@@ -35,7 +35,8 @@ abstract class BaseHandlerNode<
     NodeResponse extends ServerResponse = ServerResponse,
 >
     extends BaseHandlerCore<TFile>
-    implements MethodHandler<NodeRequest, NodeResponse> {
+    implements MethodHandler<NodeRequest, NodeResponse>
+{
     /**
      * Limiting enabled HTTP method handler.
      */
@@ -438,8 +439,8 @@ abstract class BaseHandlerNode<
                                 charset: "utf8",
                                 mediaType: "application/json",
                             }),
-                            ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
-                            ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
+                            ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
+                            ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
                         } as Record<string, string>,
                         statusCode: 200,
                     } as ResponseFile<TFile>;
@@ -480,13 +481,13 @@ abstract class BaseHandlerNode<
                                 "X-Media-Type": transformedResult.mediaType,
                                 "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
                                 "X-Transformed-Format": transformedResult.format,
-                                ...transformedResult.originalFile?.expiredAt === undefined
+                                ...(transformedResult.originalFile?.expiredAt === undefined
                                     ? {}
-                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
-                                ...transformedResult.originalFile?.modifiedAt === undefined
+                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() }),
+                                ...(transformedResult.originalFile?.modifiedAt === undefined
                                     ? {}
-                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
-                                ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
+                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() }),
+                                ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
                             } as Record<string, string>,
                             statusCode: 200,
                         } as ResponseFile<TFile>;
@@ -551,9 +552,9 @@ abstract class BaseHandlerNode<
                         "Accept-Ranges": "bytes", // Indicate we support range requests
                         "Content-Length": String(size),
                         "Content-Type": contentType,
-                        ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
-                        ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
-                        ...ETag === undefined ? {} : { ETag },
+                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
+                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
+                        ...(ETag === undefined ? {} : { ETag }),
                     } as Record<string, string>,
                     statusCode: 200,
                     ...file,

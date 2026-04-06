@@ -55,8 +55,8 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
 
     // Skip optional asterisk and whitespace
     while (
-        equalsIndex < searchString.length
-        && (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")
+        equalsIndex < searchString.length &&
+        (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")
     ) {
         equalsIndex++;
     }
@@ -81,7 +81,7 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
     let valueEnd: number;
     const firstChar = searchString[equalsIndex];
 
-    if (firstChar === "\"" || firstChar === "'") {
+    if (firstChar === '"' || firstChar === "'") {
         // Quoted value: find matching quote
         valueStart = equalsIndex + 1;
         valueEnd = searchString.indexOf(firstChar, valueStart);

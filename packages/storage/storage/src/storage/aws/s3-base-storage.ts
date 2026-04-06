@@ -262,7 +262,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         ContentType: file.contentType,
                         Key: file.name,
                         Metadata: mapValues({ originalName: file.originalName, ...file.metadata } as Record<string, unknown>, (value) =>
-                            encodeURI(String(value))),
+                            encodeURI(String(value)),
+                        ),
                     }),
                 );
             } catch {
@@ -341,8 +342,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
-                            const readable
-                                = part.body instanceof Readable
+                            const readable =
+                                part.body instanceof Readable
                                     ? part.body
                                     : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
 
@@ -379,7 +380,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             Key: file.name,
                             PartNumber: partNumber,
                             UploadId: uploadId,
-                            ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
+                            ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
                         }),
                     );
 
@@ -453,7 +454,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     Bucket,
                     CopySource,
                     Key,
-                    ...options?.storageClass && { StorageClass: options.storageClass },
+                    ...(options?.storageClass && { StorageClass: options.storageClass }),
                 }),
             );
 
@@ -509,7 +510,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 } else {
                                     items.push({
                                         id: Key,
-                                        ...LastModified && { createdAt: LastModified },
+                                        ...(LastModified && { createdAt: LastModified }),
                                     } as TFile);
                                 }
                             }
@@ -732,8 +733,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("UploadId is required");
         }
 
-        const parts
-            = file.Parts?.map(({ ETag, PartNumber }) => {
+        const parts =
+            file.Parts?.map(({ ETag, PartNumber }) => {
                 if (!ETag || !PartNumber) {
                     throw new Error("ETag and PartNumber are required");
                 }

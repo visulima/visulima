@@ -366,7 +366,7 @@ describe("headers", () => {
             it("should parse valid content disposition header", () => {
                 expect.assertions(1);
 
-                const result = HeaderUtilities.parseContentDisposition("attachment; filename=\"test.txt\"");
+                const result = HeaderUtilities.parseContentDisposition('attachment; filename="test.txt"');
 
                 expect(result).toBeDefined();
             });

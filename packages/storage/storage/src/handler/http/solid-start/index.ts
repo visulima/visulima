@@ -63,7 +63,7 @@ export interface SolidStartHandlerConfig<TFile extends UploadFile> extends Uploa
  * export const OPTIONS = handler;
  * ```
  */
-export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidStartHandlerConfig<TFile>): (event: APIEvent) => Promise<Response> => {
+export const createSolidStartHandler = <TFile extends UploadFile>(config: SolidStartHandlerConfig<TFile>): ((event: APIEvent) => Promise<Response>) => {
     let handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>;
 
     // Create the appropriate handler based on type

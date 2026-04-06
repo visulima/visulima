@@ -52,7 +52,7 @@ export class Validator<T> {
             this.validators[code] = { ...this.validators[code], ...validator } as Required<ValidatorConfig<T>>;
 
             if (typeof this.validators[code].isValid !== "function") {
-                throw new TypeError("Validation config \"isValid\" is missing, or it is not a function!");
+                throw new TypeError('Validation config "isValid" is missing, or it is not a function!');
             }
         });
     }
