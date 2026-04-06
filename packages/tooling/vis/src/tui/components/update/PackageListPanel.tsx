@@ -42,43 +42,22 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
     return (
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "white" : "gray"}>
-                {" "}
-                {checkbox}
-                {" "}
-            </Text>
-            {hasSecurity || hasSocketAlerts
-                ? (
-                    <Text color={isAcknowledged ? "gray" : "red"}>{isAcknowledged ? "\u2713 " : "\u26A0 "}</Text>
-                )
-                : (
-                    <Text>{"  "}</Text>
-                )}
+            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
+            {hasSecurity || hasSocketAlerts ? (
+                <Text color={isAcknowledged ? "gray" : "red"}>{isAcknowledged ? "\u2713 " : "\u26A0 "}</Text>
+            ) : (
+                <Text>{"  "}</Text>
+            )}
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
                     {isAcknowledged ? " [ack]" : ""}
                 </Text>
             </Box>
-            {scoreText && (
-                <Text color={scoreColorName}>
-                    {" "}
-                    {scoreText}
-                </Text>
-            )}
-            <Text dimColor>
-                {" "}
-                {entry.currentRange}
-            </Text>
-            <Text dimColor>
-                {" "}
-                {"\u2192"}
-                {" "}
-            </Text>
-            <Text>
-                {entry.newRange}
-                {" "}
-            </Text>
+            {scoreText && <Text color={scoreColorName}> {scoreText}</Text>}
+            <Text dimColor> {entry.currentRange}</Text>
+            <Text dimColor> {"\u2192"} </Text>
+            <Text>{entry.newRange} </Text>
             <Text bold color={typeColor}>
                 {entry.updateType}
             </Text>
@@ -93,19 +72,11 @@ interface CatalogHeaderProps {
 
 const CatalogHeader = ({ count, name }: CatalogHeaderProps): React.JSX.Element => (
     <Box flexShrink={0} height={1} marginTop={1}>
-        <Text dimColor>
-            {"\u25BC"}
-            {" "}
-        </Text>
+        <Text dimColor>{"\u25BC"} </Text>
         <Text bold color="white">
             {name.toUpperCase()}
         </Text>
-        <Text dimColor>
-            {" "}
-            (
-            {count}
-            )
-        </Text>
+        <Text dimColor> ({count})</Text>
     </Box>
 );
 
@@ -221,20 +192,10 @@ const PackageListPanel = ({
                     {" VIS "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
-                    {" "}
-                    outdated
+                    {totalEntries} outdated
                     {summaryText}
                 </Text>
-                {!isDryRun && checkedCount > 0 && (
-                    <Text dimColor>
-                        {" "}
-                        —
-                        {checkedCount}
-                        {" "}
-                        selected
-                    </Text>
-                )}
+                {!isDryRun && checkedCount > 0 && <Text dimColor> —{checkedCount} selected</Text>}
             </Box>
 
             {/* Filter type bar — below header */}
@@ -249,10 +210,7 @@ const PackageListPanel = ({
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-                                {" "}
-                                {f.label}
-                            </Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
                         </Box>
                     );
                 })}

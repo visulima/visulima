@@ -1922,7 +1922,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...await Promise.all(fetches));
+        results.push(...(await Promise.all(fetches)));
     } finally {
         clearTimeout(timeout);
     }
