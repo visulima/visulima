@@ -49,6 +49,7 @@ stateDiagram-v2
     resolved --> [*]
     dismissed --> [*]
 ```
+
 - **Rich metadata capture** — bounding box, CSS classes, computed styles, accessibility attributes, framework component info, DOM path, nearby elements, selected text
 - **Screenshot capture** — pixel-perfect screenshots via the Screen Capture API
 - **Source file linking** — automatically captures `file:line:col` from `data-vdt-source` attributes
@@ -144,12 +145,12 @@ Press **C** on the inspector toolbar or click **Copy** in an annotation detail p
 
 ### When to use each format
 
-| Format | Best for | Includes |
-| --- | --- | --- |
-| **Compact** | Quick fix lists, Slack messages | Element + comment (one line per annotation) |
-| **Standard** | Bug reports, PR descriptions | + source location, selector, component info, selected text |
-| **Detailed** | Thorough reviews, complex layouts | + CSS classes, DOM path, nearby text context |
-| **Forensic** | AI agents, debugging style issues | + computed styles, accessibility, nearby elements |
+| Format       | Best for                          | Includes                                                   |
+| ------------ | --------------------------------- | ---------------------------------------------------------- |
+| **Compact**  | Quick fix lists, Slack messages   | Element + comment (one line per annotation)                |
+| **Standard** | Bug reports, PR descriptions      | + source location, selector, component info, selected text |
+| **Detailed** | Thorough reviews, complex layouts | + CSS classes, DOM path, nearby text context               |
+| **Forensic** | AI agents, debugging style issues | + computed styles, accessibility, nearby elements          |
 
 ### Output examples
 
@@ -256,6 +257,7 @@ Press **C** on the inspector toolbar or click **Copy** in an annotation detail p
         ---
         ```
     </Tab>
+
 </Tabs>
 
 ### Customizing output
@@ -275,12 +277,12 @@ In development mode, the annotation system automatically detects source files vi
 
 Component names and stacks are included when detected. The level of detail adapts to your output format:
 
-| Format | React | Vue | Svelte |
-| --- | --- | --- | --- |
-| **Compact** | omitted | omitted | omitted |
-| **Standard** | Component name + stack | Component name | Component name |
-| **Detailed** | + source file | + source file | + source file |
-| **Forensic** | + full stack, all ancestors | + parent chain | + file path |
+| Format       | React                       | Vue            | Svelte         |
+| ------------ | --------------------------- | -------------- | -------------- |
+| **Compact**  | omitted                     | omitted        | omitted        |
+| **Standard** | Component name + stack      | Component name | Component name |
+| **Detailed** | + source file               | + source file  | + source file  |
+| **Forensic** | + full stack, all ancestors | + parent chain | + file path    |
 
 ## Annotation Settings
 
@@ -424,13 +426,13 @@ The `frameworkContext` field captures component information from React, Vue, or 
 
 The `accessibility` field captures ARIA attributes as a structured object.
 
-| Field                           | Type      | Description                                            |
-| ------------------------------- | --------- | ------------------------------------------------------ |
-| `accessibility.role`            | `string`  | ARIA role (explicit or implicit)                       |
-| `accessibility.ariaLabel`       | `string`  | `aria-label` value                                     |
-| `accessibility.ariaDescribedBy` | `string`  | Resolved text from `aria-describedby` target           |
-| `accessibility.focusable`       | `boolean` | Whether the element is keyboard-focusable              |
-| `accessibility.tabindex`        | `number`  | `tabindex` value                                       |
+| Field                           | Type      | Description                                  |
+| ------------------------------- | --------- | -------------------------------------------- |
+| `accessibility.role`            | `string`  | ARIA role (explicit or implicit)             |
+| `accessibility.ariaLabel`       | `string`  | `aria-label` value                           |
+| `accessibility.ariaDescribedBy` | `string`  | Resolved text from `aria-describedby` target |
+| `accessibility.focusable`       | `boolean` | Whether the element is keyboard-focusable    |
+| `accessibility.tabindex`        | `number`  | `tabindex` value                             |
 
 ### Multi-select & Position
 
@@ -442,16 +444,16 @@ The `accessibility` field captures ARIA attributes as a structured object.
 
 ### Resolution & Threading
 
-| Field                | Type              | Description                                                    |
-| -------------------- | ----------------- | -------------------------------------------------------------- |
-| `resolvedAt`         | `string`          | ISO 8601 timestamp when resolved or dismissed                  |
+| Field                | Type              | Description                                                     |
+| -------------------- | ----------------- | --------------------------------------------------------------- |
+| `resolvedAt`         | `string`          | ISO 8601 timestamp when resolved or dismissed                   |
 | `resolvedBy`         | `string`          | Who resolved it: `"human"`, `"agent"`, or a specific agent name |
-| `screenshot`         | `string`          | Relative path to screenshot file (e.g. `screenshots/uuid.png`) |
-| `thread`             | `ThreadMessage[]` | Conversation thread between human and AI agent                 |
-| `thread[].id`        | `string`          | Unique message ID (server-generated)                           |
-| `thread[].role`      | `string`          | Message author: `"human"` or `"agent"`                         |
-| `thread[].content`   | `string`          | Message text                                                   |
-| `thread[].timestamp` | `string`          | ISO 8601 timestamp (server-generated)                          |
+| `screenshot`         | `string`          | Relative path to screenshot file (e.g. `screenshots/uuid.png`)  |
+| `thread`             | `ThreadMessage[]` | Conversation thread between human and AI agent                  |
+| `thread[].id`        | `string`          | Unique message ID (server-generated)                            |
+| `thread[].role`      | `string`          | Message author: `"human"` or `"agent"`                          |
+| `thread[].content`   | `string`          | Message text                                                    |
+| `thread[].timestamp` | `string`          | ISO 8601 timestamp (server-generated)                           |
 
 ### TypeScript Types
 

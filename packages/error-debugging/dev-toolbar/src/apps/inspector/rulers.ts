@@ -240,12 +240,7 @@ const collectSnapEdges = (orientation: "horizontal" | "vertical"): number[] => {
         }
 
         // Skip our own elements
-        if (
-            element.id === CORNER_ID ||
-            element.id === H_RULER_ID ||
-            element.id === V_RULER_ID ||
-            element.classList.contains(GUIDELINE_CLASS)
-        ) {
+        if (element.id === CORNER_ID || element.id === H_RULER_ID || element.id === V_RULER_ID || element.classList.contains(GUIDELINE_CLASS)) {
             continue;
         }
 
@@ -321,9 +316,7 @@ const spawnGuideline = (orientation: "horizontal" | "vertical", startViewportPos
     hitZone.style.cssText = [
         "position:absolute",
         "pointer-events:auto",
-        isH
-            ? `left:0;right:0;height:${HIT_ZONE * 2 + 1}px;top:${-HIT_ZONE}px`
-            : `top:0;bottom:0;width:${HIT_ZONE * 2 + 1}px;left:${-HIT_ZONE}px`,
+        isH ? `left:0;right:0;height:${HIT_ZONE * 2 + 1}px;top:${-HIT_ZONE}px` : `top:0;bottom:0;width:${HIT_ZONE * 2 + 1}px;left:${-HIT_ZONE}px`,
         "background:transparent",
         isH ? "cursor:row-resize" : "cursor:col-resize",
     ].join(";");

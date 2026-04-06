@@ -1332,7 +1332,14 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
                 (event.target as Element | undefined);
 
-            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target) || isRulerElement(target)) {
+            if (
+                !target ||
+                isInsideDevToolbar(target) ||
+                isOverBadge(target) ||
+                isOverResultPopup(target) ||
+                isOverAnnotationOverlay(target) ||
+                isRulerElement(target)
+            ) {
                 return;
             }
 
@@ -1556,7 +1563,14 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
                 (event.target as Element | undefined);
 
-            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target) || isRulerElement(target)) {
+            if (
+                !target ||
+                isInsideDevToolbar(target) ||
+                isOverBadge(target) ||
+                isOverResultPopup(target) ||
+                isOverAnnotationOverlay(target) ||
+                isRulerElement(target)
+            ) {
                 hideOverlay();
 
                 return;
