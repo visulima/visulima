@@ -37,11 +37,21 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
 
     const borderStyle = focused ? "bold" : "single";
     const borderColor = (() => {
-        if (statusValue === "failure") return "red";
+        if (statusValue === "failure") {
+            return "red";
+        }
 
-        if (statusValue === "success" || isCacheStatus(statusValue)) return focused ? "green" : "gray";
+        if (statusValue === "success" || isCacheStatus(statusValue)) {
 
-        if (statusValue === "running") return focused ? "white" : "cyan";
+            return focused ? "green" : "gray";
+
+        }
+
+        if (statusValue === "running") {
+
+            return focused ? "white" : "cyan";
+
+        }
 
         return focused ? "white" : "gray";
     })();

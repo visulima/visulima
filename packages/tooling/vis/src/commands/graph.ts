@@ -314,7 +314,9 @@ for (let iter = 0; iter < 400; iter++) {
     }
   }
   edges.forEach(e => {
-    if (!e.source || !e.target) return;
+    if (!e.source || !e.target) {
+        return;
+    }
     let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
     let d = Math.sqrt(dx*dx + dy*dy) || 1;
     let f = (d - 180) * 0.008;
@@ -341,7 +343,9 @@ svg.removeChild(measure);
 
 // Render edges
 edges.forEach(e => {
-  if (!e.source || !e.target) return;
+  if (!e.source || !e.target) {
+      return;
+  }
   const sw = (widths[e.source.name]||80)/2 + 12;
   const tw = (widths[e.target.name]||80)/2 + 12;
   const dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
