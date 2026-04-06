@@ -50,6 +50,7 @@ describe("@visulima/bytes", () => {
             expect(isUint8Array(new Uint8Array())).toBe(true);
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
         it.skipIf(Buffer === undefined)("should return true for Buffer (in Node.js like env)", () => {
             expect.assertions(1);
 
@@ -167,6 +168,7 @@ describe("@visulima/bytes", () => {
             expect(toUint8Array([1, 2, 3])).toStrictEqual(new Uint8Array([1, 2, 3]));
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
         it.skipIf(Buffer === undefined)("should convert Buffer (Node.js like env)", () => {
             expect.assertions(3);
 
@@ -178,6 +180,7 @@ describe("@visulima/bytes", () => {
             expect(u8.byteOffset).toBe(buf.byteOffset);
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
         it.skipIf(Buffer === undefined)("should convert string (via Buffer.from in Node.js like env)", () => {
             expect.assertions(1);
 
@@ -188,6 +191,7 @@ describe("@visulima/bytes", () => {
             expect.assertions(2);
 
             const originalBuffer = globalThis.Buffer;
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
             const bufferExisted = globalThis.Buffer !== undefined;
 
             // eslint-disable-next-line vitest/no-conditional-in-test

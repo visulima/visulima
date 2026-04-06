@@ -15,8 +15,8 @@ export const bufferToUint8Array = (buf: Buffer): Uint8Array => new Uint8Array(bu
  * @param x The value to check.
  * @returns True if x is a Uint8Array or Buffer, false otherwise.
  */
-export const isUint8Array: (x: unknown) => x is Uint8Array =
-    typeof Buffer === "function"
+export const isUint8Array: (x: unknown) => x is Uint8Array
+    = typeof Buffer === "function"
         ? (x: unknown): x is Uint8Array => x instanceof Uint8Array || Buffer.isBuffer(x)
         : (x: unknown): x is Uint8Array => x instanceof Uint8Array;
 
@@ -31,7 +31,7 @@ export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string])
         return asciiToUint8Array([txt]);
     }
 
-    const [input] = Array.isArray(txt) ? txt : [String.raw(txt as TemplateStringsArray)]; // Handle TemplateStringsArray
+    const [input] = Array.isArray(txt) ? txt : [String.raw(txt)]; // Handle TemplateStringsArray
     const inputLength = input.length;
     const result = new Uint8Array(inputLength); // Renamed 'res' to 'result'
 
@@ -55,7 +55,7 @@ export const utf8ToUint8Array = (txt: TemplateStringsArray | [string] | string):
         return utf8ToUint8Array([txt]);
     }
 
-    const [input] = Array.isArray(txt) ? txt : [String.raw(txt as TemplateStringsArray)]; // Handle TemplateStringsArray
+    const [input] = Array.isArray(txt) ? txt : [String.raw(txt)]; // Handle TemplateStringsArray
 
     return bufferToUint8Array(Buffer.from(input, "utf8"));
 };
