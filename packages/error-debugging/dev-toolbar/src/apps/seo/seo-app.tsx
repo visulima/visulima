@@ -347,15 +347,11 @@ const deriveStatus = (messages: JsonLdValidationMessage[]): JsonLdSchema["status
     }
 
     if (messages.some((m) => m.severity === "warning")) {
-
         return "warning";
-
     }
 
     if (messages.some((m) => m.severity === "suggestion")) {
-
         return "suggestion";
-
     }
 
     return "ok";
