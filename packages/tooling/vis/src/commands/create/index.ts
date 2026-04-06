@@ -11,7 +11,7 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve, sep } from "node:path";
+import { join, relative, resolve } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -292,6 +292,8 @@ const create: Command = {
             // ── Interactive mode ──────────────────────────────────
             const answers = await runInteractivePrompts({
                 cwd,
+                defaultEditor: createConfig?.defaultEditor,
+                defaultGitInit: createConfig?.gitInit,
                 defaultPm: createConfig?.defaultPm ?? detectedPm.name,
                 inMonorepo,
             });
@@ -357,11 +359,13 @@ const create: Command = {
 
         projectName = sanitizedName;
 
-        // Guard against path traversal — target must be within cwd or equal to it
-        const resolvedCwd = resolve(cwd);
+        // Guard against path traversal — target must be within or equal to cwd.
+        // Uses path.relative instead of startsWith to prevent sibling-folder
+        // bypass (e.g., /home/user vs /home/username).
         const resolvedTarget = resolve(targetDir);
+        const rel = relative(resolve(cwd), resolvedTarget);
 
-        if (resolvedTarget !== resolvedCwd && !resolvedTarget.startsWith(resolvedCwd + sep)) {
+        if (rel.startsWith("..")) {
             throw new Error(`Target directory "${targetDir}" is outside the working directory. Use a name without "../" path segments.`);
         }
 

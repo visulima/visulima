@@ -12,7 +12,9 @@ import { executeRemoteGit, executeRemoteNpm } from "./remote";
 /**
  * Execute a template given its resolved configuration and runtime context.
  *
- * Returns the exit code (0 = success).
+ * @param config Resolved template info (type, source, extra args).
+ * @param context Runtime context (cwd, PM, project name, target dir, config).
+ * @returns Exit code — 0 on success, non-zero on failure.
  */
 export const executeTemplate = async (config: TemplateConfig, context: ExecutionContext): Promise<number> => {
     switch (config.type) {

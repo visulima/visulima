@@ -78,9 +78,18 @@ export interface PromptResult {
 
 /**
  * Run the full interactive prompt flow and return the collected answers.
+ *
+ * @param options.cwd Working directory for resolving paths.
+ * @param options.defaultPm Pre-selected package manager (skips PM prompt when set).
+ * @param options.defaultGitInit Default for the git-init prompt (from vis.config.ts).
+ * @param options.defaultEditor Default for the editor prompt (from vis.config.ts).
+ * @param options.inMonorepo Whether we are inside an existing monorepo workspace.
+ * @returns Collected answers including template, name, directory, PM, and flags.
  */
 export const runInteractivePrompts = async (options: {
     cwd: string;
+    defaultEditor?: "vscode";
+    defaultGitInit?: boolean;
     defaultPm?: string;
     inMonorepo: boolean;
 }): Promise<PromptResult> => {
@@ -161,15 +170,16 @@ export const runInteractivePrompts = async (options: {
             }
         }
 
-        // 6. Git init (standalone only)
+        // 6. Git init (standalone only — defaults from vis.config.ts)
         let gitInit = false;
 
         if (!options.inMonorepo) {
-            gitInit = await confirm(rl, "Initialize a git repository?");
+            gitInit = await confirm(rl, "Initialize a git repository?", options.defaultGitInit ?? false);
         }
 
-        // 7. Editor config
-        const editor = (await confirm(rl, "Generate VS Code configuration?"))
+        // 7. Editor config (defaults from vis.config.ts)
+        const editorDefault = options.defaultEditor === "vscode";
+        const editor = (await confirm(rl, "Generate VS Code configuration?", editorDefault))
             ? ("vscode" as const)
             : undefined;
 

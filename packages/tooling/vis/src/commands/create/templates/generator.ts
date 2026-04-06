@@ -78,6 +78,13 @@ export const generate = (): void => {
 
 // ── Executor ──────────────────────────────────────────────────────
 
+/**
+ * Scaffold a code generator package with a bin entry point.
+ *
+ * @param context Runtime context with project name and target directory.
+ * @param description Optional generator description for package.json.
+ * @returns Exit code — 0 on success.
+ */
 export const executeGeneratorTemplate = (context: ExecutionContext, description: string = ""): number => {
     const { projectName, targetDir } = context;
 

@@ -45,7 +45,7 @@ describe("executeMonorepoTemplate", () => {
         expect(existsSync(join(targetDir, "packages"))).toBe(true);
     });
 
-    it("should create root package.json with workspace name and detected PM", () => {
+    it("should create root package.json with workspace name and pnpm", () => {
         expect.assertions(4);
 
         const targetDir = join(tmpDir, "my-workspace");
@@ -57,6 +57,7 @@ describe("executeMonorepoTemplate", () => {
         expect(pkg.name).toBe("my-workspace");
         expect(pkg.private).toBe(true);
         expect(pkg.type).toBe("module");
+        // Monorepo always uses pnpm (generates pnpm-workspace.yaml)
         expect(pkg.packageManager).toBe("pnpm@latest");
     });
 

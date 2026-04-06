@@ -24,18 +24,6 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
 // ── Git URL detection ─────────────────────────────────────────────
 
 /**
- * Patterns that identify a git repository URL.
- *
- * Matches:
- * - https://github.com/owner/repo (and gitlab.com, bitbucket.org)
- * - git@github.com:owner/repo
- * - github:owner/repo, gitlab:owner/repo, bitbucket:owner/repo
- * - owner/repo (GitHub shorthand — but NOT scoped npm packages)
- * - owner/repo#branch
- * - Any of the above with /tree/branch/path or /blob/branch/path
- */
-
-/**
  * All prefixes that route to giget's `downloadTemplate` (remote:git).
  * Covers every giget provider: github/gh, gitlab, bitbucket, sourcehut, git, http/https.
  *

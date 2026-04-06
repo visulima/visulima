@@ -137,6 +137,13 @@ const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): num
 
 // ── Router ────────────────────────────────────────────────────────
 
+/**
+ * Execute a built-in template (vis:app or vis:library).
+ *
+ * @param config Resolved template config with type and extra args.
+ * @param context Runtime context with PM info, target dir, and project name.
+ * @returns Exit code — 0 on success, non-zero on failure.
+ */
 export const executeBuiltin = (config: TemplateConfig, context: ExecutionContext): number => {
     switch (config.type) {
         case "builtin:app": {

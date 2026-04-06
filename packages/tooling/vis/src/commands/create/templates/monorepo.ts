@@ -16,7 +16,8 @@ import type { ExecutionContext } from "./types";
 
 // ── Template files ────────────────────────────────────────────────
 
-const rootPackageJson = (name: string, pmName: string): string =>
+// The monorepo template always uses pnpm since it generates pnpm-workspace.yaml.
+const rootPackageJson = (name: string): string =>
     JSON.stringify(
         {
             name,
@@ -32,7 +33,7 @@ const rootPackageJson = (name: string, pmName: string): string =>
             devDependencies: {
                 "@visulima/vis": "latest",
             },
-            packageManager: `${pmName}@latest`,
+            packageManager: "pnpm@latest",
         },
         null,
         4,
@@ -92,7 +93,7 @@ indent_size = 2
 trim_trailing_whitespace = false
 `;
 
-const readmeMd = (name: string, pmName: string): string => `# ${name}
+const readmeMd = (name: string): string => `# ${name}
 
 A monorepo powered by [vis](https://visulima.com/packages/vis).
 
@@ -100,16 +101,16 @@ A monorepo powered by [vis](https://visulima.com/packages/vis).
 
 \`\`\`bash
 # Install dependencies
-${pmName} install
+pnpm install
 
 # Run all apps in development mode
-${pmName} dev
+pnpm dev
 
 # Build all packages
-${pmName} build
+pnpm build
 
 # Run tests
-${pmName} test
+pnpm test
 \`\`\`
 
 ## Structure
@@ -124,8 +125,14 @@ ${pmName} test
 
 // ── Executor ──────────────────────────────────────────────────────
 
+/**
+ * Scaffold a pnpm monorepo workspace with apps/ and packages/ directories.
+ *
+ * @param context Execution context with project name, target directory, and PM info.
+ * @returns Exit code (0 = success).
+ */
 export const executeMonorepoTemplate = (context: ExecutionContext): number => {
-    const { pm, projectName, targetDir } = context;
+    const { projectName, targetDir } = context;
 
     info("Scaffolding monorepo workspace...");
 
@@ -135,7 +142,7 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     mkdirSync(join(targetDir, "packages"), { recursive: true });
 
     // Write root files
-    writeFileSync(join(targetDir, "package.json"), rootPackageJson(projectName, pm.name));
+    writeFileSync(join(targetDir, "package.json"), rootPackageJson(projectName));
     success("Created package.json");
 
     writeFileSync(join(targetDir, "pnpm-workspace.yaml"), pnpmWorkspaceYaml());
@@ -147,7 +154,7 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     writeFileSync(join(targetDir, ".editorconfig"), editorconfig());
     success("Created .editorconfig");
 
-    writeFileSync(join(targetDir, "README.md"), readmeMd(projectName, pm.name));
+    writeFileSync(join(targetDir, "README.md"), readmeMd(projectName));
     success("Created README.md");
 
     // Add .gitkeep files so empty directories are tracked
