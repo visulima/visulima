@@ -50,24 +50,18 @@ export function resolveColor(color: number | string | undefined): number {
     }
 
     if (typeof color === "number") {
-
         return color;
-
     }
 
     if (color in NAMED_COLORS) {
-
         return NAMED_COLORS[color]!;
-
     }
 
     // ansi256(N) syntax
     const ansiMatch = /^ansi256\(\s*(\d+)\s*\)$/.exec(color);
 
     if (ansiMatch) {
-
         return Number(ansiMatch[1]);
-
     }
 
     // #RGB shorthand → expand to #RRGGBB
@@ -85,18 +79,14 @@ export function resolveColor(color: number | string | undefined): number {
     const hexMatch = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
 
     if (hexMatch) {
-
         return rgbToAnsi256(Number.parseInt(hexMatch[1]!, 16), Number.parseInt(hexMatch[2]!, 16), Number.parseInt(hexMatch[3]!, 16));
-
     }
 
     // rgb(R, G, B)
     const rgbMatch = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(color);
 
     if (rgbMatch) {
-
         return rgbToAnsi256(Number(rgbMatch[1]), Number(rgbMatch[2]), Number(rgbMatch[3]));
-
     }
 
     return 255; // unrecognised → terminal default
@@ -374,9 +364,7 @@ const applyBorderStyles = (node: YogaNode, style: Styles, currentStyle: Styles):
     const hasBorderChanges = "borderStyle" in style || "borderTop" in style || "borderBottom" in style || "borderLeft" in style || "borderRight" in style;
 
     if (!hasBorderChanges) {
-
         return;
-
     }
 
     const borderWidth = currentStyle.borderStyle ? 1 : 0;

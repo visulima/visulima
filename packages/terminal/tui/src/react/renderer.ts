@@ -217,9 +217,7 @@ function writeCell(buffer: Uint32Array, cols: number, rows: number, sx: number, 
     }
 
     if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) {
-
         return;
-
     }
 
     const index = (sy * cols + sx) * 2;
@@ -247,9 +245,7 @@ function paintBorder(
     }
 
     if (w <= 0 || h <= 0) {
-
         return;
-
     }
 
     const box = (cliBoxes as any)[node._style.borderStyle];
@@ -323,9 +319,7 @@ function collectText(node: LayoutNode): string {
     }
 
     if (node.text !== undefined) {
-
         return node.text;
-
     }
 
     const raw = node.children.map(collectText).join("");

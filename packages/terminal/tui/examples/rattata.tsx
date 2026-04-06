@@ -107,15 +107,11 @@ function messageRows(message: Message): number {
     }
 
     if (message.kind === "tool") {
-
         return 1;
-
     }
 
     if (message.kind === "diff") {
-
         return message.text.split("\n").length;
-
     }
 
     // user / ai: 1 blank line + 1 per line of text

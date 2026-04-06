@@ -140,9 +140,7 @@ export const useInput = (handler: InputHandler): void => {
             } // unhandled escape sequences
 
             if (data === "\r" || data === "\n") {
-
                 return;
-
             }
 
             handlerRef.current(
@@ -629,9 +627,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         if (key.escape) {
-
             return;
-
         }
 
         if (key.leftArrow) {

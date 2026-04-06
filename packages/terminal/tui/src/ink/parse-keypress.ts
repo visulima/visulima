@@ -281,9 +281,7 @@ function resolveEventType(value: number): EventType {
     }
 
     if (value === 2) {
-
         return "repeat";
-
     }
 
     return "press";
@@ -306,9 +304,7 @@ const parseKittyKeypress = (s: string): ParsedKey | null => {
     const match = kittyKeyRe.exec(s);
 
     if (!match) {
-
         return null;
-
     }
 
     const codepoint = Number.parseInt(match[1]!, 10);
@@ -378,9 +374,7 @@ const parseKittySpecialKey = (s: string): ParsedKey | null => {
     const match = kittySpecialKeyRe.exec(s);
 
     if (!match) {
-
         return null;
-
     }
 
     const number = Number.parseInt(match[1]!, 10);
@@ -391,9 +385,7 @@ const parseKittySpecialKey = (s: string): ParsedKey | null => {
     const name = terminator === "~" ? kittySpecialNumberKeys[number] : kittySpecialLetterKeys[terminator];
 
     if (!name) {
-
         return null;
-
     }
 
     return {
@@ -427,17 +419,13 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
     const kittyResult = parseKittyKeypress(s);
 
     if (kittyResult) {
-
         return kittyResult;
-
     }
 
     const kittySpecialResult = parseKittySpecialKey(s);
 
     if (kittySpecialResult) {
-
         return kittySpecialResult;
-
     }
 
     // If the input matched the kitty CSI-u pattern but was rejected (e.g.,

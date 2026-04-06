@@ -26,9 +26,7 @@ function fetchData(key, delay) {
     const cached = cache.get(key);
 
     if (cached?.status === "resolved") {
-
         return cached.data;
-
     }
 
     if (cached?.status === "pending") throw cached.promise;

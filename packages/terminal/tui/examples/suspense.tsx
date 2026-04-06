@@ -38,9 +38,7 @@ const read = () => {
     if (state === "pending") throw promise;
 
     if (state === "done") {
-
         return value;
-
     }
 };
 

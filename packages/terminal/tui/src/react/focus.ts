@@ -95,9 +95,7 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const active = itemsRef.current.filter((e) => e.isActive);
 
         if (active.length === 0) {
-
             return;
-
         }
 
         setActiveId((previous) => {
@@ -119,9 +117,7 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const active = itemsRef.current.filter((e) => e.isActive);
 
         if (active.length === 0) {
-
             return;
-
         }
 
         setActiveId((previous) => {
