@@ -25,12 +25,7 @@ async function findPackages(dir, packages = []) {
             const fullPath = join(dir, entry.name);
 
             // Skip test fixtures, examples, benchmarks, and test directories
-            if (
-                entry.name.startsWith("__") ||
-                entry.name === "examples" ||
-                entry.name === "__bench__" ||
-                entry.name === "__tests__"
-            ) {
+            if (entry.name.startsWith("__") || entry.name === "examples" || entry.name === "__bench__" || entry.name === "__tests__") {
                 continue;
             }
 
@@ -149,7 +144,8 @@ function generateTableContent(packagesByCategory) {
         // Add category header
         content += `\n### ${categoryName}\n\n`;
         content += "| Package | Version | Description |\n";
-        content += "| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n";
+        content +=
+            "| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n";
 
         // Sort packages within category by name
         packages.sort((a, b) => a.name.localeCompare(b.name));
@@ -181,9 +177,7 @@ function replaceTableContent(readmeContent, newContent) {
     const endIndex = readmeContent.indexOf(endMarker);
 
     if (startIndex === -1 || endIndex === -1) {
-        throw new Error(
-            `Could not find placeholders in README. Make sure both ${startMarker} and ${endMarker} exist.`,
-        );
+        throw new Error(`Could not find placeholders in README. Make sure both ${startMarker} and ${endMarker} exist.`);
     }
 
     if (startIndex >= endIndex) {

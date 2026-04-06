@@ -57,10 +57,7 @@ function generatePackageSVG(packageName, imageDataUri) {
     const startY = 117;
 
     // Replace hyphens with spaces, split by spaces, and capitalize each word
-    let nameParts = packageName
-        .replaceAll(/-/g, " ")
-        .trim()
-        .split(/\s+/);
+    let nameParts = packageName.replaceAll(/-/g, " ").trim().split(/\s+/);
 
     if (packageName !== "tsconfig") {
         nameParts = nameParts.map((word) => capitalize(word.trim()));

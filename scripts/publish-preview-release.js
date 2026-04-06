@@ -26,9 +26,7 @@ const rootPath = join(__dirname, "..");
 
 const packages = affectedProjects.map((projectName) => {
     // Ask NX for the actual project root, since project names may not match directory paths
-    const projectJson = JSON.parse(
-        execSync(`pnpm exec nx show project ${projectName} --json`, { encoding: "utf8" }),
-    );
+    const projectJson = JSON.parse(execSync(`pnpm exec nx show project ${projectName} --json`, { encoding: "utf8" }));
     const projectRoot = join(rootPath, projectJson.root);
     const packageJsonPath = join(projectRoot, "package.json");
 
