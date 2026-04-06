@@ -190,6 +190,7 @@ model Post {
 ```
 
 DMMF includes:
+
 - Relation name (`UserPosts`)
 - Foreign key field (`authorId`)
 - Referenced field (`id`)
@@ -238,17 +239,17 @@ DMMF representation:
 
 Prisma types map to database types:
 
-| Prisma Type | PostgreSQL | MySQL | SQLite | MongoDB |
-|-------------|------------|-------|--------|---------|
-| String      | text       | varchar | text | string |
-| Int         | integer    | int | integer | int |
-| BigInt      | bigint     | bigint | integer | long |
-| Float       | double precision | float | real | double |
-| Decimal     | decimal    | decimal | N/A | decimal |
-| Boolean     | boolean    | boolean | integer | bool |
-| DateTime    | timestamp  | datetime | datetime | date |
-| Json        | jsonb      | json | text | object |
-| Bytes       | bytea      | blob | blob | binData |
+| Prisma Type | PostgreSQL       | MySQL    | SQLite   | MongoDB |
+| ----------- | ---------------- | -------- | -------- | ------- |
+| String      | text             | varchar  | text     | string  |
+| Int         | integer          | int      | integer  | int     |
+| BigInt      | bigint           | bigint   | integer  | long    |
+| Float       | double precision | float    | real     | double  |
+| Decimal     | decimal          | decimal  | N/A      | decimal |
+| Boolean     | boolean          | boolean  | integer  | bool    |
+| DateTime    | timestamp        | datetime | datetime | date    |
+| Json        | jsonb            | json     | text     | object  |
+| Bytes       | bytea            | blob     | blob     | binData |
 
 ## Comments and Documentation
 

@@ -1,7 +1,4 @@
 {
     "title": "Concepts",
-    "pages": [
-        "dmmf",
-        "json-schema"
-    ]
+    "pages": ["dmmf", "json-schema"]
 }

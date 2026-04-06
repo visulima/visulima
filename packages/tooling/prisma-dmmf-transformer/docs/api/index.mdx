@@ -11,24 +11,23 @@ Complete API documentation for Prisma DMMF transformer.
 Transform Prisma DMMF to JSON Schema v7.
 
 ```typescript
-function transformDMMF(
-  dmmf: DMMF.Document,
-  options?: TransformOptions
-): JSONSchema7
+function transformDMMF(dmmf: DMMF.Document, options?: TransformOptions): JSONSchema7;
 ```
 
 **Parameters:**
+
 - `dmmf` - Prisma DMMF document from `prisma._getDmmf()`
 - `options` - Transformation options (optional)
 
 **Returns:** JSON Schema v7 document
 
 **Example:**
+
 ```typescript
 import { transformDMMF } from "@visulima/prisma-dmmf-transformer";
 
 const schema = transformDMMF(dmmf, {
-  includeRequiredFields: "true",
+    includeRequiredFields: "true",
 });
 ```
 
@@ -37,24 +36,23 @@ const schema = transformDMMF(dmmf, {
 Get JSON Schema property for a specific DMMF field.
 
 ```typescript
-function getJSONSchemaProperty(
-  field: DMMF.Field,
-  options?: TransformOptions
-): JSONSchema7Definition
+function getJSONSchemaProperty(field: DMMF.Field, options?: TransformOptions): JSONSchema7Definition;
 ```
 
 **Parameters:**
+
 - `field` - DMMF field definition
 - `options` - Transformation options (optional)
 
 **Returns:** JSON Schema property definition
 
 **Example:**
+
 ```typescript
 import { getJSONSchemaProperty } from "@visulima/prisma-dmmf-transformer";
 
 const property = getJSONSchemaProperty(field, {
-  persistOriginalType: "true",
+    persistOriginalType: "true",
 });
 ```
 
@@ -64,10 +62,10 @@ Configuration options for transformation.
 
 ```typescript
 interface TransformOptions {
-  keepRelationScalarFields?: "true" | "false";
-  includeRequiredFields?: "true" | "false";
-  persistOriginalType?: "true" | "false";
-  schemaId?: string;
+    keepRelationScalarFields?: "true" | "false";
+    includeRequiredFields?: "true" | "false";
+    persistOriginalType?: "true" | "false";
+    schemaId?: string;
 }
 ```
 
@@ -123,9 +121,9 @@ Metadata about a property.
 
 ```typescript
 interface PropertyMetaData {
-  hasDefaultValue: boolean;
-  isScalar: boolean;
-  required: boolean;
+    hasDefaultValue: boolean;
+    isScalar: boolean;
+    required: boolean;
 }
 ```
 
@@ -135,7 +133,7 @@ Metadata about a model.
 
 ```typescript
 interface ModelMetaData {
-  enums: ReadonlyDeep<DMMF.DatamodelEnum[]>;
+    enums: ReadonlyDeep<DMMF.DatamodelEnum[]>;
 }
 ```
 
@@ -144,16 +142,7 @@ interface ModelMetaData {
 Prisma scalar types.
 
 ```typescript
-type PrismaPrimitive =
-  | "String"
-  | "Boolean"
-  | "Int"
-  | "BigInt"
-  | "Float"
-  | "Decimal"
-  | "DateTime"
-  | "Json"
-  | "Bytes";
+type PrismaPrimitive = "String" | "Boolean" | "Int" | "BigInt" | "Float" | "Decimal" | "DateTime" | "Json" | "Bytes";
 ```
 
 ## JSONSchema7
@@ -162,11 +151,11 @@ The output schema follows JSON Schema Draft 7:
 
 ```typescript
 interface JSONSchema7 {
-  $schema: string;
-  $id?: string;
-  type: string;
-  definitions: Record<string, JSONSchema7Definition>;
-  properties: Record<string, JSONSchema7Definition>;
+    $schema: string;
+    $id?: string;
+    type: string;
+    definitions: Record<string, JSONSchema7Definition>;
+    properties: Record<string, JSONSchema7Definition>;
 }
 ```
 
@@ -178,9 +167,9 @@ From `@prisma/generator-helper`:
 
 ```typescript
 interface Document {
-  datamodel: Datamodel;
-  schema: Schema;
-  mappings: Mappings;
+    datamodel: Datamodel;
+    schema: Schema;
+    mappings: Mappings;
 }
 ```
 
@@ -188,11 +177,11 @@ interface Document {
 
 ```typescript
 interface Model {
-  name: string;
-  fields: Field[];
-  primaryKey: PrimaryKey | null;
-  uniqueFields: string[][];
-  uniqueIndexes: UniqueIndex[];
+    name: string;
+    fields: Field[];
+    primaryKey: PrimaryKey | null;
+    uniqueFields: string[][];
+    uniqueIndexes: UniqueIndex[];
 }
 ```
 
@@ -200,18 +189,18 @@ interface Model {
 
 ```typescript
 interface Field {
-  name: string;
-  kind: FieldKind;
-  type: string;
-  isRequired: boolean;
-  isList: boolean;
-  isUnique: boolean;
-  isId: boolean;
-  isReadOnly: boolean;
-  hasDefaultValue: boolean;
-  default?: FieldDefault;
-  relationName?: string;
-  relationFromFields?: string[];
-  relationToFields?: string[];
+    name: string;
+    kind: FieldKind;
+    type: string;
+    isRequired: boolean;
+    isList: boolean;
+    isUnique: boolean;
+    isId: boolean;
+    isReadOnly: boolean;
+    hasDefaultValue: boolean;
+    default?: FieldDefault;
+    relationName?: string;
+    relationFromFields?: string[];
+    relationToFields?: string[];
 }
 ```
