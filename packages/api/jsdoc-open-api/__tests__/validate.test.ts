@@ -39,7 +39,7 @@ describe(validate, () => {
             paths: {},
         };
 
-        await expect(validate(spec)).rejects.toThrowError(
+        await expect(validate(spec)).rejects.toThrow(
             "Swagger schema validation failed.\n  #/ must NOT have additional properties\n  #/info must have required property 'version'",
         );
     });

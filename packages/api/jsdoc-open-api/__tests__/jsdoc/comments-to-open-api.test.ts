@@ -6,7 +6,7 @@ describe("code blocks", () => {
     it("keeps spacing", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /\n\
  * @description List API versions\n\
@@ -45,7 +45,7 @@ describe(commentsToOpenApi, () => {
     it("big stuff", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * POST /pet\n\
  *\n\
@@ -266,7 +266,7 @@ describe(commentsToOpenApi, () => {
     it("random properities I don't normally use", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
@@ -302,7 +302,7 @@ describe(commentsToOpenApi, () => {
     it("simple example", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /hello\n\
  * @description Get a \"hello world\" message.\n\
@@ -331,7 +331,7 @@ describe(commentsToOpenApi, () => {
     it("2 examples", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * POST /hello\n\
  * @description Get a \"hello world\" message.\n\
@@ -400,7 +400,7 @@ describe(commentsToOpenApi, () => {
     it("complex example", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /api/v1/cars/{country}/{city}\n\
  * @description Get a list of cars at a location.\n\
@@ -526,7 +526,7 @@ describe(commentsToOpenApi, () => {
     it("simple post", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * POST /hello\n\
  * @description Post a \"hello world\" message.\n\
@@ -567,7 +567,7 @@ describe(commentsToOpenApi, () => {
     it("form post", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * POST /hello\n\
  * @description Post a \"hello world\" message.\n\
@@ -609,7 +609,7 @@ describe(commentsToOpenApi, () => {
         expect.assertions(1);
 
         // Note: We can't use "*/*" in doc comments.
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * POST /hello\n\
  * @description Post a \"hello world\" message.\n\
@@ -724,7 +724,7 @@ describe(commentsToOpenApi, () => {
     it("api-with-examples", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /\n\
  * @operationId listVersionsv2\n\
@@ -781,7 +781,7 @@ describe(commentsToOpenApi, () => {
     it("callback", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
   * POST /streams\n\
   * @description subscribes a client to receive out-of-band data\n\
@@ -837,7 +837,7 @@ describe(commentsToOpenApi, () => {
     it("links", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /users/{username}\n\
  * @operationId getUserByName\n\
@@ -891,7 +891,7 @@ describe(commentsToOpenApi, () => {
     it("petstore", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /pets\n\
  * @summary List all pets\n\
@@ -1059,7 +1059,7 @@ describe(commentsToOpenApi, () => {
     it("multiple response content types", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * GET /\n\
  * @response 200 - OK\n\
@@ -1100,7 +1100,7 @@ describe(commentsToOpenApi, () => {
     it("does nothing for normal comment", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line no-multi-str,no-use-extend-native/no-use-extend-native
+        // eslint-disable-next-line no-multi-str
         const comment = "/**\n\
  * normal comment\n\
  */".replaceAll("\r\n", "\n");

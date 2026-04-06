@@ -15,7 +15,7 @@ const generateCommand = (program: Command, commandName = "generate", configName 
         .option("-v, --verbose", "Verbose output.")
         .option("-d, --very-verbose", "Very verbose output.")
 
-        .action(async (paths, options) => {
+        .action(async (paths: string[], options: { config?: string; output?: string; verbose?: boolean; veryVerbose?: boolean }) => {
             try {
                 await baseGenerateCommand(configName, paths, options);
             } catch (error) {
