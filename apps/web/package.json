@@ -82,6 +82,7 @@
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@eslint-react/eslint-plugin": "catalog:lint",
+        "@eslint/css": "1.1.0",
         "@netlify/vite-plugin-tanstack-start": "catalog:build",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@tanstack/eslint-plugin-router": "catalog:lint",
@@ -106,6 +107,7 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
+        "tailwind-csstree": "0.3.0",
         "vitest": "catalog:test"
     },
     "engines": {
