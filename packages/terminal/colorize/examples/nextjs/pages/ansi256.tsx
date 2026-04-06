@@ -107,9 +107,9 @@ const Home: NextPage = () => {
         [""],
     );
 
-    console.log(...result)
+    console.log(...result);
 
-    console.log("test")
+    console.log("test");
 
     return <div>Check the develop console out</div>;
 };

@@ -29,13 +29,13 @@ export const convertHexToRgb = (hex: ColorValueHex | string): [number, number, n
     const length_ = color ? color.length : 0;
 
     if (length_ === 3) {
-        color
-            = ((color as string)[0] as string)
-                + ((color as string)[0] as string)
-                + ((color as string)[1] as string)
-                + ((color as string)[1] as string)
-                + ((color as string)[2] as string)
-                + ((color as string)[2] as string);
+        color =
+            ((color as string)[0] as string) +
+            ((color as string)[0] as string) +
+            ((color as string)[1] as string) +
+            ((color as string)[1] as string) +
+            ((color as string)[2] as string) +
+            ((color as string)[2] as string);
     } else if (length_ !== 6) {
         return [0, 0, 0];
     }

@@ -26,11 +26,11 @@ export const rgbToAnsi256 = (r: number, g: number, b: number): number => {
     }
 
     return (
-        16
+        16 +
         // r / 255 * 5 => r / 51
-        + 36 * Math.round(r / 51)
-        + 6 * Math.round(g / 51)
-        + Math.round(b / 51)
+        36 * Math.round(r / 51) +
+        6 * Math.round(g / 51) +
+        Math.round(b / 51)
     );
 };
 

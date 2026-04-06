@@ -14,6 +14,7 @@ Common issues and solutions for **@visulima/colorize**.
 **Problem:** `Cannot find module '@visulima/colorize'`
 
 **Solution:**
+
 ```bash npm2yarn
 # Reinstall the package
 npm install @visulima/colorize
@@ -29,6 +30,7 @@ npm install
 
 **Solution:**
 Type definitions are included. Ensure your `tsconfig.json` has:
+
 ```json
 {
     "compilerOptions": {
@@ -47,38 +49,41 @@ Type definitions are included. Ensure your `tsconfig.json` has:
 **Possible Causes & Solutions:**
 
 1. **Environment Variable Set:**
-   ```bash
-   # Check if NO_COLOR is set
-   echo $NO_COLOR
 
-   # Unset it
-   unset NO_COLOR
-   ```
+    ```bash
+    # Check if NO_COLOR is set
+    echo $NO_COLOR
+
+    # Unset it
+    unset NO_COLOR
+    ```
 
 2. **Terminal Doesn't Support Colors:**
-   ```bash
-   # Force color output
-   FORCE_COLOR=1 node script.js
 
-   # Or use CLI flag
-   node script.js --color
-   ```
+    ```bash
+    # Force color output
+    FORCE_COLOR=1 node script.js
+
+    # Or use CLI flag
+    node script.js --color
+    ```
 
 3. **Output is Piped:**
    When output is piped or redirected, colors are automatically disabled. Force colors:
-   ```typescript
-   // Set before importing
-   process.env.FORCE_COLOR = "1";
 
-   import { red } from "@visulima/colorize";
-   ```
+    ```typescript
+    // Set before importing
+    process.env.FORCE_COLOR = "1";
+
+    import { red } from "@visulima/colorize";
+    ```
 
 4. **CI Environment:**
    Most CI environments disable colors by default:
-   ```bash
-   # In CI config, set:
-   FORCE_COLOR=1
-   ```
+    ```bash
+    # In CI config, set:
+    FORCE_COLOR=1
+    ```
 
 ### Wrong Colors Displayed
 
@@ -87,6 +92,7 @@ Type definitions are included. Ensure your `tsconfig.json` has:
 **Solution:**
 
 Check terminal color support:
+
 ```bash
 # Check if terminal supports TrueColor
 echo $COLORTERM
@@ -101,18 +107,19 @@ If your terminal doesn't support TrueColor, colorize automatically falls back to
 **Problem:** Colors show locally but not in CI/CD pipelines
 
 **Solution:**
+
 ```yaml
 # GitHub Actions
 env:
-  FORCE_COLOR: "1"
+    FORCE_COLOR: "1"
 
 # GitLab CI
 variables:
-  FORCE_COLOR: "1"
+    FORCE_COLOR: "1"
 
 # CircleCI
 environment:
-  FORCE_COLOR: "1"
+    FORCE_COLOR: "1"
 ```
 
 ## Browser Issues
@@ -123,6 +130,7 @@ environment:
 
 **Solution:**
 Use the spread operator:
+
 ```typescript
 import { red } from "@visulima/colorize/browser";
 
@@ -139,6 +147,7 @@ console.log(...red("Error"));
 
 **Solution:**
 Firefox doesn't support ANSI codes natively. Colorize automatically falls back to `%c` syntax. Ensure you're using the spread operator:
+
 ```typescript
 import { red, green } from "@visulima/colorize/browser";
 
@@ -152,6 +161,7 @@ console.log(...green("Success")); // Works in Firefox
 
 **Solution:**
 This happens when using the console override hack. Remove the hack to restore file paths:
+
 ```typescript
 // Remove this override to see file paths again
 // The trade-off is you need to use the spread operator
@@ -168,6 +178,7 @@ console.log(...colorize.red("Error")); // Shows file path
 Ensure your environment supports ESM:
 
 **Node.js (ESM):**
+
 ```json
 // package.json
 {
@@ -176,6 +187,7 @@ Ensure your environment supports ESM:
 ```
 
 **TypeScript:**
+
 ```json
 // tsconfig.json
 {
@@ -187,6 +199,7 @@ Ensure your environment supports ESM:
 ```
 
 **CommonJS Alternative:**
+
 ```javascript
 const { red } = require("@visulima/colorize");
 ```
@@ -199,12 +212,14 @@ const { red } = require("@visulima/colorize");
 Ensure you're using Node.js 22.13 or higher, which supports `exports` field in `package.json`.
 
 Update Node.js:
+
 ```bash
 nvm install 22.13
 nvm use 22.13
 ```
 
 Or use the full path (not recommended):
+
 ```typescript
 import template from "@visulima/colorize/dist/template.mjs";
 ```
@@ -218,27 +233,29 @@ import template from "@visulima/colorize/dist/template.mjs";
 **Solution:**
 
 1. **Reduce color operations in loops:**
-   ```typescript
-   // ❌ Slow: Color inside loop
-   for (let i = 0; i < 1000; i++) {
-       console.log(red(`Item ${i}`));
-   }
 
-   // ✅ Fast: Color once, reuse
-   const redText = red("Item");
-   for (let i = 0; i < 1000; i++) {
-       console.log(`${redText} ${i}`);
-   }
-   ```
+    ```typescript
+    // ❌ Slow: Color inside loop
+    for (let i = 0; i < 1000; i++) {
+        console.log(red(`Item ${i}`));
+    }
+
+    // ✅ Fast: Color once, reuse
+    const redText = red("Item");
+    for (let i = 0; i < 1000; i++) {
+        console.log(`${redText} ${i}`);
+    }
+    ```
 
 2. **Use template literals efficiently:**
-   ```typescript
-   // ❌ Slower
-   red("Text " + variable + " more text");
 
-   // ✅ Faster
-   red`Text ${variable} more text`;
-   ```
+    ```typescript
+    // ❌ Slower
+    red("Text " + variable + " more text");
+
+    // ✅ Faster
+    red`Text ${variable} more text`;
+    ```
 
 ### Memory Leaks
 
@@ -246,6 +263,7 @@ import template from "@visulima/colorize/dist/template.mjs";
 
 **Solution:**
 Don't store large numbers of colorize instances. Reuse colors:
+
 ```typescript
 // ❌ Don't do this
 const colors = [];
@@ -266,6 +284,7 @@ const red = import { red } from "@visulima/colorize";
 
 **Solution:**
 This is usually a version issue. Ensure you have TypeScript 5.0+:
+
 ```bash npm2yarn
 npm install -D typescript@latest
 ```
@@ -276,6 +295,7 @@ npm install -D typescript@latest
 
 **Solution:**
 Explicitly type the function if needed:
+
 ```typescript
 import type { StyleFunction } from "@visulima/colorize";
 import { red } from "@visulima/colorize";
@@ -291,6 +311,7 @@ const myStyle: StyleFunction = red.bold;
 
 **Solution:**
 Use Windows Terminal instead of cmd.exe:
+
 ```bash
 # Install Windows Terminal
 winget install Microsoft.WindowsTerminal
@@ -299,6 +320,7 @@ winget install Microsoft.WindowsTerminal
 ```
 
 Alternatively, enable ANSI support in cmd.exe (Windows 10+):
+
 ```cmd
 reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
 ```
@@ -309,6 +331,7 @@ reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
 
 **Solution:**
 Use PowerShell 7+ for best results:
+
 ```powershell
 # Install PowerShell 7
 winget install Microsoft.PowerShell
@@ -322,6 +345,7 @@ winget install Microsoft.PowerShell
 
 **Solution:**
 Ensure your terminal supports TrueColor:
+
 ```bash
 # Set COLORTERM
 export COLORTERM=truecolor
@@ -336,6 +360,7 @@ export FORCE_COLOR=3
 
 **Solution:**
 Use `multilineGradient` instead of `gradient`:
+
 ```typescript
 import { multilineGradient } from "@visulima/colorize/gradient";
 
@@ -354,6 +379,7 @@ console.log(gradient("cyan", "magenta")(text));
 
 **Solution:**
 Ensure you're using the correct syntax:
+
 ```typescript
 import template from "@visulima/colorize/template";
 
@@ -370,6 +396,7 @@ console.log(template("{red Error message}"));
 
 **Solution:**
 Convert objects to strings:
+
 ```typescript
 import template from "@visulima/colorize/template";
 
@@ -391,6 +418,7 @@ console.log(template`User: {green ${JSON.stringify(user)}}`);
 
 **Solution:**
 Manually set the color level:
+
 ```bash
 # Force TrueColor (24-bit)
 export FORCE_COLOR=3
@@ -406,6 +434,7 @@ export NO_COLOR=1
 ```
 
 Or programmatically:
+
 ```typescript
 // Before importing colorize
 process.env.FORCE_COLOR = "3";
@@ -418,30 +447,33 @@ import { red } from "@visulima/colorize";
 If you're still experiencing issues:
 
 1. **Check Node.js version:**
-   ```bash
-   node --version
-   # Should be 22.13 or higher
-   ```
+
+    ```bash
+    node --version
+    # Should be 22.13 or higher
+    ```
 
 2. **Check package version:**
-   ```bash
-   npm list @visulima/colorize
-   ```
+
+    ```bash
+    npm list @visulima/colorize
+    ```
 
 3. **Enable debug output:**
-   ```typescript
-   import colorize from "@visulima/colorize";
 
-   console.log("Color support detected:", colorize.isColorSupported);
-   ```
+    ```typescript
+    import colorize from "@visulima/colorize";
+
+    console.log("Color support detected:", colorize.isColorSupported);
+    ```
 
 4. **Report an issue:**
-   - GitHub: [github.com/visulima/visulima/issues](https://github.com/visulima/visulima/issues)
-   - Include:
-     - Node.js version
-     - Operating system
-     - Terminal emulator
-     - Minimal reproduction code
+    - GitHub: [github.com/visulima/visulima/issues](https://github.com/visulima/visulima/issues)
+    - Include:
+        - Node.js version
+        - Operating system
+        - Terminal emulator
+        - Minimal reproduction code
 
 ## Next Steps
 

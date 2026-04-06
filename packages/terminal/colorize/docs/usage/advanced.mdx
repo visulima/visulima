@@ -15,12 +15,12 @@ Access the extended 256-color palette for more color options.
 
 The 256-color palette is divided into ranges:
 
-| Range     | Description                                 |
-| --------- | ------------------------------------------- |
-| 0-7       | Standard colors (same as base 16)           |
-| 8-15      | Bright colors (same as base 16)             |
-| 16-231    | 6×6×6 RGB cube (216 colors)                 |
-| 232-255   | Grayscale from black to white (24 steps)    |
+| Range   | Description                              |
+| ------- | ---------------------------------------- |
+| 0-7     | Standard colors (same as base 16)        |
+| 8-15    | Bright colors (same as base 16)          |
+| 16-231  | 6×6×6 RGB cube (216 colors)              |
+| 232-255 | Grayscale from black to white (24 steps) |
 
 ### Foreground Colors
 
@@ -169,6 +169,7 @@ TrueColor → ANSI 256 → ANSI 16 → No colors
 ```
 
 If a terminal doesn't support TrueColor:
+
 - TrueColor is converted to the nearest 256-color
 - If 256 colors aren't supported, it converts to base 16 colors
 - If no colors are supported, ANSI codes are stripped
@@ -345,15 +346,15 @@ console.log(...result); // Correctly styled in browser console
 
 ### Browser Compatibility
 
-| Browser     | Version   | Colors Supported |
-| ----------- | --------- | ---------------- |
-| **Chrome**  | **69+**   | TrueColor (16M)  |
-| **Safari**  | **10+**   | TrueColor (16M)  |
-| **Edge**    | **79+**   | TrueColor (16M)  |
-| **Opera**   | **56+**   | TrueColor (16M)  |
-| **Brave**   | **1.0+**  | TrueColor (16M)  |
-| **Vivaldi** | **2.0+**  | TrueColor (16M)  |
-| **Firefox** | All       | Fallback to `%c` |
+| Browser     | Version  | Colors Supported |
+| ----------- | -------- | ---------------- |
+| **Chrome**  | **69+**  | TrueColor (16M)  |
+| **Safari**  | **10+**  | TrueColor (16M)  |
+| **Edge**    | **79+**  | TrueColor (16M)  |
+| **Opera**   | **56+**  | TrueColor (16M)  |
+| **Brave**   | **1.0+** | TrueColor (16M)  |
+| **Vivaldi** | **2.0+** | TrueColor (16M)  |
+| **Firefox** | All      | Fallback to `%c` |
 
 ### Console Hack (Optional)
 

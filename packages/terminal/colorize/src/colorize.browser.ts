@@ -58,7 +58,7 @@ const createStyle = (
             // eslint-disable-next-line unicorn/prefer-string-replace-all
             const inputWithoutStyles = input.replace(/,.*;/g, "");
 
-            return [`%c${inputWithoutStyles}`, style.css, ...collectedStyles ?? []];
+            return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? [])];
         }
 
         if (typeof input === "number" || typeof input === "string") {
@@ -138,7 +138,7 @@ for (const name in styleMethods) {
     styles[name as keyof typeof styleMethods] = {
         get() {
             return (...arguments_: (number | string)[]) =>
-            // @ts-expect-error: TODO: fix typing of `arguments_`
+                // @ts-expect-error: TODO: fix typing of `arguments_`
 
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },

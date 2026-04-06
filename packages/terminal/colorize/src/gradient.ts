@@ -14,7 +14,7 @@ export const gradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): (string_: string) => string => {
+): ((string_: string) => string) => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);
@@ -54,7 +54,7 @@ export const multilineGradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): (string_: string) => string => {
+): ((string_: string) => string) => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);

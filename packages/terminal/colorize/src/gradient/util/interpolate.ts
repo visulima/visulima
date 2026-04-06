@@ -31,16 +31,16 @@ const interpolate = <T extends Record<string, number>>(step: T, start: T, index:
             (color as any)[k] = (step[k] as number) * index + (start[k] as number);
             // @TODO: Fix this any type
             // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any,sonarjs/no-element-overwrite
-            (color as any)[k]
+            (color as any)[k] =
                 // eslint-disable-next-line security/detect-object-injection
-                = (color[k] as number) < 0
+                (color[k] as number) < 0
                     ? // eslint-disable-next-line security/detect-object-injection
-                    (color[k] as number) + (max[k] as number)
+                      (color[k] as number) + (max[k] as number)
                     : // eslint-disable-next-line security/detect-object-injection
-                    max[k] === 1
-                        ? // eslint-disable-next-line security/detect-object-injection
+                      max[k] === 1
+                      ? // eslint-disable-next-line security/detect-object-injection
                         (color[k] as number)
-                        : // eslint-disable-next-line security/detect-object-injection
+                      : // eslint-disable-next-line security/detect-object-injection
                         (color[k] as number) % (max[k] as number);
         }
     }
