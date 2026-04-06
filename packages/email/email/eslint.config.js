@@ -13,7 +13,7 @@ export default createConfig(
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
-            ".prettierrc.cjs",
+            "prettier.config.js",
             "package.json",
             "__tests__/crypto/fixtures.ts",
             "README.md",
