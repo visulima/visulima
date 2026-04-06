@@ -5,7 +5,7 @@ import { bench, describe } from "vitest";
 
 import { renderToString } from "../dist/react/render-to-string.js";
 
-const TuiSimpleApp = () {
+const TuiSimpleApp = () => {
     return React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
@@ -14,7 +14,7 @@ const TuiSimpleApp = () {
     );
 };
 
-const TuiStyledApp = () {
+const TuiStyledApp = () => {
     return React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
@@ -39,7 +39,7 @@ const TuiStyledApp = () {
     );
 };
 
-const TuiDashboardApp = () {
+const TuiDashboardApp = () => {
     return React.createElement(
         "box",
         { flexDirection: "column", width: 80, height: 24 },
@@ -73,7 +73,7 @@ const TuiDashboardApp = () {
     );
 };
 
-const InkSimpleApp = () {
+const InkSimpleApp = () => {
     return React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
@@ -82,7 +82,7 @@ const InkSimpleApp = () {
     );
 };
 
-const InkStyledApp = () {
+const InkStyledApp = () => {
     return React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
@@ -107,7 +107,7 @@ const InkStyledApp = () {
     );
 };
 
-const InkDashboardApp = () {
+const InkDashboardApp = () => {
     return React.createElement(
         InkBox,
         { flexDirection: "column", width: 80, height: 24 },
