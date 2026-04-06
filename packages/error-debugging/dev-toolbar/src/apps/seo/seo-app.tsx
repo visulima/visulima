@@ -342,11 +342,21 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
 };
 
 const deriveStatus = (messages: JsonLdValidationMessage[]): JsonLdSchema["status"] => {
-    if (messages.some((m) => m.severity === "error")) return "error";
+    if (messages.some((m) => m.severity === "error")) {
+        return "error";
+    }
 
-    if (messages.some((m) => m.severity === "warning")) return "warning";
+    if (messages.some((m) => m.severity === "warning")) {
 
-    if (messages.some((m) => m.severity === "suggestion")) return "suggestion";
+        return "warning";
+
+    }
+
+    if (messages.some((m) => m.severity === "suggestion")) {
+
+        return "suggestion";
+
+    }
 
     return "ok";
 };
@@ -913,8 +923,12 @@ const SERP_PREVIEWS: SerpPreviewConfig[] = [
 ];
 
 const truncateToChars = (text: string, maxChars: number): string => {
-    if (text.length <= maxChars) return text;
-    if (maxChars <= ELLIPSIS.length) return ELLIPSIS;
+    if (text.length <= maxChars) {
+        return text;
+    }
+    if (maxChars <= ELLIPSIS.length) {
+        return ELLIPSIS;
+    }
 
     return text.slice(0, maxChars - ELLIPSIS.length) + ELLIPSIS;
 };
