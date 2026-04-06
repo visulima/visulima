@@ -17,10 +17,17 @@ import type { Blocklist } from "../src/typosquats";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = resolve(__dirname, "../data/typosquats.json");
 const CONCURRENCY = 20;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 // ── Helpers ────────────────────────────────────────────────────────
 
-const readBlocklist = (): Blocklist => JSON.parse(readFileSync(DATA_FILE, "utf8")) as Blocklist;
+const readBlocklist = (): Blocklist => {
+    try {
+        return JSON.parse(readFileSync(DATA_FILE, "utf8")) as Blocklist;
+    } catch (error) {
+        throw new Error(`Failed to read blocklist from ${DATA_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
 
 const writeBlocklist = (data: Blocklist): void => {
     const sorted: Blocklist = {};
@@ -33,12 +40,17 @@ const writeBlocklist = (data: Blocklist): void => {
 };
 
 const packageExists = async (name: string): Promise<boolean> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
     try {
         const url = `https://registry.npmjs.org/${encodeURIComponent(name).replace("%40", "@")}`;
 
-        return (await fetch(url, { method: "HEAD" })).ok;
+        return (await fetch(url, { method: "HEAD", signal: controller.signal })).ok;
     } catch {
         return false;
+    } finally {
+        clearTimeout(timeout);
     }
 };
 

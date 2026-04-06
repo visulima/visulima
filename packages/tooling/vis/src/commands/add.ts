@@ -20,46 +20,7 @@ import {
     scoreLabel,
 } from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
-import { toStringArray } from "../utils";
-
-// ── Helpers ─────────────────────────────────────────────────────────
-
-const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
-
-/**
- * Extracts the package name from an add argument like "react", "react@19", "@scope/pkg@^2".
- * Returns { name, versionSpec } where versionSpec may be undefined.
- */
-const parseAddArgument = (arg: string): { name: string; versionSpec: string | undefined } => {
-    // Handle scoped packages: @scope/name@version
-    if (arg.startsWith("@")) {
-        const slashIndex = arg.indexOf("/");
-
-        if (slashIndex === -1) {
-            return { name: arg, versionSpec: undefined };
-        }
-
-        const afterSlash = arg.slice(slashIndex + 1);
-        const atIndex = afterSlash.indexOf("@");
-
-        if (atIndex === -1) {
-            return { name: arg, versionSpec: undefined };
-        }
-
-        return {
-            name: arg.slice(0, slashIndex + 1 + atIndex),
-            versionSpec: afterSlash.slice(atIndex + 1),
-        };
-    }
-
-    const match = VERSION_SPEC_REGEX.exec(arg);
-
-    if (!match) {
-        return { name: arg, versionSpec: undefined };
-    }
-
-    return { name: match[1], versionSpec: match[2] };
-};
+import { parsePackageArgument, toStringArray } from "../utils";
 
 /**
  * Resolves the latest version for each package from the npm registry.
@@ -214,7 +175,7 @@ const runSocketPreCheck = async (
     minimumScore: number,
     acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
-    const parsed = packages.map(parseAddArgument);
+    const parsed = packages.map(parsePackageArgument);
 
     // Coerce version specs to concrete semver (handles "^1.2.3", "19", "latest" etc.)
     const coercedSpecs = new Map<string, string>();
@@ -306,7 +267,7 @@ const add: Command = {
 
         // Typosquat check (unless disabled)
         if (!options["no-typosquat-check"]) {
-            const parsed = packages.map((p: string) => parseAddArgument(p));
+            const parsed = packages.map((p: string) => parsePackageArgument(p));
             const result = await runTyposquatCheck(parsed.map((p) => p.name));
 
             if (!result.ok) {

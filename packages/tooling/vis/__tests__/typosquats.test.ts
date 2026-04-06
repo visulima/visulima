@@ -1,8 +1,7 @@
-import { PassThrough } from "node:stream";
-
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck } from "../src/typosquats";
+import { parsePackageArgument } from "../src/utils";
 
 // ── generateVariants ───────────────────────────────────────────────
 
@@ -384,8 +383,6 @@ describe("runTyposquatCheck", () => {
     it("should return ok=false when user answers N (abort)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
 
-        const mockStdin = new PassThrough();
-
         vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
             close: vi.fn(),
             question: (_prompt: string, cb: (answer: string) => void) => {
@@ -528,5 +525,53 @@ describe("runTyposquatCheck", () => {
 
             vi.restoreAllMocks();
         }
+    });
+});
+
+// ── parsePackageArgument ───────────────────────────────────────────
+
+describe("parsePackageArgument", () => {
+    it("should parse a bare package name", () => {
+        expect(parsePackageArgument("react")).toEqual({ name: "react", versionSpec: undefined });
+    });
+
+    it("should parse name@version", () => {
+        expect(parsePackageArgument("react@19")).toEqual({ name: "react", versionSpec: "19" });
+    });
+
+    it("should parse name@semver-range", () => {
+        expect(parsePackageArgument("lodash@^4.17.0")).toEqual({ name: "lodash", versionSpec: "^4.17.0" });
+    });
+
+    it("should parse name@tilde-range", () => {
+        expect(parsePackageArgument("express@~4.18.0")).toEqual({ name: "express", versionSpec: "~4.18.0" });
+    });
+
+    it("should parse name@dist-tag", () => {
+        expect(parsePackageArgument("react@next")).toEqual({ name: "react", versionSpec: "next" });
+    });
+
+    it("should parse a scoped package without version", () => {
+        expect(parsePackageArgument("@types/react")).toEqual({ name: "@types/react", versionSpec: undefined });
+    });
+
+    it("should parse a scoped package with version", () => {
+        expect(parsePackageArgument("@types/react@18")).toEqual({ name: "@types/react", versionSpec: "18" });
+    });
+
+    it("should parse a scoped package with semver range", () => {
+        expect(parsePackageArgument("@scope/pkg@^2.0.0")).toEqual({ name: "@scope/pkg", versionSpec: "^2.0.0" });
+    });
+
+    it("should handle a scope without a slash", () => {
+        expect(parsePackageArgument("@something")).toEqual({ name: "@something", versionSpec: undefined });
+    });
+
+    it("should handle a scope with slash but no version", () => {
+        expect(parsePackageArgument("@org/lib")).toEqual({ name: "@org/lib", versionSpec: undefined });
+    });
+
+    it("should parse a scoped package with dist-tag", () => {
+        expect(parsePackageArgument("@scope/pkg@latest")).toEqual({ name: "@scope/pkg", versionSpec: "latest" });
     });
 });

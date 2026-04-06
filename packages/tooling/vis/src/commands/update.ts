@@ -34,6 +34,7 @@ import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import { buildSocketOptions, scoreColor } from "../socket-security";
 import { runTyposquatCheck } from "../typosquats";
+import { parsePackageArgument } from "../utils";
 import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -456,7 +457,8 @@ const update: Command = {
 
         // Typosquat check on explicit package arguments
         if (argument.length > 0 && !options["no-typosquat-check"]) {
-            const result = await runTyposquatCheck(argument);
+            const parsed = argument.map((a: string) => parsePackageArgument(a));
+            const result = await runTyposquatCheck(parsed.map((p) => p.name));
 
             if (!result.ok) {
                 process.exitCode = 1;
@@ -464,7 +466,16 @@ const update: Command = {
                 return;
             }
 
-            argument = result.packages;
+            // Rebuild args with corrected names, preserving version specifiers
+            argument = parsed.map((p, i) => {
+                const corrected = result.packages[i];
+
+                if (corrected !== p.name) {
+                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                }
+
+                return argument[i];
+            });
         }
 
         // Rollback mode

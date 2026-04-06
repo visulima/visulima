@@ -68,6 +68,12 @@ const SUBSTITUTIONS: Record<string, string[]> = {
  * - Homoglyph / keyboard substitution
  * - Separator manipulation (dash/dot/underscore swaps)
  * - Common suffixes (-js, -node)
+ *
+ * Separators (`-` and `.`) are preserved during omission and duplication passes.
+ * Names shorter than 3 characters return an empty set.
+ *
+ * @param name - The package name to generate variants for.
+ * @returns A set of unique variant strings (never includes the original name).
  */
 export const generateVariants = (name: string): Set<string> => {
     const variants = new Set<string>();
