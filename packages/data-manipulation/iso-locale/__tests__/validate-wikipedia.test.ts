@@ -3,6 +3,16 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { all as currencies } from "../src/currencies";
 import { currencySymbolMap } from "../src/data/currency-symbol";
 
+const ALPHA3_REGEX = /^[A-Z]{3}$/;
+const DIGITS_1_3_REGEX = /^\d{1,3}$/;
+const CITATION_REF_REGEX = /\[\d+\]/g;
+const WHITESPACE_REGEX = /\s+/;
+const ACTIVE_CODES_TABLE_REGEX = /<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active codes[\s\S]*?<\/table>/i;
+const ACTIVE_ISO4217_TABLE_REGEX = /<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active ISO 4217[\s\S]*?<\/table>/i;
+const WIKITABLE_REGEX = /<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>([\s\S]*?)<\/table>/gi;
+const SYMBOL_TABLE_REGEX = /<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i;
+const SYMBOL_TABLE_ALT_REGEX = /<table[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i;
+
 /**
  * Known currency name variations between Wikipedia and our data
  * Maps currency codes to alternative names that should be considered equivalent
@@ -32,7 +42,7 @@ const fetchWikipediaPage = async (title: string): Promise<string> => {
     });
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch Wikipedia page: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch Wikipedia page: ${String(response.status)} ${response.statusText}`);
     }
 
     return response.text();
@@ -51,7 +61,7 @@ const extractTextFromHtml = (html: string): string =>
         .replaceAll("&amp;", "&")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
-        .replaceAll("&quot;", '"')
+        .replaceAll("&quot;", "\"")
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]")
         .replaceAll("&#160;", " ")
@@ -106,7 +116,7 @@ const parseTableRows = (tableHtml: string): { code: string; name: string; number
             const name = cells[3]?.trim();
 
             // Validate code format (3 letters) and number (3 digits)
-            if (code && /^[A-Z]{3}$/.test(code) && number && /^\d{1,3}$/.test(number) && name) {
+            if (code && ALPHA3_REGEX.test(code) && number && DIGITS_1_3_REGEX.test(number) && name) {
                 const paddedNumber = number.padStart(3, "0");
 
                 result.push({ code, name, number: paddedNumber });
@@ -127,13 +137,13 @@ const parseISO4217Table = (html: string): { code: string; name: string; number: 
 
     // Look for the table with class "wikitable" that contains "Active ISO 4217 currency codes"
     // The table structure: Code | Num | D | Currency | Locations
-    const tableMatch =
-        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active codes[\s\S]*?<\/table>/i) ||
-        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active ISO 4217[\s\S]*?<\/table>/i);
+    const tableMatch
+        = ACTIVE_CODES_TABLE_REGEX.exec(html)
+            ?? ACTIVE_ISO4217_TABLE_REGEX.exec(html);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain currency data
-        const allTables = html.matchAll(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>([\s\S]*?)<\/table>/gi);
+        const allTables = html.matchAll(WIKITABLE_REGEX);
 
         for (const table of allTables) {
             if (table[1].includes("AED") || table[1].includes("USD") || table[1].includes("EUR")) {
@@ -197,7 +207,7 @@ const parseSymbolTableRows = (tableHtml: string): { code: string; name: string; 
             const name = cells[2]?.trim();
 
             // Validate code format (3 letters) - some entries might not have codes
-            if (symbol && code && /^[A-Z]{3}$/.test(code) && name) {
+            if (symbol && code && ALPHA3_REGEX.test(code) && name) {
                 result.push({ code, name, symbol });
             }
         }
@@ -215,13 +225,13 @@ const parseCurrencySymbolTable = (html: string): { code: string; name: string; s
     const result: { code: string; name: string; symbol: string }[] = [];
 
     // Look for currency symbol tables - Wikipedia uses wikitable class
-    const tableMatch =
-        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i) ||
-        html.match(/<table[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i);
+    const tableMatch
+        = SYMBOL_TABLE_REGEX.exec(html)
+            ?? SYMBOL_TABLE_ALT_REGEX.exec(html);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain symbol data
-        const allTables = html.matchAll(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>([\s\S]*?)<\/table>/gi);
+        const allTables = html.matchAll(WIKITABLE_REGEX);
 
         for (const table of allTables) {
             if (table[1].includes("$") && (table[1].includes("USD") || table[1].includes("EUR"))) {
@@ -318,6 +328,7 @@ describe("wikipedia Validation", () => {
         const issues: string[] = [];
         const majorCurrencies = ["USD", "EUR", "GBP", "JPY", "CNY", "AUD", "CAD", "CHF", "INR", "BRL"];
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const code of majorCurrencies) {
             const wikiCurrency = wikipediaISO4217.find((c) => c.code === code);
             const ourCurrency = currencies.find((c) => c.code === code);
@@ -342,13 +353,13 @@ describe("wikipedia Validation", () => {
             // Validate name (allow for minor variations and citation references)
             // Remove citation references like [6] from Wikipedia names
             const wikiName = wikiCurrency.name
-                .replaceAll(/\[\d+\]/g, "") // Remove citation references [1], [2], etc.
+                .replaceAll(CITATION_REF_REGEX, "") // Remove citation references [1], [2], etc.
                 .toLowerCase()
                 .trim();
             const ourName = ourCurrency.name.toLowerCase().trim();
 
             // Check if there are known variations for this currency
-            const variations = currencyNameVariations[code] || [];
+            const variations = currencyNameVariations[code] ?? [];
             const wikiInVariations = variations.some((v) => wikiName.includes(v));
             const ourInVariations = variations.some((v) => ourName.includes(v));
 
@@ -359,14 +370,14 @@ describe("wikipedia Validation", () => {
             }
 
             // Extract first significant word from each name for comparison
-            const wikiFirstWord = wikiName.split(/\s+/)[0] || "";
-            const ourFirstWord = ourName.split(/\s+/)[0] || "";
+            const wikiFirstWord = wikiName.split(WHITESPACE_REGEX)[0] ?? "";
+            const ourFirstWord = ourName.split(WHITESPACE_REGEX)[0] ?? "";
 
             // Check if names are similar (either contains the other's first word, or they share common terms)
-            const namesSimilar =
-                ourName.includes(wikiFirstWord) ||
-                wikiName.includes(ourFirstWord) ||
-                (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
+            const namesSimilar
+                = ourName.includes(wikiFirstWord)
+                    || wikiName.includes(ourFirstWord)
+                    || (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
 
             if (!namesSimilar && wikiFirstWord !== ourFirstWord) {
                 issues.push(`Currency ${code}: name mismatch - Wikipedia: "${wikiCurrency.name}", ours: "${ourCurrency.name}"`);
@@ -377,8 +388,11 @@ describe("wikipedia Validation", () => {
         if (issues.length > 0) {
             // eslint-disable-next-line no-console
             console.log("\nWikipedia ISO 4217 validation issues:");
-            // eslint-disable-next-line no-console
-            issues.forEach((issue) => console.log(`  - ${issue}`));
+
+            issues.forEach((issue) => {
+                // eslint-disable-next-line no-console
+                console.log(`  - ${issue}`);
+            });
         }
 
         expect(issues).toHaveLength(0);
@@ -398,6 +412,7 @@ describe("wikipedia Validation", () => {
         const issues: string[] = [];
         const majorCurrencies = ["USD", "EUR", "GBP", "JPY", "CNY", "AUD", "CAD", "CHF", "INR", "BRL"];
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const code of majorCurrencies) {
             const wikiSymbol = wikipediaCurrencySymbols.find((s) => s.code === code);
             const ourSymbol = currencySymbolMap.find((s) => s.code === code);
@@ -427,8 +442,11 @@ describe("wikipedia Validation", () => {
         if (issues.length > 0) {
             // eslint-disable-next-line no-console
             console.log("\nWikipedia currency symbol validation issues:");
-            // eslint-disable-next-line no-console
-            issues.forEach((issue) => console.log(`  - ${issue}`));
+
+            issues.forEach((issue) => {
+                // eslint-disable-next-line no-console
+                console.log(`  - ${issue}`);
+            });
         }
 
         // This is informational - symbol variations are acceptable
@@ -436,7 +454,7 @@ describe("wikipedia Validation", () => {
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (issues.length > 0) {
             // eslint-disable-next-line no-console
-            console.warn(`Found ${issues.length} symbol mismatches (this is informational)`);
+            console.warn(`Found ${String(issues.length)} symbol mismatches (this is informational)`);
         }
 
         // Test passes regardless of issues (informational only)
@@ -461,6 +479,7 @@ describe("wikipedia Validation", () => {
         const sampleSize = Math.min(50, wikipediaISO4217.length);
         const sampleCurrencies = wikipediaISO4217.slice(0, sampleSize);
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const wikiCurrency of sampleCurrencies) {
             if (!ourCurrencyCodes.has(wikiCurrency.code)) {
                 issues.push(`Missing currency: ${wikiCurrency.code} (${wikiCurrency.name}) - listed in Wikipedia but not in our data`);
@@ -471,8 +490,11 @@ describe("wikipedia Validation", () => {
         if (issues.length > 0) {
             // eslint-disable-next-line no-console
             console.log("\nMissing currencies from Wikipedia:");
-            // eslint-disable-next-line no-console
-            issues.forEach((issue) => console.log(`  - ${issue}`));
+
+            issues.forEach((issue) => {
+                // eslint-disable-next-line no-console
+                console.log(`  - ${issue}`);
+            });
         }
 
         // Allow some missing currencies as Wikipedia might include historical ones

@@ -3,6 +3,9 @@ import currenciesData from "./data/currencies";
 import { currencySymbolMap } from "./data/currency-symbol";
 import type { Currency } from "./types";
 
+const NUMERIC_1_3_REGEX = /^\d{1,3}$/;
+const ALPHA_3_REGEX = /^[A-Z]{3}$/i;
+
 /**
  * Currency symbol map
  */
@@ -76,7 +79,7 @@ export const getByNumber = (number: string | number): Currency | undefined => {
 export const getByCountry = (countryCode: string): Currency[] => {
     const country = countriesAll.find((c) => c.alpha2 === countryCode.toUpperCase());
 
-    if (!country || !country.currencies) {
+    if (!country?.currencies) {
         return [];
     }
 
@@ -91,7 +94,7 @@ export const getByCountry = (countryCode: string): Currency[] => {
 export const getCountriesByCurrency = (currencyCode: string): string[] => {
     const upperCode = currencyCode.toUpperCase();
 
-    return countriesAll.filter((country) => country.currencies?.includes(upperCode)).map((country) => country.alpha2);
+    return countriesAll.filter((country) => country.currencies.includes(upperCode)).map((country) => country.alpha2);
 };
 
 /**
@@ -102,7 +105,7 @@ export const getCountriesByCurrency = (currencyCode: string): string[] => {
 export const getSymbol = (currencyCode: string): string => {
     const currency = getByCode(currencyCode);
 
-    return currency?.symbol || currencyCode.toUpperCase();
+    return currency?.symbol ?? currencyCode.toUpperCase();
 };
 
 /**
@@ -121,12 +124,12 @@ export const isValid = (code: string | number): boolean => {
     const codeString = String(code);
 
     // If it's a number or numeric string (3 digits), check numeric codes
-    if (typeof code === "number" || /^\d{1,3}$/.test(codeString)) {
+    if (typeof code === "number" || NUMERIC_1_3_REGEX.test(codeString)) {
         return getByNumber(code) !== undefined;
     }
 
     // Otherwise check alphabetic codes (must be 3 letters)
-    if (codeString.length === 3 && /^[A-Z]{3}$/i.test(codeString)) {
+    if (codeString.length === 3 && ALPHA_3_REGEX.test(codeString)) {
         return getByCode(codeString) !== undefined;
     }
 

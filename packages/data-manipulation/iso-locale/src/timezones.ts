@@ -32,14 +32,14 @@ export const all = (): string[] => {
         tzList.forEach((tz) => timezones.add(tz));
     });
 
-    return [...timezones].toSorted();
+    return [...timezones].toSorted((a, b) => a.localeCompare(b));
 };
 
 /**
  * Get all countries with timezone data.
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
-export const getCountriesWithTimezones = (): string[] => Object.keys(countryTimezonesData).toSorted();
+export const getCountriesWithTimezones = (): string[] => Object.keys(countryTimezonesData).toSorted((a, b) => a.localeCompare(b));
 
 /**
  * Check if a timezone is valid (exists in our data).

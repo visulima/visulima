@@ -2,6 +2,8 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { all, getCountriesForTimezone, getCountriesWithTimezones, getPrimaryTimezone, getTimezonesByCountry, isValidTimezone } from "../src/timezones";
 
+const IANA_TIMEZONE_REGEX = /^[A-Z_]+\/[A-Z_/-]+$/i;
+
 describe("timezones", () => {
     describe(getTimezonesByCountry, () => {
         it("should get timezones for US", () => {
@@ -125,7 +127,7 @@ describe("timezones", () => {
 
             const timezones = all();
 
-            expect(timezones).toStrictEqual(timezones.toSorted());
+            expect(timezones).toStrictEqual(timezones.toSorted((a, b) => a.localeCompare(b)));
         });
     });
 
@@ -146,7 +148,7 @@ describe("timezones", () => {
 
             const countries = getCountriesWithTimezones();
 
-            expect(countries).toStrictEqual(countries.toSorted());
+            expect(countries).toStrictEqual(countries.toSorted((a, b) => a.localeCompare(b)));
         });
     });
 
@@ -220,7 +222,7 @@ describe("timezones", () => {
             timezones.forEach((tz) => {
                 // IANA timezones follow pattern: Area/Location or Area/SubArea/Location
                 // Can contain letters, underscores, hyphens, and slashes
-                expect(tz).toMatch(/^[A-Z_]+\/[A-Z_/-]+$/i);
+                expect(tz).toMatch(IANA_TIMEZONE_REGEX);
             });
         });
 

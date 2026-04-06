@@ -2,6 +2,10 @@ import { getByAlpha2, getLanguages } from "./countries";
 import { getByCountry, getCountriesByCurrency } from "./currencies";
 import { convert6393To6391 } from "./data/iso-639-mapping";
 
+const ALPHA2_REGEX = /^[A-Z]{2}$/;
+const LANG_REGEX = /^[a-z]{2,3}$/;
+const SCRIPT_REGEX = /^[A-Z]{4}$/i;
+
 /**
  * Get currency code from locale or country code.
  * Supports BCP 47 tags (en-US), underscore format (en_US), or ISO 3166-1 alpha-2 (US).
@@ -20,7 +24,7 @@ export const getCurrency = (locale: string): string | undefined => {
         for (let i = 1; i < parts.length; i += 1) {
             const part = parts[i]?.toUpperCase();
 
-            if (part && part.length === 2 && /^[A-Z]{2}$/.test(part)) {
+            if (part?.length === 2 && ALPHA2_REGEX.test(part)) {
                 countryCode = part;
                 break;
             }
@@ -30,7 +34,7 @@ export const getCurrency = (locale: string): string | undefined => {
         const parts = locale.split("_");
         const part = parts.at(-1)?.toUpperCase();
 
-        if (part && part.length === 2 && /^[A-Z]{2}$/.test(part)) {
+        if (part?.length === 2 && ALPHA2_REGEX.test(part)) {
             countryCode = part;
         }
     } else if (locale.length === 2) {
@@ -70,7 +74,7 @@ export const parseBCP47Tag = (tag: string): { country?: string; language: string
     const language = (parts[0] ?? "").toLowerCase();
 
     // Validate language code format (2-3 letters, ISO 639-1 or ISO 639-2)
-    if (!/^[a-z]{2,3}$/.test(language)) {
+    if (!LANG_REGEX.test(language)) {
         return undefined;
     }
 
@@ -86,9 +90,9 @@ export const parseBCP47Tag = (tag: string): { country?: string; language: string
         }
 
         // Script codes are 4 letters, country codes are 2 letters
-        if (part.length === 4 && /^[A-Z]{4}$/i.test(part)) {
+        if (part.length === 4 && SCRIPT_REGEX.test(part)) {
             script = part;
-        } else if (part.length === 2 && /^[A-Z]{2}$/.test(part.toUpperCase())) {
+        } else if (part.length === 2 && ALPHA2_REGEX.test(part.toUpperCase())) {
             country = part.toUpperCase();
         }
     }
