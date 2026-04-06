@@ -1,13 +1,13 @@
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyOverrides, lockfileContainsPackage, readOverrides } from "../src/overrides";
 import type { PmInfo } from "../src/overrides";
-import { OptimizeStore } from "../src/tui/components/optimize/OptimizeStore";
+import { applyOverrides, readOverrides } from "../src/overrides";
 import type { OptimizeEntry } from "../src/tui/components/optimize/OptimizeStore";
+import { OptimizeStore } from "../src/tui/components/optimize/OptimizeStore";
 
 let tmpDir: string;
 
@@ -21,25 +21,27 @@ afterEach(() => {
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
-const makeEntry = (overrides: Partial<OptimizeEntry> = {}): OptimizeEntry => ({
-    category: "native",
-    hasCodemod: false,
-    packageName: "test-pkg",
-    replacement: "native API",
-    ...overrides,
-});
+const makeEntry = (overrides: Partial<OptimizeEntry> = {}): OptimizeEntry => {
+    return {
+        category: "native",
+        hasCodemod: false,
+        packageName: "test-pkg",
+        replacement: "native API",
+        ...overrides,
+    };
+};
 
 const writePkgJson = (dir: string, content: Record<string, unknown>): void => {
-    writeFileSync(join(dir, "package.json"), JSON.stringify(content, null, 2) + "\n");
+    writeFileSync(join(dir, "package.json"), `${JSON.stringify(content, null, 2)}\n`);
 };
 
 // ── OptimizeStore ───────────────────────────────────────────────────
 
-describe("OptimizeStore", () => {
+describe(OptimizeStore, () => {
     it("should initialize with entries", () => {
         expect.assertions(3);
 
-        const entries = [makeEntry({ packageName: "a" }), makeEntry({ packageName: "b", category: "socket" })];
+        const entries = [makeEntry({ packageName: "a" }), makeEntry({ category: "socket", packageName: "b" })];
         const store = new OptimizeStore(entries);
         const state = store.getSnapshot();
 
@@ -54,9 +56,11 @@ describe("OptimizeStore", () => {
         const store = new OptimizeStore([makeEntry({ packageName: "a" })]);
 
         store.toggleCheck("a");
+
         expect(store.getSnapshot().checkedEntries.has("a")).toBe(true);
 
         store.toggleCheck("a");
+
         expect(store.getSnapshot().checkedEntries.has("a")).toBe(false);
     });
 
@@ -66,9 +70,11 @@ describe("OptimizeStore", () => {
         const store = new OptimizeStore([makeEntry({ packageName: "a" }), makeEntry({ packageName: "b" })]);
 
         store.toggleAll();
+
         expect(store.getSnapshot().checkedEntries.size).toBe(2);
 
         store.toggleAll();
+
         expect(store.getSnapshot().checkedEntries.size).toBe(0);
     });
 
@@ -76,15 +82,17 @@ describe("OptimizeStore", () => {
         expect.assertions(2);
 
         const store = new OptimizeStore([
-            makeEntry({ packageName: "a", category: "native" }),
-            makeEntry({ packageName: "b", category: "socket" }),
-            makeEntry({ packageName: "c", category: "preferred" }),
+            makeEntry({ category: "native", packageName: "a" }),
+            makeEntry({ category: "socket", packageName: "b" }),
+            makeEntry({ category: "preferred", packageName: "c" }),
         ]);
 
         store.setFilter("native");
+
         expect(store.getFilteredEntries()).toHaveLength(1);
 
         store.setFilter("all");
+
         expect(store.getFilteredEntries()).toHaveLength(3);
     });
 
@@ -94,9 +102,11 @@ describe("OptimizeStore", () => {
         const store = new OptimizeStore([makeEntry({ packageName: "is-regex" }), makeEntry({ packageName: "lodash" })]);
 
         store.setFilterText("regex");
+
         expect(store.getFilteredEntries()).toHaveLength(1);
 
         store.setFilterText("");
+
         expect(store.getFilteredEntries()).toHaveLength(2);
     });
 
@@ -106,9 +116,11 @@ describe("OptimizeStore", () => {
         const store = new OptimizeStore([makeEntry({ packageName: "a" }), makeEntry({ packageName: "b" })]);
 
         store.select(99);
+
         expect(store.getSnapshot().selectedIndex).toBe(1);
 
         store.select(-5);
+
         expect(store.getSnapshot().selectedIndex).toBe(0);
     });
 
@@ -178,7 +190,7 @@ describe("OptimizeStore", () => {
     it("should toggle all respecting current filter", () => {
         expect.assertions(2);
 
-        const store = new OptimizeStore([makeEntry({ packageName: "a", category: "native" }), makeEntry({ packageName: "b", category: "socket" })]);
+        const store = new OptimizeStore([makeEntry({ category: "native", packageName: "a" }), makeEntry({ category: "socket", packageName: "b" })]);
 
         store.setFilter("native");
         store.toggleAll();

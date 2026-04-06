@@ -1,9 +1,11 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createInterface as originalCreateInterface } from "node:readline";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/typosquats";
+import { parsePackageArgument } from "../src/utils";
 
 // Mock node:readline so we can control createInterface in interactive tests
 let mockCreateInterface: ReturnType<typeof vi.fn> | undefined;
@@ -23,12 +25,9 @@ vi.mock(import("node:readline"), async (importOriginal) => {
     };
 });
 
-import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/typosquats";
-import { parsePackageArgument } from "../src/utils";
-
 // ── generateVariants ───────────────────────────────────────────────
 
-describe("generateVariants", () => {
+describe(generateVariants, () => {
     it("should return empty set for names shorter than 3 characters", () => {
         expect(generateVariants("").size).toBe(0);
         expect(generateVariants("a").size).toBe(0);
@@ -232,7 +231,7 @@ describe("generateVariants", () => {
             const variants = generateVariants("lodash");
             const asArray = [...variants];
 
-            expect(asArray.length).toBe(new Set(asArray).size);
+            expect(asArray).toHaveLength(new Set(asArray).size);
         });
 
         it("should handle names with dots", () => {
@@ -257,7 +256,7 @@ describe("generateVariants", () => {
 
 // ── checkTyposquat ─────────────────────────────────────────────────
 
-describe("checkTyposquat", () => {
+describe(checkTyposquat, () => {
     it("should detect a known blocklisted typosquat", () => {
         const result = checkTyposquat("axois");
 
@@ -350,7 +349,7 @@ describe("checkTyposquat", () => {
 
 // ── checkTyposquats (batch) ────────────────────────────────────────
 
-describe("checkTyposquats", () => {
+describe(checkTyposquats, () => {
     it("should return empty array when all names are safe", () => {
         const result = checkTyposquats(["react", "express", "lodash"]);
 
@@ -399,7 +398,7 @@ describe("checkTyposquats", () => {
 
 // ── runTyposquatCheck (interactive prompt) ──────────────────────────
 
-describe("runTyposquatCheck", () => {
+describe(runTyposquatCheck, () => {
     const originalIsTTY = process.stdin.isTTY;
 
     afterEach(() => {
@@ -527,7 +526,7 @@ describe("runTyposquatCheck", () => {
 
 // ── parsePackageArgument ───────────────────────────────────────────
 
-describe("parsePackageArgument", () => {
+describe(parsePackageArgument, () => {
     it("should parse a bare package name", () => {
         expect(parsePackageArgument("react")).toEqual({ name: "react", versionSpec: undefined });
     });
@@ -604,7 +603,7 @@ describe("checkTyposquats with allowlist", () => {
 
 // ── scanDepsForTyposquats ──────────────────────────────────────────
 
-describe("scanDepsForTyposquats", () => {
+describe(scanDepsForTyposquats, () => {
     const originalIsTTY = process.stdin.isTTY;
     let tmpDir: string;
 
@@ -616,7 +615,7 @@ describe("scanDepsForTyposquats", () => {
         Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, writable: true });
 
         if (existsSync(tmpDir)) {
-            rmSync(tmpDir, { recursive: true, force: true });
+            rmSync(tmpDir, { force: true, recursive: true });
         }
     });
 
@@ -638,8 +637,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
+                dependencies: { express: "^4.0.0", react: "^18.0.0" },
                 name: "test",
-                dependencies: { react: "^18.0.0", express: "^4.0.0" },
             }),
         );
 
@@ -654,8 +653,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
-                name: "test",
                 dependencies: { axois: "^1.0.0" },
+                name: "test",
             }),
         );
 
@@ -670,8 +669,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
-                name: "test",
                 dependencies: { axois: "^1.0.0" },
+                name: "test",
             }),
         );
 
@@ -686,8 +685,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
-                name: "test",
                 devDependencies: { axois: "^1.0.0" },
+                name: "test",
             }),
         );
 
@@ -702,8 +701,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
-                name: "test",
                 dependencies: { "my-axios": "npm:axois@^1.0.0" },
+                name: "test",
             }),
         );
 
@@ -718,8 +717,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
-                name: "test",
                 dependencies: { "my-react": "pnpm:rreact@^18.0.0" },
+                name: "test",
             }),
         );
 
@@ -732,8 +731,8 @@ describe("scanDepsForTyposquats", () => {
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
+                dependencies: { express: "~4.18.0", react: "^18.0.0" },
                 name: "test",
-                dependencies: { react: "^18.0.0", express: "~4.18.0" },
             }),
         );
 

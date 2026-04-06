@@ -1,15 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { detectPm } from "../src/pm-runner";
 
-describe("detectPm", () => {
+describe(detectPm, () => {
     it("should detect a valid package manager for the workspace", () => {
         expect.assertions(2);
 
         const pm = detectPm(process.cwd());
 
         expect(["pnpm", "npm", "yarn", "bun"]).toContain(pm.name);
-        expect(typeof pm.version).toBe("string");
+
+        expectTypeOf(pm.version).toBeString();
     });
 
     it("should detect pnpm for this monorepo", () => {
@@ -23,6 +24,6 @@ describe("detectPm", () => {
     it("should throw for non-existent directories", () => {
         expect.assertions(1);
 
-        expect(() => detectPm("/tmp/nonexistent-dir-" + Date.now())).toThrow();
+        expect(() => detectPm(`/tmp/nonexistent-dir-${Date.now()}`)).toThrow();
     });
 });

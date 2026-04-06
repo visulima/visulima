@@ -13,7 +13,7 @@ const createTask = (project: string, target: string): Task => {
 };
 
 describe("tui/formatting-utils", () => {
-    describe("formatFlags", () => {
+    describe(formatFlags, () => {
         it("should format a simple string flag", () => {
             expect(formatFlags("  ", "verbose", "true")).toBe("  --verbose=true");
         });
@@ -29,7 +29,7 @@ describe("tui/formatting-utils", () => {
         it("should format an object flag as JSON", () => {
             const result = formatFlags("", "config", { key: "val" });
 
-            expect(result).toBe('--config={"key":"val"}');
+            expect(result).toBe("--config={\"key\":\"val\"}");
         });
 
         it("should format positional arguments (underscore flag)", () => {
@@ -41,7 +41,7 @@ describe("tui/formatting-utils", () => {
         });
     });
 
-    describe("formatTargetsAndProjects", () => {
+    describe(formatTargetsAndProjects, () => {
         it("should format single target and single project", () => {
             const tasks = [createTask("my-app", "build")];
             const result = formatTargetsAndProjects(["my-app"], ["build"], tasks);

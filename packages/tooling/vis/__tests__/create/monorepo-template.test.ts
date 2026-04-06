@@ -4,17 +4,19 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock output module to avoid dependency on @visulima/ansi (requires build)
-vi.mock("../../src/output", () => ({
-    info: vi.fn(),
-    success: vi.fn(),
-    warn: vi.fn(),
-}));
-
 import { executeMonorepoTemplate } from "../../src/commands/create/templates/monorepo";
 import type { ExecutionContext } from "../../src/commands/create/templates/types";
 
-describe("executeMonorepoTemplate", () => {
+// Mock output module to avoid dependency on @visulima/ansi (requires build)
+vi.mock(import("../../src/output"), () => {
+    return {
+        info: vi.fn(),
+        success: vi.fn(),
+        warn: vi.fn(),
+    };
+});
+
+describe(executeMonorepoTemplate, () => {
     let tmpDir: string;
 
     beforeEach(() => {
@@ -25,14 +27,16 @@ describe("executeMonorepoTemplate", () => {
         rmSync(tmpDir, { force: true, recursive: true });
     });
 
-    const makeContext = (targetDir: string): ExecutionContext => ({
-        cwd: tmpDir,
-        inMonorepo: false,
-        logger: console,
-        pm: { name: "pnpm", version: "10.0.0" },
-        projectName: "my-workspace",
-        targetDir,
-    });
+    const makeContext = (targetDir: string): ExecutionContext => {
+        return {
+            cwd: tmpDir,
+            inMonorepo: false,
+            logger: console,
+            pm: { name: "pnpm", version: "10.0.0" },
+            projectName: "my-workspace",
+            targetDir,
+        };
+    };
 
     it("should create the monorepo directory structure", () => {
         expect.assertions(3);

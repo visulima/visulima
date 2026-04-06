@@ -22,7 +22,7 @@ const analyze: Command = {
         ["vis analyze react --ai-type security", "Run security-focused analysis"],
         ["vis analyze react --format json", "Output as JSON"],
     ],
-    // eslint-disable-next-line sonarjs/cognitive-complexity -- command handler with multiple flows
+
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");

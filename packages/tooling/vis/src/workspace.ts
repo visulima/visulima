@@ -331,7 +331,6 @@ interface VisConfig {
     };
 }
 
-// eslint-disable-next-line sonarjs/slow-regex
 const TRAILING_SLASH_RE = /\/+$/;
 const DOUBLE_GLOB_SUFFIX_RE = /\/\*\*$/;
 const NESTED_GLOB_SUFFIX_RE = /\/\*\/\*$/;

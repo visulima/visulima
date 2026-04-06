@@ -1,10 +1,10 @@
 import { strip } from "@visulima/colorize";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { getStatusIcon, getStatusPrefix, isCacheStatus, logCommandOutputCI } from "../../src/tui/status-utils";
 
 describe("tui/status-utils", () => {
-    describe("isCacheStatus", () => {
+    describe(isCacheStatus, () => {
         it("should return true for cache statuses", () => {
             expect(isCacheStatus("local-cache")).toBe(true);
             expect(isCacheStatus("local-cache-kept-existing")).toBe(true);
@@ -18,36 +18,39 @@ describe("tui/status-utils", () => {
         });
     });
 
-    describe("getStatusIcon", () => {
+    describe(getStatusIcon, () => {
         it("should return a non-empty string for success", () => {
             const icon = getStatusIcon("success");
 
-            expect(typeof icon).toBe("string");
+            expectTypeOf(icon).toBeString();
+
             expect(strip(icon).length).toBeGreaterThan(0);
         });
 
         it("should return a string for cache statuses", () => {
-            expect(typeof getStatusIcon("local-cache")).toBe("string");
-            expect(typeof getStatusIcon("local-cache-kept-existing")).toBe("string");
-            expect(typeof getStatusIcon("remote-cache")).toBe("string");
+            expectTypeOf(getStatusIcon("local-cache")).toBeString();
+            expectTypeOf(getStatusIcon("local-cache-kept-existing")).toBeString();
+            expectTypeOf(getStatusIcon("remote-cache")).toBeString();
         });
 
         it("should return a string for failure", () => {
             const icon = getStatusIcon("failure");
 
-            expect(typeof icon).toBe("string");
+            expectTypeOf(icon).toBeString();
+
             expect(strip(icon).length).toBeGreaterThan(0);
         });
 
         it("should return a string for skipped", () => {
             const icon = getStatusIcon("skipped");
 
-            expect(typeof icon).toBe("string");
+            expectTypeOf(icon).toBeString();
+
             expect(strip(icon).length).toBeGreaterThan(0);
         });
     });
 
-    describe("getStatusPrefix", () => {
+    describe(getStatusPrefix, () => {
         it("should include [cache] label for cache statuses", () => {
             const prefix = strip(getStatusPrefix("local-cache"));
 
@@ -68,7 +71,7 @@ describe("tui/status-utils", () => {
         });
     });
 
-    describe("logCommandOutputCI", () => {
+    describe(logCommandOutputCI, () => {
         let writeSpy: ReturnType<typeof vi.spyOn>;
 
         beforeEach(() => {
@@ -82,7 +85,7 @@ describe("tui/status-utils", () => {
         it("should write output to stdout", () => {
             logCommandOutputCI("app:build", "success", "build output here");
 
-            expect(writeSpy).toHaveBeenCalled();
+            expect(writeSpy).toHaveBeenCalledWith();
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 

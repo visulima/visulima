@@ -26,7 +26,7 @@ const makeEntry = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {
 
 // --- buildAnalysisPrompt ---
 
-describe("buildAnalysisPrompt", () => {
+describe(buildAnalysisPrompt, () => {
     it("should include package names and versions", () => {
         expect.assertions(4);
 
@@ -72,11 +72,11 @@ describe("buildAnalysisPrompt", () => {
 
 // --- extractJson ---
 
-describe("extractJson", () => {
+describe(extractJson, () => {
     it("should parse direct JSON", () => {
         expect.assertions(1);
 
-        const result = extractJson('{"foo": "bar"}');
+        const result = extractJson("{\"foo\": \"bar\"}");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -84,7 +84,7 @@ describe("extractJson", () => {
     it("should extract from markdown code block", () => {
         expect.assertions(1);
 
-        const result = extractJson('Here is the analysis:\n```json\n{"foo": "bar"}\n```\nDone.');
+        const result = extractJson("Here is the analysis:\n```json\n{\"foo\": \"bar\"}\n```\nDone.");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -92,7 +92,7 @@ describe("extractJson", () => {
     it("should extract from plain code block", () => {
         expect.assertions(1);
 
-        const result = extractJson('```\n{"foo": "bar"}\n```');
+        const result = extractJson("```\n{\"foo\": \"bar\"}\n```");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -100,7 +100,7 @@ describe("extractJson", () => {
     it("should find JSON object in text", () => {
         expect.assertions(1);
 
-        const result = extractJson('Some text before {"foo": "bar"} and after');
+        const result = extractJson("Some text before {\"foo\": \"bar\"} and after");
 
         expect(result).toStrictEqual({ foo: "bar" });
     });
@@ -120,7 +120,7 @@ describe("extractJson", () => {
 
 // --- normalizeRecommendation ---
 
-describe("normalizeRecommendation", () => {
+describe(normalizeRecommendation, () => {
     it("should normalize valid values", () => {
         expect.assertions(4);
 
@@ -170,7 +170,7 @@ describe("normalizeRecommendation", () => {
 
 // --- parseAiResponse ---
 
-describe("parseAiResponse", () => {
+describe(parseAiResponse, () => {
     it("should parse valid AI response", () => {
         expect.assertions(4);
 
@@ -215,7 +215,7 @@ describe("parseAiResponse", () => {
     it("should handle missing recommendations field", () => {
         expect.assertions(2);
 
-        const result = parseAiResponse('{"summary": "test"}', "codex", "impact");
+        const result = parseAiResponse("{\"summary\": \"test\"}", "codex", "impact");
 
         expect(result.recommendations).toHaveLength(0);
         expect(result.summary).toBe("test");
@@ -224,7 +224,7 @@ describe("parseAiResponse", () => {
 
 // --- ruleBasedAnalysis ---
 
-describe("ruleBasedAnalysis", () => {
+describe(ruleBasedAnalysis, () => {
     it("should classify patch updates as low risk", () => {
         expect.assertions(2);
 
@@ -302,7 +302,7 @@ describe("ruleBasedAnalysis", () => {
 
 // --- formatAiAnalysis ---
 
-describe("formatAiAnalysis", () => {
+describe(formatAiAnalysis, () => {
     it("should include provider name in header", () => {
         expect.assertions(3);
 
@@ -462,7 +462,7 @@ describe("formatAiAnalysis with analysis types", () => {
 
 // --- formatAiAnalysisJson ---
 
-describe("formatAiAnalysisJson", () => {
+describe(formatAiAnalysisJson, () => {
     it("should produce valid JSON", () => {
         expect.assertions(3);
 

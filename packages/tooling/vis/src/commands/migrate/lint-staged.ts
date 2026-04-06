@@ -213,7 +213,7 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
 
         if (existsSync(filePath)) {
             unlinkSync(filePath);
-            // eslint-disable-next-line no-param-reassign -- mutation is the purpose of this function
+
             report.removedConfigCount += 1;
         }
     }
@@ -224,7 +224,7 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
 /**
  * Rewrite pre-commit hook to replace lint-staged invocations with `vis staged`.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- line-by-line hook rewriting requires nested pattern matching
+
 const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => {
     const hookPath = join(root, hooksDirectory, "pre-commit");
 
@@ -313,7 +313,7 @@ const extractConfig = (root: string, source: string, report: MigrationReport): R
 /**
  * Clean up old lint-staged artifacts: config key, files, and dependency.
  */
-/* eslint-disable no-param-reassign -- tracking migration progress */
+
 const cleanupLintStagedArtifacts = (root: string, report: MigrationReport): void => {
     const { configRemoved, dependencyRemoved } = removeLintStagedFromPackageJson(root);
 
@@ -364,7 +364,6 @@ const applyMigration = (
     cleanupLintStagedArtifacts(root, report);
     rewriteHooks(root, options, logger, report);
 };
-/* eslint-enable no-param-reassign */
 
 // ─── Orchestrator ───────────────────────────────────────────────────
 
@@ -384,16 +383,16 @@ const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: bo
 
     // Check for unsupported config formats
     if (hasUnsupportedLintStagedConfig(root)) {
-        addMigrationWarning(report, 'Non-JSON lint-staged config found — please migrate to "staged" in vis.config.ts manually');
+        addMigrationWarning(report, "Non-JSON lint-staged config found — please migrate to \"staged\" in vis.config.ts manually");
         addManualStep(report, "Convert your lint-staged config file to JSON format or add staged config to vis.config.ts manually");
     }
 
     // Check if vis.config.ts already has staged
     if (hasStagedConfigInVisConfig(root)) {
-        addMigrationWarning(report, 'vis.config.ts already has a "staged" config — skipping lint-staged merge');
+        addMigrationWarning(report, "vis.config.ts already has a \"staged\" config — skipping lint-staged merge");
 
         if (!options.silent) {
-            logger.warn('vis.config.ts already has a "staged" config — skipping');
+            logger.warn("vis.config.ts already has a \"staged\" config — skipping");
         }
 
         if (!options.dryRun) {

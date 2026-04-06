@@ -120,7 +120,6 @@ const applyCatalogAndInstall = async (
         logger.info(`Running ${installCommand}...\n`);
 
         try {
-            // eslint-disable-next-line sonarjs/os-command -- running detected package manager, not user input
             execSync(installCommand, {
                 cwd: workspaceRoot,
                 env: process.env,
@@ -132,7 +131,6 @@ const applyCatalogAndInstall = async (
     }
 };
 
-/* eslint-disable sonarjs/cognitive-complexity */
 const executeCatalogUpdate = async (
     workspaceRoot: string,
     packageManager: CatalogPackageManager,
@@ -167,18 +165,18 @@ const executeCatalogUpdate = async (
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-              if (progressInstance) {
-                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-              } else {
-                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                      interactive: true,
-                      patchConsole: false,
-                  });
-              }
-          }
+            if (progressInstance) {
+                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+            } else {
+                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                    interactive: true,
+                    patchConsole: false,
+                });
+            }
+        }
         : (current: number, total: number): void => {
-              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-          };
+            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+        };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
@@ -279,7 +277,7 @@ const executeCatalogUpdate = async (
         for (const entry of outdated) {
             const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
             const isAck = Boolean(entry.acceptedRisk);
-            const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
+            const icon = hasSecurityIssue ? isAck ? "\u2713" : "\u26A0" : "\u2713";
             const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
             const socketOverall = entry.socketReport?.score.overall;
             const scoreSuffix = socketOverall === undefined ? "" : ` [${String(Math.round(socketOverall * 100))}%]`;
@@ -405,7 +403,6 @@ const executePmWrapper = (
     logger.info(`Running: ${fullCommand}`);
 
     try {
-        // eslint-disable-next-line sonarjs/os-command -- command sourced from detected package manager binary, not user input
         execSync(fullCommand, {
             cwd: workspaceRoot,
             env: process.env,

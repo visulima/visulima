@@ -138,7 +138,7 @@ describe("add command argument validation", () => {
 
         const packages = ["react", "react-dom", "@types/react"];
 
-        expect(packages.length).toBe(3);
+        expect(packages).toHaveLength(3);
     });
 
     it("should build correct AddOptions", () => {
@@ -231,7 +231,7 @@ describe("why command argument validation", () => {
 
         const options: Record<string, unknown> = { depth: 3, json: true };
 
-        const depth = options.depth !== undefined ? Number(options.depth) : undefined;
+        const depth = options.depth === undefined ? undefined : Number(options.depth);
 
         expect(depth).toBe(3);
         expect((options.json as boolean) || false).toBe(true);
@@ -242,7 +242,7 @@ describe("why command argument validation", () => {
 
         const options: Record<string, unknown> = {};
 
-        const depth = options.depth !== undefined ? Number(options.depth) : undefined;
+        const depth = options.depth === undefined ? undefined : Number(options.depth);
 
         expect(depth).toBeUndefined();
     });
@@ -360,7 +360,7 @@ describe("dlx command argument validation", () => {
         expect.assertions(1);
 
         const options: Record<string, unknown> = { package: ["cowsay", "lolcatjs"] };
-        const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
+        const additionalPackages = options.package ? Array.isArray(options.package) ? (options.package as string[]) : [options.package as string] : [];
 
         expect(additionalPackages).toStrictEqual(["cowsay", "lolcatjs"]);
     });
@@ -369,7 +369,7 @@ describe("dlx command argument validation", () => {
         expect.assertions(1);
 
         const options: Record<string, unknown> = { package: "cowsay" };
-        const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
+        const additionalPackages = options.package ? Array.isArray(options.package) ? (options.package as string[]) : [options.package as string] : [];
 
         expect(additionalPackages).toStrictEqual(["cowsay"]);
     });

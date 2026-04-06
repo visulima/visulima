@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -18,7 +18,7 @@ afterEach(() => {
 
 // --- Readers ---
 
-describe("readNativeAuditExclusions", () => {
+describe(readNativeAuditExclusions, () => {
     describe("pnpm", () => {
         it("should parse ignoreCves and ignoreGhsas from pnpm-workspace.yaml", () => {
             expect.assertions(3);
@@ -121,7 +121,7 @@ npmAuditExcludePackages:
 
 // --- Matching helpers ---
 
-describe("isAdvisoryExcluded", () => {
+describe(isAdvisoryExcluded, () => {
     const exclusions = { excludedPackages: [], ignoredAdvisories: ["CVE-2022-36313", "GHSA-*"] };
 
     it("should match exact advisory ID", () => {
@@ -140,7 +140,7 @@ describe("isAdvisoryExcluded", () => {
     });
 });
 
-describe("isPackageExcluded", () => {
+describe(isPackageExcluded, () => {
     const exclusions = { excludedPackages: ["debug", "@scope/*"], ignoredAdvisories: [] };
 
     it("should match exact package name", () => {
@@ -161,7 +161,7 @@ describe("isPackageExcluded", () => {
 
 // --- Writers ---
 
-describe("syncAcceptedRisksToNativeConfig", () => {
+describe(syncAcceptedRisksToNativeConfig, () => {
     describe("pnpm", () => {
         it("should add auditConfig section to pnpm-workspace.yaml", () => {
             expect.assertions(3);

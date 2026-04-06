@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -20,7 +20,7 @@ describe("implode shell profile cleanup", () => {
 
         const profilePath = join(tmpDir, ".zshrc");
 
-        writeFileSync(profilePath, ["# normal line", 'export PATH="$HOME/.vis/bin:$PATH"', "# vis setup", "alias ls='ls -la'"].join("\n"));
+        writeFileSync(profilePath, ["# normal line", "export PATH=\"$HOME/.vis/bin:$PATH\"", "# vis setup", "alias ls='ls -la'"].join("\n"));
 
         const content = readFileSync(profilePath, "utf8");
         const lines = content.split("\n");

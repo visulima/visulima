@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../src/config";
 
-describe("defineConfig", () => {
+describe(defineConfig, () => {
     it("should apply secure defaults to empty config", () => {
         expect.assertions(7);
 
@@ -88,7 +88,7 @@ describe("cONFIG_FILES", () => {
     });
 });
 
-describe("findVisConfigFile", () => {
+describe(findVisConfigFile, () => {
     it("should find vis.config.ts", () => {
         expect.assertions(1);
 
@@ -129,7 +129,7 @@ describe("findVisConfigFile", () => {
     });
 });
 
-describe("loadVisConfig", () => {
+describe(loadVisConfig, () => {
     it("should return secure defaults when no file exists", async () => {
         expect.assertions(3);
 
@@ -146,7 +146,7 @@ describe("loadVisConfig", () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), 'export default { update: { target: "minor" } };');
+        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default { update: { target: \"minor\" } };");
 
         const config = await loadVisConfig(temporaryDirectory);
 
@@ -191,7 +191,7 @@ export default config;
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), 'export default async () => ({ ai: { provider: "gemini" } });');
+        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default async () => ({ ai: { provider: \"gemini\" } });");
 
         const config = await loadVisConfig(temporaryDirectory);
 
@@ -203,7 +203,7 @@ export default config;
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.cjs"), 'module.exports = { update: { format: "json" } };');
+        writeFileSync(join(temporaryDirectory, "vis.config.cjs"), "module.exports = { update: { format: \"json\" } };");
 
         const config = await loadVisConfig(temporaryDirectory);
 
@@ -227,7 +227,7 @@ describe("config cache", () => {
     it("should create a cache file after first load", async () => {
         expect.assertions(2);
 
-        writeFileSync(join(tmpDir, "vis.config.mjs"), 'export default { update: { target: "patch" } };');
+        writeFileSync(join(tmpDir, "vis.config.mjs"), "export default { update: { target: \"patch\" } };");
 
         const config = await loadVisConfig(tmpDir);
 
@@ -237,6 +237,7 @@ describe("config cache", () => {
         const cacheExists = (() => {
             try {
                 readFileSync(cachePath);
+
                 return true;
             } catch {
                 return false;
@@ -249,7 +250,7 @@ describe("config cache", () => {
     it("should return cached config on second load without recompiling", async () => {
         expect.assertions(2);
 
-        writeFileSync(join(tmpDir, "vis.config.mjs"), 'export default { update: { target: "patch" } };');
+        writeFileSync(join(tmpDir, "vis.config.mjs"), "export default { update: { target: \"patch\" } };");
 
         const first = await loadVisConfig(tmpDir);
         const second = await loadVisConfig(tmpDir);
@@ -261,14 +262,14 @@ describe("config cache", () => {
     it("should invalidate cache when config file changes", async () => {
         expect.assertions(2);
 
-        writeFileSync(join(tmpDir, "vis.config.mjs"), 'export default { update: { target: "patch" } };');
+        writeFileSync(join(tmpDir, "vis.config.mjs"), "export default { update: { target: \"patch\" } };");
 
         const first = await loadVisConfig(tmpDir);
 
         expect(first.update?.target).toBe("patch");
 
         // Modify the config file
-        writeFileSync(join(tmpDir, "vis.config.mjs"), 'export default { update: { target: "latest" } };');
+        writeFileSync(join(tmpDir, "vis.config.mjs"), "export default { update: { target: \"latest\" } };");
 
         const second = await loadVisConfig(tmpDir);
 
@@ -278,7 +279,7 @@ describe("config cache", () => {
     it("should handle corrupt cache gracefully", async () => {
         expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "vis.config.mjs"), 'export default { update: { target: "minor" } };');
+        writeFileSync(join(tmpDir, "vis.config.mjs"), "export default { update: { target: \"minor\" } };");
 
         // Write corrupt cache
         const cacheDir = join(tmpDir, "node_modules", ".cache", "vis");

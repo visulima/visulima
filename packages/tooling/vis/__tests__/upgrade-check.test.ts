@@ -1,12 +1,12 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { EXCLUDED_COMMANDS, isNewerVersion, shouldCheck } from "../src/upgrade-check";
 
-describe("isNewerVersion", () => {
+describe(isNewerVersion, () => {
     it("should detect newer major version", () => {
         expect.assertions(1);
 
@@ -63,7 +63,7 @@ describe("isNewerVersion", () => {
     });
 });
 
-describe("shouldCheck", () => {
+describe(shouldCheck, () => {
     const originalEnv = { ...process.env };
 
     afterEach(() => {
@@ -103,7 +103,7 @@ describe("shouldCheck", () => {
     });
 });
 
-describe("EXCLUDED_COMMANDS", () => {
+describe("eXCLUDED_COMMANDS", () => {
     it("should contain upgrade", () => {
         expect.assertions(1);
 

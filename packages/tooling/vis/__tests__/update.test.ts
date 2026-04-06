@@ -26,7 +26,7 @@ const options = (overrides: Partial<UpdateCommandOptions> = {}): UpdateCommandOp
     };
 };
 
-describe("resolveUpdateCommand", () => {
+describe(resolveUpdateCommand, () => {
     describe("global", () => {
         it("should always use npm for global updates regardless of detected PM", () => {
             expect.assertions(2);

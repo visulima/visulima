@@ -32,7 +32,6 @@ const createTemporaryGitRepo = (): { cleanup: () => void; restore: () => void; r
     const root = mkdtempSync(join(tmpdir(), "vis-hook-test-"));
     const originalCwd = process.cwd();
 
-    // eslint-disable-next-line sonarjs/no-os-command-from-path -- test setup
     execSync("git init", { cwd: root, stdio: "ignore" });
     process.chdir(root);
 
@@ -61,7 +60,7 @@ const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
 
 // ─── hookScript (unit) ──────────────────────────────────────────────
 
-describe("hookScript", () => {
+describe(hookScript, () => {
     it("should compute correct depth for simple dir", () => {
         expect.assertions(1);
 
@@ -117,7 +116,7 @@ describe("hookScript", () => {
 
 // ─── installHooks (integration) ─────────────────────────────────────
 
-describe("installHooks", () => {
+describe(installHooks, () => {
     it.skipIf(process.platform === "win32")("should create internal dispatcher scripts but not user hooks", () => {
         expect.assertions(7);
 
@@ -150,7 +149,6 @@ describe("installHooks", () => {
         try {
             installHooks(".vis-hooks");
 
-            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
             const hooksPath = execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim();
 
             expect(hooksPath).toBe(".vis-hooks/_");
@@ -198,7 +196,6 @@ describe("installHooks", () => {
         const { cleanup } = createTemporaryGitRepo();
 
         try {
-            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
             execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
 
             const result = installHooks(".vis-hooks");
@@ -228,7 +225,7 @@ describe("installHooks", () => {
 
 // ─── uninstallHooks (integration) ───────────────────────────────────
 
-describe("uninstallHooks", () => {
+describe(uninstallHooks, () => {
     it.skipIf(process.platform === "win32")("should unset core.hooksPath and remove internal directory", () => {
         expect.assertions(5);
 
@@ -248,7 +245,7 @@ describe("uninstallHooks", () => {
             expect(existsSync(join(root, ".vis-hooks", "_"))).toBe(false);
 
             // core.hooksPath should be unset
-            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
+
             const checkResult = execSync("git config --local core.hooksPath 2>&1 || true", { encoding: "utf8" });
 
             expect(checkResult.trim()).toBe("");
@@ -275,7 +272,7 @@ describe("uninstallHooks", () => {
 
 // ─── transformHookScript (unit) ─────────────────────────────────────
 
-describe("transformHookScript", () => {
+describe(transformHookScript, () => {
     it("should remove common.sh sourcing line", () => {
         expect.assertions(3);
 
@@ -288,7 +285,7 @@ echo "hello"
         const result = transformHookScript(input);
 
         expect(result).not.toContain("common.sh");
-        expect(result).toContain('echo "hello"');
+        expect(result).toContain("echo \"hello\"");
         expect(result).toContain("#!/bin/sh");
     });
 
@@ -317,13 +314,13 @@ echo "done"
         const result = transformHookScript(input);
 
         expect(result).toContain("common.sh in a comment");
-        expect(result).not.toContain('. "$(dirname "$0")/common.sh"');
+        expect(result).not.toContain(". \"$(dirname \"$0\")/common.sh\"");
     });
 });
 
 // ─── detectHuskyDirectory (unit) ────────────────────────────────────
 
-describe("detectHuskyDirectory", () => {
+describe(detectHuskyDirectory, () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
@@ -376,7 +373,7 @@ describe("detectHuskyDirectory", () => {
 
 // ─── detectPackageManager (unit) ────────────────────────────────────
 
-describe("detectPackageManager", () => {
+describe(detectPackageManager, () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
@@ -445,7 +442,7 @@ describe("detectPackageManager", () => {
 
 // ─── cleanPackageJsonScripts (unit) ─────────────────────────────────
 
-describe("cleanPackageJsonScripts", () => {
+describe(cleanPackageJsonScripts, () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
@@ -464,7 +461,7 @@ describe("cleanPackageJsonScripts", () => {
         const result = cleanPackageJsonScripts(temporary.root);
 
         expect(result.modified).toBe(true);
-        expect(result.removedScriptReferences).toContain('removed "prepare" script (was: "husky")');
+        expect(result.removedScriptReferences).toContain("removed \"prepare\" script (was: \"husky\")");
 
         const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
 

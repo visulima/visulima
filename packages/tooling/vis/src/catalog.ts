@@ -790,7 +790,6 @@ const fetchPackageVersions = async (
     }, timeoutMs);
 
     try {
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
         const response = await fetch(url, { headers, signal: controller.signal });
 
         if (!response.ok) {
@@ -913,7 +912,6 @@ const fetchVulnerabilities = async (
     }, timeoutMs);
 
     try {
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
         const response = await fetch("https://api.osv.dev/v1/querybatch", {
             body: JSON.stringify({ queries }),
             headers: { "Content-Type": "application/json" },
@@ -1056,7 +1054,7 @@ const fetchVersionsBatched = async (
 
     for (let index = 0; index < uniquePackages.length; index += concurrency) {
         const batch = uniquePackages.slice(index, index + concurrency);
-        // eslint-disable-next-line no-await-in-loop -- intentional batched processing to limit concurrency
+
         const results = await Promise.allSettled(
             batch.map(async (name) => {
                 const registry = npmrcConfig ? getRegistryForPackage(name, npmrcConfig) : undefined;
@@ -1137,7 +1135,7 @@ const buildOutdatedEntries = (
 };
 
 /** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: ParsedVersion | undefined): string => (parsed ? versionToString(parsed) : "");
+const formatVersionString = (parsed: ParsedVersion | undefined): string => parsed ? versionToString(parsed) : "";
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1889,7 +1887,6 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             const npmUrl = `https://www.npmjs.com/package/${entry.packageName}`;
 
             try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+
                 const response = await fetch(`https://registry.npmjs.org/${entry.packageName}`, {
                     headers: { Accept: "application/json" },
                     signal: controller.signal,
@@ -1922,7 +1919,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...(await Promise.all(fetches)));
+        results.push(...await Promise.all(fetches));
     } finally {
         clearTimeout(timeout);
     }

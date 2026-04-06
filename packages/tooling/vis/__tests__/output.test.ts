@@ -26,7 +26,7 @@ describe("output module", () => {
         });
     });
 
-    describe("info", () => {
+    describe(info, () => {
         it("should write to stderr with info: prefix", () => {
             expect.assertions(1);
 
@@ -38,7 +38,7 @@ describe("output module", () => {
         });
     });
 
-    describe("warn", () => {
+    describe(warn, () => {
         it("should write to stderr with warn: prefix", () => {
             expect.assertions(1);
 
@@ -50,7 +50,7 @@ describe("output module", () => {
         });
     });
 
-    describe("error", () => {
+    describe(error, () => {
         it("should write to stderr with error: prefix", () => {
             expect.assertions(1);
 
@@ -62,7 +62,7 @@ describe("output module", () => {
         });
     });
 
-    describe("note", () => {
+    describe(note, () => {
         it("should write to stderr with note: prefix", () => {
             expect.assertions(1);
 
@@ -74,7 +74,7 @@ describe("output module", () => {
         });
     });
 
-    describe("success", () => {
+    describe(success, () => {
         it("should write to stderr with checkmark symbol", () => {
             expect.assertions(1);
 
@@ -86,7 +86,7 @@ describe("output module", () => {
         });
     });
 
-    describe("failure", () => {
+    describe(failure, () => {
         it("should write to stderr with X symbol", () => {
             expect.assertions(1);
 
@@ -98,7 +98,7 @@ describe("output module", () => {
         });
     });
 
-    describe("injectVersion", () => {
+    describe(injectVersion, () => {
         it("should set VIS_VERSION environment variable", () => {
             expect.assertions(1);
 

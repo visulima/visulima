@@ -23,7 +23,6 @@ const upgrade: Command = {
         let currentVersion: string;
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
             currentVersion = require("../../package.json").version;
         } catch {
             currentVersion = "unknown";

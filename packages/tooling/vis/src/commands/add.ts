@@ -35,7 +35,6 @@ const resolveLatestVersions = async (packageNames: string[], timeoutMs: number =
     try {
         const fetches = packageNames.map(async (name) => {
             try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+
                 const response = await fetch(`https://registry.npmjs.org/${name}/latest`, {
                     headers: { Accept: "application/json" },
                     signal: controller.signal,

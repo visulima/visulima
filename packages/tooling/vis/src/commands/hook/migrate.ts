@@ -126,13 +126,12 @@ const processScript = (scripts: Record<string, string>, scriptName: string, scri
     }
 
     if (cleaned) {
-        // eslint-disable-next-line no-param-reassign -- mutating scripts object passed by caller
         scripts[scriptName] = cleaned;
 
         return `updated "${scriptName}" script`;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, no-param-reassign -- mutating scripts object passed by caller
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- mutating scripts object passed by caller
     delete scripts[scriptName];
 
     return `removed "${scriptName}" script (was: "${scriptValue}")`;
@@ -195,12 +194,11 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console)
 
     // Install vis hooks first (sets up core.hooksPath and dispatcher scripts)
     // Temporarily unset core.hooksPath if it points to husky so installHooks doesn't skip
-    // eslint-disable-next-line sonarjs/no-os-command-from-path
+
     const checkResult = spawnSync("git", ["config", "--local", "core.hooksPath"]);
     const existingPath = checkResult.status === 0 ? checkResult.stdout?.toString().trim() : "";
 
     if (existingPath && (existingPath === ".husky/_" || existingPath.startsWith(".husky"))) {
-        // eslint-disable-next-line sonarjs/no-os-command-from-path
         spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"]);
     }
 

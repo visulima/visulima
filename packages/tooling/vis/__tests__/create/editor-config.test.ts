@@ -27,7 +27,7 @@ describe("create editor config generation", () => {
             "editor.formatOnSave": true,
         };
 
-        writeFileSync(join(vscodeDir, "settings.json"), JSON.stringify(defaultSettings, null, 4) + "\n");
+        writeFileSync(join(vscodeDir, "settings.json"), `${JSON.stringify(defaultSettings, null, 4)}\n`);
 
         const settings = JSON.parse(readFileSync(join(vscodeDir, "settings.json"), "utf8"));
 
@@ -45,12 +45,12 @@ describe("create editor config generation", () => {
 
         const extensions = { recommendations: ["oxc.oxc-vscode"] };
 
-        writeFileSync(join(vscodeDir, "extensions.json"), JSON.stringify(extensions, null, 4) + "\n");
+        writeFileSync(join(vscodeDir, "extensions.json"), `${JSON.stringify(extensions, null, 4)}\n`);
 
         const result = JSON.parse(readFileSync(join(vscodeDir, "extensions.json"), "utf8"));
 
         expect(result.recommendations).toContain("oxc.oxc-vscode");
-        expect(result.recommendations.length).toBe(1);
+        expect(result.recommendations).toHaveLength(1);
     });
 
     it("should merge settings.json preserving existing settings", () => {
@@ -61,8 +61,8 @@ describe("create editor config generation", () => {
         mkdirSync(vscodeDir, { recursive: true });
 
         const existing = {
-            "editor.tabSize": 4,
             "editor.formatOnSave": false,
+            "editor.tabSize": 4,
         };
 
         writeFileSync(join(vscodeDir, "settings.json"), JSON.stringify(existing));
@@ -74,7 +74,7 @@ describe("create editor config generation", () => {
 
         const merged = { ...defaults, ...existing };
 
-        writeFileSync(join(vscodeDir, "settings.json"), JSON.stringify(merged, null, 4) + "\n");
+        writeFileSync(join(vscodeDir, "settings.json"), `${JSON.stringify(merged, null, 4)}\n`);
 
         const result = JSON.parse(readFileSync(join(vscodeDir, "settings.json"), "utf8"));
 
@@ -101,11 +101,11 @@ describe("create editor config generation", () => {
             recommendations: [...new Set([...existing.recommendations, ...defaults.recommendations])],
         };
 
-        writeFileSync(join(vscodeDir, "extensions.json"), JSON.stringify(merged, null, 4) + "\n");
+        writeFileSync(join(vscodeDir, "extensions.json"), `${JSON.stringify(merged, null, 4)}\n`);
 
         const result = JSON.parse(readFileSync(join(vscodeDir, "extensions.json"), "utf8"));
 
         expect(result.recommendations).toContain("oxc.oxc-vscode");
-        expect(result.recommendations.length).toBe(2); // no duplicates
+        expect(result.recommendations).toHaveLength(2); // no duplicates
     });
 });

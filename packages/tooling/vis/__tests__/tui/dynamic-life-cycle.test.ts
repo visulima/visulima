@@ -1,12 +1,15 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
+import { render } from "@visulima/tui";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { createDynamicOutputRenderer } from "../../src/tui/dynamic-life-cycle";
 
 // Mock @visulima/tui render to avoid actual terminal rendering
 let mockUnmount: () => void;
 let mockWaitUntilExit: () => Promise<void>;
 let exitResolve: () => void;
 
-vi.mock("@visulima/tui", async (importOriginal) => {
+vi.mock(import("@visulima/tui"), async (importOriginal) => {
     const actual = await importOriginal<typeof import("@visulima/tui")>();
 
     return {
@@ -26,16 +29,13 @@ vi.mock("@visulima/tui", async (importOriginal) => {
                 clear: vi.fn(),
                 rerender: vi.fn(),
                 rootNode: {},
-                unmount: vi.fn(() => mockUnmount()),
+                unmount: vi.fn(() => { mockUnmount(); }),
                 waitUntilExit: vi.fn(() => mockWaitUntilExit()),
                 waitUntilRenderFlush: vi.fn(() => Promise.resolve()),
             };
         }),
     };
 });
-
-import { render } from "@visulima/tui";
-import { createDynamicOutputRenderer } from "../../src/tui/dynamic-life-cycle";
 
 const createTask = (project: string, target: string): Task => {
     return {
@@ -170,7 +170,7 @@ describe("tui/createDynamicOutputRenderer", () => {
         await renderIsDone;
 
         // Summary should be printed to stdout after alternate screen restores
-        expect(writeSpy).toHaveBeenCalled();
+        expect(writeSpy).toHaveBeenCalledWith();
     });
 
     it("should collect task output via printTaskTerminalOutput", () => {

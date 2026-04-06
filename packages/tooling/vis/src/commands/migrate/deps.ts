@@ -15,8 +15,6 @@ interface MigrateLogger {
     warn: (message: string) => void;
 }
 
-/* eslint-disable no-param-reassign -- report mutation is the purpose of these migration functions */
-
 /**
  * Rewrite scripts in package.json to replace husky/lint-staged references.
  */
@@ -97,7 +95,7 @@ const rewritePackageJson = (root: string, packageManager: PackageManagerType, ov
                     const workspacesField = pkg["workspaces"] as string[] | { catalog?: Record<string, string>; packages?: string[] } | undefined;
                     const workspacesObject = workspacesField && !Array.isArray(workspacesField) ? workspacesField : undefined;
                     const bunCatalog: Record<string, string> = {
-                        ...(workspacesObject?.catalog ?? (pkg["catalog"] as Record<string, string> | undefined)),
+                        ...workspacesObject?.catalog ?? (pkg["catalog"] as Record<string, string> | undefined),
                     };
 
                     for (const [key, value] of Object.entries(overrides)) {
@@ -299,8 +297,6 @@ const updatePnpmWorkspaceCatalog = (root: string, overrides: Record<string, stri
 
     writeFileSync(filePath, result.join("\n"), "utf8");
 };
-
-/* eslint-enable no-param-reassign */
 
 /**
  * Top-level orchestrator for dependency migration.

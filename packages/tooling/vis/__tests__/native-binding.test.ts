@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 describe("native-binding", () => {
     describe("loadNativeBindings", () => {
@@ -33,7 +33,7 @@ describe("native-binding", () => {
             vi.resetModules();
             const { isNativeAvailable } = await import("../src/native-binding");
 
-            expect(typeof isNativeAvailable()).toBe("boolean");
+            expectTypeOf(isNativeAvailable()).toBeBoolean();
         });
     });
 });
@@ -55,9 +55,11 @@ describe("native addon integration", () => {
 
             const result = native!.detectPackageManager(process.cwd());
 
-            expect(typeof result.name).toBe("string");
+            expectTypeOf(result.name).toBeString();
+
             expect(["pnpm", "npm", "yarn", "bun"]).toContain(result.name);
-            expect(typeof result.isWorkspace).toBe("boolean");
+
+            expectTypeOf(result.isWorkspace).toBeBoolean();
         });
 
         it("should return pnpm for this monorepo", () => {
