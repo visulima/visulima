@@ -1,8 +1,4 @@
 {
-  "title": "Connect",
-  "pages": [
-    "index",
-    "quickstart",
-    "next"
-  ]
+    "title": "Connect",
+    "pages": ["index", "quickstart", "next"]
 }

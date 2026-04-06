@@ -52,7 +52,7 @@ describe("router", () => {
         const out = context.add("GET", "/foo/:hello", noop);
 
         expect(out, "returns the Router instance (chainable)").toStrictEqual(context);
-        expect(context.routes, "added \"GET /foo/:hello\" route successfully").toHaveLength(1);
+        expect(context.routes, 'added "GET /foo/:hello" route successfully').toHaveLength(1);
 
         testRoute(context.routes[0] as Route<any>, {
             fns: [noop],
@@ -64,7 +64,7 @@ describe("router", () => {
 
         context.add("POST", "bar", noop);
 
-        expect(context.routes, "added \"POST /bar\" route successfully (via alias)").toHaveLength(2);
+        expect(context.routes, 'added "POST /bar" route successfully (via alias)').toHaveLength(2);
 
         testRoute(context.routes[1] as Route<any>, {
             fns: [noop],
@@ -93,7 +93,7 @@ describe("router", () => {
 
         context.add("PATCH", "/foo/:hello", noop, noop);
 
-        expect(context.routes, "added \"SEARCH /foo/:hello\" route successfully").toHaveLength(1);
+        expect(context.routes, 'added "SEARCH /foo/:hello" route successfully').toHaveLength(1);
 
         testRoute(context.routes[0] as Route<any>, {
             fns: [noop, noop],
@@ -105,7 +105,7 @@ describe("router", () => {
 
         context.add("PUT", "/bar", noop, noop, noop);
 
-        expect(context.routes, "added \"PUT /bar\" route successfully (via alias)").toHaveLength(2);
+        expect(context.routes, 'added "PUT /bar" route successfully (via alias)').toHaveLength(2);
 
         testRoute(context.routes[1] as Route<any>, {
             fns: [noop, noop, noop],
@@ -124,7 +124,7 @@ describe("router", () => {
         const out = context.use("/foo/:hello", noop);
 
         expect(out, "returns the Router instance (chainable)").toStrictEqual(context);
-        expect(context.routes, "added \"ANY /foo/:hello\" route successfully").toHaveLength(1);
+        expect(context.routes, 'added "ANY /foo/:hello" route successfully').toHaveLength(1);
 
         testRoute(context.routes[0] as Route<any>, {
             fns: [noop],
@@ -136,7 +136,7 @@ describe("router", () => {
 
         context.use("/", noop, noop, noop);
 
-        expect(context.routes, "added \"ANY /\" routes successfully").toHaveLength(2);
+        expect(context.routes, 'added "ANY /" routes successfully').toHaveLength(2);
 
         testRoute(context.routes[1] as Route<any>, {
             fns: [noop, noop, noop],
@@ -148,7 +148,7 @@ describe("router", () => {
 
         context.use("/foo/:world?", noop, noop, noop, noop);
 
-        expect(context.routes, "added \"ANY /foo/:world?\" routes successfully").toHaveLength(3);
+        expect(context.routes, 'added "ANY /foo/:world?" routes successfully').toHaveLength(3);
 
         testRoute(context.routes[2] as Route<any>, {
             fns: [noop, noop, noop, noop],
@@ -166,7 +166,7 @@ describe("router", () => {
         const function_: AnyHandler = (request: any) => request.chain++;
         const context = new Router<AnyHandler>().add("", "/greet/:name", function_);
 
-        expect(context.routes, "added \"ALL /greet/:name\" route").toHaveLength(1);
+        expect(context.routes, 'added "ALL /greet/:name" route').toHaveLength(1);
 
         testRoute(context.routes[0] as Route<any>, {
             fns: [function_],
@@ -178,9 +178,9 @@ describe("router", () => {
 
         const foo = context.find("HEAD", "/greet/Bob") as any;
 
-        expect(foo.params.name, "~> \"params.name\" is expected").toBe("Bob");
+        expect(foo.params.name, '~> "params.name" is expected').toBe("Bob");
 
-        expect(foo.fns, "~~> \"handlers\" has 1 item").toHaveLength(1);
+        expect(foo.fns, '~~> "handlers" has 1 item').toHaveLength(1);
 
         foo.chain = 0;
 
@@ -190,8 +190,8 @@ describe("router", () => {
 
         const bar = context.find("GET", "/greet/Judy") as any;
 
-        expect(bar.params.name, "~> \"params.name\" is expected").toBe("Judy");
-        expect(bar.fns, "~~> \"handlers\" has 1 item").toHaveLength(1);
+        expect(bar.params.name, '~> "params.name" is expected').toBe("Judy");
+        expect(bar.fns, '~~> "handlers" has 1 item').toHaveLength(1);
 
         bar.chain = 0;
 
@@ -202,13 +202,13 @@ describe("router", () => {
         const function2: AnyHandler = (request: any) => {
             // eslint-disable-next-line no-plusplus
             expect(request.chain++, "~> ran new HEAD after ALL handler").toBe(1);
-            expect(request.params.name, "~~> still see \"params.name\" value").toBe("Rick");
-            expect(request.params.person, "~~> receives \"params.person\" value").toBe("Rick");
+            expect(request.params.name, '~~> still see "params.name" value').toBe("Rick");
+            expect(request.params.person, '~~> receives "params.person" value').toBe("Rick");
         };
 
         context.add("HEAD", "/greet/:person", function2);
 
-        expect(context.routes, "added \"HEAD /greet/:name\" route").toHaveLength(2);
+        expect(context.routes, 'added "HEAD /greet/:name" route').toHaveLength(2);
 
         testRoute(context.routes[1] as Route<any>, {
             fns: [function2],
@@ -220,8 +220,8 @@ describe("router", () => {
 
         const baz = context.find("HEAD", "/greet/Rick") as any;
 
-        expect(baz.params.name, "~> \"params.name\" is expected").toBe("Rick");
-        expect(baz.fns, "~~> \"handlers\" has 2 items").toHaveLength(2);
+        expect(baz.params.name, '~> "params.name" is expected').toBe("Rick");
+        expect(baz.fns, '~~> "handlers" has 2 items').toHaveLength(2);
 
         baz.chain = 0;
 
@@ -231,8 +231,8 @@ describe("router", () => {
 
         const bat = context.find("POST", "/greet/Morty") as any;
 
-        expect(bat.params.name, "~> \"params.name\" is expected").toBe("Morty");
-        expect(bat.fns, "~~> \"handlers\" has 1 item").toHaveLength(1);
+        expect(bat.params.name, '~> "params.name" is expected').toBe("Morty");
+        expect(bat.fns, '~~> "handlers" has 1 item').toHaveLength(1);
 
         bat.chain = 0;
 
@@ -251,22 +251,22 @@ describe("router", () => {
             "/foo/:title",
             ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> 1st \"GET /foo/:title\" ran first").toBe(1);
-                expect(request.params.title, "~> \"params.title\" is expected").toBe("bar");
+                expect(request.chain++, '~> 1st "GET /foo/:title" ran first').toBe(1);
+                expect(request.params.title, '~> "params.title" is expected').toBe("bar");
             }) as AnyHandler,
             ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> 2nd \"GET /foo/:title\" ran second").toBe(2);
+                expect(request.chain++, '~> 2nd "GET /foo/:title" ran second').toBe(2);
             }) as AnyHandler,
         );
 
         const out = context.find("GET", "/foo/bar") as any;
 
         expect(out, "returns an object").toBeTypeOf("object");
-        expect(out.params, "~> has \"params\" key (object)").toBeTypeOf("object");
-        expect(out.params.title, "~~> \"params.title\" value is correct").toBe("bar");
+        expect(out.params, '~> has "params" key (object)').toBeTypeOf("object");
+        expect(out.params.title, '~~> "params.title" value is correct').toBe("bar");
 
-        expect(Array.isArray(out.fns), "~> has \"handlers\" key (array)").toBe(true);
+        expect(Array.isArray(out.fns), '~> has "handlers" key (array)').toBe(true);
         expect(out.fns, "~~> saved both handlers").toHaveLength(2);
 
         out.chain = 1;
@@ -282,8 +282,8 @@ describe("router", () => {
         const out = context.find("DELETE", "/nothing");
 
         expect(out, "returns an object").toBeTypeOf("object");
-        expect(Object.keys(out.params), "~> \"params\" is empty").toHaveLength(0);
-        expect(out.fns, "~> \"handlers\" is empty").toHaveLength(0);
+        expect(Object.keys(out.params), '~> "params" is empty').toHaveLength(0);
+        expect(out.fns, '~> "handlers" is empty').toHaveLength(0);
     });
 
     it("find() - multiple", async () => {
@@ -295,28 +295,28 @@ describe("router", () => {
 
         const context = new Router<AnyHandler>()
             .use("/foo", ((request) => {
-                expect(true, "~> ran use(\"/foo\")\" route").toBe(true); // x2
+                expect(true, '~> ran use("/foo")" route').toBe(true); // x2
 
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
-                    expect(request.params.title, "~~> saw \"param.title\" value").toBe("bar");
+                    expect(request.params.title, '~~> saw "param.title" value').toBe("bar");
                 }
 
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 1st").toBe(0);
             }) as AnyHandler)
             .add("GET", "/foo", ((request) => {
-                expect(true, "~> ran \"GET /foo\" route").toBe(true);
+                expect(true, '~> ran "GET /foo" route').toBe(true);
 
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 2nd").toBe(1);
             }) as AnyHandler)
             .add("GET", "/foo/:title?", ((request) => {
-                expect(true, "~> ran \"GET /foo/:title?\" route").toBe(true); // x2
+                expect(true, '~> ran "GET /foo/:title?" route').toBe(true); // x2
 
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
-                    expect(request.params.title, "~~> saw \"params.title\" value").toBe("bar");
+                    expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 }
 
                 if (isRoot) {
@@ -328,10 +328,10 @@ describe("router", () => {
                 }
             }) as AnyHandler)
             .add("GET", "/foo/*", ((request) => {
-                expect(true, "~> ran \"GET /foo/*\" route").toBe(true);
+                expect(true, '~> ran "GET /foo/*" route').toBe(true);
 
-                expect(request.params["*"], "~~> saw \"params[\"*\"]\" value").toBe("bar");
-                expect(request.params.title, "~~> saw \"params.title\" value").toBe("bar");
+                expect(request.params["*"], '~~> saw "params["*"]" value').toBe("bar");
+                expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 3rd").toBe(2);
             }) as AnyHandler);
@@ -358,15 +358,15 @@ describe("router", () => {
         const context = new Router<AnyHandler>()
             .add("", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> found \"ALL /foo\" route").toBe(0);
+                expect(request.chain++, '~> found "ALL /foo" route').toBe(0);
             }) as AnyHandler)
             .add("HEAD", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> found \"HEAD /foo\" route").toBe(1);
+                expect(request.chain++, '~> found "HEAD /foo" route').toBe(1);
             }) as AnyHandler)
             .add("GET", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> also found \"GET /foo\" route").toBe(2);
+                expect(request.chain++, '~> also found "GET /foo" route').toBe(2);
             }) as AnyHandler)
             .add("GET", "/", async () => {
                 expect(true, "should not run").toBe(true);
@@ -388,15 +388,15 @@ describe("router", () => {
         const context = new Router<AnyHandler>()
             .add("", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> ran \"ALL /foo\" 1st").toBe(0);
+                expect(request.chain++, '~> ran "ALL /foo" 1st').toBe(0);
             }) as AnyHandler)
             .add("GET", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> ran \"GET /foo\" 2nd").toBe(1);
+                expect(request.chain++, '~> ran "GET /foo" 2nd').toBe(1);
             }) as AnyHandler)
             .add("HEAD", "/foo", ((request) => {
                 // eslint-disable-next-line no-plusplus
-                expect(request.chain++, "~> ran \"HEAD /foo\" 3rd").toBe(2);
+                expect(request.chain++, '~> ran "HEAD /foo" 3rd').toBe(2);
             }) as AnyHandler)
             .add("GET", "/", (() => {
                 expect(true, "should not run").toBe(true);
@@ -423,46 +423,46 @@ describe("router", () => {
         const context4 = new Router<AnyHandler>().add("", "movies/:title.mp4", noop);
 
         expect(find(context1, "/api").fns, "~> exact match").toHaveLength(1);
-        expect(find(context1, "/api/foo").fns, "~> does not match \"/api/foo\" - too long").toHaveLength(0);
+        expect(find(context1, "/api/foo").fns, '~> does not match "/api/foo" - too long').toHaveLength(0);
 
-        expect(find(context2, "/api").fns, "~> does not match \"/api\" only").toHaveLength(0);
+        expect(find(context2, "/api").fns, '~> does not match "/api" only').toHaveLength(0);
 
         const foo1 = find(context2, "/api/v1");
 
-        expect(foo1.fns, "~> does match \"/api/v1\" directly").toHaveLength(1);
+        expect(foo1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
 
-        expect(foo1.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(foo1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const foo2 = find(context2, "/api/v1/users");
 
-        expect(foo2.fns, "~> does not match \"/api/v1/users\" - too long").toHaveLength(0);
-        expect(foo2.params.version, "~> cannot parse the \"version\" parameter (not a match)").toBeUndefined();
+        expect(foo2.fns, '~> does not match "/api/v1/users" - too long').toHaveLength(0);
+        expect(foo2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
-        expect(find(context3, "/api").fns, "~> does match \"/api\" because optional").toHaveLength(1);
+        expect(find(context3, "/api").fns, '~> does match "/api" because optional').toHaveLength(1);
 
         const bar1 = find(context3, "/api/v1");
 
-        expect(bar1.fns, "~> does match \"/api/v1\" directly").toHaveLength(1);
-        expect(bar1.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(bar1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
+        expect(bar1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const bar2 = find(context3, "/api/v1/users");
 
-        expect(bar2.fns, "~> does match \"/api/v1/users\" - too long").toHaveLength(0);
-        expect(bar2.params.version, "~> cannot parse the \"version\" parameter (not a match)").toBeUndefined();
+        expect(bar2.fns, '~> does match "/api/v1/users" - too long').toHaveLength(0);
+        expect(bar2.params.version, '~> cannot parse the "version" parameter (not a match)').toBeUndefined();
 
-        expect(find(context4, "/movies").fns, "~> does not match \"/movies\" directly").toHaveLength(0);
-        expect(find(context4, "/movies/narnia").fns, "~> does not match \"/movies/narnia\" directly").toHaveLength(0);
+        expect(find(context4, "/movies").fns, '~> does not match "/movies" directly').toHaveLength(0);
+        expect(find(context4, "/movies/narnia").fns, '~> does not match "/movies/narnia" directly').toHaveLength(0);
 
         const baz1 = find(context4, "/movies/narnia.mp4");
 
-        expect(baz1.fns, "~> does match \"/movies/narnia.mp4\" directly").toHaveLength(1);
+        expect(baz1.fns, '~> does match "/movies/narnia.mp4" directly').toHaveLength(1);
 
-        expect(baz1.params.title, "~> parses the \"title\" correctly").toBe("narnia");
+        expect(baz1.params.title, '~> parses the "title" correctly').toBe("narnia");
 
         const baz2 = find(context4, "/movies/narnia.mp4/cast");
 
-        expect(baz2.fns, "~> does match \"/movies/narnia.mp4/cast\" - too long").toHaveLength(0);
-        expect(baz2.params.title, "~> cannot parse the \"title\" parameter (not a match)").toBeUndefined();
+        expect(baz2.fns, '~> does match "/movies/narnia.mp4/cast" - too long').toHaveLength(0);
+        expect(baz2.params.title, '~> cannot parse the "title" parameter (not a match)').toBeUndefined();
     });
 
     it("find() w/ use()", async () => {
@@ -478,42 +478,42 @@ describe("router", () => {
         expect(find(context1, "/api").fns, "~> exact match").toHaveLength(1);
         expect(find(context1, "/api/foo").fns, "~> loose match").toHaveLength(1);
 
-        expect(find(context2, "/api").fns, "~> does not match \"/api\" only").toHaveLength(0);
+        expect(find(context2, "/api").fns, '~> does not match "/api" only').toHaveLength(0);
 
         const foo1 = find(context2, "/api/v1");
 
-        expect(foo1.fns, "~> does match \"/api/v1\" directly").toHaveLength(1);
-        expect(foo1.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(foo1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
+        expect(foo1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const foo2 = find(context2, "/api/v1/users");
 
-        expect(foo2.fns, "~> does match \"/api/v1/users\" loosely").toHaveLength(1);
-        expect(foo2.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(foo2.fns, '~> does match "/api/v1/users" loosely').toHaveLength(1);
+        expect(foo2.params.version, '~> parses the "version" correctly').toBe("v1");
 
-        expect(find(context3, "/api").fns, "~> does match \"/api\" because optional").toHaveLength(1);
+        expect(find(context3, "/api").fns, '~> does match "/api" because optional').toHaveLength(1);
 
         const bar1 = find(context3, "/api/v1");
 
-        expect(bar1.fns, "~> does match \"/api/v1\" directly").toHaveLength(1);
-        expect(bar1.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(bar1.fns, '~> does match "/api/v1" directly').toHaveLength(1);
+        expect(bar1.params.version, '~> parses the "version" correctly').toBe("v1");
 
         const bar2 = find(context3, "/api/v1/users");
 
-        expect(bar2.fns, "~> does match \"/api/v1/users\" loosely").toHaveLength(1);
-        expect(bar2.params.version, "~> parses the \"version\" correctly").toBe("v1");
+        expect(bar2.fns, '~> does match "/api/v1/users" loosely').toHaveLength(1);
+        expect(bar2.params.version, '~> parses the "version" correctly').toBe("v1");
 
-        expect(find(context4, "/movies").fns, "~> does not match \"/movies\" directly").toHaveLength(0);
-        expect(find(context4, "/movies/narnia").fns, "~> does not match \"/movies/narnia\" directly").toHaveLength(0);
+        expect(find(context4, "/movies").fns, '~> does not match "/movies" directly').toHaveLength(0);
+        expect(find(context4, "/movies/narnia").fns, '~> does not match "/movies/narnia" directly').toHaveLength(0);
 
         const baz1 = find(context4, "/movies/narnia.mp4");
 
-        expect(baz1.fns, "~> does match \"/movies/narnia.mp4\" directly").toHaveLength(1);
-        expect(baz1.params.title, "~> parses the \"title\" correctly").toBe("narnia");
+        expect(baz1.fns, '~> does match "/movies/narnia.mp4" directly').toHaveLength(1);
+        expect(baz1.params.title, '~> parses the "title" correctly').toBe("narnia");
 
         const baz2 = find(context4, "/movies/narnia.mp4/cast");
 
-        expect(baz2.fns, "~> does match \"/movies/narnia.mp4/cast\" loosely").toHaveLength(1);
-        expect(baz2.params.title, "~> parses the \"title\" correctly").toBe("narnia");
+        expect(baz2.fns, '~> does match "/movies/narnia.mp4/cast" loosely').toHaveLength(1);
+        expect(baz2.params.title, '~> parses the "title" correctly').toBe("narnia");
     });
 
     it("find() - regex w/ named groups", async () => {
@@ -527,7 +527,7 @@ describe("router", () => {
             ((request) => {
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, String.raw`~> 1st "GET /^[/]foo[/](?<title>\w+)[/]?$/" ran first`).toBe(1);
-                expect(request.params.title, "~> \"params.title\" is expected").toBe("bar");
+                expect(request.params.title, '~> "params.title" is expected').toBe("bar");
             }) as AnyHandler,
             ((request) => {
                 // eslint-disable-next-line no-plusplus
@@ -538,10 +538,10 @@ describe("router", () => {
         const out = context.find("GET", "/foo/bar") as any;
 
         expect(out, "returns an object").toBeTypeOf("object");
-        expect(out.params, "~> has \"params\" key (object)").toBeTypeOf("object");
-        expect(out.params.title, "~~> \"params.title\" value is correct").toBe("bar");
+        expect(out.params, '~> has "params" key (object)').toBeTypeOf("object");
+        expect(out.params.title, '~~> "params.title" value is correct').toBe("bar");
 
-        expect(Array.isArray(out.fns), "~> has \"handlers\" key (array)").toBe(true);
+        expect(Array.isArray(out.fns), '~> has "handlers" key (array)').toBe(true);
         expect(out.fns, "~~> saved both handlers").toHaveLength(2);
 
         out.chain = 1;
@@ -556,11 +556,11 @@ describe("router", () => {
         let isRoot = true;
         const context = new Router<AnyHandler>()
             .use("/foo", ((request) => {
-                expect(true, "~> ran use(\"/foo\")\" route").toBe(true); // x2
+                expect(true, '~> ran use("/foo")" route').toBe(true); // x2
 
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
-                    expect(request.params.title, "~~> saw \"params.title\" value").toBe("bar");
+                    expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 }
 
                 // eslint-disable-next-line no-plusplus
@@ -568,7 +568,7 @@ describe("router", () => {
             }) as AnyHandler)
 
             .add("GET", "/foo", ((request) => {
-                expect(true, "~> ran \"GET /foo\" route").toBe(true);
+                expect(true, '~> ran "GET /foo" route').toBe(true);
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 2nd").toBe(1);
             }) as AnyHandler)
@@ -578,7 +578,7 @@ describe("router", () => {
 
                 if (!isRoot) {
                     // eslint-disable-next-line vitest/no-conditional-expect
-                    expect(request.params.title, "~~> saw \"params.title\" value").toBe("bar");
+                    expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 }
 
                 if (isRoot) {
@@ -590,10 +590,10 @@ describe("router", () => {
                 }
             }) as AnyHandler)
             .add("GET", /^\/foo\/(?<wild>.*)$/u, ((request) => {
-                expect(true, "~> ran \"GET /^[/]foo[/](?<wild>.*)$/\" route").toBe(true);
+                expect(true, '~> ran "GET /^[/]foo[/](?<wild>.*)$/" route').toBe(true);
 
-                expect(request.params.wild, "~~> saw \"params.wild\" value").toBe("bar");
-                expect(request.params.title, "~~> saw \"params.title\" value").toBe("bar");
+                expect(request.params.wild, '~~> saw "params.wild" value').toBe("bar");
+                expect(request.params.title, '~~> saw "params.title" value').toBe("bar");
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 3rd").toBe(2);
             }) as AnyHandler);

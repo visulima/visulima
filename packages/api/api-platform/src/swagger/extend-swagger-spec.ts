@@ -268,12 +268,12 @@ const prepareResponseExamples = (
         });
 
         if (!transformed) {
-            transformedExamples[exampleName]
-                = spec.components?.examples?.[exampleName] === undefined
+            transformedExamples[exampleName] =
+                spec.components?.examples?.[exampleName] === undefined
                     ? example
                     : {
-                        $ref: `#/components/examples/${exampleName}`,
-                    };
+                          $ref: `#/components/examples/${exampleName}`,
+                      };
         }
     });
 
