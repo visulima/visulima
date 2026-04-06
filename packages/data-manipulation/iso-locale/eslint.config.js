@@ -17,9 +17,9 @@ export default createConfig(
             "research.md",
             "prettier.config.js",
         ],
-    typescript: {
-        tsconfigPath: "./tsconfig.eslint.json",
-    },
+        typescript: {
+            tsconfigPath: "./tsconfig.eslint.json",
+        },
     },
     {
         files: ["src/data/*.ts"],

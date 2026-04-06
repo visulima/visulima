@@ -273,7 +273,7 @@ describe("regions", () => {
 
             const continents = getContinents();
 
-            expect(continents).toStrictEqual(continents.toSorted());
+            expect(continents).toStrictEqual(continents.toSorted((a, b) => a.localeCompare(b)));
         });
     });
 
@@ -306,7 +306,7 @@ describe("regions", () => {
 
             const subregions = getSubregions();
 
-            expect(subregions).toStrictEqual(subregions.toSorted());
+            expect(subregions).toStrictEqual(subregions.toSorted((a, b) => a.localeCompare(b)));
         });
     });
 
@@ -336,7 +336,7 @@ describe("regions", () => {
 
             const intermediaries = getIntermediaryRegions();
 
-            expect(intermediaries).toStrictEqual(intermediaries.toSorted());
+            expect(intermediaries).toStrictEqual(intermediaries.toSorted((a, b) => a.localeCompare(b)));
         });
     });
 

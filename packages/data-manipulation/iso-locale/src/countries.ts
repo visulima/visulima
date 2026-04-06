@@ -1,6 +1,8 @@
 import countriesData from "./data/countries";
 import type { Country } from "./types";
 
+const DIGITS_ONLY_REGEX = /^\d+$/;
+
 /**
  * Countries data indexed by alpha-2 code
  */
@@ -114,11 +116,11 @@ export const numericToAlpha3 = (numeric: string | number): string | undefined =>
  * @returns true if valid, false otherwise
  */
 export const isValid = (code: string | number): boolean => {
-    if (typeof code === "number" || /^\d+$/.test(String(code))) {
+    if (typeof code === "number" || DIGITS_ONLY_REGEX.test(code)) {
         return getByNumeric(code) !== undefined;
     }
 
-    const upperCode = String(code).toUpperCase();
+    const upperCode = code.toUpperCase();
 
     if (upperCode.length === 2) {
         return getByAlpha2(upperCode) !== undefined;
@@ -154,10 +156,10 @@ export const byNumeric: Readonly<Record<string, Country>> = countriesByNumeric;
 export const getEmoji = (countryCode: string | number): string | undefined => {
     let country: Country | undefined;
 
-    if (typeof countryCode === "number" || /^\d+$/.test(String(countryCode))) {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
         country = getByNumeric(countryCode);
     } else {
-        const upperCode = String(countryCode).toUpperCase();
+        const upperCode = countryCode.toUpperCase();
 
         if (upperCode.length === 2) {
             country = getByAlpha2(upperCode);
@@ -177,10 +179,10 @@ export const getEmoji = (countryCode: string | number): string | undefined => {
 export const getCallingCode = (countryCode: string | number): string | undefined => {
     let country: Country | undefined;
 
-    if (typeof countryCode === "number" || /^\d+$/.test(String(countryCode))) {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
         country = getByNumeric(countryCode);
     } else {
-        const upperCode = String(countryCode).toUpperCase();
+        const upperCode = countryCode.toUpperCase();
 
         if (upperCode.length === 2) {
             country = getByAlpha2(upperCode);
@@ -200,10 +202,10 @@ export const getCallingCode = (countryCode: string | number): string | undefined
 export const getCallingCodes = (countryCode: string | number): string[] => {
     let country: Country | undefined;
 
-    if (typeof countryCode === "number" || /^\d+$/.test(String(countryCode))) {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
         country = getByNumeric(countryCode);
     } else {
-        const upperCode = String(countryCode).toUpperCase();
+        const upperCode = countryCode.toUpperCase();
 
         if (upperCode.length === 2) {
             country = getByAlpha2(upperCode);
@@ -212,7 +214,7 @@ export const getCallingCodes = (countryCode: string | number): string[] => {
         }
     }
 
-    return country?.countryCallingCodes || [];
+    return country?.countryCallingCodes ?? [];
 };
 
 /**
@@ -223,10 +225,10 @@ export const getCallingCodes = (countryCode: string | number): string[] => {
 export const getLanguages = (countryCode: string | number): string[] => {
     let country: Country | undefined;
 
-    if (typeof countryCode === "number" || /^\d+$/.test(String(countryCode))) {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
         country = getByNumeric(countryCode);
     } else {
-        const upperCode = String(countryCode).toUpperCase();
+        const upperCode = countryCode.toUpperCase();
 
         if (upperCode.length === 2) {
             country = getByAlpha2(upperCode);
@@ -235,7 +237,7 @@ export const getLanguages = (countryCode: string | number): string[] => {
         }
     }
 
-    return country?.languages || [];
+    return country?.languages ?? [];
 };
 
 /**
@@ -246,10 +248,10 @@ export const getLanguages = (countryCode: string | number): string[] => {
 export const getIOC = (countryCode: string | number): string | undefined => {
     let country: Country | undefined;
 
-    if (typeof countryCode === "number" || /^\d+$/.test(String(countryCode))) {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
         country = getByNumeric(countryCode);
     } else {
-        const upperCode = String(countryCode).toUpperCase();
+        const upperCode = countryCode.toUpperCase();
 
         if (upperCode.length === 2) {
             country = getByAlpha2(upperCode);

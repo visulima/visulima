@@ -49,7 +49,7 @@ export const getContinents = (): string[] => {
         continents.add(region.continent);
     });
 
-    return [...continents].toSorted();
+    return [...continents].toSorted((a, b) => a.localeCompare(b));
 };
 
 /**
@@ -66,7 +66,7 @@ export const getSubregions = (continent?: string): string[] => {
         }
     });
 
-    return [...subregions].toSorted();
+    return [...subregions].toSorted((a, b) => a.localeCompare(b));
 };
 
 /**
@@ -83,7 +83,7 @@ export const getIntermediaryRegions = (continent?: string): string[] => {
         }
     });
 
-    return [...intermediaries].toSorted();
+    return [...intermediaries].toSorted((a, b) => a.localeCompare(b));
 };
 
 /**
