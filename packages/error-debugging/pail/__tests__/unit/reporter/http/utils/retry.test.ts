@@ -28,14 +28,14 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockResolvedValueOnce(mockResponse);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 3, 1000, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 3, 1000, true);
 
         await vi.runAllTimersAsync();
         await promise;
 
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch).toHaveBeenCalledWith("https://api.example.com/logs", {
-            body: "{\"test\": \"data\"}",
+            body: '{"test": "data"}',
             headers: { "Content-Type": "application/json" },
             method: "POST",
         });
@@ -49,7 +49,7 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockRejectedValueOnce(mockError).mockRejectedValueOnce(mockError).mockResolvedValueOnce(mockResponse);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 2, 100, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 2, 100, true);
 
         await vi.runAllTimersAsync();
         await promise;
@@ -64,7 +64,7 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockRejectedValue(mockError);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 2, 100, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 2, 100, true);
 
         promise.catch(() => {
             // Ignore errors
@@ -90,7 +90,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             1,
             1000,
             true, // respectRateLimit
@@ -113,7 +113,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             1,
             1000,
             true, // respectRateLimit
@@ -137,7 +137,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             true,
@@ -165,7 +165,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             true,
@@ -191,7 +191,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             true,
@@ -203,7 +203,7 @@ describe(sendWithRetry, () => {
 
         expect(onDebugRequestResponse).toHaveBeenCalledWith({
             req: {
-                body: "{\"test\": \"data\"}",
+                body: '{"test": "data"}',
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
                 url: "https://api.example.com/logs",
@@ -224,7 +224,7 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockRejectedValue(mockError);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 2, 100, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 2, 100, true);
 
         promise.catch(() => {
             // Ignore errors
@@ -248,7 +248,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             false, // respectRateLimit = false
@@ -272,7 +272,7 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockResolvedValueOnce(mockResponse500).mockResolvedValueOnce(mockResponse200);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 1, 100, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 1, 100, true);
 
         await vi.runAllTimersAsync();
         await promise;
@@ -307,7 +307,7 @@ describe(sendWithRetry, () => {
 
         mockFetch.mockResolvedValueOnce(mockResponse);
 
-        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 0, 1000, true);
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, '{"test": "data"}', 0, 1000, true);
 
         await vi.runAllTimersAsync();
         await promise;
@@ -316,7 +316,7 @@ describe(sendWithRetry, () => {
 
         const callArgs = mockFetch.mock.calls[0][1];
 
-        expect(callArgs.body).toBe("{\"test\": \"data\"}");
+        expect(callArgs.body).toBe('{"test": "data"}');
     });
 
     it("should stop retrying after max retries on 5xx errors", async () => {
@@ -331,7 +331,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             2,
             100,
             true,
@@ -368,7 +368,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             true,
@@ -401,7 +401,7 @@ describe(sendWithRetry, () => {
             "https://api.example.com/logs",
             "POST",
             { "Content-Type": "application/json" },
-            "{\"test\": \"data\"}",
+            '{"test": "data"}',
             0,
             1000,
             true,

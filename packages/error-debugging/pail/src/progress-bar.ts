@@ -232,8 +232,8 @@ export class ProgressBar {
             const completeChars = Array.isArray(this.options.barCompleteChar) ? this.options.barCompleteChar : undefined;
             const incompleteChars = Array.isArray(this.options.barIncompleteChar) ? this.options.barIncompleteChar : undefined;
 
-            const completeChar
-                = completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
+            const completeChar =
+                completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
             const incompleteChar = incompleteChars?.[0] ?? (typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░");
             const completeLength = completeChars?.length ?? 1;
 

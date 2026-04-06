@@ -1,10 +1,10 @@
 {
-  "name": "pail-esm",
-  "private": true,
-  "description": "ESM version",
-  "type": "module",
-  "dependencies": {
-    "@visulima/pail": "workspace:*"
-  },
-  "devDependencies": {}
+    "name": "pail-esm",
+    "private": true,
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/pail": "workspace:*"
+    },
+    "devDependencies": {}
 }
