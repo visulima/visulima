@@ -10,13 +10,10 @@ type RollbackString = { index: number; string: string };
 const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrings: string[]): boolean => {
     // eslint-disable-next-line no-plusplus
     for (let s = 0; s < rollbackStrings.length; ++s) {
-        // eslint-disable-next-line security/detect-object-injection
         let currentString = (rollbackStrings[s] as RollbackString).string; // starting with the rolled back string
-        // eslint-disable-next-line security/detect-object-injection
         let patternIndex = (rollbackStrings[s] as RollbackString).index;
 
         while (patternIndex < patternSubstrings.length) {
-            // eslint-disable-next-line security/detect-object-injection
             const patternSubstring = patternSubstrings[patternIndex] as string;
 
             if (!currentString.includes(patternSubstring)) {
@@ -36,7 +33,6 @@ const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrin
             // eslint-disable-next-line no-plusplus
             patternIndex++;
 
-            // eslint-disable-next-line security/detect-object-injection
             while (patternSubstrings[patternIndex] === "") {
                 // eslint-disable-next-line no-plusplus
                 patternIndex++;
@@ -82,7 +78,6 @@ const wildcard = (
     let currentString = input;
 
     // find pattern beginning
-    // eslint-disable-next-line security/detect-object-injection
     while (patternSubstrings[patternIndex] === "") {
         // eslint-disable-next-line no-plusplus
         patternIndex++;
@@ -101,7 +96,6 @@ const wildcard = (
     const rollbackStrings: RollbackString[] = [];
 
     while (patternIndex < patternSubstrings.length) {
-        // eslint-disable-next-line security/detect-object-injection
         const patternSubstring = patternSubstrings[patternIndex] as string;
 
         if (!currentString.includes(patternSubstring)) {
@@ -122,7 +116,6 @@ const wildcard = (
         // eslint-disable-next-line no-plusplus
         patternIndex++;
 
-        // eslint-disable-next-line security/detect-object-injection
         while (patternSubstrings[patternIndex] === "") {
             // eslint-disable-next-line no-plusplus
             patternIndex++;
