@@ -6,10 +6,10 @@ import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
- * This function takes an object of {@link ITerm2FileProps} and constructs a semicolon-separated
+ * This function takes an object of {@link ITerm2FileProperties} and constructs a semicolon-separated
  * string of key-value pairs (e.g., `name=...;size=...;inline=1`).
  * This formatted string is then used as part of commands like `File=` or `MultipartFile=`.
- * @param properties An object containing a subset of {@link ITerm2FileProps}.
+ * @param properties An object containing a subset of {@link ITerm2FileProperties}.
  * Only properties that are set in this object will be included in the output string.
  * @returns A string of semicolon-separated key-value pairs for iTerm2 file properties.
  * Returns an empty string if no relevant properties are provided in the `props` object.
@@ -88,15 +88,15 @@ const formatITerm2FileProperties = (properties: Partial<ITerm2FileProperties>): 
  * - `File=[PROPERTIES]` (if content is not provided directly, e.g., for a download announcement)
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- * @see {@link ITerm2FileProps} for property details.
- * @see {@link iTerm2} for the function that wraps this payload into a full escape sequence.
+ * @see {@link ITerm2FileProperties} for property details.
+ * @see `iTerm2` for the function that wraps this payload into a full escape sequence.
  */
 export class ITerm2File implements IITerm2Payload {
     private readonly fileProps: ITerm2FileProperties;
 
     /**
      * Constructs an `ITerm2File` payload object.
-     * @param properties An object containing properties for the file/image, as defined by {@link ITerm2FileProps}.
+     * @param properties An object containing properties for the file/image, as defined by {@link ITerm2FileProperties}.
      * The `name` property within `props` should be pre-Base64 encoded by the caller if it might
      * contain special characters (like `;`, `=`, or non-ASCII characters).
      * If `fileData` is provided, `props.content` will be overridden, and `props.size` will be
@@ -196,7 +196,7 @@ export class ITerm2FilePart implements IITerm2Payload {
  * This command initiates a transfer; the actual file data is sent in subsequent `FilePart` commands.
  *
  * Implements {@link IITerm2Payload} for use with the generic `iTerm2` function.
- * @see {@link ITerm2FileProps} for property details (omitting `content`).
+ * @see {@link ITerm2FileProperties} for property details (omitting `content`).
  * @see {@link ITerm2FilePart} for sending file chunks.
  * @see {@link ITerm2FileEnd} for finalizing the transfer.
  */

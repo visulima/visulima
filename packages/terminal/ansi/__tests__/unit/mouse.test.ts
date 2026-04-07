@@ -161,7 +161,7 @@ describe(mouseSgrSequence, () => {
         const y = 0;
 
         // Expect: ESC[<0;1;1M
-        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
+        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}M`);
     });
 
     it("should generate correct SGR sequence for right click release at (5,8)", () => {
@@ -172,7 +172,7 @@ describe(mouseSgrSequence, () => {
         const y = 8;
 
         // Expect: ESC[<2;6;9m
-        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
+        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}m`);
     });
 
     it("should generate correct SGR sequence for motion with middle button at (15,25) with Ctrl", () => {
@@ -183,7 +183,7 @@ describe(mouseSgrSequence, () => {
         const y = 25;
 
         // Expect: ESC[<49;16;26M
-        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
+        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}M`);
     });
 
     it("should return empty string for invalid Cb in SGR", () => {
@@ -199,7 +199,7 @@ describe(mouseSgrSequence, () => {
         const y = 999; // 0-indexed, so 1000th pixel
 
         // Expect: ESC[<0;1000;1000M
-        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
+        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}M`);
     });
 
     it("should generate correct SGR sequence with all modifiers for press", () => {
@@ -212,7 +212,7 @@ describe(mouseSgrSequence, () => {
         const y = 20;
 
         // Expect: ESC[<62;11;21M
-        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}M`);
+        expect(mouseSgrSequence(callback, x, y, false)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}M`);
     });
 
     it("should generate correct SGR sequence with all modifiers for release", () => {
@@ -228,7 +228,7 @@ describe(mouseSgrSequence, () => {
         const y = 20;
 
         // Expect: ESC[<31;11;21m
-        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
+        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}m`);
     });
 
     it("should generate correct SGR sequence for motion during a release event (uncommon but possible)", () => {
@@ -239,7 +239,7 @@ describe(mouseSgrSequence, () => {
         const y = 1;
 
         // Expect: ESC[<40;2;2m (note the 'm' for release)
-        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${callback};${x + 1};${y + 1}m`);
+        expect(mouseSgrSequence(callback, x, y, true)).toBe(`${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}m`);
     });
 });
 

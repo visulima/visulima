@@ -32,26 +32,14 @@ export default createConfig(
     {
         files: ["./src/mode.ts", "./src/status.ts"],
         rules: {
+            // Public API names contain "Ext" and "Param" abbreviations that cannot be renamed without breaking changes
             "unicorn/prevent-abbreviations": "off",
         },
     },
     {
-        files: ["./src/**/*.ts"],
+        files: ["./__tests__/unit/mode.test.ts"],
         rules: {
-            "jsdoc/match-description": "off", // TODO: fix this later
-            "jsdoc/no-undefined-types": "off",
-        },
-    },
-    {
-        files: ["__tests__/**/*.ts"],
-        rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/require-await": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "e18e/prefer-static-regex": "off",
+            // Tests for deprecated APIs that must remain to verify backward compatibility
             "sonarjs/deprecation": "off",
         },
     },

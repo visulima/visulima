@@ -274,8 +274,8 @@ export const DA1: string = requestPrimaryDeviceAttributes;
 
 /**
  * Generates the response sequence for Primary Device Attributes (DA1).
- * Sequence: `CSI ? Ps ; ... c`
- *
+ * Sequence: `CSI ? Ps ; ... c`.
+ * @remarks
  * Common attributes include:
  * - 1  132 columns
  * - 2  Printer port
@@ -293,7 +293,7 @@ export const DA1: string = requestPrimaryDeviceAttributes;
  * - 42 ISO Latin-2 character set
  * - 44 PCTerm
  * - 45 Soft key map
- * - 46 ASCII emulation
+ * - 46 ASCII emulation.
  * @param attributes Numeric attribute codes.
  * @returns The DA1 response sequence.
  * @example
@@ -657,8 +657,9 @@ export const RequestLightDarkReport: string = `${CSI}?996n`;
 /**
  * Generates a Light/Dark Color Scheme Report sequence.
  * This sequence reports the terminal's operating system light/dark color preference.
- * - `CSI ? 997 ; 1 n` for dark mode
- * - `CSI ? 997 ; 2 n` for light mode
+ * @remarks
+ * - `CSI ? 997 ; 1 n` for dark mode.
+ * - `CSI ? 997 ; 2 n` for light mode.
  * @param dark Whether the color scheme is dark mode (true) or light mode (false).
  * @returns The light/dark report sequence string.
  * @see {@link https://contour-terminal.org/vt-extensions/color-palette-update-notifications/}

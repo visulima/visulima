@@ -35,7 +35,7 @@ const stringToHex = (input: string): string => {
 
 /**
  * Requests Termcap/Terminfo (XTGETTCAP) strings from the terminal.
- * Sequence: DCS + q &lt;Pt> ST
+ * Sequence: `DCS + q Pt ST`.
  * @param caps A list of termcap/terminfo capability names (e.g., "Co", "li", "cols").
  * @returns The XTGETTCAP sequence string.
  * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Device-Control-Strings-plus-q

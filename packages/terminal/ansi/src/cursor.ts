@@ -149,7 +149,7 @@ export const cursorForward = (count = 1): string => `${CSI}${String(count)}C`;
  * This is a DEC private mode. Visibility can be restored using {@link cursorShow} (`CSI ?25h`).
  * The appearance of the cursor (when visible) can often be controlled by {@link setCursorStyle}.
  * @see {@link cursorShow}
- * @see {@link TextCursorEnableMode} in `mode.ts` (represents DEC Mode 25).
+ * @see `TextCursorEnableMode` in `mode.ts` (represents DEC Mode 25).
  * @returns The ANSI escape sequence `CSI ?25l`.
  */
 export const cursorHide: string = `${CSI}?25l`;
@@ -306,7 +306,7 @@ export const cursorSave: string = isTerminalApp ? SAVE_CURSOR_DEC : `${ESC}s`;
  * This is a DEC private mode. Visibility can be hidden using {@link cursorHide} (`CSI ?25l`).
  * The appearance of the cursor (when visible) can often be controlled by {@link setCursorStyle}.
  * @see {@link cursorHide}
- * @see {@link TextCursorEnableMode} in `mode.ts` (represents DEC Mode 25).
+ * @see `TextCursorEnableMode` in `mode.ts` (represents DEC Mode 25).
  * @returns The ANSI escape sequence `CSI ?25h`.
  */
 export const cursorShow: string = `${CSI}?25h`;

@@ -206,7 +206,7 @@ export const resizeTextAreaChars = (height: number, width: number): string => xt
  * This function uses `XTermWindowOp.REQUEST_WINDOW_SIZE_WIN_OP_COMPAT` (14), which corresponds to
  * `XTermWindowOp.REPORT_TEXT_AREA_SIZE_CHARS` in XTerm.
  *
- * Sequence: `CSI 14 t` (which triggers the report `CSI 4 ; height ; width t`)
+ * Sequence: `CSI 14 t` (which triggers the report `CSI 4 ; height ; width t`).
  * @returns The ANSI escape sequence to request the text area size in characters.
  * @see xtermWindowOp
  * @see XTermWindowOp.REPORT_TEXT_AREA_SIZE_CHARS
@@ -227,7 +227,7 @@ export const requestTextAreaSizeChars = (): string => xtermWindowOp(XTermWindowO
  * The terminal is expected to respond with a sequence like `CSI 6 ; height ; width t`,
  * where height and width are the dimensions of a single character cell in pixels.
  *
- * Sequence: `CSI 16 t` (which triggers the report `CSI 6 ; height ; width t`)
+ * Sequence: `CSI 16 t` (which triggers the report `CSI 6 ; height ; width t`).
  * @returns The ANSI escape sequence to request the cell size in pixels.
  * @see xtermWindowOp
  * @see XTermWindowOp.REPORT_CELL_SIZE_PIXELS
@@ -246,7 +246,7 @@ export const requestCellSizePixels = (): string => xtermWindowOp(XTermWindowOp.R
  * Requests a report of the terminal window's text area size in pixels.
  * The terminal is expected to respond with a sequence like `CSI 8 ; height ; width t`.
  *
- * Sequence: `CSI 18 t` (which triggers the report `CSI 8 ; height ; width t`)
+ * Sequence: `CSI 18 t` (which triggers the report `CSI 8 ; height ; width t`).
  * @returns The ANSI escape sequence to request the text area size in pixels.
  * @see xtermWindowOp
  * @see XTermWindowOp.REPORT_TEXT_AREA_SIZE_PIXELS
@@ -408,7 +408,7 @@ export const restoreMaximizedWindow = (): string => xtermWindowOp(XTermWindowOp.
  * Some terminals might use `CSI 10 t` for a general maximize/toggle.
  * This function uses `XTermWindowOp.MAXIMIZE_WINDOW` which is 10.
  *
- * Sequence: `CSI 10 t` (using `XTermWindowOp.MAXIMIZE_WINDOW`)
+ * Sequence: `CSI 10 t` (using `XTermWindowOp.MAXIMIZE_WINDOW`).
  * @returns The ANSI escape sequence to maximize the window.
  * @see xtermWindowOp
  * @see XTermWindowOp.MAXIMIZE_WINDOW
