@@ -43,11 +43,12 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
 
     try {
         sourceStat = await lstat(source);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        error.message = error.message.replace("lstat", "ensureLink");
+    } catch (error: unknown) {
+        const nodeError = error as NodeJS.ErrnoException;
 
-        throw error;
+        nodeError.message = nodeError.message.replace("lstat", "ensureLink");
+
+        throw nodeError;
     }
 
     if (destinationStat && isStatsIdentical(sourceStat, destinationStat)) {

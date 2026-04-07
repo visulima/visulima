@@ -30,6 +30,7 @@ export const detect = (content: string): typeof EOL | null => {
     const matched = content.match(regDetect);
 
     if (!matched || matched.length === 0) {
+        // eslint-disable-next-line unicorn/no-null -- null return is part of the public API contract
         return null;
     }
 

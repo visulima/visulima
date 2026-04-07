@@ -9,13 +9,13 @@ import isAccessibleSync from "../is-accessible-sync";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
 
-type DecompressionMethod = (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => void;
+type DecompressionMethod = (buffer: Buffer) => Buffer;
 
 const decompressionMethods: Record<string, DecompressionMethod> = {
-    brotli: brotliDecompressSync,
-    gzip: unzipSync,
+    brotli: brotliDecompressSync as DecompressionMethod,
+    gzip: unzipSync as DecompressionMethod,
     none: (buffer: Buffer) => buffer,
-} as const;
+};
 
 /**
  * Synchronously reads the entire contents of a file.
@@ -71,7 +71,8 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     // @ts-expect-error - TS doesn't like our typed `encoding` option
     const content = nodeReadFileSync(path, flag ? { encoding, flag } : { encoding });
 
-    const decompressed = (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content);
+    const decompress = decompressionMethods[compression ?? "none"] as DecompressionMethod;
+    const decompressed = decompress(content as Buffer);
 
     return (buffer ? decompressed : decompressed.toString()) as ContentType<O>;
 };

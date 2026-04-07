@@ -5,9 +5,9 @@ import type { JsonReviver, ReadJsonOptions } from "../types";
 import parseJson from "../utils/parse-json";
 import readFileSync from "./read-file-sync";
 
-function readJsonSync<T extends JsonValue>(path: URL | string, options?: ReadJsonOptions): T;
+function readJsonSync(path: URL | string, options?: ReadJsonOptions): JsonValue;
 
-function readJsonSync<T extends JsonValue>(path: URL | string, reviver: JsonReviver, options?: ReadJsonOptions): T;
+function readJsonSync(path: URL | string, reviver: JsonReviver, options?: ReadJsonOptions): JsonValue;
 
 /**
  * Synchronously reads a JSON file and then parses it into an object.

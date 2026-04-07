@@ -52,9 +52,8 @@ const writeJson = async (path: URL | string, data: unknown, options: WriteJsonOp
             }
 
             trailingNewline = file.endsWith("\n") ? "\n" : "";
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            if (error.code !== "ENOENT") {
+        } catch (error: unknown) {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
                 throw error;
             }
         }

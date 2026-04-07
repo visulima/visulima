@@ -125,7 +125,7 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "ensureLink") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(() => { function_(sourcePath, destinationPath); }).rejects.toThrow(Error);
+            await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => { function_(sourcePath, destinationPath); }).toThrow(Error);

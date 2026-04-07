@@ -245,6 +245,8 @@ describe(walk, () => {
     });
 
     it("should not crash on symlinks pointing to files with default options", async () => {
+        expect.hasAssertions();
+
         const temporaryDirectory = resolve(fixture, "_tmp_symlink_file_test");
 
         await mkdir(resolve(temporaryDirectory, "subdir"), { recursive: true });
@@ -269,6 +271,8 @@ describe(walk, () => {
     });
 
     it("should not crash on symlinks pointing to files with includeFiles=false", async () => {
+        expect.hasAssertions();
+
         const temporaryDirectory = resolve(fixture, "_tmp_symlink_nofiles_test");
 
         await mkdir(resolve(temporaryDirectory, "subdir"), { recursive: true });
@@ -292,6 +296,8 @@ describe(walk, () => {
     });
 
     it("walkSync should not crash on symlinks pointing to files", () => {
+        expect.hasAssertions();
+
         const temporaryDirectory = resolve(fixture, "_tmp_symlink_sync_test");
         const { mkdirSync, rmSync, symlinkSync, writeFileSync } = require("node:fs");
 

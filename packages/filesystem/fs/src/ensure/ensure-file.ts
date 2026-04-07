@@ -42,13 +42,12 @@ const ensureFile = async (filePath: URL | string): Promise<void> => {
         const stat = await lstat(filePath);
 
         if (!stat.isFile()) {
-            throw new Error(`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`);
+            throw new Error(`Ensure path exists, expected 'file', got '${String(getFileInfoType(stat))}'`);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
         // if file not exists
 
-        if (error.code === "ENOENT") {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
             // ensure dir exists
             await ensureDir(dirname(toPath(filePath)));
             // create file

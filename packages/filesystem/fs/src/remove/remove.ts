@@ -42,7 +42,7 @@ const remove = async (path: URL | string, options: RetryOptions = {}): Promise<v
     }
 
     try {
-        await rm(path, { force: true, maxRetries: options?.maxRetries, recursive: true, retryDelay: options?.retryDelay });
+        await rm(path, { force: true, maxRetries: options.maxRetries, recursive: true, retryDelay: options.retryDelay });
     } catch {
         /* empty */
     }

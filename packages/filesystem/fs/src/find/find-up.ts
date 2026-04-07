@@ -88,16 +88,16 @@ const findUp = async (
         return [name];
     };
 
-    if (options.allowSymlinks === undefined) {
-        // eslint-disable-next-line no-param-reassign
-        options.allowSymlinks = true;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.allowSymlinks ??= true;
 
     const statFunction = options.allowSymlinks ? stat : lstat;
 
     while (directory && directory !== stopAt && directory !== root) {
         // eslint-disable-next-line no-await-in-loop
-        for await (let fileName of await getMatchers(directory)) {
+        const matchers = await getMatchers(directory);
+
+        for (let fileName of matchers) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
             }
@@ -115,6 +115,7 @@ const findUp = async (
             const filePath = isAbsolute(fileName as string) ? (fileName as string) : resolve(directory, fileName as string);
 
             try {
+                // eslint-disable-next-line no-await-in-loop
                 const stats = await statFunction(filePath);
 
                 if ((type === "file" && stats.isFile()) || (type === "directory" && stats.isDirectory())) {

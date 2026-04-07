@@ -23,21 +23,22 @@ const generateCodeFrame = (source: string, location: CodeFrameLocation, options?
         },
     );
 
+const JSON_POSITION_REGEX = /in JSON at position (\d+)(?: \(line (\d+) column (\d+)\))?$/;
+
 const getErrorLocation = (source: string, message: string): CodeFrameLocation | undefined => {
-    const match = /in JSON at position (?<index>\d+)(?: \(line (?<line>\d+) column (?<column>\d+)\))?$/.exec(message);
+    const match = JSON_POSITION_REGEX.exec(message);
 
     if (!match) {
         return undefined;
     }
 
-    // eslint-disable-next-line prefer-const
-    let { column, index, line } = match.groups as { column?: string; index: number | string; line?: string };
+    const [, indexString, lineString, columnString] = match;
 
-    if (line && column) {
-        return { column: Number(column), line: Number(line) };
+    if (lineString && columnString) {
+        return { column: Number(columnString), line: Number(lineString) };
     }
 
-    index = Number(index);
+    let index = Number(indexString);
 
     // The error location can be out of bounds.
     if (index === source.length) {
@@ -47,17 +48,19 @@ const getErrorLocation = (source: string, message: string): CodeFrameLocation | 
     return indexToLineColumn(source, index);
 };
 
+// The token is always quoted after Node.js 20, but we handle both cases for compatibility
+// eslint-disable-next-line regexp/no-potentially-useless-backreference
+const UNEXPECTED_TOKEN_REGEX = /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/;
+
 const addCodePointToUnexpectedToken = (message: string): string =>
     message.replace(
-        // The token is always quoted after Node.js 20, but we handle both cases for compatibility
-        // eslint-disable-next-line regexp/no-potentially-useless-backreference
-        /(?<=^Unexpected token )(?<quote>')?(.)\k<quote>/,
+        UNEXPECTED_TOKEN_REGEX,
 
         (_, _quote, token: string) => `"${token}"(${getCodePoint(token)})`,
     );
 
-function parseJson<T = JsonValue>(string: string, filename?: string, options?: CodeFrameOptions): T;
-function parseJson<T = JsonValue>(string: string, reviver: JsonReviver, fileName?: string, options?: CodeFrameOptions): T;
+function parseJson(string: string, filename?: string, options?: CodeFrameOptions): JsonValue;
+function parseJson(string: string, reviver: JsonReviver, fileName?: string, options?: CodeFrameOptions): JsonValue;
 
 /**
  * Parses a JSON string, constructing the JavaScript value or object described by the string.
@@ -128,10 +131,9 @@ function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string
     let message: string;
 
     try {
-        return JSON.parse(string, reviver);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        message = error.message;
+        return JSON.parse(string, reviver) as T;
+    } catch (error: unknown) {
+        message = (error as Error).message;
     }
 
     let location: CodeFrameLocation | undefined;

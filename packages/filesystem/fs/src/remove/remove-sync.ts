@@ -37,7 +37,7 @@ const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     }
 
     try {
-        rmSync(path, { force: true, maxRetries: options?.maxRetries, recursive: true, retryDelay: options?.retryDelay });
+        rmSync(path, { force: true, maxRetries: options.maxRetries, recursive: true, retryDelay: options.retryDelay });
     } catch {
         /* empty */
     }

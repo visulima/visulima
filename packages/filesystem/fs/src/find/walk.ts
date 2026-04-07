@@ -87,8 +87,14 @@ export default async function* walk(
         return;
     }
 
-    const mappedMatch = match ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
-    const mappedSkip = skip ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
+    const mappedMatch = match
+        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
+        ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        : undefined;
+    const mappedSkip = skip
+        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
+        ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        : undefined;
 
     // eslint-disable-next-line no-param-reassign
     directory = resolve(toPath(directory));
@@ -102,21 +108,24 @@ export default async function* walk(
     }
 
     try {
-        for await (const entry of await readdir(directory, {
+        const entries = await readdir(directory, {
             withFileTypes: true,
-        })) {
+        });
+
+        for (const entry of entries) {
             let path = join(directory, entry.name);
 
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
+                    // eslint-disable-next-line no-await-in-loop
                     path = await realpath(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {
-                        isDirectory: entry.isDirectory,
+                        isDirectory: () => entry.isDirectory(),
 
-                        isFile: entry.isFile,
+                        isFile: () => entry.isFile(),
 
-                        isSymbolicLink: entry.isSymbolicLink,
+                        isSymbolicLink: () => entry.isSymbolicLink(),
                         name: entry.name,
                         path,
                     };
