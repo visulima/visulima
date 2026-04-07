@@ -27,9 +27,7 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/require-await": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
             "e18e/ban-dependencies": "off",
-            "e18e/prefer-static-regex": "off",
             "jsdoc/match-description": "off",
             "sonarjs/no-nested-functions": "off",
             "sonarjs/os-command": "off",
@@ -47,7 +45,6 @@ export default createConfig(
         // External dependency types not resolvable by ESLint's type checker
         files: ["./src/find-tsconfig.ts"],
         rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
         },
@@ -62,7 +59,6 @@ export default createConfig(
         // External dependency types not resolvable by ESLint's type checker
         files: ["./src/read-tsconfig.ts"],
         rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-call": "off",
         },
     },
