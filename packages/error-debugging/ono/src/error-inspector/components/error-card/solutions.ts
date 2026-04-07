@@ -27,7 +27,6 @@ const solutions = async (
 
     const firstTrace: Trace | undefined = parseStacktrace(error, { frameLimit: 1 })[0];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- sequential await requires for...of
     for (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
         if (hint) {
             break;

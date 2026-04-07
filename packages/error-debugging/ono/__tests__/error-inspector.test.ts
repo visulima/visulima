@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import Editors from "../../../shared/utils/editors";
 import template from "../src/error-inspector";
 
 describe("error inspector template", () => {
@@ -111,7 +112,7 @@ describe("error inspector template", () => {
         expect.assertions(1);
 
         const error = new Error("Test error");
-        const html = await template(error, undefined);
+        const html = await template(error);
 
         expectTypeOf(html).toBeString();
 
@@ -136,7 +137,7 @@ describe("error inspector template", () => {
         const error = new Error("Test error");
 
         const html = await template(error, [], {
-            editor: "vscode" as any,
+            editor: Editors.vscode,
             openInEditorUrl: "/editor",
         });
 

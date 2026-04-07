@@ -113,7 +113,7 @@ describe("stack page", () => {
             expect.assertions(1);
 
             const error = new Error("Test error");
-            const page = await createStackPage(error, undefined);
+            const page = await createStackPage(error);
 
             expect(page.code.html).toContain("Test error");
         });

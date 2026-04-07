@@ -1,4 +1,4 @@
-import type { RequestListener } from "node:http";
+import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
 import { createServer, get as httpGet } from "node:http";
 
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -329,36 +329,39 @@ describe("server middleware", () => {
 
             const middleware = createOpenInEditorMiddleware();
 
-            let capturedRequest: any;
+            let capturedRequest: IncomingMessage | undefined;
 
             // Override the middleware to capture calls
-            const testMiddleware = (request: any, response: any, next: any) => {
+            const testMiddleware: RequestListener = (request: IncomingMessage, response: ServerResponse) => {
                 capturedRequest = request;
 
-                middleware(request, response, next);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget in test middleware
+                middleware(request, response);
             };
 
-            const server = createServer(testMiddleware as RequestListener);
+            const server = createServer(testMiddleware);
 
             // eslint-disable-next-line vitest/no-test-return-statement
             return new Promise<void>((resolve) => {
                 server.listen(0, () => {
-                    const { port } = server.address() as any;
+                    const { port } = server.address() as { port: number };
 
                     // Make a request
 
-                    const request = httpGet(`http://localhost:${port}/?file=/test.js&line=10`, (response: any) => {
+                    const request = httpGet(`http://localhost:${String(port)}/?file=/test.js&line=10`, (response: IncomingMessage) => {
                         // eslint-disable-next-line unused-imports/no-unused-vars
                         let data = "";
 
-                        response.on("data", (chunk: any) => {
-                            data += chunk;
+                        // eslint-disable-next-line sonarjs/no-nested-functions -- Node.js HTTP event handler
+                        response.on("data", (chunk: Buffer) => {
+                            data += String(chunk);
                         });
 
+                        // eslint-disable-next-line sonarjs/no-nested-functions -- Node.js HTTP event handler in integration test
                         response.on("end", () => {
                             server.close();
 
-                            expect(capturedRequest.url).toContain("file=");
+                            expect(capturedRequest?.url).toContain("file=");
 
                             resolve();
                         });
