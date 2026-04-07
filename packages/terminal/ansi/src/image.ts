@@ -79,19 +79,15 @@ export interface ImageOptions {
  * @see {@link ImageOptions}
  */
 export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
-    if (!data) {
-        return "";
-    }
-
     let returnValue = `${OSC}1337;File=inline=1`;
 
     if (options.width !== undefined) {
         // Check for undefined to allow 0 or "0px"
-        returnValue += `;width=${options.width}`;
+        returnValue += `;width=${String(options.width)}`;
     }
 
     if (options.height !== undefined) {
-        returnValue += `;height=${options.height}`;
+        returnValue += `;height=${String(options.height)}`;
     }
 
     // preserveAspectRatio defaults to true. Only add the parameter if it's false.

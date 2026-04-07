@@ -6,6 +6,9 @@ import { BEL, OSC, ST } from "./constants";
  * @param title The title string to validate
  * @returns The sanitized title string
  */
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+const TITLE_SANITIZE_REGEX = /[\u0007\u001B]/g;
+
 const validateTitle = (title: string): string => {
     if (typeof title !== "string") {
         throw new TypeError("Title must be a string");
@@ -13,8 +16,7 @@ const validateTitle = (title: string): string => {
 
     // Remove or escape potentially problematic characters
     // OSC sequences can be terminated by BEL or ST, so we should escape these
-    // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-    return title.replaceAll(/[\u0007\u001B]/g, "");
+    return title.replaceAll(TITLE_SANITIZE_REGEX, "");
 };
 
 /**

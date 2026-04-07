@@ -276,7 +276,7 @@ export const mouseSgrSequence = (callback: number, x: number, y: number, isRelea
     // Coordinates are 1-based for the protocol
     const finalChar = isRelease ? "m" : "M";
 
-    return `${ESC}[<${callback};${x + 1};${y + 1}${finalChar}`;
+    return `${ESC}[<${String(callback)};${String(x + 1)};${String(y + 1)}${finalChar}`;
 };
 
 // Mouse Reporting Mode Control Sequences

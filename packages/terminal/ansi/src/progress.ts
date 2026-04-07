@@ -19,7 +19,7 @@ export const resetProgressBar: string = `${OSC}9;4;0${BEL}`;
 export const setProgressBar = (percentage: number): string => {
     const clamped = Math.min(Math.max(0, percentage), 100);
 
-    return `${OSC}9;4;1;${clamped}${BEL}`;
+    return `${OSC}9;4;1;${String(clamped)}${BEL}`;
 };
 
 /**
@@ -33,7 +33,7 @@ export const setProgressBar = (percentage: number): string => {
 export const setErrorProgressBar = (percentage: number): string => {
     const clamped = Math.min(Math.max(0, percentage), 100);
 
-    return `${OSC}9;4;2;${clamped}${BEL}`;
+    return `${OSC}9;4;2;${String(clamped)}${BEL}`;
 };
 
 /**
@@ -55,5 +55,5 @@ export const setIndeterminateProgressBar: string = `${OSC}9;4;3${BEL}`;
 export const setWarningProgressBar = (percentage: number): string => {
     const clamped = Math.min(Math.max(0, percentage), 100);
 
-    return `${OSC}9;4;4;${clamped}${BEL}`;
+    return `${OSC}9;4;4;${String(clamped)}${BEL}`;
 };

@@ -49,7 +49,7 @@ const formatITerm2FileProperties = (properties: Partial<ITerm2FileProperties>): 
     }
 
     if (properties.size !== undefined) {
-        options.push(`size=${properties.size}`);
+        options.push(`size=${String(properties.size)}`);
     }
 
     if (properties.width !== undefined) {
@@ -117,9 +117,7 @@ export class ITerm2File implements IITerm2Payload {
 
             this.fileProps.content = Buffer.from(fileData).toString("base64");
 
-            if (this.fileProps.size === undefined) {
-                this.fileProps.size = fileData.byteLength;
-            }
+            this.fileProps.size ??= fileData.byteLength;
 
             // Verify size consistency if both are provided
             if (this.fileProps.size !== fileData.byteLength) {

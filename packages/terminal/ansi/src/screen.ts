@@ -24,7 +24,7 @@ import { CSI, SEP } from "./constants";
  * process.stdout.write(insertLine(5)); // CSI 5L
  * ```
  */
-export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}L`;
+export const insertLine = (count = 1): string => `${CSI}${count <= 1 ? "" : String(count)}L`;
 
 /**
  * Deletes a specified number of lines starting from the line with the cursor.
@@ -50,7 +50,7 @@ export const insertLine = (count = 1): string => `${CSI + (count <= 1 ? "" : cou
  * process.stdout.write(deleteLine(3)); // CSI 3M
  * ```
  */
-export const deleteLine = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}M`;
+export const deleteLine = (count = 1): string => `${CSI}${count <= 1 ? "" : String(count)}M`;
 
 /**
  * Sets the top and bottom margins, defining the scrolling region.
@@ -83,10 +83,10 @@ export const setTopBottomMargins = (top?: number | null, bottom?: number | null)
     const bottomString = bottom && bottom > 0 ? bottom.toString() : "";
 
     if (topString === "" && bottomString === "") {
-        return `${CSI + SEP}r`; // CSI ;r (reset to default)
+        return `${CSI}${SEP}r`; // CSI ;r (reset to default)
     }
 
-    return `${CSI + topString + SEP + bottomString}r`;
+    return `${CSI}${topString}${SEP}${bottomString}r`;
 };
 
 /**
@@ -122,10 +122,10 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
     const rightString = right && right > 0 ? right.toString() : "";
 
     if (leftString === "" && rightString === "") {
-        return `${CSI + SEP}s`; // CSI ;s (reset to default)
+        return `${CSI}${SEP}s`; // CSI ;s (reset to default)
     }
 
-    return `${CSI + leftString + SEP + rightString}s`;
+    return `${CSI}${leftString}${SEP}${rightString}s`;
 };
 
 /**
@@ -152,7 +152,7 @@ export const setLeftRightMargins = (left?: number | null, right?: number | null)
  * process.stdout.write(insertCharacter(10)); // CSI 10@
  * ```
  */
-export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}@`;
+export const insertCharacter = (count = 1): string => `${CSI}${count <= 1 ? "" : String(count)}@`;
 
 /**
  * Deletes a specified number of characters starting from the current cursor position.
@@ -179,7 +179,7 @@ export const insertCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  * process.stdout.write(deleteCharacter(5)); // CSI 5P
  * ```
  */
-export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}P`;
+export const deleteCharacter = (count = 1): string => `${CSI}${count <= 1 ? "" : String(count)}P`;
 
 /**
  * Clears horizontal tab stops.
@@ -205,7 +205,7 @@ export const deleteCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" 
  * process.stdout.write(clearTabStop(3)); // CSI 3g
  * ```
  */
-export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI + mode}g`;
+export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI}${String(mode)}g`;
 
 /**
  * Requests a report of the terminal's presentation state.
@@ -232,7 +232,7 @@ export const clearTabStop = (mode: 0 | 3 = 0): string => `${CSI + mode}g`;
  * process.stdout.write(requestPresentationStateReport(1)); // CSI 1$u
  * ```
  */
-export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CSI + mode}$u`;
+export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CSI}${String(mode)}$u`;
 
 /**
  * Repeats the preceding graphic character a specified number of times.
@@ -259,4 +259,4 @@ export const requestPresentationStateReport = (mode: 0 | 1 | 2): string => `${CS
  * process.stdout.write(repeatPreviousCharacter()); // Output: BB (total 2 'B's)
  * ```
  */
-export const repeatPreviousCharacter = (count = 1): string => `${CSI + (count <= 1 ? "" : count)}b`;
+export const repeatPreviousCharacter = (count = 1): string => `${CSI}${count <= 1 ? "" : String(count)}b`;

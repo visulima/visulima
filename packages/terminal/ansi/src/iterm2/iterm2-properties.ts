@@ -32,7 +32,7 @@ export const it2Cells = (n: number): string => n.toString();
  * const sequence = `File=height=${heightInPixels}`;
  * ```
  */
-export const it2Pixels = (n: number): string => `${n}px`;
+export const it2Pixels = (n: number): string => `${String(n)}px`;
 
 /**
  * Formats a number as a string representing a dimension as a percentage for iTerm2.
@@ -45,7 +45,7 @@ export const it2Pixels = (n: number): string => `${n}px`;
  * const sequence = `File=width=${widthAsPercentage}`;
  * ```
  */
-export const it2Percent = (n: number): string => `${n}%`;
+export const it2Percent = (n: number): string => `${String(n)}%`;
 
 /**
  * Defines the interface for any iTerm2 OSC 1337 payload object.

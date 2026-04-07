@@ -90,15 +90,8 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
         return "";
     }
 
-    let hasDecReport = false;
-
-    const reportCodes = reports.map((report) => {
-        if (report.isDecReport) {
-            hasDecReport = true;
-        }
-
-        return report.reportCode.toString();
-    });
+    const hasDecReport = reports.some((report) => report.isDecReport);
+    const reportCodes = reports.map((report) => report.reportCode.toString());
 
     let seq = CSI;
 
@@ -106,7 +99,7 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
         seq += "?";
     }
 
-    return `${seq + reportCodes.join(SEP)}n`;
+    return `${seq}${reportCodes.join(SEP)}n`;
 };
 
 /**
@@ -177,7 +170,7 @@ export const cursorPositionReport = (line: number, column: number): string => {
     const r = Math.max(1, line);
     const c = Math.max(1, column);
 
-    return `${CSI + r.toString() + SEP + c.toString()}R`;
+    return `${CSI}${r.toString()}${SEP}${c.toString()}R`;
 };
 
 /**
@@ -360,7 +353,7 @@ export const reportSecondaryDeviceAttributes = (version: number, level: number, 
     const pl = Math.max(0, level);
     const pc = Math.max(0, cartridge);
 
-    return `${CSI}>${pv}${SEP}${pl}${SEP}${pc}c`;
+    return `${CSI}>${String(pv)}${SEP}${String(pl)}${SEP}${String(pc)}c`;
 };
 
 // Tertiary Device Attributes (DA3)
