@@ -256,6 +256,7 @@ const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInst
 // ── Command definition ────────────────────────────────────────────
 
 const create: Command = {
+    group: "Scaffold & Config",
     argument: {
         description: "Template to use (e.g., vis:app, create-vite, user/repo) — omit for interactive mode",
         name: "template",

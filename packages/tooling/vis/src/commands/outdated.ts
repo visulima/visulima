@@ -4,6 +4,7 @@ import { detectPm, runOutdated } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const outdated: Command = {
+    group: "Security & Health",
     argument: {
         description: "Specific packages to check (checks all if omitted)",
         name: "packages",

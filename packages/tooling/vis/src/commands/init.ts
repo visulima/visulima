@@ -204,6 +204,7 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
  * In non-interactive mode (CI, piped), creates a minimal config with secure defaults.
  */
 const init: Command = {
+    group: "Scaffold & Config",
     description: "Initialize vis.config.ts with best-practice security defaults",
     examples: [
         ["vis init", "Interactive setup wizard"],

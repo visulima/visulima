@@ -170,7 +170,12 @@ describe("tui/createDynamicOutputRenderer", () => {
         await renderIsDone;
 
         // Summary should be printed to stdout after alternate screen restores
-        expect(writeSpy).toHaveBeenCalledWith();
+        expect(writeSpy.mock.calls.length).toBeGreaterThan(0);
+
+        const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
+
+        expect(allOutput).toContain("vis run app-a:build");
+        expect(allOutput).toContain("Successfully ran target build");
     });
 
     it("should collect task output via printTaskTerminalOutput", () => {

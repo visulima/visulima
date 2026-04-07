@@ -314,6 +314,7 @@ const collectSourceFiles = (dir: string): string[] => {
  * which optimizations to apply. In non-TTY/CI mode, outputs a static report.
  */
 const optimize: Command = {
+    group: "Workspace",
     description: "Analyze and optimize dependencies using e18e replacements and @socketregistry overrides",
     examples: [
         ["vis optimize", "Interactive TUI to select and apply optimizations"],

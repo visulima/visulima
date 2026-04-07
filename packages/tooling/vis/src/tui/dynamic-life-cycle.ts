@@ -18,6 +18,8 @@ interface DynamicOutputOptions {
     /** Auto-exit config: false = stay open, true = 3s countdown, number = custom seconds */
     autoExit?: boolean | number;
     projectNames: string[];
+    /** Registry of writable stdin entries keyed by task ID, for interactive input. */
+    stdinRegistry?: Map<string, import("./types").StdinEntry>;
     tasks: Task[];
 }
 
@@ -28,7 +30,7 @@ interface DynamicOutputResult {
 }
 
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
-    const { args, autoExit = false, projectNames, tasks } = options;
+    const { args, autoExit = false, projectNames, stdinRegistry, tasks } = options;
 
     const store = new TaskStore(tasks);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
@@ -50,9 +52,20 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         }
     };
 
+    const killAllPtyProcesses = (): void => {
+        if (stdinRegistry) {
+            for (const entry of stdinRegistry.values()) {
+                entry.kill?.();
+            }
+
+            stdinRegistry.clear();
+        }
+    };
+
     const onSignal = (): void => {
         cleanup();
         clearKeepAlive();
+        killAllPtyProcesses();
 
         // Force restore terminal: leave alternate screen, show cursor
         process.stdout.write("\u001B[?1049l\u001B[?25h");
@@ -215,6 +228,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     autoExitSeconds,
                     parallelSlots,
                     projectNames,
+                    stdinRegistry: stdinRegistry ?? new Map(),
                     store,
                     targets: args.targets,
                     tasks,
@@ -230,6 +244,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             instance.waitUntilExit().then(
                 () => {
                     clearKeepAlive();
+                    killAllPtyProcesses();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
 
@@ -238,6 +253,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 },
                 () => {
                     clearKeepAlive();
+                    killAllPtyProcesses();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
                     resolveDone();

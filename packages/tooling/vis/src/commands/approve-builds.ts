@@ -7,6 +7,7 @@ import { detectPm } from "../pm-runner";
 import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
 
 const approveBuilds: Command = {
+    group: "Security & Health",
     description: "Review and approve dependencies with build scripts",
     examples: [
         ["vis approve-builds", "Scan and list unapproved build scripts"],

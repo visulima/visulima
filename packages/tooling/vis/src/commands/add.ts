@@ -241,6 +241,7 @@ const runSocketPreCheck = async (
 // ── Command ─────────────────────────────────────────────────────────
 
 const add: Command = {
+    group: "Dependencies",
     argument: {
         description: "Packages to add (e.g., react react-dom)",
         name: "packages",

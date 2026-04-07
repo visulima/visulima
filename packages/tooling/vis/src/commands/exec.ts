@@ -4,6 +4,7 @@ import { detectPm, runExec } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const exec: Command = {
+    group: "Run & Execute",
     argument: {
         description: "Command to execute followed by arguments",
         name: "command",

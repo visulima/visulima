@@ -574,6 +574,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 // ── Command ─────────────────────────────────────────────────────────
 
 const audit: Command = {
+    group: "Security & Health",
     description: "Audit installed packages for vulnerabilities and supply chain risks",
     examples: [
         ["vis audit", "Full audit of all installed packages"],

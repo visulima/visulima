@@ -5,6 +5,7 @@ import { scanDepsForTyposquats } from "../typosquats";
 import { toStringArray } from "../utils";
 
 const install: Command = {
+    group: "Dependencies",
     alias: "i",
     description: "Install dependencies using the detected package manager",
     examples: [

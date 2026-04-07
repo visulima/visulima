@@ -9,6 +9,7 @@ import { buildSocketOptions, fetchSocketReports } from "../socket-security";
 const VERSION_PREFIX_REGEX = /^[\^~>=<]+/;
 
 const analyze: Command = {
+    group: "System",
     argument: {
         description: "Package name to analyze (e.g., react)",
         name: "package",
