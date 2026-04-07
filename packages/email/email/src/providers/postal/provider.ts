@@ -38,7 +38,7 @@ const postalProvider: ProviderFactory<PostalConfig> = defineProvider((config: Po
         host: config.host,
         retries: config.retries ?? DEFAULT_RETRIES,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...(config.logger && { logger: config.logger }),
+        ...config.logger && { logger: config.logger },
     };
 
     const providerState = new ProviderState();
@@ -125,7 +125,7 @@ const postalProvider: ProviderFactory<PostalConfig> = defineProvider((config: Po
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Postal API not available or invalid API key");
                 }
 

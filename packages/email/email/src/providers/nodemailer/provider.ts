@@ -67,8 +67,10 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig> = defineProvider(
          */
 
         const convertToNodemailerOptions = (emailOptions: NodemailerEmailOptions) => {
+            // eslint-disable-next-line @stylistic/no-extra-parens
             const formatFromAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
 
+            // eslint-disable-next-line @stylistic/no-extra-parens
             const formatToAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
 
             const fromAddress = options.defaultFrom ?? emailOptions.from;

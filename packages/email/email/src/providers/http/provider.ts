@@ -95,7 +95,7 @@ const httpProvider: ProviderFactory<HttpEmailConfig> = defineProvider((options_:
                 return;
             }
 
-            if (!(await this.isAvailable())) {
+            if (!await this.isAvailable()) {
                 throw new EmailError(PROVIDER_NAME, "API endpoint not available");
             }
 

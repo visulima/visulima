@@ -38,11 +38,4 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
-    {
-        files: ["**/providers/**/*.ts"],
-        rules: {
-            "@stylistic/no-extra-parens": "off",
-            "sonarjs/file-name-differ-from-class": "off",
-        },
-    },
 );

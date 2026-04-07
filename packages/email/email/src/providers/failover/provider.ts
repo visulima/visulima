@@ -235,6 +235,7 @@ const provider: ProviderFactory<FailoverConfig> = defineProvider((config: Failov
                     }
                 }
 
+                // eslint-disable-next-line @stylistic/no-extra-parens
                 const errorMessages = errors.map((error) => (error instanceof Error ? error.message : String(error))).join("; ");
 
                 return {

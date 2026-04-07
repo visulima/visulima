@@ -38,7 +38,7 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                 hardValidation: config.hardValidation ?? false,
                 retries: config.retries ?? DEFAULT_RETRIES,
                 timeout: config.timeout ?? DEFAULT_TIMEOUT,
-                ...(config.logger && { logger: config.logger }),
+                ...config.logger && { logger: config.logger },
             };
 
         const providerState = new ProviderState();
@@ -125,7 +125,7 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    if (!(await this.isAvailable())) {
+                    if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Brevo API not available or invalid API key");
                     }
 
@@ -318,7 +318,7 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                                 return {
                                     content,
                                     name: attachment.filename,
-                                    ...(attachment.contentType && { type: attachment.contentType }),
+                                    ...attachment.contentType && { type: attachment.contentType },
                                 };
                             }),
                         );
