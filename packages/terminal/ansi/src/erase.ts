@@ -10,6 +10,21 @@ import { cursorToColumn1, cursorUp } from "./cursor";
  */
 export enum EraseDisplayMode {
     /**
+     * Clears from the current cursor position to the end of the screen (inclusive).
+     * If the cursor is at the top-left, this clears the entire screen.
+     * This corresponds to `Ps=0` (or `Ps` omitted) in `CSI Ps J`.
+     * Sequence: `CSI J` or `CSI 0J`.
+     */
+    ToEnd = 0,
+
+    /**
+     * Clears from the beginning of the screen to the current cursor position (inclusive).
+     * This corresponds to `Ps=1` in `CSI Ps J`.
+     * Sequence: `CSI 1J`.
+     */
+    ToBeginning = 1,
+
+    /**
      * Clears the entire screen. The cursor position usually does not change, but this can be
      * terminal-dependent. Some terminals might move the cursor to the home position (top-left).
      * This corresponds to `Ps=2` in `CSI Ps J`.
@@ -25,21 +40,6 @@ export enum EraseDisplayMode {
      * @remarks This mode is particularly useful for a more complete "reset" of the terminal view.
      */
     EntireScreenAndScrollback = 3,
-
-    /**
-     * Clears from the beginning of the screen to the current cursor position (inclusive).
-     * This corresponds to `Ps=1` in `CSI Ps J`.
-     * Sequence: `CSI 1J`.
-     */
-    ToBeginning = 1,
-
-    /**
-     * Clears from the current cursor position to the end of the screen (inclusive).
-     * If the cursor is at the top-left, this clears the entire screen.
-     * This corresponds to `Ps=0` (or `Ps` omitted) in `CSI Ps J`.
-     * Sequence: `CSI J` or `CSI 0J`.
-     */
-    ToEnd = 0,
 }
 
 /**
@@ -84,11 +84,11 @@ export const eraseDisplay = (mode: EraseDisplayMode | 0 | 1 | 2 | 3): string => 
  */
 export enum EraseLineMode {
     /**
-     * Clears the entire current line.
-     * This corresponds to `Ps=2` in `CSI Ps K`.
-     * Sequence: `CSI 2K`.
+     * Clears from the current cursor position to the end of the line (inclusive).
+     * This corresponds to `Ps=0` (or `Ps` omitted) in `CSI Ps K`.
+     * Sequence: `CSI K` or `CSI 0K`.
      */
-    EntireLine = 2,
+    ToEnd = 0,
 
     /**
      * Clears from the beginning of the line to the current cursor position (inclusive).
@@ -98,11 +98,11 @@ export enum EraseLineMode {
     ToBeginning = 1,
 
     /**
-     * Clears from the current cursor position to the end of the line (inclusive).
-     * This corresponds to `Ps=0` (or `Ps` omitted) in `CSI Ps K`.
-     * Sequence: `CSI K` or `CSI 0K`.
+     * Clears the entire current line.
+     * This corresponds to `Ps=2` in `CSI Ps K`.
+     * Sequence: `CSI 2K`.
      */
-    ToEnd = 0,
+    EntireLine = 2,
 }
 
 /**

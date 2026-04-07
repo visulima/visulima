@@ -30,7 +30,7 @@ const regex = ansiRegex();
  * console.log(strippedTitle); // Output: "Some content"
  * ```
  */
-// eslint-disable-next-line no-control-regex,sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex
 const strip = (input: string): string => input.replace(/\u001B\]0;.*\u0007/, "").replace(regex, "");
 
 export default strip;

@@ -18,39 +18,14 @@ export enum XTermWindowOp {
     ICONIFY_WINDOW = 2,
 
     /**
-     * Lower the window to the bottom of the stacking order.
-     */
-    LOWER_WINDOW = 6,
-
-    /**
-     * Maximize window (i.e., "zoom" or "toggle").
-     */
-    MAXIMIZE_WINDOW = 10,
-
-    /**
-     * Maximize window horizontally.
-     */
-    MAXIMIZE_WINDOW_HORIZONTALLY = 10.2,
-
-    /**
-     * Maximize window vertically.
-     */
-    MAXIMIZE_WINDOW_VERTICALLY = 10.1,
-
-    /**
      * Move window to `[x, y]`.
      */
     MOVE_WINDOW = 3,
 
     /**
-     * Pop window title from stack.
+     * Resize the text area to `[height, width]` in characters.
      */
-    POP_WINDOW_TITLE = 23,
-
-    /**
-     * Push window title on stack.
-     */
-    PUSH_WINDOW_TITLE = 22,
+    RESIZE_TEXT_AREA_CHARS = 4,
 
     /**
      * Raise the window to the front of the stacking order.
@@ -58,71 +33,14 @@ export enum XTermWindowOp {
     RAISE_WINDOW = 5,
 
     /**
+     * Lower the window to the bottom of the stacking order.
+     */
+    LOWER_WINDOW = 6,
+
+    /**
      * Refresh the window.
      */
     REFRESH_WINDOW = 7,
-
-    /**
-     * Report cell size in pixels.
-     * Response: `CSI 6 ; height ; width t`
-     */
-    REPORT_CELL_SIZE_PIXELS = 16, // From Go code
-
-    /**
-     * Report icon label.
-     * Response: `OSC L label ST`
-     */
-    REPORT_ICON_LABEL = 19,
-
-    /**
-     * Report text area size in characters.
-     * Response: `CSI 4 ; height ; width t`
-     */
-    REPORT_TEXT_AREA_SIZE_CHARS = 14,
-
-    /**
-     * Report text area size in pixels.
-     * Response: `CSI 8 ; height ; width t`
-     */
-    REPORT_TEXT_AREA_SIZE_PIXELS = 18,
-
-    /**
-     * Report window position.
-     * Response: `CSI 3 ; x ; y t`
-     */
-    REPORT_WINDOW_POSITION = 13,
-
-    /**
-     * Report window state.
-     * Response: `CSI code t` where `code` is 1 if de-iconified, 2 if iconified.
-     */
-    REPORT_WINDOW_STATE = 11,
-
-    /**
-     * Report window title.
-     * Response: `OSC l label ST`
-     */
-    REPORT_WINDOW_TITLE = 21,
-
-    /**
-     * Report window size in pixels.
-     * Alias for `REPORT_TEXT_AREA_SIZE_PIXELS` for compatibility with some terminals (e.g., mintty).
-     * Response: `CSI 4 ; height ; width t`
-     * Should be REPORT_TEXT_AREA_SIZE_PIXELS (18) for XTerm, but using Go's value.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
-    REQUEST_WINDOW_SIZE_WIN_OP_COMPAT = 14, // From Go code
-
-    /**
-     * Resize the screen to `[width, height]` in pixels and resize the text area to `[cols, lines]` in characters.
-     * (DECSLPP - Set Lines Per Page)
-     */
-    RESIZE_SCREEN_AND_TEXT_AREA = 24, // Typically with one param (lines), but XTerm extends it for width/height too
-
-    /**
-     * Resize the text area to `[height, width]` in characters.
-     */
-    RESIZE_TEXT_AREA_CHARS = 4,
 
     /**
      * Resize the text area to `[height, width]` in pixels.
@@ -135,9 +53,91 @@ export enum XTermWindowOp {
     RESTORE_MAXIMIZED_WINDOW = 9,
 
     /**
+     * Maximize window (i.e., "zoom" or "toggle").
+     */
+    MAXIMIZE_WINDOW = 10,
+
+    /**
+     * Maximize window vertically.
+     */
+    MAXIMIZE_WINDOW_VERTICALLY = 10.1,
+
+    /**
+     * Maximize window horizontally.
+     */
+    MAXIMIZE_WINDOW_HORIZONTALLY = 10.2,
+
+    /**
      * Undo full-screen mode.
      */
     UNDO_FULL_SCREEN_MODE = 10.3, // Note: XTerm docs list 10 ; 0, 10 ; 1, 10 ; 2, this is simplified.
+
+    /**
+     * Report window state.
+     * Response: `CSI code t` where `code` is 1 if de-iconified, 2 if iconified.
+     */
+    REPORT_WINDOW_STATE = 11,
+
+    /**
+     * Report window position.
+     * Response: `CSI 3 ; x ; y t`
+     */
+    REPORT_WINDOW_POSITION = 13,
+
+    /**
+     * Report text area size in characters.
+     * Response: `CSI 4 ; height ; width t`
+     */
+    REPORT_TEXT_AREA_SIZE_CHARS = 14,
+
+    /**
+     * Report window size in pixels.
+     * Alias for `REPORT_TEXT_AREA_SIZE_PIXELS` for compatibility with some terminals (e.g., mintty).
+     * Response: `CSI 4 ; height ; width t`
+     * Should be REPORT_TEXT_AREA_SIZE_PIXELS (18) for XTerm, but using Go's value.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+    REQUEST_WINDOW_SIZE_WIN_OP_COMPAT = 14, // From Go code
+
+    /**
+     * Report cell size in pixels.
+     * Response: `CSI 6 ; height ; width t`
+     */
+    REPORT_CELL_SIZE_PIXELS = 16, // From Go code
+
+    /**
+     * Report text area size in pixels.
+     * Response: `CSI 8 ; height ; width t`
+     */
+    REPORT_TEXT_AREA_SIZE_PIXELS = 18,
+
+    /**
+     * Report icon label.
+     * Response: `OSC L label ST`
+     */
+    REPORT_ICON_LABEL = 19,
+
+    /**
+     * Report window title.
+     * Response: `OSC l label ST`
+     */
+    REPORT_WINDOW_TITLE = 21,
+
+    /**
+     * Push window title on stack.
+     */
+    PUSH_WINDOW_TITLE = 22,
+
+    /**
+     * Pop window title from stack.
+     */
+    POP_WINDOW_TITLE = 23,
+
+    /**
+     * Resize the screen to `[width, height]` in pixels and resize the text area to `[cols, lines]` in characters.
+     * (DECSLPP - Set Lines Per Page)
+     */
+    RESIZE_SCREEN_AND_TEXT_AREA = 24, // Typically with one param (lines), but XTerm extends it for width/height too
 }
 
 /**
