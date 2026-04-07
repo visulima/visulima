@@ -19,7 +19,7 @@ describe(writeConsoleLogBasedOnLevel, () => {
         consoleMock.mockReset();
     });
 
-    it('should return console.error when level is "error"', () => {
+    it("should return console.error when level is \"error\"", () => {
         expect.assertions(1);
 
         const logFunction = writeConsoleLogBasedOnLevel("error");
@@ -28,7 +28,7 @@ describe(writeConsoleLogBasedOnLevel, () => {
         expect(logFunction).toBe(console.error);
     });
 
-    it('should return console.warn when level is "warn"', () => {
+    it("should return console.warn when level is \"warn\"", () => {
         expect.assertions(1);
 
         const logFunction = writeConsoleLogBasedOnLevel("warn");

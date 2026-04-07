@@ -23,7 +23,7 @@ const defaultInspectorConfig: Partial<Options> = {
             return string_;
         }
 
-        return (styles[style] as ColorizeType)(string_);
+        return styles[style](string_);
     },
 };
 

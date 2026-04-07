@@ -231,7 +231,7 @@ describe("pailError", () => {
         });
     });
 
-    describe("createPailError", () => {
+    describe(createPailError, () => {
         it("should create a PailError from a string", () => {
             expect.assertions(2);
 

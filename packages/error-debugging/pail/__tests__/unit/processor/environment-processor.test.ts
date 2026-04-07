@@ -31,7 +31,7 @@ describe("environmentProcessor", () => {
         process.env = originalEnv;
     });
 
-    describe("detectEnvironment", () => {
+    describe(detectEnvironment, () => {
         it("should detect NODE_ENV", () => {
             expect.assertions(1);
 

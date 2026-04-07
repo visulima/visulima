@@ -185,6 +185,6 @@ describe("elysia plugin", () => {
 
         const { useLogger: freshUseLogger } = await import("../../../src/middleware/elysia");
 
-        expect(() => freshUseLogger()).toThrowError("[pail]");
+        expect(() => freshUseLogger()).toThrow("[pail]");
     });
 });

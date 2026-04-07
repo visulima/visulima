@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { extractSafeHeaders, extractSafeNodeHeaders } from "../../../../src/middleware/shared/headers";
 
 describe("headers", () => {
-    describe("extractSafeHeaders", () => {
+    describe(extractSafeHeaders, () => {
         it("should extract non-sensitive headers", () => {
             expect.assertions(2);
 
@@ -75,7 +75,7 @@ describe("headers", () => {
         });
     });
 
-    describe("extractSafeNodeHeaders", () => {
+    describe(extractSafeNodeHeaders, () => {
         it("should extract non-sensitive headers", () => {
             expect.assertions(2);
 

@@ -138,7 +138,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     public log(meta: ReadonlyMeta<L>): void {
         // eslint-disable-next-line no-underscore-dangle
-        this._log(this._formatMessage(meta as ReadonlyMeta<L>), meta.type.level);
+        this._log(this._formatMessage(meta), meta.type.level);
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity, no-underscore-dangle
@@ -170,7 +170,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (badge) {
-            items.push(colorized(badge) as string);
+            items.push(colorized(badge));
         } else {
             const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
@@ -183,9 +183,9 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (label) {
             const longestLabelWidth = getStringWidth(longestLabel);
-            const labelWidth = getStringWidth(label as string);
+            const labelWidth = getStringWidth(label);
 
-            items.push(`${colorized(formatLabel(label as string, this.styles))} `, grey(".".repeat(Math.max(0, longestLabelWidth - labelWidth))));
+            items.push(`${colorized(formatLabel(label, this.styles))} `, grey(".".repeat(Math.max(0, longestLabelWidth - labelWidth))));
         } else {
             // plus 2 for the space and the dot
             items.push(grey(".".repeat(longestLabel.length + 2)));
@@ -201,7 +201,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (prefix) {
             items.push(
-                `${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `,
+                `${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}]`)} `,
             );
         }
 
@@ -230,12 +230,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wordWrap(formattedMessage, {
-                        trim: false,
-                        width: size - 3,
-                        wrapMode: WrapMode.STRICT_WIDTH,
-                    }),
+                groupSpaces
+                + wordWrap(formattedMessage, {
+                    trim: false,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
+                }),
             );
         }
 
@@ -247,7 +247,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
                     if (value instanceof Error) {
                         hasError = true;
 
-                        return `\n\n${renderError(value as Error, {
+                        return `\n\n${renderError(value, {
                             ...this.#errorOptions,
                             filterStacktrace: pailFileFilter,
                             prefix: groupSpaces,
@@ -269,7 +269,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (error) {
             items.push(
-                renderError(error as Error, {
+                renderError(error, {
                     ...this.#errorOptions,
                     filterStacktrace: pailFileFilter,
                     prefix: groupSpaces,
@@ -279,7 +279,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                `\n\n${renderError(traceError as Error, {
+                `\n\n${renderError(traceError, {
                     ...this.#errorOptions,
                     filterStacktrace: pailFileFilter,
                     hideErrorCauseCodeView: true,
@@ -292,7 +292,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (suffix) {
-            items.push("\n", groupSpaces + grey(this.styles.underline.suffix ? underline(suffix as string) : suffix));
+            items.push("\n", groupSpaces + grey(this.styles.underline.suffix ? underline(suffix) : suffix));
         }
 
         return items.join("");

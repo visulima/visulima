@@ -41,7 +41,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message1\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message1\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -68,7 +68,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}     ${grey("[Scope1 > Scope2]")}     This is a sample message\n`,
         );
 
         stdoutSpy.mockRestore();
@@ -94,7 +94,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stderrSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
 
         stderrSpy.mockRestore();
@@ -123,7 +123,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(newStdout.write).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}         This is a sample message\n`,
         );
     });
 
@@ -150,7 +150,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(newStderr.write).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(red("ERROR")) + bold(red("LABEL"))}         This is an error message\n`,
         );
     });
 
@@ -172,7 +172,7 @@ describe("simpleReporter", () => {
         };
         const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        expect(() => simpleReporter.log(meta as unknown as Meta<string>)).not.toThrowError();
+        expect(() => { simpleReporter.log(meta as unknown as Meta<string>); }).not.toThrow();
 
         stdoutSpy.mockRestore();
     });
@@ -241,7 +241,7 @@ describe("simpleReporter", () => {
         simpleReporter.log(meta as ReadonlyMeta<string>);
 
         expect(stdoutSpy).toHaveBeenCalledExactlyOnceWith(
-            `    ${`${grey("[Group1]")} ${grey(dateFormatter(date))}`} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
+            `    ${grey("[Group1]")} ${grey(dateFormatter(date))} ${bold(blueBright("INFO")) + bold(blueBright("LABEL"))}           a  This is a sample message1\n`,
         );
 
         stdoutSpy.mockRestore();

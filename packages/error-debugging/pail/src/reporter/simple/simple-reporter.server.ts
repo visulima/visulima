@@ -89,7 +89,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
     }
 
     public log(meta: ReadonlyMeta<L>): void {
-        const message = this.formatMessage(meta as ReadonlyMeta<L>);
+        const message = this.formatMessage(meta);
         const logLevel = meta.type.level as LiteralUnion<ExtendedRfc5424LogLevels, L>;
 
         const streamType = ["error", "trace", "warn"].includes(logLevel as string) ? "stderr" : "stdout";
@@ -122,7 +122,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} ` as string);
+            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} `);
         }
 
         if (date) {
@@ -130,7 +130,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (badge) {
-            items.push(bold(colorized(badge) as string));
+            items.push(bold(colorized(badge)));
         } else {
             const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
 
@@ -143,10 +143,10 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const longestWidth: number = getStringWidth(longestLabel);
 
         if (label) {
-            const labelWidth: number = getStringWidth(label as string);
+            const labelWidth: number = getStringWidth(label);
             const pad: number = Math.max(0, longestWidth - labelWidth);
 
-            items.push(`${bold(colorized(formatLabel(label as string, this.styles)))} `, " ".repeat(pad));
+            items.push(`${bold(colorized(formatLabel(label, this.styles)))} `, " ".repeat(pad));
         } else {
             items.push(" ".repeat(longestWidth + 1));
         }
@@ -160,7 +160,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (prefix) {
-            items.push(`${grey(`[${this.styles.underline.prefix ? underline(prefix as string) : prefix}]`)} `);
+            items.push(`${grey(`[${this.styles.underline.prefix ? underline(prefix) : prefix}]`)} `);
         }
 
         const titleSize = getStringWidth(items.join(""));
@@ -169,12 +169,12 @@ export class SimpleReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wordWrap(formattedMessage, {
-                        trim: false,
-                        width: size - 3,
-                        wrapMode: WrapMode.STRICT_WIDTH,
-                    }),
+                groupSpaces
+                + wordWrap(formattedMessage, {
+                    trim: false,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
+                }),
             );
         }
 
@@ -186,7 +186,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
                     if (value instanceof Error) {
                         hasError = true;
 
-                        return `\n\n${renderError(value as Error, {
+                        return `\n\n${renderError(value, {
                             ...this.#errorOptions,
                             filterStacktrace: pailFileFilter,
                             prefix: groupSpaces,
@@ -208,7 +208,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
         if (error) {
             items.push(
-                renderError(error as Error, {
+                renderError(error, {
                     ...this.#errorOptions,
                     filterStacktrace: pailFileFilter,
                     prefix: groupSpaces,
@@ -218,7 +218,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
         if (traceError) {
             items.push(
-                `\n\n${renderError(traceError as Error, {
+                `\n\n${renderError(traceError, {
                     ...this.#errorOptions,
                     filterStacktrace: pailFileFilter,
                     hideErrorCauseCodeView: true,
@@ -231,7 +231,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (suffix) {
-            items.push(` ${groupSpaces}${grey(this.styles.underline.suffix ? underline(suffix as string) : suffix)}`);
+            items.push(` ${groupSpaces}${grey(this.styles.underline.suffix ? underline(suffix) : suffix)}`);
         }
 
         if (file) {

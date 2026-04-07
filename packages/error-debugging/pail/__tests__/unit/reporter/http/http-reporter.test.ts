@@ -324,7 +324,7 @@ describe(HttpReporter, () => {
 
         await vi.runAllTimersAsync();
 
-        expect(mockCompressData).toHaveBeenCalledWith(expect.stringContaining('"level":"informational"'));
+        expect(mockCompressData).toHaveBeenCalledWith(expect.stringContaining("\"level\":\"informational\""));
         expect(mockSendWithRetry).toHaveBeenCalledWith(
             expect.any(String),
             expect.any(String),
@@ -495,7 +495,7 @@ describe(HttpReporter, () => {
         const body = callArgs[3] as string;
 
         // Should be a JSON array
-        expect(() => JSON.parse(body)).not.toThrowError();
+        expect(() => JSON.parse(body)).not.toThrow();
 
         const parsed = JSON.parse(body);
 
@@ -538,7 +538,7 @@ describe(HttpReporter, () => {
         const body = callArgs[3] as string;
 
         // Should be a JSON object with "logs" field
-        expect(() => JSON.parse(body)).not.toThrowError();
+        expect(() => JSON.parse(body)).not.toThrow();
 
         const parsed = JSON.parse(body);
 
@@ -559,7 +559,7 @@ describe(HttpReporter, () => {
                     }),
                 url: "https://api.example.com/logs",
             });
-        }).toThrowError("batchFieldName is required when batchMode is 'field'");
+        }).toThrow("batchFieldName is required when batchMode is 'field'");
     });
 
     it("should call onDebug callback when provided", async () => {
@@ -1233,7 +1233,7 @@ describe(HttpReporter, () => {
         const body = callArgs[3] as string;
 
         // Should be valid JSON
-        expect(() => JSON.parse(body)).not.toThrowError();
+        expect(() => JSON.parse(body)).not.toThrow();
     });
 
     it("should handle empty message", async () => {

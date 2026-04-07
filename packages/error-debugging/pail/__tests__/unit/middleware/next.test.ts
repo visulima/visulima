@@ -23,7 +23,7 @@ describe("next.js adapter", () => {
         vi.restoreAllMocks();
     });
 
-    describe("createWithPail", () => {
+    describe(createWithPail, () => {
         it("should wrap a handler and emit on success", async () => {
             expect.assertions(2);
 
@@ -57,7 +57,7 @@ describe("next.js adapter", () => {
 
             const request = new Request("http://localhost/api/users");
 
-            await expect(handler(request)).rejects.toThrowError("handler error");
+            await expect(handler(request)).rejects.toThrow("handler error");
             expect(errorSpy).toHaveBeenCalledTimes(1);
         });
 
@@ -146,7 +146,7 @@ describe("next.js adapter", () => {
         });
     });
 
-    describe("pailMiddleware", () => {
+    describe(pailMiddleware, () => {
         it("should set x-request-id and x-pail-start headers", () => {
             expect.assertions(2);
 
@@ -196,11 +196,11 @@ describe("next.js adapter", () => {
         });
     });
 
-    describe("useLogger", () => {
+    describe(useLogger, () => {
         it("should throw when called outside withPail context", () => {
             expect.assertions(1);
 
-            expect(() => useLogger()).toThrowError("[pail]");
+            expect(() => useLogger()).toThrow("[pail]");
         });
     });
 });

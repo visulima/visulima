@@ -110,12 +110,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cRepeated = white(`[${repeated}x]`);
 
             repeatedMessage = isNotBrowser
-                ? (format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) as string)
+                ? format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[])
                 : [cRepeated[0], ...cRepeated.slice(1)];
         }
 
         if (label) {
-            const cLabel = colorized(this.#formatLabel(label as string));
+            const cLabel = colorized(this.#formatLabel(label));
 
             if (isNotBrowser) {
                 items.push(format(cLabel[0] as string, cLabel.slice(1) as unknown as string[]));
@@ -127,7 +127,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 items.push(repeatedMessage);
             }
 
-            let lengthDiff = (longestLabel as string).length - (label as string).length;
+            let lengthDiff = longestLabel.length - label.length;
 
             if (repeated) {
                 lengthDiff -= String(repeated).length + 3;
@@ -145,7 +145,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 }
             }
         } else {
-            const cSpacer = grey(".".repeat((longestLabel as string).length + 1));
+            const cSpacer = grey(".".repeat(longestLabel.length + 1));
 
             if (isNotBrowser) {
                 items.push(format(cSpacer[0] as string, cSpacer.slice(1) as unknown as string[]));
@@ -166,7 +166,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
         if (prefix) {
             const cPrefix = grey(
-                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix as string) : prefix}] `,
+                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}] `,
             );
 
             if (isNotBrowser) {
@@ -189,12 +189,12 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (suffix) {
-            const cSuffix = grey((this.styles.underline.suffix ? underline(suffix as string) : suffix) as string);
+            const cSuffix = grey(this.styles.underline.suffix ? underline(suffix) : suffix);
 
             if (isNotBrowser) {
-                items.push(format(`\n${cSuffix[0] as string}` as string, cSuffix.slice(1) as unknown as string[]));
+                items.push(format(`\n${cSuffix[0] as string}`, cSuffix.slice(1) as unknown as string[]));
             } else {
-                items.push([`\n${cSuffix[0] as string}` as string, ...cSuffix.slice(1)]);
+                items.push([`\n${cSuffix[0] as string}`, ...cSuffix.slice(1)]);
             }
         }
 

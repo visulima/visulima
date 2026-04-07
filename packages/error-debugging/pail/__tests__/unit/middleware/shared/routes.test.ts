@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { getServiceForPath, matchesPattern, shouldLog } from "../../../../src/middleware/shared/routes";
 
 describe("routes", () => {
-    describe("matchesPattern", () => {
+    describe(matchesPattern, () => {
         it("should match exact paths", () => {
             expect.assertions(2);
 
@@ -51,7 +51,7 @@ describe("routes", () => {
         });
     });
 
-    describe("shouldLog", () => {
+    describe(shouldLog, () => {
         it("should log all paths when no include/exclude", () => {
             expect.assertions(2);
 
@@ -98,7 +98,7 @@ describe("routes", () => {
         });
     });
 
-    describe("getServiceForPath", () => {
+    describe(getServiceForPath, () => {
         it("should return undefined when no routes configured", () => {
             expect.assertions(1);
 

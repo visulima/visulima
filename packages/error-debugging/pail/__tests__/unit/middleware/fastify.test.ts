@@ -23,7 +23,7 @@ const createMockFastify = () => {
                 hooks[name] = [];
             }
 
-            (hooks[name] as HookHandler[]).push(handler);
+            hooks[name].push(handler);
         },
         trigger: async (name: string, ...arguments_: unknown[]) => {
             for (const handler of hooks[name] ?? []) {

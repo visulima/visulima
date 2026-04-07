@@ -48,7 +48,7 @@ class InteractiveStreamHook {
      * progress bars that can update dynamically.
      */
     public active(): void {
-        this.write(cursorHide as string);
+        this.write(cursorHide);
 
         // @ts-ignore - We are modifying the write method
         this.#stream.write = (data: Uint8Array | string, ...arguments_: [((error?: Error) => void)?] | [(string | undefined)?, ((error?: Error) => void)?]) => {
@@ -58,7 +58,7 @@ class InteractiveStreamHook {
                 // prettier-ignore
                 this.#decoder.write(
                     typeof data === "string"
-                        // eslint-disable-next-line sonarjs/no-nested-conditional
+
                         ? Buffer.from(data, typeof arguments_[0] === "string" ? (arguments_[0] as BufferEncoding) : undefined)
                         : Buffer.from(data),
                 ),
@@ -81,7 +81,7 @@ class InteractiveStreamHook {
      */
     public erase(count: number): void {
         if (count > 0) {
-            this.write(eraseLines(count + 1) as string);
+            this.write(eraseLines(count + 1));
         }
     }
 
@@ -115,7 +115,7 @@ class InteractiveStreamHook {
      */
     public renew(): void {
         this.#stream.write = this.#method;
-        this.write(cursorShow as string);
+        this.write(cursorShow);
     }
 
     /**

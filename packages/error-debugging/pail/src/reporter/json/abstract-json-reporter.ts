@@ -104,7 +104,7 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
         }
 
         // eslint-disable-next-line no-underscore-dangle
-        this._log((this.stringify as typeof stringify)(rest) as string, type.level);
+        this._log((this.stringify as typeof stringify)(rest), type.level);
     }
 
     /**
