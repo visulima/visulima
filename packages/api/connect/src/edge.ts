@@ -1,4 +1,4 @@
-import type { ZodObject } from "zod";
+import type * as z from "zod";
 
 import withZod from "./adapter/with-zod";
 import type { Route } from "./router";
@@ -26,13 +26,12 @@ const onError = async (error: unknown) => {
 };
 
 export const getPathname = (request: Request & { nextUrl?: URL }): string =>
-    // eslint-disable-next-line compat/compat
     (request.nextUrl ?? new URL(request.url)).pathname;
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | void>;
 
-export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends ZodObject<any> = ZodObject<any>> {
+export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends z.ZodObject<any> = z.ZodObject<any>> {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "");
 
     public connect: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "CONNECT");
@@ -64,12 +63,12 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>> = {}) {
         this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>);
-        this.onError =
-            options.onError ??
-            (onError as unknown as (
-                error: unknown,
-                ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
-            ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
+        this.onError
+            = options.onError
+                ?? (onError as unknown as (
+                    error: unknown,
+                    ...arguments_: Parameters<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>
+                ) => ReturnType<RoutesExtendedRequestHandler<R, Context, RResponse, Route<Nextable<FunctionLike>>[]>>);
     }
 
     public clone(): EdgeRouter<R, Context, RResponse, Schema> {
@@ -123,7 +122,7 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             base = "/";
         }
 
-        this.router.use(base, ...fns.map((function_) => (function_ instanceof EdgeRouter ? function_.router : function_)));
+        this.router.use(base, ...fns.map((function_) => function_ instanceof EdgeRouter ? function_.router : function_));
 
         return this;
     }
@@ -141,10 +140,10 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             // eslint-disable-next-line unicorn/prefer-ternary
             if (typeof routeOrFunction === "function") {
                 // eslint-disable-next-line no-param-reassign
-                fns = [withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
+                fns = [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)];
             } else {
                 // eslint-disable-next-line no-param-reassign
-                fns = fns.map((function_) => withZod<R, Context, Nextable<RequestHandler<R, Context>>, Schema>(zodOrRouteOrFunction as Schema, function_));
+                fns = fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
             }
         } else if (typeof zodOrRouteOrFunction === "function") {
             // eslint-disable-next-line no-param-reassign
@@ -167,4 +166,4 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
 
 export const createEdgeRouter = <R extends Request, Context>(
     options: HandlerOptions<RoutesExtendedRequestHandler<R, Context, Response, Route<Nextable<FunctionLike>>[]>> = {},
-): EdgeRouter<R, Context> => new EdgeRouter<R, Context, Response>(options);
+): EdgeRouter<R, Context> => new EdgeRouter<R, Context>(options);

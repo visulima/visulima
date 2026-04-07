@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import type { ZodObject } from "zod";
+import type * as z from "zod";
 
 import withZod from "./adapter/with-zod";
 import type { Route } from "./router";
@@ -42,7 +42,7 @@ export type RequestHandler<Request extends IncomingMessage, Response extends Ser
 export class NodeRouter<
     Request extends IncomingMessage = IncomingMessage,
     Response extends ServerResponse = ServerResponse,
-    Schema extends ZodObject<any> = ZodObject<never>,
+    Schema extends z.ZodObject<any> = z.ZodObject<never>,
 > {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
 
@@ -144,11 +144,11 @@ export class NodeRouter<
         } else if (typeof zodOrRouteOrFunction === "object") {
             if (typeof routeOrFunction === "function") {
                 // eslint-disable-next-line no-param-reassign
-                fns = [withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, routeOrFunction)];
+                fns = [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)];
             } else {
                 // eslint-disable-next-line no-param-reassign
                 fns = fns.map((function_) =>
-                    withZod<Request, Response, Nextable<RequestHandler<Request, Response>>, Schema>(zodOrRouteOrFunction as Schema, function_),
+                    withZod(zodOrRouteOrFunction as Schema, function_),
                 );
             }
         } else if (typeof zodOrRouteOrFunction === "function") {
@@ -173,7 +173,7 @@ export class NodeRouter<
 export const createRouter = <
     Request extends IncomingMessage,
     Response extends ServerResponse,
-    Schema extends ZodObject<any> = ZodObject<{ body?: ZodObject<any>; headers?: ZodObject<any>; query?: ZodObject<any> }>,
+    Schema extends z.ZodObject<any> = z.ZodObject,
 >(
     options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
 ): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);
