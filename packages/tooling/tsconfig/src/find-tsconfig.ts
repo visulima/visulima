@@ -30,13 +30,13 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
     const configFileName = options.configFileName ?? "tsconfig.json";
 
     let filePath = await findUp(configFileName, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 
     if (!filePath) {
         filePath = await findUp("jsconfig.json", {
-            ...(cwd && { cwd }),
+            ...cwd && { cwd },
             type: "file",
         });
     }
@@ -69,13 +69,13 @@ export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsC
     const configFileName = options.configFileName ?? "tsconfig.json";
 
     let filePath = findUpSync(configFileName, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
         type: "file",
     });
 
     if (!filePath) {
         filePath = findUpSync("jsconfig.json", {
-            ...(cwd && { cwd }),
+            ...cwd && { cwd },
             type: "file",
         });
     }

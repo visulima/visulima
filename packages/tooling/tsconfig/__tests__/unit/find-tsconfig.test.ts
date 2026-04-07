@@ -56,7 +56,6 @@ describe("tsconfig", () => {
 
             const expectedErrorMessage = "ENOENT: No such file or directory, for 'tsconfig.json' or 'jsconfig.json' found.";
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findTsConfig") {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(function_("/noMatch")).rejects.toThrow(expectedErrorMessage);

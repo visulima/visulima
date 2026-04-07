@@ -94,7 +94,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
 
     const [orgOrName, ...remaining] = requestedPath.split("/");
 
-    const packageName = ((orgOrName as string).startsWith("@") ? `${orgOrName as string}/${(remaining as string[]).shift()}` : orgOrName) as string;
+    const packageName = ((orgOrName as string).startsWith("@") ? `${orgOrName as string}/${remaining.shift()}` : orgOrName) as string;
     const subpath = remaining.join("/");
 
     const pnpApi = getPnpApi();

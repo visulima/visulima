@@ -25,7 +25,6 @@ describe("tsconfig", () => {
         it("should write a tsconfig.json file", async () => {
             expect.assertions(1);
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "writeTsConfig") {
                 await (function_ as typeof writeTsConfig)(
                     {
