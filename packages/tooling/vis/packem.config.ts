@@ -21,5 +21,19 @@ export default defineConfig({
         packageJson: {
             exports: false,
         },
+        dependencies: {
+            unused: {
+                exclude: [
+                    "@visulima/vis-binding-darwin-arm64",
+                    "@visulima/vis-binding-darwin-x64",
+                    "@visulima/vis-binding-linux-arm64-gnu",
+                    "@visulima/vis-binding-linux-arm64-musl",
+                    "@visulima/vis-binding-linux-x64-gnu",
+                    "@visulima/vis-binding-linux-x64-musl",
+                    "@visulima/vis-binding-win32-arm64-msvc",
+                    "@visulima/vis-binding-win32-x64-msvc",
+                ],
+            },
+        },
     },
 }) as BuildConfig;
