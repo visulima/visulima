@@ -35,19 +35,19 @@ const UNKNOWN_FUNCTION = "<unknown>";
 // at Module.load (internal/modules/cjs/loader.js:641:32)
 // -----------------
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
-const CHROMIUM_REGEX =
+const CHROMIUM_REGEX
     // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/regex-complexity
-    /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+    = /^.*?\s*at\s(?:(.+?\)(?:\s\[.+\])?|\(?.*?)\s?\((?:address\sat\s)?)?(?:async\s)?((?:<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 
 // eslint-disable-next-line sonarjs/slow-regex
 const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // foo.bar.js:123:39
 // foo.bar.js:123:39 <- original.js:123:34
-// eslint-disable-next-line regexp/no-unused-capturing-group, sonarjs/slow-regex
+// eslint-disable-next-line sonarjs/slow-regex
 const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
 
 // eval at <anonymous> (C:\\Users\\user\\project\\visulima\\packages\\error\\__tests__\\stacktrace\\parse-stacktrace.test.ts
-// eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/optimal-quantifier-concatenation
 const WINDOWS_EVAL_REGEX = /(eval)\sat\s(<anonymous>)\s\((.*)\)?:(\d+)?:(\d+)\),\s*(<anonymous>)?:(\d+)?:(\d+)/;
 
 // in AppProviders (at App.tsx:28)
@@ -103,9 +103,9 @@ const extractSafariExtensionDetails = (methodName: string, url: string): [string
 
     return isSafariExtension || isSafariWebExtension
         ? [
-              methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
-              isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
-          ]
+            methodName.includes("@") ? (methodName.split("@")[0] as string) : UNKNOWN_FUNCTION,
+            isSafariExtension ? `safari-extension:${url}` : `safari-web-extension:${url}`,
+        ]
         : [methodName, url];
 };
 
@@ -178,10 +178,10 @@ const parseChromium = (line: string): Trace | undefined => {
         let evalOrigin: Trace | undefined;
         let windowsParts:
             | {
-                  column: number | undefined;
-                  file: string | undefined;
-                  line: number | undefined;
-              }
+                column: number | undefined;
+                file: string | undefined;
+                line: number | undefined;
+            }
             | undefined;
 
         if (isEval) {
@@ -341,9 +341,9 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
         debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
 
         return {
-            column: parts[4] ? +parts[4] : (topFrameMeta?.column ?? undefined),
+            column: parts[4] ? +parts[4] : topFrameMeta?.column ?? undefined,
             file: parts[2],
-            line: parts[3] ? +parts[3] : (topFrameMeta?.line ?? undefined),
+            line: parts[3] ? +parts[3] : topFrameMeta?.line ?? undefined,
 
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
@@ -382,7 +382,7 @@ const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ fi
             // Remove webpack (error: *) wrappers
             const cleanedLine = WEBPACK_ERROR_REGEXP.test(line) ? line.replace(WEBPACK_ERROR_REGEXP, "$1") : line;
 
-            // eslint-disable-next-line unicorn/prefer-string-replace-all, sonarjs/slow-regex, sonarjs/anchor-precedence
+            // eslint-disable-next-line unicorn/prefer-string-replace-all, sonarjs/slow-regex
             return cleanedLine.replace(/^\s+|\s+$/g, "");
         })
         // https://github.com/getsentry/sentry-javascript/issues/7813

@@ -32,7 +32,7 @@ describe("error serializer", () => {
         expect(serialized.stack).toContain("serialize.test.ts:");
     });
 
-    it('serializes Error objects with subclass "name"', () => {
+    it("serializes Error objects with subclass \"name\"", () => {
         expect.assertions(1);
 
         class MyError extends Error {}
@@ -655,7 +655,7 @@ describe("error serializer", () => {
         });
         error.object = object;
 
-        expect(() => serializeError(error)).not.toThrowError();
+        expect(() => serializeError(error)).not.toThrow();
     });
 
     it.runIf("DOMException" in globalThis)("should deep clone DOMException when it is in the cause property", () => {
@@ -703,7 +703,7 @@ describe("error serializer", () => {
         const serialized = serializeError(error);
 
         expect(serialized.bigNumber).toBe("123456789012345678901n");
-        expect(() => JSON.stringify(serialized)).not.toThrowError();
+        expect(() => JSON.stringify(serialized)).not.toThrow();
     });
 
     it("should serialize nested BigInt values", () => {
@@ -833,7 +833,7 @@ describe("error serializer", () => {
 
             expect(deserialized).toBeInstanceOf(NonError);
             expect(deserialized).toBeInstanceOf(Error);
-            expect(deserialized.message).toBe('"test"');
+            expect(deserialized.message).toBe("\"test\"");
         });
 
         it("should deserialize array", () => {
@@ -1139,7 +1139,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(BadError as any);
-            }).toThrowError('The error constructor "BadError" is not compatible');
+            }).toThrow("The error constructor \"BadError\" is not compatible");
         });
 
         it("should throw error for already known constructor", () => {
@@ -1147,7 +1147,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(Error);
-            }).toThrowError('The error constructor "Error" is already known.');
+            }).toThrow("The error constructor \"Error\" is already known.");
         });
 
         it("should validate constructor works without arguments and use instance.name over constructor.name", () => {
@@ -1198,7 +1198,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(RequiresArgumentsError);
-            }).toThrowError('The error constructor "RequiresArgumentsError" is not compatible');
+            }).toThrow("The error constructor \"RequiresArgumentsError\" is not compatible");
         });
 
         it("should throw error when constructor throws in constructor", () => {
@@ -1214,7 +1214,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(ThrowsInConstructorError);
-            }).toThrowError('The error constructor "ThrowsInConstructorError" is not compatible');
+            }).toThrow("The error constructor \"ThrowsInConstructorError\" is not compatible");
         });
 
         it("should handle minified constructor names correctly", () => {
@@ -1261,7 +1261,7 @@ describe("error serializer", () => {
 
             expect(() => {
                 addKnownErrorConstructor(IncompatibleError);
-            }).toThrowError('The error constructor "IncompatibleError" is not compatible');
+            }).toThrow("The error constructor \"IncompatibleError\" is not compatible");
         });
 
         it("should allow specifying custom name to override instance.name", () => {
