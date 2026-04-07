@@ -4,6 +4,12 @@ import type { ReactElement } from "react";
 
 import type { Instance, RenderOptions } from "../ink/render";
 import render from "../ink/render";
+import type { KeySender } from "./keys";
+import { createKeySender, KEY } from "./keys";
+import type { Screen } from "./screen";
+import { createScreen } from "./screen";
+import type { WaitForOptions } from "./wait-for";
+import { waitFor } from "./wait-for";
 
 /**
  * Mock stdout stream that captures rendered frames.
@@ -169,9 +175,19 @@ export type TestInstance = {
     cleanup: () => void;
 
     /**
+     * Wait for pending React renders to flush (two microtick delay).
+     */
+    flush: () => Promise<void>;
+
+    /**
      * All rendered frames captured from stdout (shorthand for `stdout.frames`).
      */
     readonly frames: ReadonlyArray<string>;
+
+    /**
+     * Keyboard input helpers for simulating key presses.
+     */
+    keys: KeySender;
 
     /**
      * Returns the most recently rendered frame from stdout (shorthand for `stdout.lastFrame()`).
@@ -182,6 +198,11 @@ export type TestInstance = {
      * Replace the previous root node with a new one or update props.
      */
     rerender: (node: ReactElement) => void;
+
+    /**
+     * Screen query helpers for inspecting rendered output with ANSI stripping.
+     */
+    screen: Screen;
 
     /**
      * Mock stderr stream with frame capture.
@@ -202,6 +223,14 @@ export type TestInstance = {
      * Manually unmount the whole app.
      */
     unmount: () => void;
+
+    /**
+     * Wait for a condition to be met by polling.
+     *
+     * If `condition` is a string, waits until the screen contains it.
+     * If `condition` is a function, waits until it stops throwing.
+     */
+    waitFor: (condition: (() => void) | string, options?: WaitForOptions) => Promise<void>;
 };
 
 export type TestRenderOptions = {
@@ -252,17 +281,35 @@ const testRender = (node: ReactElement, testOptions: TestRenderOptions = {}): Te
 
     instances.push(instance);
 
+    const screen = createScreen(() => stdout.lastFrame(), stdout.frames);
+    const keys = createKeySender((data) => stdin.write(data));
+
+    const flush = async (): Promise<void> => {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 0);
+        });
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 0);
+        });
+    };
+
     return {
         cleanup: instance.cleanup,
+        flush,
         get frames() {
             return stdout.frames;
         },
+        keys,
         lastFrame: () => stdout.lastFrame(),
         rerender: instance.rerender as (node: ReactElement) => void,
+        screen,
         stderr,
         stdin,
         stdout,
         unmount: instance.unmount,
+        async waitFor(condition: (() => void) | string, options?: WaitForOptions): Promise<void> {
+            await waitFor(condition, () => screen.text(), options);
+        },
     };
 };
 
@@ -288,4 +335,7 @@ const cleanup = (): void => {
     instances.length = 0;
 };
 
-export { cleanup, testRender as render };
+export { cleanup, createKeySender, createScreen, KEY, testRender as render, waitFor };
+export type { KeyName, KeySender } from "./keys";
+export type { Screen } from "./screen";
+export type { WaitForOptions } from "./wait-for";
