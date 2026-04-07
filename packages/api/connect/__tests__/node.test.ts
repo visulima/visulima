@@ -12,7 +12,7 @@ const noop: AnyHandler = async () => {
 };
 
 const badFunction = () => {
-    // throw new Error("bad function");
+    // intentionally empty - represents a no-op handler for testing
 };
 
 const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CONNECT", "TRACE"];
@@ -461,11 +461,11 @@ describe(createRouter, () => {
 
         const context2 = createRouter().get("/hello/:name");
 
-        // @ts-expect-error: internal
-        context2.prepareRequest(
+        // @ts-expect-error: accessing private static method for testing
+        NodeRouter.prepareRequest(
             request,
-            // @ts-expect-error: internal
-            context2.router.find("GET", "/hello/world"),
+            // @ts-expect-error: accessing private router for testing
+            (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"),
         );
 
         // @ts-expect-error: extra prop
@@ -475,11 +475,11 @@ describe(createRouter, () => {
             params: { age: "20" },
         };
 
-        // @ts-expect-error: internal
-        context2.prepareRequest(
+        // @ts-expect-error: accessing private static method for testing
+        NodeRouter.prepareRequest(
             requestWithParameters as unknown as IncomingMessage,
-            // @ts-expect-error: internal
-            context2.router.find("GET", "/hello/world"),
+            // @ts-expect-error: accessing private router for testing
+            (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"),
         );
 
         expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
@@ -488,11 +488,11 @@ describe(createRouter, () => {
             params: { name: "sunshine" },
         };
 
-        // @ts-expect-error: internal
-        context2.prepareRequest(
+        // @ts-expect-error: accessing private static method for testing
+        NodeRouter.prepareRequest(
             requestWithParameters2 as unknown as IncomingMessage,
-            // @ts-expect-error: internal
-            context2.router.find("GET", "/hello/world"),
+            // @ts-expect-error: accessing private router for testing
+            (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"),
         );
 
         expect(requestWithParameters2.params, "params are merged (existing takes precedence)").toStrictEqual({ name: "sunshine" });
