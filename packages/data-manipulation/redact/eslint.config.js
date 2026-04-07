@@ -31,11 +31,4 @@ export default createConfig(
             "unicorn/no-null": "off",
         },
     },
-    {
-        files: ["./src/**/*.ts"],
-        rules: {
-            // index-based for loops are used intentionally for performance over for-of
-            "unicorn/no-for-loop": "off",
-        },
-    },
 );
