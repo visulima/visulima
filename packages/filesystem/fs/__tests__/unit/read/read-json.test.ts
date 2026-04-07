@@ -1,41 +1,49 @@
 import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "@visulima/path";
+import type { JsonValue } from "type-fest";
 import { describe, expect, it } from "vitest";
 
 import JsonError from "../../../src/error/json-error";
 import readJson from "../../../src/read/read-json";
 import readJsonSync from "../../../src/read/read-json-sync";
+import type { JsonReviver, ReadJsonOptions } from "../../../src/types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fixturePath = join(__dirname, "..", "..", "..", "__fixtures__", "read-json");
 
+type ReadJsonFunction = (path: URL | string, reviverOrOptions?: JsonReviver | ReadJsonOptions, options?: ReadJsonOptions) => JsonValue | Promise<JsonValue>;
+
 describe.each([
-    ["readJson", readJson],
-    ["readJsonSync", readJsonSync],
-])("%s", (name: string, function_) => {
+    ["readJson", readJson as ReadJsonFunction],
+    ["readJsonSync", readJsonSync as ReadJsonFunction],
+])("%s", (name: string, function_: ReadJsonFunction) => {
     it("should read a valid JSON file with default options", async () => {
         expect.assertions(1);
 
-        let result = function_(join(fixturePath, "test.json"));
+        const result: JsonValue | Promise<JsonValue> = function_(join(fixturePath, "test.json"));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(result).resolves.toStrictEqual({
+                name: "John Doe",
+            });
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(result).toStrictEqual({
+                name: "John Doe",
+            });
         }
-
-        expect(result).toStrictEqual({
-            name: "John Doe",
-        });
     });
 
     it("should read a valid JSON file with custom options", async () => {
         expect.assertions(1);
 
-        const reviver = (_, value) => value;
-        const options = {
+        const reviver: JsonReviver = (_: string, value: JsonValue): JsonValue => value;
+        const options: ReadJsonOptions = {
             color: {
                 gutter: (value: string) => value,
                 marker: (value: string) => value,
@@ -43,29 +51,35 @@ describe.each([
             },
         };
 
-        let result = function_(join(fixturePath, "test.json"), reviver, options);
+        const result: JsonValue | Promise<JsonValue> = function_(join(fixturePath, "test.json"), reviver, options);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(result).resolves.toStrictEqual({
+                name: "John Doe",
+            });
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(result).toStrictEqual({
+                name: "John Doe",
+            });
         }
-
-        expect(result).toStrictEqual({
-            name: "John Doe",
-        });
     });
 
     it("should read a JSON file with an empty object", async () => {
         expect.assertions(1);
 
-        let result = function_(join(fixturePath, "empty.json"));
+        const result: JsonValue | Promise<JsonValue> = function_(join(fixturePath, "empty.json"));
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(result).resolves.toStrictEqual({});
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(result).toStrictEqual({});
         }
-
-        expect(result).toStrictEqual({});
     });
 
     it("should throw an error if the file path is not string or URL", async () => {
@@ -74,25 +88,23 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(() => function_(null)).rejects.toThrow("Path must be a non-empty string or URL.");
+            await expect(() => function_(null as unknown as string)).rejects.toThrow("Path must be a non-empty string or URL.");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => function_(null)).toThrow("Path must be a non-empty string or URL.");
+            expect(() => function_(null as unknown as string)).toThrow("Path must be a non-empty string or URL.");
         }
     });
 
     it("should throw an JSONError if the file content is broken", async () => {
         expect.assertions(1);
 
-        try {
-            if (name === "readJson") {
-                await function_(join(fixturePath, "broken.json"));
-            } else {
-                function_(join(fixturePath, "broken.json"));
-            }
-        } catch (error) {
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "readJson") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error).toBeInstanceOf(JsonError);
+            await expect(() => function_(join(fixturePath, "broken.json"))).rejects.toBeInstanceOf(JsonError);
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => function_(join(fixturePath, "broken.json"))).toThrow(JsonError);
         }
     });
 
@@ -100,18 +112,22 @@ describe.each([
         expect.assertions(1);
 
         const beforeParse = (data: string) => data.replace("John Doe", "Test");
-        let result = function_(join(fixturePath, "test.json"), {
+        const result: JsonValue | Promise<JsonValue> = function_(join(fixturePath, "test.json"), {
             beforeParse,
         });
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(result).resolves.toStrictEqual({
+                name: "Test",
+            });
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(result).toStrictEqual({
+                name: "Test",
+            });
         }
-
-        expect(result).toStrictEqual({
-            name: "Test",
-        });
     });
 
     it("should throw a error on a missing file", async () => {

@@ -56,7 +56,7 @@ describe.each([
         const path = "test.yaml";
         const data = { test: { deep: "test" } };
 
-        const replacer = (key: string, value: any) => (key === "test" ? "replaced" : value);
+        const replacer = (key: string, value: unknown): unknown => (key === "test" ? "replaced" : value);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeYaml") {
@@ -78,7 +78,7 @@ describe.each([
         const path = "test.yaml";
         const data = { test: { deep: "test" } };
 
-        const replacer = (key: string, value: any) => (key === "deep" ? "replaced" : value);
+        const replacer = (key: string, value: unknown): unknown => (key === "deep" ? "replaced" : value);
         const options = { indent: 4 };
 
         // eslint-disable-next-line vitest/no-conditional-in-test
