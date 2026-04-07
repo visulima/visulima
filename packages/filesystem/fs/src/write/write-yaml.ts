@@ -1,6 +1,6 @@
 import { stringify } from "yaml";
 
-import type { WriteYamlOptions, YamlReplacer } from "../types";
+import type { JsonReplacer, WriteYamlOptions } from "../types";
 import writeFile from "./write-file";
 
 async function writeYaml(
@@ -13,7 +13,7 @@ async function writeYaml(
     path: URL | string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any,
-    replacer?: YamlReplacer,
+    replacer?: JsonReplacer,
     options?: WriteYamlOptions | number | string,
 ): Promise<void>;
 
@@ -56,23 +56,23 @@ async function writeYaml(
     path: URL | string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
     data: any,
-    replacer?: WriteYamlOptions | YamlReplacer,
+    replacer?: WriteYamlOptions | JsonReplacer,
     options?: WriteYamlOptions | number | string,
 ): Promise<void> {
     let stringifyOptions: WriteYamlOptions | undefined;
-    let effectiveReplacer: YamlReplacer | undefined;
+    let effectiveReplacer: JsonReplacer | undefined;
     let space: number | string | undefined;
 
     if (typeof replacer === "object" && replacer !== null && !Array.isArray(replacer) && typeof replacer !== "function") {
         stringifyOptions = replacer;
         effectiveReplacer = stringifyOptions.replacer;
         space = stringifyOptions.space;
-    } else if (typeof options === "object" && options !== null) {
+    } else if (typeof options === "object") {
         stringifyOptions = options;
-        effectiveReplacer = replacer as YamlReplacer;
-        space = stringifyOptions.space ?? (typeof options === "number" || typeof options === "string" ? options : undefined);
+        effectiveReplacer = replacer as JsonReplacer;
+        space = stringifyOptions.space;
     } else {
-        effectiveReplacer = replacer as YamlReplacer;
+        effectiveReplacer = replacer as JsonReplacer;
         space = options;
     }
 

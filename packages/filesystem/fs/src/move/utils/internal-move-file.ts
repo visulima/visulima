@@ -33,9 +33,8 @@ const internalMoveFile = async (
 
     try {
         await rename(sourcePath, destinationPath);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        if (error.code === "EXDEV") {
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code === "EXDEV") {
             await copyFile(sourcePath, destinationPath);
 
             await unlink(sourcePath);

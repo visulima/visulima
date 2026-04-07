@@ -45,7 +45,10 @@ const emptyDir = async (dir: URL | string, options?: RetryOptions): Promise<void
         return;
     }
 
-    for await (const item of await readdir(dir)) {
+    const items = await readdir(dir);
+
+    for (const item of items) {
+        // eslint-disable-next-line no-await-in-loop
         await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
     }
 };

@@ -75,10 +75,8 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
         if (pathExists && !options.overwrite) {
             stat = await nodeStat(path);
 
-            if (options.chown === undefined) {
-                // eslint-disable-next-line no-param-reassign
-                options.chown = { gid: stat.gid, uid: stat.uid };
-            }
+            // eslint-disable-next-line no-param-reassign
+            options.chown ??= { gid: stat.gid, uid: stat.uid };
 
             await rename(path, `${path}.bak`);
         }
@@ -95,9 +93,8 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
         await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
         await rename(temporaryPath, path);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        throw new Error(`Failed to write file at: ${path} - ${error.message}`, { cause: error });
+    } catch (error: unknown) {
+        throw new Error(`Failed to write file at: ${path} - ${(error as Error).message}`, { cause: error });
     } finally {
         if (await isAccessible(temporaryPath)) {
             await unlink(`${path}.tmp`);

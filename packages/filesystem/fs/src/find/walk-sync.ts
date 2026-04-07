@@ -15,7 +15,7 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
 import globToRegExp from "./utils/glob-to-regexp";
 import walkInclude from "./utils/walk-include";
 
-/** Create {@linkcode WalkEntry} for the `path` synchronously. */
+/** Create WalkEntry for the `path` synchronously. */
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = (path: string): WalkEntry => {
     const normalizePath: string = normalize(path);
@@ -23,11 +23,11 @@ const _createWalkEntry = (path: string): WalkEntry => {
     const info: Stats = statSync(normalizePath);
 
     return {
-        isDirectory: info.isDirectory,
+        isDirectory: () => info.isDirectory(),
 
-        isFile: info.isFile,
+        isFile: () => info.isFile(),
 
-        isSymbolicLink: info.isSymbolicLink,
+        isSymbolicLink: () => info.isSymbolicLink(),
         name: basename(normalizePath),
         path: normalizePath,
     };
@@ -35,7 +35,7 @@ const _createWalkEntry = (path: string): WalkEntry => {
 
 /**
  * Synchronously walks the file tree rooted at `directory`, yielding each file or directory that matches the criteria specified in `options`.
- * This is the synchronous version of the {@linkcode walk} function.
+ * This is the synchronous version of the async walk function.
  * @param directory The root directory to start walking from.
  * @param options Optional configuration to control the walking process. See {@link WalkOptions}.
  * @param options.extensions List of file extensions used to filter entries.
@@ -85,8 +85,14 @@ export default function* walkSync(
         return;
     }
 
-    const mappedMatch = match ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
-    const mappedSkip = skip ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
+    const mappedMatch = match
+        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
+        ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        : undefined;
+    const mappedSkip = skip
+        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
+        ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        : undefined;
 
     // eslint-disable-next-line no-param-reassign
     directory = resolve(toPath(directory));
@@ -100,9 +106,11 @@ export default function* walkSync(
     }
 
     try {
-        for (const entry of readdirSync(directory, {
+        const entries = readdirSync(directory, {
             withFileTypes: true,
-        })) {
+        });
+
+        for (const entry of entries) {
             let path = join(directory, entry.name);
 
             if (entry.isSymbolicLink()) {
@@ -110,11 +118,11 @@ export default function* walkSync(
                     path = realpathSync(path);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield {
-                        isDirectory: entry.isDirectory,
+                        isDirectory: () => entry.isDirectory(),
 
-                        isFile: entry.isFile,
+                        isFile: () => entry.isFile(),
 
-                        isSymbolicLink: entry.isSymbolicLink,
+                        isSymbolicLink: () => entry.isSymbolicLink(),
                         name: entry.name,
                         path: normalize(path),
                     };
@@ -138,11 +146,11 @@ export default function* walkSync(
                 } as WalkOptions);
             } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield {
-                    isDirectory: entry.isDirectory,
+                    isDirectory: () => entry.isDirectory(),
 
-                    isFile: entry.isFile,
+                    isFile: () => entry.isFile(),
 
-                    isSymbolicLink: entry.isSymbolicLink,
+                    isSymbolicLink: () => entry.isSymbolicLink(),
                     name: entry.name,
                     path: normalize(path),
                 };

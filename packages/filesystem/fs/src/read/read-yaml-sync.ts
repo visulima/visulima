@@ -3,8 +3,8 @@ import { parse } from "yaml";
 import type { CompressionType, ReadYamlOptions, YamlReviver } from "../types";
 import readFileSync from "./read-file-sync";
 
-function readYamlSync<R = Record<string, unknown>>(path: URL | string, options?: ReadYamlOptions<CompressionType>): R;
-function readYamlSync<R = Record<string, unknown>>(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<CompressionType>): R;
+function readYamlSync(path: URL | string, options?: ReadYamlOptions<CompressionType>): Record<string, unknown>;
+function readYamlSync(path: URL | string, reviver?: YamlReviver, options?: ReadYamlOptions<CompressionType>): Record<string, unknown>;
 
 /**
  * Synchronously reads a YAML file and then parses it into an object.

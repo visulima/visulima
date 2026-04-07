@@ -30,7 +30,7 @@ describe.each([
 
         const result = await function_(join(fixturePath, "text.md"), { buffer: true });
 
-        expect(result?.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
+        expect(result.toString()).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
     it("should throw a error on a missing file", async () => {

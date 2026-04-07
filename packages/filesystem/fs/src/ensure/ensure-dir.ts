@@ -24,13 +24,12 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
         const fileInfo = await lstat(directory);
 
         if (!fileInfo.isDirectory()) {
-            throw new Error(`Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`);
+            throw new Error(`Ensure path exists, expected 'dir', got '${String(getFileInfoType(fileInfo))}'`);
         }
 
         return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        if (error.code !== "ENOENT") {
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             throw error;
         }
     }
@@ -39,16 +38,15 @@ const ensureDir = async (directory: URL | string): Promise<void> => {
     // This can be racy. So we catch AlreadyExists and check lstat again.
     try {
         await mkdir(directory, { recursive: true });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        if (error.code !== "EEXIST") {
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
             throw error;
         }
 
         const fileInfo = await lstat(directory);
 
         if (!fileInfo.isDirectory()) {
-            throw new Error(`Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`);
+            throw new Error(`Ensure path exists, expected 'dir', got '${String(getFileInfoType(fileInfo))}'`, { cause: error });
         }
     }
 };

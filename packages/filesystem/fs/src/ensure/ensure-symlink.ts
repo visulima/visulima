@@ -35,6 +35,7 @@ const isWindows = process.platform === "win32" || /^(?:msys|cygwin)$/.test(<stri
  * ```
  */
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- symlink creation requires multiple platform-specific checks
 const ensureSymlink = async (target: URL | string, linkName: URL | string, type?: symlinkSync.Type): Promise<void> => {
     assertValidFileOrDirectoryPath(target);
     assertValidFileOrDirectoryPath(linkName);
@@ -65,20 +66,27 @@ const ensureSymlink = async (target: URL | string, linkName: URL | string, type?
 
     // Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
     // lack permission to create them
-    const symlinkType: string | null = type ?? (isWindows ? "junction" : sourceFilePathType === "dir" ? "dir" : "file");
+    let symlinkType: string = type ?? "file";
+
+    if (!type) {
+        if (isWindows) {
+            symlinkType = "junction";
+        } else {
+            symlinkType = sourceFilePathType === "dir" ? "dir" : "file";
+        }
+    }
 
     try {
         await symlink(toNamespacedPath(toPath(targetRealPath)), linkName, symlinkType);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        if (error.code !== "EEXIST") {
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
             throw error;
         }
 
         const linkStatInfo = await lstat(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName}`);
+            throw new AlreadyExistsError(`A ${String(getFileInfoType(linkStatInfo))} already exists at the path: ${linkName}`);
         }
 
         const linkPath = await readlink(linkName);

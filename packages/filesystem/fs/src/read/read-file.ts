@@ -15,6 +15,7 @@ const decompressionMethods: Record<string, DecompressionMethod> = {
     brotli: brotliDecompress,
     gzip: unzip,
     none: (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => {
+        // eslint-disable-next-line unicorn/no-null -- Node.js callback convention uses null for no error
         callback(null, buffer);
     },
 } as const;

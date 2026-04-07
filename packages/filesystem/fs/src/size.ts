@@ -80,10 +80,12 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
     return await new Promise((resolve, reject) => {
-        compressor.on("data", (chunk) => {
+        compressor.on("data", (chunk: Buffer) => {
             totalSize += chunk.length;
         });
-        compressor.on("end", () => { resolve(totalSize); });
+        compressor.on("end", () => {
+            resolve(totalSize);
+        });
         compressor.on("error", reject);
 
         stream.on("error", reject);

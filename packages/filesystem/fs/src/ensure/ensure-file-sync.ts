@@ -30,13 +30,12 @@ const ensureFileSync = (filePath: URL | string): void => {
         const stat = lstatSync(filePath);
 
         if (!stat.isFile()) {
-            throw new Error(`Ensure path exists, expected 'file', got '${getFileInfoType(stat)}'`);
+            throw new Error(`Ensure path exists, expected 'file', got '${String(getFileInfoType(stat))}'`);
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
         // if file not exists
 
-        if (error.code === "ENOENT") {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
             // ensure dir exists
             ensureDirSync(dirname(toPath(filePath)));
             // create file

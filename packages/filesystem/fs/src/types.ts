@@ -101,12 +101,12 @@ export type ReadFileOptions<C> = {
      * The encoding to use. Default: `utf8`
      * @see https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
      */
-    encoding?: ReadFileEncoding | undefined;
+    encoding?: ReadFileEncoding;
 
     /**
      * The flag used to open the file. Default: `r`
      */
-    flag?: number | string | undefined;
+    flag?: number | string;
 };
 
 /**
@@ -176,12 +176,12 @@ export type WriteFileOptions = {
     /**
      * The encoding to use. Default: `utf8`
      */
-    encoding?: BufferEncoding | null | undefined;
+    encoding?: BufferEncoding | null;
 
     /**
      * The flag used to write the file. Default: `w`
      */
-    flag?: string | undefined;
+    flag?: string;
 
     /**
      * The file mode (permission and sticky bits). Default: `0o666`
@@ -230,7 +230,7 @@ export type WriteJsonOptions = WriteFileOptions & {
      *
      * Pass in `undefined` for no formatting.
      */
-    indent?: number | string | undefined;
+    indent?: number | string;
 
     /**
      * Passed into `JSON.stringify`.
@@ -312,14 +312,14 @@ export type RetryOptions = {
      * `true` for operations that support it (like `rm`).
      * @default 0
      */
-    maxRetries?: number | undefined;
+    maxRetries?: number;
 
     /**
      * The amount of time in milliseconds to wait between retries.
      * This option is ignored if the `recursive` option is not `true` for operations that support it.
      * @default 100
      */
-    retryDelay?: number | undefined;
+    retryDelay?: number;
 };
 
 /**
@@ -351,7 +351,7 @@ export type WriteYamlOptions = CreateNodeOptions
         /**
          * Passed into `yaml.stringify` as the replacer argument.
          */
-        replacer?: YamlReplacer;
+        replacer?: JsonReplacer;
 
         /**
          * Passed into `yaml.stringify` as the space argument for indentation.

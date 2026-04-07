@@ -4,7 +4,7 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 
 /**
- * Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration.
+ * Error thrown in walk or walkSync during iteration.
  * @example
  * ```javascript
  * import { WalkError } from "@visulima/fs/error";
@@ -51,7 +51,7 @@ class WalkError extends Error {
      * @param root The root directory path where the walk operation started or encountered the error.
      */
     public constructor(cause: unknown, root: string) {
-        super(`${cause instanceof Error ? cause.message : cause} for path "${root}"`);
+        super(`${cause instanceof Error ? cause.message : String(cause)} for path "${root}"`);
 
         this.cause = cause;
         this.root = root;

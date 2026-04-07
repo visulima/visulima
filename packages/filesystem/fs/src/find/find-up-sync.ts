@@ -84,10 +84,8 @@ const findUpSync = (
         return [name];
     };
 
-    if (options.allowSymlinks === undefined) {
-        // eslint-disable-next-line no-param-reassign
-        options.allowSymlinks = true;
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.allowSymlinks ??= true;
 
     const statFunction = options.allowSymlinks ? statSync : lstatSync;
 
