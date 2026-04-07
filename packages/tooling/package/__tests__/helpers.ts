@@ -1,10 +1,12 @@
 import { execSync } from "node:child_process";
 
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
 /**
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
-export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
+export const esc = (string_: string): string => string_.replaceAll("", String.raw`\x1b`);
 
 /**
  * Return output of javascript file.
@@ -16,5 +18,5 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     const result = execSync(cmd);
 
     // replace last newline in result
-    return result.toString().replace(/\n$/, "");
+    return result.toString().replace(TRAILING_NEWLINE_REGEX, "");
 };

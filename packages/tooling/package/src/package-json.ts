@@ -7,7 +7,7 @@ import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
 import { readYaml, readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies,e18e/ban-dependencies -- dot-prop is a required dependency for property access
 import { getProperty, hasProperty } from "dot-prop";
 import JSON5 from "json5";
 import type { Input } from "normalize-package-data";
@@ -18,6 +18,8 @@ import { readPnpmCatalogs, readPnpmCatalogsSync, resolveCatalogReferences } from
 import type { Cache, EnsurePackagesOptions, NormalizedPackageJson, PackageJson } from "./types";
 import confirm from "./utils/confirm";
 import isNode from "./utils/is-node";
+
+const LAST_SEPARATOR_REGEX = /, ([^,]*)$/;
 
 const PackageJsonParseCache = new Map<string, NormalizedPackageJson>();
 
@@ -84,7 +86,8 @@ const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp |
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
-    const yamlData = await readYaml(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYaml types unresolvable from bundled workspace package
+    const yamlData: unknown = await readYaml(filePath);
 
     return yamlData as JsonObject;
 };
@@ -95,7 +98,8 @@ const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFileSync = (filePath: string): JsonObject => {
-    const yamlData = readYamlSync(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYamlSync types unresolvable from bundled workspace package
+    const yamlData: unknown = readYamlSync(filePath);
 
     return yamlData as JsonObject;
 };
@@ -106,7 +110,7 @@ const parseYamlFileSync = (filePath: string): JsonObject => {
  * @returns The parsed JSON5 data as a JSON object
  */
 const parseJson5File = async (filePath: string): Promise<JsonObject> => {
-    const text = await readFile(filePath);
+    const text: string = await readFile(filePath);
 
     return JSON5.parse(text);
 };
@@ -117,7 +121,8 @@ const parseJson5File = async (filePath: string): Promise<JsonObject> => {
  * @returns The parsed JSON5 data as a JSON object
  */
 const parseJson5FileSync = (filePath: string): JsonObject => {
-    const text = readFileSync(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readFileSync types unresolvable from bundled workspace package
+    const text: string = readFileSync(filePath);
 
     return JSON5.parse(text);
 };
@@ -140,7 +145,8 @@ const parsePackageFile = async (filePath: string, options?: { json5?: boolean; y
         return parseJson5File(filePath);
     }
 
-    return readJson(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readJson types unresolvable from bundled workspace package
+    return readJson(filePath) as Promise<JsonObject>;
 };
 
 /**
@@ -161,7 +167,8 @@ const parsePackageFileSync = (filePath: string, options?: { json5?: boolean; yam
         return parseJson5FileSync(filePath);
     }
 
-    return readJsonSync(filePath);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readJsonSync types unresolvable from bundled workspace package
+    return readJsonSync(filePath) as JsonObject;
 };
 
 export type FindPackageJsonCache = Cache<NormalizedReadResult>;
@@ -202,7 +209,9 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     let filePath: string | undefined;
 
     // Search for files in order of preference
-    for await (const pattern of searchPatterns) {
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
+    for (const pattern of searchPatterns) {
+        // eslint-disable-next-line no-await-in-loop,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- sequential search by design; findUp types unresolvable from bundled workspace package
         filePath = await findUp(pattern, findUpConfig);
 
         if (filePath) {
@@ -211,7 +220,8 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     }
 
     if (!filePath) {
-        throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(/, ([^,]*)$/, " or $1")} found.`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
+        throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
@@ -276,7 +286,9 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     let filePath: string | undefined;
 
     // Search for files in order of preference
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const pattern of searchPatterns) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
         filePath = findUpSync(pattern, findUpConfig);
 
         if (filePath) {
@@ -285,7 +297,8 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     }
 
     if (!filePath) {
-        throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(/, ([^,]*)$/, " or $1")} found.`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
+        throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
     }
 
     const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonFileCache;
@@ -329,17 +342,19 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
  * @returns A `Promise` that resolves once the package.json file has been written. The type of the returned promise is `Promise&lt;void>`.
  */
 
-export const writePackageJson = async <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
+export const writePackageJson = async (data: PackageJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- writeJson types unresolvable from bundled workspace package
     await writeJson(join(directory, "package.json"), data, writeOptions);
 };
 
-export const writePackageJsonSync = <T = PackageJson>(data: T, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
+export const writePackageJsonSync = (data: PackageJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- writeJsonSync types unresolvable from bundled workspace package
     writeJsonSync(join(directory, "package.json"), data, writeOptions);
 };
 
@@ -368,7 +383,7 @@ export const parsePackageJsonSync = (
     },
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): NormalizedPackageJson => {
-    const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
+    const isObject = typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
 
     if (!isObject && !isString) {
@@ -396,7 +411,8 @@ export const parsePackageJsonSync = (
 
         isFile = true;
     } else {
-        json = parseJson(packageFile as string);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- parseJson types unresolvable from bundled workspace package
+        json = parseJson(packageFile as string) as JsonObject;
     }
 
     // Resolve catalog references if enabled and we have a file path
@@ -405,7 +421,7 @@ export const parsePackageJsonSync = (
             const catalogs = readPnpmCatalogsSync(packageFile as string);
 
             if (catalogs) {
-                resolveCatalogReferences(json as JsonObject, catalogs);
+                resolveCatalogReferences(json, catalogs);
             }
         } else {
             throw new Error("The 'resolveCatalogs' option can only be used on a file path.");
@@ -417,10 +433,10 @@ export const parsePackageJsonSync = (
     const result = json as NormalizedPackageJson;
 
     // Cache the result for file-based parsing
-    if (isFile && filePath && options?.cache) {
-        const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+    if (isFile && options?.cache) {
+        const cache = typeof options.cache === "boolean" ? PackageJsonParseCache : options.cache;
 
-        cache.set(filePath, result);
+        cache.set(filePath as string, result);
     }
 
     return result;
@@ -451,7 +467,7 @@ export const parsePackageJson = async (
     },
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<NormalizedPackageJson> => {
-    const isObject = packageFile !== null && typeof packageFile === "object" && !Array.isArray(packageFile);
+    const isObject = typeof packageFile === "object" && !Array.isArray(packageFile);
     const isString = typeof packageFile === "string";
 
     if (!isObject && !isString) {
@@ -479,7 +495,8 @@ export const parsePackageJson = async (
 
         isFile = true;
     } else {
-        json = parseJson(packageFile as string);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- parseJson types unresolvable from bundled workspace package
+        json = parseJson(packageFile as string) as JsonObject;
     }
 
     // Resolve catalog references if enabled
@@ -488,7 +505,7 @@ export const parsePackageJson = async (
             const catalogs = await readPnpmCatalogs(packageFile as string);
 
             if (catalogs) {
-                resolveCatalogReferences(json as JsonObject, catalogs);
+                resolveCatalogReferences(json, catalogs);
             }
         } else {
             throw new Error("The 'resolveCatalogs' option can only be used on a file path.");
@@ -500,10 +517,10 @@ export const parsePackageJson = async (
     const result = json as NormalizedPackageJson;
 
     // Cache the result for file-based parsing
-    if (isFile && filePath && options?.cache) {
-        const cache = options.cache && typeof options.cache !== "boolean" ? options.cache : PackageJsonParseCache;
+    if (isFile && options?.cache) {
+        const cache = typeof options.cache === "boolean" ? PackageJsonParseCache : options.cache;
 
-        cache.set(filePath, result);
+        cache.set(filePath as string, result);
     }
 
     return result;
@@ -543,6 +560,7 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
 
     const allDependencies = { ...dependencies, ...devDependencies, ...options?.peerDeps === false ? {} : peerDependencies };
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const argument of arguments_) {
         if (hasProperty(allDependencies, argument)) {
             return true;
@@ -593,6 +611,7 @@ export const ensurePackages = async (
         ...options,
     } satisfies EnsurePackagesOptions;
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const packageName of packages) {
         if (
             (config.deps && hasProperty(dependencies, packageName))
@@ -609,7 +628,7 @@ export const ensurePackages = async (
         return;
     }
 
-    if (process.env.CI || (isNode && !process.stdout?.isTTY)) {
+    if (process.env.CI || (isNode && !process.stdout.isTTY)) {
         const message = `Skipping package installation for [${packages.join(", ")}] because the process is not interactive.`;
 
         if (options.throwOnWarn) {

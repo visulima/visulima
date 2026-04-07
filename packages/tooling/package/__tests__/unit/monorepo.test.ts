@@ -8,6 +8,8 @@ import { describe, expect, it } from "vitest";
 import type { RootMonorepo } from "../../src/monorepo";
 import { findMonorepoRoot, findMonorepoRootSync } from "../../src/monorepo";
 
+const NO_MONOREPO_ROOT_REGEX = /No monorepo root could be found upwards/;
+
 const cwd = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "workspaces");
 const packages = ["package-a", "package-b", "package-c"];
 const scenarios = ["pnpm", "yarn", "turbo-pnpm", "turbo-yarn", "turbo-npm", "yarn-packageManager", "npm", "lerna", "lerna-sub-yarn-packageManager"];
@@ -92,11 +94,11 @@ describe("monorepo", () => {
             if (name === "findMonorepoRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 await expect(_function(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
-                    /No monorepo root could be found upwards/,
+                    NO_MONOREPO_ROOT_REGEX,
                 );
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(() => (_function as typeof findMonorepoRootSync)(temporaryDirectory())).toThrow(/No monorepo root could be found upwards/);
+                expect(() => (_function as typeof findMonorepoRootSync)(temporaryDirectory())).toThrow(NO_MONOREPO_ROOT_REGEX);
             }
         });
 

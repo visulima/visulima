@@ -32,7 +32,6 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/require-await": "off",
             "e18e/ban-dependencies": "off",
-            "e18e/prefer-static-regex": "off",
             "sonarjs/no-undefined-argument": "off",
         },
     },
@@ -41,66 +40,6 @@ export default createConfig(
         rules: {
             "vitest/no-conditional-expect": "off",
             "vitest/no-conditional-in-test": "off",
-        },
-    },
-    {
-        files: ["./src/monorepo.ts"],
-        rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-        },
-    },
-    {
-        files: ["./src/package-json.ts"],
-        rules: {
-            "@typescript-eslint/await-thenable": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
-            "@typescript-eslint/no-unnecessary-type-parameters": "off",
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "e18e/ban-dependencies": "off",
-            "e18e/prefer-static-regex": "off",
-            "no-for-of-array/no-for-of-array": "off",
-            "sonarjs/different-types-comparison": "off",
-        },
-    },
-    {
-        files: ["./src/package-manager.ts"],
-        rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "@typescript-eslint/require-await": "off",
-        },
-    },
-    {
-        files: ["./src/package.ts"],
-        rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-        },
-    },
-    {
-        files: ["./src/pnpm.ts"],
-        rules: {
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "no-for-of-array/no-for-of-array": "off",
-        },
-    },
-    {
-        files: ["./src/error/package-not-found-error.ts"],
-        rules: {
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
         },
     },
 );

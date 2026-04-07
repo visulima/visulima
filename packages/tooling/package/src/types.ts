@@ -7,8 +7,7 @@ import type { PackageJson as typeFestPackageJson } from "type-fest";
 export type NormalizedPackageJson = normalizePackage & PackageJson;
 export type PackageJson = typeFestPackageJson;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Cache<T = any> = Map<string, T>;
+export type Cache<T = unknown> = Map<string, T>;
 
 export type EnsurePackagesOptions = {
     /** Configuration for user confirmation prompts when installing packages */

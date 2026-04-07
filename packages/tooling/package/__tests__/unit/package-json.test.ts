@@ -22,6 +22,10 @@ import {
 } from "../../src/package-json";
 import type { NormalizedPackageJson } from "../../src/types";
 
+const NO_DESCRIPTION_REGEX = /No description/;
+const REPOSITORY_FIELD_REGEX = /repository field/;
+const UNRELATED_REGEX = /unrelated.*/;
+
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
 
 const { mockConfirm, mockInstallPackage } = vi.hoisted(() => {
@@ -218,7 +222,7 @@ describe("package-json", () => {
 
             try {
                 await parsePackageJson(packageFile, {
-                    ignoreWarnings: [/No description/, /repository field/],
+                    ignoreWarnings: [NO_DESCRIPTION_REGEX, REPOSITORY_FIELD_REGEX],
                     strict: true,
                 });
 
@@ -241,7 +245,7 @@ describe("package-json", () => {
 
             try {
                 await parsePackageJson(packageFile, {
-                    ignoreWarnings: ["No description", /repository field/],
+                    ignoreWarnings: ["No description", REPOSITORY_FIELD_REGEX],
                     strict: true,
                 });
 
@@ -264,7 +268,7 @@ describe("package-json", () => {
 
             try {
                 await parsePackageJson(packageFile, {
-                    ignoreWarnings: ["Different warning", /unrelated.*/],
+                    ignoreWarnings: ["Different warning", UNRELATED_REGEX],
                     strict: true,
                 });
 
