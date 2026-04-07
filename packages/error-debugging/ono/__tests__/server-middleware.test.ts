@@ -5,6 +5,10 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { createNodeHttpHandler, createOpenInEditorMiddleware } from "../src/server/open-in-editor";
 
+const URL_COLUMN_FILE_LINE_PATTERN = /\/\?column=\d+&file=.+&line=\d+/;
+const URL_FILE_LINE_COLUMN_EDITOR_PATTERN = /\/\?file=.+&line=.+&column=.+&editor=.+/;
+const URL_COLUMN_FILE_LINE_EDITOR_PATTERN = /\/\?column=\d+&file=.+&line=\d+&editor=.+/;
+
 describe("server middleware", () => {
     describe(createOpenInEditorMiddleware, () => {
         it("should create middleware function", () => {
@@ -48,7 +52,7 @@ describe("server middleware", () => {
 
             await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRequest.url).toMatch(/\/\?column=\d+&file=.+&line=\d+/);
+            expect(mockRequest.url).toMatch(URL_COLUMN_FILE_LINE_PATTERN);
         });
 
         it("should handle GET requests with query parameters", async () => {
@@ -72,7 +76,7 @@ describe("server middleware", () => {
 
             await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRequest.url).toMatch(/\/\?file=.+&line=.+&column=.+&editor=.+/);
+            expect(mockRequest.url).toMatch(URL_FILE_LINE_COLUMN_EDITOR_PATTERN);
         });
 
         it("should handle missing file parameter", async () => {
@@ -212,7 +216,7 @@ describe("server middleware", () => {
 
             await middleware(mockRequest, mockResponse, next);
 
-            expect(mockRequest.url).toMatch(/\/\?column=\d+&file=.+&line=\d+&editor=.+/);
+            expect(mockRequest.url).toMatch(URL_COLUMN_FILE_LINE_EDITOR_PATTERN);
         });
 
         it("should handle malformed JSON gracefully", async () => {

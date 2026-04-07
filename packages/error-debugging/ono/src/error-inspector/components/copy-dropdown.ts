@@ -7,6 +7,8 @@ import clipboardIcon from "lucide-static/icons/clipboard.svg?data-uri&encoding=c
 
 import { sanitizeAttribute, sanitizeHtml } from "../utils/sanitize";
 
+const HASH_PREFIX_PATTERN = /^#/;
+
 const copyDropdown = ({
     label = "Copy",
     secondaryLabel = "Copy fix prompt",
@@ -34,7 +36,7 @@ const copyDropdown = ({
     title="${safeLabelAttribute}"
     aria-haspopup="menu"
     aria-expanded="false"
-    aria-controls="${sanitizeAttribute(`ono-copy-menu-${String(targetId).replace(/^#/, "")}`)}"
+    aria-controls="${sanitizeAttribute(`ono-copy-menu-${targetId.replace(HASH_PREFIX_PATTERN, "")}`)}"
     class="ono-dropdown-toggle inline-flex justify-center items-center gap-2 px-1 h-8 rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-1)] bg-[var(--ono-surface)] text-[var(--ono-text)] hover:bg-[var(--ono-hover-overlay)] focus:outline-hidden focus:bg-[var(--ono-hover-overlay)] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
   >
     <span class="ono-copy-default dui size-4 transition" style="-webkit-mask-image: url('${clipboardIcon}'); mask-image: url('${clipboardIcon}')"></span>

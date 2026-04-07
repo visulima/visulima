@@ -4,9 +4,9 @@ const editorSelector = (editor?: Editors): string => {
     let options = `<option value="">Auto-detected Editor</option>`;
 
     (Object.keys(Editors) as (keyof typeof Editors)[]).forEach((editorName) => {
-        const isSelected = editor && String(editor) === String(editorName);
+        const isSelected = editor !== undefined && (editor as string) === (editorName as string);
 
-        options += `<option value="${String(editorName)}" ${isSelected ? "selected" : ""}>${Editors[editorName]}</option>`;
+        options += `<option value="${editorName}" ${isSelected ? "selected" : ""}>${Editors[editorName]}</option>`;
     });
 
     return `<div class="relative inline-block">

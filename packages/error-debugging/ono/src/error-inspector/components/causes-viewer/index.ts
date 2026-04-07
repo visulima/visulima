@@ -18,13 +18,14 @@ const causes = async (causeList: unknown[], options: { openInEditorUrl?: string 
     const content: string[] = [];
     const scripts: string[] = [];
 
-    for await (const [index, cause] of causeList.entries()) {
+    for (const [index, cause] of causeList.entries()) {
         if (cause instanceof Error) {
+            // eslint-disable-next-line no-await-in-loop -- sequential processing of error causes
             const { html: stackTraceHtml, script: stackTraceScript } = await stackTraceViewer(cause, {
                 openInEditorUrl: options.openInEditorUrl,
             });
 
-            content.push(`<details aria-label="Cause ${index + 1}" class="relative rounded-[var(--ono-radius-lg)] mb-2 last:mb-0 group shadow-[var(--ono-elevation-1)] bg-[var(--ono-surface)]">
+            content.push(`<details aria-label="Cause ${String(index + 1)}" class="relative rounded-[var(--ono-radius-lg)] mb-2 last:mb-0 group shadow-[var(--ono-elevation-1)] bg-[var(--ono-surface)]">
     <summary class="pl-5 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-all inline-flex justify-between items-center gap-x-3 w-full font-semibold text-start py-4 px-5 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-[var(--ono-text)]">
       ${sanitizeHtml(cause.name)}: ${sanitizeHtml(cause.message)}
       <span class="dui ono-expand-icon-closed size-4" style="-webkit-mask-image:url('${plusIcon}'); mask-image:url('${plusIcon}')"></span>

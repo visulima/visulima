@@ -302,10 +302,6 @@ type ErrorType = Error | SolutionError | VisulimaError;
 // Main template function that generates the complete error inspector HTML page
 const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<string> => {
     // Input validation
-    if (!error) {
-        throw new TypeError("Error parameter is required");
-    }
-
     if (!Array.isArray(solutionFinders)) {
         throw new TypeError("solutionFinders must be an array");
     }
@@ -323,9 +319,9 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     const anyCustomSelected = customPages.some((p) => p.defaultSelected);
     const tabsList: HeaderTab[] = [{ id: stackId, name: stackName, selected: !anyCustomSelected }];
 
-    for (const page of customPages) {
-        tabsList.push({ id: String(page.id), name: String(page.name), selected: Boolean(page.defaultSelected) });
-    }
+    customPages.forEach((page) => {
+        tabsList.push({ id: page.id, name: page.name, selected: Boolean(page.defaultSelected) });
+    });
 
     const headerTabsResult = headerTabs(tabsList);
     const headerBarResult = headerBar(sanitizedOptions);
@@ -341,18 +337,18 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
     );
 
     // Add custom pages efficiently
-    for (const page of customPages) {
-        const safeId = sanitizeAttribute(String(page.id));
+    customPages.forEach((page) => {
+        const safeId = sanitizeAttribute(page.id);
         const hidden = page.defaultSelected ? "" : " hidden";
 
         htmlParts.push(
             `<div id="ono-section-${safeId}" class="${hidden} relative" role="tabpanel" aria-labelledby="ono-tab-${safeId}">${page.code.html}</div>`,
         );
-    }
+    });
 
     return layout({
         content: htmlParts.join("").trim(),
-        cspNonce: options?.cspNonce,
+        cspNonce: options.cspNonce,
         css: inlineCss as string,
         description: "Error",
         error,
@@ -364,9 +360,9 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
             headerTabsResult.script,
             headerBarResult.script,
             stackScript as string,
-            ...customPages.map((p) => p.code.script || ""),
+            ...customPages.map((p) => p.code.script ?? ""),
         ].filter(Boolean),
-        theme: options?.theme,
+        theme: options.theme,
         title: "Error",
     });
 };

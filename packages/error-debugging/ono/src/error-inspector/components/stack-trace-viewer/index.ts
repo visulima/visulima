@@ -13,6 +13,8 @@ import type { GroupType, Item } from "./types";
 import getType from "./utils/get-type";
 import groupSimilarTypes from "./utils/group-similar-types";
 
+const FILE_URI_PREFIX_PATTERN = /^file:\/\//;
+
 const stackTraceViewer = async (
     error: Error,
     options: { openInEditorUrl?: string } = {},
@@ -21,7 +23,7 @@ const stackTraceViewer = async (
     script: string;
     // eslint-disable-next-line sonarjs/cognitive-complexity
 }> => {
-    const uniqueKey = revisionHash(error.name + error.message + error.stack);
+    const uniqueKey = revisionHash(error.name + error.message + (error.stack ?? ""));
 
     const traces = parseStacktrace(error);
 
@@ -36,15 +38,16 @@ const stackTraceViewer = async (
                 ">": "&gt;",
             };
 
-            return entities[char] || char;
+            return entities[char] ?? char;
         });
 
     const tabs: { html: string; type: GroupType }[] = [];
     const sourceCode: string[] = [];
 
-    for await (const [index, trace] of traces.entries()) {
-        const defaultSource = `// Unable to load source code for ${trace.file}:${trace.line}:${trace.column}`;
+    for (const [index, trace] of traces.entries()) {
+        const defaultSource = `// Unable to load source code for ${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
 
+        // eslint-disable-next-line no-await-in-loop -- sequential file I/O per stack frame
         const source = trace.file ? await getFileSource(trace.file) : undefined;
         const isClickable = Boolean(source);
         const sourceCodeFrame = source
@@ -64,7 +67,7 @@ const stackTraceViewer = async (
             )
             : defaultSource;
 
-        const lang = findLanguageBasedOnExtension(trace.file || "");
+        const lang = findLanguageBasedOnExtension(trace.file ?? "");
 
         let safeCode: string;
 
@@ -72,6 +75,7 @@ const stackTraceViewer = async (
         if (lang === "text") {
             safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
         } else {
+            // eslint-disable-next-line no-await-in-loop -- sequential syntax highlighting per frame
             const highlighter = await getHighlighter([lang]);
 
             const code = highlighter.codeToHtml(sourceCodeFrame, {
@@ -85,14 +89,14 @@ const stackTraceViewer = async (
             safeCode = sanitizeHtml(code);
         }
 
-        const filePath = `${trace.file}:${trace.line}:${trace.column}`;
-        const absPathForEditor = (trace.file || "").replace(/^file:\/\//, "");
-        const relativeFilePath = filePath.replace(process.cwd?.() || "", "").replace("file:///", "");
-        const safeMethod = sanitizeHtml(trace.methodName || "");
+        const filePath = `${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
+        const absPathForEditor = (trace.file ?? "").replace(FILE_URI_PREFIX_PATTERN, "");
+        const relativeFilePath = filePath.replace(process.cwd?.() ?? "", "").replace("file:///", "");
+        const safeMethod = sanitizeHtml(trace.methodName ?? "");
         const safeRelativePath = sanitizeHtml(relativeFilePath);
 
         tabs.push({
-            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${index}" data-stack-tab="#source-code-tabs-${uniqueKey}-${index}" aria-controls="source-code-tabs-${uniqueKey}-${index}" ${
+            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${String(index)}" data-stack-tab="#source-code-tabs-${uniqueKey}-${String(index)}" aria-controls="source-code-tabs-${uniqueKey}-${String(index)}" ${
                 isClickable ? "" : "disabled aria-disabled=\"true\""
             } class="${cn(
                 "relative inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--ono-hover-overlay)] text-[var(--ono-text-muted)] cursor-pointer",
@@ -111,16 +115,16 @@ const stackTraceViewer = async (
         if (options.openInEditorUrl) {
             openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-open-in-editor data-url="${sanitizeUrlAttribute(options.openInEditorUrl)}" data-path="${sanitizeAttribute(
                 absPathForEditor,
-            )}" data-line="${sanitizeAttribute(trace.line || 1)}" data-column="${sanitizeAttribute(trace.column || 1)}" title="Open ${safeRelativePath} in external editor">${safeRelativePath} — Open in editor</button>`;
+            )}" data-line="${sanitizeAttribute(trace.line ?? 1)}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in external editor">${safeRelativePath} — Open in editor</button>`;
         } else if (isClickable) {
             openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-editor-link data-path="${sanitizeAttribute(absPathForEditor)}" data-line="${sanitizeAttribute(
-                trace.line || 1,
-            )}" data-column="${sanitizeAttribute(trace.column || 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
+                trace.line ?? 1,
+            )}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
         }
 
-        sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${index}" class="${
+        sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${String(index)}" class="${
             index === 0 && isClickable ? "block" : "hidden"
-        }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${index}" tabindex="0">
+        }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${String(index)}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--ono-text)]">
     ${openInEditorButton}
 </div>
@@ -163,8 +167,8 @@ const stackTraceViewer = async (
                     }
                 }
 
-                const checkboxId = `small-switch-${uniqueKey}-${groupIndex}`;
-                const detailsId = `stack-trace-group-${uniqueKey}-${groupIndex}`;
+                const checkboxId = `small-switch-${uniqueKey}-${String(groupIndex)}`;
+                const detailsId = `stack-trace-group-${uniqueKey}-${String(groupIndex)}`;
 
                 return `<div class="flex items-center gap-2">
     <label for="${checkboxId}" class="relative text-sm text-[var(--ono-text)] flex gap-2 items-center">
@@ -228,11 +232,11 @@ const stackTraceViewer = async (
                                 }
                             }
 
-                            return `<details id="stack-trace-group-${uniqueKey}-${groupIndex}">
+                            return `<details id="stack-trace-group-${uniqueKey}-${String(groupIndex)}">
 <summary class="py-3 px-6 cursor-pointer flex items-center justify-between text-sm hover:bg-[var(--ono-hover-overlay)] focus:outline-hidden focus:ring-1 focus:ring-gray-600 text-[var(--ono-text)]">
     <span class="flex items-center gap-2">
       <span class="uppercase tracking-wide text-[10px] text-[var(--ono-text-muted)]">${groupLabel}</span>
-      <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] bg-[var(--ono-chip-bg)] text-[var(--ono-chip-text)]">${tab.length}</span>
+      <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] bg-[var(--ono-chip-bg)] text-[var(--ono-chip-text)]">${String(tab.length)}</span>
     </span>
     <span data-chevron class="dui w-4 h-4 transition-transform duration-300" style="-webkit-mask-image:url('${chevronDownIcon}'); mask-image:url('${chevronDownIcon}')"></span>
 </summary>

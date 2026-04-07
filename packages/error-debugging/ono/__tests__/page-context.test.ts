@@ -272,7 +272,7 @@ describe("context page", () => {
                 on: vi.fn((event, callback) => {
                     if (event === "data") {
                         // Send the large body in chunks
-                        const chunks = largeBody.match(/.{1,10000}/g) || [];
+                        const chunks = largeBody.match(/.{1,10000}/g) ?? [];
 
                         chunks.forEach((chunk) => setTimeout(callback, 0, chunk));
                     } else if (event === "end") {

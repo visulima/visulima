@@ -5,7 +5,7 @@ const hasNativeRequest = typeof globalThis !== "undefined" && "Request" in globa
 const hasNativeHeaders = typeof globalThis !== "undefined" && "Headers" in globalThis;
 
 // Runtime type detection
-const isNodeJS = typeof process !== "undefined" && process.versions?.node;
+const isNodeJS = typeof process !== "undefined" && process.versions.node;
 const isBun = typeof globalThis !== "undefined" && "Bun" in globalThis;
 const isDeno = typeof globalThis !== "undefined" && "Deno" in globalThis;
 
