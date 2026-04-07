@@ -101,6 +101,12 @@ export const FEATURE_CATALOG: FeatureCatalogEntry[] = [
         id: "ghcr.io/devcontainers/features/nix:1",
         name: "Nix",
     },
+    {
+        category: "tool",
+        description: "SSH server for remote connections to the container",
+        id: "ghcr.io/devcontainers/features/sshd:1",
+        name: "SSH Server",
+    },
 
     // Cloud
     {

@@ -20,6 +20,7 @@ export interface MountEntry {
 
 export interface DevcontainerConfig {
     build?: DevcontainerBuild;
+    capAdd?: string[];
     containerEnv?: Record<string, string>;
     containerUser?: string;
     customizations?: {
@@ -36,16 +37,20 @@ export interface DevcontainerConfig {
     mounts?: Array<MountEntry | string>;
     name?: string;
     onCreateCommand?: string | string[];
+    overrideCommand?: boolean;
     postAttachCommand?: string | string[];
     postCreateCommand?: string | string[];
     postStartCommand?: string | string[];
     portsAttributes?: Record<string, PortAttributes>;
+    privileged?: boolean;
     remoteEnv?: Record<string, string>;
     remoteUser?: string;
     runServices?: string[];
+    securityOpt?: string[];
     service?: string;
     shutdownAction?: string;
     workspaceFolder?: string;
+    workspaceMount?: string;
 }
 
 // ── TUI Types ──────────────────────────────────────────────────────────

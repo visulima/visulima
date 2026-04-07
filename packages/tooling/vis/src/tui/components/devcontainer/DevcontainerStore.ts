@@ -392,6 +392,14 @@ export class DevcontainerStore {
             delete config.runServices;
         }
 
+        if (config.capAdd?.length === 0) {
+            delete config.capAdd;
+        }
+
+        if (config.securityOpt?.length === 0) {
+            delete config.securityOpt;
+        }
+
         // Remove empty features object
         if (config.features && Object.keys(config.features).length === 0) {
             delete config.features;

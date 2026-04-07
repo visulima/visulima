@@ -10,12 +10,13 @@ import DockerComposeSection, { COMPOSE_FIELD_COUNT } from "./sections/DockerComp
 import EnvironmentSection, { getEnvFieldCount } from "./sections/EnvironmentSection";
 import ExtensionsSection from "./sections/ExtensionsSection";
 import FeaturesSection from "./sections/FeaturesSection";
-import GeneralSection, { GENERAL_FIELD_COUNT } from "./sections/GeneralSection";
+import GeneralSection, { GENERAL_BOOLEAN_FIELDS, GENERAL_FIELD_COUNT } from "./sections/GeneralSection";
 import LifecycleSection, { LIFECYCLE_FIELD_COUNT } from "./sections/LifecycleSection";
 import MountsSection from "./sections/MountsSection";
 import PortsSection from "./sections/PortsSection";
 import PreviewPanel from "./sections/PreviewPanel";
 import type { DevcontainerConfig, SectionId } from "./types";
+import { validateConfig } from "./validate";
 
 // ── Layout constants ────────────────────────────────────────────────────
 
@@ -165,10 +166,30 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     const handleSave = useCallback(() => {
         const cleanConfig = store.cleanConfig();
+        const validation = validateConfig(cleanConfig);
+
+        if (!validation.valid) {
+            const firstError = validation.errors[0];
+            setSaveMessage(firstError ? `Error: ${firstError.message}` : "Validation failed");
+
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
+
+            saveTimerRef.current = setTimeout(() => {
+                if (mountedRef.current) {
+                    setSaveMessage(null);
+                }
+            }, 3000);
+
+            return;
+        }
 
         onSave(cleanConfig);
         store.markClean();
-        setSaveMessage("Saved!");
+
+        const warningCount = validation.warnings.length;
+        setSaveMessage(warningCount > 0 ? `Saved! (${String(warningCount)} warning${warningCount > 1 ? "s" : ""})` : "Saved!");
 
         if (saveTimerRef.current) {
             clearTimeout(saveTimerRef.current);
@@ -586,9 +607,19 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 return;
             }
 
-            // Space to toggle (features, extensions)
+            // Space to toggle (features, extensions, general booleans)
             if (input === " ") {
-                if (state.section === "features") {
+                if (state.section === "general") {
+                    // Boolean fields start after string fields
+                    const stringFieldCount = GENERAL_FIELD_COUNT - GENERAL_BOOLEAN_FIELDS.length;
+                    const boolIndex = state.fieldIndex - stringFieldCount;
+
+                    if (boolIndex >= 0 && boolIndex < GENERAL_BOOLEAN_FIELDS.length) {
+                        const field = GENERAL_BOOLEAN_FIELDS[boolIndex] as keyof DevcontainerConfig;
+
+                        store.updateConfig({ [field]: !state.config[field] });
+                    }
+                } else if (state.section === "features") {
                     const catalog = filterFeatures(state.featureSearch);
                     const feature = catalog[state.fieldIndex];
 
@@ -945,7 +976,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 </Box>
             </Box>
             <Box paddingX={1}>
-                {saveMessage && <Text color="green">{saveMessage} </Text>}
+                {saveMessage && <Text color={saveMessage.startsWith("Error") ? "red" : "green"}>{saveMessage} </Text>}
                 {state.isDirty && <Text color="yellow">[modified]</Text>}
                 {!state.isDirty && !saveMessage && <Text dimColor>[saved]</Text>}
             </Box>

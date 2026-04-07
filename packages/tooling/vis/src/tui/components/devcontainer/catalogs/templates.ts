@@ -142,6 +142,146 @@ export const TEMPLATES: DevcontainerTemplate[] = [
     },
     {
         config: {
+            customizations: {
+                vscode: {
+                    extensions: [
+                        "ms-python.python",
+                        "ms-python.vscode-pylance",
+                    ],
+                    settings: {
+                        "editor.formatOnSave": true,
+                        "python.defaultInterpreterPath": "/usr/local/bin/python",
+                    },
+                },
+            },
+            features: {
+                "ghcr.io/devcontainers/features/git:1": {},
+                "ghcr.io/devcontainers/features/github-cli:1": {},
+                "ghcr.io/devcontainers/features/python:1": { version: "3.12" },
+            },
+            forwardPorts: [8000],
+            image: "mcr.microsoft.com/devcontainers/python:3.12",
+            name: "Python",
+            postCreateCommand: "pip install -r requirements.txt || true",
+        },
+        description: "Python 3.12 with pip and venv",
+        id: "python",
+        name: "Python",
+    },
+    {
+        config: {
+            customizations: {
+                vscode: {
+                    extensions: [
+                        "golang.go",
+                    ],
+                    settings: {
+                        "editor.formatOnSave": true,
+                        "go.toolsManagement.autoUpdate": true,
+                    },
+                },
+            },
+            features: {
+                "ghcr.io/devcontainers/features/git:1": {},
+                "ghcr.io/devcontainers/features/go:1": { version: "1.22" },
+            },
+            forwardPorts: [8080],
+            image: "mcr.microsoft.com/devcontainers/go:1.22",
+            name: "Go",
+            postCreateCommand: "go mod download || true",
+        },
+        description: "Go 1.22 development environment",
+        id: "go",
+        name: "Go",
+    },
+    {
+        config: {
+            customizations: {
+                vscode: {
+                    extensions: [
+                        "rust-lang.rust-analyzer",
+                        "tamasfe.even-better-toml",
+                    ],
+                    settings: {
+                        "editor.formatOnSave": true,
+                    },
+                },
+            },
+            features: {
+                "ghcr.io/devcontainers/features/git:1": {},
+                "ghcr.io/devcontainers/features/rust:1": {},
+            },
+            image: "mcr.microsoft.com/devcontainers/rust:latest",
+            name: "Rust",
+            postCreateCommand: "cargo build || true",
+        },
+        description: "Rust development with cargo and rust-analyzer",
+        id: "rust",
+        name: "Rust",
+    },
+    {
+        config: {
+            customizations: {
+                vscode: {
+                    extensions: [
+                        "vscjava.vscode-java-pack",
+                        "vscjava.vscode-maven",
+                    ],
+                },
+            },
+            features: {
+                "ghcr.io/devcontainers/features/git:1": {},
+                "ghcr.io/devcontainers/features/java:1": { version: "17" },
+            },
+            forwardPorts: [8080],
+            image: "mcr.microsoft.com/devcontainers/java:17",
+            name: "Java",
+            postCreateCommand: "./mvnw install || ./gradlew build || true",
+        },
+        description: "Java 17 with Maven/Gradle support",
+        id: "java",
+        name: "Java",
+    },
+    {
+        config: {
+            customizations: {
+                vscode: {
+                    extensions: [
+                        "ms-azuretools.vscode-docker",
+                        "ms-kubernetes-tools.vscode-kubernetes-tools",
+                        "hashicorp.terraform",
+                    ],
+                },
+            },
+            features: {
+                "ghcr.io/devcontainers/features/aws-cli:1": {},
+                "ghcr.io/devcontainers/features/azure-cli:1": {},
+                "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+                "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+                "ghcr.io/devcontainers/features/terraform:1": {},
+            },
+            image: "mcr.microsoft.com/devcontainers/base:ubuntu",
+            name: "DevOps",
+        },
+        description: "Docker, Kubernetes, Terraform, AWS & Azure CLIs",
+        id: "devops",
+        name: "DevOps",
+    },
+    {
+        config: {
+            features: {
+                "ghcr.io/devcontainers/features/common-utils:2": {},
+            },
+            image: "mcr.microsoft.com/devcontainers/base:ubuntu",
+            name: "Minimal",
+            remoteUser: "vscode",
+        },
+        description: "Bare Ubuntu with common utilities",
+        id: "minimal",
+        name: "Minimal",
+    },
+    {
+        config: {
             image: "mcr.microsoft.com/devcontainers/base:ubuntu",
             name: "Custom",
         },
