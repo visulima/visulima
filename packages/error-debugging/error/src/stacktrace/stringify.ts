@@ -6,8 +6,8 @@ import type { Trace } from "./types";
 export const formatStackFrameLine = (frame: Trace): string => {
     const method = frame.methodName && frame.methodName !== "<unknown>" ? `${frame.methodName} ` : "";
     const file = frame.file ?? "<unknown>";
-    const line = frame.line ?? 0;
-    const column = frame.column ?? 0;
+    const line = String(frame.line ?? 0);
+    const column = String(frame.column ?? 0);
 
     // Prefer a consistent Node-style format: "    at method (file:line:column)"
     // If method is missing, omit the parentheses wrapper
@@ -26,8 +26,8 @@ export const formatStacktrace = (frames: Trace[], options?: { header?: { message
     const lines: string[] = [];
 
     if (options?.header && (options.header.name || options.header.message)) {
-        const headerName = String(options.header.name || "Error");
-        const headerMessage = String(options.header.message || "");
+        const headerName = options.header.name ?? "Error";
+        const headerMessage = options.header.message ?? "";
 
         lines.push(`${headerName}${headerMessage ? ": " : ""}${headerMessage}`);
     }

@@ -19,11 +19,13 @@ const binarySearch = (element: number, array: number[]): number => {
     return m;
 };
 
+const LINE_BREAK_REGEX = /\n|\r(?!\n)/;
+
 // split by line break characters, CR, LF or CRLF
 // compile an array of indexes, where each line starts
 const getLineStartIndexes = (string_: string): number[] =>
     // eslint-disable-next-line unicorn/no-array-reduce
-    string_.split(/\n|\r(?!\n)/).reduce(
+    string_.split(LINE_BREAK_REGEX).reduce(
         (accumulator: number[], current) => {
             accumulator.push((accumulator.at(-1) as number) + current.length + 1);
 

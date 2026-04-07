@@ -8,7 +8,7 @@ const aiPrompt = ({
     applicationType: string | undefined;
     error: Error;
     file: SolutionFinderFile;
-}): string => `You are a very skilled ${file.language} programmer.
+}): string => `You are a very skilled ${file.language ?? "unknown"} programmer.
 
 ${applicationType ? `You are working on a ${applicationType} application.` : ""}
 
@@ -27,13 +27,13 @@ ENDLINKS
 
 Here comes the context and the exception message:
 
-Line: ${file.line}
+Line: ${String(file.line)}
 
 File:
 ${file.file}
 
 Snippet including line numbers:
-${file.snippet}
+${file.snippet ?? ""}
 
 Exception class:
 ${error.name}

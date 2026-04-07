@@ -27,7 +27,7 @@ const rules: Rule[] = [
     {
         name: "esm-cjs-interop",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (
                 has(
@@ -65,7 +65,7 @@ const rules: Rule[] = [
     {
         name: "missing-default-export",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "default export not found", "has no default export", "does not provide an export named 'default'", "is not exported from")) {
                 return {
@@ -88,7 +88,7 @@ const rules: Rule[] = [
     {
         name: "port-in-use",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "eaddrinuse", "address already in use", "listen eaddrinuse")) {
                 return {
@@ -113,7 +113,7 @@ const rules: Rule[] = [
     {
         name: "file-not-found-or-case",
         test: (error, file): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "enoent", "module not found", "cannot find module")) {
                 return {
@@ -122,7 +122,7 @@ const rules: Rule[] = [
                         "If using TS path aliases, verify `tsconfig.paths` and bundler aliases.",
                         "",
                         "Current file:",
-                        code(`${file.file}:${file.line}`),
+                        code(`${file.file}:${String(file.line)}`),
                     ].join("\n"),
                     title: "Missing file or path case mismatch",
                 };
@@ -134,7 +134,7 @@ const rules: Rule[] = [
     {
         name: "ts-path-mapping",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "ts2307", "cannot find module") || message.includes("TS2307")) {
                 return {
@@ -160,7 +160,7 @@ const rules: Rule[] = [
     {
         name: "network-dns-enotfound",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "enotfound", "getaddrinfo enotfound", "dns", "fetch failed", "ecconnrefused", "econnrefused")) {
                 return {
@@ -184,7 +184,7 @@ const rules: Rule[] = [
     {
         name: "undefined-property",
         test: (error): RuleMatch | undefined => {
-            const message = (error?.message || String(error || "")).toString();
+            const { message } = error;
 
             if (has(message, "cannot read properties of undefined", "reading '")) {
                 return {
@@ -207,7 +207,7 @@ const rules: Rule[] = [
 ];
 
 const ruleBasedFinder: SolutionFinder = {
-    handle: async (error: Error, file: SolutionFinderFile): Promise<Solution | undefined> => {
+    handle: (error: Error, file: SolutionFinderFile): Promise<Solution | undefined> => {
         try {
             const matches = rules
                 .map((r) => {
@@ -216,21 +216,21 @@ const ruleBasedFinder: SolutionFinder = {
                 .filter((x) => Boolean(x.match)) as { match: RuleMatch; rule: Rule }[];
 
             if (matches.length === 0) {
-                return undefined;
+                return Promise.resolve(undefined);
             }
 
             const sections = matches
-                .toSorted((a, b) => (a.match.priority || 0) - (b.match.priority || 0))
+                .toSorted((a, b) => (a.match.priority ?? 0) - (b.match.priority ?? 0))
                 .map((m) => `#### ${m.match.title}\n\n${m.match.md}`)
                 .join("\n\n---\n\n");
 
             if (sections === "") {
-                return undefined;
+                return Promise.resolve(undefined);
             }
 
-            return { body: sections, header: "### Potential fixes detected" };
+            return Promise.resolve({ body: sections, header: "### Potential fixes detected" });
         } catch {
-            return undefined;
+            return Promise.resolve(undefined);
         }
     },
     name: "ruleBasedHints",

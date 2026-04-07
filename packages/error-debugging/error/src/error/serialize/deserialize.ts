@@ -50,8 +50,7 @@ const reconstructAggregateError = (
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const reconstructedErrors = errors.map((error_) => deserializeValue(error_, options, depth + 1));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (Constructor as any)(reconstructedErrors, message);
+    return new (Constructor as new (errors: unknown[], message: unknown) => Error)(reconstructedErrors, message);
 };
 
 /**
@@ -66,7 +65,7 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
     const { cause, errors, message, name, stack, ...properties } = serialized;
 
     // Get the appropriate constructor
-    const Constructor = getErrorConstructor(name as string) || Error;
+    const Constructor = getErrorConstructor(name as string) ?? Error;
 
     // Create the error instance, handling AggregateError specially
     const error

@@ -7,7 +7,7 @@ export type SolutionFinderFile = {
     file: string;
     language?: string;
     line: number;
-    snippet?: string | undefined;
+    snippet?: string;
 };
 
 export type SolutionFinder = {

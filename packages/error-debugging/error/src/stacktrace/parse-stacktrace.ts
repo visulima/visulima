@@ -7,7 +7,7 @@ type TopFrameMeta = {
 };
 
 const debugLog = (message: string, ...arguments_: unknown[]): void => {
-    if (process.env.DEBUG && String(process.env.DEBUG) === "true") {
+    if (process.env.DEBUG && process.env.DEBUG === "true") {
         // eslint-disable-next-line no-console
         console.debug(`error:parse-stacktrace: ${message}`, ...arguments_);
     }
@@ -44,11 +44,11 @@ const CHROMIUM_EVAL_REGEX = /\((\S+)\),\s(<[^>]+>)?:(\d+)?:(\d+)?\)?/;
 // foo.bar.js:123:39
 // foo.bar.js:123:39 <- original.js:123:34
 // eslint-disable-next-line sonarjs/slow-regex
-const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(\s<-\s(.+):(\d+):(\d+))?/;
+const CHROMIUM_MAPPED = /(.*?):(\d+):(\d+)(?:\s<-\s.+:\d+:\d+)?/;
 
 // eval at <anonymous> (C:\\Users\\user\\project\\visulima\\packages\\error\\__tests__\\stacktrace\\parse-stacktrace.test.ts
 // eslint-disable-next-line regexp/optimal-quantifier-concatenation
-const WINDOWS_EVAL_REGEX = /(eval)\sat\s(<anonymous>)\s\((.*)\)?:(\d+)?:(\d+)\),\s*(<anonymous>)?:(\d+)?:(\d+)/;
+const WINDOWS_EVAL_REGEX = /eval\sat\s(<anonymous>)\s\((.*)\)?:(\d+)?:(\d+)\),\s*<anonymous>?:(\d+)?:(\d+)/;
 
 // in AppProviders (at App.tsx:28)
 
@@ -76,6 +76,20 @@ const FIREFOX_REGEX = /(\S[^\s[]*\[.*\]|.*?)@(.*):(\d+):(\d+)/;
 
 // Used to sanitize webpack (error: *) wrapped stack errors
 const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
+
+// Inline regex patterns moved to module scope for performance
+const AT_PREFIX_REGEX = /at\s/;
+const CHROMIUM_EVAL_SPLIT_REGEX = /^(\S+):(\d+):(\d+)$|^(\S+):(\d+)$/;
+// eslint-disable-next-line sonarjs/slow-regex
+const TRIM_REGEX = /^\s+|\s+$/g;
+// eslint-disable-next-line sonarjs/slow-regex
+const ERROR_LINE_REGEX = /\S*(?:Error: |AggregateError:)/;
+const ANONYMOUS_FUNCTION_REGEX = /^Anonymous function$/;
+const NODE_LINE_REGEX = /^\s*in\s.*/;
+// eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
+const CHROMIUM_LINE_REGEX = /^.*?\s*at\s.*/;
+// eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/anchor-precedence
+const GECKO_LINE_REGEX = /^.*?\s*@.*|\[native code\]/;
 
 /**
  * Safari web extensions, starting version unknown, can produce "frames-only" stacktraces.
@@ -135,7 +149,7 @@ const parseNode = (line: string): Trace | undefined => {
             file: split[0],
             line: split[1] ? +split[1] : undefined,
 
-            methodName: nestedNode[1] || UNKNOWN_FUNCTION,
+            methodName: nestedNode[1] ?? UNKNOWN_FUNCTION,
             raw: line,
             type: undefined,
         };
@@ -148,10 +162,10 @@ const parseNode = (line: string): Trace | undefined => {
 
         const trace = {
             column: node[4] ? +node[4] : undefined,
-            file: node[2] ? node[2].replace(/at\s/, "") : undefined,
+            file: node[2] ? node[2].replace(AT_PREFIX_REGEX, "") : undefined,
             line: node[3] ? +node[3] : undefined,
 
-            methodName: node[1] || UNKNOWN_FUNCTION,
+            methodName: node[1] ?? UNKNOWN_FUNCTION,
             raw: line,
             type: line.startsWith("internal") ? ("internal" as TraceType) : undefined,
         };
@@ -173,6 +187,7 @@ const parseChromium = (line: string): Trace | undefined => {
 
         const isNative = parts[2]?.startsWith("native"); // start of line
 
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally using || because startsWith returns false (not nullish) when not matching
         const isEval = parts[2]?.startsWith("eval") || parts[1]?.startsWith("eval"); // start of line
 
         let evalOrigin: Trace | undefined;
@@ -190,7 +205,7 @@ const parseChromium = (line: string): Trace | undefined => {
             if (subMatch) {
                 // can be index.js:123:39 or index.js:123 or index.js
 
-                const split = /^(\S+):(\d+):(\d+)$|^(\S+):(\d+)$/.exec(subMatch[1] as string);
+                const split = CHROMIUM_EVAL_SPLIT_REGEX.exec(subMatch[1] as string);
 
                 if (split) {
                     // throw out eval line/column and use top-most line/column number
@@ -218,15 +233,15 @@ const parseChromium = (line: string): Trace | undefined => {
 
                 if (windowsSubMatch) {
                     windowsParts = {
-                        column: windowsSubMatch[5] ? +windowsSubMatch[5] : undefined,
-                        file: windowsSubMatch[3],
-                        line: windowsSubMatch[4] ? +windowsSubMatch[4] : undefined,
+                        column: windowsSubMatch[4] ? +windowsSubMatch[4] : undefined,
+                        file: windowsSubMatch[2],
+                        line: windowsSubMatch[3] ? +windowsSubMatch[3] : undefined,
                     };
 
                     evalOrigin = {
-                        column: windowsSubMatch[8] ? +windowsSubMatch[8] : undefined,
-                        file: windowsSubMatch[2],
-                        line: windowsSubMatch[7] ? +windowsSubMatch[7] : undefined,
+                        column: windowsSubMatch[6] ? +windowsSubMatch[6] : undefined,
+                        file: windowsSubMatch[1],
+                        line: windowsSubMatch[5] ? +windowsSubMatch[5] : undefined,
                         methodName: "eval",
                         raw: windowsSubMatch[0],
                         type: "eval" as TraceType,
@@ -237,7 +252,7 @@ const parseChromium = (line: string): Trace | undefined => {
 
         const [methodName, file] = extractSafariExtensionDetails(
             // Normalize IE's 'Anonymous function'
-            parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
+            parts[1] ? parts[1].replace(ANONYMOUS_FUNCTION_REGEX, "<anonymous>") : UNKNOWN_FUNCTION,
             parts[2] as string,
         );
 
@@ -297,7 +312,7 @@ const parseGecko = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefine
 
         const [methodName, file] = extractSafariExtensionDetails(
             // Normalize IE's 'Anonymous function'
-            parts[1] ? parts[1].replace(/^Anonymous function$/, "<anonymous>") : UNKNOWN_FUNCTION,
+            parts[1] ? parts[1].replace(ANONYMOUS_FUNCTION_REGEX, "<anonymous>") : UNKNOWN_FUNCTION,
             parts[3] as string,
         );
 
@@ -345,6 +360,7 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
             file: parts[2],
             line: parts[3] ? +parts[3] : topFrameMeta?.line ?? undefined,
 
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally using || to treat empty string as unknown
             methodName: parts[1] || UNKNOWN_FUNCTION,
             raw: line,
             type: undefined,
@@ -374,23 +390,24 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
 };
 
 const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
-    // @ts-expect-error missing stacktrace property
-    let lines = (error.stacktrace ?? error.stack ?? "")
+    // Some error types (e.g. Opera) use `stacktrace` instead of `stack`
+    const errorRecord = error as unknown as Record<string, unknown>;
+    const rawStack: string = typeof errorRecord.stacktrace === "string" ? errorRecord.stacktrace : error.stack ?? "";
+
+    let lines: string[] = rawStack
         .split("\n")
         .map((line: string): string => {
             // https://github.com/getsentry/sentry-javascript/issues/5459
             // Remove webpack (error: *) wrappers
             const cleanedLine = WEBPACK_ERROR_REGEXP.test(line) ? line.replace(WEBPACK_ERROR_REGEXP, "$1") : line;
 
-            // eslint-disable-next-line unicorn/prefer-string-replace-all, sonarjs/slow-regex
-            return cleanedLine.replace(/^\s+|\s+$/g, "");
+            return cleanedLine.replaceAll(TRIM_REGEX, "");
         })
         // https://github.com/getsentry/sentry-javascript/issues/7813
         // Skip Error: lines
         // Skip AggregateError: lines
         // Skip eval code without more context
-        // eslint-disable-next-line sonarjs/slow-regex
-        .filter((line: string): boolean => !/\S*(?:Error: |AggregateError:)/.test(line) && line !== "eval code");
+        .filter((line: string): boolean => !ERROR_LINE_REGEX.test(line) && line !== "eval code");
 
     if (filter) {
         lines = lines.filter((element: string) => filter(element));
@@ -414,38 +431,37 @@ const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ fi
 
         let parseResult: Trace | undefined;
 
-        if (/^\s*in\s.*/.test(line)) {
+        if (NODE_LINE_REGEX.test(line)) {
             parseResult = parseNode(line);
-            // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
-        } else if (/^.*?\s*at\s.*/.test(line)) {
+        } else if (CHROMIUM_LINE_REGEX.test(line)) {
             parseResult = parseChromium(line);
-            // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex, sonarjs/anchor-precedence
-        } else if (/^.*?\s*@.*|\[native code\]/.test(line)) {
+        } else if (GECKO_LINE_REGEX.test(line)) {
             let topFrameMeta: TopFrameMeta | undefined;
 
             if (currentIndex === 0) {
-                // @ts-expect-error columnNumber and lineNumber property only exists on Firefox
-                if (error.columnNumber || error.lineNumber) {
+                // Firefox and Safari add extra properties to Error objects
+                const browserError = error as unknown as Record<string, unknown>;
+                const columnNumber = browserError.columnNumber as number | undefined;
+                const lineNumber = browserError.lineNumber as number | undefined;
+                const safariLine = browserError.line as number | undefined;
+                const safariColumn = browserError.column as number | undefined;
+
+                if (columnNumber || lineNumber) {
                     topFrameMeta = {
-                        // @ts-expect-error columnNumber and columnNumber property only exists on Firefox
-                        column: error.columnNumber,
-                        // @ts-expect-error columnNumber and lineNumber property only exists on Firefox
-                        line: error.lineNumber,
+                        column: columnNumber,
+                        line: lineNumber,
                         type: "firefox",
                     };
-                    // @ts-expect-error line and column property only exists on safari
-                } else if (error.line || error.column) {
+                } else if (safariLine || safariColumn) {
                     topFrameMeta = {
-                        // @ts-expect-error column property only exists on safari
-                        column: error.column,
-                        // @ts-expect-error line property only exists on safari
-                        line: error.line,
+                        column: safariColumn,
+                        line: safariLine,
                         type: "safari",
                     };
                 }
             }
 
-            parseResult = parseFirefox(line, topFrameMeta) || parseGecko(line, topFrameMeta);
+            parseResult = parseFirefox(line, topFrameMeta) ?? parseGecko(line, topFrameMeta);
         } else {
             parseResult = parseReactAndroidNative(line);
         }
