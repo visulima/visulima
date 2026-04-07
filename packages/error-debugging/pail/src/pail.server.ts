@@ -57,10 +57,9 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * @param options Server-specific configuration options
      */
     public constructor(public readonly options: ServerConstructorOptions<T, L>) {
+        /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-redundant-type-constituents, sonarjs/no-useless-intersection -- parent optimization uses dynamic property access on options */
         // Optimize: reuse streams from parent when not overridden
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parentStderr = (options as any).parentStderr as NodeJS.WriteStream | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parentStdout = (options as any).parentStdout as NodeJS.WriteStream | undefined;
 
         const { interactive, processors, rawReporter, reporters, stderr: optionsStderr, stdout: optionsStdout } = options;
@@ -68,17 +67,13 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         const stdout = parentStdout ?? optionsStdout;
 
         // Optimize: reuse types, longestLabel, stringify, logLevels, and messages from parent if provided
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parentLongestLabel = (options as any).parentLongestLabel as string | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parentTypes = (options as any).parentTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L> | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { parentLogLevels, parentMessages, parentStringify } = options as any;
 
         // Extract reporters before super() so parent constructor doesn't register them
         // We'll register them ourselves after streams are set
         // Optimize: only create parentOptions if we need to modify it, otherwise pass options directly
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parentOptions: any & ConstructorOptions<T, L> = {
             disabled: options.disabled,
             logLevel: options.logLevel,
@@ -119,6 +114,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         }
 
         super(parentOptions);
+        /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-redundant-type-constituents, sonarjs/no-useless-intersection */
 
         this.interactive = interactive ?? false;
 
@@ -189,7 +185,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         options?: Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>,
     ): PailServerType<N, LC> {
         // Check if types have changed - if not, we can reuse bound methods
-        const typesChanged = options?.types !== undefined && options.types !== null;
+        const typesChanged = options?.types !== undefined;
         const mergedTypes = typesChanged
             ? mergeTypes<LC, N>(this.types as DefaultLoggerTypes<LC>, options.types as LoggerTypesConfig<N, LC>)
             : (this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>);
@@ -567,20 +563,22 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
             return;
         }
 
+        /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- stream wrapping requires dynamic property access */
         // Backup original value
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle
         if (!(stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign, no-underscore-dangle
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle, @typescript-eslint/unbound-method -- intentionally storing unbound method for backup
             (stream as any).__write = stream.write;
         }
 
         // Override
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
+        // eslint-disable-next-line no-param-reassign
         (stream as any).write = (data: any): void => {
             // @TODO: Fix typings
             // @ts-expect-error - dynamic property
             (this as unknown as PailServerImpl)[type](String(data).trim());
         };
+        /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -589,14 +587,16 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+        /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- stream restore requires dynamic property access */
+        // eslint-disable-next-line no-underscore-dangle
         if ((stream as any).__write) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign, no-underscore-dangle
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
             stream.write = (stream as any).__write;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign, no-underscore-dangle
+            // eslint-disable-next-line no-param-reassign, no-underscore-dangle
             delete (stream as any).__write;
         }
+        /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
     }
 }
 

@@ -76,9 +76,9 @@ export class OpenTelemetryProcessor<L extends string = string> implements Proces
      * @param options Configuration options for field names and nesting
      */
     public constructor(options: OpenTelemetryProcessorOptions = {}) {
-        this.#traceIdField = options.traceIdFieldName || "trace_id";
-        this.#spanIdField = options.spanIdFieldName || "span_id";
-        this.#traceFlagsField = options.traceFlagsFieldName || "trace_flags";
+        this.#traceIdField = options.traceIdFieldName ?? "trace_id";
+        this.#spanIdField = options.spanIdFieldName ?? "span_id";
+        this.#traceFlagsField = options.traceFlagsFieldName ?? "trace_flags";
         this.#traceFieldName = options.traceFieldName;
     }
 
@@ -115,8 +115,8 @@ export class OpenTelemetryProcessor<L extends string = string> implements Proces
             }
             : fields;
 
-        // eslint-disable-next-line no-param-reassign
-        meta.context = [...meta.context || [], traceData];
+        // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unsafe-assignment -- meta.context is typed as any[]
+        meta.context = [...meta.context ?? [], traceData];
 
         return meta;
     }

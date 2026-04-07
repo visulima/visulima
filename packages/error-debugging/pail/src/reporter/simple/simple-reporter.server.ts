@@ -46,7 +46,8 @@ export class SimpleReporter<T extends string = string, L extends string = string
     readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
 
     public constructor(options: Partial<SimpleReporterOptions> = {}) {
-        const { error: errorOptions, inspect: inspectOptions, ...rest } = options;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- type resolution issue with Options from @visulima/inspector
+        const { error: errorOptions, inspect: inspectOptions, ...rest }: Partial<SimpleReporterOptions> = options;
 
         super({
             uppercase: {
@@ -56,6 +57,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
             ...rest,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- inspectOptions has type resolution issues
         this.#inspectOptions = { ...defaultInspectorConfig, indent: undefined, ...inspectOptions };
         this.#errorOptions = {
             ...errorOptions,
@@ -122,7 +124,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} `);
+            items.push(`${groupSpaces + grey(`[${groups.at(-1) ?? ""}]`)} `);
         }
 
         if (date) {
@@ -152,7 +154,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (repeated) {
-            items.push(`${bgGrey.white(`[${repeated}x]`)} `);
+            items.push(`${bgGrey.white(`[${String(repeated)}x]`)} `);
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
@@ -197,7 +199,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
                         return ` ${inspect(value, this.#inspectOptions)}`;
                     }
 
-                    const newValue = (hasError ? "\n\n" : " ") + value;
+                    const newValue = (hasError ? "\n\n" : " ") + String(value);
 
                     hasError = false;
 
@@ -235,7 +237,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
 
         if (file) {
-            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
+            const fileMessage = (file.name ?? "") + (file.line ? `:${String(file.line)}` : "");
 
             const callerPad = Math.max(0, titleSize - getStringWidth("Caller: "));
 

@@ -42,8 +42,13 @@ const LEVEL_TO_LOG_TYPE: Record<WideEventLevel, DefaultLogTypes> = {
 const deepMerge = <T extends Record<string, unknown>>(target: T, source: DeepPartial<T>): T => {
     const result = { ...target };
 
-    for (const key of Object.keys(source) as (keyof T)[]) {
+    const keys = Object.keys(source) as (keyof T)[];
+
+    for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- DeepPartial types are inherently loose
         const sourceValue = source[key];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- result[key] has complex union type
         const targetValue = result[key];
 
         if (
@@ -69,7 +74,7 @@ const deepMerge = <T extends Record<string, unknown>>(target: T, source: DeepPar
  */
 const formatDuration = (ms: number): string => {
     if (ms < 1000) {
-        return `${ms}ms`;
+        return `${String(ms)}ms`;
     }
 
     return `${(ms / 1000).toFixed(2)}s`;
@@ -309,7 +314,7 @@ export class WideEvent<TData extends Record<string, unknown> = Record<string, un
 
         const durationMs = Math.round(performance.now() - this.startTime);
         const resolvedLevel = this.attachedError ? "error" : this.level;
-        const type = typeOverride ?? LEVEL_TO_LOG_TYPE[resolvedLevel] ?? this.type;
+        const type = typeOverride ?? LEVEL_TO_LOG_TYPE[resolvedLevel];
 
         const payload: Record<string, unknown> = {
             duration: formatDuration(durationMs),

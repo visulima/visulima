@@ -159,8 +159,8 @@ class SamplingProcessor<L extends string = string> implements Processor<L> {
      * @returns true if any condition forces keeping the log
      */
     #shouldForceKeep(meta: Readonly<Meta<L>>): boolean {
-        for (const condition of this.#tailConditions) {
-            if (condition(meta)) {
+        for (let i = 0; i < this.#tailConditions.length; i += 1) {
+            if (this.#tailConditions[i](meta)) {
                 return true;
             }
         }

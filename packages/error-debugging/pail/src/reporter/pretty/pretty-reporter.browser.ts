@@ -48,8 +48,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         });
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- browser colorize returns arrays where spread is intentional
     public log(meta: ReadonlyMeta<L>): void {
+        /* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment -- browser colorize API uses string arrays; items is intentionally any[] for console API */
         // eslint-disable-next-line unicorn/no-typeof-undefined
         const isNotBrowser = typeof globalThis.window !== "undefined" && typeof globalThis.document !== "undefined";
         const consoleLogFunction = writeConsoleLogBasedOnLevel(meta.type.level);
@@ -207,9 +208,11 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle
             const arguments_ = [];
 
-            for (const value of items) {
+            for (let i = 0; i < items.length; i += 1) {
+                const value = items[i];
+
                 if (Array.isArray(value) && value.length > 1 && (value[0] as string).includes("%c")) {
-                    logMessage += value[0];
+                    logMessage += String(value[0]);
 
                     css.push(...value.slice(1));
                 } else {
@@ -219,6 +222,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
 
             consoleLogFunction(`${logMessage}%c`, ...css, "", ...arguments_);
         }
+        /* eslint-enable @typescript-eslint/no-misused-spread, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
     }
 
     /**

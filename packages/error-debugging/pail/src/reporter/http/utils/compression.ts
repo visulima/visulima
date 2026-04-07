@@ -1,7 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable n/no-unsupported-features/node-builtins */
 
 import { gzipSync } from "node:zlib";
+
+interface CompressionStreamLike {
+    readable: { getReader: () => ReadableStreamDefaultReader<Uint8Array> };
+    writable: { getWriter: () => WritableStreamDefaultWriter<Uint8Array> };
+}
 
 /**
  * Compresses data using gzip compression.
@@ -11,7 +15,8 @@ import { gzipSync } from "node:zlib";
 const compressData = async (data: string): Promise<Uint8Array> => {
     // Use CompressionStream API if available (browser/edge)
     // Check for CompressionStream in a way that doesn't trigger Node.js version warnings
-    const CompressionStreamClass = (globalThis as any).CompressionStream;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const CompressionStreamClass = (globalThis as Record<string, any>).CompressionStream as (new (format: string) => CompressionStreamLike) | undefined;
 
     if (CompressionStreamClass) {
         const stream = new CompressionStreamClass("gzip");
@@ -21,8 +26,8 @@ const compressData = async (data: string): Promise<Uint8Array> => {
         const encoder = new TextEncoder();
         const chunks: Uint8Array[] = [];
 
-        writer.write(encoder.encode(data));
-        writer.close();
+        await writer.write(encoder.encode(data));
+        await writer.close();
 
         // Read all chunks from the stream
         let done = false;
@@ -31,7 +36,7 @@ const compressData = async (data: string): Promise<Uint8Array> => {
             // eslint-disable-next-line no-await-in-loop
             const result = await reader.read();
 
-            done = result.done ?? false;
+            done = result.done;
 
             if (result.value) {
                 chunks.push(result.value);
@@ -40,15 +45,17 @@ const compressData = async (data: string): Promise<Uint8Array> => {
 
         // Combine all chunks
         const totalLength = chunks.reduce((accumulator, chunk) => accumulator + chunk.length, 0);
-        const result = new Uint8Array(totalLength);
+        const resultBuffer = new Uint8Array(totalLength);
         let offset = 0;
 
-        for (const chunk of chunks) {
-            result.set(chunk, offset);
+        for (let i = 0; i < chunks.length; i += 1) {
+            const chunk = chunks[i];
+
+            resultBuffer.set(chunk, offset);
             offset += chunk.length;
         }
 
-        return result;
+        return resultBuffer;
     }
 
     // Node.js environment - use zlib

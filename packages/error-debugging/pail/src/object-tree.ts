@@ -20,7 +20,7 @@ export type TreeSortFunction = (a: string, b: string) => number;
  */
 export interface ObjectTreeOptions {
     /** Text to display for circular references (default: " (circular ref.)") */
-    breakCircularWith?: string | null | undefined;
+    breakCircularWith?: string | null;
     /** Whether to return as single string or array of lines (default: true) */
     joined?: boolean;
     /** Connector for neighbor keys (default: "├─ ") */
@@ -32,7 +32,7 @@ export interface ObjectTreeOptions {
     /** Separator between key and value (default: ": ") */
     separator?: string;
     /** Function to sort object keys (default: natural order) */
-    sortFn?: TreeSortFunction | undefined;
+    sortFn?: TreeSortFunction;
     /** Spacer for neighbor branches (default: "│  ") */
     spacerNeighbour?: string;
     /** Spacer for non-neighbor branches (default: "   ") */
@@ -43,7 +43,7 @@ export interface ObjectTreeOptions {
  * Validates and builds the context object with all options.
  */
 const buildContext = (options?: ObjectTreeOptions) => {
-    const context: Required<Omit<ObjectTreeOptions, "sortFn">> & { sortFn?: TreeSortFunction | undefined } = {
+    const context: Required<Omit<ObjectTreeOptions, "sortFn">> & { sortFn?: TreeSortFunction } = {
         breakCircularWith: " (circular ref.)",
         joined: true,
         keyNeighbour: "├─ ",
@@ -144,7 +144,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
     const rootRendered = context.renderFn(tree);
 
     if (rootRendered !== undefined) {
-        result.push(String(rootRendered));
+        result.push(rootRendered);
     }
 
     // Sort function matching original implementation
@@ -153,7 +153,8 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
             return input; // Keep natural order (stack will reverse via pop)
         }
 
-        return input.toSorted((a, b) => context?.sortFn?.(b, a) ?? 0); // Returns a new sorted copy (reversed compare for LIFO)
+        // eslint-disable-next-line sonarjs/arguments-order -- intentional reverse for LIFO stack ordering
+        return input.toSorted((a, b) => context.sortFn?.(b, a) ?? 0); // Returns a new sorted copy (reversed compare for LIFO)
     };
 
     const neighbours: boolean[] = [];
@@ -181,10 +182,10 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
             })
             .join("");
         const connector = neighbours[key.length - 1] ? context.keyNeighbour : context.keyNoNeighbour;
-        const keyName = key.at(-1);
+        const keyName = key.at(-1) ?? "";
         const nodeRendered = context.renderFn(node);
         const value = nodeRendered === undefined ? "" : `${context.separator}${nodeRendered}`;
-        const circular = isCircular ? context.breakCircularWith : "";
+        const circular = isCircular ? context.breakCircularWith ?? "" : "";
 
         result.push(`${indent}${connector}${keyName}${value}${circular}`);
 

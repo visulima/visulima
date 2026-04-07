@@ -1,4 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Minimal Response interface for fetch-like responses.
+ */
+interface FetchResponse {
+    headers: { forEach: (callback: (value: string, key: string) => void) => void; get: (name: string) => string | null };
+    ok: boolean;
+    status: number;
+    statusText: string;
+    text: () => Promise<string>;
+}
 
 /**
  * Calculates exponential backoff delay.
@@ -28,7 +37,7 @@ const prepareRequestBody = (body: string | Uint8Array): BodyInit | undefined => 
     }
 
     // Uint8Array needs to be converted for fetch compatibility
-    return new Uint8Array(body.buffer, body.byteOffset, body.byteLength) as any;
+    return new Uint8Array(body.buffer, body.byteOffset, body.byteLength);
 };
 
 /**
@@ -43,7 +52,7 @@ const prepareRequestBody = (body: string | Uint8Array): BodyInit | undefined => 
  * @returns True if the request should be retried, false otherwise
  */
 const processResponse = async (
-    response: any,
+    response: FetchResponse,
     url: string,
     method: string,
     headers: Record<string, string>,
@@ -88,7 +97,7 @@ const processResponse = async (
 
     // Non-retryable client errors
     if (response.status < 500 && response.status !== 429) {
-        const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
 
         if (onError) {
             onError(error);
@@ -110,7 +119,13 @@ const processResponse = async (
  * @param maxRetries Maximum number of retries
  * @returns Delay in milliseconds if should retry, undefined otherwise
  */
-const handleRateLimit = (response: any, respectRateLimit: boolean, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
+const handleRateLimit = (
+    response: FetchResponse,
+    respectRateLimit: boolean,
+    retryDelay: number,
+    attempt: number,
+    maxRetries: number,
+): number | undefined => {
     if (response.status === 429 && respectRateLimit && attempt < maxRetries) {
         const retryAfter = response.headers.get("retry-after");
 
@@ -128,7 +143,7 @@ const handleRateLimit = (response: any, respectRateLimit: boolean, retryDelay: n
  * @param maxRetries Maximum number of retries
  * @returns Delay in milliseconds if should retry, undefined otherwise
  */
-const handleServerError = (response: any, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
+const handleServerError = (response: FetchResponse, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
     if (response.status >= 500 && attempt < maxRetries) {
         return calculateBackoffDelay(retryDelay, attempt);
     }
@@ -145,7 +160,13 @@ const handleServerError = (response: any, retryDelay: number, attempt: number, m
  * @param maxRetries Maximum number of retries
  * @returns Delay in milliseconds if should retry, undefined otherwise
  */
-const calculateRetryDelay = (response: any, respectRateLimit: boolean, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
+const calculateRetryDelay = (
+    response: FetchResponse,
+    respectRateLimit: boolean,
+    retryDelay: number,
+    attempt: number,
+    maxRetries: number,
+): number | undefined => {
     const rateLimitDelay = handleRateLimit(response, respectRateLimit, retryDelay, attempt, maxRetries);
 
     if (rateLimitDelay !== undefined) {
@@ -243,7 +264,7 @@ const sendWithRetry = async (
 
             // Max retries reached or non-retryable error
             if (!response.ok) {
-                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
 
                 if (onError) {
                     onError(error);

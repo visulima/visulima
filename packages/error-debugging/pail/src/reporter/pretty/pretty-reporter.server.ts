@@ -78,7 +78,8 @@ export class PrettyReporter<T extends string = string, L extends string = string
      * @param options Configuration options for styling, error rendering, and object inspection
      */
     public constructor(options: Partial<PrettyReporterOptions> = {}) {
-        const { error: errorOptions, inspect: inspectOptions, ...rest } = options;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- type resolution issue with Options from @visulima/inspector
+        const { error: errorOptions, inspect: inspectOptions, ...rest }: Partial<PrettyReporterOptions> = options;
 
         super({
             uppercase: {
@@ -88,6 +89,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
             ...rest,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- inspectOptions has type resolution issues
         this.#inspectOptions = { ...defaultInspectorConfig, ...inspectOptions };
         this.#errorOptions = {
             ...errorOptions,
@@ -162,7 +164,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const items: string[] = [];
 
         if (groups.length > 0) {
-            items.push(`${groupSpaces + grey(`[${groups.at(-1)}]`)} `);
+            items.push(`${groupSpaces + grey(`[${groups.at(-1) ?? ""}]`)} `);
         }
 
         if (date) {
@@ -192,7 +194,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (repeated) {
-            items.push(`${bgGrey.white(`[${repeated}x]`)} `);
+            items.push(`${bgGrey.white(`[${String(repeated)}x]`)} `);
         }
 
         if (Array.isArray(scope) && scope.length > 0) {
@@ -208,7 +210,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const titleSize = getStringWidth(items.join(" "));
 
         if (file) {
-            const fileMessage = file.name + (file.line ? `:${file.line}` : "");
+            const fileMessage = (file.name ?? "") + (file.line ? `:${String(file.line)}` : "");
             const fileMessageSize = getStringWidth(fileMessage);
 
             if (fileMessageSize + titleSize + 2 > size) {
@@ -258,7 +260,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
                         return ` ${inspect(value, this.#inspectOptions)}`;
                     }
 
-                    const newValue = (hasError ? "\n\n" : " ") + value;
+                    const newValue = (hasError ? "\n\n" : " ") + String(value);
 
                     hasError = false;
 

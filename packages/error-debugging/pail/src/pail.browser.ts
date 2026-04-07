@@ -39,6 +39,7 @@ const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => Re
 
         try {
             // @ts-expect-error - this is the correct type
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- generic function apply
             const result = function_.apply(this, args);
 
             doing = false;
@@ -137,13 +138,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.throttleMin = options.throttleMin ?? 5;
 
         // Optimize: reuse types, longestLabel, stringify, and logLevels from parent if provided (for child loggers)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentLongestLabel = (options as any).parentLongestLabel as string | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentTypes = (options as any).parentTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L> | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentStringify = (options as any).parentStringify as typeof stringify | undefined;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentLogLevels = (options as any).parentLogLevels as Record<string, number> | undefined;
 
         // Reuse stringify from parent if available (same configuration)
@@ -197,7 +198,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.lastLog = {};
 
         // Prevent infinite loop on logging
-        this.logger = preventLoop(this.logger).bind(this);
+        this.logger = preventLoop(this.logger.bind(this));
 
         this.#initializeBoundMethods();
 
@@ -230,7 +231,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         // eslint-disable-next-line no-restricted-syntax,guard-for-in
         for (const type in this.types) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             (this.force as any)[type] = this.logger.bind(this, type as T, false, true);
         }
     }
@@ -253,20 +254,19 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public wrapConsole(): void {
+        /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- console wrapping requires dynamic property access */
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const type in this.types) {
             // Backup original value
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (!(console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (console as any)[`__${type}`] = (console as any)[type];
             }
 
             // Override
             // @TODO: Fix typings
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (console as any)[type] = (this as unknown as PailBrowserImpl<T, L>)[type as keyof PailBrowserImpl<T, L>];
         }
+        /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
     }
 
     /**
@@ -285,18 +285,18 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public restoreConsole(): void {
+        /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- console restore requires dynamic property access */
         // eslint-disable-next-line no-restricted-syntax
         for (const type in this.types) {
             // Restore if backup is available
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((console as any)[`__${type}`]) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (console as any)[type] = (console as any)[`__${type}`];
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-dynamic-delete
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete (console as any)[`__${type}`];
             }
         }
+        /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
     }
 
     /**
@@ -316,17 +316,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      */
     public wrapException(): void {
         if (typeof process !== "undefined") {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            process.on("uncaughtException", (error: any) => {
+            process.on("uncaughtException", (error: Error) => {
                 // @TODO: Fix typings
                 // @ts-expect-error - dynamic property
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 (this as unknown as PailBrowserImpl<T, L>).error(error);
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            process.on("unhandledRejection", (error: any) => {
+            process.on("unhandledRejection", (error: unknown) => {
                 // @TODO: Fix typings
                 // @ts-expect-error - dynamic property
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 (this as unknown as PailBrowserImpl<T, L>).error(error);
             });
         }
@@ -427,7 +427,10 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // Flush all queued messages
         const queue = this.messageQueue.splice(0);
 
-        for (const { messageObject, raw, type } of queue) {
+        for (let i = 0; i < queue.length; i += 1) {
+            const { messageObject, raw, type } = queue[i];
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- messageObject comes from queue with any[] type
             this.logger(type, raw, false, ...messageObject);
         }
     }
@@ -508,10 +511,9 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * childWithNewType.db("Query executed"); // New type available
      * ```
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public child<N extends string = T, LC extends string = L>(options?: Partial<ConstructorOptions<N, LC>>): PailBrowserType<N, LC> {
         // Check if types have changed - if not, we can reuse bound methods
-        const typesChanged = options?.types !== undefined && options.types !== null;
+        const typesChanged = options?.types !== undefined;
         const mergedTypes = typesChanged
             ? mergeTypes<LC, N>(this.types as DefaultLoggerTypes<LC>, options.types as LoggerTypesConfig<N, LC>)
             : (this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>);
@@ -665,7 +667,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             this.logger("info", false, false, {
                 context: data,
-                message: span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`,
+                message: span < 1000 ? `${String(span)} ms` : `${(span / 1000).toFixed(2)} s`,
                 prefix: label,
             });
         } else {
@@ -705,7 +707,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             this.timersMap.delete(label);
 
             this.logger("stop", false, false, {
-                message: `${this.endTimerMessage} ${span < 1000 ? `${span} ms` : `${(span / 1000).toFixed(2)} s`}`,
+                message: `${this.endTimerMessage} ${span < 1000 ? `${String(span)} ms` : `${(span / 1000).toFixed(2)} s`}`,
                 prefix: label,
             });
         } else {
@@ -733,6 +735,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public group(label = "console.group"): void {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- runtime SSR check
         if (globalThis.window === undefined) {
             this.groups.push(label);
         } else {
@@ -756,6 +759,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public groupEnd(): void {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- runtime SSR check
         if (globalThis.window === undefined) {
             this.groups.pop();
         } else {
@@ -785,7 +789,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         this.countMap.set(label, current + 1);
 
         this.logger("log", false, false, {
-            message: `${label}: ${current + 1}`,
+            message: `${label}: ${String(current + 1)}`,
             prefix: label,
         });
     }
@@ -872,13 +876,15 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     protected registerReporters(reporters: Reporter<L>[]): void {
-        for (const reporter of reporters) {
-            this.reporters.add(this.extendReporter(reporter));
+        for (let i = 0; i < reporters.length; i += 1) {
+            this.reporters.add(this.extendReporter(reporters[i]));
         }
     }
 
     protected registerProcessors(processors: Processor<L>[]): void {
-        for (const processor of processors) {
+        for (let i = 0; i < processors.length; i += 1) {
+            const processor = processors[i];
+
             if (typeof (processor as StringifyAwareProcessor<L>).setStringify === "function") {
                 (processor as StringifyAwareProcessor<L>).setStringify(this.stringify);
             }
@@ -888,6 +894,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     #report(meta: Meta<L>, raw: boolean): void {
+        // eslint-disable-next-line sonarjs/no-selector-parameter -- raw flag is fundamental to the reporting architecture
         if (raw) {
             this.rawReporter.log(Object.freeze(meta));
         } else {
@@ -902,7 +909,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    #buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: any[]): Meta<L> {
+    #buildMeta(typeName: string, type: Partial<LoggerConfiguration<L>>, ...arguments_: unknown[]): Meta<L> {
         const meta = {
             badge: undefined,
             context: undefined,
@@ -939,6 +946,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             // Check if first argument is a structured Message object (has "message" property)
         } else if (arguments_.length > 0 && typeof arguments_[0] === "object" && arguments_[0] !== null && "message" in arguments_[0]) {
             // First argument is a Message object - destructure it for structured logging
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Message type uses any for flexibility
             const { context, message, prefix, suffix } = arguments_[0] as Message;
 
             if (context) {
@@ -953,6 +961,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                 meta.suffix = suffix;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Message.message is any by design
             meta.message = message;
 
             // If there are additional arguments beyond the Message object, add them to context
@@ -974,8 +983,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             // Handle single arguments
         } else if (arguments_.length === 1) {
             // Single argument - set as message (not wrapped in array)
-            // eslint-disable-next-line prefer-destructuring
-            meta.message = arguments_[0];
+            meta.message = arguments_[0] as Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
             // Handle empty arguments (edge case)
         } else {
             // No arguments provided
@@ -998,7 +1006,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    protected logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, force: boolean, ...messageObject: any[]): void {
+    protected logger(type: LiteralUnion<DefaultLogTypes, T>, raw: boolean, force: boolean, ...messageObject: unknown[]): void {
         if (this.disabled) {
             return;
         }
@@ -1010,12 +1018,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             return;
         }
 
-        const typeConfig = this.types[type];
-
-        if (!typeConfig) {
-            return;
-        }
-
+        const typeConfig = this.types[type] as LoggerConfiguration<L>;
         const logLevel = this.#normalizeLogLevel(typeConfig.logLevel);
 
         // Bypass level check if force is true
@@ -1026,7 +1029,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
              * @param newLog false if the throttle expired and we don't want to log a duplicate
              */
             const resolveLog = (newLog = false) => {
-                const repeated = (this.lastLog.count || 0) - this.throttleMin;
+                const repeated = (this.lastLog.count ?? 0) - this.throttleMin;
 
                 if (this.lastLog.object && repeated > 0) {
                     const lastMeta = { ...this.lastLog.object };
@@ -1075,7 +1078,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                             ]);
 
                     if (isSameLog) {
-                        this.lastLog.count = (this.lastLog.count || 0) + 1;
+                        this.lastLog.count = (this.lastLog.count ?? 0) + 1;
 
                         if (this.lastLog.count > this.throttleMin) {
                             // Auto-resolve when throttle is timed out

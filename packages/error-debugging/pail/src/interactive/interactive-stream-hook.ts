@@ -36,7 +36,7 @@ class InteractiveStreamHook {
      * @param stream The Node.js WriteStream to hook into (usually stdout or stderr)
      */
     public constructor(stream: NodeJS.WriteStream) {
-        this.#method = stream.write;
+        this.#method = stream.write.bind(stream);
         this.#stream = stream;
     }
 
@@ -58,7 +58,7 @@ class InteractiveStreamHook {
                 // prettier-ignore
                 this.#decoder.write(
                     typeof data === "string"
-
+                        // eslint-disable-next-line sonarjs/no-nested-conditional
                         ? Buffer.from(data, typeof arguments_[0] === "string" ? (arguments_[0] as BufferEncoding) : undefined)
                         : Buffer.from(data),
                 ),

@@ -54,12 +54,14 @@ interface EnvironmentProcessorOptions {
  * @returns Detected environment information
  */
 const detectEnvironment = (): EnvironmentInfo => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- process may not exist in browser/edge environments
     if (typeof process === "undefined" || !process.env) {
         return {};
     }
 
     const { env } = process;
     const info: EnvironmentInfo = {
+        /* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing -- env vars may be undefined or empty at runtime */
         // Commit hash
         commit:
             env.COMMIT_SHA
@@ -108,6 +110,7 @@ const detectEnvironment = (): EnvironmentInfo => {
             || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
             || env.RENDER_GIT_COMMIT?.slice(0, 7)
             || undefined,
+        /* eslint-enable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing */
     };
 
     // Clean up undefined values
@@ -172,8 +175,13 @@ class EnvironmentProcessor<L extends string = string> implements Processor<L> {
         const cleanOverrides: Partial<EnvironmentInfo> = {};
 
         if (options.overrides) {
-            for (const [key, value] of Object.entries(options.overrides)) {
+            const overrideEntries: [string, unknown][] = Object.entries(options.overrides);
+
+            for (let i = 0; i < overrideEntries.length; i += 1) {
+                const [key, value] = overrideEntries[i];
+
                 if (value !== undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- array index access typing
                     (cleanOverrides as Record<string, unknown>)[key] = value;
                 }
             }

@@ -49,7 +49,7 @@ export interface Meta<L> extends VisulimaPail.CustomMeta<L> {
 
     message: Primitive | ReadonlyArray<unknown> | Record<PropertyKey, unknown>;
     prefix: string | undefined;
-    repeated?: number | undefined;
+    repeated?: number;
     scope: string[] | undefined;
     suffix: string | undefined;
     traceError: Error | undefined; // for internal use
@@ -119,7 +119,7 @@ export interface LoggerFunction {
 export interface LoggerConfiguration<L extends string> {
     badge?: string;
 
-    color?: AnsiColors | undefined;
+    color?: AnsiColors;
     label: string;
     logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>;
 }
@@ -267,8 +267,9 @@ export interface ServerConstructorOptions<T extends string, L extends string> ex
 }
 
 export type Message = {
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context?: any[] | undefined;
+    context?: any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message: any;
     prefix?: string;
