@@ -3,11 +3,13 @@ import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
+import type { PackageManager } from "../tui/components/devcontainer/catalogs/mount-suggestions";
 import { TEMPLATES } from "../tui/components/devcontainer/catalogs/templates";
 import { readDevcontainerJson, writeDevcontainerJson } from "../tui/components/devcontainer/devcontainer-io";
 import { DevcontainerStore } from "../tui/components/devcontainer/DevcontainerStore";
 import type { DevcontainerConfig } from "../tui/components/devcontainer/types";
 import VisDevcontainerApp from "../tui/components/devcontainer/VisDevcontainerApp";
+import { detectPm } from "../pm-runner";
 
 const devcontainer: Command = {
     group: "Scaffold & Config",
@@ -27,6 +29,17 @@ const devcontainer: Command = {
         const templateId = options.template as string | undefined;
         const outputPath = options.output as string | undefined;
         const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
+
+        // Detect package manager
+        let detectedPm: PackageManager | null = null;
+
+        try {
+            const pmInfo = detectPm(workspaceRoot);
+
+            detectedPm = pmInfo.name as PackageManager;
+        } catch {
+            // Could not detect — will be null
+        }
 
         // Try to read existing devcontainer.json
         const existing = readDevcontainerJson(workspaceRoot);
@@ -68,7 +81,7 @@ const devcontainer: Command = {
         // Keep event loop alive while TUI is active
         const keepAlive = setInterval(() => {}, 1000);
 
-        const store = new DevcontainerStore(initialConfig, hadComments);
+        const store = new DevcontainerStore(initialConfig, hadComments, detectedPm);
 
         // If --template is provided in create mode, apply it and skip selector
         if (templateId && !existing) {

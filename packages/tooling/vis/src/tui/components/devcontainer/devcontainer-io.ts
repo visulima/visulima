@@ -24,7 +24,16 @@ export const readDevcontainerJson = (workspaceRoot: string): ReadResult | null =
     const raw = readFileSync(filePath, "utf8");
     const stripped = stripJsonComments(raw);
     const hadComments = stripped !== raw;
-    const config = JSON.parse(stripped) as DevcontainerConfig;
+
+    let config: DevcontainerConfig;
+
+    try {
+        config = JSON.parse(stripped) as DevcontainerConfig;
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        throw new Error(`Failed to parse ${filePath}: ${message}`);
+    }
 
     return { config, hadComments };
 };
