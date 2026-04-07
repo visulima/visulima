@@ -10,12 +10,11 @@
  * task output, logged messages, static headers).
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
- *
  * @license Apache-2.0
  */
 
 import type { ReactNode } from "react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 import type { DOMElement } from "../dom";
 import { renderToStatic } from "../render-node-to-output";
@@ -27,7 +26,13 @@ export type Props = {
     readonly width?: number;
 };
 
-function StaticRender({ children, style, width }: Props): React.ReactNode {
+const handleBeforeRender = (node: DOMElement): void => {
+    if (!node.cachedRender) {
+        renderToStatic(node);
+    }
+};
+
+const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
     const ref = useRef<DOMElement>(null);
 
     useEffect(() => {
@@ -40,19 +45,22 @@ function StaticRender({ children, style, width }: Props): React.ReactNode {
         };
     }, []);
 
+    const mergedStyle = useMemo(() => {
+        return {
+            ...style,
+            width,
+        };
+    }, [style, width]);
+
     return (
         <ink-box
+            internalOnBeforeRender={handleBeforeRender}
             ref={ref}
-            style={{ ...style, width }}
-            internalOnBeforeRender={(node: DOMElement) => {
-                if (node && !node.cachedRender) {
-                    renderToStatic(node);
-                }
-            }}
+            style={mergedStyle}
         >
             {children}
         </ink-box>
     );
-}
+};
 
 export default StaticRender;

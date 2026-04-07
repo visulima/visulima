@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus */
 import { getBackgroundColorEscape } from "./colorize";
 import type { DOMNode } from "./dom";
 import type Output from "./output";

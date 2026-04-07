@@ -1,4 +1,3 @@
-/* eslint-disable func-style, no-for-of-array/no-for-of-array */
 // Kitty keyboard protocol flags.
 // @see https://sw.kovidgoyal.net/kitty/keyboard-protocol/
 export const kittyFlags = {

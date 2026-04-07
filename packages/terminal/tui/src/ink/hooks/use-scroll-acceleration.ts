@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return, import/exports-last, unicorn/prefer-ternary */
+/* eslint-disable consistent-return, unicorn/prefer-ternary */
 
 /**
  * React hook for macOS-style scroll acceleration with momentum.
@@ -74,6 +74,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
     const skipNextTickRef = useRef(false);
     const tickTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
     const onScrollRef = useRef(onScroll);
+
     onScrollRef.current = onScroll;
 
     // Momentum tick loop — only runs while coasting to avoid idle CPU usage

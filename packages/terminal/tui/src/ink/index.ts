@@ -94,7 +94,7 @@ export { default as TextInput } from "./components/TextInput";
 export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
 export type {
-    AsyncChildrenFn,
+    AsyncChildrenFunction,
     FlatNode,
     SelectionMode,
     TreeNode,

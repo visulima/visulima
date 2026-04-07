@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-duplicate-type-constituents, @typescript-eslint/no-unsafe-assignment, import/exports-last, import/no-commonjs, no-underscore-dangle */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-duplicate-type-constituents, @typescript-eslint/no-unsafe-assignment, import/no-commonjs */
 // ESM wrapper around the NAPI-RS CJS native binding
 import { createRequire } from "node:module";
 

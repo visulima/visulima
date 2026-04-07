@@ -1,4 +1,4 @@
-/* eslint-disable react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react-x/no-use-context, react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
 import { useContext } from "react";
 

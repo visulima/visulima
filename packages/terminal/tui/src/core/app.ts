@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/naming-convention, import/no-named-as-default, import/prefer-default-export, no-for-of-array/no-for-of-array, no-underscore-dangle, unicorn/no-null */
+/* eslint-disable @typescript-eslint/naming-convention, import/no-named-as-default, unicorn/no-null */
 import EventEmitter from "eventemitter3";
 
 import type { RendererInstance, TerminalGuardInstance } from "./native-binding";

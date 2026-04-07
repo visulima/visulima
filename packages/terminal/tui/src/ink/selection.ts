@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable sonarjs/no-nested-conditional */
 
 /**
  * DOM-like Selection and Range API for terminal text selection.
@@ -12,9 +12,9 @@
 import type { DOMElement, DOMNode } from "./dom";
 import { getPathToRoot } from "./dom";
 import { toStyledLine } from "./measure-text";
-import type { StyledLine } from "./styled-line";
 import type { CharOffsetMap } from "./squash-text-nodes";
 import { squashTextNodesWithMap } from "./squash-text-nodes";
+import type { StyledLine } from "./styled-line";
 
 /**
  * Extract styled line from a DOM node with character offset mapping.

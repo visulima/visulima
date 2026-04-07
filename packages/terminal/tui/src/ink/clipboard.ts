@@ -1,5 +1,3 @@
-/* eslint-disable import/exports-last */
-
 /**
  * OSC 52 clipboard protocol utilities.
  *

@@ -1,4 +1,4 @@
-/* eslint-disable func-style, import/exports-last, jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description, no-plusplus */
+/* eslint-disable jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description */
 /**
  * DevTools — optional development overlay for Ratatat apps.
  *
@@ -44,7 +44,8 @@ function useFpsCounter() {
     useEffect(() => {
         const onRender = () => {
             // Reset the idle timeout — 2s of no renders → show '--'
-            if (idleTimer.current) clearTimeout(idleTimer.current);
+            if (idleTimer.current)
+                clearTimeout(idleTimer.current);
 
             idleTimer.current = setTimeout(() => {
                 setFps(0);
@@ -70,7 +71,8 @@ function useFpsCounter() {
         return () => {
             unsub();
 
-            if (idleTimer.current) clearTimeout(idleTimer.current);
+            if (idleTimer.current)
+                clearTimeout(idleTimer.current);
         };
     }, [app]);
 
@@ -83,7 +85,11 @@ const FpsHud = ({ fps }: { fps: number }) => {
 
     return (
         <Box borderColor="gray" borderStyle="round" paddingX={1}>
-            <Text dim>{label} updates/sec</Text>
+            <Text dim>
+                {label}
+                {" "}
+                updates/sec
+            </Text>
         </Box>
     );
 };

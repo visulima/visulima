@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/filename-case, import/exports-last, @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 
 /**
  * Unordered list component for Ink.

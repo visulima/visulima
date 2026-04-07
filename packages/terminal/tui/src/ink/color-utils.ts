@@ -78,7 +78,8 @@ export const colorToAnsi256 = (color: string): number => {
 
 /**
  * Convert a color string to SGR parameter array for escape sequences.
- * @param isFg - true for foreground (30-based), false for background (40-based)
+ * @param color the color string to convert
+ * @param isFg true for foreground (30-based), false for background (40-based)
  */
 export const colorToSgrParams = (color: string, isFg: boolean): number[] => {
     const base = isFg ? 30 : 40;

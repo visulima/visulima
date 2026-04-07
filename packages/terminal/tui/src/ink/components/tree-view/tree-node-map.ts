@@ -158,13 +158,13 @@ export class TreeNodeMap<T = Record<string, unknown>> {
             }
 
             if (flat.childrenIds.length > 0) {
-                return { ...flat.node, children: flat.childrenIds.map(rebuildFromMap) };
+                return { ...flat.node, children: flat.childrenIds.map((childId) => rebuildFromMap(childId)) };
             }
 
             return flat.node;
         };
 
-        const rootData = this.rootIds.map(rebuildFromMap);
+        const rootData = this.rootIds.map((nodeId) => rebuildFromMap(nodeId));
 
         return new TreeNodeMap(rootData);
     }

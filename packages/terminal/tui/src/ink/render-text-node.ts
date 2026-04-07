@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity */
-
 /**
  * StyledLine-based text node rendering.
  *
@@ -15,8 +13,8 @@ import { measureStyledLine, splitStyledLineByNewline, toStyledLine } from "./mea
 import type Output from "./output";
 import type { OutputTransformer } from "./render-node-to-output";
 import { applySelectionToStyledLine } from "./selection";
-import type { StyledLine } from "./styled-line";
 import squashTextNodes from "./squash-text-nodes";
+import type { StyledLine } from "./styled-line";
 import { wrapOrTruncateStyledLine } from "./text-wrap";
 
 /**
@@ -82,13 +80,13 @@ export const handleTextNode = (
     const { width: currentWidth } = measureStyledLine(styledLine);
     const maxWidth = getMaxWidth(node.yogaNode!);
 
-    let lines: StyledLine[] =
-        currentWidth > maxWidth ? wrapOrTruncateStyledLine(styledLine, maxWidth, node.style.textWrap ?? "wrap") : splitStyledLineByNewline(styledLine);
+    let lines: StyledLine[]
+        = currentWidth > maxWidth ? wrapOrTruncateStyledLine(styledLine, maxWidth, node.style.textWrap ?? "wrap") : splitStyledLineByNewline(styledLine);
 
     lines = applyPaddingToStyledLines(node, lines);
 
     // Write each line directly as StyledLine (skips bridge conversion)
-    for (let index = 0; index < lines.length; index++) {
-        output.writeStyledLine(x, y + index, lines[index]!);
+    for (const [index, line] of lines.entries()) {
+        output.writeStyledLine(x, y + index, line);
     }
 };

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/filename-case */
 import React, { useMemo } from "react";
 
 import type { Props as BoxProps } from "../Box";

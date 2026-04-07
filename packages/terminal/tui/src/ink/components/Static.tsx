@@ -1,4 +1,4 @@
-/* eslint-disable react-x/set-state-in-effect, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react-x/set-state-in-effect, react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
 import { useLayoutEffect, useMemo, useState } from "react";
 

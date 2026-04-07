@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, no-for-of-array/no-for-of-array, no-plusplus, react-x/no-context-provider, react-x/no-unnecessary-use-callback, sonarjs/no-nested-functions, unicorn/filename-case, unicorn/prefer-event-target */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, react-x/no-unnecessary-use-callback, sonarjs/no-nested-functions */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
@@ -71,6 +71,7 @@ const App = ({
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const [internal_eventEmitter] = useState(() => {
         const emitter = new EventEmitter();
+
         // Each useInput hook adds a listener, so the count can legitimately exceed the default limit of 10.
         emitter.setMaxListeners(Infinity);
 
@@ -80,9 +81,8 @@ const App = ({
     const readableListenerRef = useRef<(() => void) | undefined>(undefined);
     const inputParserRef = useRef<ReturnType<typeof createInputParser> | undefined>(undefined);
 
-    if (!inputParserRef.current) {
-        inputParserRef.current = createInputParser();
-    }
+    inputParserRef.current ??= createInputParser();
+
     const pendingInputFlushRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const didWarnAboutDeprecatedPasteFallbackRef = useRef(false);
     // Small delay to let chunked escape sequences complete before flushing as literal input.
@@ -188,9 +188,9 @@ const App = ({
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
                             didWarnAboutDeprecatedPasteFallbackRef.current = true;
                             writeToStderr(
-                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. " +
-                                    "This fallback is deprecated and will be removed in the next major version. " +
-                                    "Migrate paste handling to usePaste().\n",
+                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. "
+                                + "This fallback is deprecated and will be removed in the next major version. "
+                                + "Migrate paste handling to usePaste().\n",
                             );
                         }
 
@@ -490,7 +490,7 @@ const App = ({
 
     const stdinContextValue = useMemo(() => {
         return {
-            internal_eventEmitter: internal_eventEmitter,
+            internal_eventEmitter,
 
             internal_exitOnCtrlC: exitOnCtrlC,
             isRawModeSupported,
@@ -498,28 +498,34 @@ const App = ({
             setRawMode: handleSetRawMode,
             stdin,
         };
-    }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC]);
+    }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC, internal_eventEmitter]);
 
     const stdoutContextValue = useMemo(
-        () => ({
-            stdout,
-            write: writeToStdout,
-        }),
+        () => {
+            return {
+                stdout,
+                write: writeToStdout,
+            };
+        },
         [stdout, writeToStdout],
     );
 
     const stderrContextValue = useMemo(
-        () => ({
-            stderr,
-            write: writeToStderr,
-        }),
+        () => {
+            return {
+                stderr,
+                write: writeToStderr,
+            };
+        },
         [stderr, writeToStderr],
     );
 
     const cursorContextValue = useMemo(
-        () => ({
-            setCursorPosition,
-        }),
+        () => {
+            return {
+                setCursorPosition,
+            };
+        },
         [setCursorPosition],
     );
 

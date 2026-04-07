@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 
 import useInput from "../../hooks/use-input";
-import type { AsyncChildrenFn as AsyncChildrenFunction, SelectionMode } from "./types";
+import type { AsyncChildrenFunction, SelectionMode } from "./types";
 import type { TreeViewState } from "./use-tree-view-state";
 
 export type UseTreeViewProps<T = Record<string, unknown>> = {
@@ -107,7 +107,9 @@ export function useTreeView<T>({ isDisabled = false, loadChildren, onLoadError, 
 
                         if (flat && flat.hasChildren && flat.childrenIds.length === 0) {
                             // Async load needed
-                            void triggerLoad(state.focusedId);
+                            triggerLoad(state.focusedId).catch(() => {
+                                // Swallow async load errors
+                            });
 
                             return;
                         }

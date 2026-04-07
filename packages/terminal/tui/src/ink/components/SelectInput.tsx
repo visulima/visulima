@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Select input component for Ink.
@@ -304,8 +304,10 @@ export default function SelectInput<V>({
     const hasInitialSelectionRef = useRef(hasInitialSelection);
     const resolvedInitialRef = useRef(resolvedInitial);
     const stateRef = useRef(state);
+
     stateRef.current = state;
     const onSelectRef = useRef(onSelect);
+
     onSelectRef.current = onSelect;
     const previousItems = useRef(items);
 

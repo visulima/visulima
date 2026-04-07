@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null, unicorn/prefer-dom-node-remove */
+/* eslint-disable @typescript-eslint/no-explicit-any, unicorn/no-null, unicorn/prefer-dom-node-remove */
 import Yoga from "yoga-layout";
 
 import { measureTextBlock } from "./text-width";
@@ -41,7 +41,8 @@ export class LayoutNode {
             this.yogaNode.unsetMeasureFunc();
         } else {
             this.yogaNode.setMeasureFunc((width, widthMode, height, heightMode) => {
-                if (value.length === 0) return { height: 0, width: 0 };
+                if (value.length === 0)
+                    return { height: 0, width: 0 };
 
                 const unconstrained = measureTextBlock(value, Number.MAX_SAFE_INTEGER);
 
@@ -152,7 +153,8 @@ export class LayoutNode {
 
         // Clear parent reference on children before clearing our own bookkeeping
         for (const child of this.children) {
-            if (child.parent === this) child.parent = null;
+            if (child.parent === this)
+                child.parent = null;
         }
 
         this.children = [];

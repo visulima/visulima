@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity */
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
@@ -141,8 +140,8 @@ export const renderNodeToScreenReaderOutput = (
     } else if (node.nodeName === "ink-box" || node.nodeName === "ink-root") {
         const separator = node.style.flexDirection === "row" || node.style.flexDirection === "row-reverse" ? " " : "\n";
 
-        const childNodes =
-            node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
+        const childNodes
+            = node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
 
         output = childNodes
             .map((childNode) => {
@@ -205,8 +204,8 @@ const renderNodeToOutput = (
     // Render caching: if this node has a cached render result (a Region),
     // composite it directly and skip the entire subtree traversal.
     if (node.cachedRender) {
-        const x = (offsetX ?? 0) + (node.yogaNode?.getComputedLeft() ?? 0);
-        const y = (offsetY ?? 0) + (node.yogaNode?.getComputedTop() ?? 0);
+        const x = offsetX + (node.yogaNode?.getComputedLeft() ?? 0);
+        const y = offsetY + (node.yogaNode?.getComputedTop() ?? 0);
 
         output.addRegionTree(node.cachedRender, x, y);
 
@@ -544,7 +543,7 @@ export const renderToStatic = (node: DOMElement): void => {
         children: [],
         cursorPosition: undefined,
         height,
-        id: (node as any).internalId ?? "static",
+        id: (node as DOMElement & { internalId?: string }).internalId ?? "static",
         isScrollable: false,
         lines: [...staticOutput.getRootLines()],
         selectableSpans: [],

@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Default item component for SelectInput.

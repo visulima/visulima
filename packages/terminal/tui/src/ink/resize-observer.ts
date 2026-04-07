@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, import/exports-last, max-classes-per-file, no-console, no-param-reassign */
+/* eslint-disable no-console */
 
 /**
  * ResizeObserver API for terminal UI elements.
@@ -100,7 +100,7 @@ export function measureAndExtractObservers(node: DOMElement, observerEntries: Ma
         if (!Number.isNaN(width) && !Number.isNaN(height)) {
             const lastSize = node.internal_lastMeasuredSize;
 
-            if (!lastSize || lastSize.width !== width || lastSize.height !== height) {
+            if (lastSize?.width !== width || lastSize.height !== height) {
                 node.internal_lastMeasuredSize = { height, width };
 
                 if (hasObservers) {
@@ -135,7 +135,7 @@ export function triggerResizeObservers(node: DOMElement, forceCache = false): vo
 
         for (const child of n.childNodes) {
             if (child.nodeName !== "#text") {
-                traverse(child as DOMElement);
+                traverse(child);
             }
         }
     }

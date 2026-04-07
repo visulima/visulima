@@ -6,15 +6,14 @@
  * styles at the end of the string.
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
- *
  * @license Apache-2.0
  */
 
 /* eslint-disable no-bitwise */
 
 import { colorToSgrParams } from "./color-utils";
-import type { StyledLine } from "./styled-line";
 import { BOLD_MASK, DIM_MASK, HIDDEN_MASK, INVERSE_MASK, ITALIC_MASK, STRIKETHROUGH_MASK, UNDERLINE_MASK } from "./style-flags";
+import type { StyledLine } from "./styled-line";
 
 // SGR parameter codes
 const SGR_BOLD = 1;
@@ -60,30 +59,30 @@ export const styledLineToString = (line: StyledLine): string => {
     // Direct indexed access — avoids iterator object allocation per character.
     // Single getSpan() call per character, all properties derived from the span.
     let result = "";
-    let prevFlags = 0;
-    let prevFg: string | undefined;
-    let prevBg: string | undefined;
-    let prevLink: string | undefined;
+    let previousFlags = 0;
+    let previousFg: string | undefined;
+    let previousBg: string | undefined;
+    let previousLink: string | undefined;
     let hasActiveStyles = false;
 
     // Walk spans directly instead of per-character iteration.
     // This is O(spans) not O(characters) for the style-diff logic.
-    let charIdx = 0;
+    let charIndex = 0;
     const spans = line.getSpans();
 
     for (const span of spans) {
         const spanFlags = span.formatFlags & 0x7f; // strip FULL_WIDTH_MASK
-        const fgColor = span.fgColor;
-        const bgColor = span.bgColor;
-        const link = span.link;
+        const { fgColor } = span;
+        const { bgColor } = span;
+        const { link } = span;
         const flags = spanFlags;
 
         // Emit style diff once per span (not per character)
-        if (flags !== prevFlags || fgColor !== prevFg || bgColor !== prevBg || link !== prevLink) {
+        if (flags !== previousFlags || fgColor !== previousFg || bgColor !== previousBg || link !== previousLink) {
             // Handle link changes
-            if (link !== prevLink) {
-                if (prevLink) {
-                    result += prevLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
+            if (link !== previousLink) {
+                if (previousLink) {
+                    result += previousLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
                 }
 
                 if (link) {
@@ -94,104 +93,112 @@ export const styledLineToString = (line: StyledLine): string => {
             }
 
             // Bold/dim (share SGR 22 reset)
-            const prevBoldDim = prevFlags & (BOLD_MASK | DIM_MASK);
+            const previousBoldDim = previousFlags & (BOLD_MASK | DIM_MASK);
             const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
 
-            if (prevBoldDim !== newBoldDim) {
-                const removingBold = prevFlags & BOLD_MASK && !(flags & BOLD_MASK);
-                const removingDim = prevFlags & DIM_MASK && !(flags & DIM_MASK);
+            if (previousBoldDim !== newBoldDim) {
+                const removingBold = previousFlags & BOLD_MASK && !(flags & BOLD_MASK);
+                const removingDim = previousFlags & DIM_MASK && !(flags & DIM_MASK);
 
                 if (removingBold || removingDim) {
                     result += sgr([SGR_NO_BOLD]);
                 }
 
-                if (flags & BOLD_MASK && (!(prevFlags & BOLD_MASK) || removingDim)) {
+                if (flags & BOLD_MASK && (!(previousFlags & BOLD_MASK) || removingDim)) {
                     result += sgr([SGR_BOLD]);
                 }
 
-                if (flags & DIM_MASK && (!(prevFlags & DIM_MASK) || removingBold)) {
+                if (flags & DIM_MASK && (!(previousFlags & DIM_MASK) || removingBold)) {
                     result += sgr([SGR_DIM]);
                 }
             }
 
-            if (flags & ITALIC_MASK && !(prevFlags & ITALIC_MASK)) {
+            if (flags & ITALIC_MASK && !(previousFlags & ITALIC_MASK)) {
                 result += sgr([SGR_ITALIC]);
-            } else if (!(flags & ITALIC_MASK) && prevFlags & ITALIC_MASK) {
+            } else if (!(flags & ITALIC_MASK) && previousFlags & ITALIC_MASK) {
                 result += sgr([SGR_NO_ITALIC]);
             }
 
-            if (flags & UNDERLINE_MASK && !(prevFlags & UNDERLINE_MASK)) {
+            if (flags & UNDERLINE_MASK && !(previousFlags & UNDERLINE_MASK)) {
                 result += sgr([SGR_UNDERLINE]);
-            } else if (!(flags & UNDERLINE_MASK) && prevFlags & UNDERLINE_MASK) {
+            } else if (!(flags & UNDERLINE_MASK) && previousFlags & UNDERLINE_MASK) {
                 result += sgr([SGR_NO_UNDERLINE]);
             }
 
-            if (flags & INVERSE_MASK && !(prevFlags & INVERSE_MASK)) {
+            if (flags & INVERSE_MASK && !(previousFlags & INVERSE_MASK)) {
                 result += sgr([SGR_INVERSE]);
-            } else if (!(flags & INVERSE_MASK) && prevFlags & INVERSE_MASK) {
+            } else if (!(flags & INVERSE_MASK) && previousFlags & INVERSE_MASK) {
                 result += sgr([SGR_NO_INVERSE]);
             }
 
-            if (flags & HIDDEN_MASK && !(prevFlags & HIDDEN_MASK)) {
+            if (flags & HIDDEN_MASK && !(previousFlags & HIDDEN_MASK)) {
                 result += sgr([SGR_HIDDEN]);
-            } else if (!(flags & HIDDEN_MASK) && prevFlags & HIDDEN_MASK) {
+            } else if (!(flags & HIDDEN_MASK) && previousFlags & HIDDEN_MASK) {
                 result += sgr([SGR_NO_HIDDEN]);
             }
 
-            if (flags & STRIKETHROUGH_MASK && !(prevFlags & STRIKETHROUGH_MASK)) {
+            if (flags & STRIKETHROUGH_MASK && !(previousFlags & STRIKETHROUGH_MASK)) {
                 result += sgr([SGR_STRIKETHROUGH]);
-            } else if (!(flags & STRIKETHROUGH_MASK) && prevFlags & STRIKETHROUGH_MASK) {
+            } else if (!(flags & STRIKETHROUGH_MASK) && previousFlags & STRIKETHROUGH_MASK) {
                 result += sgr([SGR_NO_STRIKETHROUGH]);
             }
 
-            if (fgColor !== prevFg) {
+            if (fgColor !== previousFg) {
                 result += fgColor ? sgr(colorToSgrParams(fgColor, true)) : sgr([SGR_FG_DEFAULT]);
             }
-            if (bgColor !== prevBg) {
+
+            if (bgColor !== previousBg) {
                 result += bgColor ? sgr(colorToSgrParams(bgColor, false)) : sgr([SGR_BG_DEFAULT]);
             }
 
             hasActiveStyles = flags !== 0 || fgColor !== undefined || bgColor !== undefined;
-            prevFlags = flags;
-            prevFg = fgColor;
-            prevBg = bgColor;
-            prevLink = link;
+            previousFlags = flags;
+            previousFg = fgColor;
+            previousBg = bgColor;
+            previousLink = link;
         }
 
-        result += line.getTextRange(charIdx, charIdx + span.length);
-        charIdx += span.length;
+        result += line.getTextRange(charIndex, charIndex + span.length);
+        charIndex += span.length;
     }
 
     // Close remaining styles
     if (hasActiveStyles) {
-        if (prevFlags & (BOLD_MASK | DIM_MASK)) {
+        if (previousFlags & (BOLD_MASK | DIM_MASK)) {
             result += sgr([SGR_NO_BOLD]);
         }
-        if (prevFlags & ITALIC_MASK) {
+
+        if (previousFlags & ITALIC_MASK) {
             result += sgr([SGR_NO_ITALIC]);
         }
-        if (prevFlags & UNDERLINE_MASK) {
+
+        if (previousFlags & UNDERLINE_MASK) {
             result += sgr([SGR_NO_UNDERLINE]);
         }
-        if (prevFlags & INVERSE_MASK) {
+
+        if (previousFlags & INVERSE_MASK) {
             result += sgr([SGR_NO_INVERSE]);
         }
-        if (prevFlags & HIDDEN_MASK) {
+
+        if (previousFlags & HIDDEN_MASK) {
             result += sgr([SGR_NO_HIDDEN]);
         }
-        if (prevFlags & STRIKETHROUGH_MASK) {
+
+        if (previousFlags & STRIKETHROUGH_MASK) {
             result += sgr([SGR_NO_STRIKETHROUGH]);
         }
-        if (prevFg !== undefined) {
+
+        if (previousFg !== undefined) {
             result += sgr([SGR_FG_DEFAULT]);
         }
-        if (prevBg !== undefined) {
+
+        if (previousBg !== undefined) {
             result += sgr([SGR_BG_DEFAULT]);
         }
     }
 
-    if (prevLink) {
-        result += prevLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
+    if (previousLink) {
+        result += previousLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
     }
 
     return result;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, e18e/prefer-static-regex */
+/* eslint-disable e18e/prefer-static-regex */
 import { truncate, wordWrap } from "@visulima/string";
 
 import type { Styles } from "./styles";

@@ -1,5 +1,3 @@
-/* eslint-disable import/exports-last */
-
 /**
  * React hook for color blindness simulation and compensation.
  *

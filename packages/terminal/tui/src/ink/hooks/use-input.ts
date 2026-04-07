@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return, e18e/prefer-static-regex, import/exports-last */
+/* eslint-disable consistent-return, e18e/prefer-static-regex */
 import { useEffect, useRef } from "react";
 
 import { IMECompositionBuffer, isIMEInput } from "../ime-utils";
@@ -255,7 +255,6 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
             return;
         }
 
-        // eslint-disable-next-line sonarjs/cognitive-complexity
         const handleData = (data: string) => {
             // Check if this is IME input
             if (imeEnabled && isIMEInput(data)) {

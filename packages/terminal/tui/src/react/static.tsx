@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, func-style, no-plusplus, react/function-component-definition */
+/* eslint-disable react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
 import React, { useMemo, useRef } from "react";
 

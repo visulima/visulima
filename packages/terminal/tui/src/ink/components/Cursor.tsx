@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 import type { RefObject } from "react";
 import React, { useMemo } from "react";
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, class-methods-use-this, consistent-return, default-case, import/exports-last, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, prefer-const, sonarjs/cognitive-complexity */
+/* eslint-disable @typescript-eslint/no-use-before-define, class-methods-use-this, no-bitwise */
 import { getStringWidth } from "@visulima/string";
 
 import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
@@ -198,7 +198,7 @@ export default class Output {
         const lines = this.caches.getLines(text);
         const hasTransformers = transformers.length > 0;
 
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        for (const [lineIndex, rawLine] of lines.entries()) {
             const rowIndex = y + lineIndex;
 
             if (rowIndex < 0 || rowIndex >= this.grid.length) {
@@ -209,7 +209,7 @@ export default class Output {
                 continue;
             }
 
-            let line = lines[lineIndex] ?? "";
+            let line = rawLine;
 
             if (hasTransformers) {
                 for (const transformer of transformers) {
@@ -285,7 +285,7 @@ export default class Output {
         this.writeStyledLineToRow(this.grid[y]!, x, line, this.width, clip);
     }
 
-    getRootLines(): readonly StyledLine[] {
+    getRootLines(): ReadonlyArray<StyledLine> {
         return this.grid;
     }
 
@@ -307,19 +307,19 @@ export default class Output {
                 continue;
             }
 
-            const dstRow = this.grid[targetY]!;
+            const destinationRow = this.grid[targetY]!;
 
             for (let rx = 0; rx < srcLine.length; rx++) {
                 const targetX = x + rx;
 
-                if (targetX < 0 || targetX >= dstRow.length) {
+                if (targetX < 0 || targetX >= destinationRow.length) {
                     continue;
                 }
 
                 const value = srcLine.getValue(rx);
 
                 if (value !== " " || srcLine.hasStyles(rx)) {
-                    dstRow.setCharFast(targetX, value, srcLine.getFormatFlags(rx), srcLine.getFgColor(rx), srcLine.getBgColor(rx), srcLine.getLink(rx));
+                    destinationRow.setCharFast(targetX, value, srcLine.getFormatFlags(rx), srcLine.getFgColor(rx), srcLine.getBgColor(rx), srcLine.getLink(rx));
                 }
             }
         }
@@ -388,8 +388,8 @@ export default class Output {
 
         const canUseMemoization = this.lineMemoizationEnabled;
         const hasPrevious = this.previousLines.length > 0;
-        const canReuseRows =
-            canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
+        const canReuseRows
+            = canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
 
         if (this.previousLines.length > output.length) {
             this.previousLines.length = output.length;
@@ -399,13 +399,13 @@ export default class Output {
             this.previousRenderedLines.length = output.length;
         }
 
-        const generatedLines = new Array<string>(output.length);
+        const generatedLines = Array.from({ length: output.length });
         let changedRows = 0;
 
-        for (let rowIndex = 0; rowIndex < output.length; rowIndex++) {
-            const row = output[rowIndex]!;
+        for (const [rowIndex, element] of output.entries()) {
+            const row = element;
 
-            if (canReuseRows && this.previousLines[rowIndex] && this.previousLines[rowIndex]!.equals(row)) {
+            if (canReuseRows && this.previousLines[rowIndex]?.equals(row)) {
                 generatedLines[rowIndex] = this.previousRenderedLines[rowIndex] ?? "";
                 continue;
             }

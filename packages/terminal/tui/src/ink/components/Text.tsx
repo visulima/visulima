@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-shadow, import/no-named-as-default-member, jsdoc/escape-inline-tags, no-param-reassign, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable @typescript-eslint/no-shadow, import/no-named-as-default-member, jsdoc/escape-inline-tags, react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import colorizeDefault from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
@@ -98,10 +98,6 @@ export default function Text({
     const inheritedBackgroundColor = useContext(backgroundContext);
     const childrenOrAriaLabel = isScreenReaderEnabled && ariaLabel ? ariaLabel : children;
 
-    if (childrenOrAriaLabel === undefined || childrenOrAriaLabel === null) {
-        return null;
-    }
-
     const transform = useCallback(
         (children: string): string => {
             if (dimColor) {
@@ -143,6 +139,10 @@ export default function Text({
         },
         [dimColor, color, backgroundColor, inheritedBackgroundColor, bold, italic, underline, strikethrough, inverse],
     );
+
+    if (childrenOrAriaLabel === undefined || childrenOrAriaLabel === null) {
+        return null;
+    }
 
     if (isScreenReaderEnabled && ariaHidden) {
         return null;

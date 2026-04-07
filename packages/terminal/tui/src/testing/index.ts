@@ -73,10 +73,10 @@ class Stderr extends EventEmitter {
 class Stdin extends EventEmitter {
     readonly isTTY = true;
 
-    private _data: string | undefined;
+    private pendingData: string | undefined;
 
     write = (data: string): boolean => {
-        this._data = data;
+        this.pendingData = data;
         this.emit("readable");
         this.emit("data", data);
 
@@ -84,11 +84,11 @@ class Stdin extends EventEmitter {
     };
 
     read(): string | undefined {
-        const { _data } = this;
+        const { pendingData } = this;
 
-        this._data = undefined;
+        this.pendingData = undefined;
 
-        return _data;
+        return pendingData;
     }
 
     setEncoding(): this {

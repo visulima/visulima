@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Progress bar component for Ink.
@@ -76,6 +76,5 @@ export default function ProgressBar({
     const filled = Math.min(Math.floor(space * Math.max(0, Math.min(1, percent))), space);
     const bar = character.repeat(filled) + (rightPad ? " ".repeat(space - filled) : "");
 
-    // eslint-disable-next-line react/jsx-props-no-spreading
     return <Text {...textProps}>{bar}</Text>;
 }

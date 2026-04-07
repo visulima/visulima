@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, e18e/prefer-static-regex, import/no-named-as-default, no-bitwise, no-control-regex, no-underscore-dangle, radix, sonarjs/cognitive-complexity, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prefer-code-point */
+/* eslint-disable e18e/prefer-static-regex, import/no-named-as-default, no-bitwise, no-control-regex, radix, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prefer-code-point */
 import EventEmitter from "eventemitter3";
 
 export interface MouseEvent {
@@ -218,11 +218,16 @@ export class InputParser extends EventEmitter {
 
                 let button: MouseEvent["button"] | null = null;
 
-                if (base === 0 && !isRelease) button = "left";
-                else if (base === 1 && !isRelease) button = "middle";
-                else if (base === 2 && !isRelease) button = "right";
-                else if (base === 64) button = "scrollUp";
-                else if (base === 65) button = "scrollDown";
+                if (base === 0 && !isRelease)
+                    button = "left";
+                else if (base === 1 && !isRelease)
+                    button = "middle";
+                else if (base === 2 && !isRelease)
+                    button = "right";
+                else if (base === 64)
+                    button = "scrollUp";
+                else if (base === 65)
+                    button = "scrollDown";
 
                 if (button) {
                     const event: MouseEvent = { button, ctrl, meta, shift, x, y };
@@ -230,7 +235,8 @@ export class InputParser extends EventEmitter {
                     this.emit("mouse", event);
 
                     // Back-compat: legacy 'click' event for left button press
-                    if (button === "left") this.emit("click", { x, y });
+                    if (button === "left")
+                        this.emit("click", { x, y });
                 }
             }
 

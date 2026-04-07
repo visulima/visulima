@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, react-x/no-forward-ref, react-x/no-leaked-conditional-rendering, react-x/no-use-context, unicorn/filename-case */
+/* eslint-disable react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, react-x/no-forward-ref, react-x/no-use-context */
 import type { ForwardRefExoticComponent, PropsWithChildren, ReactNode, RefAttributes } from "react";
 import { forwardRef, useContext } from "react";
 import type { Except } from "type-fest";
@@ -136,17 +136,19 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                 }}
             >
                 {isScreenReaderEnabled && label ? label : children}
-                {sticky && stickyChildren && !isScreenReaderEnabled ? (
-                    <ink-box
-                        internalStickyAlternate
-                        style={{
-                            position: "absolute",
-                            ...style,
-                        }}
-                    >
-                        {stickyChildren}
-                    </ink-box>
-                ) : null}
+                {sticky && stickyChildren && !isScreenReaderEnabled
+                    ? (
+                        <ink-box
+                            internalStickyAlternate
+                            style={{
+                                position: "absolute",
+                                ...style,
+                            }}
+                        >
+                            {stickyChildren}
+                        </ink-box>
+                    )
+                    : null}
             </ink-box>
         );
 

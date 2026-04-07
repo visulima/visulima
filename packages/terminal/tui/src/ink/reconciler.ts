@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, consistent-return, func-style, no-console, no-empty, no-for-of-array/no-for-of-array, no-param-reassign, sonarjs/cognitive-complexity, unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, consistent-return, no-console, no-empty, unicorn/no-null */
 import process from "node:process";
 
 import { createContext, version as reactVersion } from "react";
@@ -130,9 +130,9 @@ async function loadPackageJson() {
 
     const parsedContent = JSON.parse(content) as
         | {
-              name?: string;
-              version?: string;
-          }
+            name?: string;
+            version?: string;
+        }
         | undefined;
 
     return {

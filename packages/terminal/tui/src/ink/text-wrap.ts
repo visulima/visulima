@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-for-of-array/no-for-of-array, sonarjs/cognitive-complexity */
-
 /**
  * StyledLine-based text wrapping and truncation.
  *
@@ -11,22 +9,6 @@
 
 import { inkCharacterWidth, styledLineWidth } from "./measure-text";
 import { StyledLine } from "./styled-line";
-
-export const wrapOrTruncateStyledLine = (line: StyledLine, maxWidth: number, textWrap = "wrap"): StyledLine[] => {
-    if (textWrap.startsWith("truncate")) {
-        let position: "end" | "middle" | "start" = "end";
-
-        if (textWrap === "truncate-middle") {
-            position = "middle";
-        } else if (textWrap === "truncate-start") {
-            position = "start";
-        }
-
-        return [truncateStyledLine(line, maxWidth, position)];
-    }
-
-    return wrapStyledLine(line, maxWidth);
-};
 
 const truncateStyledLine = (line: StyledLine, columns: number, position: "end" | "middle" | "start" = "end"): StyledLine => {
     if (columns < 1) {
@@ -50,7 +32,7 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
     if (position === "start") {
         // Keep the right portion
         let width = 0;
-        let startIdx = line.length;
+        let startIndex = line.length;
 
         for (let i = line.length - 1; i >= 0; i--) {
             width += inkCharacterWidth(line.getValue(i));
@@ -59,10 +41,10 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
                 break;
             }
 
-            startIdx = i;
+            startIndex = i;
         }
 
-        return ellipsis.combine(line.slice(startIdx));
+        return ellipsis.combine(line.slice(startIndex));
     }
 
     if (position === "middle") {
@@ -101,7 +83,7 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
     }
 
     // position === "end"
-    let endIdx = 0;
+    let endIndex = 0;
     let w = 0;
 
     for (let i = 0; i < line.length; i++) {
@@ -112,10 +94,10 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
         }
 
         w += cw;
-        endIdx = i + 1;
+        endIndex = i + 1;
     }
 
-    return line.slice(0, endIdx).combine(ellipsis);
+    return line.slice(0, endIndex).combine(ellipsis);
 };
 
 /**
@@ -134,9 +116,9 @@ const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
     let i = 0;
 
     while (i < line.length) {
-        const firstVal = line.getValue(i);
+        const firstValue = line.getValue(i);
 
-        if (firstVal === "\n") {
+        if (firstValue === "\n") {
             rows.push(line.slice(currentRowStart, i));
             currentRowStart = i + 1;
             currentRowWidth = 0;
@@ -149,7 +131,7 @@ const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
         let j = i;
         let wordWidth = 0;
 
-        if (firstVal === " ") {
+        if (firstValue === " ") {
             wordWidth = inkCharacterWidth(" ");
             j = i + 1;
         } else {
@@ -161,7 +143,7 @@ const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
 
         // Word/space is [i, j)
         if (currentRowWidth + wordWidth > columns && currentRowWidth > 0) {
-            if (firstVal === " " && !isAtStartOfLogicalLine && !line.hasStyles(i)) {
+            if (firstValue === " " && !isAtStartOfLogicalLine && !line.hasStyles(i)) {
                 // Drop unstyled space that causes wrap
                 i = j;
                 continue;
@@ -206,7 +188,7 @@ const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
             currentRowWidth += wordWidth;
             i = j;
 
-            if (firstVal !== " ") {
+            if (firstValue !== " ") {
                 isAtStartOfLogicalLine = false;
             }
         }
@@ -217,4 +199,20 @@ const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
     }
 
     return rows;
+};
+
+export const wrapOrTruncateStyledLine = (line: StyledLine, maxWidth: number, textWrap = "wrap"): StyledLine[] => {
+    if (textWrap.startsWith("truncate")) {
+        let position: "end" | "middle" | "start" = "end";
+
+        if (textWrap === "truncate-middle") {
+            position = "middle";
+        } else if (textWrap === "truncate-start") {
+            position = "start";
+        }
+
+        return [truncateStyledLine(line, maxWidth, position)];
+    }
+
+    return wrapStyledLine(line, maxWidth);
 };

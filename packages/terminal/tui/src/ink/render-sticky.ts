@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, jsdoc/check-param-names, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/cognitive-complexity */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, jsdoc/check-param-names */
 
 /**
  * Sticky header rendering for elements with `overflow: 'scroll'`.

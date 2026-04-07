@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/restrict-plus-operands, default-case, import/exports-last, jsdoc/lines-before-block, no-plusplus, unicorn/no-immediate-mutation, unicorn/no-null */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, default-case, jsdoc/lines-before-block, unicorn/no-immediate-mutation, unicorn/no-null */
 /**
  * React hook for managing a multi-line text buffer with cursor, selection, and undo/redo.
  */
@@ -166,10 +166,12 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
     // Track "desired column" for vertical movement
     const desiredCol = useRef(state.cursor.col);
+
     desiredCol.current = state.cursor.col;
 
     // Keep a ref to the latest state for use in callbacks that read but don't write via setState updater
     const stateRef = useRef(state);
+
     stateRef.current = state;
 
     const pushUndo = useCallback((snapshot: Snapshot) => {

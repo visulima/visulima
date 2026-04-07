@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, import/exports-last, jsdoc/check-indentation, jsdoc/match-description, no-control-regex, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/slow-regex, unicorn/no-null */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, jsdoc/check-indentation, jsdoc/match-description, no-control-regex, sonarjs/slow-regex, unicorn/no-null */
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -225,7 +225,8 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
 export const useRatatatContext = (): RatatatContextProps => {
     const context = useContext(RatatatContext);
 
-    if (!context) throw new Error("useRatatatContext must be used within a Ratatat App environment");
+    if (!context)
+        throw new Error("useRatatatContext must be used within a Ratatat App environment");
 
     return context;
 };
@@ -339,7 +340,8 @@ export const useStdin = (): { isRawModeSupported: boolean; setRawMode: (value: b
  * Ink-compatible: measureElement(ref.current)
  */
 export const measureElement = (node: LayoutNode | null): { height: number; width: number } => {
-    if (!node || !node.yogaNode) return { height: 0, width: 0 };
+    if (!node || !node.yogaNode)
+        return { height: 0, width: 0 };
 
     return {
         height: node.yogaNode.getComputedHeight() ?? 0,
@@ -520,7 +522,8 @@ export type MouseHandler = (event: MouseEvent) => void;
 export const useMouse = (handler: MouseHandler): void => {
     const context = useContext(RatatatContext);
 
-    if (!context) throw new Error("useMouse must be used within a Ratatat App environment");
+    if (!context)
+        throw new Error("useMouse must be used within a Ratatat App environment");
 
     const handlerRef = useRef<MouseHandler>(handler);
 

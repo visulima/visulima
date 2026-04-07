@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return, import/exports-last */
+/* eslint-disable consistent-return */
 
 /**
  * React hook for managing text selection with keyboard and clipboard integration.
@@ -61,6 +61,7 @@ const useTextSelection = (ref: RefObject<DOMElement | null>, options: UseTextSel
     const [selectedText, setSelectedText] = useState("");
 
     const onSelectionChangeRef = useRef(onSelectionChange);
+
     onSelectionChangeRef.current = onSelectionChange;
 
     // Listen for selection changes

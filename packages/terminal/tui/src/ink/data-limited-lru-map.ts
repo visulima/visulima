@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
-
 /**
  * A specialized LRU map that enforces limits on both the number of entries and
  * the total character length of the keys.

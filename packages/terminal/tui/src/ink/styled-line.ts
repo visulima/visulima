@@ -11,13 +11,12 @@
  * 1 string + 1 typed array + typically 1-5 span objects.
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
- *
  * @license Apache-2.0
  * Copyright 2026 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* eslint-disable no-bitwise, no-plusplus */
+/* eslint-disable no-bitwise */
 
 import { FULL_WIDTH_MASK, INVERSE_MASK } from "./style-flags";
 
@@ -32,7 +31,7 @@ export type StyleSpan = {
 const MAX_SAFE_OFFSET = 0x7f_ff; // 32767
 
 export class StyledLine {
-    public length: number;
+    public length: number = 0;
 
     private static readonly emptyCache = new Map<number, StyledLine>();
 
@@ -41,10 +40,6 @@ export class StyledLine {
     private charData: Uint16Array | undefined;
 
     private spans: StyleSpan[] | undefined;
-
-    constructor() {
-        this.length = 0;
-    }
 
     static empty(length: number): StyledLine {
         const safeLength = Math.min(length, MAX_SAFE_OFFSET);
@@ -202,20 +197,20 @@ export class StyledLine {
 
         const start = this.charData![index]! & 0x7f_ff;
         const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text!.length;
-        const oldLen = end - start;
+        const oldLength = end - start;
 
         let newValue = value;
 
-        if (this.text!.length - oldLen + value.length > MAX_SAFE_OFFSET) {
-            newValue = value.slice(0, Math.max(0, MAX_SAFE_OFFSET - (this.text!.length - oldLen)));
+        if (this.text!.length - oldLength + value.length > MAX_SAFE_OFFSET) {
+            newValue = value.slice(0, Math.max(0, MAX_SAFE_OFFSET - (this.text!.length - oldLength)));
         }
 
-        const newLen = newValue.length;
+        const newLength = newValue.length;
 
         this.text = this.text!.slice(0, start) + newValue + this.text!.slice(end);
 
-        if (oldLen !== newLen) {
-            const diff = newLen - oldLen;
+        if (oldLength !== newLength) {
+            const diff = newLength - oldLength;
 
             for (let i = index + 1; i < this.length; i++) {
                 const data = this.charData![i]!;
@@ -270,10 +265,10 @@ export class StyledLine {
 
         const start = this.charData![index]! & 0x7f_ff;
         const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text!.length;
-        const oldLen = end - start;
+        const oldLength = end - start;
 
         // Fast path: same-length replacement (no offset adjustment needed)
-        if (value.length === oldLen) {
+        if (value.length === oldLength) {
             // Replace the character in the text string
             if (value !== this.text!.slice(start, end)) {
                 this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
@@ -284,8 +279,8 @@ export class StyledLine {
             // Slow path: different length, need offset adjustment
             this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
 
-            if (oldLen !== value.length) {
-                const diff = value.length - oldLen;
+            if (oldLength !== value.length) {
+                const diff = value.length - oldLength;
 
                 for (let i = index + 1; i < this.length; i++) {
                     const data = this.charData![i]!;
@@ -302,11 +297,10 @@ export class StyledLine {
         const existingSpan = this.getSpan(index);
 
         if (
-            existingSpan &&
-            existingSpan.formatFlags === cleanFormatFlags &&
-            existingSpan.fgColor === fgColor &&
-            existingSpan.bgColor === bgColor &&
-            existingSpan.link === link
+            existingSpan?.formatFlags === cleanFormatFlags
+            && existingSpan.fgColor === fgColor
+            && existingSpan.bgColor === bgColor
+            && existingSpan.link === link
         ) {
             return;
         }
@@ -341,26 +335,25 @@ export class StyledLine {
      * Overwrite a range of this line with content from a source StyledLine.
      * More efficient than calling setChar() per character because it does
      * a single span split + rebuild instead of per-character span manipulation.
-     *
-     * @param destStart — start index in this line
+     * @param destinationStart — start index in this line
      * @param source — the StyledLine to copy from
      * @param srcStart — start index in source (default 0)
      * @param count — number of characters to copy (default: source.length)
      */
-    writeFrom(destStart: number, source: StyledLine, srcStart = 0, count?: number): void {
+    writeFrom(destinationStart: number, source: StyledLine, srcStart = 0, count?: number): void {
         const n = count ?? source.length - srcStart;
 
-        if (n <= 0 || destStart >= this.length) {
+        if (n <= 0 || destinationStart >= this.length) {
             return;
         }
 
         this.ensureInitialized();
 
-        const actualCount = Math.min(n, this.length - destStart, source.length - srcStart);
+        const actualCount = Math.min(n, this.length - destinationStart, source.length - srcStart);
 
         // Rebuild text in the destination range
-        const destTextStart = this.charData![destStart]! & 0x7f_ff;
-        const destTextEnd = destStart + actualCount < this.length ? this.charData![destStart + actualCount]! & 0x7f_ff : this.text!.length;
+        const destinationTextStart = this.charData![destinationStart]! & 0x7f_ff;
+        const destinationTextEnd = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & 0x7f_ff : this.text!.length;
 
         // Build new text segment from source
         let newSegment = "";
@@ -369,24 +362,24 @@ export class StyledLine {
             newSegment += source.getValue(srcStart + i);
         }
 
-        const oldSegLen = destTextEnd - destTextStart;
-        const diff = newSegment.length - oldSegLen;
+        const oldSegLength = destinationTextEnd - destinationTextStart;
+        const diff = newSegment.length - oldSegLength;
 
-        this.text = this.text!.slice(0, destTextStart) + newSegment + this.text!.slice(destTextEnd);
+        this.text = this.text!.slice(0, destinationTextStart) + newSegment + this.text!.slice(destinationTextEnd);
 
         // Update charData offsets
-        let offset = destTextStart;
+        let offset = destinationTextStart;
 
         for (let i = 0; i < actualCount; i++) {
             const srcFullWidth = source.getFullWidth(srcStart + i);
 
-            this.charData![destStart + i] = offset | (srcFullWidth ? 0x80_00 : 0);
+            this.charData![destinationStart + i] = offset | (srcFullWidth ? 0x80_00 : 0);
             offset += source.getValue(srcStart + i).length;
         }
 
         // Shift subsequent offsets
         if (diff !== 0) {
-            for (let i = destStart + actualCount; i < this.length; i++) {
+            for (let i = destinationStart + actualCount; i < this.length; i++) {
                 const data = this.charData![i]!;
 
                 this.charData![i] = ((data & 0x7f_ff) + diff) | (data & 0x80_00);
@@ -394,8 +387,8 @@ export class StyledLine {
         }
 
         // Replace spans in the range
-        this.splitSpansAt(destStart);
-        this.splitSpansAt(destStart + actualCount);
+        this.splitSpansAt(destinationStart);
+        this.splitSpansAt(destinationStart + actualCount);
 
         // Build new spans from source for the range
         const newSpans: StyleSpan[] = [];
@@ -418,28 +411,28 @@ export class StyledLine {
         }
 
         // Replace the affected span range
-        let destSpanIdx = 0;
-        let destSpanOffset = 0;
+        let destinationSpanIndex = 0;
+        let destinationSpanOffset = 0;
 
         for (let i = 0; i < this.spans!.length; i++) {
-            if (destSpanOffset === destStart) {
-                destSpanIdx = i;
+            if (destinationSpanOffset === destinationStart) {
+                destinationSpanIndex = i;
                 break;
             }
 
-            destSpanOffset += this.spans![i]!.length;
+            destinationSpanOffset += this.spans![i]!.length;
         }
 
         // Find how many spans to remove (those covering destStart..destStart+actualCount)
         let removeCount = 0;
         let covered = 0;
 
-        for (let i = destSpanIdx; i < this.spans!.length && covered < actualCount; i++) {
+        for (let i = destinationSpanIndex; i < this.spans!.length && covered < actualCount; i++) {
             covered += this.spans![i]!.length;
             removeCount++;
         }
 
-        this.spans!.splice(destSpanIdx, removeCount, ...newSpans);
+        this.spans!.splice(destinationSpanIndex, removeCount, ...newSpans);
         this.mergeSpans();
     }
 
@@ -463,7 +456,7 @@ export class StyledLine {
             return;
         }
 
-        this.text += value;
+        this.text = (this.text ?? "") + value;
 
         if (this.length >= this.charData!.length) {
             const newData = new Uint16Array(this.charData!.length * 2 || 16);
@@ -476,7 +469,7 @@ export class StyledLine {
 
         const lastSpan = this.spans!.at(-1);
 
-        if (lastSpan && lastSpan.formatFlags === cleanFormatFlags && lastSpan.fgColor === fgColor && lastSpan.bgColor === bgColor && lastSpan.link === link) {
+        if (lastSpan?.formatFlags === cleanFormatFlags && lastSpan.fgColor === fgColor && lastSpan.bgColor === bgColor && lastSpan.link === link) {
             lastSpan.length++;
         } else {
             this.spans!.push({
@@ -501,7 +494,11 @@ export class StyledLine {
         result.length = this.length;
         result.text = this.text;
         result.charData = this.charData.slice(0, Math.max(this.length, 16));
-        result.spans = this.spans!.map((span) => ({ ...span }));
+        result.spans = this.spans!.map((span) => {
+            return {
+                ...span,
+            };
+        });
 
         return result;
     }
@@ -585,15 +582,15 @@ export class StyledLine {
             return allLines[0]!.clone();
         }
 
-        let totalTextLen = 0;
+        let totalTextLength = 0;
         let totalChars = 0;
 
         for (const line of allLines) {
-            totalTextLen += line.getText().length;
+            totalTextLength += line.getText().length;
             totalChars += line.length;
         }
 
-        if (totalTextLen > MAX_SAFE_OFFSET) {
+        if (totalTextLength > MAX_SAFE_OFFSET) {
             let result: StyledLine = this.clone();
 
             for (const other of others) {
@@ -634,7 +631,11 @@ export class StyledLine {
             currentOffset += lineText.length;
         }
 
-        result.spans = allLines.flatMap((l) => l.getSpans().map((s) => ({ ...s })));
+        result.spans = allLines.flatMap((l) => l.getSpans().map((s) => {
+            return {
+                ...s,
+            };
+        }));
         result.mergeSpans();
 
         return result;
@@ -649,27 +650,27 @@ export class StyledLine {
             return 0;
         }
 
-        let currentIdx = this.length - 1;
+        let currentIndex = this.length - 1;
 
         if (this.spans) {
             for (let s = this.spans.length - 1; s >= 0; s--) {
                 const span = this.spans[s]!;
-                const hasStylesOnSpan =
-                    (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
+                const hasStylesOnSpan
+                    = (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
 
                 if (hasStylesOnSpan) {
-                    return currentIdx + 1;
+                    return currentIndex + 1;
                 }
 
                 for (let i = 0; i < span.length; i++) {
-                    const charStart = this.charData[currentIdx]! & 0x7f_ff;
-                    const charEnd = currentIdx + 1 < this.length ? this.charData[currentIdx + 1]! & 0x7f_ff : this.text.length;
+                    const charStart = this.charData[currentIndex]! & 0x7f_ff;
+                    const charEnd = currentIndex + 1 < this.length ? this.charData[currentIndex + 1]! & 0x7f_ff : this.text.length;
 
                     if (charEnd - charStart !== 1 || this.text[charStart] !== " ") {
-                        return currentIdx + 1;
+                        return currentIndex + 1;
                     }
 
-                    currentIdx--;
+                    currentIndex--;
                 }
             }
         }
@@ -711,16 +712,16 @@ export class StyledLine {
             return false;
         }
 
-        for (let i = 0; i < s1.length; i++) {
-            const sp1 = s1[i]!;
+        for (const [i, element] of s1.entries()) {
+            const sp1 = element;
             const sp2 = s2[i]!;
 
             if (
-                sp1.length !== sp2.length ||
-                sp1.formatFlags !== sp2.formatFlags ||
-                sp1.fgColor !== sp2.fgColor ||
-                sp1.bgColor !== sp2.bgColor ||
-                sp1.link !== sp2.link
+                sp1.length !== sp2.length
+                || sp1.formatFlags !== sp2.formatFlags
+                || sp1.fgColor !== sp2.fgColor
+                || sp1.bgColor !== sp2.bgColor
+                || sp1.link !== sp2.link
             ) {
                 return false;
             }
@@ -752,7 +753,7 @@ export class StyledLine {
         return Array.from({ length: this.length }, (_, i) => this.getValue(i));
     }
 
-    *[Symbol.iterator](): Iterator<{
+    * [Symbol.iterator](): Iterator<{
         bgColor?: string;
         fgColor?: string;
         formatFlags: number;
@@ -765,12 +766,12 @@ export class StyledLine {
             return;
         }
 
-        let currentSpanIdx = 0;
+        let currentSpanIndex = 0;
         let currentSpanPos = 0;
         const spans = this.getSpans();
 
         for (let i = 0; i < this.length; i++) {
-            const span = spans[currentSpanIdx];
+            const span = spans[currentSpanIndex];
             const flags = span ? span.formatFlags : 0;
             const isFullWidth = this.getFullWidth(i);
 
@@ -788,7 +789,7 @@ export class StyledLine {
                 currentSpanPos++;
 
                 if (currentSpanPos >= span.length) {
-                    currentSpanIdx++;
+                    currentSpanIndex++;
                     currentSpanPos = 0;
                 }
             }
@@ -839,7 +840,7 @@ export class StyledLine {
 
         const oldLength = this.length;
         const extraCount = safeWidth - oldLength;
-        const oldTextLen = this.text!.length;
+        const oldTextLength = this.text!.length;
 
         // Do NOT extend text — new cells are empty (zero-length) placeholders
         // Grow charData if needed
@@ -852,7 +853,7 @@ export class StyledLine {
 
         // All new cells point to the same offset (end of text) — zero-length values
         for (let i = 0; i < extraCount; i++) {
-            this.charData![oldLength + i] = oldTextLen;
+            this.charData![oldLength + i] = oldTextLength;
         }
 
         this.length = safeWidth;
@@ -860,7 +861,7 @@ export class StyledLine {
         // Extend the last span or add a new default span
         const lastSpan = this.spans!.at(-1);
 
-        if (lastSpan && lastSpan.formatFlags === 0 && lastSpan.fgColor === undefined && lastSpan.bgColor === undefined && lastSpan.link === undefined) {
+        if (lastSpan?.formatFlags === 0 && lastSpan.fgColor === undefined && lastSpan.bgColor === undefined && lastSpan.link === undefined) {
             lastSpan.length += extraCount;
         } else {
             this.spans!.push({ formatFlags: 0, length: extraCount });
@@ -898,17 +899,17 @@ export class StyledLine {
             return this.clone();
         }
 
-        let otherTextLenToTake = 0;
+        let otherTextLengthToTake = 0;
         let otherCharsToTake = 0;
 
         for (let i = 0; i < other.length; i++) {
-            const val = other.getValue(i);
+            const value = other.getValue(i);
 
-            if (otherTextLenToTake + val.length > spaceForOther) {
+            if (otherTextLengthToTake + value.length > spaceForOther) {
                 break;
             }
 
-            otherTextLenToTake += val.length;
+            otherTextLengthToTake += value.length;
             otherCharsToTake++;
         }
 
@@ -916,7 +917,7 @@ export class StyledLine {
         const result = new StyledLine();
 
         result.length = this.length + otherCharsToTake + (truncated ? 1 : 0);
-        result.text = this.getText() + other.getText().slice(0, otherTextLenToTake) + (truncated ? "..." : "");
+        result.text = this.getText() + other.getText().slice(0, otherTextLengthToTake) + (truncated ? "..." : "");
         result.charData = new Uint16Array(Math.max(result.length, 16));
 
         if (this.charData) {
@@ -937,7 +938,7 @@ export class StyledLine {
         }
 
         if (truncated) {
-            result.charData[this.length + otherCharsToTake] = this.getText().length + otherTextLenToTake;
+            result.charData[this.length + otherCharsToTake] = this.getText().length + otherTextLengthToTake;
         }
 
         const otherSpans: StyleSpan[] = [];
@@ -976,10 +977,10 @@ export class StyledLine {
             const span = this.spans[i]!;
 
             if (index > current && index < current + span.length) {
-                const leftLen = index - current;
-                const rightLen = span.length - leftLen;
+                const leftLength = index - current;
+                const rightLength = span.length - leftLength;
 
-                this.spans.splice(i, 1, { ...span, length: leftLen }, { ...span, length: rightLen });
+                this.spans.splice(i, 1, { ...span, length: leftLength }, { ...span, length: rightLength });
 
                 return;
             }
@@ -1002,7 +1003,7 @@ export class StyledLine {
 
             const last = newSpans.at(-1);
 
-            if (last && last.formatFlags === span.formatFlags && last.fgColor === span.fgColor && last.bgColor === span.bgColor && last.link === span.link) {
+            if (last?.formatFlags === span.formatFlags && last.fgColor === span.fgColor && last.bgColor === span.bgColor && last.link === span.link) {
                 last.length += span.length;
             } else {
                 newSpans.push({ ...span });

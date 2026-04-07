@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-for-of-array/no-for-of-array, no-param-reassign, sonarjs/cognitive-complexity */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import type { DOMElement, DOMNode } from "./dom";
 import { isNodeSelectable } from "./dom";
 import type { CursorPosition } from "./log-update";

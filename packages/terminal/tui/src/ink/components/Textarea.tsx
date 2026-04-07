@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, func-style, import/exports-last, no-plusplus, no-useless-assignment, react-x/no-array-index-key, react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state, react/function-component-definition, sonarjs/cognitive-complexity, unicorn/filename-case, unicorn/prefer-single-call */
+/* eslint-disable no-useless-assignment, react-x/no-array-index-key, react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state, react/function-component-definition, unicorn/prefer-single-call */
 
 /**
  * Multi-line text input component for Ink.
@@ -111,14 +111,17 @@ export default function Textarea({
 }: Props): ReactElement {
     const buffer = useTextBuffer(defaultValue);
     const bufferRef = useRef(buffer);
+
     bufferRef.current = buffer;
 
     const { copy } = useClipboard();
     const [scrollOffset, setScrollOffset] = useState(0);
 
     const onChangeRef = useRef(onChange);
+
     onChangeRef.current = onChange;
     const onSubmitRef = useRef(onSubmit);
+
     onSubmitRef.current = onSubmit;
 
     // Fire onChange on value changes
@@ -364,7 +367,14 @@ export default function Textarea({
 
                     return (
                         <Box key={lineNumber}>
-                            {showLineNumbers ? <Text dimColor>{String(lineNumber + 1).padStart(lineNumberWidth)} </Text> : undefined}
+                            {showLineNumbers
+                                ? (
+                                    <Text dimColor>
+                                        {String(lineNumber + 1).padStart(lineNumberWidth)}
+                                        {" "}
+                                    </Text>
+                                )
+                                : undefined}
                             {}
                             <Text dimColor>{line || (lineNumber === 0 && placeholder ? placeholder : "")}</Text>
                         </Box>
@@ -382,17 +392,26 @@ export default function Textarea({
             <Box flexDirection="column">
                 {placeholderLines.map((pLine, index) => (
                     <Box key={index}>
-                        {showLineNumbers ? <Text dimColor>{String(index + 1).padStart(lineNumberWidth)} </Text> : undefined}
-                        {index === 0 ? (
-                            <Text>
-                                <Text dimColor inverse>
-                                    {pLine[0] ?? " "}
+                        {showLineNumbers
+                            ? (
+                                <Text dimColor>
+                                    {String(index + 1).padStart(lineNumberWidth)}
+                                    {" "}
                                 </Text>
-                                <Text dimColor>{pLine.slice(1)}</Text>
-                            </Text>
-                        ) : (
-                            <Text dimColor>{pLine}</Text>
-                        )}
+                            )
+                            : undefined}
+                        {index === 0
+                            ? (
+                                <Text>
+                                    <Text dimColor inverse>
+                                        {pLine[0] ?? " "}
+                                    </Text>
+                                    <Text dimColor>{pLine.slice(1)}</Text>
+                                </Text>
+                            )
+                            : (
+                                <Text dimColor>{pLine}</Text>
+                            )}
                     </Box>
                 ))}
             </Box>
@@ -407,7 +426,14 @@ export default function Textarea({
 
                 return (
                     <Box key={lineNumber}>
-                        {showLineNumbers ? <Text dimColor={!isCursorLine}>{String(lineNumber + 1).padStart(lineNumberWidth)} </Text> : undefined}
+                        {showLineNumbers
+                            ? (
+                                <Text dimColor={!isCursorLine}>
+                                    {String(lineNumber + 1).padStart(lineNumberWidth)}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
                         <Text>{renderLine(line, lineNumber, buffer.cursor, sel)}</Text>
                     </Box>
                 );

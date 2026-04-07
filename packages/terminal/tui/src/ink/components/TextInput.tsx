@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Text input component for Ink.
@@ -147,13 +147,17 @@ export default function TextInput({ defaultValue = "", isDisabled = false, mask 
     const [cursor, setCursor] = useState(defaultValue.length);
 
     const valueRef = useRef(value);
+
     valueRef.current = value;
     const cursorRef = useRef(cursor);
+
     cursorRef.current = cursor;
 
     const onChangeRef = useRef(onChange);
+
     onChangeRef.current = onChange;
     const onSubmitRef = useRef(onSubmit);
+
     onSubmitRef.current = onSubmit;
 
     const suggestion = findSuggestion(value, suggestions);

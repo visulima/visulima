@@ -1,4 +1,4 @@
-/* eslint-disable global-require, no-bitwise */
+/* eslint-disable no-bitwise */
 
 /**
  * Rust-backed rendering for the Ink path.
@@ -32,7 +32,7 @@ const getRendererClass = (): RendererConstructor | undefined => {
 
     try {
         // Dynamic import to avoid hard dependency on native binding
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
+
         const binding = require("../../index.js") as { Renderer: RendererConstructor };
 
         cachedRendererClass = binding.Renderer;

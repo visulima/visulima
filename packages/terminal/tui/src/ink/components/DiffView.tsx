@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, default-case, func-style, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/prefer-read-only-props, unicorn/filename-case */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, consistent-return, default-case, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, sonarjs/prefer-read-only-props */
 
 /**
  * Diff viewer component for Ink.
@@ -267,17 +267,21 @@ const computeInlineDiff = (oldContent: string, newContent: string, mode: InlineD
  */
 const renderInlineParts = (parts: InlineDiffPart[], color: string, bgColor: string): ReactNode => (
     <>
-        {parts.map((part, index) =>
-            part.highlight ? (
-                <Text backgroundColor={bgColor} color="white" key={index}>
-                    {part.value}
-                </Text>
-            ) : (
+        {parts.map((part, index) => {
+            if (part.highlight) {
+                return (
+                    <Text backgroundColor={bgColor} color="white" key={index}>
+                        {part.value}
+                    </Text>
+                );
+            }
+
+            return (
                 <Text color={color} key={index}>
                     {part.value}
                 </Text>
-            ),
-        )}
+            );
+        })}
     </>
 );
 
@@ -345,11 +349,13 @@ function UnifiedView({
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => (
                 <Box flexDirection="column" key={hunkIndex}>
-                    {hunkIndex > 0 ? (
-                        <Box marginBottom={0} marginTop={0}>
-                            <Text dimColor>···</Text>
-                        </Box>
-                    ) : undefined}
+                    {hunkIndex > 0
+                        ? (
+                            <Box marginBottom={0} marginTop={0}>
+                                <Text dimColor>···</Text>
+                            </Box>
+                        )
+                        : undefined}
                     <Text color="cyan" dimColor>
                         {hunk.header}
                     </Text>
@@ -387,11 +393,16 @@ function UnifiedView({
 
                         return (
                             <Box key={lineIndex}>
-                                {showLineNumbers ? (
-                                    <Text color={color} dimColor={line.type === "context"}>
-                                        {String(line.oldLineNum ?? "").padStart(4)} {String(line.newLineNum ?? "").padStart(4)}{" "}
-                                    </Text>
-                                ) : undefined}
+                                {showLineNumbers
+                                    ? (
+                                        <Text color={color} dimColor={line.type === "context"}>
+                                            {String(line.oldLineNum ?? "").padStart(4)}
+                                            {" "}
+                                            {String(line.newLineNum ?? "").padStart(4)}
+                                            {" "}
+                                        </Text>
+                                    )
+                                    : undefined}
                                 <Text color={color}>{prefix}</Text>
                                 {lineContent}
                             </Box>
@@ -424,12 +435,14 @@ function SplitView({
     return (
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => {
-                const separator =
-                    hunkIndex > 0 ? (
-                        <Box marginBottom={0} marginTop={0}>
-                            <Text dimColor>···</Text>
-                        </Box>
-                    ) : undefined;
+                const separator
+                    = hunkIndex > 0
+                        ? (
+                            <Box marginBottom={0} marginTop={0}>
+                                <Text dimColor>···</Text>
+                            </Box>
+                        )
+                        : undefined;
 
                 // Build left (old) and right (new) lines using precomputed inline diffs
                 const leftLines: { content: ReactNode; lineNum?: number }[] = [];
@@ -502,12 +515,26 @@ function SplitView({
                             return (
                                 <Box flexDirection="row" key={rowIndex}>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? <Text dimColor>{String(left?.lineNum ?? "").padStart(4)} </Text> : undefined}
+                                        {showLineNumbers
+                                            ? (
+                                                <Text dimColor>
+                                                    {String(left?.lineNum ?? "").padStart(4)}
+                                                    {" "}
+                                                </Text>
+                                            )
+                                            : undefined}
                                         {left?.content}
                                     </Box>
                                     <Text dimColor>│</Text>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? <Text dimColor>{String(right?.lineNum ?? "").padStart(4)} </Text> : undefined}
+                                        {showLineNumbers
+                                            ? (
+                                                <Text dimColor>
+                                                    {String(right?.lineNum ?? "").padStart(4)}
+                                                    {" "}
+                                                </Text>
+                                            )
+                                            : undefined}
                                         {right?.content}
                                     </Box>
                                 </Box>
@@ -570,10 +597,14 @@ export default function DiffView({
     const labels = (
         <Box flexDirection="column">
             <Text color="red" dimColor>
-                --- {oldLabel}
+                ---
+                {" "}
+                {oldLabel}
             </Text>
             <Text color="green" dimColor>
-                +++ {newLabel}
+                +++
+                {" "}
+                {newLabel}
             </Text>
         </Box>
     );
