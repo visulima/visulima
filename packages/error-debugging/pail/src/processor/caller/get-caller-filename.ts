@@ -35,6 +35,7 @@ const getCallerFilename = (): {
     /** Line number where the call originated */
     lineNumber?: number;
 } => {
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- prepareStackTrace is a static property, not a bound method
     const errorStack = Error.prepareStackTrace;
 
     try {

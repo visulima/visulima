@@ -111,10 +111,6 @@ class InteractiveManager {
      * @throws {TypeError} If the specified stream is not available
      */
     public erase(stream: StreamType, count: number = this.#lastLength): void {
-        if (this.#stream[stream] === undefined) {
-            throw new TypeError(`Stream "${stream}" is not available`);
-        }
-
         this.#stream[stream].erase(count);
     }
 
@@ -124,7 +120,11 @@ class InteractiveManager {
      */
     public hook(): boolean {
         if (!this.#isActive) {
-            Object.values(this.#stream).forEach((hook) => { hook.active(); });
+            const hooks = Object.values(this.#stream);
+
+            for (let i = 0; i < hooks.length; i += 1) {
+                hooks[i].active();
+            }
 
             this.#clear(true);
         }
@@ -147,7 +147,11 @@ class InteractiveManager {
 
             this.#lastLength = 0;
 
-            Object.values(this.#stream).forEach((hook) => { hook.active(); });
+            const hooks = Object.values(this.#stream);
+
+            for (let i = 0; i < hooks.length; i += 1) {
+                hooks[i].active();
+            }
         }
     }
 
@@ -164,7 +168,11 @@ class InteractiveManager {
                 this.erase(stream);
             }
 
-            Object.values(this.#stream).forEach((hook) => { hook.renew(); });
+            const hooks = Object.values(this.#stream);
+
+            for (let i = 0; i < hooks.length; i += 1) {
+                hooks[i].renew();
+            }
         }
     }
 
@@ -175,7 +183,11 @@ class InteractiveManager {
      */
     public unhook(separateHistory: boolean = true): boolean {
         if (this.#isActive) {
-            Object.values(this.#stream).forEach((hook) => { hook.inactive(separateHistory); });
+            const hooks = Object.values(this.#stream);
+
+            for (let i = 0; i < hooks.length; i += 1) {
+                hooks[i].inactive(separateHistory);
+            }
 
             this.#clear();
         }
@@ -191,12 +203,7 @@ class InteractiveManager {
      */
     public update(stream: StreamType, rows: string[], from: number = 0): void {
         if (rows.length > 0) {
-            if (this.#stream[stream] === undefined) {
-                throw new TypeError(`Stream "${stream}" is not available`);
-            }
-
             const hook = this.#stream[stream];
-
             const { columns: width, rows: height } = terminalSize();
 
             const position = from > height ? height - 1 : Math.max(0, Math.min(height - 1, from));

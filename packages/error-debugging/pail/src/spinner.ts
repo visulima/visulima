@@ -291,7 +291,7 @@ export class Spinner {
             this.#prefixText = options.prefixText;
         }
 
-        const manager = this.#multiSpinner || this.#interactiveManager;
+        const manager = this.#multiSpinner ?? this.#interactiveManager;
 
         if (manager) {
             if (this.#multiSpinner) {
@@ -464,7 +464,7 @@ export class Spinner {
 
         this.#finalOutput = output;
 
-        const manager = this.#multiSpinner || this.#interactiveManager;
+        const manager = this.#multiSpinner ?? this.#interactiveManager;
 
         if (manager) {
             if (this.#multiSpinner) {
@@ -534,7 +534,7 @@ export class MultiSpinner {
      */
     public create(text?: string, options: SpinnerOptions = {}): Spinner {
         // eslint-disable-next-line no-plusplus
-        const id = `spinner_${this.#nextSpinnerId++}`;
+        const id = `spinner_${String(this.#nextSpinnerId++)}`;
 
         const spinner = new Spinner({ ...this.#options, ...options });
 

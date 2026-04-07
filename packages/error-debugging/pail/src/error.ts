@@ -122,7 +122,7 @@ class PailError extends Error {
      * @returns Formatted error string with why/fix/link context
      */
     public override toString(): string {
-        let output = `${this.name} [${this.status}]: ${this.message}`;
+        let output = `${this.name} [${String(this.status)}]: ${this.message}`;
 
         if (this.why) {
             output += `\n  Why: ${this.why}`;
@@ -137,6 +137,7 @@ class PailError extends Error {
         }
 
         if (this.cause !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- we explicitly want String() conversion for non-Error causes
             const causeMessage = this.cause instanceof Error ? this.cause.message : String(this.cause);
 
             output += `\n  Cause: ${causeMessage}`;

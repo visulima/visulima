@@ -64,16 +64,11 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
         const formatter = build({
             formatters: this.#formatters,
             stringify: (value: unknown) => {
-                const stringified = (this.#stringify as typeof JSON.stringify)(value);
-
-                if (stringified === undefined) {
-                    // eslint-disable-next-line no-console
-                    console.warn(`Unable to stringify value of type ${typeof value}`, value);
-
-                    return "undefined";
+                if (!this.#stringify) {
+                    return JSON.stringify(value);
                 }
 
-                return stringified;
+                return this.#stringify(value);
             },
         } as Options);
 
@@ -95,20 +90,21 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
      * @returns The formatted data
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    #format(formatter: typeof format, data: any, arguments_: unknown[] = []): any {
+    #format(formatter: typeof format, data: unknown, arguments_: unknown[] = []): unknown {
         if (typeof data === "string") {
             return formatter(data, arguments_);
         }
 
         if (typeof data === "object" && data !== null) {
-            // eslint-disable-next-line guard-for-in,no-restricted-syntax
-            for (const index in data as Record<string, unknown> | [string, unknown[]]) {
-                const value = data[index];
+            const record = data as Record<string, unknown>;
+            const keys = Object.keys(record);
+
+            for (let i = 0; i < keys.length; i += 1) {
+                const index = keys[i];
+                const value: unknown = record[index];
 
                 if (typeof value === "string" || Array.isArray(value) || typeof value === "object") {
-                    // eslint-disable-next-line no-param-reassign
-                    data[index] = this.#format(formatter, value, arguments_);
+                    record[index] = this.#format(formatter, value, arguments_);
                 }
             }
         }

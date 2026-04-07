@@ -56,8 +56,7 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
      * Sets a custom stringify function for object serialization.
      * @param function_ The stringify function to use for serialization
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    public setStringify(function_: any): void {
+    public setStringify(function_: typeof stringify): void {
         this.stringify = function_;
     }
 
@@ -72,7 +71,7 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
 
         if (file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${file.name}:${file.line}${file.column ? `:${file.column}` : ""}`;
+            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${file.name ?? ""}:${String(file.line)}${file.column ? `:${String(file.column)}` : ""}`;
         }
 
         if (message === EMPTY_SYMBOL) {
@@ -88,7 +87,10 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
         if (context) {
             const newContext: ReadonlyMeta<L>["context"] = [];
 
-            for (const item of context) {
+            for (let i = 0; i < context.length; i += 1) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- context is typed as any[]
+                const item = context[i];
+
                 if (item === EMPTY_SYMBOL) {
                     continue;
                 }

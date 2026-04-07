@@ -99,7 +99,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
 
     fastify.addHook("onRequest", (request: PailFastifyRequest, _reply: PailFastifyReply, done: () => void) => {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const requestId = (request.headers["x-request-id"] as string) ?? crypto.randomUUID();
+        const requestId = (request.headers["x-request-id"] as string | undefined) ?? crypto.randomUUID();
         const safeHeaders = extractSafeNodeHeaders(request.headers);
 
         const { finish, logger, skipped } = createMiddlewareLogger(options, {
@@ -123,7 +123,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
         });
     });
 
-    fastify.addHook("onResponse", async (request: PailFastifyRequest, reply: PailFastifyReply) => {
+    fastify.addHook("onResponse", (request: PailFastifyRequest, reply: PailFastifyReply) => {
         const state = requestState.get(request);
 
         if (!state || emitted.has(request)) {
@@ -134,7 +134,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
         state.finish({ status: reply.statusCode });
     });
 
-    fastify.addHook("onError", async (request: PailFastifyRequest, _reply: PailFastifyReply, error: Error) => {
+    fastify.addHook("onError", (request: PailFastifyRequest, _reply: PailFastifyReply, error: Error) => {
         const state = requestState.get(request);
 
         if (!state || emitted.has(request)) {

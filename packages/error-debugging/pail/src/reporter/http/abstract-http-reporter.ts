@@ -295,7 +295,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
 
             if (logEntrySize > this.maxLogSize) {
                 const error = new LogSizeError(
-                    `Log entry exceeds maximum size of ${this.maxLogSize} bytes. Size: ${logEntrySize} bytes`,
+                    `Log entry exceeds maximum size of ${String(this.maxLogSize)} bytes. Size: ${String(logEntrySize)} bytes`,
                     { data: payloadTemplate.data, logLevel: logLevelString, message: messageString },
                     logEntrySize,
                     this.maxLogSize,
@@ -335,22 +335,23 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
 
         // Force send if adding this entry would exceed 90% of max payload size
         if (payloadSizeWithEntry > payloadSizeThreshold && this.batchQueue.length > 0) {
-            this.processBatch();
+            // eslint-disable-next-line no-void -- void needed to handle floating promise
+            void this.processBatch();
         }
 
         this.batchQueue.push(payload);
         this.currentBatchSize += logEntrySize + this.batchSendDelimiter.length;
 
         // Start batch timeout if not already running
-        if (!this.batchTimeout) {
-            this.batchTimeout = setTimeout(() => {
-                this.processBatch();
-            }, this.batchSendTimeout);
-        }
+        this.batchTimeout ??= setTimeout(() => {
+            // eslint-disable-next-line no-void -- void needed to handle floating promise
+            void this.processBatch();
+        }, this.batchSendTimeout);
 
         // Send immediately if batch size is reached
         if (this.batchQueue.length >= this.batchSize) {
-            this.processBatch();
+            // eslint-disable-next-line no-void -- void needed to handle floating promise
+            void this.processBatch();
         }
     }
 
@@ -396,7 +397,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
 
             // If there are more items in the queue, process them
             if (this.batchQueue.length > 0) {
-                this.processBatch();
+                // eslint-disable-next-line no-void -- void needed to handle floating promise
+                void this.processBatch();
             }
         }
     }
@@ -443,9 +445,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         const headers: Record<string, string> = typeof this.headers === "function" ? this.headers() : { ...this.headers };
 
         // Set content type - user headers take precedence
-        if (!headers["content-type"]) {
-            headers["content-type"] = contentType ?? this.contentType;
-        }
+        headers["content-type"] ??= contentType ?? this.contentType;
 
         let finalPayload: string | Uint8Array = payload;
 
@@ -457,7 +457,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             } catch (error) {
                 // If compression fails, fall back to uncompressed
                 if (this.onError) {
-                    this.onError(new Error(`Compression failed: ${error}`));
+                    this.onError(new Error(`Compression failed: ${String(error)}`));
                 }
             }
         }

@@ -10,7 +10,7 @@ const getLongestLabel = <L extends string, T extends string>(types: LoggerTypesC
     }
 
     // eslint-disable-next-line unicorn/no-array-reduce, @stylistic/no-extra-parens
-    return labels.reduce((x, y) => (x.length > y.length ? x : y));
+    return labels.reduce((x, y) => (x.length > y.length ? x : y), "");
 };
 
 export default getLongestLabel;

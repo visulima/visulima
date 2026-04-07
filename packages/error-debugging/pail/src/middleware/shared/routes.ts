@@ -115,11 +115,17 @@ export const getServiceForPath = (path: string, routes?: Record<string, RouteCon
         return undefined;
     }
 
-    for (const [pattern, config] of Object.entries(routes)) {
+    const entries: [string, RouteConfig][] = Object.entries(routes);
+
+    /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access -- array index access typing */
+    for (let i = 0; i < entries.length; i += 1) {
+        const [pattern, config] = entries[i];
+
         if (matchesPattern(path, pattern)) {
             return config.service;
         }
     }
+    /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
     return undefined;
 };

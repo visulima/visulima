@@ -29,7 +29,7 @@ class SafeStreamHandler {
      */
 
     public end(...arguments_: any[]): void {
-        this.#stream.end(...arguments_);
+        this.#stream.end(...(arguments_ as [unknown]));
     }
 
     public get isReady(): boolean {

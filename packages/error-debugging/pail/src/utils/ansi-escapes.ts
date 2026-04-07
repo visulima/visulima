@@ -4,7 +4,7 @@ const eraseScreen = `${ESC}2J`;
 const eraseLine = `${ESC}2K`;
 
 const cursorLeft = `${ESC}G`;
-const cursorUp = (count = 1) => `${ESC + count}A`;
+const cursorUp = (count = 1) => `${ESC}${String(count)}A`;
 
 // prettier-ignore
 export const clearTerminal: string

@@ -36,7 +36,11 @@ class RedactProcessor<L extends string = string> implements Processor<L> {
      * @param options Additional redaction options
      */
     public constructor(rules?: Rules, options?: RedactOptions) {
-        this.#redact = <T>(input: T) => redact(input, rules || standardRules, options);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- standardRules has resolution issues
+        const effectiveRules: Rules = rules ?? standardRules;
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- T is needed for redact's generic return type
+        this.#redact = <T>(input: T) => redact(input, effectiveRules, options);
     }
 
     /**

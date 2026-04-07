@@ -8,7 +8,7 @@ class RawReporter<L extends string = string> implements Reporter<L> {
 
         const consoleLogFunction = writeConsoleLogBasedOnLevel(type.level);
 
-        consoleLogFunction(message, ...context);
+        consoleLogFunction(message, ...(context as unknown[]));
     }
 }
 
