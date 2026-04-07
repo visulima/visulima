@@ -264,7 +264,6 @@ const postmarkProvider: ProviderFactory<PostmarkConfig> = defineProvider((config
                     const headersRecord = headersToRecord(emailOptions.headers);
                     const headersArray: { Name: string; Value: string }[] = [];
 
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const [key, value] of Object.entries(headersRecord)) {
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
                         headersArray.push({ Name: sanitizeHeaderName(key), Value: sanitizeHeaderValue(String(value)) });

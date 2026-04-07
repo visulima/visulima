@@ -84,7 +84,6 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
         const lines = response.split("\r\n");
         const capabilities: Record<string, string[]> = {};
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const line of lines) {
             if (line.startsWith("250-") || line.startsWith("250 ")) {
                 const capLine = line.slice(4).trim();
@@ -793,7 +792,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     }
 
                     // Send RCPT TO for each recipient
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
+
                     for (const recipient of recipients) {
                         // eslint-disable-next-line no-await-in-loop
                         await sendSmtpCommand(socket, `RCPT TO:<${recipient}>`, "250");
@@ -958,7 +957,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
          */
         async shutdown(): Promise<void> {
             // Close all connections in the pool
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
+
             for (const socket of connectionPool) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
@@ -972,7 +971,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             connectionPool.length = 0;
 
             // Reject any waiting connections
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
+
             for (const queueItem of connectionQueue) {
                 clearTimeout(queueItem.timeout);
                 queueItem.reject(new Error("Provider shutdown"));

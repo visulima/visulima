@@ -103,7 +103,6 @@ export class SmimeEncrypter implements EmailEncrypter {
 
             const normalized = Array.isArray(recipients) ? recipients : [recipients];
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const recipient of normalized) {
                 // Handle both string (for backward compatibility) and EmailAddress object
                 const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
@@ -351,7 +350,6 @@ export class SmimeEncrypter implements EmailEncrypter {
         lines.push(`Subject: ${email.subject}`, "MIME-Version: 1.0");
 
         if (email.headers) {
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(email.headers)) {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 lines.push(`${key}: ${value}`);

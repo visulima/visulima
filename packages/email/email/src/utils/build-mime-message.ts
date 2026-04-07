@@ -78,7 +78,6 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
             }),
         );
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const attachment of resolvedAttachments) {
             message.push(`--${boundary}`);
 

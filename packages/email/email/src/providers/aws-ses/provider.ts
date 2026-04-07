@@ -326,7 +326,6 @@ const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: Aw
         if (emailOptions.headers) {
             const headersRecord = headersToRecord(emailOptions.headers);
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [name, value] of Object.entries(headersRecord)) {
                 const sanitizedName = sanitizeHeaderName(name);
                 const sanitizedValue = sanitizeHeaderValue(value);

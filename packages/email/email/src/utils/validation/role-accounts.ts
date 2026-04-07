@@ -204,7 +204,6 @@ const checkCombinedParts = (parts: string[], customPrefixes?: Set<string>): bool
 
     const separators = ["-", ".", "_"];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const separator of separators) {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const combined = `${parts[0]}${separator}${parts[1]}`;
@@ -218,7 +217,6 @@ const checkCombinedParts = (parts: string[], customPrefixes?: Set<string>): bool
 };
 
 const checkAllPartsAreRoleAccounts = (parts: string[], customPrefixes?: Set<string>): boolean => {
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const part of parts) {
         if (!checkRolePrefix(part, customPrefixes)) {
             return false;

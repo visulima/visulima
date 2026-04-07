@@ -191,7 +191,6 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig> = defineProvider(
                     if (emailOptions.mimeHeaders && Object.keys(emailOptions.mimeHeaders).length > 0) {
                         const mimeHeaders: Record<string, string> = {};
 
-                        // eslint-disable-next-line no-for-of-array/no-for-of-array
                         for (const [key, value] of Object.entries(emailOptions.mimeHeaders)) {
                             mimeHeaders[key] = value;
                         }
