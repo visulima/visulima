@@ -113,7 +113,7 @@
         "@visulima/task-runner-binding-win32-x64-msvc": "workspace:*"
     },
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": ">=22.13 <=25.x"
     },
     "publishConfig": {
         "access": "public",

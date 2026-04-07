@@ -3,21 +3,36 @@ import React from "react";
 
 import type { DevcontainerConfig } from "../types";
 
-const FIELDS = ["name", "image", "workspaceFolder", "remoteUser"] as const;
+const FIELDS = ["name", "image", "workspaceFolder", "workspaceMount", "remoteUser", "containerUser", "shutdownAction"] as const;
 
 const FIELD_LABELS: Record<(typeof FIELDS)[number], string> = {
+    containerUser: "Container User",
     image: "Image",
     name: "Name",
     remoteUser: "Remote User",
+    shutdownAction: "Shutdown Action",
     workspaceFolder: "Workspace Folder",
+    workspaceMount: "Workspace Mount",
 };
 
 const FIELD_PLACEHOLDERS: Record<(typeof FIELDS)[number], string> = {
+    containerUser: "root",
     image: "mcr.microsoft.com/devcontainers/javascript-node:22",
     name: "My Dev Container",
     remoteUser: "node",
+    shutdownAction: "none | stopContainer",
     workspaceFolder: "/workspaces/${localWorkspaceFolderBasename}",
+    workspaceMount: "source=${localWorkspaceFolder},target=...,type=bind",
 };
+
+const BOOLEAN_FIELDS = ["privileged", "overrideCommand"] as const;
+
+const BOOLEAN_LABELS: Record<(typeof BOOLEAN_FIELDS)[number], string> = {
+    overrideCommand: "Override Command",
+    privileged: "Privileged",
+};
+
+const ALL_FIELD_COUNT = FIELDS.length + BOOLEAN_FIELDS.length;
 
 interface GeneralSectionProps {
     readonly config: DevcontainerConfig;
@@ -36,7 +51,7 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
             const value = (config[field] as string) ?? "";
 
             return (
-                <Box key={field} marginBottom={index < FIELDS.length - 1 ? 1 : 0}>
+                <Box key={field} marginBottom={1}>
                     <Box width={20}>
                         <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
                             {isSelected ? "\u276f " : "  "}
@@ -61,9 +76,33 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
                 </Box>
             );
         })}
+        {BOOLEAN_FIELDS.map((field, boolIndex) => {
+            const absoluteIndex = FIELDS.length + boolIndex;
+            const isSelected = absoluteIndex === fieldIndex;
+            const value = config[field] ?? false;
+
+            return (
+                <Box key={field} marginBottom={boolIndex < BOOLEAN_FIELDS.length - 1 ? 1 : 0}>
+                    <Box width={20}>
+                        <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
+                            {isSelected ? "\u276f " : "  "}
+                            {BOOLEAN_LABELS[field]}:
+                        </Text>
+                    </Box>
+                    <Box flexGrow={1}>
+                        <Text color={value ? "green" : "gray"}>
+                            {value ? "yes" : "no"}
+                            {isSelected && <Text dimColor> (Space to toggle)</Text>}
+                        </Text>
+                    </Box>
+                </Box>
+            );
+        })}
         <Box marginTop={1}>
             <Text dimColor>
                 <Text bold color="white">Enter</Text> edit field
+                {"  "}
+                <Text bold color="white">Space</Text> toggle
                 {"  "}
                 <Text bold color="white">{"\u2191\u2193"}</Text> navigate
                 {"  "}
@@ -73,6 +112,7 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
     </Box>
 );
 
-export const GENERAL_FIELD_COUNT: number = FIELDS.length;
+export const GENERAL_FIELD_COUNT: number = ALL_FIELD_COUNT;
+export const GENERAL_BOOLEAN_FIELDS: readonly ("privileged" | "overrideCommand")[] = BOOLEAN_FIELDS;
 
 export default GeneralSection;

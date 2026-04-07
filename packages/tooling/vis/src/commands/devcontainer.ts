@@ -119,7 +119,7 @@ const devcontainer: Command = {
     options: [
         {
             alias: "t",
-            description: "Start from a template: node, node-pnpm, node-postgres, node-dind, fullstack, custom",
+            description: "Start from a template: node, node-pnpm, node-postgres, node-dind, fullstack, python, go, rust, java, devops, minimal, custom",
             name: "template",
             type: String,
         },
