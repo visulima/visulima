@@ -1,8 +1,8 @@
-import { writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
-import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PnpmCatalogs } from "../../src/pnpm";
@@ -19,7 +19,7 @@ describe("pnpm", () => {
     let temporaryDirection: string;
 
     beforeEach(() => {
-        temporaryDirection = temporaryDirectory();
+        temporaryDirection = mkdtempSync(join(tmpdir(), "visulima-package-"));
     });
 
     afterEach(async () => {

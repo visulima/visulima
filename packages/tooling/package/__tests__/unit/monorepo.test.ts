@@ -1,8 +1,9 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { JSONError } from "@visulima/fs/error";
 import { dirname, join } from "@visulima/path";
-import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 
 import type { RootMonorepo } from "../../src/monorepo";
@@ -93,12 +94,12 @@ describe("monorepo", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findMonorepoRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                await expect(_function(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
+                await expect(_function(join(mkdtempSync(join(tmpdir(), "visulima-package-")), "packages", "package-a"))).rejects.toThrow(
                     NO_MONOREPO_ROOT_REGEX,
                 );
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(() => (_function as typeof findMonorepoRootSync)(temporaryDirectory())).toThrow(NO_MONOREPO_ROOT_REGEX);
+                expect(() => (_function as typeof findMonorepoRootSync)(mkdtempSync(join(tmpdir(), "visulima-package-")))).toThrow(NO_MONOREPO_ROOT_REGEX);
             }
         });
 
