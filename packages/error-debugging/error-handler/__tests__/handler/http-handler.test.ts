@@ -91,7 +91,7 @@ describe("httpHandler handler", () => {
 
         expect(data.detail).toBe("No Trace Please");
         expect(data.status).toBe(500);
-        expect(Object.prototype.hasOwnProperty.call(data, "trace")).toBe(false);
+        expect(Object.hasOwn(data, "trace")).toBe(false);
     });
 
     it("returns Problem JSON when Accept is application/json", async () => {
@@ -145,7 +145,7 @@ describe("httpHandler handler", () => {
                 {
                     handler: (error_, _request, res) => {
                         res.statusCode = (error_ as any).statusCode ?? 400;
-                        res.end((error_ as Error).message);
+                        res.end(error_.message);
                     },
                     regex: /application\/yaml/u,
                 },
@@ -246,7 +246,7 @@ describe("httpHandler handler", () => {
 
             expect(data.detail).toBe("No Trace Please");
             expect(data.status).toBe(500);
-            expect(Object.prototype.hasOwnProperty.call(data, "trace")).toBe(false);
+            expect(Object.hasOwn(data, "trace")).toBe(false);
         });
 
         it("returns Problem JSON when Accept is application/json", async () => {
