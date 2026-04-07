@@ -987,6 +987,74 @@ describe("borders", () => {
         expect(output).toBe(boxen(`${" ".repeat(38)}\n${nestedBox}\n`, { borderStyle: "round" }));
     });
 
+    it("border with uniform background color", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <Box alignSelf="flex-start" borderBackgroundColor="blue" borderColor="white" borderStyle="single">
+                <Text>Test</Text>
+            </Box>,
+        );
+
+        // Verify border characters are rendered
+        expect(output).toContain("┌");
+        expect(output).toContain("┘");
+    });
+
+    it("border with per-side background colors", () => {
+        expect.assertions(4);
+
+        const output = renderToString(
+            <Box
+                alignSelf="flex-start"
+                borderBottomBackgroundColor="blue"
+                borderLeftBackgroundColor="green"
+                borderRightBackgroundColor="yellow"
+                borderStyle="single"
+                borderTopBackgroundColor="red"
+            >
+                <Text>Test</Text>
+            </Box>,
+        );
+
+        // Verify each named background color escape is present
+        // The stylePiece applies bg to the whole border segment
+        // red bg (41) on top, green bg (42) on left, yellow bg (43) on right, blue bg (44) on bottom
+        expect(output).toContain("\u001B[41m");
+        expect(output).toContain("\u001B[42m");
+        expect(output).toContain("\u001B[43m");
+        expect(output).toContain("\u001B[44m");
+    });
+
+    it("border background color fallback to general borderBackgroundColor", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <Box alignSelf="flex-start" borderBackgroundColor="magenta" borderStyle="single" borderTopBackgroundColor="cyan">
+                <Text>Test</Text>
+            </Box>,
+        );
+
+        // Top border uses cyan bg (46) override, other sides fall back to magenta bg (45)
+        expect(output).toContain("\u001B[46m");
+        expect(output).toContain("\u001B[45m");
+    });
+
+    it("foreground, background and dim combine correctly on border", () => {
+        expect.assertions(3);
+
+        const output = renderToString(
+            <Box alignSelf="flex-start" borderStyle="single" borderTopBackgroundColor="cyan" borderTopColor="red" borderTopDimColor>
+                <Text>Hi</Text>
+            </Box>,
+        );
+
+        // Expect red FG (31), cyan BG (46) and dim (2) to appear
+        expect(output).toContain("\u001B[31m");
+        expect(output).toContain("\u001B[46m");
+        expect(output).toContain("\u001B[2m");
+    });
+
     it("render border after update - concurrent", async () => {
         expect.assertions(2);
 
