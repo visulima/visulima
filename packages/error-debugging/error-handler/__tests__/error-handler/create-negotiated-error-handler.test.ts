@@ -1,9 +1,13 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import type { HttpError } from "http-errors";
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
 import createNegotiatedErrorHandler from "../../src/error-handler/create-negotiated-error-handler";
+
+const YAML_REGEX = /application\/yaml/u;
 
 describe("createNegotiatedErrorHandler negotiator", () => {
     it("falls back to Problem JSON if no Accept provided", async () => {
@@ -59,10 +63,10 @@ describe("createNegotiatedErrorHandler negotiator", () => {
             method: "GET",
         });
 
-        const defaultHtml = (error: any, _request: any, res: any) => {
-            res.statusCode = (error as HttpError).statusCode ?? 500;
-            res.setHeader("content-type", "text/html; charset=utf-8");
-            res.end("<!DOCTYPE html><html><head><title>Test</title></head><body>ok</body></html>");
+        const defaultHtml = (error: Error, _request: IncomingMessage, response: ServerResponse) => {
+            response.statusCode = (error as HttpError).statusCode;
+            response.setHeader("content-type", "text/html; charset=utf-8");
+            response.end("<!DOCTYPE html><html><head><title>Test</title></head><body>ok</body></html>");
         };
 
         await createNegotiatedErrorHandler([], false, defaultHtml)(new httpErrors.BadRequest(), req, res);
@@ -84,11 +88,11 @@ describe("createNegotiatedErrorHandler negotiator", () => {
         await createNegotiatedErrorHandler(
             [
                 {
-                    handler: (error: any, _, response) => {
-                        response.statusCode = (error as HttpError).statusCode ?? 400;
+                    handler: (error: Error, _, response) => {
+                        response.statusCode = (error as HttpError).statusCode;
                         response.end((error as HttpError).message);
                     },
-                    regex: /application\/yaml/u,
+                    regex: YAML_REGEX,
                 },
             ],
             false,

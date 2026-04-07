@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import problemErrorHandler from "../../src/error-handler/problem-error-handler";
 
 describe("problem-error-handler", () => {
-    it("should render normal error", () => {
+    it("should render normal error", async () => {
         expect.assertions(3);
 
         const { req, res } = createMocks({
@@ -14,7 +14,7 @@ describe("problem-error-handler", () => {
 
         const error = new Error("test");
 
-        problemErrorHandler(error, req, res);
+        await problemErrorHandler(error, req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
@@ -23,7 +23,7 @@ describe("problem-error-handler", () => {
         expect(res._getData()).toBe("{\"type\":\"about:blank\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"test\"}");
     });
 
-    it("should render http-errors", () => {
+    it("should render http-errors", async () => {
         expect.assertions(3);
 
         const { req, res } = createMocks({
@@ -34,7 +34,7 @@ describe("problem-error-handler", () => {
 
         error.expose = false;
 
-        problemErrorHandler(error, req, res);
+        await problemErrorHandler(error, req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(403);

@@ -37,7 +37,7 @@ describe(sendFetchJson, () => {
         const response = sendFetchJson(data, 200);
         const body = await response.json();
 
-        expect(body).toEqual({});
+        expect(body).toStrictEqual({});
     });
 
     it("should handle arrays", async () => {
@@ -47,7 +47,7 @@ describe(sendFetchJson, () => {
         const response = sendFetchJson(data, 200);
         const body = await response.json();
 
-        expect(body).toEqual([1, 2, 3, "test"]);
+        expect(body).toStrictEqual([1, 2, 3, "test"]);
     });
 
     it("should handle null and undefined values", async () => {
@@ -57,7 +57,7 @@ describe(sendFetchJson, () => {
         const response = sendFetchJson(data, 200);
         const body = await response.json();
 
-        expect(body).toEqual({ nullValue: null }); // undefined values are omitted by JSON.stringify
+        expect(body).toStrictEqual({ nullValue: null }); // undefined values are omitted by JSON.stringify
     });
 
     it("should handle complex nested objects", async () => {
@@ -78,7 +78,7 @@ describe(sendFetchJson, () => {
         const response = sendFetchJson(data, 200);
         const body = await response.json();
 
-        expect(body).toEqual({
+        expect(body).toStrictEqual({
             items: ["item1", "item2"],
             user: {
                 id: 123,
@@ -136,7 +136,7 @@ describe(sendFetchJson, () => {
 
         const largeData = {
             items: Array.from({ length: 1000 }, (_, index) => {
-                return { id: index, name: `Item ${index}` };
+                return { id: index, name: `Item ${String(index)}` };
             }),
         };
 

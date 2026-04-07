@@ -18,7 +18,7 @@ describe("error-handler/utils", () => {
 
         error.headers = {
             "X-Test": "test",
-        } as any;
+        };
 
         setErrorHeaders(res, error);
 
