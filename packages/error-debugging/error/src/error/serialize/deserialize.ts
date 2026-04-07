@@ -69,8 +69,8 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
     const Constructor = getErrorConstructor(name as string) || Error;
 
     // Create the error instance, handling AggregateError specially
-    const error =
-        name === "AggregateError" && Array.isArray(errors)
+    const error
+        = name === "AggregateError" && Array.isArray(errors)
             ? reconstructAggregateError(Constructor as new (...arguments_: unknown[]) => Error, errors, message, options, depth)
             : new Constructor(message as string);
 
@@ -235,7 +235,7 @@ const deserialize = (value: unknown, options: DeserializeOptionsType = {}): Erro
 
     // Handle primitives
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-        return handlePrimitive(value as string | number | boolean);
+        return handlePrimitive(value);
     }
 
     // Handle arrays

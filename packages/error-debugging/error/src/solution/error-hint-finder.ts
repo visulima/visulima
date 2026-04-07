@@ -17,7 +17,7 @@ const errorHintFinder: SolutionFinder = {
         }
 
         if (Array.isArray(error.hint)) {
-            return { body: (error.hint as string[]).join("\n") };
+            return { body: error.hint.join("\n") };
         }
 
         return undefined;
