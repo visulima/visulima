@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { HtmlErrorHandlerOptions } from "./html-error-handler";
@@ -74,10 +73,8 @@ class MockServerResponse {
 
     public _trailer = "";
 
-    // eslint-disable-next-line unicorn/no-null
     public connection = null as any;
 
-    // eslint-disable-next-line unicorn/no-null
     public socket = null as any;
 
     public setHeader(name: string, value: string | number | ReadonlyArray<string>): this {
@@ -122,7 +119,6 @@ class MockServerResponse {
         }
 
         if (typeof statusMessage === "object") {
-            // eslint-disable-next-line no-param-reassign
             headers = statusMessage;
         }
 
@@ -198,7 +194,6 @@ class MockServerResponse {
 
     public destroy = () => this;
 
-    // eslint-disable-next-line unicorn/no-null
     public read = () => null;
 
     public setEncoding = () => this;
@@ -211,7 +206,6 @@ class MockServerResponse {
 
     public destroySoon = () => this;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public pipe = () => ({}) as any;
 
     public unpipe = () => this;
@@ -231,13 +225,13 @@ class MockServerResponse {
     public writeEarlyHints = () => {};
 }
 
-export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): ((error: Error, request: Request) => Promise<Response>) => {
+export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (error: Error, request: Request) => Promise<Response> => {
     const nodeHandler = htmlErrorHandler(options);
 
     return async (error: Error, request: Request): Promise<Response> => {
         // Create mock request/response for the node handler
         const mockRequest = {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             headers: Object.fromEntries((request as any).headers.entries()),
             method: request.method,
             url: request.url,
@@ -246,7 +240,7 @@ export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): ((
         const mockResponse = new MockServerResponse();
 
         // Call the node handler
-        await nodeHandler(error, mockRequest, mockResponse as unknown as ServerResponse<IncomingMessage>);
+        await nodeHandler(error, mockRequest, mockResponse as unknown as ServerResponse);
 
         // Convert the mock response to a fetch Response
         const contentType = mockResponse.getHeader("content-type") || "text/html; charset=utf-8";
