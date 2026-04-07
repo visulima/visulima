@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const rgbToHsv = ({ b, g, r }: { b: number; g: number; r: number }): { h: number; s: number; v: number } => {
     let rdif;
     let gdif;

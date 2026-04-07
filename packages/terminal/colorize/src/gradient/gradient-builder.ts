@@ -4,6 +4,7 @@ import { colorNames } from "./util/color-names";
 import { computeSubSteps } from "./util/compute";
 import { interpolateHsv, interpolateRgb } from "./util/interpolate";
 
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export class GradientBuilder {
     readonly #colorize: ColorizeType;
 
@@ -18,16 +19,18 @@ export class GradientBuilder {
             throw new Error("Invalid number of stops (< 2)");
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
         const havingPositions = (stops[0] as StopInput).position !== undefined;
 
         let l = stops.length;
         let p = -1;
         let lastColorLess = false;
 
-        // eslint-disable-next-line no-loops/no-loops,@typescript-eslint/naming-convention
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         for (const [index, stop_] of stops.entries()) {
-            let stop = {} as StopOutput;
+            let stop: StopOutput;
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
             const hasPosition = (stop_ as StopInput).position !== undefined;
 
             if (havingPositions !== hasPosition) {
@@ -49,11 +52,11 @@ export class GradientBuilder {
 
                 if (hasColor) {
                     if (Array.isArray(stopInput.color)) {
-                        color = stopInput.color as [number, number, number];
+                        color = stopInput.color;
                     } else if (typeof stopInput.color === "string") {
-                        color = stopInput.color.includes("#") ? convertHexToRgb(stopInput.color as ColorValueHex) : colorNames[stopInput.color as CssColorName];
-                    } else if ((stopInput.color as RGB).r !== undefined && (stopInput.color as RGB).g !== undefined && (stopInput.color as RGB).b) {
-                        color = [(stopInput.color as RGB).r, (stopInput.color as RGB).g, (stopInput.color as RGB).b];
+                        color = stopInput.color.includes("#") ? convertHexToRgb(stopInput.color) : colorNames[stopInput.color as CssColorName];
+                    } else if (stopInput.color && "r" in stopInput.color && "g" in stopInput.color && "b" in stopInput.color) {
+                        color = [stopInput.color.r, stopInput.color.g, stopInput.color.b];
                     }
                 }
 
@@ -72,7 +75,7 @@ export class GradientBuilder {
                 p = stop.position;
             } else if (Array.isArray(stop_)) {
                 stop = {
-                    color: stop_ as [number, number, number],
+                    color: stop_,
                     position: index / (l - 1),
                 };
             } else if (typeof stop_ === "string") {
@@ -80,7 +83,11 @@ export class GradientBuilder {
                     color: stop_.includes("#") ? convertHexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
-            } else if ((stop_ as RGB).r !== undefined && (stop_ as RGB).g !== undefined && (stop_ as RGB).b !== undefined) {
+            } else if (
+                (stop_ as RGB | undefined)?.r !== undefined
+                && (stop_ as RGB | undefined)?.g !== undefined
+                && (stop_ as RGB | undefined)?.b !== undefined
+            ) {
                 stop = {
                     color: [(stop_ as RGB).r, (stop_ as RGB).g, (stop_ as RGB).b],
                     position: index / (l - 1),
@@ -92,19 +99,22 @@ export class GradientBuilder {
             this.stops.push(stop);
         }
 
-        if ((this.stops[0] as StopOutput).position !== 0) {
+        const firstStop = this.stops[0] as StopOutput;
+
+        if (firstStop.position !== 0) {
             this.stops.unshift({
-                color: (this.stops[0] as StopOutput).color,
+                color: firstStop.color,
                 position: 0,
             });
 
-            // eslint-disable-next-line no-plusplus
-            l++;
+            l += 1;
         }
 
-        if ((this.stops[l - 1] as StopOutput).position !== 1) {
+        const lastStop = this.stops[l - 1] as StopOutput;
+
+        if (lastStop.position !== 1) {
             this.stops.push({
-                color: (this.stops[l - 1] as StopOutput).color,
+                color: lastStop.color,
                 position: 1,
             });
         }
@@ -113,23 +123,19 @@ export class GradientBuilder {
     public reverse(): GradientBuilder {
         const stops: StopInput[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            const stop_ = { ...stop, position: 1 - stop.position };
+            const reversedStop = { ...stop, position: 1 - stop.position };
 
-            stops.push(stop_ as StopInput);
+            stops.push(reversedStop as StopInput);
         }
 
-        // eslint-disable-next-line etc/no-assign-mutated-array
-        return new GradientBuilder(this.#colorize, stops.reverse());
+        return new GradientBuilder(this.#colorize, stops.toReversed());
     }
 
     public loop(): GradientBuilder {
         const stops1: StopInput[] = [];
         const stops2: StopInput[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops) {
             stops1.push({
                 color: stop.color,
@@ -137,7 +143,6 @@ export class GradientBuilder {
             } as StopInput);
         }
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const stop of this.stops.slice(0, -1)) {
             stops2.push({
                 color: stop.color,
@@ -145,8 +150,7 @@ export class GradientBuilder {
             } as StopInput);
         }
 
-        // eslint-disable-next-line etc/no-assign-mutated-array
-        return new GradientBuilder(this.#colorize, [...stops1, ...stops2.reverse()]);
+        return new GradientBuilder(this.#colorize, [...stops1, ...stops2.toReversed()]);
     }
 
     public rgb(steps: number): ColorizeType[] {
@@ -162,9 +166,7 @@ export class GradientBuilder {
             }
         });
 
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 0, l = this.stops.length; index < l - 1; index++) {
-            // eslint-disable-next-line security/detect-object-injection
+        for (let index = 0, l = this.stops.length; index < l - 1; index += 1) {
             const rgbs = interpolateRgb(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
 
             gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
@@ -188,9 +190,7 @@ export class GradientBuilder {
             }
         });
 
-        // eslint-disable-next-line no-plusplus,no-loops/no-loops
-        for (let index = 0, l = this.stops.length; index < l - 1; index++) {
-            // eslint-disable-next-line security/detect-object-injection
+        for (let index = 0, l = this.stops.length; index < l - 1; index += 1) {
             const rgbs = interpolateHsv(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number, mode);
 
             gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));

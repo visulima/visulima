@@ -8,7 +8,7 @@
  */
 
 // prettier-ignore
-
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const makeColorizeTemplate = (template: (text: string) => string): (firstString: TemplateStringsArray, ...arguments_: any[]) => string =>
 
     (firstString: TemplateStringsArray, ...arguments_: any[]): string => {
@@ -19,9 +19,7 @@ export const makeColorizeTemplate = (template: (text: string) => string): (first
 
         const parts = [firstString.raw[0]];
 
-        // eslint-disable-next-line no-loops/no-loops,no-plusplus
-        for (let index = 1; index < firstString.raw.length; index++) {
-            // eslint-disable-next-line security/detect-object-injection
+        for (let index = 1; index < firstString.raw.length; index += 1) {
             parts.push(String(arguments_[index - 1]).replaceAll(/[{}\\]/g, String.raw`\$&`), String(firstString.raw[index]));
         }
 

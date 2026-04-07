@@ -2,9 +2,9 @@
 import ColorizeImpl from "./colorize.browser";
 import type { ColorizeType, ColorValueHex } from "./types";
 
-const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
+const colorize: ColorizeType = new ColorizeImpl();
 
-export default colorize as ColorizeType;
+export default colorize;
 
 // Extract methods that return 'this'
 export const ansi256: (code: number) => ColorizeType = colorize.ansi256;

@@ -25,12 +25,12 @@ describe("utils tests", () => {
     it("should replace all occurrences when search value is found multiple times", () => {
         expect.assertions(1);
 
-        const string_ = "hello world hello";
+        const testString = "hello world hello";
         const searchValue = "hello";
         const replaceValue = "hi";
         const expected = "hi world hi";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });
@@ -38,12 +38,12 @@ describe("utils tests", () => {
     it("should return the original string when search value is an empty string", () => {
         expect.assertions(1);
 
-        const string_ = "hello world";
+        const testString = "hello world";
         const searchValue = "";
         const replaceValue = "hi";
         const expected = "hello world";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });
@@ -51,12 +51,12 @@ describe("utils tests", () => {
     it("should return the original string when search value is not found", () => {
         expect.assertions(1);
 
-        const string_ = "hello world";
+        const testString = "hello world";
         const searchValue = "hi";
         const replaceValue = "hey";
         const expected = "hello world";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });
@@ -64,12 +64,12 @@ describe("utils tests", () => {
     it("should handle a search value longer than the string", () => {
         expect.assertions(1);
 
-        const string_ = "hello";
+        const testString = "hello";
         const searchValue = "hello world";
         const replaceValue = "hi";
         const expected = "hello";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });
@@ -77,12 +77,12 @@ describe("utils tests", () => {
     it("should handle a replace value longer than the search value", () => {
         expect.assertions(1);
 
-        const string_ = "hello world";
+        const testString = "hello world";
         const searchValue = "world";
         const replaceValue = "hello there";
         const expected = "hello hello there";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });
@@ -90,12 +90,12 @@ describe("utils tests", () => {
     it("should handle a search value that overlaps with the replace value", () => {
         expect.assertions(1);
 
-        const string_ = "hello world";
+        const testString = "hello world";
         const searchValue = "world";
         const replaceValue = "worldwide";
         const expected = "hello worldwide";
 
-        const result = stringReplaceAll(string_, searchValue, replaceValue);
+        const result = stringReplaceAll(testString, searchValue, replaceValue);
 
         expect(result).toStrictEqual(expected);
     });

@@ -2,19 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import ColorizeImpl from "../../../src/colorize.server";
 import { GradientBuilder } from "../../../src/gradient/gradient-builder";
-import type { ColorizeType } from "../../../src/types";
 
-const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
+const colorize = new ColorizeImpl();
 
 describe("gradient", () => {
     it("should reverse gradient", () => {
         expect.assertions(1);
 
         const grad1 = new GradientBuilder(colorize, ["red", "green", "blue", "yellow", "black"]);
+        // eslint-disable-next-line unicorn/no-array-reverse -- GradientBuilder.reverse() is not Array#reverse()
         const grad2 = grad1.reverse();
 
-        // eslint-disable-next-line etc/no-assign-mutated-array
-        expect(grad1.stops.map((stop) => stop.color)).toStrictEqual(grad2.stops.reverse().map((stop) => stop.color));
+        expect(grad1.stops.map((stop) => stop.color)).toStrictEqual(grad2.stops.toReversed().map((stop) => stop.color));
     });
 
     it("should generate 11 steps gradient from black to grey in RGB", () => {
@@ -100,17 +99,17 @@ describe("gradient", () => {
         expect.assertions(3);
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
             new GradientBuilder(colorize, [{ color: "black", position: 0 }, { position: 0.2 }, { position: 0.4 }, { color: "white", position: 1 }]);
         }).toThrow("Cannot define two consecutive position-only stops");
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
             new GradientBuilder(colorize, [{ position: 0.4 }, { color: "white", position: 1 }]);
         }).toThrow("Cannot define two consecutive position-only stops");
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
             new GradientBuilder(colorize, [{ color: "black", position: 0 }, { position: 0.2 }]);
         }).toThrow("Cannot define two consecutive position-only stops");
     });
@@ -119,7 +118,7 @@ describe("gradient", () => {
         expect.assertions(1);
 
         expect(() => {
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
             new GradientBuilder(colorize, [
                 { color: "black", position: 0.5 },
                 { color: "white", position: 0 },

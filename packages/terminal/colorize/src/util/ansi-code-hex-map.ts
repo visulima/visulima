@@ -6,6 +6,7 @@
  * Copyright (c) 2023, webdiscus
  */
 
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const ansiCodeHexMap: Record<number, string> = {
     0: "#000",
     1: "#800",

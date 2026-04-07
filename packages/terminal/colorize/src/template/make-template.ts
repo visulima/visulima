@@ -11,30 +11,32 @@ import type { ColorizeType, ColorValueHex } from "../types";
 import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { unescape } from "../util/unescape";
 
-const TEMPLATE_REGEX =
-    // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-lazy-ends,regexp/no-dupe-disjunctions
-    /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/optimal-lookaround-quantifier
+const TEMPLATE_REGEX
+    // eslint-disable-next-line regexp/no-lazy-ends,regexp/no-dupe-disjunctions,sonarjs/regex-complexity
+    = /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
+// eslint-disable-next-line regexp/optimal-lookaround-quantifier,sonarjs/regex-complexity
 const STYLE_REGEX = /(?:^|\.)(?:(\w+)(?:\(([^)]*)\))?|#(?=[:a-f\d]{2,})([a-f\d]{6})?(?::([a-f\d]{6}))?)/gi;
 const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
+// eslint-disable-next-line sonarjs/regex-complexity
 const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|([^\\])/gi;
+// eslint-disable-next-line sonarjs/slow-regex
+const CHUNK_SPLIT_REGEX = /\s*,\s*/;
 
 const parseArguments = (name: string, value: string): (number | string)[] => {
     const results: (number | string)[] = [];
-    const chunks = value.trim().split(/\s*,\s*/);
+    const chunks = value.trim().split(CHUNK_SPLIT_REGEX);
 
     let matches;
 
-    // eslint-disable-next-line no-loops/no-loops
     for (const chunk of chunks) {
         const number = Number(chunk);
 
         if (!Number.isNaN(number)) {
             results.push(number);
-            // eslint-disable-next-line no-cond-assign
-        } else if ((matches = STRING_REGEX.exec(chunk))) {
-            // eslint-disable-next-line unicorn/prefer-string-replace-all
-            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => (escape ? unescape(escape as string) : character)));
+            // eslint-disable-next-line no-cond-assign,sonarjs/no-nested-assignment
+        } else if (matches = STRING_REGEX.exec(chunk)) {
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,no-confusing-arrow
+            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => escape ? unescape(escape as string) : (character as string)));
         } else {
             throw new Error(`Invalid template style argument: ${chunk} (in style '${name}')`);
         }
@@ -43,13 +45,14 @@ const parseArguments = (name: string, value: string): (number | string)[] => {
     return results;
 };
 
+// eslint-disable-next-line sonarjs/use-type-alias
 const parseStyle: (style: string) => (number | string | undefined)[][] = (style: string) => {
     STYLE_REGEX.lastIndex = 0;
 
     const results: (number | string | undefined)[][] = [];
     let matches;
 
-    // eslint-disable-next-line no-loops/no-loops,no-cond-assign
+    // eslint-disable-next-line no-cond-assign
     while ((matches = STYLE_REGEX.exec(style)) !== null) {
         const name = matches[1];
 
@@ -78,19 +81,16 @@ const buildStyle = (
         styles: (number | string | undefined)[][];
     }[],
 ) => {
-    const enabled: Record<string, (number | string | undefined)[] | null> = {};
+    const enabled: Record<string, (number | string | undefined)[] | undefined> = {};
 
-    // eslint-disable-next-line no-loops/no-loops
     for (const layer of styles) {
-        // eslint-disable-next-line no-loops/no-loops
         for (const style of layer.styles) {
-            enabled[style[0] as string] = layer.inverse ? null : style.slice(1);
+            enabled[style[0] as string] = layer.inverse ? undefined : style.slice(1);
         }
     }
 
     let current: ColorizeType = colorize;
 
-    // eslint-disable-next-line no-loops/no-loops
     for (const [styleName, enabledStyles] of Object.entries(enabled)) {
         if (!Array.isArray(enabledStyles)) {
             continue;
@@ -101,64 +101,65 @@ const buildStyle = (
         }
 
         // @ts-expect-error - @TODO fix types
-
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         current = enabledStyles.length > 0 ? current[styleName as keyof ColorizeType](...enabledStyles) : current[styleName as keyof ColorizeType];
     }
 
     return current;
 };
 
-export const makeTemplate =
-    (colorize: ColorizeType): ((string: string) => string) =>
-    (string: string) => {
-        const styles: {
-            inverse: string | undefined;
-            styles: (number | string | undefined)[][];
-        }[] = [];
-        const chunks = [];
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
+export const makeTemplate
+    = (colorize: ColorizeType): (string: string) => string =>
+        (string: string) => {
+            const styles: {
+                inverse: string | undefined;
+                styles: (number | string | undefined)[][];
+            }[] = [];
+            const chunks: string[] = [];
 
-        let chunk: string[] = [];
+            let chunk: string[] = [];
 
-        string.replaceAll(
-            TEMPLATE_REGEX,
-            // @ts-expect-error - TS doesn't understand that the regex args are defined
-            (
-                _: string,
-                escapeCharacter: string | undefined,
-                inverse: string | undefined,
-                style: string | undefined,
-                close: string | undefined,
-                character: string | undefined,
-            ) => {
-                if (escapeCharacter) {
-                    chunk.push(unescape(escapeCharacter) as string);
-                } else if (style) {
-                    const joinedChunk = chunk.join("");
+            string.replaceAll(
+                TEMPLATE_REGEX,
+                // @ts-expect-error - TS doesn't understand that the regex args are defined
+                (
+                    _: string,
+                    escapeCharacter: string | undefined,
+                    inverse: string | undefined,
+                    style: string | undefined,
+                    close: string | undefined,
+                    character: string | undefined,
+                ) => {
+                    if (escapeCharacter) {
+                        chunk.push(unescape(escapeCharacter));
+                    } else if (style) {
+                        const joinedChunk = chunk.join("");
 
-                    chunk = [];
-                    chunks.push(styles.length === 0 ? joinedChunk : buildStyle(colorize, styles)(joinedChunk));
+                        chunk = [];
+                        chunks.push(styles.length === 0 ? joinedChunk : buildStyle(colorize, styles)(joinedChunk));
 
-                    styles.push({ inverse, styles: parseStyle(style) });
-                } else if (close) {
-                    if (styles.length === 0) {
-                        throw new Error("Found extraneous } in template literal");
+                        styles.push({ inverse, styles: parseStyle(style) });
+                    } else if (close) {
+                        if (styles.length === 0) {
+                            throw new Error("Found extraneous } in template literal");
+                        }
+
+                        chunks.push(buildStyle(colorize, styles)(chunk.join("")));
+                        chunk = [];
+
+                        styles.pop();
+                    } else {
+                        chunk.push(character as string);
                     }
+                },
+            );
 
-                    chunks.push(buildStyle(colorize, styles)(chunk.join("")));
-                    chunk = [];
+            chunks.push(chunk.join(""));
 
-                    styles.pop();
-                } else {
-                    chunk.push(character as string);
-                }
-            },
-        );
+            if (styles.length > 0) {
+                throw new Error(`template literal is missing ${String(styles.length)} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
+            }
 
-        chunks.push(chunk.join(""));
-
-        if (styles.length > 0) {
-            throw new Error(`template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
-        }
-
-        return chunks.join("");
-    };
+            return chunks.join("");
+        };
