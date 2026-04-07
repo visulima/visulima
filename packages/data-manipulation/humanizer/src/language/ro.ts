@@ -34,29 +34,26 @@ const roUnitMap: Record<string, keyof DurationUnitMeasures> = {
 /**
  * Romanian uses "de" before the noun for numbers >= 20 (when not ending in 01-19).
  * See: https://en.wikipedia.org/wiki/Romanian_numbers#Preposition_de
- *
  * @internal
- * @param unit - [singular, plural, plural with "de"]
+ * @param unit [singular, plural, plural with "de"]
  * @returns Function that returns the appropriate form based on counter
  */
-const romanianUnit = (unit: [string, string, string]) => {
-    return (counter: number): string => {
-        if (counter === 1) {
-            return unit[0];
-        }
+const romanianUnit = (unit: [string, string, string]) => (counter: number): string => {
+    if (counter === 1) {
+        return unit[0];
+    }
 
-        if (Math.floor(counter) !== counter || counter === 0) {
-            return unit[1];
-        }
+    if (Math.floor(counter) !== counter || counter === 0) {
+        return unit[1];
+    }
 
-        const remainder = counter % 100;
+    const remainder = counter % 100;
 
-        if (remainder >= 1 && remainder <= 19) {
-            return unit[1];
-        }
+    if (remainder >= 1 && remainder <= 19) {
+        return unit[1];
+    }
 
-        return unit[2];
-    };
+    return unit[2];
 };
 
 export const durationLanguage: DurationLanguage = createDurationLanguage(

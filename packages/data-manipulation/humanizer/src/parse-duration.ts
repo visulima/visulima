@@ -18,6 +18,7 @@ const ESCAPE_REGEX = /[-/\\^$*+?.()|[\]{}]/g;
 const ISO_FORMAT = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i;
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
+const SIGN_PREFIX_REGEX = /^[-+]/;
 
 /**
  * Parses a human-readable duration string into milliseconds using specified language units.
@@ -45,7 +46,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     const escapedGroup = groupSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
     const escapedPlaceholder = placeholderSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
 
-    const currentUnitMap = (language.unitMap ?? englishUnitMap) as Record<string, keyof DurationUnitMeasures>; // Fallback needed if englishUnitMap is not guaranteed
+    const currentUnitMap = language.unitMap ?? englishUnitMap; // Fallback needed if englishUnitMap is not guaranteed
 
     let processedValue = value.replaceAll(new RegExp(String.raw`(\d)[${escapedPlaceholder}${escapedGroup}](\d)`, "g"), "$1$2");
 
@@ -82,7 +83,6 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     if (colonMatch) {
         let hours = 0;
         let minutes = 0;
-        let seconds = 0;
 
         if (colonMatch[2] !== undefined) {
             // Format: hh:mm:ss   → groups [1]=hh, [2]=mm, [3]=ss
@@ -93,7 +93,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
             minutes = Number.parseInt(colonMatch[1], 10);
         }
 
-        seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
+        const seconds = Number.parseInt(colonMatch[3] ?? "0", 10);
 
         // Calculate total milliseconds
         return hours * 3_600_000 + minutes * 60_000 + seconds * 1000;
@@ -136,7 +136,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         // Determine sign based on original string, trim whitespace
         const trimmedNumberString = numberString.trim();
         const sign = trimmedNumberString.startsWith("-") ? -1 : 1;
-        const absNumberString = trimmedNumberString.replace(/^[-+]/, ""); // Remove sign for parseFloat
+        const absNumberString = trimmedNumberString.replace(SIGN_PREFIX_REGEX, ""); // Remove sign for parseFloat
 
         const parsedNumber = Number.parseFloat(absNumberString);
         const unitKey = currentUnitMap[unitString.toLowerCase()];

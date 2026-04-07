@@ -72,7 +72,7 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
             for (const char of countString) {
                 // `char` should always be 0-9 at this point.
 
-                formattedCount += char === "." ? decimal : digitReplacements[char as keyof typeof digitReplacements];
+                formattedCount += char === "." ? decimal : (digitReplacements[char as keyof typeof digitReplacements] as string);
             }
         } else {
             formattedCount = countString.replace(".", decimal);
@@ -85,7 +85,7 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
     let word = languageWord as string;
 
     if (typeof languageWord === "function") {
-        word = languageWord(unitCount) as string;
+        word = languageWord(unitCount);
     }
 
     // Never add a spacer if the count is hidden
@@ -96,10 +96,10 @@ const renderPiece = ({ unitCount, unitName }: DurationPiece, language: DurationL
 
     // eslint-disable-next-line no-underscore-dangle
     if (language._numberFirst) {
-        return (word as string) + spacer + formattedCount;
+        return word + spacer + formattedCount;
     }
 
-    return formattedCount + spacer + (word as string);
+    return formattedCount + spacer + word;
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -164,9 +164,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
 
                     const smallerUnitCount = unitCounts[smallerUnitName] as number;
 
-                    // @ts-expect-error unitCounts[unitName] is defined
-
-                    unitCounts[unitName] += (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
+                    unitCounts[unitName] = (unitCounts[unitName] ?? 0) + (smallerUnitCount * unitMeasures[smallerUnitName]) / unitMeasures[unitName];
 
                     unitCounts[smallerUnitName] = 0;
                 }
@@ -206,8 +204,7 @@ const getPieces = (ms: number, options: InternalOptions): DurationPiece[] => {
             const amountOfPreviousUnit = Math.floor((rounded * unitMeasures[unitName]) / previousUnitMs);
 
             if (amountOfPreviousUnit) {
-                // @ts-expect-error unitCounts[previousUnitName] is defined
-                unitCounts[previousUnitName] += amountOfPreviousUnit;
+                unitCounts[previousUnitName] = (unitCounts[previousUnitName] ?? 0) + amountOfPreviousUnit;
 
                 unitCounts[unitName] = 0;
             } else {
@@ -286,10 +283,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
 
     const renderedPieces: string[] = [];
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-    for (const piece_ of pieces) {
-        const piece = piece_ as DurationPiece;
-
+    for (const piece of pieces) {
         renderedPieces.push(renderPiece(piece, language, options));
     }
 
@@ -300,7 +294,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
     } else if (pieces.length === 2) {
         result = renderedPieces.join(conjunction);
     } else {
-        result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + renderedPieces.at(-1);
+        result = renderedPieces.slice(0, -1).join(delimiter) + (serialComma ? "," : "") + conjunction + (renderedPieces.at(-1) ?? "");
     }
 
     if (adverb) {
@@ -344,11 +338,11 @@ const duration = (milliseconds: number, options?: DurationOptions): string => {
 
     // Has the nice side effect of converting things to numbers. For example,
     // converts `"123"` and `Number(123)` to `123`.
-    const absTime = Math.abs(milliseconds as number);
+    const absTime = Math.abs(milliseconds);
 
     const pieces = getPieces(absTime, config);
 
-    return formatPieces(pieces, config, milliseconds as number);
+    return formatPieces(pieces, config, milliseconds);
 };
 
 export default duration;
