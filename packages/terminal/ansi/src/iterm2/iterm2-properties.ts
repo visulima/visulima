@@ -53,7 +53,7 @@ export const it2Percent = (n: number): string => `${String(n)}%`;
  * An OSC 1337 sequence has the general form: `OSC 1337 ; &lt;payload_string> BEL`.
  * Objects implementing this interface are responsible for generating that `&lt;payload_string>`
  * via their `toString()` method. This allows for a structured way to build various iTerm2 commands.
- * @see {@link iTerm2} function which consumes objects of this type.
+ * @see `iTerm2` function in `iterm2.ts` which consumes objects of this type.
  */
 export interface IITerm2Payload {
     /**

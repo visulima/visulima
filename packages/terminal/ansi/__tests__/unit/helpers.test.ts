@@ -1,17 +1,18 @@
+import type { MockInstance } from "vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const originalEnvironment = { ...process.env };
-const originalWindow = (globalThis as any).window;
+const originalWindow = (globalThis as Record<string, unknown>).window;
 
 describe("helper Constants", () => {
-    let platformSpy: any;
-    let environmentSpy: any;
+    let platformSpy: MockInstance;
+    let environmentSpy: MockInstance;
 
     beforeEach(() => {
         platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("linux");
         environmentSpy = vi.spyOn(process, "env", "get").mockReturnValue({ ...originalEnvironment });
         // Ensure a clean slate for window, default to non-browser for most tests
-        (globalThis as any).window = undefined;
+        (globalThis as Record<string, unknown>).window = undefined;
     });
 
     afterEach(() => {
@@ -20,9 +21,9 @@ describe("helper Constants", () => {
 
         // Restore original window object if it existed
         if (originalWindow === undefined) {
-            (globalThis as any).window = undefined;
+            (globalThis as Record<string, unknown>).window = undefined;
         } else {
-            (globalThis as any).window = originalWindow;
+            (globalThis as Record<string, unknown>).window = originalWindow;
         }
 
         vi.resetModules();
@@ -52,7 +53,7 @@ describe("helper Constants", () => {
             expect.assertions(1);
 
             environmentSpy.mockReturnValue({ ...originalEnvironment, TERM_PROGRAM: "Apple_Terminal" });
-            (globalThis as any).window = { document: {} }; // Simulate browser
+            (globalThis as Record<string, unknown>).window = { document: {} }; // Simulate browser
             const { isTerminalApp } = await import("../../src/helpers");
 
             expect(isTerminalApp).toBe(false);
@@ -82,7 +83,7 @@ describe("helper Constants", () => {
             expect.assertions(1);
 
             platformSpy.mockReturnValue("win32");
-            (globalThis as any).window = { document: {} }; // Simulate browser
+            (globalThis as Record<string, unknown>).window = { document: {} }; // Simulate browser
             const { isWindows } = await import("../../src/helpers");
 
             expect(isWindows).toBe(false);

@@ -1,6 +1,7 @@
 /* eslint-disable no-secrets/no-secrets */
 import { BEL, OSC } from "./constants";
 import type { IITerm2Payload } from "./iterm2/iterm2-properties";
+import type { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2/iterm2-sequences";
 
 // Re-export specific payload types and props for easier use by consumers
 export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2/iterm2-properties";

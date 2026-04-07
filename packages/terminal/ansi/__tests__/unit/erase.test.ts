@@ -57,7 +57,8 @@ describe("erase utilities", () => {
 
         it("should default to mode 0 for invalid mode number", () => {
             expect.assertions(1);
-            expect(eraseDisplay(99 as any)).toBe(`${CSI}J`);
+            // @ts-expect-error -- testing runtime behavior with invalid mode value
+            expect(eraseDisplay(99 as unknown as EraseDisplayMode)).toBe(`${CSI}J`);
         });
     });
 
@@ -93,7 +94,8 @@ describe("erase utilities", () => {
 
         it("should default to mode 0 for invalid mode number", () => {
             expect.assertions(1);
-            expect(eraseInLine(99 as any)).toBe(`${CSI}K`);
+            // @ts-expect-error -- testing runtime behavior with invalid mode value
+            expect(eraseInLine(99 as unknown as EraseLineMode)).toBe(`${CSI}K`);
         });
     });
 

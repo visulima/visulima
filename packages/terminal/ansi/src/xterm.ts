@@ -1,11 +1,11 @@
 import { CSI } from "./constants";
 
 /**
- * XTerm Key Modifier Options XTMODKEYS.
+ * XTerm Key Modifier Options (XTMODKEYS).
  * Sets or resets XTerm key modifier resources.
  *
- * Sequence: `CSI > Pp m` (to reset resource Pp)
- * Sequence: `CSI > Pp ; Pv m` (to set resource Pp to value Pv)
+ * Sequence: `CSI > Pp m` (to reset resource Pp).
+ * Sequence: `CSI > Pp ; Pv m` (to set resource Pp to value Pv).
  * @param resource The resource parameter (Pp), a non-negative integer.
  * @param value Optional. The value parameter (Pv), a non-negative integer. If omitted, the resource is reset.
  * If provided and not positive, it's treated as if omitted (resource is reset).

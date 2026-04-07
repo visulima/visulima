@@ -41,7 +41,7 @@ export const clearLineAndHomeCursor: string = `${eraseInLine(EraseLineMode.Entir
  *
  * Effective combined sequence: `CSI H CSI 2J`.
  * @remarks This is a very common sequence for clearing the visible terminal window.
- * @see {@link cursorPosition} (which `CSI H` relates to)
+ * @see `cursorPosition` from `./cursor` (which `CSI H` relates to)
  * @see {@link eraseDisplay}
  * @see {@link EraseDisplayMode.EntireScreen}
  */
