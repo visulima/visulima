@@ -11,29 +11,24 @@ interface IDocumentTerm {
 const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, tag: string): string => {
     const lowerCaseTag = tag.toLowerCase();
 
-    // eslint-disable-next-line security/detect-object-injection
     if (!maskMaps[lowerCaseTag]) {
-        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+        // eslint-disable-next-line no-param-reassign
         maskMaps[lowerCaseTag] = new Map<string, string>();
     }
 
-    // eslint-disable-next-line security/detect-object-injection
-    const { size } = maskMaps[lowerCaseTag] as Map<string, string>;
+    const { size } = maskMaps[lowerCaseTag];
 
     const maskedValue = `<${tag.toUpperCase()}${size > 0 ? size : ""}>`;
 
-    // eslint-disable-next-line security/detect-object-injection
-    (maskMaps[lowerCaseTag] as Map<string, string>).set(text, maskedValue);
+    maskMaps[lowerCaseTag].set(text, maskedValue);
 
-    // eslint-disable-next-line security/detect-object-injection
-    return (maskMaps[lowerCaseTag] as Map<string, string>).get(text) as string;
+    return maskMaps[lowerCaseTag].get(text) as string;
 };
 
 const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
     for (const type of typesToAnonymize) {
-        // eslint-disable-next-line security/detect-object-injection
         maskMaps[type] = new Map<string, string>();
     }
 
@@ -78,7 +73,6 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
     // eslint-disable-next-line unicorn/no-array-reduce
     const uniqueProcessedTerms = [...processedTerms.reduce((map, term) => map.set(term.text + term.start + term.tag, term), new Map()).values()];
 
-    // eslint-disable-next-line etc/no-assign-mutated-array
     return uniqueProcessedTerms.sort((a, b) => {
         const startDiff = a.start - b.start;
 
@@ -94,7 +88,6 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
     for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
-        // eslint-disable-next-line @rushstack/security/no-unsafe-regexp,security/detect-non-literal-regexp
         const rx = new RegExp(pattern, "giu");
 
         let match;
@@ -165,10 +158,10 @@ const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOption
 
     for (const modifier of modifiers) {
         if (
-            options?.exclude &&
-            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude
+            && ((typeof modifier === "string" && options.exclude.includes(modifier))
+                || (typeof modifier === "number" && options.exclude.includes(modifier))
+                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             continue;
         }

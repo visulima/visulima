@@ -21,7 +21,7 @@ const standardModifierRules: Rules = [
     {
         deep: true,
         key: "date",
-        // eslint-disable-next-line no-secrets/no-secrets
+
         pattern: String.raw`\b\d{1,2}\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}\b`,
     },
     { deep: true, key: "date", pattern: String.raw`\b(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d\b` },
@@ -30,7 +30,7 @@ const standardModifierRules: Rules = [
     {
         deep: true,
         key: "date",
-        // eslint-disable-next-line no-secrets/no-secrets
+
         pattern: String.raw`\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},\s+\d{4}\b`,
     },
     { deep: true, key: "date", pattern: String.raw`\b(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])\b` },

@@ -32,18 +32,18 @@ const recursivelyFilterAttributes = <V = Record<string, any>>(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setProperty(copy as Record<string, any>, modifier.key, modifier.replacement);
         } else {
-            // eslint-disable-next-line no-restricted-syntax,guard-for-in
+            // eslint-disable-next-line guard-for-in
             for (const key in copy) {
                 const currentIdentifier = identifier ? `${identifier}.${key.toLowerCase()}` : key.toLowerCase();
 
                 if (!modifier.wildcard && key.toLowerCase() === modifier.key) {
-                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    // eslint-disable-next-line no-param-reassign
                     copy[key] = modifier.replacement;
                 } else if (modifier.wildcard && (wildcard(key.toLowerCase(), modifier.key) || wildcard(currentIdentifier.toLowerCase(), modifier.key))) {
-                    // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+                    // eslint-disable-next-line no-param-reassign
                     copy[key] = modifier.replacement;
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-param-reassign,security/detect-object-injection
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-param-reassign
                     copy[key] = recursiveFilter(copy[key] as V, examinedObjects, saveCopy, [modifier], options, currentIdentifier.toLowerCase());
                 }
             }
@@ -65,11 +65,9 @@ const recursiveFilter = <V, R = V>(
     }
 
     // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
-    // eslint-disable-next-line security/detect-object-injection
     const id: number | undefined = input[circularReferenceKey];
 
     if (id != undefined || id === 0) {
-        // eslint-disable-next-line security/detect-object-injection
         return examinedObjects[id]?.copy as R;
     }
 
@@ -98,15 +96,14 @@ const recursiveFilter = <V, R = V>(
                 copy.code = input.code;
             }
 
-            // eslint-disable-next-line guard-for-in,no-restricted-syntax
+            // eslint-disable-next-line guard-for-in
             for (const key in input) {
                 // @ts-expect-error we're literally iterating through attributes, these will exist
-                // eslint-disable-next-line security/detect-object-injection
                 copy[key] = input[key];
             }
 
             saveCopy(input, copy);
-            recursivelyFilterAttributes<V>(copy as V, examinedObjects, saveCopy, rules, options, identifier);
+            recursivelyFilterAttributes(copy as V, examinedObjects, saveCopy, rules, options, identifier);
 
             return copy as unknown as R;
         }
@@ -270,7 +267,7 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
         const id = examinedObjects.length;
 
         // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
-        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
+        // eslint-disable-next-line no-param-reassign
         original[circularReferenceKey] = id;
 
         examinedObjects.push({
@@ -283,10 +280,10 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
 
     for (const modifier of rules) {
         if (
-            options?.exclude &&
-            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude
+            && ((typeof modifier === "string" && options.exclude.includes(modifier))
+                || (typeof modifier === "number" && options.exclude.includes(modifier))
+                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             continue;
         }
