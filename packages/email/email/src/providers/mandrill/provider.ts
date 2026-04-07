@@ -223,7 +223,6 @@ const mandrillProvider: ProviderFactory<MandrillConfig> = defineProvider((config
                 if (emailOptions.cc) {
                     const ccAddresses = formatMandrillAddresses(emailOptions.cc, "cc");
 
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const addr of ccAddresses) {
                         addr.type = "cc";
                     }
@@ -235,7 +234,6 @@ const mandrillProvider: ProviderFactory<MandrillConfig> = defineProvider((config
                 if (emailOptions.bcc) {
                     const bccAddresses = formatMandrillAddresses(emailOptions.bcc, "bcc");
 
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const addr of bccAddresses) {
                         addr.type = "bcc";
                     }

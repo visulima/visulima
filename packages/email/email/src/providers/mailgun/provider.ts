@@ -26,14 +26,12 @@ const DEFAULT_RETRIES = 3;
 const objectToFormData = (data: Record<string, unknown>): string => {
     const formData: string[] = [];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(data)) {
         if (value === undefined || value === null) {
             continue;
         }
 
         if (Array.isArray(value)) {
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const item of value) {
                 formData.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`);
             }
@@ -274,7 +272,6 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
                     formData.template = emailOptions.template;
 
                     if (emailOptions.templateVariables) {
-                        // eslint-disable-next-line no-for-of-array/no-for-of-array
                         for (const [key, value] of Object.entries(emailOptions.templateVariables)) {
                             formData[`v:${key}`] = value;
                         }
@@ -329,7 +326,6 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const [key, value] of Object.entries(headersRecord)) {
                         formData[`h:${key}`] = value;
                     }
@@ -344,7 +340,6 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
                         emailOptions.attachments.map((attachment, i) => createMailgunAttachment(attachment, PROVIDER_NAME, i)),
                     );
 
-                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const attachmentData of attachmentResults) {
                         formData[attachmentData.key] = attachmentData.content;
                     }

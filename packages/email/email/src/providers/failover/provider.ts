@@ -47,7 +47,6 @@ const provider: ProviderFactory<FailoverConfig> = defineProvider((config: Failov
         initializationPromise = (async () => {
             providers.length = 0;
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const mailer of options.mailers) {
                 try {
                     let mailerProvider: Provider;
@@ -123,7 +122,6 @@ const provider: ProviderFactory<FailoverConfig> = defineProvider((config: Failov
                     await initializeProviders();
                 }
 
-                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const providerToCheck of providers) {
                     try {
                         // eslint-disable-next-line no-await-in-loop -- Sequential checking is required

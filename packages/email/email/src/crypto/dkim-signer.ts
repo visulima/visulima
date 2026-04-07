@@ -16,7 +16,6 @@ import type { DkimOptions, EmailSigner } from "./types";
 const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" | "relaxed" = "simple"): string => {
     const headerLines: string[] = [];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(headers)) {
         const normalizedKey = method === "relaxed" ? key.toLowerCase().trim() : key;
         const normalizedValue = method === "relaxed" ? value.replaceAll(/\s+/g, " ").trim() : value;

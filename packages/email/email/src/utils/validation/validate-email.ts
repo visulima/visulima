@@ -42,7 +42,6 @@ const validateEmail = (email: string): boolean => {
     // Domain parts shouldn't start or end with hyphen
     const domainParts = domain.split(".");
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const part of domainParts) {
         if (part.startsWith("-") || part.endsWith("-") || part.length === 0) {
             return false;

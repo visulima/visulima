@@ -97,7 +97,6 @@ describe(parseAddress, () => {
 
         const testCases = ["john@example.com", "John Doe <john@example.com>", "user.name+tag@example.sub.com"];
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const testCase of testCases) {
             const parsed = parseAddress(testCase);
 

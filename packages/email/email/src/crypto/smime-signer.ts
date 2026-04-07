@@ -306,7 +306,6 @@ export class SmimeSigner implements EmailSigner {
         lines.push(`Subject: ${email.subject}`, "MIME-Version: 1.0");
 
         if (email.headers) {
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(email.headers)) {
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 lines.push(`${key}: ${value}`);

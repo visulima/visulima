@@ -50,7 +50,6 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig> = defineProvider(
         const initializeProviders = async (): Promise<void> => {
             providers.length = 0;
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const mailer of options.mailers) {
                 try {
                     // If mailer is a provider factory, call it with empty config
