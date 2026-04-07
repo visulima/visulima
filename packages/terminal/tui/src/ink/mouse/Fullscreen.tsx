@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/filename-case */
-
 /**
  * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0

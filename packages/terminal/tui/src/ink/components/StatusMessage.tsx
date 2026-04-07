@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Status message component for Ink.

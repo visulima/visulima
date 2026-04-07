@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/no-named-as-default-member, sonarjs/cognitive-complexity */
+/* eslint-disable import/no-named-as-default-member */
 import type { AnsiColors, ColorizeType } from "@visulima/colorize";
 import colorizeDefault from "@visulima/colorize";
 

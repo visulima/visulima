@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-extraneous-dependencies, import/no-namespace, jsdoc/no-undefined-types, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, no-empty, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, no-underscore-dangle, no-void, react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, sonarjs/cognitive-complexity, sonarjs/different-types-comparison, sonarjs/no-async-constructor, sonarjs/no-tab */
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-extraneous-dependencies, import/no-namespace, jsdoc/no-undefined-types, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, no-empty, no-void, react-x/no-context-provider, sonarjs/different-types-comparison, sonarjs/no-async-constructor, sonarjs/no-tab */
 import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
@@ -32,7 +32,8 @@ import { clearStyledLineCache } from "./measure-text";
 import reconciler from "./reconciler";
 import render from "./renderer";
 import type ResizeObserver from "./resize-observer";
-import { measureAndExtractObservers, type ResizeObserverEntry } from "./resize-observer";
+import type { ResizeObserverEntry } from "./resize-observer";
+import { measureAndExtractObservers } from "./resize-observer";
 import { calculateScroll } from "./scroll";
 import { getWindowSize } from "./utils";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
@@ -67,9 +68,9 @@ const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineB
 
 const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
     if (
-        buffer[startIndex] !== kittyQueryEscapeByte ||
-        buffer[startIndex + 1] !== kittyQueryOpenBracketByte ||
-        buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
+        buffer[startIndex] !== kittyQueryEscapeByte
+        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
+        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
     ) {
         return undefined;
     }
@@ -157,13 +158,13 @@ const shouldClearTerminalForFrame = ({
 
     return (
         // Overflowing frames still need full clear fallback.
-        wasOverflowing ||
-        (isOverflowing && hadPreviousFrame) ||
+        wasOverflowing
+        || (isOverflowing && hadPreviousFrame)
         // Clear when shrinking from fullscreen to non-fullscreen output.
-        isLeavingFullscreen ||
+        || isLeavingFullscreen
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
-        shouldClearOnUnmount
+        || shouldClearOnUnmount
     );
 };
 
@@ -384,18 +385,18 @@ export default class Ink {
         const baseOnRender = unthrottled
             ? this.onRender
             : (() => {
-                  const throttled = throttle(this.onRender, renderThrottleMs, {
-                      leading: true,
-                      trailing: true,
-                  });
+                const throttled = throttle(this.onRender, renderThrottleMs, {
+                    leading: true,
+                    trailing: true,
+                });
 
-                  this.throttledOnRender = throttled;
+                this.throttledOnRender = throttled;
 
-                  return () => {
-                      this.hasPendingThrottledRender = true;
-                      throttled();
-                  };
-              })();
+                return () => {
+                    this.hasPendingThrottledRender = true;
+                    throttled();
+                };
+            })();
 
         if (unthrottled) {
             this.throttledOnRender = undefined;
@@ -450,26 +451,26 @@ export default class Ink {
         this.throttledLog = unthrottled
             ? this.log
             : throttle(
-                  (output: string) => {
-                      const shouldWrite = this.log.willRender(output);
-                      const sync = this.shouldSync();
+                (output: string) => {
+                    const shouldWrite = this.log.willRender(output);
+                    const sync = this.shouldSync();
 
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(bsu);
-                      }
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(bsu);
+                    }
 
-                      this.log(output);
+                    this.log(output);
 
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(esu);
-                      }
-                  },
-                  undefined,
-                  {
-                      leading: true,
-                      trailing: true,
-                  },
-              );
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(esu);
+                    }
+                },
+                undefined,
+                {
+                    leading: true,
+                    trailing: true,
+                },
+            );
 
         // Ignore last render after unmounting a tree to prevent empty output before exit
         this.isUnmounted = false;
@@ -827,9 +828,7 @@ export default class Ink {
     private accessibilityContextValue: { isScreenReaderEnabled: boolean } | undefined;
 
     render(node: ReactNode): void {
-        if (!this.accessibilityContextValue) {
-            this.accessibilityContextValue = { isScreenReaderEnabled: this.isScreenReaderEnabled };
-        }
+        this.accessibilityContextValue ??= { isScreenReaderEnabled: this.isScreenReaderEnabled };
 
         const tree = (
             <AccessibilityContext.Provider value={this.accessibilityContextValue}>
@@ -943,13 +942,13 @@ export default class Ink {
         settleThrottle(this.throttledOnRender, canWriteToStdout);
 
         if (
-            canWriteToStdout && // Skip the final render when in alternate screen mode — the alternate
+            canWriteToStdout // Skip the final render when in alternate screen mode — the alternate
             // buffer content is disposable and will be discarded when we switch back
             // to the primary screen. Rendering a final frame here would write content
             // to the alternate screen that is immediately discarded, or worse, if the
             // ALT_SCREEN_OFF write is buffered, the final frame could leak onto the
             // primary screen buffer.
-            !this.alternateScreen
+            && !this.alternateScreen
         ) {
             const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
 

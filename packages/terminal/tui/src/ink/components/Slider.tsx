@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, jsdoc/informative-docs, no-plusplus, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/filename-case */
+/* eslint-disable jsdoc/informative-docs, react/function-component-definition, sonarjs/no-nested-conditional */
 
 /**
  * Slider component for Ink.
@@ -140,8 +140,10 @@ export default function Slider({
     const current = isControlled ? clamp(controlledValue, safeMin, safeMax) : internalValue;
 
     const onChangeRef = useRef(onChange);
+
     onChangeRef.current = onChange;
     const currentRef = useRef(current);
+
     currentRef.current = current;
 
     const setValue = useCallback(

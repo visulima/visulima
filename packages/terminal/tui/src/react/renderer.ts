@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-plus-operands, func-style, import/exports-last, import/no-extraneous-dependencies, import/prefer-default-export, jsdoc/check-indentation, no-bitwise, no-console, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands, import/no-extraneous-dependencies, jsdoc/check-indentation, no-bitwise, no-console, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
 import cliBoxes from "cli-boxes";
 
 import type { LayoutNode } from "./layout";
@@ -302,9 +302,11 @@ function paintBorder(
     const yEnd = canShowBottom ? h - 1 : h;
 
     for (let y = yStart; y < yEnd; y++) {
-        if (showLeft) writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        if (showLeft)
+            writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
 
-        if (showRight) writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        if (showRight)
+            writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
     }
 }
 
@@ -370,7 +372,8 @@ function paintText(
             cursorY++;
         }
 
-        if (cursorY >= h) break;
+        if (cursorY >= h)
+            break;
 
         // Wide character that can't fit even on an empty line — replace with space
         // to avoid writing a half-glyph without its continuation cell.

@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/filename-case, import/exports-last */
-
 /**
  * Ordered list component for Ink.
  *

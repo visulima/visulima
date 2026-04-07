@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/filename-case */
-
 /**
  * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
@@ -29,13 +27,13 @@ type MouseState = {
     scroll: MouseScrollAction;
 };
 
-type MouseAction =
-    | { button: MouseButton; click: MouseClickAction; position: MousePosition; type: "click" }
-    | { type: "click-reset" }
-    | { button: MouseButton; drag: MouseDragAction; position: MousePosition; type: "drag" }
-    | { position: MousePosition; type: "move" }
-    | { position: MousePosition; scroll: MouseScrollAction; type: "scroll" }
-    | { type: "scroll-reset" };
+type MouseAction
+    = | { button: MouseButton; click: MouseClickAction; position: MousePosition; type: "click" }
+        | { type: "click-reset" }
+        | { button: MouseButton; drag: MouseDragAction; position: MousePosition; type: "drag" }
+        | { position: MousePosition; type: "move" }
+        | { position: MousePosition; scroll: MouseScrollAction; type: "scroll" }
+        | { type: "scroll-reset" };
 
 const initialMouseState: MouseState = {
     button: null,
@@ -80,7 +78,7 @@ const mouseReducer = (state: MouseState, action: MouseAction): MouseState => {
 const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
     const { internal_eventEmitter: internalEventEmitter } = useStdinContext();
     const { stdout } = useStdout();
-    // eslint-disable-next-line unicorn/prefer-event-target
+
     const events = useRef(new EventEmitter());
 
     const [state, dispatch] = useReducer(mouseReducer, initialMouseState);

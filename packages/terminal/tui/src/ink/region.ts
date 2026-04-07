@@ -16,64 +16,64 @@
 import type { StyledLine } from "./styled-line";
 
 export type Region = {
-    /** Unique identifier for this region (used for dirty tracking) */
-    id: number | string;
-
-    /** Position relative to parent region */
-    x: number;
-    y: number;
-
-    /** Dimensions */
-    width: number;
-    height: number;
-
-    /** Content buffer — StyledLine per row, relative to (0,0) of this region */
-    readonly lines: readonly StyledLine[];
-
-    /** Trimmed output (trailing spaces removed) for final rendering */
-    readonly styledOutput: readonly StyledLine[];
-
-    /** Whether this region supports scrolling */
-    isScrollable: boolean;
-    isVerticallyScrollable?: boolean;
-    isHorizontallyScrollable?: boolean;
-
-    /** Scroll state */
-    scrollTop?: number;
-    scrollLeft?: number;
-    scrollHeight?: number;
-    scrollWidth?: number;
-    scrollbarVisible?: boolean;
-
-    /** Layout properties */
-    overflowToBackbuffer?: boolean;
-    marginRight?: number;
-    marginBottom?: number;
-    scrollbarThumbColor?: string;
     backgroundColor?: string;
-    opaque?: boolean;
-    borderTop?: number;
+
     borderBottom?: number;
+    borderTop?: number;
 
-    /** Sticky headers for this region */
-    stickyHeaders: StickyHeader[];
     cachedStickyHeaders?: StickyHeader[];
-
     /** Child regions (nested content areas) */
     children: Region[];
 
     /** Cursor position within this region */
     cursorPosition?: { col: number; row: number };
 
-    /** Whether the scrollback position is stable */
-    stableScrollback?: boolean;
+    height: number;
 
+    /** Unique identifier for this region (used for dirty tracking) */
+    id: number | string;
+    isHorizontallyScrollable?: boolean;
+    /** Whether this region supports scrolling */
+    isScrollable: boolean;
+
+    isVerticallyScrollable?: boolean;
+    /** Content buffer — StyledLine per row, relative to (0,0) of this region */
+    readonly lines: ReadonlyArray<StyledLine>;
+    marginBottom?: number;
+    marginRight?: number;
     /** DOM node reference for debugging/caching */
     nodeId?: number;
+
+    opaque?: boolean;
+    /** Layout properties */
+    overflowToBackbuffer?: boolean;
+    scrollbarThumbColor?: string;
+    scrollbarVisible?: boolean;
+    scrollHeight?: number;
+    scrollLeft?: number;
+    /** Scroll state */
+    scrollTop?: number;
+    scrollWidth?: number;
 
     /** Selectable text spans for text selection */
     selectableSpans: SelectableSpan[];
     selectableText?: string;
+
+    /** Whether the scrollback position is stable */
+    stableScrollback?: boolean;
+
+    /** Sticky headers for this region */
+    stickyHeaders: StickyHeader[];
+
+    /** Trimmed output (trailing spaces removed) for final rendering */
+    readonly styledOutput: ReadonlyArray<StyledLine>;
+
+    /** Dimensions */
+    width: number;
+
+    /** Position relative to parent region */
+    x: number;
+    y: number;
 };
 
 export type SelectableSpan = {
@@ -85,7 +85,7 @@ export type SelectableSpan = {
 
 export type StickyHeader = {
     /** Lines in the natural (scrolling) position */
-    lines: readonly StyledLine[];
+    lines: ReadonlyArray<StyledLine>;
     /** Height of the header in lines */
     maxHeaderHeight: number;
     /** Natural row offset relative to content start */
@@ -93,7 +93,7 @@ export type StickyHeader = {
     /** Node ID for identification */
     nodeId: number;
     /** Lines in the stuck (fixed) position */
-    stuckLines?: readonly StyledLine[];
+    stuckLines?: ReadonlyArray<StyledLine>;
     /** Stuck X position relative to region */
     x: number;
     /** Stuck Y position relative to region */
@@ -133,7 +133,7 @@ export const treesEqual = (a: RegionNode, b: RegionNode): boolean => {
 /**
  * Extract selectable text from a list of selectable spans.
  */
-export const extractSelectableText = (spans: readonly SelectableSpan[]): string => {
+export const extractSelectableText = (spans: ReadonlyArray<SelectableSpan>): string => {
     if (spans.length === 0) {
         return "";
     }

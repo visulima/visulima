@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, import/exports-last */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import process from "node:process";
 import { Stream } from "node:stream";
 

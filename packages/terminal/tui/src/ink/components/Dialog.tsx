@@ -70,17 +70,6 @@ export type Props = {
     readonly rows?: number;
 
     /**
-     * Ref to the internal ScrollView for programmatic scrolling.
-     */
-    readonly scrollRef?: React.Ref<ScrollViewRef>;
-
-    /**
-     * Title rendered at the top of the dialog. If a string is provided,
-     * it is rendered as bold cyan text.
-     */
-    readonly title?: ReactNode;
-
-    /**
      * Scrollbar visual style.
      * @default "block"
      */
@@ -97,6 +86,17 @@ export type Props = {
         | "single"
         | "singleDouble"
         | "thick";
+
+    /**
+     * Ref to the internal ScrollView for programmatic scrolling.
+     */
+    readonly scrollRef?: React.Ref<ScrollViewRef>;
+
+    /**
+     * Title rendered at the top of the dialog. If a string is provided,
+     * it is rendered as bold cyan text.
+     */
+    readonly title?: ReactNode;
 
     /**
      * Whether the dialog is visible. When `false`, nothing is rendered.
@@ -124,7 +124,7 @@ export type Props = {
  * &lt;/Dialog>
  * ```
  */
-export default function Dialog({
+const Dialog = ({
     backgroundColor: backgroundColorProp,
     borderColor = "cyan",
     borderStyle = "round",
@@ -140,7 +140,7 @@ export default function Dialog({
     title,
     visible = true,
     width = 60,
-}: Props): ReactElement | null {
+}: Props): ReactElement | null => {
     // Hooks must be called unconditionally (React rules)
     const windowSize = useWindowSize();
     const { isLoading: paletteLoading, palette } = useTerminalPalette();
@@ -154,20 +154,22 @@ export default function Dialog({
     const cols = columnsProp ?? (windowSize.columns || 80);
     const termRows = rowsProp ?? (windowSize.rows || 24);
 
-    const bg = backgroundColorProp ?? (paletteLoading ? "black" : (palette?.background ?? "black"));
+    const bg = backgroundColorProp ?? (paletteLoading ? "black" : palette?.background ?? "black");
 
     const resolvedMaxHeight = maxHeightProp <= 1 ? Math.floor(termRows * maxHeightProp) : Math.min(maxHeightProp, termRows - 2);
 
-    const titleElement =
-        typeof title === "string" ? (
-            <Box marginBottom={1}>
-                <Text bold color={borderColor}>
-                    {title}
-                </Text>
-            </Box>
-        ) : (
-            (title ?? null)
-        );
+    const titleElement
+        = typeof title === "string"
+            ? (
+                <Box marginBottom={1}>
+                    <Text bold color={borderColor}>
+                        {title}
+                    </Text>
+                </Box>
+            )
+            : title ?? null
+        ;
+
     return (
         <Box alignItems="center" height={termRows} justifyContent="center" position="absolute" width={cols}>
             <Box
@@ -182,7 +184,7 @@ export default function Dialog({
                 width={Math.min(width, cols - 4)}
             >
                 {/* Title — fixed above scroll area */}
-                {titleElement && (
+                {titleElement != null && (
                     <Box flexShrink={0} paddingX={paddingX}>
                         {titleElement}
                     </Box>
@@ -202,7 +204,7 @@ export default function Dialog({
                 </ScrollView>
 
                 {/* Footer — fixed below scroll area */}
-                {footer && (
+                {footer != null && (
                     <Box alignItems="center" flexDirection="column" flexShrink={0} marginTop={1} paddingX={paddingX}>
                         {footer}
                     </Box>
@@ -210,4 +212,6 @@ export default function Dialog({
             </Box>
         </Box>
     );
-}
+};
+
+export default Dialog;

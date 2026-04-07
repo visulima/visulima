@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * TreeView component for terminal UIs with keyboard navigation,
@@ -18,7 +18,7 @@ import Box from "../Box";
 import Text from "../Text";
 import { theme } from "./theme";
 import { buildNodeAriaLabel, buildNodeAriaState, TreeViewNode } from "./TreeViewNode";
-import type { AsyncChildrenFn as AsyncChildrenFunction, SelectionMode, TreeNode, TreeNodeRendererProps } from "./types";
+import type { AsyncChildrenFunction, SelectionMode, TreeNode, TreeNodeRendererProps } from "./types";
 import { useTreeView } from "./use-tree-view";
 import { useTreeViewState } from "./use-tree-view-state";
 
@@ -154,7 +154,11 @@ export function TreeView<T = Record<string, unknown>>({
             {isScreenReaderEnabled && <Text aria-label={ariaLabel} />}
             {state.hasScrollUp && (
                 <Text aria-label={`${state.viewportFromIndex} more items above`} dimColor>
-                    {"  "}↑{state.viewportFromIndex} more above
+                    {"  "}
+                    ↑
+                    {state.viewportFromIndex}
+                    {" "}
+                    more above
                 </Text>
             )}
             {state.viewportNodes.map(({ node, state: nodeState }) => {
@@ -188,7 +192,11 @@ export function TreeView<T = Record<string, unknown>>({
             })}
             {state.hasScrollDown && (
                 <Text aria-label={`${state.visibleCount - state.viewportToIndex} more items below`} dimColor>
-                    {"  "}↓{state.visibleCount - state.viewportToIndex} more below
+                    {"  "}
+                    ↓
+                    {state.visibleCount - state.viewportToIndex}
+                    {" "}
+                    more below
                 </Text>
             )}
         </Box>

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/filename-case */
 import type React from "react";
 import type { ReactNode, Ref } from "react";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -274,7 +273,7 @@ export const ScrollView = ({
             scrollToBottom: scrollToBottomImperative,
             scrollToTop: scrollToTopImperative,
         };
-    }, [onScroll, getBottomOffset, getScrollOffset, scrollByImperative, scrollToImperative, scrollToBottomImperative, scrollToTopImperative]);
+    }, [getBottomOffset, getScrollOffset, scrollByImperative, scrollToImperative, scrollToBottomImperative, scrollToTopImperative]);
 
     const showScrollbar = scrollbar && scrollbarContentHeight > scrollbarViewportHeight && scrollbarViewportHeight > 0;
 
@@ -292,7 +291,6 @@ export const ScrollView = ({
                     ref={innerRef}
                     scrollOffset={scrollOffset}
                     virtualize={virtualize}
-                    // eslint-disable-next-line react/jsx-props-no-spreading
                     {...boxProps}
                     flexGrow={1}
                 />
@@ -319,7 +317,6 @@ export const ScrollView = ({
             ref={innerRef}
             scrollOffset={scrollOffset}
             virtualize={virtualize}
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...boxProps}
         />
     );

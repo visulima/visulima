@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Multi-select input component for Ink.
@@ -148,13 +148,17 @@ export default function MultiSelect({
 
     const [selectedValues, setSelectedValues] = useState(defaultValue);
     const selectedValuesRef = useRef(selectedValues);
+
     selectedValuesRef.current = selectedValues;
     const onSubmitRef = useRef(onSubmit);
+
     onSubmitRef.current = onSubmit;
     const onChangeRef = useRef(onChange);
+
     onChangeRef.current = onChange;
 
     const stateRef = useRef(state);
+
     stateRef.current = state;
 
     const visibleOptions = useMemo(() => options.slice(state.visibleFrom, state.visibleFrom + limit), [options, state.visibleFrom, limit]);
@@ -240,13 +244,17 @@ export default function MultiSelect({
                             <Text> </Text>
                         )}
                         <Text color={labelColor} dimColor={isDisabled}>
-                            {isSelected ? "◼" : "◻"} {option.label}
+                            {isSelected ? "◼" : "◻"}
+                            {" "}
+                            {option.label}
                         </Text>
-                        {isSelected ? (
-                            <Text color="green" dimColor={!isFocused}>
-                                ✓
-                            </Text>
-                        ) : undefined}
+                        {isSelected
+                            ? (
+                                <Text color="green" dimColor={!isFocused}>
+                                    ✓
+                                </Text>
+                            )
+                            : undefined}
                     </Box>
                 );
             })}

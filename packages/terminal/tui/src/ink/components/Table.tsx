@@ -1,4 +1,4 @@
-/* eslint-disable func-style, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 import type { BorderStyle, HorizontalAlignment } from "@visulima/tabular";
 import { Table as TabularTable } from "@visulima/tabular";
 import {
@@ -158,18 +158,23 @@ function TableComponent<T extends ScalarDict>({
         }
 
         // Resolve column configs
-        const resolvedColumns: ColumnConfig<T>[] = columnsProp
-            ? columnsProp.map((col) => (typeof col === "string" ? { key: col } : col))
-            : (Object.keys(data[0] as object) as (keyof T & string)[]).map((key) => {
-                  return { key };
-              });
+        let resolvedColumns: ColumnConfig<T>[];
+
+        if (columnsProp) {
+            // eslint-disable-next-line @stylistic/no-extra-parens -- required by no-confusing-arrow
+            resolvedColumns = columnsProp.map((col) => (typeof col === "string" ? { key: col } : col));
+        } else {
+            resolvedColumns = (Object.keys(data[0] as object) as (keyof T & string)[]).map((key) => {
+                return { key };
+            });
+        }
 
         if (resolvedColumns.length === 0) {
             return "";
         }
 
         // Resolve border style
-        const border = typeof borderStyle === "string" ? (BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER) : borderStyle;
+        const border = typeof borderStyle === "string" ? BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER : borderStyle;
 
         // Build column widths array (undefined entries let tabular auto-calculate)
         const columnWidths: (number | undefined)[] = resolvedColumns.map((col) => col.width);

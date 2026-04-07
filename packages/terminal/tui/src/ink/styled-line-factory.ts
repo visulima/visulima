@@ -2,16 +2,16 @@
  * Direct text → StyledLine pipeline.
  *
  * Converts ANSI-styled text to StyledLine without the intermediate StyledChar
- * representation, eliminating the @alcalzone/ansi-tokenize dependency.
+ * representation, eliminating the `@alcalzone/ansi-tokenize` dependency.
  *
  * The pipeline:
- *   1. tokenizeAnsi() — splits text into ANSI tokens and plain text
- *   2. SGR state machine — tracks active formatting from CSI SGR sequences
- *   3. Grapheme segmenter — handles combining chars, emoji, regional indicators
- *   4. StyledLine.pushChar() — appends each grapheme with its resolved style
+ * 1. tokenizeAnsi() — splits text into ANSI tokens and plain text
+ * 2. SGR state machine — tracks active formatting from CSI SGR sequences
+ * 3. Grapheme segmenter — handles combining chars, emoji, regional indicators
+ * 4. StyledLine.pushChar() — appends each grapheme with its resolved style
  */
 
-/* eslint-disable no-bitwise, no-plusplus, sonarjs/cognitive-complexity */
+/* eslint-disable no-bitwise */
 
 import { isFullwidthCodePoint } from "@visulima/string";
 
@@ -30,12 +30,14 @@ type SgrState = {
     link: string | undefined;
 };
 
-const createSgrState = (): SgrState => ({
-    bgColor: undefined,
-    fgColor: undefined,
-    formatFlags: 0,
-    link: undefined,
-});
+const createSgrState = (): SgrState => {
+    return {
+        bgColor: undefined,
+        fgColor: undefined,
+        formatFlags: 0,
+        link: undefined,
+    };
+};
 
 /**
  * Parse a CSI SGR parameter string (e.g. "1;31;48;5;12") and apply it
@@ -272,6 +274,7 @@ const isFullwidthGrapheme = (grapheme: string, codePoint: number): boolean => {
 // ── OSC Hyperlink Parsing ────────────────────────────────────────────
 
 // Matches both ESC-based (\x1B]8;...) and C1-based (\x9D8;...) OSC hyperlinks
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group -- ANSI escape sequences require control characters; capturing group aids debugging
 const oscHyperlinkRegex = /(?:\u001B\]|\u009D)8;([^;]*);(.*?)(?:\u001B\\|\u0007|\u009C)/;
 
 const parseOscHyperlink = (oscValue: string): string | undefined => {
@@ -385,7 +388,7 @@ const processTextToken = (text: string, line: StyledLine, state: SgrState): void
  * Convert an ANSI-styled text string directly to a StyledLine.
  *
  * This is the zero-dependency replacement for the chain:
- *   tokenize() → styledCharsFromTokens() → styledCharsToStyledLine()
+ * tokenize() → styledCharsFromTokens() → styledCharsToStyledLine().
  */
 export const textToStyledLine = (text: string): StyledLine => {
     if (text.length === 0) {
@@ -398,11 +401,6 @@ export const textToStyledLine = (text: string): StyledLine => {
 
     for (const token of tokens) {
         switch (token.type) {
-            case "text": {
-                processTextToken(token.value, line, sgrState);
-                break;
-            }
-
             case "csi": {
                 // Only SGR sequences (final char 'm') affect styling
                 if (token.finalCharacter === "m") {
@@ -424,6 +422,11 @@ export const textToStyledLine = (text: string): StyledLine => {
                     sgrState = { ...sgrState, link: undefined };
                 }
 
+                break;
+            }
+
+            case "text": {
+                processTextToken(token.value, line, sgrState);
                 break;
             }
 
@@ -454,8 +457,8 @@ export const plainTextToStyledLine = (text: string): StyledLine => {
 
     // Fast path: pure ASCII printable
     if (asciiPrintableRegex.test(text)) {
-        for (let i = 0; i < text.length; i++) {
-            line.pushChar(text[i]!, 0);
+        for (const element of text) {
+            line.pushChar(element, 0);
         }
 
         return line;

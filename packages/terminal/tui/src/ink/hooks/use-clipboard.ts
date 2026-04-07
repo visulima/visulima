@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, import/exports-last, no-restricted-syntax */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-restricted-syntax */
 
 /**
  * React hook for clipboard operations via OSC 52 terminal escape sequences.

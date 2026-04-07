@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Clickable terminal link component for Ink.
@@ -41,21 +41,7 @@ type Props = {
  * Covers the most common terminals. For exhaustive detection,
  * use the `supports-hyperlinks` package externally.
  */
-let _cachedSupportsHyperlinks: boolean | undefined;
-
-const supportsHyperlinks = (): boolean => {
-    // Skip cache when FORCE_HYPERLINK is set (allows runtime override)
-    if (process.env["FORCE_HYPERLINK"]) {
-        return process.env["FORCE_HYPERLINK"] !== "0";
-    }
-
-    if (_cachedSupportsHyperlinks !== undefined) {
-        return _cachedSupportsHyperlinks;
-    }
-
-    // eslint-disable-next-line no-return-assign
-    return (_cachedSupportsHyperlinks = detectHyperlinkSupport());
-};
+let cachedSupportsHyperlinks: boolean | undefined;
 
 const detectHyperlinkSupport = (): boolean => {
     // Not a TTY — no hyperlink support
@@ -100,6 +86,21 @@ const detectHyperlinkSupport = (): boolean => {
     }
 
     return false;
+};
+
+const supportsHyperlinks = (): boolean => {
+    // Skip cache when FORCE_HYPERLINK is set (allows runtime override)
+    if (process.env["FORCE_HYPERLINK"]) {
+        return process.env["FORCE_HYPERLINK"] !== "0";
+    }
+
+    if (cachedSupportsHyperlinks !== undefined) {
+        return cachedSupportsHyperlinks;
+    }
+
+    cachedSupportsHyperlinks = detectHyperlinkSupport();
+
+    return cachedSupportsHyperlinks;
 };
 
 /**

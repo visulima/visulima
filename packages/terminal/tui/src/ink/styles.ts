@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, import/exports-last, sonarjs/cognitive-complexity */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import type { AnsiColors } from "@visulima/colorize";
 import type { Boxes, BoxStyle } from "cli-boxes";
 import type { LiteralUnion } from "type-fest";
@@ -64,6 +64,18 @@ export type Styles = {
      * @default false
      */
     readonly borderBottomDimColor?: boolean;
+
+    /**
+     * Text to display embedded in the bottom border line.
+     * Rendered as: `└─ title ─────────┘`
+     */
+    readonly borderBottomTitle?: string;
+
+    /**
+     * Alignment of the bottom border title.
+     * @default "left"
+     */
+    readonly borderBottomTitleAlignment?: "center" | "left" | "right";
 
     /**
      * Change border color. A shorthand for setting `borderTopColor`, `borderRightColor`, `borderBottomColor`, and `borderLeftColor`.
@@ -148,6 +160,12 @@ export type Styles = {
     readonly borderTopDimColor?: boolean;
 
     /**
+     * Text to display on the right side of the top border line.
+     * Rendered as: `┌─ title ──── rightTitle ─┐`
+     */
+    readonly borderTopRightTitle?: string;
+
+    /**
      * Text to display embedded in the top border line.
      * Rendered as: `┌─ title ─────────┐`
      */
@@ -158,24 +176,6 @@ export type Styles = {
      * @default "left"
      */
     readonly borderTopTitleAlignment?: "center" | "left" | "right";
-
-    /**
-     * Text to display on the right side of the top border line.
-     * Rendered as: `┌─ title ──── rightTitle ─┐`
-     */
-    readonly borderTopRightTitle?: string;
-
-    /**
-     * Text to display embedded in the bottom border line.
-     * Rendered as: `└─ title ─────────┘`
-     */
-    readonly borderBottomTitle?: string;
-
-    /**
-     * Alignment of the bottom border title.
-     * @default "left"
-     */
-    readonly borderBottomTitleAlignment?: "center" | "left" | "right";
 
     /**
      * Bottom offset for positioned elements.

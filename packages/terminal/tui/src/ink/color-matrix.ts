@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, sonarjs/unused-named-groups, unicorn/no-null */
+/* eslint-disable sonarjs/unused-named-groups, unicorn/no-null */
 
 /**
  * Color matrix transforms for color blindness simulation and compensation.

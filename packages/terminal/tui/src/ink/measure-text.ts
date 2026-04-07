@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-use-before-define, e18e/prefer-static-regex, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/cognitive-complexity */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { getStringWidth } from "@visulima/string";
 
 import DataLimitedLruMap from "./data-limited-lru-map";

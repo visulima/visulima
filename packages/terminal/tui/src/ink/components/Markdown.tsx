@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, func-style, import/exports-last, jsdoc/match-description, jsx-a11y/anchor-is-valid, no-secrets/no-secrets, react-x/no-array-index-key, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/slow-regex, unicorn/filename-case */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, jsdoc/match-description, jsx-a11y/anchor-is-valid, no-secrets/no-secrets, react-x/no-array-index-key, react/function-component-definition, sonarjs/slow-regex */
 
 /**
  * Markdown rendering component for Ink.
@@ -80,7 +80,8 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
                 return (
                     <Text inverse key={index}>
                         {" "}
-                        {token.text}{" "}
+                        {token.text}
+                        {" "}
                     </Text>
                 );
             }
@@ -110,7 +111,10 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
 
                 return (
                     <Text dimColor key={index}>
-                        [image: {img.text || img.href}]
+                        [image:
+                        {" "}
+                        {img.text || img.href}
+                        ]
                     </Text>
                 );
             }

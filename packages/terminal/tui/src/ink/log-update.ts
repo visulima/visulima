@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, import/exports-last, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-identical-functions */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, sonarjs/no-identical-functions */
 import type { Writable } from "node:stream";
 
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
@@ -254,12 +254,12 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             }
 
             buffer.push(
-                cursorTo(0) +
-                    nextLines[i] +
-                    eraseLineEnd +
-                    // Don't append newline after the last line when the input
-                    // has no trailing newline (fullscreen mode).
-                    (isLastLine && !hasTrailingNewline ? "" : "\n"),
+                cursorTo(0)
+                + nextLines[i]
+                + eraseLineEnd
+                // Don't append newline after the last line when the input
+                // has no trailing newline (fullscreen mode).
+                + (isLastLine && !hasTrailingNewline ? "" : "\n"),
             );
         }
 

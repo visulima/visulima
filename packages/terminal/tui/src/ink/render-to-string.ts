@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment, import/exports-last, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
 import type { ReactNode } from "react";
 import { LegacyRoot } from "react-reconciler/constants";
 import Yoga from "yoga-layout";
@@ -64,20 +64,20 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
 
         // Walk the tree and calculate scroll state for scroll containers,
         // matching what ink.tsx does in the live rendering pipeline.
-        const walkScroll = (node: DOMElement): void => {
-            if (node.nodeName === "ink-box") {
-                const overflow = node.style.overflow ?? "visible";
-                const overflowX = node.style.overflowX ?? overflow;
-                const overflowY = node.style.overflowY ?? overflow;
+        const walkScroll = (element: DOMElement): void => {
+            if (element.nodeName === "ink-box") {
+                const overflow = element.style.overflow ?? "visible";
+                const overflowX = element.style.overflowX ?? overflow;
+                const overflowY = element.style.overflowY ?? overflow;
 
                 if (overflowX === "scroll" || overflowY === "scroll") {
-                    calculateScroll(node);
+                    calculateScroll(element);
                 }
             }
 
-            for (const child of node.childNodes) {
+            for (const child of element.childNodes) {
                 if (child.nodeName !== "#text") {
-                    walkScroll(child as DOMElement);
+                    walkScroll(child);
                 }
             }
         };

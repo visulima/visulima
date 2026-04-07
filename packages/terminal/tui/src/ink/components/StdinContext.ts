@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, unicorn/filename-case, unicorn/prefer-event-target */
+/* eslint-disable unicorn/filename-case */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 

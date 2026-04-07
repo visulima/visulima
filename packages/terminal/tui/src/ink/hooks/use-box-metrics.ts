@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, consistent-return, import/exports-last, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, consistent-return, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -95,11 +95,11 @@ const useBoxMetrics = (ref: RefObject<DOMElement>): UseBoxMetricsResult => {
         const layout = ref.current?.yogaNode?.getComputedLayout() ?? emptyMetrics;
 
         setMetrics((previousMetrics) => {
-            const hasChanged =
-                previousMetrics.width !== layout.width ||
-                previousMetrics.height !== layout.height ||
-                previousMetrics.left !== layout.left ||
-                previousMetrics.top !== layout.top;
+            const hasChanged
+                = previousMetrics.width !== layout.width
+                    || previousMetrics.height !== layout.height
+                    || previousMetrics.left !== layout.left
+                    || previousMetrics.top !== layout.top;
 
             return hasChanged ? layout : previousMetrics;
         });

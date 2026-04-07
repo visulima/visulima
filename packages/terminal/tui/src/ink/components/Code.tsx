@@ -1,4 +1,4 @@
-/* eslint-disable consistent-return, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable consistent-return, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition */
 
 /**
  * Syntax-highlighted code display component for Ink.
@@ -116,11 +116,14 @@ export default function Code({ code, highlightLines, language, showLineNumbers =
 
                 return (
                     <Box key={index}>
-                        {showLineNumbers ? (
-                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                {String(lineNumber).padStart(gutterWidth)}{" "}
-                            </Text>
-                        ) : undefined}
+                        {showLineNumbers
+                            ? (
+                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                    {String(lineNumber).padStart(gutterWidth)}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
                         <Text>{line}</Text>
                     </Box>
                 );

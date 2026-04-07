@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 import CFonts from "cfonts";
 import type { ReactElement } from "react";
 import { useMemo } from "react";

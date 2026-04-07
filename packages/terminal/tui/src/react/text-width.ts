@@ -1,4 +1,3 @@
-/* eslint-disable func-style, no-for-of-array/no-for-of-array, no-plusplus */
 import { getStringWidth as visulimaGetStringWidth } from "@visulima/string";
 
 // Terminal convention: ambiguous-width and text-emoji characters (e.g. ▪ ● ◆ ◀ ▶)
@@ -60,7 +59,8 @@ export function measureTextBlock(text: string, wrapWidth: number): { maxLineWidt
     for (const line of lines) {
         const lineWidth = getStringWidth(line);
 
-        if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+        if (lineWidth > maxLineWidth)
+            maxLineWidth = lineWidth;
 
         wrappedRows += wrapWidth > 0 ? countWrappedRowsForLine(line, wrapWidth) : 0;
     }

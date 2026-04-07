@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, jsdoc/informative-docs, no-for-of-array/no-for-of-array, sonarjs/cognitive-complexity, unicorn/prevent-abbreviations */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, jsdoc/informative-docs, unicorn/prevent-abbreviations */
 
 /**
  * Element measurement utilities.

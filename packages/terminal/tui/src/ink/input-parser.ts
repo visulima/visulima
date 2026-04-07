@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-plusplus, sonarjs/function-return-type */
+/* eslint-disable sonarjs/function-return-type */
 const escape = "\u001B";
 const pasteStart = "\u001B[200~";
 const pasteEnd = "\u001B[201~";
@@ -10,11 +10,11 @@ type ParsedInput = {
     readonly pending: string;
 };
 
-type ParsedSequence =
-    | {
-          readonly nextIndex: number;
-          readonly sequence: string;
-      }
+type ParsedSequence
+    = | {
+        readonly nextIndex: number;
+        readonly sequence: string;
+    }
     | "pending"
     | undefined;
 
@@ -111,11 +111,11 @@ const parseEscapedCodePoint = (
     };
 };
 
-type ParsedEscapeSequence =
-    | {
-          readonly nextIndex: number;
-          readonly sequence: string;
-      }
+type ParsedEscapeSequence
+    = | {
+        readonly nextIndex: number;
+        readonly sequence: string;
+    }
     | "pending";
 
 const parseEscapeSequence = (input: string, escapeIndex: number): ParsedEscapeSequence => {

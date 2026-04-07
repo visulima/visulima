@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, import/exports-last, no-param-reassign, no-plusplus, unicorn/no-null, unicorn/prefer-dom-node-remove */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, unicorn/no-null, unicorn/prefer-dom-node-remove */
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
 import measureText from "./measure-text";
 import type { OutputTransformer } from "./render-node-to-output";
-import type { StyledLine } from "./styled-line";
 import type ResizeObserver from "./resize-observer";
 import type { ScrollState } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
+import type { StyledLine } from "./styled-line";
 import type { Styles } from "./styles";
 import wrapText from "./wrap-text";
 
@@ -73,6 +73,13 @@ export type CursorMarker = {
 
 export type DOMElement = InkNode & {
     attributes: Record<string, DOMNodeAttribute>;
+
+    /**
+     * Cached render result (a Region). When set, the entire subtree is
+     * skipped during rendering and the cached region is composited directly.
+     * Set by setCachedRender(), cleared on unmount by cleanupNodeTree().
+     */
+    cachedRender?: import("./region").Region;
     childNodes: DOMNode[];
     internal_accessibility?: {
         role?:
@@ -106,6 +113,7 @@ export type DOMElement = InkNode & {
             selected?: boolean;
         };
     };
+
     internal_cursor?: CursorMarker;
 
     internal_hidden?: boolean;
@@ -183,13 +191,6 @@ export type DOMElement = InkNode & {
      * to lazily populate cachedRender on first render.
      */
     internalOnBeforeRender?: (node: DOMElement, options?: { trackSelection?: boolean }) => void;
-
-    /**
-     * Cached render result (a Region). When set, the entire subtree is
-     * skipped during rendering and the cached region is composited directly.
-     * Set by setCachedRender(), cleared on unmount by cleanupNodeTree().
-     */
-    cachedRender?: import("./region").Region;
 
     // Internal properties
     isStaticDirty?: boolean;
@@ -389,7 +390,7 @@ export const setTextNodeValue = (node: TextNode, text: string): void => {
     markNodeAsDirty(node);
 };
 
-export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): (() => void) => {
+export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): () => void => {
     if (rootNode.nodeName !== "ink-root") {
         return () => {};
     }

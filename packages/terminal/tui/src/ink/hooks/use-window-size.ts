@@ -1,4 +1,3 @@
-/* eslint-disable import/exports-last */
 import { useEffect, useState } from "react";
 
 import { getWindowSize } from "../utils";

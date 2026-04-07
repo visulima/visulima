@@ -4,7 +4,7 @@ export type { FlatNode } from "./tree-node-map";
 export { TreeNodeMap } from "./tree-node-map";
 export type { Props as TreeViewProps } from "./TreeView";
 export { TreeView } from "./TreeView";
-export type { AsyncChildrenFn, SelectionMode, TreeNode, TreeNodeRendererProps, TreeNodeState } from "./types";
+export type { AsyncChildrenFunction, SelectionMode, TreeNode, TreeNodeRendererProps, TreeNodeState } from "./types";
 export type { UseTreeViewProps } from "./use-tree-view";
 export { useTreeView } from "./use-tree-view";
 export type { TreeViewState, UseTreeViewStateProps } from "./use-tree-view-state";

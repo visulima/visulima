@@ -1,4 +1,4 @@
-/* eslint-disable func-style, import/no-extraneous-dependencies */
+/* eslint-disable import/no-extraneous-dependencies */
 import type { Writable } from "node:stream";
 
 import isInCi from "is-in-ci";

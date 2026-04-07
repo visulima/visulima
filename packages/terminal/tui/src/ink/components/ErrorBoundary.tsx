@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, react/destructuring-assignment, sonarjs/function-return-type, sonarjs/public-static-readonly, unicorn/filename-case */
+/* eslint-disable react/destructuring-assignment, sonarjs/function-return-type, sonarjs/public-static-readonly */
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 

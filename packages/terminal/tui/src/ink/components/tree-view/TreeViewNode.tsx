@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * TreeViewNode renders a single node in the tree with focus indicator,
@@ -36,6 +36,7 @@ type Props<T = Record<string, unknown>> = {
     readonly styles: Theme["styles"];
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentionally co-located helper
 export function buildNodeAriaLabel(label: string, nodeState: TreeNodeState, siblingPosition: number, siblingCount: number): string {
     const { depth, hasChildren, isExpanded, isLoading, isSelected } = nodeState;
     const parts: string[] = [label, `item ${siblingPosition} of ${siblingCount}`];
@@ -59,6 +60,7 @@ export function buildNodeAriaLabel(label: string, nodeState: TreeNodeState, sibl
     return parts.join(", ");
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentionally co-located helper
 export function buildNodeAriaState(nodeState: TreeNodeState, selectionMode: SelectionMode): { expanded?: boolean; selected?: boolean } | undefined {
     const state: { expanded?: boolean; selected?: boolean } = {};
 

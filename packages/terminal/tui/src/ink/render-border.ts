@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/no-extraneous-dependencies, import/no-named-as-default-member, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable import/no-extraneous-dependencies, import/no-named-as-default-member */
 import colorizeDefault from "@visulima/colorize";
 import cliBoxes from "cli-boxes";
 
@@ -20,15 +20,14 @@ const stylePiece = (segment: string, fg?: string, bg?: string, dim?: boolean): s
 
 /**
  * Embed title text into a border line.
- *
- * @param borderChar - The horizontal border character (e.g., "─")
- * @param contentWidth - Available width between corners
- * @param title - Text to embed (left/center aligned)
- * @param titleAlignment - "left" | "center" | "right"
- * @param rightTitle - Optional text on the right side
- * @param borderFg - Border foreground color
- * @param borderBg - Border background color
- * @param borderDim - Whether to dim the border
+ * @param borderChar The horizontal border character (e.g., "─")
+ * @param contentWidth Available width between corners
+ * @param title Text to embed (left/center aligned)
+ * @param titleAlignment "left" | "center" | "right"
+ * @param rightTitle Optional text on the right side
+ * @param borderFg Border foreground color
+ * @param borderBg Border background color
+ * @param borderDim Whether to dim the border
  * @returns The styled border string (without corner characters)
  */
 const buildBorderWithTitle = (
@@ -47,29 +46,29 @@ const buildBorderWithTitle = (
 
     const leftTitle = title ? ` ${title} ` : "";
     const right = rightTitle ? ` ${rightTitle} ` : "";
-    const leftLen = leftTitle.length;
-    const rightLen = right.length;
+    const leftLength = leftTitle.length;
+    const rightLength = right.length;
     const alignment = titleAlignment ?? "left";
 
     // If both titles together exceed width, truncate the right title first, then left
-    if (leftLen + rightLen >= contentWidth) {
-        if (leftLen >= contentWidth) {
+    if (leftLength + rightLength >= contentWidth) {
+        if (leftLength >= contentWidth) {
             // Left title alone exceeds width -- truncate it
-            return leftTitle.slice(0, contentWidth - 1) + "\u2026";
+            return `${leftTitle.slice(0, contentWidth - 1)}\u2026`;
         }
 
         // Left title fits, truncate or drop the right title
-        const remainingForRight = contentWidth - leftLen;
+        const remainingForRight = contentWidth - leftLength;
 
         if (remainingForRight > 3) {
             return leftTitle + right.slice(0, remainingForRight);
         }
 
         // Not enough space for right title, fill with border
-        return leftTitle + stylePiece(borderChar.repeat(contentWidth - leftLen), borderFg, borderBg, borderDim);
+        return leftTitle + stylePiece(borderChar.repeat(contentWidth - leftLength), borderFg, borderBg, borderDim);
     }
 
-    const middleWidth = contentWidth - leftLen - rightLen;
+    const middleWidth = contentWidth - leftLength - rightLength;
 
     if (alignment === "left" || rightTitle) {
         // Left-aligned title + fill + right title
@@ -77,7 +76,7 @@ const buildBorderWithTitle = (
     }
 
     if (alignment === "right") {
-        const fillWidth = contentWidth - leftLen;
+        const fillWidth = contentWidth - leftLength;
 
         return stylePiece(borderChar.repeat(fillWidth), borderFg, borderBg, borderDim) + leftTitle;
     }
@@ -87,9 +86,9 @@ const buildBorderWithTitle = (
     const rightFill = middleWidth - leftFill;
 
     return (
-        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim) +
-        leftTitle +
-        stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
+        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim)
+        + leftTitle
+        + stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
     );
 };
 

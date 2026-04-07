@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 
 /**
  * Confirm input component for Ink.
@@ -52,8 +52,10 @@ export type Props = {
  */
 export default function ConfirmInput({ defaultChoice = "confirm", isDisabled = false, onCancel, onConfirm, submitOnEnter = true }: Props): ReactElement {
     const onConfirmRef = useRef(onConfirm);
+
     onConfirmRef.current = onConfirm;
     const onCancelRef = useRef(onCancel);
+
     onCancelRef.current = onCancel;
 
     useInput(

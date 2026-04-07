@@ -1,5 +1,3 @@
-/* eslint-disable import/exports-last, no-param-reassign, no-plusplus */
-
 /**
  * CSS-level scroll calculation utilities for elements with `overflow: 'scroll'`.
  *

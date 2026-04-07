@@ -24,7 +24,7 @@ export type TreeNode<T = Record<string, unknown>> = {
 /**
  * For async/lazy loading: a function that resolves children on demand.
  */
-export type AsyncChildrenFn<T = Record<string, unknown>> = (node: TreeNode<T>) => Promise<TreeNode<T>[]>;
+export type AsyncChildrenFunction<T = Record<string, unknown>> = (node: TreeNode<T>) => Promise<TreeNode<T>[]>;
 
 /**
  * State passed to custom renderers and theme functions.
