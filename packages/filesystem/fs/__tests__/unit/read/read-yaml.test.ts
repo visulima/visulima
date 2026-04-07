@@ -12,18 +12,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const fixturePath = join(__dirname, "..", "..", "..", "__fixtures__", "read-yaml");
 
+type ReadYamlFunction = (path: URL | string) => Promise<Record<string, unknown>> | Record<string, unknown>;
+
 describe.each([
-    ["readYaml", readYaml],
-    ["readYamlSync", readYamlSync],
-])("%s", (name, function_) => {
+    ["readYaml", readYaml as ReadYamlFunction],
+    ["readYamlSync", readYamlSync as ReadYamlFunction],
+])("%s", (name: string, function_: ReadYamlFunction) => {
     it("should read .yaml file", async () => {
         expect.assertions(1);
 
         const path = join(fixturePath, "file.yaml");
 
-        const content: string = name === "readYaml" ? await function_(path) : function_(path);
+        const content: Promise<Record<string, unknown>> | Record<string, unknown> = function_(path);
 
-        expect(content).toStrictEqual({
+        expect(name === "readYaml" ? await content : content).toStrictEqual({
             YAML: ["A human-readable data serialization language", "https://en.wikipedia.org/wiki/YAML"],
             yaml: ["A complete JavaScript implementation", "https://www.npmjs.com/package/yaml"],
         });
@@ -34,9 +36,9 @@ describe.each([
 
         const path = join(fixturePath, "file.yml");
 
-        const content: string = name === "readYaml" ? await function_(path) : function_(path);
+        const content: Promise<Record<string, unknown>> | Record<string, unknown> = function_(path);
 
-        expect(content).toStrictEqual({
+        expect(name === "readYaml" ? await content : content).toStrictEqual({
             YAML: ["A human-readable data serialization language", "https://en.wikipedia.org/wiki/YAML"],
             yaml: ["A complete JavaScript implementation", "https://www.npmjs.com/package/yaml"],
         });

@@ -10,18 +10,20 @@ const INVALID_JSON_STRING = `{
   \t"foo": true,
   }`;
 
-const errorMessageRegex = (() => {
-    if (NODE_JS_VERSION < 20) {
-        // eslint-disable-next-line regexp/strict
-        return /Unexpected token "}"\(\\u{7d}\) in JSON at position 20/;
-    }
+// eslint-disable-next-line regexp/strict
+const ERROR_MESSAGE_RE_V18 = /Unexpected token "}"\(\\u{7d}\) in JSON at position 20/;
+const ERROR_MESSAGE_RE_V20 = /Expected double-quoted property name in JSON at position 20/;
+const ERROR_MESSAGE_RE_V21_PLUS = /Expected double-quoted property name in JSON at position 20 \(line 3 column 3\)/;
 
-    if (NODE_JS_VERSION < 21) {
-        return /Expected double-quoted property name in JSON at position 20/;
-    }
+let errorMessageRegex: RegExp;
 
-    return /Expected double-quoted property name in JSON at position 20 \(line 3 column 3\)/;
-})();
+if (NODE_JS_VERSION < 20) {
+    errorMessageRegex = ERROR_MESSAGE_RE_V18;
+} else if (NODE_JS_VERSION < 21) {
+    errorMessageRegex = ERROR_MESSAGE_RE_V20;
+} else {
+    errorMessageRegex = ERROR_MESSAGE_RE_V21_PLUS;
+}
 
 const errorMessageRegexWithFileName = new RegExp(String.raw`${errorMessageRegex.source}.*in foo\.json`);
 
@@ -104,9 +106,9 @@ describe("parse-json", () => {
 
         try {
             parseJson(INVALID_JSON_STRING, "foo.json");
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toBe(`  1 | {
+            expect((error as JSONError).codeFrame).toBe(`  1 | {
   2 |   \t"foo": true,
 ${CODE_FRAME_POINTER} 3 |   }
     |   ^`);
@@ -118,7 +120,8 @@ ${CODE_FRAME_POINTER} 3 |   }
 
         try {
             parseJson("{");
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const jsonError = error as JSONError;
             let expectedCodeFrame: string | undefined = `${CODE_FRAME_POINTER} 1 | {
     |  ^`;
 
@@ -130,7 +133,7 @@ ${CODE_FRAME_POINTER} 3 |   }
             }
 
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toStrictEqual(expectedCodeFrame);
+            expect(jsonError.codeFrame).toStrictEqual(expectedCodeFrame);
         }
     });
 
@@ -139,11 +142,13 @@ ${CODE_FRAME_POINTER} 3 |   }
 
         try {
             parseJson("a");
-        } catch (error: any) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error).toBeInstanceOf(JSONError);
+        } catch (error: unknown) {
+            const jsonError = error as JSONError;
 
-            const firstLine = error.message.split("\n")[0];
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(jsonError).toBeInstanceOf(JSONError);
+
+            const firstLine = jsonError.message.split("\n")[0];
 
             if (NODE_JS_VERSION === 18) {
                 // eslint-disable-next-line vitest/no-conditional-expect
@@ -161,34 +166,40 @@ ${CODE_FRAME_POINTER} 3 |   }
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "foo.json");
-            } catch (error: any) {
-                // eslint-disable-next-line vitest/no-conditional-expect
-                expect(error.fileName).toBe("foo.json");
+            } catch (error: unknown) {
+                const jsonError = error as JSONError;
 
-                throw error;
+                // eslint-disable-next-line vitest/no-conditional-expect
+                expect(jsonError.fileName).toBe("foo.json");
+
+                throw jsonError;
             }
         }).toThrow(errorMessageRegexWithFileName);
 
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING);
-            } catch (error: any) {
-                error.fileName = "foo.json";
+            } catch (error: unknown) {
+                const jsonError = error as JSONError;
 
-                throw error;
+                jsonError.fileName = "foo.json";
+
+                throw jsonError;
             }
         }).toThrow(errorMessageRegexWithFileName);
 
         expect(() => {
             try {
                 parseJson(INVALID_JSON_STRING, "bar.json");
-            } catch (error: any) {
+            } catch (error: unknown) {
+                const jsonError = error as JSONError;
+
                 // eslint-disable-next-line vitest/no-conditional-expect
-                expect(error.fileName).toBe("bar.json");
+                expect(jsonError.fileName).toBe("bar.json");
 
-                error.fileName = "foo.json";
+                jsonError.fileName = "foo.json";
 
-                throw error;
+                throw jsonError;
             }
         }).toThrow(errorMessageRegexWithFileName);
     });
@@ -202,9 +213,9 @@ ${CODE_FRAME_POINTER} 3 |   }
                     gutter: (value) => `+++${value}`,
                 },
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.codeFrame).toBe(` +++ 1 | {
+            expect((error as JSONError).codeFrame).toBe(` +++ 1 | {
  +++ 2 |   \t"foo": true,
 ${CODE_FRAME_POINTER}+++ 3 |   }
  +++   |   ^`);

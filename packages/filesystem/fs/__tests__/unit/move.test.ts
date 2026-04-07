@@ -67,9 +67,9 @@ describe.each([
 
         try {
             await function_(join(distribution, "x"), join(distribution, "y"), { overwrite: false });
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.message).toContain("ENOENT: no such file or directory, rename");
+            expect((error as Error).message).toContain("ENOENT: no such file or directory, rename");
         }
     });
 
@@ -146,9 +146,9 @@ describe.each([
 
         try {
             await function_(file, renamedFile);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(error.message).toBe(`Source directory "${directory}" does not match destination directory "${resolve(directory, "dir2")}"`);
+            expect((error as Error).message).toBe(`Source directory "${directory}" does not match destination directory "${resolve(directory, "dir2")}"`);
         }
     });
 });

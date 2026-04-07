@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { sanitize } from "../../src/sanitize";
 
-const repeat = (string: string, times: number): string => new Array(times + 1).join(string);
+const repeat = (string: string, times: number): string => Array.from({ length: times + 1 }).join(string);
 
 describe(sanitize, () => {
     describe("valid names", () => {

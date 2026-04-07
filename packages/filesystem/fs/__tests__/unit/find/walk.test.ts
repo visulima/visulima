@@ -1,3 +1,4 @@
+import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
@@ -6,6 +7,10 @@ import { describe, expect, it } from "vitest";
 
 import { walk, walkSync } from "../../../src";
 import type { WalkEntry, WalkOptions } from "../../../src/types";
+
+const MATCH_X_RE = /x$/;
+const MATCH_Y_RE = /y$/;
+const MATCH_Z_RE = /z$/;
 
 const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk");
 
@@ -116,7 +121,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x", "y"], {
-            match: [/x$/, /y$/],
+            match: [MATCH_X_RE, MATCH_Y_RE],
         });
     });
 
@@ -132,7 +137,7 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", [".", "z"], {
-            skip: [/x$/, /y$/],
+            skip: [MATCH_X_RE, MATCH_Y_RE],
         });
     });
 
@@ -201,8 +206,8 @@ describe(walk, () => {
         expect.assertions(2);
 
         await assertWalkPaths("match", ["x"], {
-            match: [/x$/],
-            skip: [/y$/, /z$/],
+            match: [MATCH_X_RE],
+            skip: [MATCH_Y_RE, MATCH_Z_RE],
         });
     });
 
@@ -299,7 +304,6 @@ describe(walk, () => {
         expect.hasAssertions();
 
         const temporaryDirectory = resolve(fixture, "_tmp_symlink_sync_test");
-        const { mkdirSync, rmSync, symlinkSync, writeFileSync } = require("node:fs");
 
         mkdirSync(resolve(temporaryDirectory, "subdir"), { recursive: true });
         writeFileSync(resolve(temporaryDirectory, "real-file.txt"), "hello");
