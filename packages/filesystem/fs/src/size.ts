@@ -83,7 +83,7 @@ const getCompressedStreamSizeEfficient = async (stream: Readable, createCompress
         compressor.on("data", (chunk) => {
             totalSize += chunk.length;
         });
-        compressor.on("end", () => resolve(totalSize));
+        compressor.on("end", () => { resolve(totalSize); });
         compressor.on("error", reject);
 
         stream.on("error", reject);

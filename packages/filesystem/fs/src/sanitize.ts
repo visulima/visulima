@@ -5,7 +5,7 @@ const FALLBACK_NAME = "unnamed";
 const MAX_LENGTH = 128;
 
 const REPLACEMENT_CHARACTERS: Record<string, string> = {
-    '"': "ˮ", // 0x02EE - MODIFIER LETTER DOUBLE APOSTROPHE
+    "\"": "ˮ", // 0x02EE - MODIFIER LETTER DOUBLE APOSTROPHE
     "*": "⁎", // 0x204E - LOW ASTERISK
     "/": "⁄", // 0x2044 - FRACTION SLASH
     ":": "꞉", // 0xA789 - MODIFIER LETTER COLON
@@ -18,7 +18,7 @@ const REPLACEMENT_CHARACTERS: Record<string, string> = {
 
 // Pre-compiled regexes for better performance
 // Control characters: C0 controls (0x00-0x1F) and C1 controls (0x80-0x9F)
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS_REGEX = /[\u0000-\u001F\u0080-\u009F]/g;
 const RELATIVE_PATHS_REGEX = /^(?:\.+[/\\]+)+|^\.+$/g;
 const WINDOWS_SPECIAL_NAMES_REGEX = /^(?:con|prn|aux|nul|com\d|lpt\d)$/i;
@@ -104,7 +104,7 @@ const cleanWindowsName = (name: string): string => {
         let cleanedBaseName = baseName;
 
         while (cleanedBaseName.length > 0) {
-            const char = cleanedBaseName[cleanedBaseName.length - 1];
+            const char = cleanedBaseName.at(-1);
 
             if (char === undefined || !TRIM_CHARS.has(char)) {
                 break;
@@ -124,7 +124,7 @@ const cleanWindowsName = (name: string): string => {
     let cleaned = name;
 
     while (cleaned.length > 0) {
-        const char = cleaned[cleaned.length - 1];
+        const char = cleaned.at(-1);
 
         if (char === undefined || !TRIM_CHARS.has(char)) {
             break;
@@ -160,7 +160,7 @@ const isWindowsReservedName = (name: string): boolean => {
     let trimmed = name;
 
     while (trimmed.length > 0) {
-        const char = trimmed[trimmed.length - 1];
+        const char = trimmed.at(-1);
 
         if (char === undefined || !TRIM_CHARS.has(char)) {
             break;
@@ -306,8 +306,8 @@ export const sanitize = (name: string, options?: Partial<SanitizeOptions>): stri
     }
 
     // Replace forbidden characters based on filesystem type
-    sanitized =
-        fileSystemType === "win32" || fileSystemType === "fat32"
+    sanitized
+        = fileSystemType === "win32" || fileSystemType === "fat32"
             ? sanitized.replaceAll(WINDOWS_FORBIDDEN_CHARS_REGEX, (char) => REPLACEMENT_CHARACTERS[char] ?? "")
             : sanitized.replaceAll(UNIX_FORBIDDEN_CHARS_REGEX, REPLACEMENT_CHARACTERS["/"] ?? "");
 

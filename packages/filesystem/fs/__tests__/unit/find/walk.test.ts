@@ -23,7 +23,7 @@ const assertWalkPaths = async (rootPath: string, expectedPaths: string[], option
     const root = resolve(fixture, rootPath);
     const entries = await getEntries(root, options);
 
-    const result = expectedPaths.map((path) => resolve(root, path) as string);
+    const result = expectedPaths.map((path) => resolve(root, path));
 
     expect(entries.map(({ path }) => path)).toStrictEqual(expect.arrayContaining(result));
     expect(entries).toHaveLength(result.length);
@@ -165,7 +165,7 @@ describe(walk, () => {
 
         const root = resolve(fixture, "non_existent");
 
-        await expect(async () => await getEntries(root)).rejects.toThrow("ENOENT");
+        await expect(getEntries(root)).rejects.toThrow("ENOENT");
     });
 
     it("should handle maxDepth of 0", async () => {
@@ -293,7 +293,7 @@ describe(walk, () => {
 
     it("walkSync should not crash on symlinks pointing to files", () => {
         const temporaryDirectory = resolve(fixture, "_tmp_symlink_sync_test");
-        const { mkdirSync, writeFileSync, symlinkSync, rmSync } = require("node:fs");
+        const { mkdirSync, rmSync, symlinkSync, writeFileSync } = require("node:fs");
 
         mkdirSync(resolve(temporaryDirectory, "subdir"), { recursive: true });
         writeFileSync(resolve(temporaryDirectory, "real-file.txt"), "hello");

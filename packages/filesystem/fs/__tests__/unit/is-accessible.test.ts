@@ -78,7 +78,7 @@ describe.each([
     it("should handle path as URL or string", async () => {
         expect.assertions(1);
 
-        const path = new URL(`file:///${file as string}`);
+        const path = new URL(`file:///${file}`);
 
         let result = function_(path, F_OK);
 

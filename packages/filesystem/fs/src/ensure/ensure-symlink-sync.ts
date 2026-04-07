@@ -80,14 +80,14 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
         const linkStatInfo = lstatSync(linkName);
 
         if (!linkStatInfo.isSymbolicLink()) {
-            throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName as string}`);
+            throw new AlreadyExistsError(`A ${getFileInfoType(linkStatInfo)} already exists at the path: ${linkName}`);
         }
 
         const linkPath = readlinkSync(linkName);
         const linkRealPath = toNamespacedPath(resolve(linkPath));
 
         if (linkRealPath !== targetRealPath) {
-            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName as string} -> ${linkRealPath}` as string);
+            throw new AlreadyExistsError(`A symlink targeting to an undesired path already exists: ${linkName} -> ${linkRealPath}`);
         }
     }
 };
