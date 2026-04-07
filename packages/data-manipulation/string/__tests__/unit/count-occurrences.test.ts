@@ -17,7 +17,7 @@ describe("countOccurrences function", () => {
         expect(() => {
             // @ts-expect-error: incorrect value.
             countOccurrences("test", 0);
-        }).toThrowError(/Expected character/);
+        }).toThrow(/Expected character/);
     });
 
     it("should return 0 for empty source string", () => {
@@ -31,7 +31,7 @@ describe("countOccurrences function", () => {
 
         expect(() => {
             countOccurrences("test", "");
-        }).toThrowError(/Expected non-empty substring/);
+        }).toThrow(/Expected non-empty substring/);
     });
 
     it("should count single character occurrences", () => {

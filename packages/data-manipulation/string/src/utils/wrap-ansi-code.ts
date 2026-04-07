@@ -6,9 +6,9 @@ import { ANSI_CSI, ANSI_SGR_TERMINATOR, ESCAPES } from "../constants";
  * @returns The wrapped ANSI code
  */
 const wrapAnsiCode = (code: number | string): string => {
-    const escapeChar = ESCAPES.values().next().value;
+    const escapeChar = ESCAPES.values().next().value as string;
 
-    return `${escapeChar}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
+    return `${escapeChar}${ANSI_CSI}${String(code)}${ANSI_SGR_TERMINATOR}`;
 };
 
 export default wrapAnsiCode;

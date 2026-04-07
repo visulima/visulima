@@ -47,15 +47,15 @@ const mergeIntervals = (intervals: IntervalArray): IntervalArray => {
     for (let index = 1; index < intervals.length; index++) {
         const next = intervals[index];
 
-        if (next && next[0] <= (currentMerge[1] as number) + 1) {
-            currentMerge[1] = Math.max(currentMerge[1] as number, next[1] as number);
+        if (next && next[0] <= currentMerge[1] + 1) {
+            currentMerge[1] = Math.max(currentMerge[1], next[1]);
         } else {
-            merged.push(currentMerge as Interval);
+            merged.push(currentMerge);
             currentMerge = [...(next as Interval)];
         }
     }
 
-    merged.push(currentMerge as Interval);
+    merged.push(currentMerge);
 
     return merged;
 };
@@ -98,7 +98,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                 // eslint-disable-next-line no-cond-assign
                 while ((match = searchPattern.exec(source)) !== null) {
                     const start = match.index;
-                    const original = match[0] as string;
+                    const original = match[0];
 
                     if (original.length === 0 && searchPattern.lastIndex === match.index) {
                         searchPattern.lastIndex += 1; // Avoid infinite loop on zero-length matches
@@ -106,7 +106,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
                     const end = start + original.length - 1;
 
-                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_REGEX, (substringFound, capturedSymbolOrDigits) => {
+                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_REGEX, (substringFound: string, capturedSymbolOrDigits: string) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original;
                         }
@@ -149,7 +149,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     // Mock a match object for the replacement logic ($& and $$ are supported)
                     const mockMatch: RegExpExecArray = Object.assign([original], { index: start, input: source }) as RegExpExecArray;
 
-                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_STRING, (substringFound, capturedSymbolOrDigits) => {
+                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_STRING, (substringFound: string, capturedSymbolOrDigits: string) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original; // original is match[0]
                         }
@@ -208,6 +208,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     });
 
     // Mark ignored characters
+
     for (const range of mergedIgnores) {
         // eslint-disable-next-line no-plusplus
         for (let index = range[0]; index <= range[1]; index++) {
@@ -226,6 +227,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     let insertionAfterEnd = ""; // Store zero-length replacements targeted *after* the last char
 
     // First, handle all zero-length matches - they insert without consuming/overlapping
+
     for (const match of potentialMatches) {
         if (match.original.length === 0 && match.start >= 0 && match.start <= processedChars.length) {
             // Allow insertion at or after last char
@@ -247,6 +249,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     }
 
     // Now, handle non-zero-length matches, considering precedence and overlaps
+
     for (const match of potentialMatches) {
         if (match.original.length === 0) {
             continue;
@@ -258,9 +261,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         // eslint-disable-next-line no-plusplus
         for (let index = match.start; index <= match.end; index++) {
             if (
-                !processedChars[index] || // Out of bounds
-                (processedChars[index] as ProcessedChar).isIgnored || // Overlaps ignore
-                (processedChars[index] as ProcessedChar).appliedMatchId !== undefined // Overlaps higher-priority match
+                !processedChars[index] // Out of bounds
+                || (processedChars[index] as ProcessedChar).isIgnored // Overlaps ignore
+                || (processedChars[index] as ProcessedChar).appliedMatchId !== undefined // Overlaps higher-priority match
             ) {
                 canApply = false;
                 break;
@@ -268,9 +271,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         }
 
         if (
-            canApply && // Apply this valid match
-            match.start >= 0 &&
-            match.start < processedChars.length
+            canApply // Apply this valid match
+            && match.start >= 0
+            && match.start < processedChars.length
         ) {
             // Mark characters covered by this match
             // eslint-disable-next-line no-plusplus

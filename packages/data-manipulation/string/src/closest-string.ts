@@ -46,7 +46,6 @@ export const closestString = (givenWord: string, possibleWords: ReadonlyArray<st
     const { caseSensitive, compareFn: compareFunction = levenshteinDistance } = { ...options };
 
     if (!caseSensitive) {
-        // eslint-disable-next-line no-param-reassign
         givenWord = givenWord.toLowerCase();
     }
 

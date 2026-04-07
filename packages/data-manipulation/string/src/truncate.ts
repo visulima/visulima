@@ -142,23 +142,20 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
         return "";
     }
 
-    // eslint-disable-next-line no-param-reassign
     input = input.normalize("NFC");
 
     // Destructure options with defaults
     const { ellipsis = DEFAULT_ELLIPSIS, position = "end", preferTruncationOnSpace = false } = options;
 
     // Calculate or use provided ellipsis width
-    let ellipsisWidth: number | undefined = (options.ellipsisWidth ?? ellipsis === DEFAULT_ELLIPSIS) ? 1 : undefined;
+    let ellipsisWidth: number | undefined = options.ellipsisWidth ?? ellipsis === DEFAULT_ELLIPSIS ? 1 : undefined;
 
-    if (ellipsisWidth === undefined) {
-        ellipsisWidth = getStringTruncatedWidth(ellipsis, {
-            ...options.width,
-            ellipsis: "",
-            ellipsisWidth: 0,
-            limit: Number.POSITIVE_INFINITY,
-        }).width;
-    }
+    ellipsisWidth ??= getStringTruncatedWidth(ellipsis, {
+        ...options.width,
+        ellipsis: "",
+        ellipsisWidth: 0,
+        limit: Number.POSITIVE_INFINITY,
+    }).width;
 
     // Get the total width of the input string
     const { width } = getStringTruncatedWidth(input, {
@@ -211,18 +208,18 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
                 const secondBreakWidthActual = indexToWidth(input, secondBreak, options.width);
 
                 return (
-                    slice(input, 0, firstBreakWidth, { width: options.width }) +
-                    ellipsis +
-                    slice(input, secondBreakWidthActual, width, { width: options.width }).trim()
+                    slice(input, 0, firstBreakWidth, { width: options.width })
+                    + ellipsis
+                    + slice(input, secondBreakWidthActual, width, { width: options.width }).trim()
                 );
             }
 
             return (
                 slice(input, 0, leftWidth, {
                     width: options.width,
-                }) +
-                ellipsis +
-                slice(input, width - rightWidth, width, {
+                })
+                + ellipsis
+                + slice(input, width - rightWidth, width, {
                     width: options.width,
                 })
             );
@@ -239,8 +236,8 @@ export const truncate = (input: string, limit: number, options: TruncateOptions 
             }
 
             return (
-                ellipsis +
-                slice(input, width - limit + ellipsisWidth, width, {
+                ellipsis
+                + slice(input, width - limit + ellipsisWidth, width, {
                     width: options.width,
                 })
             );

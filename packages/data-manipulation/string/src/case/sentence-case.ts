@@ -57,9 +57,8 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
                 return word;
             }
 
-            // eslint-disable-next-line no-param-reassign
             word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
-            // eslint-disable-next-line no-param-reassign
+
             word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
 
             if (firstWord) {

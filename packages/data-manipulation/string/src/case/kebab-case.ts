@@ -93,7 +93,7 @@ export const kebabCase = <T extends string = string>(value?: T, options?: KebabC
     });
 
     // Join the processed words with proper handling of ANSI and emoji sequences
-    const result = joinSegments<KebabCase<T>>(processed, options?.joiner ?? "-");
+    const result = joinSegments(processed, options?.joiner ?? "-");
 
     // Cache the result for future use if caching is enabled
     if (shouldCache && cacheKey) {

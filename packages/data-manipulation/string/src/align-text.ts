@@ -74,18 +74,14 @@ export const alignText = (text: string[] | string, options: AlignTextOptions = {
     if (!Array.isArray(text)) {
         returnString = true;
 
-        // eslint-disable-next-line no-param-reassign
-        text = String(text).split(split);
+        text = text.split(split);
     }
 
     let width: number;
     let maxWidth = 0;
 
-    // eslint-disable-next-line no-param-reassign
     text = text
         .map((input) => {
-            // eslint-disable-next-line no-param-reassign
-            input = String(input);
             width = getStringWidth(input, options.stringWidthOptions);
             maxWidth = Math.max(width, maxWidth);
 

@@ -67,13 +67,13 @@ export const flipCase = <T extends string = string>(value?: T, options?: FlipOpt
             index += 1;
 
             while (index < processedValue.length && processedValue[index] !== "m") {
-                ansiSequence += processedValue[index];
+                ansiSequence += processedValue[index] as string;
 
                 index += 1;
             }
 
             if (index < processedValue.length) {
-                ansiSequence += processedValue[index];
+                ansiSequence += processedValue[index] as string;
                 result += ansiSequence;
             }
 

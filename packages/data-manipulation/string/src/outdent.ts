@@ -17,7 +17,7 @@ const extend = <T, S extends object>(target: T, source: S): S & T => {
     type Extended = S & T;
 
     for (const property of Object.keys(source)) {
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (target as any)[property] = source[property as keyof S];
     }
 
@@ -58,7 +58,6 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     const reMatchIndent = new RegExp(reSource, "g");
 
     if (firstInterpolatedValueSetsIndentationLevel) {
-        // eslint-disable-next-line no-param-reassign
         strings = strings.slice(1);
     }
 
@@ -89,7 +88,7 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
 
         // Normalize newlines
         if (normalizeNewlines) {
-            v = v.replaceAll(RE_MATCH_NEWLINES, newline as string);
+            v = v.replaceAll(RE_MATCH_NEWLINES, newline);
         }
 
         outdentedStrings[index] = v;
@@ -141,7 +140,7 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
-    const cache = enableCache ? (options.cacheStore ?? templateCache) : undefined;
+    const cache = enableCache ? options.cacheStore ?? templateCache : undefined;
     const hasNewlineOption = options.newline !== undefined;
 
     // Define the actual outdent function returned by the factory
@@ -183,10 +182,10 @@ const createInstance = (options: Options): Outdent => {
             // Special case: indentation level set by the first interpolated value (if it's also outdent)
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const firstValueIsOutdent = values[0] === outdent || values[0] === defaultOutdent;
-            const firstInterpolatedValueSetsIndentationLevel =
-                firstValueIsOutdent &&
-                RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) &&
-                RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
+            const firstInterpolatedValueSetsIndentationLevel
+                = firstValueIsOutdent
+                    && RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string)
+                    && RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
 
             let renderedArray: string[] | undefined;
 
