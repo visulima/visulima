@@ -44,7 +44,7 @@ const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor
             return value.map(String);
         }
 
-        return value.map((item: unknown) => (type as TypeConstructor)(String(item)));
+        return value.map((item: unknown) => type(String(item)));
     }
 
     if (value === null) {
@@ -64,7 +64,7 @@ const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor
         return String(value);
     }
 
-    return (type as TypeConstructor)(String(value));
+    return type(String(value));
 };
 
 export default convertValue;

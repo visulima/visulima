@@ -188,8 +188,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             }
 
             const optionName = definition ? definition.name : token.name;
-            const isMultiple = definition && definition.multiple;
-            const isLazyMultiple = definition && definition.lazyMultiple;
+            const isMultiple = definition?.multiple;
+            const isLazyMultiple = definition?.lazyMultiple;
 
             if (values[optionName] !== undefined && !isMultiple && !isLazyMultiple && !options.partial) {
                 throw new AlreadySetError(optionName);
@@ -214,12 +214,12 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             if (token.value === undefined) {
                 const nextToken = tokens[i + 1] as ArgumentToken | undefined;
                 // Check if next token is a value-only option token (from short option groups like -ab=value)
-                const isValueOnlyOptionToken = nextToken && nextToken.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
-                const shouldConsumeValue =
-                    nextToken &&
-                    definition &&
-                    !(definition.type && isBooleanType(definition.type)) &&
-                    (nextToken.kind === "positional" || isValueOnlyOptionToken);
+                const isValueOnlyOptionToken = nextToken?.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
+                const shouldConsumeValue
+                    = nextToken
+                        && definition
+                        && !(definition.type && isBooleanType(definition.type))
+                        && (nextToken.kind === "positional" || isValueOnlyOptionToken);
                 const isDefaultOptionNonMultiple = definition && definition.defaultOption && !definition.multiple && !definition.lazyMultiple;
 
                 if (shouldConsumeValue && (!definition?.defaultOption || isDefaultOptionNonMultiple)) {
@@ -229,11 +229,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                         const collectedValues: any[] = [];
 
                         while (
-                            currentIndex < tokens.length &&
-                            ((tokens[currentIndex] as ArgumentToken).kind === "positional" ||
-                                ((tokens[currentIndex] as ArgumentToken).kind === "option" &&
-                                    !("name" in (tokens[currentIndex] as ArgumentToken)) &&
-                                    (tokens[currentIndex] as ArgumentToken).value !== undefined))
+                            currentIndex < tokens.length
+                            && ((tokens[currentIndex] as ArgumentToken).kind === "positional"
+                                || ((tokens[currentIndex] as ArgumentToken).kind === "option"
+                                    && !("name" in (tokens[currentIndex] as ArgumentToken))
+                                    && (tokens[currentIndex] as ArgumentToken).value !== undefined))
                         ) {
                             collectedValues.push((tokens[currentIndex] as ArgumentToken).value);
                             consumedPositionalIndices.add((tokens[currentIndex] as ArgumentToken).index);
@@ -248,15 +248,15 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     } else if (isLazyMultiple) {
                         createOrAppendArray(values, optionName, nextToken.value, true);
                         consumedPositionalIndices.add(nextToken.index);
-                        // eslint-disable-next-line sonarjs/updated-loop-counter, no-plusplus
+                        // eslint-disable-next-line no-plusplus
                         i++;
                     } else {
                         values[optionName] = nextToken.value;
                         consumedPositionalIndices.add(nextToken.index);
-                        // eslint-disable-next-line sonarjs/updated-loop-counter, no-plusplus
+                        // eslint-disable-next-line no-plusplus
                         i++;
                     }
-                } else if (definition && definition.type && isBooleanType(definition.type)) {
+                } else if (definition?.type && isBooleanType(definition.type)) {
                     createOrAppendArray(values, optionName, true, isMultiple);
                 } else {
                     // eslint-disable-next-line unicorn/no-null
@@ -266,7 +266,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 // Option with inline value
                 let { value } = token as Omit<ArgumentToken, "value"> & { value: string | boolean };
 
-                if (definition && definition.type && isBooleanType(definition.type)) {
+                if (definition?.type && isBooleanType(definition.type)) {
                     switch (value) {
                         case "": {
                             if (options.partial) {
@@ -346,11 +346,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
         for (const token of tokens) {
             if (
-                token.kind === "option" &&
-                !definitionMap.has(token.name || "") &&
-                !aliasMap.has(token.name || "") &&
-                (!options.caseInsensitive ||
-                    (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
+                token.kind === "option"
+                && !definitionMap.has(token.name || "")
+                && !aliasMap.has(token.name || "")
+                && (!options.caseInsensitive
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
             ) {
                 stopAtUnknownArgvIndex = token.index;
                 break;
@@ -439,11 +439,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
         const firstUnknownOptionTokenIndex = tokens.findIndex(
             (token) =>
-                token.kind === "option" &&
-                !definitionMap.has(token.name || "") &&
-                !aliasMap.has(token.name || "") &&
-                (!options.caseInsensitive ||
-                    (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
+                token.kind === "option"
+                && !definitionMap.has(token.name || "")
+                && !aliasMap.has(token.name || "")
+                && (!options.caseInsensitive
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
         );
 
         const firstUnconsumedPositionalTokenIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
@@ -474,7 +474,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         const definition = definitionMap.get(key);
 
         // eslint-disable-next-line unicorn/no-null, sonarjs/no-nested-conditional
-        output[finalKey] = definition && definition.type ? convertValue(value, definition.type) : value === undefined ? null : value;
+        output[finalKey] = definition?.type ? convertValue(value, definition.type) : value === undefined ? null : value;
     }
 
     // Handle default values
@@ -529,7 +529,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
                 const definition = definitionMap.get(originalKey);
 
-                if (definition && definition.group) {
+                if (definition?.group) {
                     const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
                     for (const group of groupArray) {
