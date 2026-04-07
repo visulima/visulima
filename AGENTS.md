@@ -101,3 +101,5 @@ Husky + lint-staged runs on commit:
 
 ### Release
 Independent per-package versioning via `multi-semantic-release`. Each package has `.releaserc.json` extending the shared preset. The preset chain: commit-analyzer → release-notes-generator → changelog → clean-package-json → pnpm-publish → git → github.
+
+Research the codebase before editing. Never change code you haven't read.
