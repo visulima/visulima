@@ -15,7 +15,6 @@ const decompressionMethods: Record<string, DecompressionMethod> = {
     brotli: brotliDecompress,
     gzip: unzip,
     none: (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => {
-        // eslint-disable-next-line unicorn/no-null
         callback(null, buffer);
     },
 } as const;
@@ -63,13 +62,13 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign
-    path = toPath(path) as string;
+    path = toPath(path);
 
-    if (!(await isAccessible(path))) {
+    if (!await isAccessible(path)) {
         throw new PermissionError(`unable to read the non-accessible file: ${path}`);
     }
 
-    if (!(await isAccessible(path, R_OK))) {
+    if (!await isAccessible(path, R_OK)) {
         throw new Error(`Unable to read the non-readable file: ${path}`);
     }
 

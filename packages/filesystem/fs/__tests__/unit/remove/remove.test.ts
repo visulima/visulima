@@ -16,8 +16,8 @@ describe.each([
     ["removeSync", removeSync],
 ])("%s", (name, function_) => {
     it.each([
-        ["string", join(distribution, "file.txt"), async (path: URL | string) => await writeFile(path, "Hello, World!")],
-        ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path: URL | string) => await writeFile(path, "Hello, World!")],
+        ["string", join(distribution, "file.txt"), async (path: URL | string) => { await writeFile(path, "Hello, World!"); }],
+        ["URL", new URL(`file:///${join(distribution, "file.txt")}`), async (path: URL | string) => { await writeFile(path, "Hello, World!"); }],
         [
             "Symbolic link",
             join(distribution, "symlink.txt"),

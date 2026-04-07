@@ -30,7 +30,7 @@ describe("parse-json", () => {
     it("should parse a valid JSON string without a reviver function", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const result = parseJson(jsonString);
 
         expect(result).toStrictEqual({ age: 30, name: "John" });
@@ -40,7 +40,7 @@ describe("parse-json", () => {
     it("should parse a valid JSON string with a reviver function", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const reviver = (key: string, value: number) => {
             if (key === "age") {
                 return value + 10;
@@ -57,7 +57,7 @@ describe("parse-json", () => {
     it("should parse a JSON string with nested objects and arrays", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30, "hobbies": ["reading", "painting"], "address": {"street": "123 Main St", "city": "New York"}}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30, \"hobbies\": [\"reading\", \"painting\"], \"address\": {\"street\": \"123 Main St\", \"city\": \"New York\"}}";
         const result = parseJson(jsonString);
 
         expect(result).toStrictEqual({
@@ -83,7 +83,7 @@ describe("parse-json", () => {
     it("should throw a JSONError when parsing an invalid JSON string", () => {
         expect.assertions(1);
 
-        const jsonString = '{"name": "John", "age": 30}';
+        const jsonString = "{\"name\": \"John\", \"age\": 30}";
         const invalidJsonString = jsonString.replace("}", "");
 
         expect(() => {
@@ -95,7 +95,7 @@ describe("parse-json", () => {
         expect.assertions(1);
 
         expect(() => {
-            parseJson('{"name": "John", "age": 30,}');
+            parseJson("{\"name\": \"John\", \"age\": 30,}");
         }).toThrow(JSONError);
     });
 
@@ -108,7 +108,7 @@ describe("parse-json", () => {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(`  1 | {
   2 |   \t"foo": true,
-${CODE_FRAME_POINTER as string} 3 |   }
+${CODE_FRAME_POINTER} 3 |   }
     |   ^`);
         }
     });
@@ -119,13 +119,13 @@ ${CODE_FRAME_POINTER as string} 3 |   }
         try {
             parseJson("{");
         } catch (error: any) {
-            let expectedCodeFrame: string | undefined = `${CODE_FRAME_POINTER as string} 1 | {
+            let expectedCodeFrame: string | undefined = `${CODE_FRAME_POINTER} 1 | {
     |  ^`;
 
             if (NODE_JS_VERSION === 18) {
                 expectedCodeFrame = undefined;
             } else if (NODE_JS_VERSION === 20) {
-                expectedCodeFrame = `${CODE_FRAME_POINTER as string} 1 | {
+                expectedCodeFrame = `${CODE_FRAME_POINTER} 1 | {
     | ^`;
             }
 
@@ -206,7 +206,7 @@ ${CODE_FRAME_POINTER as string} 3 |   }
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(error.codeFrame).toBe(` +++ 1 | {
  +++ 2 |   \t"foo": true,
-${CODE_FRAME_POINTER as string}+++ 3 |   }
+${CODE_FRAME_POINTER}+++ 3 |   }
  +++   |   ^`);
         }
     });

@@ -128,7 +128,7 @@ function parseJson<T = JsonValue>(string: string, reviver?: JsonReviver | string
     let message: string;
 
     try {
-        return JSON.parse(string, reviver as JsonReviver);
+        return JSON.parse(string, reviver);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         message = error.message;

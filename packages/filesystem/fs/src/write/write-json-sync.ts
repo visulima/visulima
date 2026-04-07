@@ -47,7 +47,7 @@ const writeJsonSync = (path: URL | string, data: unknown, options: WriteJsonOpti
             if (detectIndent) {
                 const { indent: dIndent } = detectIndentFn(file);
 
-                indent = dIndent as string;
+                indent = dIndent;
             }
 
             trailingNewline = file.endsWith("\n") ? "\n" : "";

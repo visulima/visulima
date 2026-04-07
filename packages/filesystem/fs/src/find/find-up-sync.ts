@@ -78,7 +78,7 @@ const findUpSync = (
         }
 
         if (Array.isArray(name)) {
-            return name as string[];
+            return name;
         }
 
         return [name];
@@ -102,10 +102,8 @@ const findUpSync = (
             }
 
             if (Buffer.isBuffer(fileName)) {
-                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
-                // eslint-disable-next-line sonarjs/updated-loop-counter
                 fileName = fileURLToPath(fileName as URL | string);
             }
 

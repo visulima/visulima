@@ -64,16 +64,16 @@ async function writeYaml(
     let space: number | string | undefined;
 
     if (typeof replacer === "object" && replacer !== null && !Array.isArray(replacer) && typeof replacer !== "function") {
-        stringifyOptions = replacer as WriteYamlOptions;
+        stringifyOptions = replacer;
         effectiveReplacer = stringifyOptions.replacer;
         space = stringifyOptions.space;
     } else if (typeof options === "object" && options !== null) {
-        stringifyOptions = options as WriteYamlOptions;
+        stringifyOptions = options;
         effectiveReplacer = replacer as YamlReplacer;
         space = stringifyOptions.space ?? (typeof options === "number" || typeof options === "string" ? options : undefined);
     } else {
         effectiveReplacer = replacer as YamlReplacer;
-        space = options as number | string | undefined;
+        space = options;
     }
 
     const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as WriteYamlOptions));

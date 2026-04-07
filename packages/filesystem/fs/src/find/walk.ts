@@ -17,7 +17,7 @@ import walkInclude from "./utils/walk-include";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
-    const normalizePath: string = normalize(path as string);
+    const normalizePath: string = normalize(path);
 
     const name = basename(normalizePath);
 
@@ -87,8 +87,8 @@ export default async function* walk(
         return;
     }
 
-    const mappedMatch = match ? match.map((pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern)) : undefined;
-    const mappedSkip = skip ? skip.map((pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern)) : undefined;
+    const mappedMatch = match ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
+    const mappedSkip = skip ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
 
     // eslint-disable-next-line no-param-reassign
     directory = resolve(toPath(directory));

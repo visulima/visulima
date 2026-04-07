@@ -56,7 +56,7 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     assertValidFileOrDirectoryPath(path);
 
     // eslint-disable-next-line no-param-reassign
-    path = toPath(path) as string;
+    path = toPath(path);
 
     if (!isAccessibleSync(path)) {
         throw new PermissionError(`unable to read the non-accessible file: ${path}`);

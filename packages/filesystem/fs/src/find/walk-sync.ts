@@ -18,7 +18,7 @@ import walkInclude from "./utils/walk-include";
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const _createWalkEntry = (path: string): WalkEntry => {
-    const normalizePath: string = normalize(path as string);
+    const normalizePath: string = normalize(path);
 
     const info: Stats = statSync(normalizePath);
 
@@ -85,8 +85,8 @@ export default function* walkSync(
         return;
     }
 
-    const mappedMatch = match ? match.map((pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern)) : undefined;
-    const mappedSkip = skip ? skip.map((pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern)) : undefined;
+    const mappedMatch = match ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
+    const mappedSkip = skip ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern) : undefined;
 
     // eslint-disable-next-line no-param-reassign
     directory = resolve(toPath(directory));
