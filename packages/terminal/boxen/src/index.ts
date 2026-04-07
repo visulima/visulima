@@ -52,7 +52,6 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
         // eslint-disable-next-line no-param-reassign
         borderStyle = {};
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const side of sides) {
             // eslint-disable-next-line no-param-reassign
             borderStyle[side as keyof BorderStyle] = "";
@@ -84,7 +83,6 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
             borderStyle.bottom = borderStyle.horizontal;
         }
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const side of sides) {
             if (typeof borderStyle[side as keyof BorderStyle] !== "string") {
                 throw new TypeError(`Invalid border style: ${side}`);
@@ -174,14 +172,12 @@ const makeContentText = (
     if (textWidth > max) {
         const newLines = [];
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const line of lines) {
             const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.BREAK_WORDS });
             const alignedLines = alignText(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
             const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s)));
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const alignedLine of alignedLinesArray) {
                 let paddedLine;
 
