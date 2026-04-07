@@ -9,20 +9,10 @@ import {
 
 // Safe hasOwnProperty
 
-const hop = Object.prototype.hasOwnProperty;
-const has = (object: object, property: string): boolean => hop.call(object, property);
+const has = (object: object, property: string): boolean => Object.hasOwn(object, property);
 
 // Copy all own enumerable properties from source to target
-const extend = <T, S extends object>(target: T, source: S): S & T => {
-    type Extended = S & T;
-
-    for (const property of Object.keys(source)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (target as any)[property] = source[property as keyof S];
-    }
-
-    return target as Extended;
-};
+const extend = <T, S extends object>(target: T, source: S): S & T => Object.assign(target as S & T, source);
 
 /**
  * Internal helper to remove indentation from an array of strings (from template literal parts).
@@ -57,13 +47,11 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     const reSource = String.raw`(\r\n|\r|\n).{0,${indentationLevel}}`;
     const reMatchIndent = new RegExp(reSource, "g");
 
-    if (firstInterpolatedValueSetsIndentationLevel) {
-        strings = strings.slice(1);
-    }
+    const processedStrings = firstInterpolatedValueSetsIndentationLevel ? strings.slice(1) : strings;
 
     const { newline, trimLeadingNewline, trimTrailingNewline } = options;
     const normalizeNewlines = typeof newline === "string";
-    const l = strings.length;
+    const l = processedStrings.length;
 
     // Pre-allocate result array with exact size
     const outdentedStrings: string[] = Array.from({ length: l });
@@ -71,7 +59,7 @@ const internalOutdentArray = (strings: ReadonlyArray<string>, firstInterpolatedV
     // Process all strings
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < l; index++) {
-        let v = strings[index] as string;
+        let v = processedStrings[index] as string;
 
         // Remove leading indentation from all lines (most expensive operation)
         v = v.replace(reMatchIndent, "$1");
@@ -126,7 +114,7 @@ const concatStringsAndValues = (strings: ReadonlyArray<string>, values: Readonly
 
 /** Type guard to check if a value is a TemplateStringsArray. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isTemplateStringsArray = (v: any): v is TemplateStringsArray => has(v, "raw") && has(v, "length");
+const isTemplateStringsArray = (v: any): v is TemplateStringsArray => has(v as object, "raw") && has(v as object, "length");
 
 // A single shared WeakMap cache for processed template literals.
 const templateCache = new WeakMap<TemplateStringsArray, string[]>();
@@ -149,7 +137,7 @@ const createInstance = (options: Options): Outdent => {
     function outdent(stringsOrOptions: TemplateStringsArray, ...values: any[]): string;
     function outdent(stringsOrOptions: Options): Outdent;
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+    // eslint-disable-next-line sonarjs/cognitive-complexity,sonarjs/function-return-type
     function outdent(stringsOrOptions: Options | TemplateStringsArray, ...values: any[]): Outdent | string {
         // Call signature: outdent`template literal`
         if (isTemplateStringsArray(stringsOrOptions)) {

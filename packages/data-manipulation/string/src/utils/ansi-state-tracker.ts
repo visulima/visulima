@@ -78,7 +78,7 @@ class AnsiStateTracker {
     }
 
     /**
-     * Gets all active escape sequences to apply
+     * Gets all active escape sequences to apply.
      * @returns String with all active escapes
      */
     public getStartEscapesForAllActiveAttributes(): string {

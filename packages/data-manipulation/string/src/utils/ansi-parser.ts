@@ -3,7 +3,7 @@ import AnsiStateTracker from "./ansi-state-tracker";
 import type { AnsiSegment, HyperlinkSegment, ProcessAnsiStringOptions } from "./types";
 
 /**
- * Helper function to check if a character is inside an ANSI escape sequence
+ * Checks if a character is inside an ANSI escape sequence.
  * @param chars Array of characters
  * @param index Current index
  * @returns Object with isInsideEscape and isInsideLinkEscape flags
@@ -28,7 +28,7 @@ export const checkEscapeSequence = (
 };
 
 /**
- * Process a string with ANSI escape codes character by character
+ * Processes a string with ANSI escape codes character by character.
  * @param string The string to process
  * @param options Processing options
  */
@@ -42,6 +42,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     let currentUrl = "";
     let isInHyperlink = false;
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for character-by-character ANSI parsing
     const chars = [...string];
 
     // eslint-disable-next-line no-plusplus

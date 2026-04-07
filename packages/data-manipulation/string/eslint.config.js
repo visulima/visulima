@@ -33,6 +33,7 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-return": "off",
             "@typescript-eslint/require-await": "off",
             "@typescript-eslint/restrict-template-expressions": "off",
+            // Conflicts with unicorn/no-for-loop which prefers for-of
             "no-for-of-array/no-for-of-array": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/deprecation": "off",
@@ -51,28 +52,10 @@ export default createConfig(
     {
         files: ["./src/**/*.ts"],
         rules: {
-            "@typescript-eslint/no-misused-spread": "off",
-            "@typescript-eslint/no-necessary-condition": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
-            "@typescript-eslint/no-unnecessary-type-assertion": "off",
-            "@typescript-eslint/no-unnecessary-type-conversion": "off",
-            "@typescript-eslint/no-unnecessary-type-parameters": "off",
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "@typescript-eslint/restrict-plus-operands": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "@typescript-eslint/unbound-method": "off",
-            "jsdoc/match-description": "off",
-            "jsdoc/no-undefined-types": "off",
+            // Conflicts with unicorn/no-for-loop which prefers for-of; for-of is the idiomatic choice
             "no-for-of-array/no-for-of-array": "off",
-            "no-param-reassign": "off",
+            // JSDoc code examples have high entropy strings that are not secrets
             "no-secrets/no-secrets": "off",
-            "sonarjs/function-return-type": "off",
-            "sonarjs/prefer-regexp-exec": "off",
-            "unicorn/prefer-default-parameters": "off",
         },
     },
 );

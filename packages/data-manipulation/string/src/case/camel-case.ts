@@ -61,17 +61,17 @@ const camelCase = <T extends string = string>(value?: T, options?: CaseOptions):
                 return word;
             }
 
-            word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
+            const normalized = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
-            word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
+            const lowered = options?.locale ? normalized.toLocaleLowerCase(options.locale) : normalized.toLowerCase();
 
             if (firstWord) {
                 firstWord = false;
 
-                return lowerFirst(word, options);
+                return lowerFirst(lowered, options);
             }
 
-            return upperFirst(word, options);
+            return upperFirst(lowered, options);
         }),
         "",
     );

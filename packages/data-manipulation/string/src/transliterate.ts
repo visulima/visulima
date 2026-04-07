@@ -17,7 +17,9 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
 
     const replaceArray: OptionReplaceArray = [];
 
-    for (const key of Object.keys(option)) {
+    const keys = Object.keys(option);
+
+    for (const key of keys) {
         if (Object.hasOwn(option, key)) {
             const value = option[key];
 
@@ -34,7 +36,8 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
 const applyThaiRomanization = (input: string): string => {
     let output = input;
 
-    for (const entry of thaiReplacement) {
+    for (let entryIndex = 0; entryIndex < thaiReplacement.length; entryIndex += 1) {
+        const entry = thaiReplacement[entryIndex] as (typeof thaiReplacement)[number];
         const [search, replace, type] = entry;
 
         if (typeof search !== "string" || typeof replace !== "string") {
@@ -196,7 +199,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             lastCharWasChinese = false; // Reset if fixChineseSpacing is off or char is ignored
         }
 
-        result += s ?? "";
+        result += s;
         index += charLength;
     }
 

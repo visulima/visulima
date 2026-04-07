@@ -8,7 +8,7 @@ const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
 /**
- * Helper function to reset ANSI sequences at line breaks
+ * Resets ANSI sequences at line breaks.
  * @param currentLine Current line of text
  * @returns Line with reset codes if needed
  */
@@ -32,7 +32,7 @@ const resetAnsiAtLineBreak = (currentLine: string): string => {
 };
 
 /**
- * Trims spaces from a string's right side while preserving ANSI sequences
+ * Trims spaces from a string's right side while preserving ANSI sequences.
  * @param string The string to trim
  * @returns The trimmed string
  */
@@ -54,8 +54,7 @@ const stringVisibleTrimSpacesRight = (string: string): string => {
 };
 
 /**
- * Wraps text based on the breakAtWidth option using precise character-level control
- * with proper ANSI sequence handling
+ * Wraps text based on the breakAtWidth option using precise character-level control with proper ANSI sequence handling.
  * @param string The string to wrap
  * @param width Maximum width
  * @param trim Whether to trim whitespace
@@ -94,6 +93,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             escapeBuffer = char;
             currentLine += char;
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for ANSI detection
             const escapeInfo = checkEscapeSequence([...string], index);
 
             isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
@@ -276,7 +276,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 };
 
 /**
- * Wraps text respecting word boundaries with proper ANSI escape sequence handling
+ * Wraps text respecting word boundaries with proper ANSI escape sequence handling.
  * @param string The string to wrap
  * @param width Maximum width
  * @param trim Whether to trim whitespace
@@ -511,7 +511,7 @@ export interface WordWrapOptions {
 }
 
 /**
- * Word wrap implementation with multiple wrapping strategies
+ * Wraps text using multiple wrapping strategies.
  * @param string The string to wrap
  * @param options Wrapping options
  * @returns The wrapped string

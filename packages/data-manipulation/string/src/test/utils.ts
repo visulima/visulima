@@ -3,7 +3,7 @@ import { format, stripVTControlCharacters } from "node:util";
 import { getStringWidth } from "..";
 
 /**
- * Helper function to format ANSI strings for test output
+ * Formats ANSI strings for test output.
  * @param ansiString The ANSI string to format
  * @returns An object with formatted representations of the string
  */
@@ -34,7 +34,7 @@ export interface ExpectationResult {
 }
 
 /**
- * Creates an expect matcher that provides detailed information about ANSI string comparison failures
+ * Creates an expect matcher that provides detailed information about ANSI string comparison failures.
  * @param actual The actual ANSI string
  * @param expected The expected ANSI string
  * @returns A detailed comparison result
@@ -82,7 +82,7 @@ export const expectAnsiStrings = (actual: string, expected: string): Expectation
 };
 
 /**
- * Helper function to compare ANSI strings and see the differences
+ * Compares ANSI strings and returns the differences.
  * @param actual The actual ANSI string
  * @param expected The expected ANSI string
  * @returns Details about the comparison

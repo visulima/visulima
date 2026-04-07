@@ -70,17 +70,20 @@ export const alignText = (text: string[] | string, options: AlignTextOptions = {
     const widthDiffFunction = align === "right" ? fullDiff : halfDiff;
 
     let returnString = false;
+    let lines: string[];
 
-    if (!Array.isArray(text)) {
+    if (Array.isArray(text)) {
+        lines = text;
+    } else {
         returnString = true;
 
-        text = text.split(split);
+        lines = text.split(split);
     }
 
     let width: number;
     let maxWidth = 0;
 
-    text = text
+    const result = lines
         .map((input) => {
             width = getStringWidth(input, options.stringWidthOptions);
             maxWidth = Math.max(width, maxWidth);
@@ -92,5 +95,5 @@ export const alignText = (text: string[] | string, options: AlignTextOptions = {
         })
         .map((object) => Array.from({ length: widthDiffFunction(maxWidth, object.width) + 1 }).join(pad) + object.str);
 
-    return returnString ? text.join(split) : text;
+    return returnString ? result.join(split) : result;
 };

@@ -76,12 +76,12 @@ const FORMAT_STYLES: ReadonlyArray<FormatStyle> = [
     { close: "\u001B[29m", open: "\u001B[9m" }, // Strikethrough
 ] as const;
 
-/** Find the first occurrence of any substring in the input string. */
+/** Finds the first occurrence of any substring in the input string. */
 const findFirstPositionOfAny = (input: string, substrings: string[]): number => {
     let firstPos = -1;
 
-    for (const substring of substrings) {
-        const pos = input.indexOf(substring);
+    for (const sub of substrings) {
+        const pos = input.indexOf(sub);
 
         if (pos !== -1 && (firstPos === -1 || pos < firstPos)) {
             firstPos = pos;
@@ -377,7 +377,9 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                     .filter((item) => item.position >= 0)
                     .toSorted((a, b) => b.position - a.position); // Sort in reverse order of application
 
-                for (const item of activeFormatStyles) {
+                for (const activeFormatStyle of activeFormatStyles) {
+                    const item = activeFormatStyle;
+
                     if (closingSequences.includes(item.style.close)) {
                         closingParts.push(item.style.close);
                     }
@@ -408,12 +410,8 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
 /**
  * Fast slice function for non-ANSI strings with full Unicode support.
- *
- * Features:
- * - Respects grapheme boundaries
- * - Handles combining characters
- * - Supports complex scripts (e.g. CJK, Indic)
- * - Width-aware slicing
+ * Respects grapheme boundaries, handles combining characters,
+ * supports complex scripts (e.g. CJK, Indic), and provides width-aware slicing.
  * @example
  * ```typescript
  * // Basic usage

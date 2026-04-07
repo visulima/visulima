@@ -13,8 +13,8 @@ const ltr = new RegExp(`^[^${rtlRange}]*[${ltrRange}]`);
  * @param value The string to analyze.
  * @returns The text direction: 'rtl' for right-to-left, 'ltr' for left-to-right, or 'neutral' for neutral.
  */
-export const direction = (value: string): "rtl" | "ltr" | "neutral" => {
-    const source = value || "";
+export const direction = (value = ""): "rtl" | "ltr" | "neutral" => {
+    const source = value;
 
     if (rtl.test(source)) {
         return "rtl";

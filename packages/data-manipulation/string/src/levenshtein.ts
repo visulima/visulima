@@ -5,7 +5,8 @@ export const closestN = (string_: string, array: ReadonlyArray<string>, n: numbe
     const distances = Array.from({ length: n }).fill(Infinity) as number[];
     const values = Array.from({ length: n }).fill(undefined) as (string | undefined)[];
 
-    for (const candidateValue of array) {
+    for (const element of array) {
+        const candidateValue = element;
         let currentDistance = distance(string_, candidateValue);
         let currentValue: string = candidateValue;
 

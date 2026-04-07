@@ -151,22 +151,15 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
 };
 
 /**
- * Fast character type check using code point ranges
- * Optimized for performance by checking common cases first
+ * Fast character type check using code point ranges.
+ * Optimized for performance by checking common cases first.
  */
 
 /**
  * Checks if a Unicode code point represents a combining character, variation selector, or diacritic mark.
- *
- * Supports combining marks from:
- * - Universal combining marks (U+0300-U+036F, etc.)
- * - Variation selectors (U+FE00-U+FE0F, U+E0100-U+E01EF)
- * - Southeast Asian scripts (Thai, Lao)
- * - Indic scripts (Devanagari, Bengali, Gurmukhi)
- * - Arabic and Persian
- * - Hebrew
- * - Tibetan
- * - Vietnamese
+ * Supports combining marks from universal combining marks, variation selectors,
+ * Southeast Asian scripts (Thai, Lao), Indic scripts (Devanagari, Bengali, Gurmukhi),
+ * Arabic and Persian, Hebrew, Tibetan, and Vietnamese.
  * @example
  * ```typescript
  * isCombiningCharacter(0x0300); // true (combining grave accent)

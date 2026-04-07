@@ -1,21 +1,21 @@
 import { RE_FAST_ANSI } from "../../constants";
 
 /**
- * Joins segments with a joiner, handling ANSI sequences and emojis correctly
+ * Joins segments with a joiner, handling ANSI sequences and emojis correctly.
  * @param segments Array of segments to join
  * @param joiner String used to join segments together
  * @returns Joined string with proper handling of ANSI and emoji sequences
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const joinSegments = <T extends string = string>(segments: string[], joiner: string): T => {
+const joinSegments = (segments: string[], joiner: string): string => {
     const { length } = segments;
 
     if (length === 0) {
-        return "" as T;
+        return "";
     }
 
     if (length === 1) {
-        return segments[0] as T;
+        return segments[0] as string;
     }
 
     const result: string[] = [];
@@ -62,7 +62,7 @@ const joinSegments = <T extends string = string>(segments: string[], joiner: str
         }
     }
 
-    return result.join("") as T;
+    return result.join("");
 };
 
 export default joinSegments;

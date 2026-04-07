@@ -79,10 +79,6 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
     let matchIdCounter = 0;
 
     for (const item of searches) {
-        if (!item || item.length < 2) {
-            continue;
-        }
-
         const [searchKey, replacementValue] = item;
 
         if (replacementValue === undefined) {
@@ -163,7 +159,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                         // Literal $1, $2 in replacementValue will pass through if not caught by this regex.
                         const groupIndex = Number.parseInt(capturedSymbolOrDigits, 10);
 
-                        if (mockMatch && groupIndex > 0 && groupIndex < mockMatch.length) {
+                        if (groupIndex > 0 && groupIndex < mockMatch.length) {
                             // This branch will likely not be hit for $N with N > 0 for string searches
 
                             return mockMatch[groupIndex] ?? "";
@@ -209,7 +205,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     // Mark ignored characters
 
-    for (const range of mergedIgnores) {
+    for (const mergedIgnore of mergedIgnores) {
+        const range = mergedIgnore;
+
         // eslint-disable-next-line no-plusplus
         for (let index = range[0]; index <= range[1]; index++) {
             if (processedChars[index]) {
@@ -228,7 +226,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     // First, handle all zero-length matches - they insert without consuming/overlapping
 
-    for (const match of potentialMatches) {
+    for (const potentialMatch of potentialMatches) {
+        const match = potentialMatch;
+
         if (match.original.length === 0 && match.start >= 0 && match.start <= processedChars.length) {
             // Allow insertion at or after last char
             const targetIndex = match.start;
@@ -250,7 +250,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
     // Now, handle non-zero-length matches, considering precedence and overlaps
 
-    for (const match of potentialMatches) {
+    for (const potentialMatch of potentialMatches) {
+        const match = potentialMatch;
+
         if (match.original.length === 0) {
             continue;
         }

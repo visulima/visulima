@@ -3,7 +3,7 @@ import wrapAnsiCode from "./wrap-ansi-code";
 import wrapAnsiHyperlink from "./wrap-ansi-hyperlink";
 
 /**
- * Preserves ANSI escape codes when joining wrapped lines
+ * Preserves ANSI escape codes when joining wrapped lines.
  * @param rawLines Array of wrapped lines
  * @returns String with preserved ANSI codes
  */
@@ -25,6 +25,7 @@ const preserveAnsi = (rawLines: string[]): string => {
 
     const preString = rawLines.join("\n");
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for ANSI character processing
     const pre = [...preString];
     let preStringIndex = 0;
 
