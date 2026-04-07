@@ -9,7 +9,7 @@ const processShims: Partial<Process> = {
     versions: {},
 };
 
-const process: Process = new Proxy<Process>(_process, {
+const process: Process = new Proxy(_process, {
     get(target, property: keyof Process) {
         if (property in target) {
             return target[property];

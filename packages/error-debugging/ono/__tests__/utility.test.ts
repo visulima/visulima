@@ -13,7 +13,7 @@ describe("utilities", () => {
             it("should sanitize HTML content", () => {
                 expect.assertions(2);
 
-                const input = '<script>alert("xss")</script><p>Hello</p>';
+                const input = "<script>alert(\"xss\")</script><p>Hello</p>";
                 const result = sanitizeHtml(input);
 
                 expect(result).toBe("<p>Hello</p>");
@@ -49,7 +49,7 @@ describe("utilities", () => {
             it("should sanitize attribute values", () => {
                 expect.assertions(2);
 
-                const input = '"onload=alert(1)"';
+                const input = "\"onload=alert(1)\"";
                 const result = sanitizeAttribute(input);
 
                 expect(result).toContain("&quot;");
@@ -65,7 +65,7 @@ describe("utilities", () => {
                 // DOMPurify might already escape some characters, so we check that dangerous chars are escaped
                 expect(result).not.toContain("<");
                 expect(result).not.toContain(">");
-                expect(result).not.toContain('"');
+                expect(result).not.toContain("\"");
                 expect(result).not.toContain("'");
                 expect(result).toContain("&");
             });
@@ -75,7 +75,7 @@ describe("utilities", () => {
             it("should sanitize URL attributes", () => {
                 expect.assertions(1);
 
-                // eslint-disable-next-line no-script-url, sonarjs/code-eval
+                // eslint-disable-next-line no-script-url
                 const input = "javascript:alert(1)";
                 const result = sanitizeUrlAttribute(input);
 
@@ -104,21 +104,21 @@ describe("utilities", () => {
                 expect.assertions(3);
 
                 // Test the specific bypass mentioned: javascript:alert(1)//http://example.com
-                // eslint-disable-next-line no-script-url, sonarjs/code-eval
+                // eslint-disable-next-line no-script-url
                 const bypassAttempt1 = "javascript:alert(1)//http://example.com";
                 const result1 = sanitizeUrlAttribute(bypassAttempt1);
 
                 expect(result1).toBe("#");
 
                 // Test other potential bypass attempts
-                // eslint-disable-next-line no-script-url, sonarjs/code-eval
+                // eslint-disable-next-line no-script-url
                 const bypassAttempt2 = "javascript:evil()//https://legit-site.com";
                 const result2 = sanitizeUrlAttribute(bypassAttempt2);
 
                 expect(result2).toBe("#");
 
                 // Test with URL encoding
-                // eslint-disable-next-line no-script-url, sonarjs/code-eval
+                // eslint-disable-next-line no-script-url
                 const bypassAttempt3 = "javascript:alert(1)%2f%2fhttp://example.com";
                 const result3 = sanitizeUrlAttribute(bypassAttempt3);
 
@@ -220,7 +220,7 @@ describe("utilities", () => {
         it("should throw error for non-string input", () => {
             expect.assertions(1);
 
-            expect(() => revisionHash(123 as any)).toThrowError(TypeError);
+            expect(() => revisionHash(123 as any)).toThrow(TypeError);
         });
 
         it("should return 16 character hex string", () => {

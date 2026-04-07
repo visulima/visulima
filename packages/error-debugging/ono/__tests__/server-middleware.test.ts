@@ -1,4 +1,4 @@
-import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
+import type { RequestListener } from "node:http";
 import { createServer, get as httpGet } from "node:http";
 
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -31,7 +31,7 @@ describe("server middleware", () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
             mockRequest.on.mockImplementation((event: string, callback: Function) => {
                 if (event === "data") {
-                    callback('{"file": "src/index.ts", "line": 10, "column": 5}');
+                    callback("{\"file\": \"src/index.ts\", \"line\": 10, \"column\": 5}");
                 } else if (event === "end") {
                     callback();
                 }
@@ -224,9 +224,11 @@ describe("server middleware", () => {
                 method: "POST",
                 // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn((event, callback) => {
-                    if (event === "data") callback("{invalid json");
+                    if (event === "data")
+                        callback("{invalid json");
 
-                    if (event === "end") callback();
+                    if (event === "end")
+                        callback();
                 }),
                 url: "/",
             } as any;
@@ -296,9 +298,11 @@ describe("server middleware", () => {
                 method: "GET",
                 // eslint-disable-next-line vitest/require-mock-type-parameters
                 on: vi.fn((event, callback) => {
-                    if (event === "data") callback("");
+                    if (event === "data")
+                        callback("");
 
-                    if (event === "end") callback();
+                    if (event === "end")
+                        callback();
                 }),
                 url: "/?file=/test.js&line=10",
             } as any;
@@ -330,7 +334,7 @@ describe("server middleware", () => {
                 middleware(request, response, next);
             };
 
-            const server = createServer(testMiddleware as RequestListener<typeof IncomingMessage, typeof ServerResponse>);
+            const server = createServer(testMiddleware as RequestListener);
 
             // eslint-disable-next-line vitest/no-test-return-statement
             return new Promise<void>((resolve) => {

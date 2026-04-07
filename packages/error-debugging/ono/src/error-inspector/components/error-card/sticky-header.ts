@@ -19,7 +19,7 @@ const stickyHeader = async (
     const safeTitleValue = sanitizeAttribute(`${error.name}: ${error.message}`);
 
     // Build AI prompt using first stack frame and code frame when available
-    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as Trace;
+    const trace = parseStacktrace(error, { frameLimit: 1 })?.[0] as Trace;
     const filePath = trace?.file ?? "";
     const fileLine = trace?.line ?? 0;
     const fileSource = filePath ? await getFileSource(filePath) : "";
@@ -28,7 +28,7 @@ const stickyHeader = async (
         : "";
     const fixPrompt = aiPrompt({
         applicationType: undefined,
-        error: error as Error,
+        error,
         file: {
             file: filePath,
             language: findLanguageBasedOnExtension(filePath),

@@ -19,7 +19,7 @@ type RequestBody = Record<string, unknown>;
 type UniversalHandler = (request: IncomingMessage & { body?: RequestBody }, response: ServerResponse, next?: (error?: unknown) => void) => Promise<void>;
 
 const respond400 = (
-    response: ServerResponse<IncomingMessage> & { status?: (code: number) => ServerResponse<IncomingMessage> & { send: (body: string) => void } },
+    response: ServerResponse & { status?: (code: number) => ServerResponse & { send: (body: string) => void } },
 ) => {
     if (typeof response.status === "function") {
         response.status(400).send("Failed to open editor");
@@ -79,7 +79,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
 
                     request.on("data", onData);
                     request.on("end", onEnd);
-                    request.on("error", () => resolve({} as EditorPayload));
+                    request.on("error", () => { resolve({} as EditorPayload); });
                 } catch {
                     resolve({} as EditorPayload);
                 }
