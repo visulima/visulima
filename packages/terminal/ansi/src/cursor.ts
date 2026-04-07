@@ -456,29 +456,29 @@ export const cursorUp = (count = 1): string => `${CSI + count}A`;
  * - Some terminals might not support all styles or DECSCUSR itself.
  */
 export enum CursorStyle {
-    /** Blinking Bar (often an I-beam shape) cursor. (Corresponds to `Ps=5`) */
-    BlinkingBar = 5,
-
-    /** Blinking Block cursor. (Corresponds to `Ps=0` or `Ps=1` in `CSI Ps SP q`) */
-    BlinkingBlock = 1, // Or 0, often interchangeable for default blinking block
-
-    /** Blinking Underline cursor. (Corresponds to `Ps=3`) */
-    BlinkingUnderline = 3,
-
     /**
      * Default cursor style (Ps=0). The appearance is terminal-dependent, typically a blinking block.
      * Using `0` explicitly can sometimes reset to the terminal's configured default if it differs from `1`.
      */
     Default = 0,
 
-    /** Steady (non-blinking) Bar (I-beam) cursor. (Corresponds to `Ps=6`) */
-    SteadyBar = 6,
+    /** Blinking Block cursor. (Corresponds to `Ps=0` or `Ps=1` in `CSI Ps SP q`) */
+    BlinkingBlock = 1, // Or 0, often interchangeable for default blinking block
 
     /** Steady (non-blinking) Block cursor. (Corresponds to `Ps=2`) */
     SteadyBlock = 2,
 
+    /** Blinking Underline cursor. (Corresponds to `Ps=3`) */
+    BlinkingUnderline = 3,
+
     /** Steady (non-blinking) Underline cursor. (Corresponds to `Ps=4`) */
     SteadyUnderline = 4,
+
+    /** Blinking Bar (often an I-beam shape) cursor. (Corresponds to `Ps=5`) */
+    BlinkingBar = 5,
+
+    /** Steady (non-blinking) Bar (I-beam) cursor. (Corresponds to `Ps=6`) */
+    SteadyBar = 6,
 }
 
 /**

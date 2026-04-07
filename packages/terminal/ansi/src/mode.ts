@@ -101,16 +101,10 @@ export enum ModeSetting {
     NotRecognized = 0,
 
     /**
-     * Mode is permanently reset and cannot be changed (e.g., by RM or SM sequences).
-     * (Parameter `Ps = 4` in DECRPM)
+     * Mode is currently set.
+     * (Parameter `Ps = 1` in DECRPM)
      */
-    PermanentlyReset = 4,
-
-    /**
-     * Mode is permanently set and cannot be changed (e.g., by RM or SM sequences).
-     * (Parameter `Ps = 3` in DECRPM)
-     */
-    PermanentlySet = 3,
+    Set = 1,
 
     /**
      * Mode is currently reset (not set).
@@ -119,10 +113,16 @@ export enum ModeSetting {
     Reset = 2,
 
     /**
-     * Mode is currently set.
-     * (Parameter `Ps = 1` in DECRPM)
+     * Mode is permanently set and cannot be changed (e.g., by RM or SM sequences).
+     * (Parameter `Ps = 3` in DECRPM)
      */
-    Set = 1,
+    PermanentlySet = 3,
+
+    /**
+     * Mode is permanently reset and cannot be changed (e.g., by RM or SM sequences).
+     * (Parameter `Ps = 4` in DECRPM)
+     */
+    PermanentlyReset = 4,
 }
 
 /**
