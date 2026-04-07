@@ -304,21 +304,18 @@ describe("colorize ansi-styles", () => {
     it.each(foregroundColorNames)("colorize.%s('foo')", (style) => {
         expect.assertions(1);
 
-        // eslint-disable-next-line security/detect-object-injection
         expect(colorize[style]("foo")).toBeDefined();
     });
 
     it.each(backgroundColorNames)("colorize.%s('foo')", (style) => {
         expect.assertions(1);
 
-        // eslint-disable-next-line security/detect-object-injection
         expect(colorize[style]("foo")).toBeDefined();
     });
 
     it.each(modifierNames)("colorize.%s('foo')", (style) => {
         expect.assertions(1);
 
-        // eslint-disable-next-line security/detect-object-injection
         expect(colorize[style]("foo")).toBeDefined();
     });
 });
@@ -327,8 +324,8 @@ describe("handling numbers", () => {
     it(`should colorize a number 123`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = colorize(number_);
+        const testNumber = 123;
+        const received = colorize(testNumber);
         const expected = "123";
 
         expect(received).toStrictEqual(expected);
@@ -337,8 +334,8 @@ describe("handling numbers", () => {
     it(`should colorize a number with class call colorize.red(123)`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = colorize.red(number_);
+        const testNumber = 123;
+        const received = colorize.red(testNumber);
         const expected = ["%c123", "color: red;"];
 
         expect(received).toStrictEqual(expected);
@@ -347,8 +344,8 @@ describe("handling numbers", () => {
     it(`should colorize a number with function call red(123)`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = red(number_);
+        const testNumber = 123;
+        const received = red(testNumber);
         const expected = ["%c123", "color: red;"];
 
         expect(received).toStrictEqual(expected);
@@ -357,8 +354,8 @@ describe("handling numbers", () => {
     it(`should bold a number with function call bold(123)`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = bold(number_);
+        const testNumber = 123;
+        const received = bold(testNumber);
         const expected = ["%c123", "font-weight: bold;"];
 
         expect(received).toStrictEqual(expected);
@@ -367,8 +364,8 @@ describe("handling numbers", () => {
     it(`should colorize a number with function call red.bold(123)`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = red.bold(number_);
+        const testNumber = 123;
+        const received = red.bold(testNumber);
         const expected = ["%c123", "font-weight:bold;color:red;"];
 
         expect(received).toStrictEqual(expected);
@@ -377,8 +374,8 @@ describe("handling numbers", () => {
     it(`should colorize a number with function call hex('#A00')(123)`, () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = hex("#A00")(number_);
+        const testNumber = 123;
+        const received = hex("#A00")(testNumber);
         const expected = ["%c123", "color:#A00;"];
 
         expect(received).toStrictEqual(expected);
@@ -388,8 +385,8 @@ describe("handling numbers", () => {
     it("should colorize a number with string template call red`size: ${123}px`", () => {
         expect.assertions(1);
 
-        const number_ = 123;
-        const received = red`size: ${number_ as unknown as string}px ${number_ as unknown as string}`;
+        const testNumber = 123;
+        const received = red`size: ${testNumber as unknown as string}px ${testNumber as unknown as string}`;
         const expected = ["%csize: 123px 123", "color: red;"];
 
         expect(received).toStrictEqual(expected);

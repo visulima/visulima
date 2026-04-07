@@ -10,6 +10,7 @@ export default createConfig(
             "__fixtures__",
             "__docs__",
             "examples",
+            "__bench__",
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
@@ -17,16 +18,21 @@ export default createConfig(
             "package.json",
             "README.md",
         ],
-    typescript: {
-        tsconfigPath: "./tsconfig.eslint.json",
-    },
+        typescript: {
+            tsconfigPath: "./tsconfig.eslint.json",
+        },
     },
     {
         files: ["**/*.test.ts"],
         rules: {
+            "@stylistic/no-tabs": "off",
             "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
+            "sonarjs/no-tab": "off",
             "unicorn/no-null": "off",
         },
     },

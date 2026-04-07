@@ -2,9 +2,10 @@ import ColorizeImpl from "./colorize.server";
 import { GradientBuilder } from "./gradient/gradient-builder";
 import type { ColorizeType, ColorValueHex, CssColorName, RGB, StopInput } from "./types";
 
-const colorize: ColorizeType = new ColorizeImpl() as ColorizeType;
+const colorize: ColorizeType = new ColorizeImpl();
 
-const forbiddenChars = /\s/g;
+const WHITESPACE_GLOBAL = /\s/g;
+const WHITESPACE_TEST = /\s/;
 
 export const gradient = (
     stops: (ColorValueHex | CssColorName | RGB | StopInput | [number, number, number])[],
@@ -14,7 +15,7 @@ export const gradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): ((string_: string) => string) => {
+): (string_: string) => string => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);
@@ -22,18 +23,19 @@ export const gradient = (
     if (options?.loop) {
         builder = builder.loop();
     } else if (options?.reverse) {
+        // eslint-disable-next-line unicorn/no-array-reverse
         builder = builder.reverse();
     }
 
     return (string_: string): string => {
-        const colorsCount = Math.max(string_.replaceAll(forbiddenChars, "").length, builder.stops.length);
+        const stripped = string_.replaceAll(WHITESPACE_GLOBAL, "");
+        const colorsCount = Math.max(stripped.length, builder.stops.length);
         const colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
 
         let result = "";
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const s of string_) {
-            if (forbiddenChars.test(s)) {
+            if (WHITESPACE_TEST.test(s)) {
                 result += s;
             } else {
                 const color = colors.shift();
@@ -54,7 +56,7 @@ export const multilineGradient = (
         loop?: boolean;
         reverse?: boolean;
     },
-): ((string_: string) => string) => {
+): (string_: string) => string => {
     const { hsvSpin = "short", interpolation = "rgb" } = options ?? {};
 
     let builder = new GradientBuilder(colorize, stops);
@@ -62,26 +64,25 @@ export const multilineGradient = (
     if (options?.loop) {
         builder = builder.loop();
     } else if (options?.reverse) {
+        // eslint-disable-next-line unicorn/no-array-reverse
         builder = builder.reverse();
     }
 
     return (string_: string): string => {
         const lines = string_.split("\n");
 
-        const colorsCount = Reflect.apply(Math.max, null, [...lines.map((l) => l.length), builder.stops.length]);
+        const colorsCount = Reflect.apply(Math.max, undefined, [...lines.map((l) => l.length), builder.stops.length]);
         const colors = interpolation === "rgb" ? builder.rgb(colorsCount) : builder.hsv(colorsCount, hsvSpin);
 
         const results: string[] = [];
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const line of lines) {
             const lineColors = [...colors];
 
             let lineResult = "";
 
-            // eslint-disable-next-line no-loops/no-loops
             for (const l of line) {
-                lineResult += forbiddenChars.test(l) ? l : (lineColors.shift() as ColorizeType)(l);
+                lineResult += WHITESPACE_TEST.test(l) ? l : (lineColors.shift() as ColorizeType)(l);
             }
 
             results.push(lineResult);

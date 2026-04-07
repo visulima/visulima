@@ -15,6 +15,7 @@ import { stringReplaceAll } from "./util/string-replace-all";
 
 const styles: Record<string, object> = {};
 
+// eslint-disable-next-line unicorn/no-null -- Object.setPrototypeOf requires null, not undefined
 let stylePrototype: object | null = null;
 
 const wrapText = (
@@ -26,20 +27,20 @@ const wrapText = (
         return "";
     }
 
-    let string =
-        (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw == undefined
-            ? (`${strings as number | string}` as string)
+    let string
+        = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
+            ? String(strings as number | string)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
-        // eslint-disable-next-line no-loops/no-loops
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         for (let currentProperties = properties; currentProperties; currentProperties = currentProperties.props) {
             string = stringReplaceAll(string, currentProperties.close, currentProperties.open);
         }
     }
 
     if (string.includes("\n")) {
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
+        // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
         string = string.replace(/(\r*\n)/g, `${properties.closeStack}$1${properties.openStack}`);
     }
 
@@ -73,13 +74,13 @@ const createStyle = (
 
 // eslint-disable-next-line func-names
 const Colorize = function () {
-    const self = (string_: number | string) => `${string_}`;
+    // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+    const self = (string_: number | string) => String(string_);
 
     self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
 
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const name in baseColors) {
-        // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
                 const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
@@ -91,9 +92,8 @@ const Colorize = function () {
         };
     }
 
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const name in baseStyles) {
-        // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
                 const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
@@ -114,7 +114,7 @@ const Colorize = function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any as new () => ColorizeType;
 
-// eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+// eslint-disable-next-line guard-for-in,no-restricted-syntax
 for (const name in styleMethods) {
     styles[name as keyof typeof styleMethods] = {
         get() {

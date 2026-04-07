@@ -3,14 +3,14 @@ import type { ColorizeType } from "./types";
 
 const styles: Record<string, object> = {};
 
+// eslint-disable-next-line unicorn/no-null -- Object.setPrototypeOf requires null, not undefined
 let stylePrototype: object | null = null;
 
 const cssStringToObject = (css: string): Record<string, string> => {
     const cssObject: Record<string, string> = {};
 
-    // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/optimal-quantifier-concatenation,unicorn/prefer-string-replace-all
-    css.replace(/(?<=^|;)\s*([^:]+)\s*:\s*([^;]+)\s*/g, (_, key: string, value) => {
-        // eslint-disable-next-line security/detect-object-injection
+    // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/optimal-quantifier-concatenation,unicorn/prefer-string-replace-all,sonarjs/slow-regex
+    css.replace(/(?<=^|;)\s*([^:]+)\s*:\s*([^;]+)\s*/g, (_, key: string, value: string) => {
         cssObject[key] = value;
 
         return value;
@@ -31,13 +31,9 @@ const createStyle = (
         const cssObject = cssStringToObject(css);
         const propertiesCssObject = cssStringToObject(props.cssStack);
 
-        // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+        // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const key in propertiesCssObject) {
-            // eslint-disable-next-line security/detect-object-injection
-            if (cssObject[key] === undefined) {
-                // eslint-disable-next-line security/detect-object-injection
-                cssObject[key] = propertiesCssObject[key] as string;
-            }
+            cssObject[key] ??= propertiesCssObject[key] as string;
         }
 
         // eslint-disable-next-line unicorn/prefer-string-replace-all
@@ -53,23 +49,25 @@ const createStyle = (
         }
 
         if (typeof input === "string" && input.includes("%c")) {
+            // eslint-disable-next-line sonarjs/slow-regex
             const collectedStyles = input.match(/(?<=,).*;/g);
 
-            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
             const inputWithoutStyles = input.replace(/,.*;/g, "");
 
-            return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? [])];
+            return [`%c${inputWithoutStyles}`, style.css, ...collectedStyles ?? []];
         }
 
         if (typeof input === "number" || typeof input === "string") {
-            return [`%c${input}`, style.css];
+            return [`%c${String(input)}`, style.css];
         }
 
-        if ((input as { raw?: ArrayLike<string> | ReadonlyArray<string> | null }).raw !== null && Array.isArray(values) && values.length > 0) {
+        if ((input as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw !== undefined && Array.isArray(values) && values.length > 0) {
             const rawString = String.raw(input as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
+            // eslint-disable-next-line sonarjs/slow-regex
             const collectedStyles = rawString.match(/(?<=,).*;/g);
-            // eslint-disable-next-line unicorn/prefer-string-replace-all
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
             const inputWithoutStyles = rawString.replace(/,.*;/g, "");
 
             return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? []).join("").split(",").filter(Boolean)];
@@ -79,7 +77,7 @@ const createStyle = (
 
         rest.unshift(style.css);
 
-        return [`${`${first}`.includes("%c") ? "" : "%c"}${first}`, rest.join("")];
+        return [`${String(first).includes("%c") ? "" : "%c"}${String(first)}`, rest.join("")];
     };
 
     Object.setPrototypeOf(style, stylePrototype);
@@ -92,13 +90,13 @@ const createStyle = (
 
 // eslint-disable-next-line func-names
 const WebColorize = function () {
-    const self = (string_: number | string) => `${string_}`;
+    // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+    const self = (string_: number | string) => String(string_);
 
     self.strip = (value: string): string => value;
 
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const name in baseColors) {
-        // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
                 const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
@@ -110,9 +108,8 @@ const WebColorize = function () {
         };
     }
 
-    // eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const name in baseStyles) {
-        // eslint-disable-next-line security/detect-object-injection
         styles[name] = {
             get() {
                 const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
@@ -133,13 +130,12 @@ const WebColorize = function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any as new () => ColorizeType;
 
-// eslint-disable-next-line guard-for-in,no-loops/no-loops,no-restricted-syntax
+// eslint-disable-next-line guard-for-in,no-restricted-syntax
 for (const name in styleMethods) {
     styles[name as keyof typeof styleMethods] = {
         get() {
             return (...arguments_: (number | string)[]) =>
                 // @ts-expect-error: TODO: fix typing of `arguments_`
-
                 createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
         },
     };

@@ -8,12 +8,10 @@ const HSV_MAX: HSVA = { h: 360, s: 1, v: 1 };
 const calculateStepSize = <T extends Record<string, number>>(start: T, end: T, steps: number): T => {
     const step: T = {} as T;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const k in start) {
-        if (Object.prototype.hasOwnProperty.call(start, k)) {
-            // @TODO: Fix this any type
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
-            (step as any)[k] = steps === 0 ? 0 : ((end[k] as number) - (start[k] as number)) / steps;
+        if (Object.hasOwn(start, k)) {
+            (step as Record<string, number>)[k] = steps === 0 ? 0 : ((end[k] as number) - (start[k] as number)) / steps;
         }
     }
 
@@ -23,25 +21,18 @@ const calculateStepSize = <T extends Record<string, number>>(start: T, end: T, s
 const interpolate = <T extends Record<string, number>>(step: T, start: T, index: number, max: T): T => {
     const color: T = {} as T;
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const k in start) {
-        if (Object.prototype.hasOwnProperty.call(start, k)) {
-            // @TODO: Fix this any type
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any
-            (color as any)[k] = (step[k] as number) * index + (start[k] as number);
-            // @TODO: Fix this any type
-            // eslint-disable-next-line security/detect-object-injection,@typescript-eslint/no-explicit-any,sonarjs/no-element-overwrite
-            (color as any)[k] =
-                // eslint-disable-next-line security/detect-object-injection
-                (color[k] as number) < 0
-                    ? // eslint-disable-next-line security/detect-object-injection
-                      (color[k] as number) + (max[k] as number)
-                    : // eslint-disable-next-line security/detect-object-injection
-                      max[k] === 1
-                      ? // eslint-disable-next-line security/detect-object-injection
-                        (color[k] as number)
-                      : // eslint-disable-next-line security/detect-object-injection
-                        (color[k] as number) % (max[k] as number);
+        if (Object.hasOwn(start, k)) {
+            let value = (step[k] as number) * index + (start[k] as number);
+
+            if (value < 0) {
+                value += max[k] as number;
+            } else if (max[k] !== 1) {
+                value %= max[k] as number;
+            }
+
+            (color as Record<string, number>)[k] = value;
         }
     }
 
@@ -56,14 +47,13 @@ export const interpolateRgb = (stop1: StopOutput, stop2: StopOutput, steps: numb
 
     const gradient: RGB[] = [{ ...start }];
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
-    for (let index = 1; index < steps; index++) {
+    for (let index = 1; index < steps; index += 1) {
         const color = interpolate<RGB>(step, start, index, RGBA_MAX);
 
         gradient.push({
-            b: Math.floor(color.b as number),
-            g: Math.floor(color.g as number),
-            r: Math.floor(color.r as number),
+            b: Math.floor(color.b),
+            g: Math.floor(color.g),
+            r: Math.floor(color.r),
         });
     }
 
@@ -109,8 +99,7 @@ export const interpolateHsv = (stop1: StopOutput, stop2: StopOutput, steps: numb
 
     step.h = ((-1) ** (trigonometric ? 1 : 0) * Math.abs(diff)) / steps;
 
-    // eslint-disable-next-line no-plusplus,no-loops/no-loops
-    for (let index = 1; index < steps; index++) {
+    for (let index = 1; index < steps; index += 1) {
         const color = interpolate<HSVA>(step, start, index, HSV_MAX);
 
         gradient.push(hsvToRgb(color.h, color.s, color.v));

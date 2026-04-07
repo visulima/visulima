@@ -1,5 +1,6 @@
 import type { StopOutput } from "../../types";
 
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const computeSubSteps = (stops: StopOutput[], steps: number): number[] => {
     const l = stops.length;
 
@@ -16,9 +17,7 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
 
     const substeps: number[] = [];
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
-    for (let index = 1; index < l; index++) {
-        // eslint-disable-next-line security/detect-object-injection
+    for (let index = 1; index < l; index += 1) {
         const step = (steps - 1) * ((stops[index] as StopOutput).position - (stops[index - 1] as StopOutput).position);
 
         substeps.push(Math.max(1, Math.round(step)));
@@ -26,28 +25,23 @@ export const computeSubSteps = (stops: StopOutput[], steps: number): number[] =>
 
     let totalSubsteps = 1;
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
-    for (let n = l - 1; n--; ) {
-        // eslint-disable-next-line security/detect-object-injection
+    for (let n = l - 2; n >= 0; n -= 1) {
         totalSubsteps += substeps[n] as number;
     }
 
-    // eslint-disable-next-line no-loops/no-loops
     while (totalSubsteps !== steps) {
         if (totalSubsteps < steps) {
             const min = Math.min(...substeps);
+            const minIndex = substeps.indexOf(min);
 
-            // eslint-disable-next-line no-plusplus
-            (substeps[substeps.indexOf(min)] as number)++;
-            // eslint-disable-next-line no-plusplus
-            totalSubsteps++;
+            substeps[minIndex] = (substeps[minIndex] as number) + 1;
+            totalSubsteps += 1;
         } else {
             const max = Math.max(...substeps);
+            const maxIndex = substeps.indexOf(max);
 
-            // eslint-disable-next-line no-plusplus
-            (substeps[substeps.indexOf(max)] as number)--;
-            // eslint-disable-next-line no-plusplus
-            totalSubsteps--;
+            substeps[maxIndex] = (substeps[maxIndex] as number) - 1;
+            totalSubsteps -= 1;
         }
     }
 

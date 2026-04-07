@@ -10,6 +10,7 @@
  * Replace all matched strings.
  * Note: this implementation is over 30% faster than String.replaceAll().
  */
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const stringReplaceAll = (string_: string, searchValue: string, replaceValue: string): string => {
     // visible style has empty open/close props
     if (searchValue === "") {
@@ -26,7 +27,7 @@ export const stringReplaceAll = (string_: string, searchValue: string, replaceVa
     let lastPos = 0;
     let result = "";
 
-    // eslint-disable-next-line no-loops/no-loops,no-bitwise
+    // eslint-disable-next-line no-bitwise
     while (~pos) {
         result += string_.slice(lastPos, pos) + replaceValue;
         lastPos = pos + substringLength;

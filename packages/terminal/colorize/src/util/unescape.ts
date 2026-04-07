@@ -20,6 +20,7 @@ const ESCAPES = new Map([
     ["v", "\v"],
 ]);
 
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const unescape = (c: string): string => {
     const u = c.startsWith("u");
     const bracket = c[1] === "{";

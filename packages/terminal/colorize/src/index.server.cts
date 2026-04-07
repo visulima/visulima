@@ -7,6 +7,6 @@ const colorize: ColorizeTypeWithColorize = new ColorizeImpl() as ColorizeTypeWit
 
 colorize.Colorize = ColorizeImpl;
 
-export default colorize as ColorizeTypeWithColorize;
+export default colorize;
 
 export type { AnsiColors, AnsiStyles, ColorizeType } from "./types";

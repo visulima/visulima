@@ -6,8 +6,6 @@
  * Copyright (c) 2023, webdiscus
  */
 
-import type { ColorValueHex } from "../types";
-
 /**
  * Convert hex color string to RGB values.
  *
@@ -22,27 +20,26 @@ import type { ColorValueHex } from "../types";
  * @returns {[number, number, number]} The red, green, blue values in range [0, 255] .
  */
 
-export const convertHexToRgb = (hex: ColorValueHex | string): [number, number, number] => {
-    let [, color] = /([a-f\d]{3,6})/i.exec(hex) ?? [];
+const HEX_COLOR_REGEX = /([a-f\d]{3,6})/i;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const length_ = color ? color.length : 0;
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
+export const convertHexToRgb = (hex: string): [number, number, number] => {
+    let [, color] = HEX_COLOR_REGEX.exec(hex) ?? [];
 
-    if (length_ === 3) {
-        color =
-            ((color as string)[0] as string) +
-            ((color as string)[0] as string) +
-            ((color as string)[1] as string) +
-            ((color as string)[1] as string) +
-            ((color as string)[2] as string) +
-            ((color as string)[2] as string);
-    } else if (length_ !== 6) {
+    const colorLength = color ? color.length : 0;
+
+    if (colorLength === 3) {
+        const c0 = (color as string).charAt(0);
+        const c1 = (color as string).charAt(1);
+        const c2 = (color as string).charAt(2);
+
+        color = c0 + c0 + c1 + c1 + c2 + c2;
+    } else if (colorLength !== 6) {
         return [0, 0, 0];
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const number_ = Number.parseInt(color as string, 16);
+    const colorNumber = Number.parseInt(color as string, 16);
 
     // eslint-disable-next-line no-bitwise
-    return [(number_ >> 16) & 255, (number_ >> 8) & 255, number_ & 255];
+    return [(colorNumber >> 16) & 255, (colorNumber >> 8) & 255, colorNumber & 255];
 };

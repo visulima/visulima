@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/prefer-default-export -- public API uses named export
 export const hsvToRgb = (h: number, s: number, v: number): { b: number; g: number; r: number } => {
     let r = 0;
     let g = 0;
