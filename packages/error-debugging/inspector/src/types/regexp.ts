@@ -2,7 +2,7 @@ import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
 
 const inspectRegExp: InspectType<RegExp> = (regExp: RegExp, options: Options): string => {
-    const sourceLength = options.truncate - (2 + (regExp.flags as string).length);
+    const sourceLength = options.truncate - (2 + regExp.flags.length);
 
     return options.stylize(`/${truncate(regExp.source, sourceLength)}/${regExp.flags}`, "regexp");
 };

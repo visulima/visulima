@@ -26,7 +26,7 @@ const casses = [
     ["date", new Date(123)],
     ["map", new Map().set("a", 1)],
     ["map (complex)", new Map().set(mapObjectReferenceA, new Map().set(mapObjectReferenceB, 1))],
-    // eslint-disable-next-line unicorn/no-null
+
     ["null", null],
     ["number literal", 1],
     ["object from null", Object.create(null)],

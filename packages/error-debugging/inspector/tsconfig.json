@@ -4,5 +4,5 @@
     "compilerOptions": {
         "moduleResolution": "bundler"
     },
-    "include": ["src/**/*", "*.d.ts"]
+    "include": ["src/**/*", "__tests__/**/*", "__bench__/**/*", "*.d.ts"]
 }

@@ -2,10 +2,15 @@ import type { InspectType, Options } from "../types";
 import truncate from "../utils/truncate";
 import wrapQuotes from "../utils/wrap-quotes";
 
+// These are specific Unicode control/format characters that need escaping in string output.
+// The combined character class is intentional - each code point is matched individually.
+/* eslint-disable no-misleading-character-class, sonarjs/no-misleading-character-class */
 const stringEscapeChars = new RegExp(
-    String.raw`['\0-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5` + String.raw`\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]`,
+    String.raw`['\0-\u001f\u007f-\u009f\u00ad\u0600-\u0604\u070f\u17b4\u17b5`
+    + String.raw`\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]`,
     "g",
 );
+/* eslint-enable no-misleading-character-class, sonarjs/no-misleading-character-class */
 
 const escapeCharacters = {
     "\t": String.raw`\t`,

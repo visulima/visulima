@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { inspect } from "../../src";
 
-const isNode = typeof process === "object" && process.version;
+const isNode: boolean = typeof process === "object" && Boolean(process.version);
 // @ts-expect-error - not all versions of Node have this
 // eslint-disable-next-line n/no-deprecated-api
 const canInspectPromises = isNode && "getPromiseDetails" in process.binding("util");

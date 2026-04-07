@@ -104,7 +104,7 @@ describe("objects", () => {
         expect(inspect(object, { customInspect: true })).toBe("{ sub: { foo: 'bar' } }");
     });
 
-    it.skipIf(globalThis.window !== undefined)("should inspect custom util.inspect symbols", async () => {
+    it.skipIf("window" in globalThis)("should inspect custom util.inspect symbols", async () => {
         expect.assertions(4);
 
         const utilityInspect = await import("node:util").then((m) => m.inspect);
@@ -121,9 +121,10 @@ describe("objects", () => {
 
         const symbolResult = "[ symbol, [] ]";
         const stringResult = "[ string, [] ]";
-        const stringInspectStr = object.inspect.toString();
-        const customStr = object[Symbol.for("nodejs.util.inspect.custom")].toString();
-        const falseResult = `[ { inspect: [Function: ${stringInspectStr}], [Symbol(nodejs.util.inspect.custom)]: [Function: ${customStr}] }, [] ]`;
+        const stringInspectString = object.inspect.toString();
+
+        const customString = (object as any)[Symbol.for("nodejs.util.inspect.custom")].toString();
+        const falseResult = `[ { inspect: [Function: ${stringInspectString}], [Symbol(nodejs.util.inspect.custom)]: [Function: ${String(customString)}] }, [] ]`;
 
         const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
 
@@ -137,7 +138,7 @@ describe("objects", () => {
             },
         };
 
-        object2[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
+        (object2 as Record<symbol, unknown>)[Symbol.for("nodejs.util.inspect.custom")] = function custom() {
             return "symbol";
         };
 
