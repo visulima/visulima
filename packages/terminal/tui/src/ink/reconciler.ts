@@ -15,12 +15,14 @@ import {
     createTextNode,
     emitLayoutListeners,
     insertBeforeNode,
+    markNodeAsDirty,
     removeChildNode,
     setAttribute,
     setStyle,
     setTextNodeValue,
 } from "./dom";
 import type { OutputTransformer } from "./render-node-to-output";
+import type { Region } from "./region";
 import type { Styles } from "./styles";
 import applyStyles from "./styles";
 
@@ -253,8 +255,13 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
                     continue;
                 }
 
-                if (key === "internalOnBeforeRender") {
-                    node.internal_onBeforeRender = value as () => void;
+                if (key === "internal_static") {
+                    node.internal_static = true;
+                    continue;
+                }
+
+                if (key === "cachedRender") {
+                    node.cachedRender = value as Region;
                     continue;
                 }
 
@@ -345,8 +352,13 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
                 continue;
             }
 
-            if (key === "internalOnBeforeRender") {
-                node.internal_onBeforeRender = value as () => void;
+            if (key === "internal_static") {
+                node.internal_static = true;
+                continue;
+            }
+
+            if (key === "cachedRender") {
+                node.cachedRender = value as Region;
                 continue;
             }
 

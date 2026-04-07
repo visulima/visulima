@@ -23,7 +23,7 @@ type LayoutListener = () => void;
 let idCounter = 0;
 
 export type TextName = "#text";
-export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-cursor" | "ink-virtual-text";
+export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-cursor" | "ink-virtual-text" | "ink-static-render";
 
 /**
  * Describes a sticky header that should be composited on top of scrolled content.
@@ -141,11 +141,6 @@ export type DOMElement = InkNode & {
     internal_maxScrollTop?: number;
 
     /**
-     * Callback invoked before rendering this node.
-     */
-    internal_onBeforeRender?: (node: DOMElement) => void;
-
-    /**
      * Whether this element is opaque (prevents rendering of covered content beneath it).
      */
     internal_opaque?: boolean;
@@ -184,16 +179,26 @@ export type DOMElement = InkNode & {
      */
     internal_terminalCursorPosition?: number;
 
-    internal_transform?: OutputTransformer;
-
     /**
-     * Callback invoked before each render pass. Used by StaticRender
-     * to lazily populate cachedRender on first render.
+     * Cached text squash result for this node's subtree.
+     * Invalidated by markNodeAsDirty() when children change.
      */
-    internalOnBeforeRender?: (node: DOMElement, options?: { trackSelection?: boolean }) => void;
+    internal_textCache?: {
+        map: Map<DOMNode, { end: number; start: number }>;
+        text: string;
+    };
+
+    internal_transform?: OutputTransformer;
 
     // Internal properties
     isStaticDirty?: boolean;
+
+    /**
+     * Whether the Yoga subtree has been detached (children removed from Yoga layout)
+     * because a cachedRender was set. When cachedRender is invalidated,
+     * prepareYogaTree() re-attaches the children before the next layout pass.
+     */
+    isYogaTreeDetached?: boolean;
 
     nodeName: ElementNames;
     onComputeLayout?: () => void;
@@ -374,11 +379,26 @@ const findClosestYogaNode = (node?: DOMNode): YogaNode | undefined => {
     return node.yogaNode ?? findClosestYogaNode(node.parentNode);
 };
 
-const markNodeAsDirty = (node?: DOMNode): void => {
+export const markNodeAsDirty = (node?: DOMNode): void => {
     // Mark closest Yoga node as dirty to measure text dimensions again
     const yogaNode = findClosestYogaNode(node);
 
     yogaNode?.markDirty();
+
+    // Walk up the tree clearing caches that depend on this subtree
+    let current = node;
+
+    while (current) {
+        if (current.nodeName === "ink-text" || current.nodeName === "ink-virtual-text") {
+            (current as DOMElement).internal_textCache = undefined;
+        }
+
+        if ("cachedRender" in current) {
+            (current as DOMElement).cachedRender = undefined;
+        }
+
+        current = current.parentNode;
+    }
 };
 
 export const setTextNodeValue = (node: TextNode, text: string): void => {
@@ -430,6 +450,8 @@ export const setCachedRender = (node: DOMElement, cachedRender: import("./region
         while (node.yogaNode.getChildCount() > 0) {
             node.yogaNode.removeChild(node.yogaNode.getChild(0));
         }
+
+        node.isYogaTreeDetached = true;
     }
 };
 

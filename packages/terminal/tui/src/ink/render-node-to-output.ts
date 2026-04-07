@@ -513,7 +513,7 @@ export default renderNodeToOutput;
  * Render a DOM subtree into a cached Region.
  * Used by StaticRender to pre-render content once and cache it.
  */
-export const renderToStatic = (node: DOMElement): void => {
+export const renderToStatic = (node: DOMElement, options?: { skipStaticElements?: boolean; trackSelection?: boolean }): void => {
     if (!node.yogaNode) {
         return;
     }
@@ -534,7 +534,7 @@ export const renderToStatic = (node: DOMElement): void => {
 
     for (const childNode of node.childNodes) {
         renderNodeToOutput(childNode as DOMElement, staticOutput, {
-            skipStaticElements: false,
+            skipStaticElements: options?.skipStaticElements ?? false,
         });
     }
 
