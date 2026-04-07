@@ -17,6 +17,7 @@ import checkCommand from "./commands/check";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
+import devcontainerCommand from "./commands/devcontainer";
 import dlxCommand from "./commands/dlx";
 import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
@@ -124,6 +125,7 @@ cli.addCommand(pmCommand);
 cli.addCommand(initCommand);
 cli.addCommand(cleanCommand);
 cli.addCommand(createCommand);
+cli.addCommand(devcontainerCommand);
 cli.addCommand(upgradeCommand);
 cli.addCommand(implodeCommand);
 

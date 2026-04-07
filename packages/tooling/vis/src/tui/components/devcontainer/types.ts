@@ -1,0 +1,72 @@
+// ── DevContainer Configuration Types ───────────────────────────────────
+
+export interface DevcontainerBuild {
+    args?: Record<string, string>;
+    context?: string;
+    dockerfile?: string;
+}
+
+export interface PortAttributes {
+    label?: string;
+    onAutoForward?: "ignore" | "notify" | "openBrowser" | "openPreview" | "silent";
+    protocol?: "http" | "https";
+}
+
+export interface MountEntry {
+    source: string;
+    target: string;
+    type: "bind" | "tmpfs" | "volume";
+}
+
+export interface DevcontainerConfig {
+    build?: DevcontainerBuild;
+    containerEnv?: Record<string, string>;
+    containerUser?: string;
+    customizations?: {
+        jetbrains?: { plugins?: string[] };
+        vscode?: {
+            extensions?: string[];
+            settings?: Record<string, unknown>;
+        };
+    };
+    dockerComposeFile?: string | string[];
+    features?: Record<string, Record<string, unknown> | string>;
+    forwardPorts?: Array<number | string>;
+    image?: string;
+    mounts?: Array<MountEntry | string>;
+    name?: string;
+    onCreateCommand?: string | string[];
+    postAttachCommand?: string | string[];
+    postCreateCommand?: string | string[];
+    postStartCommand?: string | string[];
+    portsAttributes?: Record<string, PortAttributes>;
+    remoteEnv?: Record<string, string>;
+    remoteUser?: string;
+    runServices?: string[];
+    service?: string;
+    shutdownAction?: string;
+    workspaceFolder?: string;
+}
+
+// ── TUI Types ──────────────────────────────────────────────────────────
+
+export type SectionId =
+    | "compose"
+    | "environment"
+    | "extensions"
+    | "features"
+    | "general"
+    | "lifecycle"
+    | "mounts"
+    | "ports";
+
+export const SECTION_ORDER: readonly SectionId[] = [
+    "general",
+    "features",
+    "ports",
+    "lifecycle",
+    "extensions",
+    "environment",
+    "mounts",
+    "compose",
+] as const;
