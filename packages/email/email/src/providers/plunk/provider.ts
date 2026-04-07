@@ -118,7 +118,7 @@ const plunkProvider: ProviderFactory<PlunkConfig> = defineProvider((config: Plun
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Plunk API not available or invalid API key");
                 }
 

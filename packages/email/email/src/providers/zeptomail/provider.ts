@@ -61,7 +61,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig> = defineProvider(
              */
             async initialize(): Promise<void> {
                 await providerState.ensureInitialized(async () => {
-                    if (!(await this.isAvailable())) {
+                    if (!await this.isAvailable()) {
                         throw new EmailError(PROVIDER_NAME, "Zeptomail API not available or invalid token");
                     }
 

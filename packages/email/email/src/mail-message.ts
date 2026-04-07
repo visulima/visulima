@@ -203,7 +203,7 @@ export class MailMessage {
     public async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
         try {
             const content = await readFileAsBuffer(filePath);
-            const filename = options?.filename ?? basename(filePath) || "attachment";
+            const filename = options?.filename ?? (basename(filePath) || "attachment");
             const contentType = options?.contentType ?? detectMimeType(filename);
 
             this.attachments.push({
@@ -278,7 +278,7 @@ export class MailMessage {
     public async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
         try {
             const content = await readFileAsBuffer(filePath);
-            const filename = options?.filename ?? basename(filePath) || "inline";
+            const filename = options?.filename ?? (basename(filePath) || "inline");
             const contentType = options?.contentType ?? detectMimeType(filename);
             const cid = generateContentId(filename);
 

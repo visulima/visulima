@@ -316,6 +316,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig> = defineProvider(
                     }
 
                     // All providers failed
+                    // eslint-disable-next-line @stylistic/no-extra-parens
                     const errorMessages = errors.map((error) => (error instanceof Error ? error.message : String(error))).join("; ");
 
                     return {

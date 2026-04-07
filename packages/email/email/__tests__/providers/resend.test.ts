@@ -306,7 +306,7 @@ describe(resendProvider, () => {
             const { calls } = makeRequestMock.mock;
             const callWithPayload = calls
                 .slice(callCountBefore) // Only check calls made during sendEmail
-                .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && (call[2]).includes("template"));
+                .find((call) => call.length > 2 && call[2] && typeof call[2] === "string" && call[2].includes("template"));
 
             expect(callWithPayload).toBeDefined();
             expect(callWithPayload?.[2]).toBeDefined();

@@ -147,7 +147,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Resend API not available or invalid API key");
                 }
 
@@ -325,7 +325,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                                 content,
                                 content_type: attachment.contentType,
                                 filename: attachment.filename,
-                                ...(attachment.path && { path: attachment.path }),
+                                ...attachment.path && { path: attachment.path },
                             };
                         }),
                     );

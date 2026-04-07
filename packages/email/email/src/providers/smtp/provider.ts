@@ -55,7 +55,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
         secure: config.secure ?? DEFAULT_SECURE,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
         user: config.user,
-        ...(config.logger && { logger: config.logger }),
+        ...config.logger && { logger: config.logger },
     } as Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
 
     let isInitialized = false;
@@ -662,7 +662,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
 
             try {
                 // Check if SMTP server is available
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     throw new EmailError(PROVIDER_NAME, `SMTP server not available at ${options.host}:${options.port}`);
                 }
@@ -988,7 +988,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
          */
         async validateCredentials(): Promise<boolean> {
             try {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     return false;
                 }
 

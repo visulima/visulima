@@ -33,6 +33,7 @@ const formatEmailAddress = (address: EmailOptions["from"] | EmailOptions["to"] |
     }
 
     if (Array.isArray(address)) {
+        // eslint-disable-next-line @stylistic/no-extra-parens
         return address.map((addr) => (typeof addr === "string" ? addr : addr.email)).join(", ");
     }
 

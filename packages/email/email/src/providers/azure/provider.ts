@@ -38,9 +38,9 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
             region: config.region,
             retries: config.retries ?? DEFAULT_RETRIES,
             timeout: config.timeout ?? DEFAULT_TIMEOUT,
-            ...(config.connectionString && { connectionString: config.connectionString }),
-            ...(config.accessToken && { accessToken: config.accessToken }),
-            ...(config.logger && { logger: config.logger }),
+            ...config.connectionString && { connectionString: config.connectionString },
+            ...config.accessToken && { accessToken: config.accessToken },
+            ...config.logger && { logger: config.logger },
         };
 
     const providerState = new ProviderState();
@@ -138,7 +138,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Azure Communication Services API not available or invalid credentials");
                 }
 
