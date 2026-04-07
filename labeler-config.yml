@@ -181,6 +181,30 @@
 "package: vis":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/**/*"
+"package: vis/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/darwin-arm64/**/*"
+"package: vis/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/darwin-x64/**/*"
+"package: vis/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-arm64-gnu/**/*"
+"package: vis/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-arm64-musl/**/*"
+"package: vis/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-x64-gnu/**/*"
+"package: vis/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-x64-musl/**/*"
+"package: vis/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/win32-arm64-msvc/**/*"
+"package: vis/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/win32-x64-msvc/**/*"
 "package: vite-overlay":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
