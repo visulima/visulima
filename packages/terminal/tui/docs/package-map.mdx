@@ -63,15 +63,19 @@ import { render, Box, Text, useInput } from "@visulima/tui/react";
 
 ## `@visulima/tui/test`
 
-Framework-agnostic testing utilities for TUI components. Inspired by [ink-testing-library](https://github.com/vadimdemedes/ink-testing-library).
+Framework-agnostic testing utilities for TUI components. Inspired by [ink-testing-library](https://github.com/vadimdemedes/ink-testing-library) and [ink-testing](https://github.com/cjroth/ink-web/tree/main/packages/ink-testing).
 
 Primary exports:
 
-- `render` — render a component with mock streams, returns test instance
+- `render` — render a component with mock streams, returns test instance with `screen`, `keys`, `waitFor`, `flush`
 - `cleanup` — unmount all test instances (use in `afterEach`)
+- `createScreen` — standalone screen query helpers with ANSI stripping
+- `createKeySender` — standalone keyboard input simulator
+- `KEY` — raw ANSI escape sequence constants for all common keys
+- `waitFor` — standalone async polling assertion
 
 ```typescript
-import { render, cleanup } from "@visulima/tui/test";
+import { render, cleanup, KEY, createScreen, createKeySender, waitFor } from "@visulima/tui/test";
 ```
 
 ## Next Steps
