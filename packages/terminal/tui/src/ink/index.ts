@@ -111,6 +111,8 @@ export type { UnorderedListEntry, Props as UnorderedListProps } from "./componen
 export { default as UnorderedList } from "./components/UnorderedList";
 export type { DOMElement, StickyHeader } from "./dom";
 export { getPathToRoot, isNodeSelectable } from "./dom";
+export type { AnimationResult } from "./hooks/use-animation";
+export { default as useAnimation } from "./hooks/use-animation";
 export { default as useApp } from "./hooks/use-app";
 export type { BoxMetrics, UseBoxMetricsResult } from "./hooks/use-box-metrics";
 export { default as useBoxMetrics } from "./hooks/use-box-metrics";

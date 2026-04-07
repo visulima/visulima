@@ -29,8 +29,8 @@
 import type { SpinnerName } from "cli-spinners";
 import spinners from "cli-spinners";
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
 
+import useAnimation from "../hooks/use-animation";
 import Text from "./Text";
 
 export type Props = {
@@ -48,22 +48,8 @@ export type Props = {
  * Uses spinners from [cli-spinners](https://github.com/sindresorhus/cli-spinners).
  */
 export default function Spinner({ type = "dots" }: Props): ReactElement {
-    const [frame, setFrame] = useState(0);
     const spinner = spinners[type];
+    const { frame } = useAnimation({ interval: spinner.interval });
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setFrame((previousFrame) => {
-                const isLastFrame = previousFrame === spinner.frames.length - 1;
-
-                return isLastFrame ? 0 : previousFrame + 1;
-            });
-        }, spinner.interval);
-
-        return () => {
-            clearInterval(timer);
-        };
-    }, [spinner]);
-
-    return <Text>{spinner.frames[frame]}</Text>;
+    return <Text>{spinner.frames[frame % spinner.frames.length]}</Text>;
 }
