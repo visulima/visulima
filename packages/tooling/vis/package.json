@@ -107,6 +107,7 @@
         "@eslint-react/eslint-plugin": "3.0.0",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
         "@shared/xxh3": "workspace:*",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
@@ -142,6 +143,16 @@
         "lint-staged": {
             "optional": true
         }
+    },
+    "optionalDependencies": {
+        "@visulima/vis-binding-darwin-arm64": "1.0.0-alpha.3",
+        "@visulima/vis-binding-darwin-x64": "1.0.0-alpha.3",
+        "@visulima/vis-binding-linux-arm64-gnu": "1.0.0-alpha.3",
+        "@visulima/vis-binding-linux-arm64-musl": "1.0.0-alpha.3",
+        "@visulima/vis-binding-linux-x64-gnu": "1.0.0-alpha.3",
+        "@visulima/vis-binding-linux-x64-musl": "1.0.0-alpha.3",
+        "@visulima/vis-binding-win32-arm64-msvc": "1.0.0-alpha.3",
+        "@visulima/vis-binding-win32-x64-msvc": "1.0.0-alpha.3"
     },
     "engines": {
         "node": "^20.19.0 || >=22.12.0"

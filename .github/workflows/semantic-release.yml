@@ -69,18 +69,26 @@ jobs:
                   commit: "${{ github.sha }}"
                   name: "bindings-(.+)"
                   name_is_regexp: true
-                  path: "packages/tooling/task-runner/artifacts"
+                  path: "artifacts"
                   if_no_artifact_found: "fail"
                   allow_forks: false
 
             - name: "Distribute native artifacts to platform packages"
               shell: "bash"
-              working-directory: "packages/tooling/task-runner"
               run: |
-                  find artifacts -name "*.node" -exec mv {} . \;
+                  # task-runner: move matching .node files and distribute to npm packages
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
+                  cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # tui: move matching .node files and distribute to npm packages
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \;
+                  cd packages/terminal/tui && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: move matching .node files and distribute to npm packages
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
+                  cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
                   rm -rf artifacts/
-                  pnpm exec napi artifacts --output-dir . --npm-dir npm
-                  rm -f *.node
 
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
@@ -110,4 +118,4 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**'"
+              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**'"
