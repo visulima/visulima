@@ -6,13 +6,14 @@ import convertValue from "./utils/convert-value";
 import debugLog from "./utils/debug";
 
 const CAMEL_CASE_PATTERN = /-([a-z])/g;
+const NUMERIC_PATTERN = /^\d+$/;
 
 /**
  * Check if a type is Boolean.
  * @param type The type to check
  * @returns True if the type is Boolean or BooleanConstructor
  */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean"));
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name.startsWith("Boolean"));
 
 /**
  * Check if a key is special (starts with underscore).
@@ -79,7 +80,7 @@ const getDefinition = (
     caseInsensitiveAliasMap: Map<string, OptionDefinition> | undefined,
 ): OptionDefinition | undefined => {
     // Try exact match first (case-sensitive)
-    let definition = definitionMap.get(name) || aliasMap.get(name);
+    let definition = definitionMap.get(name) ?? aliasMap.get(name);
 
     // If no exact match and case-insensitive mode is enabled, try lowercase lookup
     if (!definition && caseInsensitiveNameMap) {
@@ -87,7 +88,7 @@ const getDefinition = (
         // are matched correctly (e.g., -AB becomes -ab and matches aliases a and b)
         const lowercasedKey = name.toLowerCase();
 
-        definition = caseInsensitiveNameMap.get(lowercasedKey) || caseInsensitiveAliasMap?.get(lowercasedKey);
+        definition = caseInsensitiveNameMap.get(lowercasedKey) ?? caseInsensitiveAliasMap?.get(lowercasedKey);
     }
 
     return definition;
@@ -108,7 +109,7 @@ const getDefinition = (
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], options: ParseOptions, argv: string[]): CommandLineOptions => {
-    const debugEnabled = options.debug || false;
+    const debugEnabled = options.debug ?? false;
 
     debugLog(debugEnabled, `resolveArgs called with options:`, "resolver", {
         partial: options.partial,
@@ -127,6 +128,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     const camelCaseMap = options.camelCase ? new Map<string, string>() : undefined;
     const camelCaseReverseMap = options.camelCase ? new Map<string, string>() : undefined;
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const definition of definitions) {
         definitionMap.set(definition.name, definition);
 
@@ -143,7 +145,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
 
         if (options.camelCase && camelCaseMap && camelCaseReverseMap) {
-            const camelCase = definition.name.replaceAll(CAMEL_CASE_PATTERN, (_, letter) => letter.toUpperCase());
+            const camelCase = definition.name.replaceAll(CAMEL_CASE_PATTERN, (_, letter: string) => letter.toUpperCase());
 
             camelCaseMap.set(definition.name, camelCase);
             camelCaseReverseMap.set(camelCase, definition.name);
@@ -177,7 +179,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             let definition = getDefinition(token.name, definitionMap, aliasMap, caseInsensitiveNameMap, caseInsensitiveAliasMap);
 
             // Handle numeric option names
-            if (!definition && token.value === undefined && hasNumberType && /^\d+$/.test(token.name)) {
+            if (!definition && token.value === undefined && hasNumberType && NUMERIC_PATTERN.test(token.name)) {
                 const numberDefinition = definitions.find((anyDefinition) => anyDefinition.type === Number);
 
                 if (numberDefinition) {
@@ -196,7 +198,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             }
 
             if (!definition && options.partial) {
-                const rawArgument = token.rawName || `--${token.name}${token.value !== undefined && token.inlineValue ? `=${token.value}` : ""}`;
+                const rawArgument = token.rawName ?? `--${token.name}${token.value !== undefined && token.inlineValue ? `=${token.value}` : ""}`;
 
                 unknownArgs.push({ index: token.index, value: rawArgument });
                 continue;
@@ -270,11 +272,9 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     switch (value) {
                         case "": {
                             if (options.partial) {
-                                if (!values._unknown) {
-                                    values._unknown = [];
-                                }
+                                values._unknown ??= [];
 
-                                values._unknown.push(`${token.rawName || `--${token.name}`}${token.value ? `=${token.value}` : ""}`);
+                                (values._unknown as string[]).push(`${token.rawName ?? `--${token.name}`}${token.value ? `=${token.value}` : ""}`);
                                 value = true;
                             } else {
                                 throw new UnknownOptionError(token.name);
@@ -297,7 +297,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const collectedValues: any[] = value === undefined ? [] : [value];
+                const collectedValues: any[] = [value];
 
                 if (isMultiple) {
                     let currentIndex = i + 1;
@@ -324,13 +324,14 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         } else if (token.kind === "positional" && options.stopAtFirstUnknown && !consumedPositionalIndices.has(token.index) && !defaultOptionDefinition) {
             // Only stop on unconsumed positionals when there is no defaultOption to absorb them.
             // When a defaultOption exists, positionals are collected in the second pass below.
-            debugLog(debugEnabled, `Found unconsumed positional token at index ${token.index}, stopping processing`, "resolver");
+            debugLog(debugEnabled, `Found unconsumed positional token at index ${String(token.index)}, stopping processing`, "resolver");
             output._unknown = argv.slice(token.index);
             break;
         }
     }
 
     // Ensure multiple values are arrays
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(values)) {
         const definition = definitionMap.get(key);
 
@@ -344,13 +345,14 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     let stopAtUnknownArgvIndex = Number.POSITIVE_INFINITY;
 
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const token of tokens) {
             if (
                 token.kind === "option"
-                && !definitionMap.has(token.name || "")
-                && !aliasMap.has(token.name || "")
+                && !definitionMap.has(token.name ?? "")
+                && !aliasMap.has(token.name ?? "")
                 && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? "")))
             ) {
                 stopAtUnknownArgvIndex = token.index;
                 break;
@@ -360,10 +362,10 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
     // Handle defaultOption
     if (defaultOptionDefinition) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const positionalValues: any[] = [];
+        const positionalValues: unknown[] = [];
         const positionalTokens: ArgumentToken[] = [];
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const token of tokens) {
             // Only consume positionals that appear before any unknown option
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index) && token.index < stopAtUnknownArgvIndex) {
@@ -373,8 +375,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
 
         if (positionalValues.length > 0) {
-            const existingValue = values[defaultOptionDefinition.name];
-            const isMultiple = defaultOptionDefinition.multiple || defaultOptionDefinition.lazyMultiple;
+            const existingValue: unknown = values[defaultOptionDefinition.name];
+            const isMultiple = defaultOptionDefinition.multiple ?? defaultOptionDefinition.lazyMultiple;
 
             if (existingValue === undefined) {
                 if (isMultiple) {
@@ -396,6 +398,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
     // In non-partial mode, throw error for unconsumed positional arguments
     if (!options.partial) {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const token of tokens) {
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                 throw new UnknownValueError(argv[token.index] as string);
@@ -414,7 +417,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 valueUnknownMap.set(element, i);
             }
 
-            for (const argument of values._unknown) {
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
+            for (const argument of values._unknown as string[]) {
                 const index = valueUnknownMap.get(argument);
 
                 if (index !== undefined) {
@@ -423,6 +427,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             }
         }
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const token of tokens) {
             if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
                 allUnknownItems.push({ index: token.index, value: argv[token.index] as string });
@@ -440,10 +445,10 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         const firstUnknownOptionTokenIndex = tokens.findIndex(
             (token) =>
                 token.kind === "option"
-                && !definitionMap.has(token.name || "")
-                && !aliasMap.has(token.name || "")
+                && !definitionMap.has(token.name ?? "")
+                && !aliasMap.has(token.name ?? "")
                 && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? ""))),
         );
 
         const firstUnconsumedPositionalTokenIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
@@ -469,24 +474,27 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     }
 
     // Process collected values
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(values)) {
-        const finalKey = options.camelCase ? camelCaseMap?.get(key) || key : key;
+        const finalKey = options.camelCase ? camelCaseMap?.get(key) ?? key : key;
         const definition = definitionMap.get(key);
 
-        // eslint-disable-next-line unicorn/no-null, sonarjs/no-nested-conditional
+        // eslint-disable-next-line unicorn/no-null, sonarjs/no-nested-conditional, @typescript-eslint/no-unsafe-assignment
         output[finalKey] = definition?.type ? convertValue(value, definition.type) : value === undefined ? null : value;
     }
 
     // Handle default values
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const definition of definitions) {
-        const key = options.camelCase ? camelCaseMap?.get(definition.name) || definition.name : definition.name;
+        const key = options.camelCase ? camelCaseMap?.get(definition.name) ?? definition.name : definition.name;
 
         if (!(key in output) && definition.defaultValue !== undefined) {
-            const isMultipleDefinition = definition.multiple || definition.lazyMultiple;
+            const isMultipleDefinition = definition.multiple ?? definition.lazyMultiple;
 
             if (isMultipleDefinition) {
                 output[key] = Array.isArray(definition.defaultValue) ? [...definition.defaultValue] : [definition.defaultValue];
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 output[key] = definition.defaultValue;
             }
         }
@@ -501,30 +509,32 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ungroupedOptions: Record<string, any> = {};
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const definition of definitions) {
             if (definition.group) {
                 const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
+                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const group of groupArray) {
                     if (isUnsafeKey(group)) {
                         continue;
                     }
 
-                    if (!groups[group]) {
-                        groups[group] = {};
-                    }
+                    groups[group] ??= {};
                 }
             }
         }
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const key of Object.keys(output)) {
             if (!isSpecialKey(key)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 allOptions[key] = output[key];
 
                 let originalKey = key;
 
                 if (options.camelCase) {
-                    originalKey = camelCaseReverseMap?.get(key) || key;
+                    originalKey = camelCaseReverseMap?.get(key) ?? key;
                 }
 
                 const definition = definitionMap.get(originalKey);
@@ -532,16 +542,19 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 if (definition?.group) {
                     const groupArray = Array.isArray(definition.group) ? definition.group : [definition.group];
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const group of groupArray) {
                         if (isUnsafeKey(group)) {
                             continue;
                         }
 
                         if (groups[group]) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             groups[group][key] = output[key];
                         }
                     }
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     ungroupedOptions[key] = output[key];
                 }
             }
@@ -549,6 +562,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
         const groupedOutput: CommandLineOptions = { _all: allOptions };
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [group, groupOptions] of Object.entries(groups)) {
             groupedOutput[group] = groupOptions;
         }

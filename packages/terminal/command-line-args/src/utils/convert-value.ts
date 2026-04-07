@@ -8,7 +8,7 @@ type TypeConstructor = (input: string) => unknown;
  * @param type The type to check
  * @returns True if the type is Boolean or BooleanConstructor
  */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean"));
+const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name.startsWith("Boolean"));
 
 /**
  * Check if a type is number.
@@ -61,10 +61,10 @@ const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor
     }
 
     if (isStringType(type)) {
-        return String(value);
+        return typeof value === "string" ? value : String(value as string | number | boolean);
     }
 
-    return type(String(value));
+    return type(typeof value === "string" ? value : String(value as string | number | boolean));
 };
 
 export default convertValue;

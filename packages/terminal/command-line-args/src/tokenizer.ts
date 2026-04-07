@@ -123,7 +123,6 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
     const remainings = [...args];
     let index = -1;
     let groupCount = 0;
-    let hasShortValueSeparator = false;
 
     while (remainings.length > 0) {
         const argument = remainings.shift();
@@ -161,12 +160,10 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
         if (isShortOption(argument)) {
             const shortOption = argument.charAt(1);
             let value: string | undefined;
-            let inlineValue: boolean | undefined;
 
             if (groupCount) {
                 tokens.push({
                     index,
-                    inlineValue,
                     kind: "option",
                     name: shortOption,
                     rawName: argument,
@@ -180,15 +177,8 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                     // value belongs to index of the whole "-abc" argument, not a new index)
                     value = remainings.shift();
 
-                    if (hasShortValueSeparator) {
-                        inlineValue = true;
-                        // eslint-disable-next-line sonarjs/no-redundant-assignments
-                        hasShortValueSeparator = false;
-                    }
-
                     tokens.push({
                         index,
-                        inlineValue,
                         kind: "option",
                         value,
                     });
@@ -196,7 +186,6 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
             } else {
                 tokens.push({
                     index,
-                    inlineValue,
                     kind: "option",
                     name: shortOption,
                     rawName: argument,
