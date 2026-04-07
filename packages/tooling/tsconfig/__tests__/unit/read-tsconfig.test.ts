@@ -264,7 +264,7 @@ describe("parses tsconfig", () => {
             });
 
             // @ts-expect-error - We're testing a private property
-            delete tsconfig?.compilerOptions?.[implicitBaseUrlSymbol];
+            delete tsconfig.compilerOptions[implicitBaseUrlSymbol];
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         } finally {

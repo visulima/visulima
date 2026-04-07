@@ -8,6 +8,8 @@ import type { Options } from "../src/read-tsconfig";
 
 const tscPath = resolve("node_modules/.bin/tsc");
 
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
 /**
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
@@ -22,7 +24,7 @@ export const execScriptSync = (file: string, flags: string[] = []): string => {
     const result = execSync(cmd);
 
     // replace last newline in result
-    return result.toString().replace(/\n$/, "");
+    return result.toString().replace(TRAILING_NEWLINE_REGEX, "");
 };
 
 /**
@@ -51,5 +53,5 @@ export const parseVersion = (version: string): Options["tscCompatible"] | undefi
         return undefined;
     }
 
-    return `${major}.${minor}` as Options["tscCompatible"];
+    return `${String(major)}.${String(minor)}` as Options["tscCompatible"];
 };
