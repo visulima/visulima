@@ -1,4 +1,4 @@
-/* eslint-disable no-for-of-array/no-for-of-array, sonarjs/prefer-regexp-exec, @typescript-eslint/restrict-template-expressions */
+/* eslint-disable sonarjs/prefer-regexp-exec, @typescript-eslint/restrict-template-expressions */
 const TEMPLATE_LITERAL_REGEX = /`((?:[^`$]|\$\{[^}]+\})*)`/g;
 const VARIABLE_PLACEHOLDER_REGEX = /\$\{[^}]+\}/g;
 const REGEX_SPECIAL_CHARS_REGEX = /[.*+?^${}()|[\]\\]/g;

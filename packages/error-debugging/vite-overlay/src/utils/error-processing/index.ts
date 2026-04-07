@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, no-for-of-array/no-for-of-array, @typescript-eslint/restrict-template-expressions, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, @typescript-eslint/restrict-template-expressions, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
 import type { ViteDevServer } from "vite";

@@ -1,4 +1,4 @@
-/* eslint-disable sonarjs/prefer-regexp-exec, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
+/* eslint-disable sonarjs/prefer-regexp-exec, @typescript-eslint/no-unnecessary-type-conversion */
 import { stripVTControlCharacters } from "node:util";
 
 // eslint-disable-next-line import/no-extraneous-dependencies

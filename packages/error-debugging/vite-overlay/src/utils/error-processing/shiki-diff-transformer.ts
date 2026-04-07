@@ -1,4 +1,4 @@
-/* eslint-disable no-for-of-array/no-for-of-array, @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import type { Element, ElementContent, ElementContentMap } from "hast";
 import type { ShikiTransformer } from "shiki/types";
 
