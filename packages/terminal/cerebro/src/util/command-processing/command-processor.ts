@@ -162,4 +162,4 @@ export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogg
     command: ICommand<OD, TLogger>,
     toolbox: IToolbox<TLogger>,
     _commandArgs: CommandLineOptions,
-): Promise<unknown> => await command.execute(toolbox);
+): Promise<unknown> => { await command.execute(toolbox); };

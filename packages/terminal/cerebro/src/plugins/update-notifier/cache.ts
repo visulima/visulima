@@ -39,7 +39,7 @@ export const getLastUpdate = (packageName: string): number | undefined => {
 
         const { lastUpdateCheck } = JSON.parse(readFileSync(configFile, "utf8")) as { lastUpdateCheck: number };
 
-        return lastUpdateCheck as number;
+        return lastUpdateCheck;
     } catch {
         return undefined;
     }

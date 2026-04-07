@@ -68,12 +68,12 @@ export interface Cli<T extends Console> {
 
     getCommandSection: () => CommandSection;
 
+    getCwd: () => string;
+
     /**
      * Gets all global options (built-in + custom).
      */
     getGlobalOptions: () => OptionDefinition<unknown>[];
-
-    getCwd: () => string;
 
     getPackageName: () => string | undefined;
 

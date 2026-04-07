@@ -62,7 +62,7 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
     }
 
     if (optionsToAdd.length > 0) {
-        (command.options as OD[]).push(...optionsToAdd);
+        command.options.push(...optionsToAdd);
     }
 };
 
@@ -91,7 +91,7 @@ export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger
         return;
     }
 
-    const options = toolbox.options as IToolbox["options"];
+    const { options } = toolbox;
 
     // Build a map of negated options by their camelCase name
     const negatedOptionMap = new Map<string, OptionDefinition<unknown>>();
@@ -175,13 +175,13 @@ export const mapImpliedOptions = <O extends OptionDefinition<unknown>, TLogger e
         return;
     }
 
-    const options = toolbox.options as IToolbox["options"];
+    const { options } = toolbox;
 
     for (const optionKey of Object.keys(options)) {
         const option = optionMapByCamelCase.get(optionKey);
 
         if (option?.implies) {
-            const implies = option.implies as Record<string, unknown>;
+            const { implies } = option;
 
             for (const [key, value] of Object.entries(implies)) {
                 if (options[key] === undefined) {

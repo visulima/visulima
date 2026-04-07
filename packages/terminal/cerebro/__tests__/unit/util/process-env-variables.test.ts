@@ -38,7 +38,7 @@ describe("util/env-processor", () => {
 
         process.env.TEST_STRING_VAR = "test-value";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 name: "TEST_STRING_VAR",
             },
@@ -56,7 +56,7 @@ describe("util/env-processor", () => {
 
         process.env.TEST_STRING_VAR = "test-value";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 name: "TEST_STRING_VAR",
                 type: String,
@@ -157,7 +157,7 @@ describe("util/env-processor", () => {
 
         delete process.env.TEST_VAR;
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 defaultValue: "default-value",
                 name: "TEST_VAR",
@@ -217,7 +217,7 @@ describe("util/env-processor", () => {
 
         process.env.TEST_VAR = "env-value";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 defaultValue: "default-value",
                 name: "TEST_VAR",
@@ -239,7 +239,7 @@ describe("util/env-processor", () => {
         process.env.ANOTHER_TEST_VAR = "value2";
         process.env.SINGLE = "value3";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 name: "TEST_ENV_VAR_NAME",
             },
@@ -267,7 +267,7 @@ describe("util/env-processor", () => {
         process.env.NUMBER_VAR = "42";
         process.env.BOOL_VAR = "true";
 
-        const envDefinitions: (EnvDefinition<string> | EnvDefinition<number> | EnvDefinition<boolean>)[] = [
+        const envDefinitions: (EnvDefinition | EnvDefinition<number> | EnvDefinition<boolean>)[] = [
             {
                 name: "STRING_VAR",
                 type: String,
@@ -298,7 +298,7 @@ describe("util/env-processor", () => {
 
         const customTransform = (value: string | undefined): string => value?.toUpperCase() ?? "";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 name: "CUSTOM_VAR",
                 type: customTransform,
@@ -318,7 +318,7 @@ describe("util/env-processor", () => {
         process.env.VISIBLE_VAR = "visible";
         process.env.HIDDEN_VAR = "hidden";
 
-        const envDefinitions: EnvDefinition<string>[] = [
+        const envDefinitions: EnvDefinition[] = [
             {
                 name: "VISIBLE_VAR",
             },

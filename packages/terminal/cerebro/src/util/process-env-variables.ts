@@ -18,7 +18,7 @@ const transformBooleanEnv = (value: string | undefined): boolean | undefined => 
 /**
  * Transforms an environment variable value according to its type definition.
  */
-const transformEnvValue = (envDefinition: EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>, envValue: string | undefined): unknown => {
+const transformEnvValue = (envDefinition: EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition, envValue: string | undefined): unknown => {
     if (!envDefinition.type) {
         return envValue;
     }
@@ -72,7 +72,7 @@ const toCamelCase = (name: string): string =>
  * @returns Object with camelCase keys and transformed values
  */
 const processEnvVariables = (
-    envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition<string>)[] | undefined,
+    envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition)[] | undefined,
 ): Record<string, unknown> => {
     if (!envDefinitions || envDefinitions.length === 0) {
         return {};

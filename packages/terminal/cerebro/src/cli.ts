@@ -498,7 +498,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             }
         }
 
-        validateDuplicateOptions(command as unknown as ICommand<OptionDefinition<unknown>, Console>);
+        validateDuplicateOptions(command as unknown as ICommand);
         addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
@@ -516,7 +516,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         this.#invalidateCommandCache();
 
         if (command.alias !== undefined) {
-            const aliases = typeof command.alias === "string" ? [command.alias] : (command.alias as string[]);
+            const aliases = typeof command.alias === "string" ? [command.alias] : command.alias;
 
             for (const alias of aliases) {
                 const env = getEnv();
@@ -568,7 +568,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             });
         }
 
-        if (optionDef.alias && builtInAliases.has(optionDef.alias as string)) {
+        if (optionDef.alias && builtInAliases.has(optionDef.alias)) {
             throw new CerebroError(
                 `Cannot add global option with alias "-${String(optionDef.alias)}": it conflicts with a built-in global option alias`,
                 "DUPLICATE_OPTION",
@@ -831,7 +831,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 throw new CommandNotFoundError(pathKey, alternatives);
             }
         } else {
-            const commandName = parsedCommandPath[parsedCommandPath.length - 1];
+            const commandName = parsedCommandPath.at(-1);
 
             command = commandName ? this.#commands.get(commandName) : undefined;
 
@@ -866,9 +866,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 this.#pluginsInitialized = true;
             }
 
-            await pluginManager.executeLifecycle("execute", toolbox as IToolbox<T>);
+            await pluginManager.executeLifecycle("execute", toolbox);
 
-            await pluginManager.executeLifecycle("beforeCommand", toolbox as IToolbox<T>);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
 
             let result: unknown;
 
@@ -892,11 +892,11 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            await pluginManager.executeLifecycle("afterCommand", toolbox as IToolbox<T>, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
 
             return shouldExitProcess ? exitProcess(0) : undefined;
         } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox as IToolbox<T>);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
 
             throw error;
         } finally {
@@ -972,9 +972,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 this.#pluginsInitialized = true;
             }
 
-            await pluginManager.executeLifecycle("execute", toolbox as IToolbox<T>);
+            await pluginManager.executeLifecycle("execute", toolbox);
 
-            await pluginManager.executeLifecycle("beforeCommand", toolbox as IToolbox<T>);
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
 
             let result: unknown;
 
@@ -998,11 +998,11 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 result = await executeCommand(command, toolbox, commandArgs);
             }
 
-            await pluginManager.executeLifecycle("afterCommand", toolbox as IToolbox<T>, result);
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
 
             return result;
         } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox as IToolbox<T>);
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
 
             throw error;
         }

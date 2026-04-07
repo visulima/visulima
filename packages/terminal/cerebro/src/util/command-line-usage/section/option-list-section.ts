@@ -13,8 +13,8 @@ class OptionListSection extends BaseSection {
 
         let definitions = data.optionList ?? [];
 
-        const hide = Array.isArray(data.hide) ? data.hide : ([data.hide].filter(Boolean) as string[]);
-        const groups = Array.isArray(data.group) ? data.group : ([data.group].filter(Boolean) as string[]);
+        const hide = Array.isArray(data.hide) ? data.hide : [data.hide].filter(Boolean);
+        const groups = Array.isArray(data.group) ? data.group : [data.group].filter(Boolean);
 
         /* filter out hidden definitions */
         if (hide.length > 0) {

@@ -35,7 +35,7 @@ describe("addGlobalOption", () => {
 
         const allOptions = cli.getGlobalOptions();
 
-        expect(allOptions.length).toBe(builtInCount + 1);
+        expect(allOptions).toHaveLength(builtInCount + 1);
         expect(allOptions.some((o) => o.name === "cwd")).toBe(true);
     });
 
