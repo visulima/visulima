@@ -1,3 +1,4 @@
+import type { Trace } from "@visulima/error";
 import { codeFrame, parseStacktrace } from "@visulima/error";
 import type { VisulimaError } from "@visulima/error/error";
 import type { SolutionError, SolutionFinder } from "@visulima/error/solution";
@@ -27,11 +28,11 @@ const errorCard = async ({
     html: string;
     scripts: string[];
 }> => {
-    let runtime = `${runtimeName?.toUpperCase()} ${version ?? ""}`;
+    let runtime = `${runtimeName?.toUpperCase() ?? ""} ${version ?? ""}`;
 
     if (runtime.includes("NODE")) {
         runtime = `<a href="https://nodejs.org/dist/latest-${
-            version?.split(".")[0]
+            version?.split(".")[0] ?? ""
         }.x/docs/api/" class="text-blue-500 hover:underline inline-flex items-center text-sm" target="_blank" rel="noopener noreferrer">${runtime.replace(
             "NODE",
             "Node.js",
@@ -46,8 +47,7 @@ const errorCard = async ({
     const safeTitleValue = sanitizeAttribute(`${error.name}: ${(error as Error).message}`);
 
     // Build AI prompt using first stack frame and code frame when available
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const trace = parseStacktrace(error as Error, { frameLimit: 1 })?.[0] as any;
+    const trace: Trace | undefined = parseStacktrace(error as Error, { frameLimit: 1 })[0];
     const filePath = trace?.file ?? "";
     const fileLine = trace?.line ?? 0;
     const fileSource = filePath ? await getFileSource(filePath) : "";

@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify";
+import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
 
 import type { Theme } from "../types";
 import { sanitizeCspNonce } from "./utils/sanitize";
@@ -14,7 +14,7 @@ const escapeHtml = (value: string): string =>
             ">": "&gt;",
         };
 
-        return entities[char] || char;
+        return entities[char] ?? char;
     });
 
 // Client-side utility scripts
@@ -112,12 +112,12 @@ const layout = ({
     const safeCspNonce = sanitizeCspNonce(cspNonce);
 
     // Escape title and description to prevent HTML injection
-    const safeTitle = escapeHtml(title || "Error");
-    const safeDescription = escapeHtml(description || "");
+    const safeTitle = escapeHtml(title);
+    const safeDescription = escapeHtml(description);
 
     // Optimize stack processing - only indent if stack exists and contains newlines
-    const rawStack = error.stack || error.toString();
-    const errorStack = DOMPurify.sanitize(rawStack.includes("\n") ? rawStack.replaceAll("\n", "\n\t") : rawStack);
+    const rawStack = error.stack ?? error.toString();
+    const errorStack = dompurifySanitize(rawStack.includes("\n") ? rawStack.replaceAll("\n", "\n\t") : rawStack);
 
     return `<!--
     ${errorStack}

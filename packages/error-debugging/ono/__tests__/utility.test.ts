@@ -7,6 +7,8 @@ import revisionHash from "../src/utils/revision-hash";
 import type { RuntimeName } from "../src/utils/runtimes";
 import runtime from "../src/utils/runtimes";
 
+const HEX_16_PATTERN = /^[a-f0-9]{16}$/;
+
 describe("utilities", () => {
     describe("sanitize functions", () => {
         describe(sanitizeHtml, () => {
@@ -228,7 +230,7 @@ describe("utilities", () => {
 
             const hash = revisionHash("test");
 
-            expect(hash).toMatch(/^[a-f0-9]{16}$/);
+            expect(hash).toMatch(HEX_16_PATTERN);
         });
     });
 
@@ -238,7 +240,7 @@ describe("utilities", () => {
 
             const validRuntimes: RuntimeName[] = ["bun", "deno", "edge-light", "fastly", "lagon", "netlify", "node", "workerd"];
 
-            expect(typeof runtime === "string" || runtime === undefined).toBe(true);
+            expect(runtime === undefined || typeof runtime === "string").toBe(true);
 
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (runtime) {

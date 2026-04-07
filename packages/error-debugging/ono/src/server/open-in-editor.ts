@@ -54,7 +54,7 @@ export type OpenInEditorOptions = {
  */
 export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}): UniversalHandler => {
     const parseRequestBody = async (request: IncomingMessage & { body?: RequestBody }): Promise<EditorPayload> => {
-        const method = String(request.method || "GET").toUpperCase();
+        const method = (request.method ?? "GET").toUpperCase();
 
         if (method === "POST") {
             if (request.body && typeof request.body === "object") {
@@ -79,20 +79,22 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
 
                     request.on("data", onData);
                     request.on("end", onEnd);
-                    request.on("error", () => { resolve({} as EditorPayload); });
+                    request.on("error", () => {
+                        resolve({} as EditorPayload);
+                    });
                 } catch {
                     resolve({} as EditorPayload);
                 }
             });
         }
 
-        const url = new URL(request.url || "", "http://localhost");
+        const url = new URL(request.url ?? "", "http://localhost");
 
         return {
-            column: Number(url.searchParams.get("column") || 1),
-            editor: url.searchParams.get("editor") || undefined,
-            file: url.searchParams.get("file") || undefined,
-            line: Number(url.searchParams.get("line") || 1),
+            column: Number(url.searchParams.get("column") ?? 1),
+            editor: url.searchParams.get("editor") ?? undefined,
+            file: url.searchParams.get("file") ?? undefined,
+            line: Number(url.searchParams.get("line") ?? 1),
         };
     };
 
@@ -162,7 +164,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
             });
 
             if (payload.editor) {
-                q.set("editor", String(payload.editor));
+                q.set("editor", payload.editor);
             }
 
             request.url = `/?${q.toString()}`;

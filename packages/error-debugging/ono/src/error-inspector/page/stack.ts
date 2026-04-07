@@ -100,22 +100,19 @@ const buildScriptContent = (stackTraceScript: string, causesViewerScript: string
  */
 const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], options: TemplateOptions = {}): Promise<ContentPage> => {
     // Input validation
-    if (!error) {
-        throw new TypeError("Error parameter is required");
-    }
-
     if (!Array.isArray(solutionFinders)) {
         throw new TypeError("solutionFinders must be an array");
     }
 
     // Get all error causes - optimize by avoiding full array creation if no causes
-    const allCauses = getErrorCauses(error);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- getErrorCauses type not resolved across package boundary
+    const allCauses: ErrorType[] = getErrorCauses<ErrorType>(error);
 
     // Extract and validate the main error
-    const mainError = extractMainError(allCauses);
+    const mainError = extractMainError(allCauses as unknown[]);
 
     // Optimize: only slice remaining causes if we actually have more than one cause
-    const remainingCauses = allCauses.length > 1 ? allCauses.slice(1) : [];
+    const remainingCauses: unknown[] = allCauses.length > 1 ? allCauses.slice(1) : [];
 
     // Generate all HTML components concurrently for better performance
 

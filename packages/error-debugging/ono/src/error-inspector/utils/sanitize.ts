@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify";
+import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
 
 import type { TemplateOptions } from "../types";
 
@@ -22,7 +22,13 @@ const HTML_ENTITIES = {
 const CSP_NONCE_PATTERN = /^[\w+/-]+={0,2}$/;
 
 // Converts a value to a string, handling null/undefined cases
-const toString = (value: unknown): string => String(value ?? "").trim();
+const toString = (value: unknown): string => {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return (typeof value === "string" ? value : String(value as bigint | boolean | number | symbol)).trim();
+};
 
 // Escapes HTML entities for safe use in HTML attributes
 const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => HTML_ENTITIES[char as keyof typeof HTML_ENTITIES]);
@@ -30,7 +36,7 @@ const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char
 // Sanitizes HTML content using DOMPurify to prevent XSS attacks
 export const sanitizeHtml = (value: unknown): string => {
     try {
-        return DOMPurify.sanitize(toString(value));
+        return dompurifySanitize(toString(value));
     } catch {
         // Fallback to basic escaping if DOMPurify fails
         return escapeHtml(toString(value));
@@ -47,7 +53,7 @@ export const sanitizeAttribute = (value: unknown): string => {
 
     try {
         // DOMPurify sanitizes but we need to ensure quotes are escaped for attribute safety
-        const sanitized = DOMPurify.sanitize(stringValue);
+        const sanitized = dompurifySanitize(stringValue);
 
         return sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
     } catch {
@@ -66,7 +72,7 @@ export const sanitizeUrlAttribute = (value: unknown): string => {
     }
 
     try {
-        const sanitized = DOMPurify.sanitize(rawUrl);
+        const sanitized = dompurifySanitize(rawUrl);
         const lowerUrl = sanitized.toLowerCase();
 
         // Check if URL starts with allowed prefixes
@@ -89,7 +95,7 @@ export const sanitizeCodeHtml = (value: unknown): string => {
 
     try {
         // Preserve styling/classes produced by syntax highlighters like Shiki
-        return DOMPurify.sanitize(stringValue, {
+        return dompurifySanitize(stringValue, {
             ADD_ATTR: ["class", "style"],
         });
     } catch {
@@ -112,10 +118,6 @@ export const sanitizeCspNonce = (value: unknown): string | undefined => {
 
 // Sanitizes all user-controlled template options to prevent XSS attacks
 export const sanitizeOptions = (options: TemplateOptions = {}): TemplateOptions => {
-    if (!options || typeof options !== "object") {
-        return {};
-    }
-
     try {
         return {
             ...options,

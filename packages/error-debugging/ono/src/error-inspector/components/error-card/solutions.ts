@@ -1,8 +1,9 @@
+import type { Trace } from "@visulima/error";
 import type { VisulimaError } from "@visulima/error/error";
 import type { Solution, SolutionError, SolutionFinder } from "@visulima/error/solution";
 import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
 import { parseStacktrace } from "@visulima/error/stacktrace";
-import DOMPurify from "isomorphic-dompurify";
+import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -22,12 +23,12 @@ const solutions = async (
 }> => {
     let hint: Solution | undefined;
 
-    solutionFinders.push(ruleBasedFinder, errorHintFinder);
+    solutionFinders.push(ruleBasedFinder as SolutionFinder, errorHintFinder as SolutionFinder);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const firstTrace = parseStacktrace(error, { frameLimit: 1 })[0] as any;
+    const firstTrace: Trace | undefined = parseStacktrace(error, { frameLimit: 1 })[0];
 
-    for await (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- sequential await requires for...of
+    for (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
         if (hint) {
             break;
         }
@@ -44,10 +45,12 @@ const solutions = async (
         }
 
         try {
+            // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
             hint = await solutionHandler(error, {
                 file: firstTrace?.file ?? "",
                 language: findLanguageBasedOnExtension(firstTrace?.file ?? ""),
                 line: firstTrace?.line ?? 0,
+                // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
                 snippet: firstTrace?.file ? await getFileSource(firstTrace.file) : "",
             });
         } catch {
@@ -77,12 +80,12 @@ const solutions = async (
 
                 const parsedHeader = await parse(hint.header);
 
-                return DOMPurify.sanitize(String(parsedHeader));
+                return dompurifySanitize(parsedHeader);
             })()}
             ${await (async () => {
                 const parsedBody = await parse(hint.body);
 
-                return DOMPurify.sanitize(String(parsedBody));
+                return dompurifySanitize(parsedBody);
             })()}
         </div>
     </div>
