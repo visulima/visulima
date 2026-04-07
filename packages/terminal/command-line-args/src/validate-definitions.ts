@@ -2,11 +2,13 @@ import { InvalidDefinitionsError } from "./errors/index";
 import type { OptionDefinition, ParseOptions } from "./types";
 import debugLog from "./utils/debug";
 
+const DIGIT_PATTERN = /\d/;
+
 /**
  * Check if a type is boolean.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isBooleanType = (type: any): boolean => type && (type === Boolean || (typeof type === "function" && type.name?.startsWith("Boolean")));
+const isBooleanType = (type: unknown): boolean =>
+    type !== undefined && type !== null && (type === Boolean || (typeof type === "function" && (type as { name: string }).name.startsWith("Boolean")));
 
 /**
  * Check if a custom type function is valid by checking its shape only.
@@ -30,7 +32,7 @@ const isValidCustomTypeFunction = (typeFunction: unknown): boolean =>
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseInsensitive?: boolean, debugOptions?: ParseOptions): void => {
-    const debugEnabled = debugOptions?.debug || false;
+    const debugEnabled = debugOptions?.debug ?? false;
 
     debugLog(debugEnabled, "Validating definitions:", "validation", definitions, "caseInsensitive:", caseInsensitive);
 
@@ -41,6 +43,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
 
     let defaultOptionCount = 0;
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const definition of definitions) {
         debugLog(debugEnabled, "Checking definition:", "validation", definition);
 
@@ -86,7 +89,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
                 throw new InvalidDefinitionsError("Invalid option definition: alias must be a single character");
             }
 
-            if (/\d/.test(definition.alias)) {
+            if (DIGIT_PATTERN.test(definition.alias)) {
                 throw new InvalidDefinitionsError("Invalid option definition: alias cannot be numeric");
             }
 

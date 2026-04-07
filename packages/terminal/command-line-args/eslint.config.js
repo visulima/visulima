@@ -24,27 +24,8 @@ export default createConfig(
     {
         files: ["__tests__/**"],
         rules: {
-            "@typescript-eslint/no-unsafe-return": "off",
             "sonarjs/publicly-writable-directories": "off",
             "unicorn/no-null": "off",
-        },
-    },
-    {
-        files: ["**/*.ts"],
-        rules: {
-            "@typescript-eslint/no-base-to-string": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "e18e/prefer-static-regex": "off",
-            "no-for-of-array/no-for-of-array": "off",
-            "sonarjs/different-types-comparison": "off",
-            "sonarjs/no-redundant-optional": "off",
         },
     },
 );

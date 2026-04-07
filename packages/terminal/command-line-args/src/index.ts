@@ -15,7 +15,7 @@ export type { CommandLineOptions, OptionDefinition, ParseOptions } from "./types
  * @returns Parsed command-line arguments as key-value pairs
  */
 export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions = {}): CommandLineOptions => {
-    const debugEnabled = options.debug || false;
+    const debugEnabled = options.debug ?? false;
 
     debugLog(debugEnabled, "Starting command-line-args parsing", "index");
     debugLog(debugEnabled, "Options:", "index", options);
@@ -42,7 +42,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
         // Automatically detect and skip Node.js exec args
         argv = process.argv.slice(2);
 
-        if (process.execArgv?.length) {
+        if (process.execArgv.length > 0) {
             // Skip exec args that appear in argv
             const execArgs = new Set(process.execArgv);
 
@@ -55,7 +55,7 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     // Handle case insensitive option matching
     let normalizedArgv = argv;
 
-    if (effectiveOptions.caseInsensitive && argv) {
+    if (effectiveOptions.caseInsensitive) {
         normalizedArgv = argv.map((argument) => {
             if (argument.startsWith("--")) {
                 const equalsIndex = argument.indexOf("=");
@@ -84,12 +84,12 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     }
 
     // Tokenize arguments
-    const tokens = parseArgsTokens((normalizedArgv ?? argv ?? []).map(String));
+    const tokens = parseArgsTokens(normalizedArgv.map(String));
 
     debugLog(debugEnabled, "Tokenized arguments:", "index", tokens);
 
     // Resolve tokens into final parsed arguments
-    const result = resolveArgs(tokens, definitions as OptionDefinition[], effectiveOptions, argv ?? []);
+    const result = resolveArgs(tokens, definitions as OptionDefinition[], effectiveOptions, argv);
 
     debugLog(debugEnabled, "Command-line-args parsing completed", "index");
 

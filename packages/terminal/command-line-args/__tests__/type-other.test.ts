@@ -9,7 +9,7 @@ describe("type other", () => {
         const definitions = [
             {
                 name: "file",
-                type: (_file) => _file,
+                type: (_file: string): string => _file,
             },
         ];
 
@@ -23,7 +23,7 @@ describe("type other", () => {
         const definitions = [
             {
                 name: "file",
-                type: (_file) => {
+                type: (_file: string): never => {
                     throw new Error("broken");
                 },
             },
@@ -41,7 +41,7 @@ describe("type other", () => {
             {
                 multiple: true,
                 name: "file",
-                type: (_file) => _file,
+                type: (_file: string): string => _file,
             },
         ];
 
