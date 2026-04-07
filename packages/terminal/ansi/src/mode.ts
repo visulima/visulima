@@ -65,7 +65,7 @@ const generateModeSequence = (reset: boolean, ...modes: Mode[]): string => {
             seq += "?";
         }
 
-        return seq + mode.code + command;
+        return seq + String(mode.code) + command;
     }
 
     const ansiModes = modes.filter((m) => !m.isDecMode).map((m) => m.code);
@@ -327,7 +327,7 @@ export const requestMode = (mode: Mode): string => {
         seq += "?";
     }
 
-    return `${seq + mode.code}$p`;
+    return `${seq}${String(mode.code)}$p`;
 };
 
 /** Alias for {@link requestMode}. Generates the DECRQM (Request Mode) sequence. */
@@ -379,7 +379,7 @@ export const reportMode = (mode: Mode, value: ModeSetting): string => {
         seq += "?";
     }
 
-    return `${seq}${mode.code};${effectiveValue}$y`;
+    return `${seq}${String(mode.code)};${String(effectiveValue)}$y`;
 };
 
 /** Alias for {@link reportMode}. Generates the DECRPM (Report Mode) sequence. */

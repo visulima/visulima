@@ -71,7 +71,7 @@ export const eraseDisplay = (mode: EraseDisplayMode | 0 | 1 | 2 | 3): string => 
     const validMode = mode >= 0 && mode <= 3 ? mode : EraseDisplayMode.ToEnd;
 
     // For mode 0 (ToEnd), the parameter can be omitted from the sequence.
-    return `${CSI + (validMode === EraseDisplayMode.ToEnd ? "" : String(validMode))}J`;
+    return `${CSI}${validMode === EraseDisplayMode.ToEnd ? "" : String(validMode)}J`;
 };
 
 /**
@@ -132,7 +132,7 @@ export const eraseInLine = (mode: EraseLineMode | 0 | 1 | 2): string => {
     const validMode = mode >= 0 && mode <= 2 ? mode : EraseLineMode.ToEnd;
 
     // For mode 0 (ToEnd), the parameter can be omitted from the sequence.
-    return `${CSI + (validMode === EraseLineMode.ToEnd ? "" : String(validMode))}K`;
+    return `${CSI}${validMode === EraseLineMode.ToEnd ? "" : String(validMode)}K`;
 };
 
 /**

@@ -162,11 +162,11 @@ export const xtermWindowOp: (p: number, ...ps: number[]) => string = (p: number,
 
     const parameters: (number | string)[] = [p];
 
-    for (const value of ps) {
+    ps.forEach((value) => {
         if (value >= 0) {
             parameters.push(value);
         }
-    }
+    });
 
     return `${CSI}${parameters.join(";")}t`;
 };

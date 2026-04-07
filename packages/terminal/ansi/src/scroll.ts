@@ -34,7 +34,7 @@ export const scrollUp = (count = 1): string => {
     }
 
     // Standard is CSI Pn S. Omitting Pn or Pn=1 implies 1.
-    return `${CSI + (count <= 1 ? "" : count)}S`;
+    return `${CSI}${count <= 1 ? "" : String(count)}S`;
 };
 
 /**
@@ -68,7 +68,7 @@ export const scrollDown = (count = 1): string => {
     }
 
     // Standard is CSI Pn T. Omitting Pn or Pn=1 implies 1.
-    return `${CSI + (count <= 1 ? "" : count)}T`;
+    return `${CSI}${count <= 1 ? "" : String(count)}T`;
 };
 
 /**

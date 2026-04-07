@@ -38,17 +38,8 @@ export default createConfig(
     {
         files: ["./src/**/*.ts"],
         rules: {
-            "@stylistic/operator-linebreak": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "@typescript-eslint/restrict-plus-operands": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "e18e/prefer-static-regex": "off",
             "jsdoc/match-description": "off", // TODO: fix this later
             "jsdoc/no-undefined-types": "off",
-            "no-for-of-array/no-for-of-array": "off",
-            "sonarjs/deprecation": "off",
-            "sonarjs/different-types-comparison": "off",
         },
     },
     {

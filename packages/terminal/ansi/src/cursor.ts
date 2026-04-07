@@ -109,7 +109,7 @@ export const REQUEST_EXTENDED_CURSOR_POSITION: string = `${CSI}?6n`;
  * @see {@link cursorForward}
  * @see {@link cursorLeft} (alias for this function)
  */
-export const cursorBackward = (count = 1): string => `${CSI + count}D`;
+export const cursorBackward = (count = 1): string => `${CSI}${String(count)}D`;
 
 /**
  * Moves the cursor down a specific number of rows from its current position, staying in the same column.
@@ -125,7 +125,7 @@ export const cursorBackward = (count = 1): string => `${CSI + count}D`;
  * @see {@link CURSOR_DOWN_1}
  * @see {@link cursorUp}
  */
-export const cursorDown = (count = 1): string => `${CSI + count}B`;
+export const cursorDown = (count = 1): string => `${CSI}${String(count)}B`;
 
 /**
  * Moves the cursor forward (right) a specific number of columns from its current position.
@@ -141,7 +141,7 @@ export const cursorDown = (count = 1): string => `${CSI + count}B`;
  * @see {@link CURSOR_FORWARD_1}
  * @see {@link cursorBackward}
  */
-export const cursorForward = (count = 1): string => `${CSI + count}C`;
+export const cursorForward = (count = 1): string => `${CSI}${String(count)}C`;
 
 /**
  * Hides the cursor. This uses the DECTCEM (Text Cursor Enable Mode) sequence `CSI ?25l` to set the mode to "invisible".
@@ -190,7 +190,7 @@ export const cursorLeft = (count = 1): string => cursorBackward(count);
  * @see {@link cursorToColumn1} (moves to column 1 specifically).
  * @see {@link cursorTo} for moving to an (x,y) coordinate, which can also use CHA for x-only movement.
  */
-export const cursorHorizontalAbsolute = (column = 1): string => `${CSI + column}G`;
+export const cursorHorizontalAbsolute = (column = 1): string => `${CSI}${String(column)}G`;
 
 /**
  * Moves the cursor relative to its current position by `x` columns and `y` rows.
@@ -222,15 +222,15 @@ export const cursorMove = (x: number, y: number): string => {
     let returnValue = "";
 
     if (x < 0) {
-        returnValue += `${CSI + -x}D`; // Cursor Backward
+        returnValue += `${CSI}${String(-x)}D`; // Cursor Backward
     } else if (x > 0) {
-        returnValue += `${CSI + x}C`; // Cursor Forward
+        returnValue += `${CSI}${String(x)}C`; // Cursor Forward
     }
 
     if (y < 0) {
-        returnValue += `${CSI + -y}A`; // Cursor Up
+        returnValue += `${CSI}${String(-y)}A`; // Cursor Up
     } else if (y > 0) {
-        returnValue += `${CSI + y}B`; // Cursor Down
+        returnValue += `${CSI}${String(y)}B`; // Cursor Down
     }
 
     return returnValue;
@@ -248,7 +248,7 @@ export const cursorMove = (x: number, y: number): string => {
  * cursorNextLine();  // Moves to the beginning of the next line.
  * ```
  */
-export const cursorNextLine = (count = 1): string => `${CSI + count}E`;
+export const cursorNextLine = (count = 1): string => `${CSI}${String(count)}E`;
 
 /**
  * Moves the cursor to the beginning (column 1) of the previous line, `count` times.
@@ -262,7 +262,7 @@ export const cursorNextLine = (count = 1): string => `${CSI + count}E`;
  * cursorPreviousLine();  // Moves to the beginning of the previous line.
  * ```
  */
-export const cursorPreviousLine = (count = 1): string => `${CSI + count}F`;
+export const cursorPreviousLine = (count = 1): string => `${CSI}${String(count)}F`;
 
 /**
  * Restores the last saved cursor position, character attributes (like color and style),
@@ -341,7 +341,7 @@ export const cursorTo = (x: number, y?: number): string => {
     }
 
     // CUP is 1-indexed for row and column.
-    return `${CSI + (y + 1) + SEP + (x + 1)}H`;
+    return `${CSI}${String(y + 1)}${SEP}${String(x + 1)}H`;
 };
 
 /**
@@ -364,10 +364,10 @@ export const cursorTo = (x: number, y?: number): string => {
  */
 export const cursorPosition = (row: number, column?: number): string => {
     if (column === undefined) {
-        return `${CSI + row}H`; // Moves to (row, 1)
+        return `${CSI}${String(row)}H`; // Moves to (row, 1)
     }
 
-    return `${CSI + row + SEP + column}H`;
+    return `${CSI}${String(row)}${SEP}${String(column)}H`;
 };
 
 /**
@@ -384,7 +384,7 @@ export const cursorPosition = (row: number, column?: number): string => {
  * ```
  * @see {@link cursorBackwardTab}
  */
-export const cursorHorizontalForwardTab = (count = 1): string => `${CSI + count}I`;
+export const cursorHorizontalForwardTab = (count = 1): string => `${CSI}${String(count)}I`;
 
 /**
  * Moves the cursor backward (left) to the previous tab stop, `count` times.
@@ -400,7 +400,7 @@ export const cursorHorizontalForwardTab = (count = 1): string => `${CSI + count}
  * ```
  * @see {@link cursorHorizontalForwardTab}
  */
-export const cursorBackwardTab = (count = 1): string => `${CSI + count}Z`;
+export const cursorBackwardTab = (count = 1): string => `${CSI}${String(count)}Z`;
 
 /**
  * Erases `count` characters from the current cursor position forward (inclusive of the character at the cursor position).
@@ -415,7 +415,7 @@ export const cursorBackwardTab = (count = 1): string => `${CSI + count}Z`;
  * process.stdout.write(eraseCharacter(5)); // Erases "Hello", leaves "     World"
  * ```
  */
-export const eraseCharacter = (count = 1): string => `${CSI + count}X`;
+export const eraseCharacter = (count = 1): string => `${CSI}${String(count)}X`;
 
 /**
  * Moves the cursor to the absolute vertical line (row) `row` (1-indexed), maintaining the current column.
@@ -429,7 +429,7 @@ export const eraseCharacter = (count = 1): string => `${CSI + count}X`;
  * cursorVerticalAbsolute();   // Moves to row 1, same column.
  * ```
  */
-export const cursorVerticalAbsolute = (row = 1): string => `${CSI + row}d`;
+export const cursorVerticalAbsolute = (row = 1): string => `${CSI}${String(row)}d`;
 
 /**
  * Moves the cursor up a specific number of rows from its current position, staying in the same column.
@@ -445,7 +445,7 @@ export const cursorVerticalAbsolute = (row = 1): string => `${CSI + row}d`;
  * @see {@link CURSOR_UP_1}
  * @see {@link cursorDown}
  */
-export const cursorUp = (count = 1): string => `${CSI + count}A`;
+export const cursorUp = (count = 1): string => `${CSI}${String(count)}A`;
 
 /**
  * Represents the available cursor styles that can be set using the DECSCUSR (Set Cursor Style) sequence.
@@ -502,7 +502,7 @@ export enum CursorStyle {
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Set-cursor-style-DECSCUSR} XTerm DECSCUSR documentation.
  * @see {@link https://vt100.net/docs/vt510-rm/DECSCUSR.html} VT510 DECSCUSR documentation.
  */
-export const setCursorStyle = (style: CursorStyle | number): string => `${CSI + style} q`; // Note the space before 'q'
+export const setCursorStyle = (style: CursorStyle | number): string => `${CSI}${String(style)} q`; // Note the space before 'q'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { default as restoreCursor } from "restore-cursor";

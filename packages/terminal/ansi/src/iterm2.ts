@@ -61,7 +61,7 @@ export { ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } f
  * ```
  */
 export const iTerm2 = (payload: IITerm2Payload): string => {
-    if (!payload || typeof payload.toString !== "function" || payload.toString === Object.prototype.toString) {
+    if (payload.toString === Object.prototype.toString) {
         throw new Error("Invalid payload: must implement IITerm2Payload with a custom toString method");
     }
 

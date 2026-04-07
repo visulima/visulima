@@ -3,7 +3,9 @@
  * It specifically checks for the presence of `globalThis.window.document`.
  */
 
-const isBrowser = globalThis?.window?.document !== undefined;
+const isBrowser = typeof globalThis !== "undefined" && typeof (globalThis as Record<string, unknown>).window === "object" && ((globalThis as Record<string, unknown>).window as Record<string, unknown>).document !== undefined;
+
+const OSTYPE_REGEX = /^(?:msys|cygwin)$/;
 
 /**
  * Indicates whether the code is running inside Apple's Terminal.app.
@@ -15,4 +17,4 @@ export const isTerminalApp: boolean = !isBrowser && process.env.TERM_PROGRAM ===
  * Indicates whether the current platform is Windows.
  * This is true if not in a browser and `process.platform` is "win32".
  */
-export const isWindows: boolean = !isBrowser && (process.platform === "win32" || /^(?:msys|cygwin)$/.test(<string>process.env.OSTYPE));
+export const isWindows: boolean = !isBrowser && (process.platform === "win32" || OSTYPE_REGEX.test(process.env.OSTYPE as string));

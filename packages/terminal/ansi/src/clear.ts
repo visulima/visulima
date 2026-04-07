@@ -30,7 +30,7 @@ export const clearScreenFromTopLeft: string = cursorTo(0, 0) + eraseDisplay(Eras
  * @see {@link eraseInLine}
  * @see {@link EraseLineMode.EntireLine}
  */
-export const clearLineAndHomeCursor: string = `${eraseInLine(EraseLineMode.EntireLine) + CSI}G`; // Or use "\r" for carriage return
+export const clearLineAndHomeCursor: string = `${eraseInLine(EraseLineMode.EntireLine)}${CSI}G`; // Or use "\r" for carriage return
 
 /**
  * Homes the cursor to the top-left position (row 1, column 1) and erases the entire screen.
@@ -82,12 +82,8 @@ export const clearScreenAndHomeCursor: string = `${CSI}H${eraseDisplay(EraseDisp
  * @see {@link EraseDisplayMode.EntireScreenAndScrollback}
  * @see {@link https://vt100.net/docs/vt510-rm/RIS.html} RIS documentation.
  */
+// On Windows: Erases the screen and moves cursor to (0,0)
+// On other platforms: Full reset - erase screen, erase scrollback, home cursor, and hard reset (RIS)
 export const resetTerminal: string = isWindows
-    ? // prettier-ignore-start
-    `${eraseDisplay(EraseDisplayMode.EntireScreen) + CSI}0f` // `0f` for cursor to (0,0) might be specific or non-standard
-    : // 1. Erases the screen (as a fallback/part of comprehensive clear)
-// 2. Erases the whole screen including scrollback buffer (XTerm)
-// 3. Moves cursor to the top-left position
-// 4. RIS - Hard Reset (most comprehensive reset)
-    `${eraseDisplay(EraseDisplayMode.EntireScreen) + eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback) + CSI}H${ESC}c`;
-// prettier-ignore-end
+    ? `${eraseDisplay(EraseDisplayMode.EntireScreen)}${CSI}0f`
+    : `${eraseDisplay(EraseDisplayMode.EntireScreen)}${eraseDisplay(EraseDisplayMode.EntireScreenAndScrollback)}${CSI}H${ESC}c`;

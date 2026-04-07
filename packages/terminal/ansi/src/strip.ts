@@ -31,6 +31,8 @@ const regex = ansiRegex();
  * ```
  */
 // eslint-disable-next-line no-control-regex
-const strip = (input: string): string => input.replace(/\u001B\]0;.*\u0007/, "").replace(regex, "");
+const OSC_TITLE_REGEX = /\u001B\]0;.*\u0007/;
+
+const strip = (input: string): string => input.replace(OSC_TITLE_REGEX, "").replace(regex, "");
 
 export default strip;

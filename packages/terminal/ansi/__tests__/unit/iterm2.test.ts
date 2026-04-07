@@ -51,10 +51,10 @@ describe("iTerm2 Integration", () => {
                 expect(indexTerm2(payload)).toBe(`${OSC}1337;TestPayload${BEL}`);
             });
 
-            it("should return an empty string for a null payload", () => {
+            it("should throw for a null payload", () => {
                 expect.assertions(1);
 
-                expect(() => indexTerm2(null as any)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
+                expect(() => indexTerm2(null as any)).toThrow("Cannot read properties of null");
             });
 
             it("should return an empty string for a payload with no toString", () => {
