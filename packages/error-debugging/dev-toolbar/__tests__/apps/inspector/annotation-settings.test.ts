@@ -58,7 +58,7 @@ describe("annotation-settings", () => {
 
             const raw = localStorage.getItem("__vdt_annotation_settings");
 
-            expect(raw).toBe(true);
+            expect(raw).toBeTruthy();
             expect(JSON.parse(raw!).outputDetail).toBe("forensic");
         });
 

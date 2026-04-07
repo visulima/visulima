@@ -1,5 +1,6 @@
+import { inspect } from "node:util";
 import colorize, { Colorize, red, green, hex } from "@visulima/colorize";
-console.log(colorize);
+console.log(inspect(colorize, { colors: false }));
 
 const log = console.log;
 
