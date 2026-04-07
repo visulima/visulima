@@ -55,6 +55,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
 };
 
 const migrate: Command = {
+    group: "Scaffold & Config",
     argument: {
         description: "Migration type: all, deps, lint-staged",
         name: "type",

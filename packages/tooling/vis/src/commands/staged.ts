@@ -43,6 +43,7 @@ const mapOptions = (options: Record<string, unknown>, lintStagedOptions: Record<
 };
 
 const staged: Command = {
+    group: "Run & Execute",
     description: "Run linters on staged files using config from vis.config.ts",
     examples: [
         ["vis staged", "Run staged linters"],

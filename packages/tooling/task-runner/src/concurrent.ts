@@ -35,7 +35,11 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
 
     const native = loadNativeBindings();
 
-    if (native) {
+    // The native Rust addon cannot use node-pty or expose Node.js Writable streams,
+    // so fall back to the JS runner when any command needs stdin piping or PTY.
+    const needsJsFallback = configs.some((c) => c.stdin === "pipe" || c.stdin === "pty");
+
+    if (native && !needsJsFallback) {
         const nativeOptions = {
             killOthers: options.killOthers,
             killSignal: options.killSignal,

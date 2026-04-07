@@ -3,6 +3,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import type { StdinEntry } from "../types";
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";
@@ -24,12 +25,14 @@ interface VisTaskRunnerAppProps {
     autoExitSeconds: number;
     parallelSlots: number;
     projectNames: string[];
+    /** Registry of stdin entries keyed by task ID, for interactive input. */
+    stdinRegistry: Map<string, StdinEntry>;
     store: TaskStore;
     targets: string[];
     tasks: Task[];
 }
 
-const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
+const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinRegistry, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -155,6 +158,103 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
         listScrollRef.current?.scrollTo(Math.max(0, index - 2));
     }, []);
 
+    // ── Interactive input handlers ────────────────────────────────────
+
+    // Auto-disable interactive mode when the viewed task is no longer running
+    useEffect(() => {
+        if (state.interactiveMode && outputTask?.status !== "running") {
+            store.setInteractiveMode(false);
+        }
+    }, [state.interactiveMode, outputTask?.status, store]);
+
+    // Forward terminal resize to the PTY of the currently viewed running task.
+    // Use approximate output panel dimensions, not full terminal size.
+    useEffect(() => {
+        if (!outputTaskId) {
+            return;
+        }
+
+        let panelCols = columns;
+
+        if (state.viewMode === "split" && columns >= MIN_HORIZONTAL_WIDTH) {
+            panelCols = columns - Math.floor(columns * 0.4) - 2;
+        } else if (state.viewMode === "split") {
+            panelCols = columns - 2;
+        } else if (state.viewMode === "fullscreen") {
+            panelCols = columns - 2;
+        }
+
+        const panelRows = Math.max(1, rows - 4);
+
+        stdinRegistry.get(outputTaskId)?.resize?.(panelCols, panelRows);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [columns, rows, state.viewMode, outputTaskId]);
+
+    // ── Keyboard handling (interactive mode — raw passthrough to PTY) ──
+    // Forward every keystroke directly to the PTY so interactive tools
+    // (inquirer, npm prompts, etc.) receive arrow keys, characters, etc.
+
+    useInput(
+        (input, key) => {
+            // Escape exits interactive mode — never forwarded to PTY
+            if (key.escape) {
+                store.setInteractiveMode(false);
+
+                return;
+            }
+
+            if (!outputTaskId) {
+                return;
+            }
+
+            const entry = stdinRegistry.get(outputTaskId);
+
+            if (!entry) {
+                store.setInteractiveMode(false);
+
+                return;
+            }
+
+            // Map key events to raw terminal sequences for the PTY
+            if (key.return) {
+                entry.write("\r");
+            } else if (key.upArrow) {
+                entry.write("\x1b[A");
+            } else if (key.downArrow) {
+                entry.write("\x1b[B");
+            } else if (key.rightArrow) {
+                entry.write("\x1b[C");
+            } else if (key.leftArrow) {
+                entry.write("\x1b[D");
+            } else if (key.backspace) {
+                entry.write("\x7f");
+            } else if (key.delete) {
+                entry.write("\x1b[3~");
+            } else if (key.tab) {
+                entry.write("\t");
+            } else if (key.home) {
+                entry.write("\x1b[H");
+            } else if (key.end) {
+                entry.write("\x1b[F");
+            } else if (key.pageUp) {
+                entry.write("\x1b[5~");
+            } else if (key.pageDown) {
+                entry.write("\x1b[6~");
+            } else if (key.ctrl && input) {
+                // Ctrl+letter → raw control character (Ctrl+A = 0x01, etc.)
+                const code = input.toUpperCase().codePointAt(0);
+
+                if (code !== undefined && code >= 65 && code <= 90) {
+                    entry.write(String.fromCodePoint(code - 64));
+                }
+            } else if (input) {
+                // Regular characters — forward as-is
+                entry.write(input);
+            }
+        },
+        { isActive: state.interactiveMode },
+    );
+
     // ── Keyboard handling ───────────────────────────────────────────
 
     useInput(
@@ -265,6 +365,17 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 }
 
                 return;
+            }
+
+            // ── Interactive input toggle (i) ───────────────────────
+            if (input === "i" && outputTask?.status === "running") {
+                const isOutputView = state.viewMode === "fullscreen" || (state.viewMode === "split" && state.focusedPanel === "output");
+
+                if (isOutputView) {
+                    store.setInteractiveMode(true);
+
+                    return;
+                }
             }
 
             // ── Fullscreen output mode ─────────────────────────────
@@ -466,7 +577,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 }
             }
         },
-        { isActive: true },
+        { isActive: !state.interactiveMode },
     );
 
     // ── Layout ──────────────────────────────────────────────────────
@@ -554,6 +665,14 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 </Text>
                 <Text dimColor>PAGE</Text>
             </Box>,
+            ...(outputTask?.status === "running"
+                ? [
+                    <Box gap={1} key="i">
+                        <Text bold color="white">i</Text>
+                        <Text dimColor>INPUT</Text>
+                    </Box>,
+                ]
+                : []),
             <Box gap={1} key="q">
                 <Text bold color="white">
                     q
@@ -632,6 +751,14 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 </Text>
                 <Text dimColor>SCROLL</Text>
             </Box>,
+            ...(outputTask?.status === "running"
+                ? [
+                    <Box gap={1} key="i">
+                        <Text bold color="white">i</Text>
+                        <Text dimColor>INPUT</Text>
+                    </Box>,
+                ]
+                : []),
             <Box gap={1} key="enter">
                 <Text bold color="white">
                     {"\u23CE"}
@@ -902,6 +1029,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                         <Text dimColor> Retry failed task</Text>
                     </Text>
                 </Box>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        i
+                    </Text>
+                    <Text dimColor> Interactive input (running task)</Text>
+                </Text>
             </Box>
 
             <Box flexDirection="column" marginBottom={1}>
@@ -1020,6 +1154,8 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                     <OutputPanel
                         duration={outputTask?.duration ?? outputTask?.elapsed}
                         focused
+                        interactiveMode={state.interactiveMode}
+
                         output={outputContent}
                         scrollRef={outputScrollRef}
                         status={outputTask?.status}
@@ -1058,6 +1194,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             <OutputPanel
                 duration={outputTask?.duration ?? outputTask?.elapsed}
                 focused={state.focusedPanel === "output"}
+                interactiveMode={state.interactiveMode}
                 output={outputContent}
                 scrollRef={outputScrollRef}
                 showFullscreenHint

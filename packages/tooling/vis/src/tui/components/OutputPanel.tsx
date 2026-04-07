@@ -23,6 +23,8 @@ interface OutputPanelProps {
     /** Duration in ms (for top-right border display). */
     duration?: number;
     focused: boolean;
+    /** Whether interactive input mode is active (keystrokes forwarded to PTY). */
+    interactiveMode?: boolean;
     output: string;
     scrollRef?: React.RefObject<import("@visulima/tui").ScrollViewRef>;
     /** Whether to show "&lt;enter> full screen" hint in bottom border. */
@@ -31,7 +33,7 @@ interface OutputPanelProps {
     taskId: string | null;
 }
 
-const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint, status, taskId }: OutputPanelProps): React.JSX.Element => {
+const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, showFullscreenHint, status, taskId }: OutputPanelProps): React.JSX.Element => {
     const statusValue = status ?? "pending";
     const { icon: statusIcon } = getDisplayInfo(statusValue);
 
@@ -59,7 +61,19 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     const topRightTitle = duration === undefined ? undefined : formatMs(duration);
 
     // Bottom hint: context-dependent
-    const bottomTitle = taskId ? focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus" : undefined;
+    const bottomTitle = taskId
+        ? interactiveMode
+            ? "Esc cancel | Enter send"
+            : focused && statusValue === "running" && showFullscreenHint
+                ? "\u23CE FULLSCREEN  i INPUT"
+                : focused && statusValue === "running"
+                    ? "i INPUT"
+                    : focused && showFullscreenHint
+                        ? "<enter> full screen"
+                        : focused
+                            ? undefined
+                            : "<tab> or <enter> to focus"
+        : undefined;
 
     // Empty state
     if (!taskId) {
@@ -81,7 +95,7 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     }
 
     // Split output into lines for scrolling
-    const lines = output ? output.split("\n") : [];
+    const lines = output ? output.split("\n").map((l) => l.replace(/\r$/, "")) : [];
 
     // Waiting state
     if (!output && (statusValue === "running" || statusValue === "pending")) {
@@ -107,7 +121,7 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     return (
         <Box
             borderBottomTitle={bottomTitle}
-            borderColor={borderColor}
+            borderColor={interactiveMode ? "yellow" : borderColor}
             borderStyle={borderStyle}
             borderTopRightTitle={topRightTitle}
             borderTopTitle={topTitle}
@@ -122,6 +136,14 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
                     ))}
                 </ScrollView>
             </Box>
+            {/* Interactive mode indicator — keystrokes are forwarded to the PTY */}
+            {interactiveMode && (
+                <Box flexShrink={0} justifyContent="center" paddingX={1}>
+                    <Text bold color="yellow">
+                        INTERACTIVE — keystrokes forwarded to task — Esc to exit
+                    </Text>
+                </Box>
+            )}
         </Box>
     );
 };

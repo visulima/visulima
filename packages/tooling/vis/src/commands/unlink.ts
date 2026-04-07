@@ -3,6 +3,7 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runUnlink } from "../pm-runner";
 
 const unlink: Command = {
+    group: "Dependencies",
     argument: {
         description: "Packages to unlink (omit for current package)",
         name: "packages",

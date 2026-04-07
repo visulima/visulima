@@ -85,7 +85,7 @@ describe("tui/status-utils", () => {
         it("should write output to stdout", () => {
             logCommandOutputCI("app:build", "success", "build output here");
 
-            expect(writeSpy).toHaveBeenCalledWith();
+            expect(writeSpy.mock.calls.length).toBeGreaterThan(0);
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 

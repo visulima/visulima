@@ -12,11 +12,15 @@
 import type { ChildProcess } from "node:child_process";
 import { spawn } from "node:child_process";
 
+import type { IPty } from "@lydell/node-pty";
+import { spawn as ptySpawn } from "@lydell/node-pty";
+
 import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "./types";
 
 interface ActiveProcess {
-    child: ChildProcess;
+    child?: ChildProcess;
     index: number;
+    pty?: IPty;
     startTime: [number, number]; // hrtime
 }
 
@@ -147,48 +151,92 @@ const spawnCommand = (
         });
     }
 
-    // Stream stdout line by line
-    let stdoutBuffer = "";
-
-    child.stdout?.on("data", (data: Buffer) => {
-        stdoutBuffer += data.toString();
-        const lines = stdoutBuffer.split("\n");
-
-        // Keep the last incomplete line in the buffer
-        stdoutBuffer = lines.pop()!;
-
-        for (const line of lines) {
-            onEvent({ index, kind: "stdout", text: line });
-        }
+    // Emit "started" event with write/kill functions for stdin access
+    onEvent({
+        index,
+        kill: child.pid ? (signal?: string) => killTree(child.pid!, signal ?? "SIGTERM") : undefined,
+        kind: "started",
+        write: child.stdin ? (data: string) => child.stdin!.write(data) : undefined,
     });
 
-    // Flush remaining stdout on close
-    child.stdout?.on("end", () => {
+    // Stream stdout line by line, with flush timer for partial lines
+    let stdoutBuffer = "";
+    let stdoutFlushTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const flushStdoutBuffer = (): void => {
         if (stdoutBuffer) {
             onEvent({ index, kind: "stdout", text: stdoutBuffer });
             stdoutBuffer = "";
         }
-    });
+    };
 
-    // Stream stderr line by line
-    let stderrBuffer = "";
+    child.stdout?.on("data", (data: Buffer) => {
+        if (stdoutFlushTimer) {
+            clearTimeout(stdoutFlushTimer);
+            stdoutFlushTimer = undefined;
+        }
 
-    child.stderr?.on("data", (data: Buffer) => {
-        stderrBuffer += data.toString();
-        const lines = stderrBuffer.split("\n");
+        stdoutBuffer += data.toString();
+        const lines = stdoutBuffer.split("\n");
 
-        stderrBuffer = lines.pop()!;
+        stdoutBuffer = lines.pop() ?? "";
 
         for (const line of lines) {
-            onEvent({ index, kind: "stderr", text: line });
+            onEvent({ index, kind: "stdout", text: line });
+        }
+
+        if (stdoutBuffer) {
+            stdoutFlushTimer = setTimeout(flushStdoutBuffer, 100);
         }
     });
 
-    child.stderr?.on("end", () => {
+    child.stdout?.on("end", () => {
+        if (stdoutFlushTimer) {
+            clearTimeout(stdoutFlushTimer);
+            stdoutFlushTimer = undefined;
+        }
+
+        flushStdoutBuffer();
+    });
+
+    // Stream stderr line by line, with partial-line flush
+    let stderrBuffer = "";
+    let stderrFlushTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const flushStderrBuffer = (): void => {
         if (stderrBuffer) {
             onEvent({ index, kind: "stderr", text: stderrBuffer });
             stderrBuffer = "";
         }
+    };
+
+    child.stderr?.on("data", (data: Buffer) => {
+        if (stderrFlushTimer) {
+            clearTimeout(stderrFlushTimer);
+            stderrFlushTimer = undefined;
+        }
+
+        stderrBuffer += data.toString();
+        const lines = stderrBuffer.split("\n");
+
+        stderrBuffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+            onEvent({ index, kind: "stderr", text: line });
+        }
+
+        if (stderrBuffer) {
+            stderrFlushTimer = setTimeout(flushStderrBuffer, 100);
+        }
+    });
+
+    child.stderr?.on("end", () => {
+        if (stderrFlushTimer) {
+            clearTimeout(stderrFlushTimer);
+            stderrFlushTimer = undefined;
+        }
+
+        flushStderrBuffer();
     });
 
     child.on("error", (error: Error) => {
@@ -196,6 +244,19 @@ const spawnCommand = (
     });
 
     child.on("close", (code, signal) => {
+        if (stdoutFlushTimer) {
+            clearTimeout(stdoutFlushTimer);
+            stdoutFlushTimer = undefined;
+        }
+
+        if (stderrFlushTimer) {
+            clearTimeout(stderrFlushTimer);
+            stderrFlushTimer = undefined;
+        }
+
+        flushStdoutBuffer();
+        flushStderrBuffer();
+
         const elapsed = process.hrtime(startTime);
         const durationMs = elapsed[0] * 1000 + elapsed[1] / 1_000_000;
 
@@ -226,6 +287,88 @@ const spawnCommand = (
 };
 
 /**
+ * Spawn a command inside a pseudo-terminal (PTY) so the child sees isatty() === true.
+ * Falls back to pipe mode if @lydell/node-pty is not available.
+ */
+const spawnCommandPty = (
+    index: number,
+    config: ConcurrentCommandConfig,
+    shellPath: string | undefined,
+    onEvent: (event: ProcessEvent) => void,
+    onComplete: (closeEvent: ConcurrentCloseEvent) => void,
+): ActiveProcess => {
+    const startTime = process.hrtime();
+
+    let shellProgram: string;
+    let shellArgs: string[];
+
+    if (shellPath) {
+        shellProgram = shellPath;
+        shellArgs = ["-c", config.command];
+    } else if (process.platform === "win32") {
+        shellProgram = "cmd.exe";
+        shellArgs = ["/s", "/c", config.command];
+    } else {
+        shellProgram = "/bin/sh";
+        shellArgs = ["-c", config.command];
+    }
+
+    const ptyInstance = ptySpawn(shellProgram, shellArgs, {
+        cols: config.ptySize?.cols ?? 80,
+        cwd: config.cwd ?? process.cwd(),
+        env: Object.fromEntries(
+            Object.entries({ ...process.env, ...config.env, FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1", TERM: "xterm-256color" })
+                .filter((entry): entry is [string, string] => entry[1] !== undefined),
+        ),
+        name: "xterm-256color",
+        rows: config.ptySize?.rows ?? 24,
+    });
+
+    onEvent({
+        index,
+        kill: (signal?: string) => ptyInstance.kill(signal),
+        kind: "started",
+        resize: (cols: number, rows: number) => ptyInstance.resize(cols, rows),
+        write: (data: string) => ptyInstance.write(data),
+    });
+
+    // PTY merges stdout/stderr into one stream. Emit raw data chunks
+    // so the consumer can process ANSI sequences through a TerminalBuffer.
+    ptyInstance.onData((data: string) => {
+        onEvent({ index, kind: "stdout", text: data });
+    });
+
+    ptyInstance.onExit(({ exitCode, signal }: { exitCode: number; signal?: number }) => {
+
+        const elapsed = process.hrtime(startTime);
+        const durationMs = elapsed[0] * 1000 + elapsed[1] / 1_000_000;
+        const code = exitCode ?? (signal ? 1 : -1);
+
+        const closeEvent: ConcurrentCloseEvent = {
+            command: config.command,
+            durationMs,
+            exitCode: code,
+            index,
+            killed: signal !== undefined && signal !== 0,
+            name: config.name,
+        };
+
+        onEvent({
+            commandName: config.name,
+            durationMs,
+            exitCode: code,
+            index,
+            killed: signal !== undefined && signal !== 0,
+            kind: "close",
+        });
+
+        onComplete(closeEvent);
+    });
+
+    return { index, pty: ptyInstance, startTime };
+};
+
+/**
  * Run commands concurrently using pure JavaScript (child_process.spawn).
  * This is the fallback when the native Rust addon is unavailable.
  */
@@ -250,7 +393,9 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
 
     const killAll = (): void => {
         for (const proc of active) {
-            if (proc.child.pid) {
+            if (proc.pty) {
+                proc.pty.kill(killSignal);
+            } else if (proc.child?.pid) {
                 killTree(proc.child.pid, killSignal);
             }
         }
@@ -270,48 +415,47 @@ export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], optio
         return false;
     };
 
+    const handleClose = (cmdIndex: number, closeEvent: ConcurrentCloseEvent): void => {
+        const activeIndex = active.findIndex((p) => p.index === cmdIndex);
+
+        if (activeIndex !== -1) {
+            active.splice(activeIndex, 1);
+        }
+
+        if (aborting) {
+            closeEvent.killed = true;
+
+            if (sigintAbort) {
+                closeEvent.exitCode = 0;
+            }
+        }
+
+        closeEvents.push(closeEvent);
+
+        if (!aborting && shouldKillOthers(closeEvent)) {
+            aborting = true;
+            killAll();
+        }
+
+        if (!aborting) {
+            maybeSpawnMore();
+        }
+
+        if (active.length === 0 && pending.length === 0) {
+            const success = evaluateSuccess(closeEvents, successCondition);
+
+            resolve({ closeEvents, success });
+        }
+    };
+
     const maybeSpawnMore = (): void => {
         while (active.length < maxProcesses && pending.length > 0) {
             const cmdIndex = pending.shift()!;
             const config = commands[cmdIndex]!;
 
-            const proc = spawnCommand(cmdIndex, config, options.shellPath, onEvent, (closeEvent) => {
-                // Remove from active
-                const index = active.findIndex((p) => p.index === cmdIndex);
-
-                if (index !== -1) {
-                    active.splice(index, 1);
-                }
-
-                if (aborting) {
-                    closeEvent.killed = true;
-
-                    // SIGINT (Ctrl+C) translates to exit code 0 -- user cancellation
-                    // is not a failure. Matches concurrently behavior.
-                    if (sigintAbort) {
-                        closeEvent.exitCode = 0;
-                    }
-                }
-
-                closeEvents.push(closeEvent);
-
-                // Check kill-others
-                if (!aborting && shouldKillOthers(closeEvent)) {
-                    aborting = true;
-                    killAll();
-                }
-
-                // Spawn more or finish
-                if (!aborting) {
-                    maybeSpawnMore();
-                }
-
-                if (active.length === 0 && pending.length === 0) {
-                    const success = evaluateSuccess(closeEvents, successCondition);
-
-                    resolve({ closeEvents, success });
-                }
-            });
+            const proc = config.stdin === "pty"
+                ? spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => handleClose(cmdIndex, ce))
+                : spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => handleClose(cmdIndex, ce));
 
             active.push(proc);
         }

@@ -509,7 +509,9 @@ export type ConcurrentCommandInput
             cwd?: string;
             env?: Record<string, string>;
             name?: string;
-            stdin?: "inherit" | "null" | "pipe";
+            stdin?: "inherit" | "null" | "pipe" | "pty";
+            /** Initial PTY dimensions (only used when stdin is "pty"). */
+            ptySize?: { cols: number; rows: number };
         };
 
 /**
@@ -532,8 +534,15 @@ export interface ConcurrentCommandConfig {
      * - "null" (default): stdin closed, child cannot read input
      * - "pipe": stdin is piped, can be written to programmatically
      * - "inherit": child inherits parent's stdin (for interactive commands like vite dev)
+     * - "pty": child runs inside a pseudo-terminal (isatty() returns true, enables interactive prompts)
      */
-    stdin?: "inherit" | "null" | "pipe";
+    stdin?: "inherit" | "null" | "pipe" | "pty";
+
+    /**
+     * Initial PTY dimensions. Only used when stdin is "pty".
+     * Defaults to 80x24 if not specified.
+     */
+    ptySize?: { cols: number; rows: number };
 }
 
 /**
@@ -589,12 +598,18 @@ export interface ProcessEvent {
     index: number;
     /** Whether the process was killed (for close events). */
     killed?: boolean;
-    /** Event type: "stdout", "stderr", "close", "error". */
-    kind: "close" | "error" | "stderr" | "stdout";
+    /** Kill the child process/PTY. Only present on "started" events. */
+    kill?: (signal?: string) => void;
+    /** Event type: "stdout", "stderr", "close", "error", "started". */
+    kind: "close" | "error" | "started" | "stderr" | "stdout";
     /** Error message (for error events). */
     message?: string;
+    /** Resize the child's PTY. Only present on "started" events with stdin "pty". */
+    resize?: (cols: number, rows: number) => void;
     /** Text content (for stdout/stderr events). */
     text?: string;
+    /** Write data to the child's stdin (pipe) or PTY. Only present on "started" events. */
+    write?: (data: string) => void;
 }
 
 /**

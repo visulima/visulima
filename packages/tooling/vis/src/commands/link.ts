@@ -3,6 +3,7 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runLink } from "../pm-runner";
 
 const link: Command = {
+    group: "Dependencies",
     alias: "ln",
     argument: {
         description: "Package name or directory path to link (omit to register current package)",

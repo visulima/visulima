@@ -23,6 +23,8 @@ export interface TaskState {
     filterText: string;
     /** Which panel currently has keyboard focus. */
     focusedPanel: "output" | "tasks";
+    /** Whether interactive input mode is active for the current task. */
+    interactiveMode: boolean;
     /** Accumulated terminal output per task. */
     outputs: Map<string, string>;
     /** Up to 2 pinned task IDs for output panes. */
@@ -67,6 +69,7 @@ export class TaskStore {
             filterActive: false,
             filterText: "",
             focusedPanel: "tasks",
+            interactiveMode: false,
             outputs: new Map(),
             pinnedTaskIds: [null, null],
             rerunRequested: false,
@@ -190,6 +193,12 @@ export class TaskStore {
         this.#emit({ ...this.#state });
     }
 
+    /** Replace the full output for a task (used by PTY mode where ANSI sequences update in place). */
+    public setOutput(taskId: string, content: string): void {
+        this.#state.outputs.set(taskId, content);
+        this.#emit({ ...this.#state });
+    }
+
     public markDone(): void {
         this.#emit({ ...this.#state, done: true, endTime: Date.now() });
     }
@@ -293,6 +302,7 @@ export class TaskStore {
             done: false,
             endTime: null,
             failed,
+            interactiveMode: false,
             retryTaskId: taskId,
             rows,
             succeeded,
@@ -308,6 +318,13 @@ export class TaskStore {
         }
 
         return id;
+    }
+
+    /** Toggle interactive input mode for the current task. */
+    public setInteractiveMode(active: boolean): void {
+        if (active !== this.#state.interactiveMode) {
+            this.#emit({ ...this.#state, interactiveMode: active });
+        }
     }
 
     /** Set the current view mode. */
@@ -333,6 +350,7 @@ export class TaskStore {
             done: false,
             endTime: null,
             failed: 0,
+            interactiveMode: false,
             outputs: new Map(),
             rerunRequested: true,
             rows: this.#state.rows.map((r) => {

@@ -1,0 +1,7 @@
+{
+    "name": "interactive-workspace",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
+}

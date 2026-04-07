@@ -28,6 +28,7 @@ export default defineConfig({
                     "@visulima/task-runner-binding-linux-x64-musl",
                     "@visulima/task-runner-binding-win32-arm64-msvc",
                     "@visulima/task-runner-binding-win32-x64-msvc",
+                    "@lydell/node-pty",
                 ],
             },
         },

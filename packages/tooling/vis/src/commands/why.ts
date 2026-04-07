@@ -4,6 +4,7 @@ import { detectPm, runWhy } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const why: Command = {
+    group: "Dependencies",
     alias: "explain",
     argument: {
         description: "Package(s) to explain",

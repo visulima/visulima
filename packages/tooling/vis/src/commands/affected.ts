@@ -5,6 +5,7 @@ import { getAffectedProjects } from "@visulima/task-runner";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const affected: Command = {
+    group: "Run & Execute",
     argument: {
         description: "The target to run (e.g., build, test, lint)",
         name: "target",

@@ -1,0 +1,10 @@
+{
+    "name": "worker-svc",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "deploy": "echo 'Deploying worker-svc...' && sleep 4 && echo 'worker-svc deployed!'",
+        "lint": "echo 'Linting worker-svc...' && sleep 0.8 && echo 'Clean.'",
+        "test": "echo 'Testing worker-svc...' && sleep 2 && echo 'Passed.'"
+    }
+}

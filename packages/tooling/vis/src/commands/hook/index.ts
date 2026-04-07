@@ -107,6 +107,7 @@ const executeUninstall = (hooksDirectory: string, logger: { info: (message: stri
 };
 
 const hook: Command = {
+    group: "Scaffold & Config",
     argument: {
         description: "Action to perform: install, uninstall, or migrate",
         name: "action",

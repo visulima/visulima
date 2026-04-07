@@ -165,4 +165,105 @@ describe(runConcurrentFallback, () => {
             expect(index).toBeLessThan(closeIndex);
         }
     });
+
+    it("should emit 'started' event with write function for pipe mode", async () => {
+        const events: ProcessEvent[] = [];
+
+        await runConcurrentFallback([{ command: "echo pipe-test", stdin: "pipe" }], {
+            onEvent: (event) => events.push(event),
+        });
+
+        const startedEvents = events.filter((e) => e.kind === "started");
+
+        expect(startedEvents).toHaveLength(1);
+        expect(typeof startedEvents[0]!.write).toBe("function");
+        expect(startedEvents[0]!.resize).toBeUndefined();
+    });
+
+    it("should emit 'started' event with write and resize for PTY mode", async () => {
+        const events: ProcessEvent[] = [];
+
+        await runConcurrentFallback([{ command: "echo pty-test", stdin: "pty" }], {
+            onEvent: (event) => events.push(event),
+        });
+
+        const startedEvents = events.filter((e) => e.kind === "started");
+
+        expect(startedEvents).toHaveLength(1);
+        expect(typeof startedEvents[0]!.write).toBe("function");
+        expect(typeof startedEvents[0]!.resize).toBe("function");
+    });
+
+    it("should run PTY commands and capture output", async () => {
+        const events: ProcessEvent[] = [];
+
+        const result = await runConcurrentFallback([{ command: "echo pty-hello", stdin: "pty" }], {
+            onEvent: (event) => events.push(event),
+        });
+
+        expect(result.success).toBe(true);
+
+        const stdoutEvents = events.filter((e) => e.kind === "stdout");
+
+        expect(stdoutEvents.some((e) => e.text?.includes("pty-hello"))).toBe(true);
+    });
+
+    it("should flush partial lines after 100ms timeout", async () => {
+        const events: ProcessEvent[] = [];
+
+        // printf writes without trailing newline — should be flushed by timer
+        await runConcurrentFallback([makeConfig("printf 'no-newline'")], {
+            onEvent: (event) => events.push(event),
+        });
+
+        const stdoutEvents = events.filter((e) => e.kind === "stdout");
+
+        expect(stdoutEvents.some((e) => e.text === "no-newline")).toBe(true);
+    });
+
+    it("should handle PTY with interactive read prompt", async () => {
+        const events: ProcessEvent[] = [];
+
+        const result = await runConcurrentFallback(
+            [{ command: "read -p \"Name: \" name && echo \"Got: $name\"", stdin: "pty" }],
+            {
+                onEvent: (event) => {
+                    events.push(event);
+
+                    if (event.kind === "started" && event.write) {
+                        // Wait for prompt to appear, then send input
+                        setTimeout(() => event.write!("Alice\r"), 500);
+                    }
+                },
+            },
+        );
+
+        expect(result.success).toBe(true);
+
+        const stdoutText = events
+            .filter((e) => e.kind === "stdout")
+            .map((e) => e.text)
+            .join("");
+
+        expect(stdoutText).toContain("Name:");
+        expect(stdoutText).toContain("Got: Alice");
+    }, 10_000);
+
+    it("should kill PTY processes in killAll", async () => {
+        const start = Date.now();
+
+        const result = await runConcurrentFallback(
+            [
+                { command: "exit 1", name: "failer", stdin: "pty" },
+                { command: "sleep 30", name: "sleeper", stdin: "pty" },
+            ],
+            { killOthers: ["failure"] },
+        );
+
+        const elapsed = Date.now() - start;
+
+        expect(result.success).toBe(false);
+        expect(result.closeEvents).toHaveLength(2);
+        expect(elapsed).toBeLessThan(10_000);
+    }, 15_000);
 });

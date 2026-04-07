@@ -84,6 +84,9 @@ export { TaskOrchestrator } from "./task-orchestrator";
 export type { PartitionOptions } from "./task-scheduler";
 export { parsePartition, TaskScheduler } from "./task-scheduler";
 
+// Terminal buffer (for processing PTY ANSI sequences)
+export { TerminalBuffer } from "./terminal-buffer";
+
 // Tracked executor (for auto-fingerprint mode)
 export type { TrackedExecutionResult } from "./tracked-executor";
 export { TrackedTaskExecutor } from "./tracked-executor";

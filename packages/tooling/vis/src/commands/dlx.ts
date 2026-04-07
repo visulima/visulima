@@ -3,6 +3,7 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runDlx } from "../pm-runner";
 
 const dlx: Command = {
+    group: "Run & Execute",
     argument: {
         description: "Package to execute (optionally with @version)",
         name: "package",

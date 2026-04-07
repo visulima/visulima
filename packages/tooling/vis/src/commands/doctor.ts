@@ -346,6 +346,7 @@ const displayActions = (results: DoctorResults): void => {
  * ```
  */
 const doctor: Command = {
+    group: "Security & Health",
     description: "Run a full project health check (outdated, security, duplicates, optimizations)",
     examples: [
         ["vis doctor", "Full project health check"],

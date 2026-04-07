@@ -3,6 +3,7 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runDedupe } from "../pm-runner";
 
 const dedupe: Command = {
+    group: "Dependencies",
     description: "Deduplicate dependencies using the detected package manager",
     examples: [
         ["vis dedupe", "Run deduplication"],

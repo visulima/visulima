@@ -421,6 +421,7 @@ const executePmWrapper = (
 };
 
 const update: Command = {
+    group: "Dependencies",
     alias: "up",
     argument: {
         description: "Packages to update (updates all if omitted)",

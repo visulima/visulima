@@ -8,12 +8,14 @@ import {
     parsePartition,
     runConcurrently,
     TaskScheduler,
+    TerminalBuffer,
     writeRunSummary,
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
+import type { StdinEntry } from "../tui/types";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 /**
@@ -67,7 +69,12 @@ class OutputRingBuffer {
  * Output is collected in a ring buffer capped at MAX_OUTPUT_BYTES to
  * prevent unbounded memory growth with long-running tasks like dev servers.
  */
-const createConcurrentExecutor = (workspaceRoot: string) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
+const createConcurrentExecutor = (
+    workspaceRoot: string,
+    stdinRegistry?: Map<string, StdinEntry>,
+    onOutput?: (taskId: string, text: string) => void,
+    onOutputReplace?: (taskId: string, fullContent: string) => void,
+) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
     const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
     const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
 
@@ -77,25 +84,62 @@ const createConcurrentExecutor = (workspaceRoot: string) => async (task: Task, o
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
-    const output = new OutputRingBuffer(MAX_OUTPUT_BYTES);
+    const isPty = Boolean(stdinRegistry);
+
+    // PTY tasks must never be cached — they require live user interaction.
+    // Disable cache before execution so the orchestrator skips both read and write.
+    if (isPty) {
+        task.cache = false;
+    }
+
+    const output = isPty ? undefined : new OutputRingBuffer(MAX_OUTPUT_BYTES);
+    const termBuf = isPty ? new TerminalBuffer(MAX_OUTPUT_BYTES) : undefined;
 
     const onEvent = (event: ProcessEvent): void => {
+        if (event.kind === "started" && event.write && stdinRegistry) {
+            stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+        }
+
         if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
-            output.append(`${event.text}\n`);
+            if (termBuf) {
+                // PTY mode: process ANSI sequences through terminal buffer,
+                // then replace (not append) the store output with the current screen state
+                termBuf.write(event.text);
+                onOutputReplace?.(task.id, termBuf.toString());
+            } else {
+                const line = `${event.text}\n`;
+
+                output!.append(line);
+                onOutput?.(task.id, line);
+            }
+        }
+
+        if (event.kind === "close" && stdinRegistry) {
+            stdinRegistry.delete(task.id);
         }
     };
 
-    const result = await runConcurrently([{ command, cwd: resolvedCwd, env: options.env, name: task.id }], { killOthers: ["failure"], onEvent });
+    const result = await runConcurrently(
+        [{
+            command,
+            cwd: resolvedCwd,
+            env: options.env,
+            name: task.id,
+            ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
+        }],
+        { killOthers: ["failure"], onEvent },
+    );
 
     const closeEvent = result.closeEvents[0];
 
     return {
         code: closeEvent?.exitCode ?? 1,
-        terminalOutput: output.toString(),
+        terminalOutput: termBuf ? termBuf.toString() : output!.toString(),
     };
 };
 
 const run: Command = {
+    group: "Run & Execute",
     argument: {
         description: "The target to run (e.g., build, test, lint)",
         name: "target",
@@ -218,11 +262,16 @@ const run: Command = {
             tasks: initialTasks,
         };
 
-        const taskExecutor = createConcurrentExecutor(workspaceRoot);
-
         if (isTTY) {
-            const dynamic = createDynamicOutputRenderer(lifecycleOptions);
+            const stdinRegistry = new Map<string, StdinEntry>();
+            const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, stdinRegistry });
             const { lifeCycle, store } = dynamic;
+            const taskExecutor = createConcurrentExecutor(
+                workspaceRoot,
+                stdinRegistry,
+                (taskId, text) => store.addOutput(taskId, text),
+                (taskId, fullContent) => store.setOutput(taskId, fullContent),
+            );
 
             // Run tasks in a loop — supports rerun (r) and single-task retry (R)
             let loopAction: "quit" | "rerun" | "retry" = "rerun";
@@ -250,10 +299,27 @@ const run: Command = {
 
                         lifeCycle.startTasks?.([task]);
 
-                        const retryResult = await runConcurrently([{ command, cwd: resolvedCwd, name: task.id }], {
+                        const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
+
+                        const retryResult = await runConcurrently([{
+                            command,
+                            cwd: resolvedCwd,
+                            name: task.id,
+                            ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                            stdin: "pty",
+                        }], {
                             onEvent: (event: ProcessEvent) => {
+                                if (event.kind === "started" && event.write) {
+                                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                                }
+
                                 if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
-                                    store.addOutput(task.id, `${event.text}\n`);
+                                    retryTermBuf.write(event.text);
+                                    store.setOutput(task.id, retryTermBuf.toString());
+                                }
+
+                                if (event.kind === "close") {
+                                    stdinRegistry.delete(task.id);
                                 }
                             },
                         });
@@ -321,6 +387,7 @@ const run: Command = {
 
             await dynamic.renderIsDone;
         } else {
+            const taskExecutor = createConcurrentExecutor(workspaceRoot);
             const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
             const results = await defaultTaskRunner(initialTasks, runnerOptions, {

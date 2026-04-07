@@ -16,6 +16,7 @@ import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 
 const check: Command = {
+    group: "Security & Health",
     alias: ["c", "outdated"],
     argument: {
         description: "Specific packages to check (checks all if omitted)",

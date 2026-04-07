@@ -3,6 +3,7 @@ import { execSync, spawnSync } from "node:child_process";
 import type { Command } from "@visulima/cerebro";
 
 const upgrade: Command = {
+    group: "System",
     argument: {
         description: "Target version (defaults to latest)",
         name: "version",

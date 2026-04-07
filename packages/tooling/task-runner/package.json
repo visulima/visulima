@@ -73,7 +73,8 @@
     },
     "dependencies": {
         "@visulima/humanizer": "3.0.0-alpha.8",
-        "@visulima/path": "3.0.0-alpha.7"
+        "@visulima/path": "3.0.0-alpha.7",
+        "@lydell/node-pty": "catalog:dev"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",

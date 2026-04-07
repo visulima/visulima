@@ -220,6 +220,7 @@ catalogs:
     next: 16.2.2
     node-fetch: ^3.3.2
     node-mocks-http: ^1.17.2
+    "@lydell/node-pty": 1.2.0-beta.12
     node-pty: 1.1.0
     nodemailer: 8.0.4
     npm: 11.12.1

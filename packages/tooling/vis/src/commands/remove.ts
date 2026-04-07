@@ -4,6 +4,7 @@ import { detectPm, runRemove } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const remove: Command = {
+    group: "Dependencies",
     alias: ["rm", "un", "uninstall"],
     argument: {
         description: "Packages to remove",
