@@ -1,4 +1,4 @@
 *.node
 native/target/
 index.d.ts
-examples/sample-workspace/.task-runner-cache
+examples/**/.task-runner-cache
