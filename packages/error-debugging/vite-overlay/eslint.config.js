@@ -41,12 +41,4 @@ export default createConfig(
             "vitest/require-mock-type-parameters": "off",
         },
     },
-    {
-        files: ["./__tests__/unit/**"],
-        rules: {
-            "@typescript-eslint/naming-convention": "off",
-            "no-extend-native": "off",
-            "no-underscore-dangle": "off",
-        },
-    },
 );
