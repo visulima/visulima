@@ -61,7 +61,7 @@ mod windows {
     impl JobObject {
         pub fn new() -> io::Result<Self> {
             let handle = unsafe { CreateJobObjectW(std::ptr::null(), std::ptr::null()) };
-            if handle == 0 {
+            if handle.is_null() {
                 return Err(io::Error::last_os_error());
             }
 
@@ -91,7 +91,7 @@ mod windows {
         pub fn assign_process_by_pid(&self, pid: u32) -> io::Result<()> {
             // Minimum permissions needed for Job Object assignment + termination
             let process_handle = unsafe { OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, 0, pid) };
-            if process_handle == INVALID_HANDLE_VALUE || process_handle == 0 {
+            if process_handle == INVALID_HANDLE_VALUE || process_handle.is_null() {
                 return Err(io::Error::last_os_error());
             }
 
