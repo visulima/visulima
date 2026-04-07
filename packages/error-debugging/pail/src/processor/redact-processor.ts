@@ -49,11 +49,11 @@ class RedactProcessor<L extends string = string> implements Processor<L> {
      */
     public process(meta: Meta<L>): Meta<L> {
         // eslint-disable-next-line no-param-reassign
-        meta.message = this.#redact<typeof meta.message>(meta.message);
+        meta.message = this.#redact(meta.message);
         // eslint-disable-next-line no-param-reassign
-        meta.context = this.#redact<typeof meta.context>(meta.context);
+        meta.context = this.#redact(meta.context);
         // eslint-disable-next-line no-param-reassign
-        meta.error = this.#redact<typeof meta.error>(meta.error);
+        meta.error = this.#redact(meta.error);
 
         return meta;
     }

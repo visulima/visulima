@@ -82,7 +82,7 @@ describe("hono middleware", () => {
             middleware(c as any, async () => {
                 throw new Error("handler error");
             }),
-        ).rejects.toThrowError("handler error");
+        ).rejects.toThrow("handler error");
 
         expect(errorSpy).toHaveBeenCalledTimes(1);
     });
@@ -119,6 +119,6 @@ describe("hono middleware", () => {
 
         const c = createMockContext();
 
-        expect(() => useLogger(c as any)).toThrowError("[pail]");
+        expect(() => useLogger(c as any)).toThrow("[pail]");
     });
 });

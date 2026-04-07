@@ -32,7 +32,7 @@ describe("svelteKit middleware", () => {
         vi.restoreAllMocks();
     });
 
-    describe("pailHandle", () => {
+    describe(pailHandle, () => {
         it("should attach logger to event.locals.log", async () => {
             expect.assertions(1);
 
@@ -83,7 +83,7 @@ describe("svelteKit middleware", () => {
                         throw new Error("resolve error");
                     },
                 }),
-            ).rejects.toThrowError("resolve error");
+            ).rejects.toThrow("resolve error");
 
             expect(errorSpy).toHaveBeenCalledTimes(1);
         });
@@ -124,7 +124,7 @@ describe("svelteKit middleware", () => {
         });
     });
 
-    describe("pailHandleError", () => {
+    describe(pailHandleError, () => {
         it("should record error on the logger", async () => {
             expect.assertions(1);
 
@@ -159,18 +159,19 @@ describe("svelteKit middleware", () => {
             const handleError = pailHandleError();
             const event = createMockEvent();
 
-            expect(() =>
+            expect(() => {
                 handleError({
                     error: new Error("test"),
                     event: event as any,
                     message: "test",
                     status: 500,
-                }),
-            ).not.toThrowError();
+                });
+            },
+            ).not.toThrow();
         });
     });
 
-    describe("createPailHooks", () => {
+    describe(createPailHooks, () => {
         it("should return both handle and handleError", () => {
             expect.assertions(2);
 

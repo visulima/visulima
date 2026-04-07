@@ -60,7 +60,7 @@ describe("wideEvent", () => {
         });
     });
 
-    describe("createWideEvent", () => {
+    describe(createWideEvent, () => {
         it("should create a WideEvent instance", () => {
             expect.assertions(1);
 

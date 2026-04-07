@@ -12,7 +12,7 @@ const createMockPail = () =>
         reporters: [new RawReporter()],
     });
 
-describe("createMiddlewareLogger", () => {
+describe(createMiddlewareLogger, () => {
     beforeEach(() => {
         vi.spyOn(console, "log").mockImplementation(() => {});
         vi.spyOn(console, "error").mockImplementation(() => {});

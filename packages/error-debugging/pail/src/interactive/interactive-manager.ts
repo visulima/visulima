@@ -124,7 +124,7 @@ class InteractiveManager {
      */
     public hook(): boolean {
         if (!this.#isActive) {
-            Object.values(this.#stream).forEach((hook) => hook.active());
+            Object.values(this.#stream).forEach((hook) => { hook.active(); });
 
             this.#clear(true);
         }
@@ -147,7 +147,7 @@ class InteractiveManager {
 
             this.#lastLength = 0;
 
-            Object.values(this.#stream).forEach((hook) => hook.active());
+            Object.values(this.#stream).forEach((hook) => { hook.active(); });
         }
     }
 
@@ -164,7 +164,7 @@ class InteractiveManager {
                 this.erase(stream);
             }
 
-            Object.values(this.#stream).forEach((hook) => hook.renew());
+            Object.values(this.#stream).forEach((hook) => { hook.renew(); });
         }
     }
 
@@ -175,7 +175,7 @@ class InteractiveManager {
      */
     public unhook(separateHistory: boolean = true): boolean {
         if (this.#isActive) {
-            Object.values(this.#stream).forEach((hook) => hook.inactive(separateHistory));
+            Object.values(this.#stream).forEach((hook) => { hook.inactive(separateHistory); });
 
             this.#clear();
         }

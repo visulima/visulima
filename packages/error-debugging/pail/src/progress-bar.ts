@@ -232,8 +232,8 @@ export class ProgressBar {
             const completeChars = Array.isArray(this.options.barCompleteChar) ? this.options.barCompleteChar : undefined;
             const incompleteChars = Array.isArray(this.options.barIncompleteChar) ? this.options.barIncompleteChar : undefined;
 
-            const completeChar =
-                completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
+            const completeChar
+                = completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
             const incompleteChar = incompleteChars?.[0] ?? (typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░");
             const completeLength = completeChars?.length ?? 1;
 
@@ -265,7 +265,9 @@ export class ProgressBar {
             const peakPos = this.calculatePeakPosition(width, total, filled);
             const peakChar = this.options.peakChar ?? completeChar;
 
-            if (peakPos !== undefined) {
+            if (peakPos === undefined) {
+                bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
+            } else {
                 let barContent = "";
 
                 for (let i = 0; i < width; i += 1) {
@@ -279,8 +281,6 @@ export class ProgressBar {
                 }
 
                 bar = barContent;
-            } else {
-                bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
             }
         }
 
@@ -401,7 +401,7 @@ export class MultiBarInstance extends ProgressBar {
 
     public getBarState(): { char: string; current: number; total: number } {
         const completeChar = Array.isArray(this.options.barCompleteChar)
-            ? this.options.barCompleteChar[this.options.barCompleteChar.length - 1]
+            ? this.options.barCompleteChar.at(-1)
             : getBarChar(this.options.barCompleteChar, this.options.style ?? "shades_classic", true);
 
         return {
@@ -587,7 +587,7 @@ export class MultiProgressBar {
         // Extract the bar portion
         const barMatch = output.match(BAR_REGEX);
 
-        if (!barMatch || !barMatch[1]) {
+        if (!barMatch?.[1]) {
             return output;
         }
 

@@ -1,6 +1,7 @@
 import type { format, FormatterFunction, Options } from "@visulima/fmt";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { build } from "@visulima/fmt";
+
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 /**
@@ -97,14 +98,13 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #format(formatter: typeof format, data: any, arguments_: unknown[] = []): any {
         if (typeof data === "string") {
-            return formatter(data as string, arguments_);
+            return formatter(data, arguments_);
         }
 
         if (typeof data === "object" && data !== null) {
             // eslint-disable-next-line guard-for-in,no-restricted-syntax
             for (const index in data as Record<string, unknown> | [string, unknown[]]) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const value = (data as any)[index];
+                const value = data[index];
 
                 if (typeof value === "string" || Array.isArray(value) || typeof value === "object") {
                     // eslint-disable-next-line no-param-reassign
