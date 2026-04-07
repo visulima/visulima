@@ -209,7 +209,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     let filePath: string | undefined;
 
     // Search for files in order of preference
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
+
     for (const pattern of searchPatterns) {
         // eslint-disable-next-line no-await-in-loop,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- sequential search by design; findUp types unresolvable from bundled workspace package
         filePath = await findUp(pattern, findUpConfig);
@@ -286,7 +286,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     let filePath: string | undefined;
 
     // Search for files in order of preference
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
+
     for (const pattern of searchPatterns) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
         filePath = findUpSync(pattern, findUpConfig);
@@ -560,7 +560,6 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
 
     const allDependencies = { ...dependencies, ...devDependencies, ...options?.peerDeps === false ? {} : peerDependencies };
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const argument of arguments_) {
         if (hasProperty(allDependencies, argument)) {
             return true;
@@ -611,7 +610,6 @@ export const ensurePackages = async (
         ...options,
     } satisfies EnsurePackagesOptions;
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const packageName of packages) {
         if (
             (config.deps && hasProperty(dependencies, packageName))

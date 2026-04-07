@@ -1,8 +1,9 @@
+import { mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 
 import { writeFileSync, writeJsonSync } from "@visulima/fs";
 import { join, toNamespacedPath } from "@visulima/path";
-import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { findPackageRoot, findPackageRootSync } from "../../src/package";
@@ -10,8 +11,8 @@ import { findPackageRoot, findPackageRootSync } from "../../src/package";
 describe("package", () => {
     let distribution: string;
 
-    beforeEach(async () => {
-        distribution = toNamespacedPath(temporaryDirectory());
+    beforeEach(() => {
+        distribution = toNamespacedPath(mkdtempSync(join(tmpdir(), "visulima-package-")));
     });
 
     afterEach(async () => {

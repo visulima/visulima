@@ -2,6 +2,7 @@ import { platform } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "@visulima/path";
+// eslint-disable-next-line e18e/ban-dependencies -- execa is needed because node:child_process is mocked in this file
 import { execa } from "execa";
 import { describe, expect, it, vi } from "vitest";
 

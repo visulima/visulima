@@ -143,7 +143,6 @@ export const resolveCatalogReference = (packageName: string, versionSpec: string
 
 /** Resolves catalog references in a single dependency object. */
 export const resolveDependenciesCatalogReferences = (dependencies: Record<string, string>, catalogs: PnpmCatalogs): void => {
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const [packageName, versionSpec] of Object.entries(dependencies)) {
         if (typeof versionSpec !== "string") {
             continue;
@@ -162,7 +161,6 @@ export const resolveDependenciesCatalogReferences = (dependencies: Record<string
 export const resolveCatalogReferences = (packageJson: JsonObject, catalogs: PnpmCatalogs): void => {
     const dependencyFields = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const field of dependencyFields) {
         if (!packageJson[field] || typeof packageJson[field] !== "object") {
             continue;

@@ -1,10 +1,10 @@
-import { writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 import { isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join, toNamespacedPath } from "@visulima/path";
-import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NormalizedReadResult } from "../../src/package-json";
@@ -73,8 +73,8 @@ describe("package-json", () => {
     ])("%s", (name, function_) => {
         let distribution: string;
 
-        beforeEach(async () => {
-            distribution = toNamespacedPath(temporaryDirectory());
+        beforeEach(() => {
+            distribution = toNamespacedPath(mkdtempSync(join(tmpdir(), "visulima-package-")));
         });
 
         afterEach(async () => {
@@ -111,7 +111,7 @@ describe("package-json", () => {
         let distribution: string;
 
         beforeEach(() => {
-            distribution = temporaryDirectory();
+            distribution = mkdtempSync(join(tmpdir(), "visulima-package-"));
         });
 
         afterEach(async () => {
@@ -162,10 +162,9 @@ describe("package-json", () => {
                 });
 
                 expect(true).toBe(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+                expect((error as Error).message).toContain("The following warnings were encountered while normalizing package data:");
             }
         });
 
@@ -204,9 +203,8 @@ describe("package-json", () => {
                 });
 
                 expect(true).toBe(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
-                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+            } catch (error: unknown) {
+                expect((error as Error).message).toContain("The following warnings were encountered while normalizing package data:");
                 expect(error.message).not.toContain("No description");
                 expect(error.message).not.toContain("No repository field.");
             }
@@ -227,9 +225,8 @@ describe("package-json", () => {
                 });
 
                 expect(true).toBe(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
-                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+            } catch (error: unknown) {
+                expect((error as Error).message).toContain("The following warnings were encountered while normalizing package data:");
                 expect(error.message).not.toContain("No description");
                 expect(error.message).not.toContain("No repository field.");
             }
@@ -250,9 +247,8 @@ describe("package-json", () => {
                 });
 
                 expect(true).toBe(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
-                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+            } catch (error: unknown) {
+                expect((error as Error).message).toContain("The following warnings were encountered while normalizing package data:");
                 expect(error.message).not.toContain("No description");
                 expect(error.message).not.toContain("No repository field.");
             }
@@ -273,10 +269,9 @@ describe("package-json", () => {
                 });
 
                 expect(true).toBe(false);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toContain("The following warnings were encountered while normalizing package data:");
+                expect((error as Error).message).toContain("The following warnings were encountered while normalizing package data:");
             }
         });
 
@@ -540,11 +535,9 @@ packages:
                 await parsePackageJson(packageFile, { resolveCatalogs: true });
 
                 expect(true).toBe(false);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+                expect((error as Error).message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
             }
         });
 
@@ -557,11 +550,9 @@ packages:
                 await parsePackageJson(packageFile, { resolveCatalogs: true });
 
                 expect(true).toBe(false);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+                expect((error as Error).message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
             }
         });
 
@@ -577,11 +568,9 @@ packages:
                 parsePackageJsonSync(packageFile, { resolveCatalogs: true });
 
                 expect(true).toBe(false);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+                expect((error as Error).message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
             }
         });
 
@@ -594,11 +583,9 @@ packages:
                 parsePackageJsonSync(packageFile, { resolveCatalogs: true });
 
                 expect(true).toBe(false);
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
+            } catch (error: unknown) {
                 expect(error).toBeInstanceOf(Error);
-                expect(error.message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
+                expect((error as Error).message).toBe("The 'resolveCatalogs' option can only be used on a file path.");
             }
         });
 
@@ -760,7 +747,7 @@ packages:
                 version: "1.0.0",
             };
 
-            const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "dependencies.dependency-1", undefined);
+            const result = getPackageJsonProperty(packageJson as unknown as NormalizedPackageJson, "dependencies.dependency-1");
 
             expect(result).toBeUndefined();
         });
@@ -1028,7 +1015,7 @@ packages:
         let distribution: string;
 
         beforeEach(() => {
-            distribution = temporaryDirectory();
+            distribution = mkdtempSync(join(tmpdir(), "visulima-package-"));
         });
 
         afterEach(async () => {
@@ -1379,7 +1366,7 @@ version: 2.0.0`;
         let distribution: string;
 
         beforeEach(() => {
-            distribution = temporaryDirectory();
+            distribution = mkdtempSync(join(tmpdir(), "visulima-package-"));
         });
 
         afterEach(async () => {
@@ -1604,7 +1591,7 @@ version: 2.0.0`;
         let distribution: string;
 
         beforeEach(() => {
-            distribution = temporaryDirectory();
+            distribution = mkdtempSync(join(tmpdir(), "visulima-package-"));
         });
 
         afterEach(async () => {

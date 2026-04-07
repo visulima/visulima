@@ -22,7 +22,7 @@ describe("usage `@visulima/package` npm package", () => {
         });
     });
 
-    it(`should work as ESM package`, async () => {
+    it(`should work as ESM package`, () => {
         expect.assertions(1);
 
         const filename = join(__dirname, "..", "..", "__fixtures__/package/mjs/test.mjs");
