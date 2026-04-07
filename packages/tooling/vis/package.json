@@ -145,14 +145,14 @@
         }
     },
     "optionalDependencies": {
-        "@visulima/vis-binding-darwin-arm64": "1.0.0-alpha.3",
-        "@visulima/vis-binding-darwin-x64": "1.0.0-alpha.3",
-        "@visulima/vis-binding-linux-arm64-gnu": "1.0.0-alpha.3",
-        "@visulima/vis-binding-linux-arm64-musl": "1.0.0-alpha.3",
-        "@visulima/vis-binding-linux-x64-gnu": "1.0.0-alpha.3",
-        "@visulima/vis-binding-linux-x64-musl": "1.0.0-alpha.3",
-        "@visulima/vis-binding-win32-arm64-msvc": "1.0.0-alpha.3",
-        "@visulima/vis-binding-win32-x64-msvc": "1.0.0-alpha.3"
+        "@visulima/vis-binding-darwin-arm64": "workspace:*",
+        "@visulima/vis-binding-darwin-x64": "workspace:*",
+        "@visulima/vis-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/vis-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/vis-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/vis-binding-linux-x64-musl": "workspace:*",
+        "@visulima/vis-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/vis-binding-win32-x64-msvc": "workspace:*"
     },
     "engines": {
         "node": ">=22.13 <=25.x"
