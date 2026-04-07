@@ -108,7 +108,7 @@ const parseYamlFileSync = (filePath: string): JsonObject => {
 const parseJson5File = async (filePath: string): Promise<JsonObject> => {
     const text = await readFile(filePath);
 
-    return JSON5.parse(text) as JsonObject;
+    return JSON5.parse(text);
 };
 
 /**
@@ -119,7 +119,7 @@ const parseJson5File = async (filePath: string): Promise<JsonObject> => {
 const parseJson5FileSync = (filePath: string): JsonObject => {
     const text = readFileSync(filePath);
 
-    return JSON5.parse(text) as JsonObject;
+    return JSON5.parse(text);
 };
 
 /**
@@ -228,7 +228,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
         const catalogs = await readPnpmCatalogs(filePath);
 
         if (catalogs) {
-            resolveCatalogReferences(packageJson as JsonObject, catalogs);
+            resolveCatalogReferences(packageJson, catalogs);
         }
     }
 
@@ -302,7 +302,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
         const catalogs = readPnpmCatalogsSync(filePath);
 
         if (catalogs) {
-            resolveCatalogReferences(packageJson as JsonObject, catalogs);
+            resolveCatalogReferences(packageJson, catalogs);
         }
     }
 
@@ -517,7 +517,7 @@ export const parsePackageJson = async (
  * @returns
  */
 export const getPackageJsonProperty = <T = unknown>(packageJson: NormalizedPackageJson, property: Paths<NormalizedPackageJson>, defaultValue?: T): T =>
-    getProperty(packageJson, property, defaultValue) as T;
+    getProperty(packageJson, property, defaultValue);
 
 /**
  * An asynchronous function to check if a property exists in the package.json file.
@@ -541,7 +541,7 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
     const devDependencies = getProperty(packageJson, "devDependencies", {});
     const peerDependencies = getProperty(packageJson, "peerDependencies", {});
 
-    const allDependencies = { ...dependencies, ...devDependencies, ...(options?.peerDeps === false ? {} : peerDependencies) };
+    const allDependencies = { ...dependencies, ...devDependencies, ...options?.peerDeps === false ? {} : peerDependencies };
 
     for (const argument of arguments_) {
         if (hasProperty(allDependencies, argument)) {
@@ -595,9 +595,9 @@ export const ensurePackages = async (
 
     for (const packageName of packages) {
         if (
-            (config.deps && hasProperty(dependencies, packageName)) ||
-            (config.devDeps && hasProperty(devDependencies, packageName)) ||
-            (config.peerDeps && hasProperty(peerDependencies, packageName))
+            (config.deps && hasProperty(dependencies, packageName))
+            || (config.devDeps && hasProperty(devDependencies, packageName))
+            || (config.peerDeps && hasProperty(peerDependencies, packageName))
         ) {
             continue;
         }

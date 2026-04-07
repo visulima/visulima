@@ -77,7 +77,7 @@ describe("package", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findPackageRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
+                await expect(function_(distribution)).rejects.toThrow("Could not find root directory");
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => function_(distribution)).toThrow("Could not find root directory");
@@ -90,7 +90,7 @@ describe("package", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findPackageRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                await expect(async () => await function_(distribution)).rejects.toThrow("Could not find root directory");
+                await expect(function_(distribution)).rejects.toThrow("Could not find root directory");
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => function_(distribution)).toThrow("Could not find root directory");

@@ -91,7 +91,7 @@ describe("monorepo", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findMonorepoRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                await expect(async () => await _function(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
+                await expect(_function(join(temporaryDirectory(), "packages", "package-a"))).rejects.toThrow(
                     /No monorepo root could be found upwards/,
                 );
             } else {
@@ -106,7 +106,7 @@ describe("monorepo", () => {
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findMonorepoRoot") {
                 // eslint-disable-next-line vitest/no-conditional-expect
-                await expect(async () => await _function(join(cwd, "bad"))).rejects.toThrow(JSONError);
+                await expect(_function(join(cwd, "bad"))).rejects.toThrow(JSONError);
             } else {
                 // eslint-disable-next-line vitest/no-conditional-expect
                 expect(() => (_function as typeof findMonorepoRootSync)(join(cwd, "bad"))).toThrow(JSONError);
