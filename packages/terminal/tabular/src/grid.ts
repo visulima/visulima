@@ -85,7 +85,7 @@ export class Grid {
     readonly #cellVerticalPositionCache = new WeakMap<GridItem, { firstRow: number; lastRow: number }>();
 
     /**
-     * Create the initial grid layout array (will be dynamically sized later)
+     * Create the initial grid layout array (will be dynamically sized later).
      * @returns An empty grid layout array
      */
     private static createGridLayout(): (GridItem | undefined)[][] {
@@ -93,7 +93,7 @@ export class Grid {
     }
 
     /**
-     * Creates a new Grid instance
+     * Creates a new Grid instance.
      * @param options Configuration options for the grid
      */
     public constructor(options: GridOptions) {
@@ -152,7 +152,7 @@ export class Grid {
     }
 
     /**
-     * Adds a single item to the grid
+     * Adds a single item to the grid.
      * @param cell The cell to add
      * @returns The grid instance for method chaining
      */
@@ -163,7 +163,7 @@ export class Grid {
     }
 
     /**
-     * Adds multiple items to the grid
+     * Adds multiple items to the grid.
      * @param items Array of items to add
      * @returns The grid instance for method chaining
      */
@@ -174,7 +174,7 @@ export class Grid {
     }
 
     /**
-     * Sets the number of columns in the grid
+     * Sets the number of columns in the grid.
      * @param columns Number of columns
      * @returns The grid instance for method chaining
      */
@@ -185,7 +185,7 @@ export class Grid {
     }
 
     /**
-     * Sets the number of rows in the grid
+     * Sets the number of rows in the grid.
      * @param rows Number of rows
      * @returns The grid instance for method chaining
      */
@@ -196,7 +196,7 @@ export class Grid {
     }
 
     /**
-     * Sets the border style for the grid
+     * Sets the border style for the grid.
      * @param border Border style configuration
      * @returns The grid instance for method chaining
      */
@@ -207,7 +207,7 @@ export class Grid {
     }
 
     /**
-     * Sets whether borders should be shown
+     * Sets whether borders should be shown.
      * @param show Whether to show borders
      * @returns The grid instance for method chaining
      */
@@ -218,7 +218,7 @@ export class Grid {
     }
 
     /**
-     * Sets the maximum width for the grid
+     * Sets the maximum width for the grid.
      * @param width Maximum width
      * @returns The grid instance for method chaining
      */
@@ -229,7 +229,7 @@ export class Grid {
     }
 
     /**
-     * Converts the grid to a string representation
+     * Converts the grid to a string representation.
      * @returns A string containing the rendered grid
      */
     public toString(): string {
@@ -426,7 +426,7 @@ export class Grid {
     }
 
     /**
-     * Checks if an item can be placed at a specific position
+     * Checks if an item can be placed at a specific position.
      * @param gridLayout The grid layout array
      * @param startRow Starting row index
      * @param startCol Starting column index
@@ -487,11 +487,11 @@ export class Grid {
                 // since words cannot be broken across lines
                 let wordBasedWidth = 0;
 
-                for (let li = 0; li < lines.length; li += 1) {
-                    const words = (lines[li] as string).split(WHITESPACE_REGEX);
+                for (const line of lines) {
+                    const words = line.split(WHITESPACE_REGEX);
 
-                    for (let wi = 0; wi < words.length; wi += 1) {
-                        wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(words[wi] as string), cellMaxWidth));
+                    for (const word of words) {
+                        wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
                     }
                 }
 
@@ -505,11 +505,11 @@ export class Grid {
             // This prevents one column from dominating while ensuring readability
             let maxWordWidth = 0;
 
-            for (let li = 0; li < lines.length; li += 1) {
-                const words = (lines[li] as string).split(WHITESPACE_REGEX);
+            for (const line of lines) {
+                const words = line.split(WHITESPACE_REGEX);
 
-                for (let wi = 0; wi < words.length; wi += 1) {
-                    maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(words[wi] as string), cellMaxWidth));
+                for (const word of words) {
+                    maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
                 }
             }
 
@@ -521,7 +521,7 @@ export class Grid {
     }
 
     /**
-     * Places an item in the grid layout
+     * Places an item in the grid layout.
      * @param gridLayout The grid layout array
      * @param startRow Starting row index
      * @param startCol Starting column index
@@ -656,12 +656,12 @@ export class Grid {
                 })
                 .toSorted((a, b) => b.remainder - a.remainder);
 
-            for (let ii = 0; ii < indices.length; ii += 1) {
+            for (const entry of indices) {
                 if (remainingWidth <= 0) {
                     break;
                 }
 
-                const { index } = indices[ii] as { index: number; remainder: number };
+                const { index } = entry;
 
                 // Add safety check for index bounds before incrementing
 
@@ -774,12 +774,10 @@ export class Grid {
 
                 // Distribute remaining width one by one to growable columns
                 while (remainingWidth > 0 && columnsToGrow.length > 0) {
-                    for (let gi = 0; gi < columnsToGrow.length; gi += 1) {
+                    for (const colIndex of columnsToGrow) {
                         if (remainingWidth <= 0) {
                             break;
                         }
-
-                        const colIndex = columnsToGrow[gi] as number;
 
                         adjustedWidths[colIndex] = (adjustedWidths[colIndex] ?? 0) + 1;
                         remainingWidth -= 1;
@@ -832,8 +830,8 @@ export class Grid {
                 let contentWidth = 0;
 
                 // First, calculate the full content width needed
-                for (let li = 0; li < lines.length; li += 1) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
+                for (const line of lines) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
                 }
 
                 // Determine appropriate minimum width based on wrapping capability
@@ -876,8 +874,8 @@ export class Grid {
                     let contentWidth = 0;
 
                     // First, calculate the full content width needed
-                    for (let li = 0; li < lines.length; li += 1) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
+                    for (const line of lines) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
@@ -945,9 +943,7 @@ export class Grid {
                 let currentContent = 0;
                 const holeIndices: number[] = [];
 
-                for (let i = 0; i < fixed.length; i += 1) {
-                    const element = fixed[i];
-
+                for (const [i, element] of fixed.entries()) {
                     if (typeof element === "number" && Number.isFinite(element)) {
                         seed[i] = element;
                         currentContent += element;
@@ -960,19 +956,19 @@ export class Grid {
                 let remaining = Math.max(0, availableContent - currentContent);
                 const evenWidth = holeIndices.length > 0 ? Math.floor(remaining / holeIndices.length) : 0;
 
-                for (let hi = 0; hi < holeIndices.length; hi += 1) {
-                    seed[holeIndices[hi] as number] = evenWidth;
+                for (const holeIndex of holeIndices) {
+                    seed[holeIndex] = evenWidth;
                 }
 
                 remaining -= evenWidth * holeIndices.length;
 
                 // Distribute remainder (one pixel per hole from start)
-                for (let hi = 0; hi < holeIndices.length; hi += 1) {
+                for (const holeIndex of holeIndices) {
                     if (remaining <= 0) {
                         break;
                     }
 
-                    (seed[holeIndices[hi] as number] as number) += 1;
+                    (seed[holeIndex] as number) += 1;
                     remaining -= 1;
                 }
 
@@ -1012,8 +1008,8 @@ export class Grid {
 
                 let contentWidth = 0;
 
-                for (let li = 0; li < lines.length; li += 1) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
+                for (const line of lines) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
                 }
 
                 if (colSpan === 1) {
@@ -1047,8 +1043,8 @@ export class Grid {
                     let contentWidth = 0;
 
                     // First, calculate the full content width needed
-                    for (let li = 0; li < lines.length; li += 1) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
+                    for (const line of lines) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
@@ -1381,7 +1377,7 @@ export class Grid {
     }
 
     /**
-     * Renders a horizontal border line
+     * Renders a horizontal border line.
      * @param gridLayout The grid layout array
      * @param rowHeights Array of row heights
      * @param rowIndex Row index *above* the border being drawn
@@ -1686,7 +1682,7 @@ export class Grid {
     }
 
     /**
-     * Renders the complete grid
+     * Renders the complete grid.
      * @param gridLayout The grid layout array
      * @param columnWidths Array of column widths
      * @returns String representation of the grid
@@ -1783,7 +1779,7 @@ export class Grid {
 }
 
 /**
- * Creates a new grid instance with the specified options
+ * Creates a new grid instance with the specified options.
  * @param options Configuration options for the grid
  * @returns A new Grid instance
  */

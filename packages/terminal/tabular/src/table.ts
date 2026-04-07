@@ -102,8 +102,8 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public addRows(...rows: TableCell[][]): this {
-        for (let i = 0; i < rows.length; i += 1) {
-            this.addRow(rows[i] as TableCell[]);
+        for (const row of rows) {
+            this.addRow(row);
         }
 
         this.#isDirty = true;
@@ -141,8 +141,8 @@ export class Table {
         // Calculate based on the widest row found in headers or body
         let numberColumns = 0;
 
-        for (let i = 0; i < allRows.length; i += 1) {
-            const row = allRows[i] as TableCell[];
+        for (const allRow of allRows) {
+            const row = allRow;
 
             if (Array.isArray(row)) {
                 numberColumns = Math.max(numberColumns, computeRowLogicalWidth(row));
@@ -195,11 +195,10 @@ export class Table {
             const adjustedWidths = [...fixedGridWidths];
 
             // Find minimum maxWidth for each column across all cells
-            for (let ri = 0; ri < allRows.length; ri += 1) {
-                const row = allRows[ri] as TableCell[];
+            for (const allRow of allRows) {
+                const row = allRow;
 
-                for (let cellIndex = 0; cellIndex < row.length; cellIndex += 1) {
-                    const cellInput = row[cellIndex];
+                for (const [cellIndex, cellInput] of row.entries()) {
                     let cellOptions: Omit<GridItem, "content"> = {};
 
                     if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -252,8 +251,8 @@ export class Table {
 
         const gridItems: GridItem[] = [];
 
-        for (let currentRowIndex = 0; currentRowIndex < allRows.length; currentRowIndex += 1) {
-            const row = allRows[currentRowIndex] as TableCell[];
+        for (const [currentRowIndex, allRow] of allRows.entries()) {
+            const row = allRow;
 
             if (!Array.isArray(row)) {
                 // eslint-disable-next-line no-console
@@ -270,8 +269,8 @@ export class Table {
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
             const applyFooterColspan = isFooterRow && row.length === 1 && numberColumns > 1;
 
-            for (let ci = 0; ci < row.length; ci += 1) {
-                let cellInput: Content | TableItem = row[ci] as Content | TableItem;
+            for (const element of row) {
+                let cellInput: Content | TableItem = element as Content | TableItem;
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {

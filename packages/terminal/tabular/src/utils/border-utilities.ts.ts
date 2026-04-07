@@ -1,7 +1,7 @@
 import type { BorderComponent, BorderStyle, BorderType } from "../types";
 
 /**
- * Gets the horizontal border components for a specific border type
+ * Gets the horizontal border components for a specific border type.
  * @param border The border style configuration
  * @param borderType The type of border (top, middle, or bottom)
  * @returns Object containing left, body, join, and right border components
@@ -48,7 +48,7 @@ export const getHorizontalBorderChars = (
 };
 
 /**
- * Gets the vertical border components
+ * Gets the vertical border components.
  * @param border The border style configuration
  * @returns Object containing left, join, and right border components
  */

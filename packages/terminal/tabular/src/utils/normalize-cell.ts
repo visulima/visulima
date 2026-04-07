@@ -1,4 +1,4 @@
-import type { GridCell, GridItem, InternalGridItem } from "../types";
+import type { GridCell, InternalGridItem } from "../types";
 
 export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
 

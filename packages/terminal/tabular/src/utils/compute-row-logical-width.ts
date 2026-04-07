@@ -5,7 +5,7 @@ import type { TableCell } from "../types";
  * The effective width is determined as follows:
  * - For null cells: counts as 1 column
  * - For object cells with colSpan: uses the colSpan value (defaults to 1 if not specified or invalid)
- * - For all other cells (strings, etc.): counts as 1 column
+ * - For all other cells (strings, etc.): counts as 1 column.
  * @param row Array of table cells, where each cell can be null, a string, or an object with optional colSpan
  * @returns The total logical width of the row (sum of all cell widths/spans)
  * @example
