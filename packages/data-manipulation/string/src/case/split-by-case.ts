@@ -85,7 +85,7 @@ const isLower = (code: number): number => isLowerCode[code];
 const isDigit = (code: number): number => isDigitCode[code];
 
 /**
- * A shared function to handle script transitions for various locale-specific splitting
+ * Handles script transitions for various locale-specific splitting.
  * @param s Input string to process
  * @param scriptDetectors Object mapping script types to detector functions
  * @param caseSensitive Whether to also split on uppercase transitions
@@ -116,8 +116,10 @@ const handleScriptTransitions = (
     // Quick validation - see if any of our detectors match the string
     let hasDetectedScript = false;
 
-    for (const detector of Object.values(scriptDetectors)) {
-        if (detector(s[0] as string)) {
+    const detectorValues = Object.values(scriptDetectors);
+
+    for (const detectorValue of detectorValues) {
+        if ((detectorValue as (char: string) => boolean)(s[0] as string)) {
             hasDetectedScript = true;
             break;
         }
@@ -128,6 +130,7 @@ const handleScriptTransitions = (
         return [s];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for script detection
     const chars = [...s];
     const result: string[] = [];
     let currentSegment = chars[0] as string;
@@ -135,7 +138,11 @@ const handleScriptTransitions = (
     // Determine initial script type
     let previousType = "other";
 
-    for (const [type, detector] of Object.entries(scriptDetectors)) {
+    const scriptEntries = Object.entries(scriptDetectors);
+
+    for (const scriptEntry of scriptEntries) {
+        const [type, detector] = scriptEntry as [string, (char: string) => boolean];
+
         if (detector(chars[0] as string)) {
             previousType = type;
             break;
@@ -153,7 +160,9 @@ const handleScriptTransitions = (
         // Determine current script type
         let currentType = "other";
 
-        for (const [type, detector] of Object.entries(scriptDetectors)) {
+        for (const scriptEntry of scriptEntries) {
+            const [type, detector] = scriptEntry as [string, (char: string) => boolean];
+
             if (detector(char)) {
                 currentType = type;
                 break;
@@ -368,6 +377,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting for locale-aware character processing
         const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const width_ = chars.length;
@@ -437,6 +447,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting for Cyrillic/Latin script detection
         const chars: string[] = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const width_ = chars.length;
@@ -520,7 +531,21 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
-        const parts = s.match(RE_GREEK_LATIN_SPLIT) ?? [s];
+        const parts: string[] = [];
+
+        RE_GREEK_LATIN_SPLIT.lastIndex = 0;
+
+        let greekExecMatch: RegExpExecArray | null;
+
+        // eslint-disable-next-line no-cond-assign
+        while ((greekExecMatch = RE_GREEK_LATIN_SPLIT.exec(s)) !== null) {
+            parts.push(greekExecMatch[0]);
+        }
+
+        if (parts.length === 0) {
+            parts.push(s);
+        }
+
         const result: string[] = [];
         const width = parts.length;
 
@@ -529,33 +554,33 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             const part = parts[0];
 
             if (!part || !RE_GREEK.test(part[0] as string) || part.length === 1) {
-                return [part || s];
+                return [part ?? s];
             }
         }
 
-        for (const part of parts) {
+        for (const greekPart of parts) {
             // Skip empty parts
-            if (!part) {
+            if (!greekPart) {
                 continue;
             }
 
             // Fast path for non-Greek or single-char parts
-            if (!RE_GREEK.test(part[0] as string) || part.length === 1) {
-                result.push(part);
+            if (!RE_GREEK.test(greekPart[0] as string) || greekPart.length === 1) {
+                result.push(greekPart);
 
                 continue;
             }
 
             // For Greek text longer than 1 character, split on case transitions
-            const partLength = part.length;
+            const partLength = greekPart.length;
 
-            let word = part[0] as string;
+            let word = greekPart[0] as string;
 
-            let previousIsUpper = part[0] === (part[0] as string).toLocaleUpperCase(locale);
+            let previousIsUpper = greekPart[0] === (greekPart[0] as string).toLocaleUpperCase(locale);
 
             // eslint-disable-next-line no-plusplus
             for (let index = 1; index < partLength; index++) {
-                const char = part[index] as string;
+                const char = greekPart[index] as string;
                 const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
                 if (!previousIsUpper && isUpperCaseChar) {
@@ -613,7 +638,9 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             // Post-process for Japanese particles
             const result: string[] = [];
 
-            for (const segment of baseSegments) {
+            for (const baseSegment of baseSegments) {
+                const segment = baseSegment;
+
                 if (segment.length === 1 && particles.has(segment) && result.length > 0) {
                     result[result.length - 1] = (result.at(-1) as string) + segment;
                 } else {
@@ -638,6 +665,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Special handling for Slovenian scripts
     if (locale.startsWith("sl")) {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting for Slovenian character processing
         const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const width_ = chars.length;
@@ -805,6 +833,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             return [s];
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting for Uzbek character processing
         const chars = [...s];
         // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
         const width_ = chars.length;
@@ -844,6 +873,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Handle default case - Latin script with case transitions
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting for locale-aware character processing
     const chars = [...s];
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     const width_ = chars.length;
@@ -925,7 +955,9 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
     const result: string[] = [];
     const segments: string[] = RE_FAST_ANSI.test(text) ? text.split(RE_FAST_ANSI).filter(Boolean) : [text];
 
-    for (const seg of segments) {
+    for (const segment of segments) {
+        const seg = segment;
+
         if (RE_FAST_ANSI.test(seg)) {
             // If the segment is an ANSI escape, pass it through.
             result.push(seg);
@@ -934,9 +966,9 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
             // split on emoji boundaries.
             const subs: string[] = RE_EMOJI.test(seg) ? splitByEmoji(seg).filter(Boolean) : [seg];
 
-            for (const sub of subs) {
-                if (RE_EMOJI.test(sub)) {
-                    result.push(sub);
+            for (const emojiSub of subs) {
+                if (RE_EMOJI.test(emojiSub)) {
+                    result.push(emojiSub);
                 } else {
                     // Process each plain text subsegment.
                     // eslint-disable-next-line no-lonely-if
@@ -944,9 +976,9 @@ const processTextWithAnsiEmoji = (text: string, locale: NodeLocale | undefined, 
                         // Normalize locale codes
                         const normalizedLocale = locale.toLowerCase().split("-")[0] as NodeLocale;
 
-                        result.push(...splitCamelCaseLocale(sub, normalizedLocale, knownAcronyms));
+                        result.push(...splitCamelCaseLocale(emojiSub, normalizedLocale, knownAcronyms));
                     } else {
-                        result.push(...splitCamelCaseFast(sub, knownAcronyms));
+                        result.push(...splitCamelCaseFast(emojiSub, knownAcronyms));
                     }
                 }
             }
@@ -1138,13 +1170,13 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
 
     let tokens: string[] = [];
 
-    for (const part of parts) {
+    for (const splitPart of parts) {
         if (handleAnsi || handleEmoji) {
-            tokens.push(...processTextWithAnsiEmoji(part, locale, acronymSet));
+            tokens.push(...processTextWithAnsiEmoji(splitPart, locale, acronymSet));
         } else if (locale) {
-            tokens.push(...splitCamelCaseLocale(part, locale, acronymSet));
+            tokens.push(...splitCamelCaseLocale(splitPart, locale, acronymSet));
         } else {
-            tokens.push(...splitCamelCaseFast(part, acronymSet));
+            tokens.push(...splitCamelCaseFast(splitPart, acronymSet));
         }
     }
 

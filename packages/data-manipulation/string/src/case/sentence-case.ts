@@ -42,7 +42,7 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
 
     let firstWord = true;
 
-    const result = joinSegments<SentenceCase<T>>(
+    const result = joinSegments(
         splitByCase(value, {
             handleAnsi: options?.handleAnsi,
             handleEmoji: options?.handleEmoji,
@@ -57,17 +57,17 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
                 return word;
             }
 
-            word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
+            const normalized = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
-            word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
+            const lowered = options?.locale ? normalized.toLocaleLowerCase(options.locale) : normalized.toLowerCase();
 
             if (firstWord) {
                 firstWord = false;
 
-                return upperFirst(word, options);
+                return upperFirst(lowered, options);
             }
 
-            return word;
+            return lowered;
         }),
         " ",
     );

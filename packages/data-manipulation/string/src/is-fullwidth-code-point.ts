@@ -17,7 +17,7 @@ const isFullwidthCodePoint = (codePoint: number): boolean => {
         return false;
     }
 
-    return isFullWidth(codePoint) || isWide(codePoint);
+    return (isFullWidth as (cp: number) => boolean)(codePoint) || (isWide as (cp: number) => boolean)(codePoint);
 };
 
 export default isFullwidthCodePoint;

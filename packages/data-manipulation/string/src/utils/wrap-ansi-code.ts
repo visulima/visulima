@@ -1,7 +1,7 @@
 import { ANSI_CSI, ANSI_SGR_TERMINATOR, ESCAPES } from "../constants";
 
 /**
- * Wraps an ANSI code in the escape sequence
+ * Wraps an ANSI code in the escape sequence.
  * @param code The ANSI code to wrap
  * @returns The wrapped ANSI code
  */

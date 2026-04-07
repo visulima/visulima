@@ -45,15 +45,14 @@ export const closestString = (givenWord: string, possibleWords: ReadonlyArray<st
 
     const { caseSensitive, compareFn: compareFunction = levenshteinDistance } = { ...options };
 
-    if (!caseSensitive) {
-        givenWord = givenWord.toLowerCase();
-    }
+    const normalizedGivenWord = caseSensitive ? givenWord : givenWord.toLowerCase();
 
     let nearestWord = possibleWords[0] ?? undefined;
     let closestStringDistance = Infinity;
 
-    for (const each of possibleWords) {
-        const distance = caseSensitive ? compareFunction(givenWord, each) : compareFunction(givenWord, each.toLowerCase());
+    for (const possibleWord of possibleWords) {
+        const each = possibleWord;
+        const distance = caseSensitive ? compareFunction(normalizedGivenWord, each) : compareFunction(normalizedGivenWord, each.toLowerCase());
 
         if (distance < closestStringDistance) {
             nearestWord = each;

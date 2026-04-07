@@ -3,7 +3,7 @@ import type { SlugifyOptions } from "./types";
 import { escapeRegExp } from "./utilities";
 
 /**
- * Removes all characters from a string that are not in the allowed characters list
+ * Removes all characters from a string that are not in the allowed characters list.
  * @param input The string to sanitize
  * @param allowedChars String containing allowed characters or patterns like "a-zA-Z0-9"
  * @returns - The sanitized string with only allowed characters

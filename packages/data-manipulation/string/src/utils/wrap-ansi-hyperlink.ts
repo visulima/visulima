@@ -1,7 +1,7 @@
 import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ESCAPES } from "../constants";
 
 /**
- * Wraps an ANSI hyperlink in the escape sequence
+ * Wraps an ANSI hyperlink in the escape sequence.
  * @param url The URL to wrap
  * @returns The wrapped ANSI hyperlink
  */

@@ -8,7 +8,7 @@ const regexCache = new LRUCache<string, RegExp>(1000);
 const RE_ESCAPE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 
 /**
- * Creates or retrieves a cached regex for custom separators
+ * Creates or retrieves a cached regex for custom separators.
  * @param separators Array of separator strings to create a regex pattern from
  * @returns A RegExp object that matches any of the specified separators
  */

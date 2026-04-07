@@ -62,7 +62,7 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
         return upperFirst(options?.locale ? split.toLocaleLowerCase(options.locale) : split.toLocaleLowerCase(), options);
     });
 
-    const result = joinSegments<CapitalCase<T>>(processed, " ");
+    const result = joinSegments(processed, " ");
 
     if (shouldCache && cacheKey) {
         cacheStore.set(cacheKey, result);

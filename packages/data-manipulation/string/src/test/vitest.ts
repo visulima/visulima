@@ -6,7 +6,6 @@ export interface CustomMatchers {
 }
 
 /**
- * Extends Vitest expect with ANSI string comparison
- * Use in test files with: expect.extend({ toEqualAnsi });
+ * Extends Vitest expect with ANSI string comparison via expect.extend.
  */
 export const toEqualAnsi = (actual: string, expected: string): ExpectationResult => expectAnsiStrings(actual, expected);

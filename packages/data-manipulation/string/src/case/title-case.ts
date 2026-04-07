@@ -47,11 +47,9 @@ function titleCase<T extends string = string>(value?: T, options?: CaseOptions):
         stripEmoji: options?.stripEmoji,
     })
         .map((word: string) => {
-            if (options?.locale?.startsWith("de")) {
-                word = normalizeGermanEszett(word);
-            }
+            const normalized = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
 
-            return upperFirst(options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase(), { locale: options?.locale });
+            return upperFirst(options?.locale ? normalized.toLocaleLowerCase(options.locale) : normalized.toLowerCase(), { locale: options?.locale });
         })
         .join(" ") as TitleCase<T>;
 

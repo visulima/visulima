@@ -50,7 +50,7 @@ export const compareSimilarity = (givenWord: string, options?: CompareSimilarity
         return (a: string, b: string) => compareFunction(givenWord, a) - compareFunction(givenWord, b);
     }
 
-    givenWord = givenWord.toLowerCase();
+    const normalizedGivenWord = givenWord.toLowerCase();
 
-    return (a: string, b: string) => compareFunction(givenWord, a.toLowerCase()) - compareFunction(givenWord, b.toLowerCase());
+    return (a: string, b: string) => compareFunction(normalizedGivenWord, a.toLowerCase()) - compareFunction(normalizedGivenWord, b.toLowerCase());
 };
