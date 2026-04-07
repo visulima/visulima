@@ -29,7 +29,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
             accumulator[group] = [];
         }
 
-        (accumulator[group] as ICommand[]).push(command);
+        accumulator[group].push(command);
 
         return accumulator;
     }, {});
@@ -79,9 +79,9 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                          header: inverse.yellow(" Command Options "),
-                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                      }
+                        header: inverse.yellow(" Command Options "),
+                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                    }
                     : undefined,
                 { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {
@@ -106,15 +106,15 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
     // Try to find command by name first
-    let command = commands.get(name) as ICommand<OD> | undefined;
+    let command = commands.get(name);
 
     // If not found, try to find by full path (for nested commands)
     if (!command) {
         for (const cmd of commands.values()) {
             const fullPath = cmd.commandPath ? [...cmd.commandPath, cmd.name] : [cmd.name];
 
-            if (fullPath[fullPath.length - 1] === name || fullPath.join(" ") === name) {
-                command = cmd as ICommand<OD>;
+            if (fullPath.at(-1) === name || fullPath.join(" ") === name) {
+                command = cmd;
                 break;
             }
         }
@@ -214,7 +214,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(header as string));
+            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(header));
         }
 
         if (commandName === "help") {
@@ -225,11 +225,11 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
                 typeof options?.group === "string" ? options.group : undefined,
             );
         } else {
-            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName as string);
+            printCommandHelp(logger, runtime as unknown as ICli<Console>, this.commands as unknown as Map<string, ICommand>, commandName);
         }
 
         if (footer) {
-            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(footer as string));
+            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(footer));
         }
     }
 }

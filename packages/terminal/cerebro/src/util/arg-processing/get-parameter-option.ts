@@ -24,9 +24,9 @@ const getParameterOption = <OD extends OptionDefinition<unknown>>(
         return {};
     }
 
-    const option: PossibleOptionDefinition<OD> | undefined =
-        optionMapByName && optionMapByAlias
-            ? (optionMapByName.get(nameOrAlias) ?? optionMapByAlias.get(nameOrAlias))
+    const option: PossibleOptionDefinition<OD> | undefined
+        = optionMapByName && optionMapByAlias
+            ? optionMapByName.get(nameOrAlias) ?? optionMapByAlias.get(nameOrAlias)
             : options.find((o) => o.name === nameOrAlias || o.alias === nameOrAlias);
 
     if (option !== undefined) {

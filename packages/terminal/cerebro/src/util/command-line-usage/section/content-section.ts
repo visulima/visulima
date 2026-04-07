@@ -78,7 +78,7 @@ class ContentSection extends BaseSection {
                 if (Array.isArray(section.content) && section.content.every((value) => typeof value === "string")) {
                     section.content.forEach((row) => {
                         if (Array.isArray(row)) {
-                            row.forEach((cell) => this.add(templateFormat(cell as string | undefined)));
+                            row.forEach((cell) => { this.add(templateFormat(cell as string | undefined)); });
                         } else {
                             this.add(templateFormat(row));
                         }
@@ -117,9 +117,9 @@ class ContentSection extends BaseSection {
         }
 
         if (
-            Array.isArray(content) &&
+            Array.isArray(content)
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
+            && content.every((value) => typeof value === "string" || (Array.isArray(value) && value.every((value) => typeof value === "string")))
         ) {
             const table = createTable({
                 showHeader: false,

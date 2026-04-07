@@ -22,16 +22,16 @@ const equals = (a: string[], b: string[]): boolean => {
  */
 const parseRawCommand = (commandArray: string[] | string): string[] => {
     if (typeof commandArray === "string") {
-        return (commandArray as string).split(COMMAND_DELIMITER);
+        return commandArray.split(COMMAND_DELIMITER);
     }
 
     const argv = getArgv();
 
-    if (equals(commandArray as string[], argv as string[])) {
-        return hideBin(commandArray as string[]);
+    if (equals(commandArray, argv as string[])) {
+        return hideBin(commandArray);
     }
 
-    return commandArray as string[];
+    return commandArray;
 };
 
 export default parseRawCommand;

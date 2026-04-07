@@ -219,27 +219,27 @@ const completionCommand: ICommand = {
             description: "Shell path (Unix-like systems). Used for shell detection.",
             name: "SHELL",
             type: String,
-        } satisfies EnvDefinition<string>,
+        } satisfies EnvDefinition,
         {
             description: "Starship shell configuration. Takes precedence over SHELL for detection.",
             name: "STARSHIP_SHELL",
             type: String,
-        } satisfies EnvDefinition<string>,
+        } satisfies EnvDefinition,
         {
             description: "PowerShell module path (Windows). Used for PowerShell detection.",
             name: "PSModulePath",
             type: String,
-        } satisfies EnvDefinition<string>,
+        } satisfies EnvDefinition,
         {
             description: "Command prompt variable (Windows). Used for PowerShell detection.",
             name: "PROMPT",
             type: String,
-        } satisfies EnvDefinition<string>,
+        } satisfies EnvDefinition,
         {
             description: "Command processor (Windows). Used for Windows Command Prompt detection.",
             name: "ComSpec",
             type: String,
-        } satisfies EnvDefinition<string>,
+        } satisfies EnvDefinition,
     ],
     execute: async ({ env: toolboxEnv, logger, options, runtime }: IToolbox) => {
         const cliName = runtime.getCliName();

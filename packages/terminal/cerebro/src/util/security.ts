@@ -15,7 +15,7 @@ const MAX_ARGS = 100;
 /**
  * Dangerous characters that could be used for injection attacks
  */
-const DANGEROUS_CHARS = new Set(["\n", "\r", "\t", "\0", '"', "$", "&", "'", "(", ")", ";", "<", ">", "[", "\\", "]", "`", "{", "|", "}"]);
+const DANGEROUS_CHARS = new Set(["\n", "\r", "\t", "\0", "\"", "$", "&", "'", "(", ")", ";", "<", ">", "[", "\\", "]", "`", "{", "|", "}"]);
 
 /**
  * Sanitizes a command argument to prevent injection attacks.
