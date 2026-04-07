@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { GridItem, InternalGridItem } from "../../../src/types";
 import { EMPTY_CELL_REPRESENTATION, normalizeGridCell } from "../../../src/utils/normalize-cell";
 
+const INVALID_ITEM_REGEX = /Invalid item type in grid cell/;
+
 describe("normalizeCell", () => {
     it("should handle primitive string content", () => {
         expect.assertions(1);
@@ -95,6 +97,6 @@ describe("normalizeCell", () => {
         expect(() => {
             // @ts-expect-error - Intentionally passing invalid type for testing
             normalizeGridCell(invalidCell);
-        }).toThrow(/Invalid item type in grid cell/);
+        }).toThrow(INVALID_ITEM_REGEX);
     });
 });

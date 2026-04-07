@@ -23,10 +23,8 @@ const computeRowLogicalWidth = (row: TableCell[]): number =>
         }
 
         if (typeof cell === "object" && !Array.isArray(cell)) {
-            if (cell.colSpan === undefined) {
-                // eslint-disable-next-line no-param-reassign
-                cell.colSpan = 1;
-            }
+            // eslint-disable-next-line no-param-reassign
+            cell.colSpan ??= 1;
 
             if (cell.colSpan <= 0) {
                 return total + 1;

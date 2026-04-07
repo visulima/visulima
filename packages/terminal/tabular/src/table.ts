@@ -1,6 +1,6 @@
 import { Grid } from "./grid";
 import { DEFAULT_BORDER } from "./style";
-import type { Content, GridItem, GridOptions, TableCell, TableOptions } from "./types";
+import type { Content, GridItem, GridOptions, TableCell, TableItem, TableOptions } from "./types";
 import computeRowLogicalWidth from "./utils/compute-row-logical-width";
 
 /**
@@ -102,8 +102,8 @@ export class Table {
      * @returns The Table instance for chaining.
      */
     public addRows(...rows: TableCell[][]): this {
-        for (const row of rows) {
-            this.addRow(row);
+        for (let i = 0; i < rows.length; i += 1) {
+            this.addRow(rows[i] as TableCell[]);
         }
 
         this.#isDirty = true;
@@ -141,7 +141,9 @@ export class Table {
         // Calculate based on the widest row found in headers or body
         let numberColumns = 0;
 
-        for (const row of allRows) {
+        for (let i = 0; i < allRows.length; i += 1) {
+            const row = allRows[i] as TableCell[];
+
             if (Array.isArray(row)) {
                 numberColumns = Math.max(numberColumns, computeRowLogicalWidth(row));
             } else {
@@ -158,7 +160,7 @@ export class Table {
         }
 
         // Prepare fixedColumnWidths for the Grid
-        let fixedGridWidths: number[] | undefined;
+        let fixedGridWidths: (number | undefined)[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
             const widthArray
@@ -169,11 +171,7 @@ export class Table {
                         ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
                     ];
 
-            // Only treat as fully fixed if all entries are defined numbers
-            const allDefined = widthArray.every((w) => typeof w === "number" && Number.isFinite(w));
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fixedGridWidths = allDefined ? (widthArray as number[]) : (widthArray as any);
+            fixedGridWidths = widthArray;
         } else if (typeof this.#options.columnWidths === "number") {
             // If a single number is provided, create an array with that width for all columns
             fixedGridWidths = Array.from<number>({ length: numberColumns }).fill(this.#options.columnWidths);
@@ -197,8 +195,11 @@ export class Table {
             const adjustedWidths = [...fixedGridWidths];
 
             // Find minimum maxWidth for each column across all cells
-            for (const row of allRows) {
-                for (const [cellIndex, cellInput] of row.entries()) {
+            for (let ri = 0; ri < allRows.length; ri += 1) {
+                const row = allRows[ri] as TableCell[];
+
+                for (let cellIndex = 0; cellIndex < row.length; cellIndex += 1) {
+                    const cellInput = row[cellIndex];
                     let cellOptions: Omit<GridItem, "content"> = {};
 
                     if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -239,8 +240,10 @@ export class Table {
             terminalWidth: this.#options.terminalWidth,
             truncate:
                 this.#options.truncate
-                || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
-                || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
+                ?? (fixedGridWidths?.every((w) => typeof w === "number")
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional: false from .every() must fall through to maxWidth check
+                    || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths)),
+            // eslint-disable-next-line sonarjs/deprecation -- forwarding deprecated option to grid for backward compatibility
             truncateOverflow: this.#options.truncateOverflow ?? true,
             wordWrap: this.#options.wordWrap ?? false,
         } satisfies GridOptions;
@@ -249,9 +252,8 @@ export class Table {
 
         const gridItems: GridItem[] = [];
 
-        // eslint-disable-next-line guard-for-in, no-restricted-syntax
-        for (const rowIndex in allRows) {
-            const row = allRows[rowIndex];
+        for (let currentRowIndex = 0; currentRowIndex < allRows.length; currentRowIndex += 1) {
+            const row = allRows[currentRowIndex] as TableCell[];
 
             if (!Array.isArray(row)) {
                 // eslint-disable-next-line no-console
@@ -263,14 +265,13 @@ export class Table {
             // Check if this is a header row and if the auto-span logic should apply
             const headerRowCount = this.#options.showHeader ? this.#headers.length : 0;
             const bodyRowCount = this.#rows.length;
-            const currentRowIndex = Number.parseInt(rowIndex, 10);
             const isHeaderRow = this.#options.showHeader && currentRowIndex < headerRowCount;
             const isFooterRow = this.#options.showFooter && currentRowIndex >= headerRowCount + bodyRowCount;
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
             const applyFooterColspan = isFooterRow && row.length === 1 && numberColumns > 1;
 
-            for (let cellInput of row) {
-                // End of Selection
+            for (let ci = 0; ci < row.length; ci += 1) {
+                let cellInput: Content | TableItem = row[ci] as Content | TableItem;
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {

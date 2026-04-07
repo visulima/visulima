@@ -42,7 +42,7 @@ export const getHorizontalBorderChars = (
         }
         // Add a default case to satisfy the compiler, though it shouldn't be reachable
         default: {
-            throw new Error(`Invalid borderType: ${borderType}`);
+            throw new Error(`Invalid borderType: ${String(borderType)}`);
         }
     }
 };

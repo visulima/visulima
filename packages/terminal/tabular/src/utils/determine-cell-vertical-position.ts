@@ -9,7 +9,7 @@ import type { GridItem } from "../types";
  * @returns Object containing content visibility and row bounds.
  */
 const determineCellVerticalPosition = (
-    gridLayout: (GridItem | null)[][],
+    gridLayout: (GridItem | undefined)[][],
     rowIndex: number,
     col: number,
     cell: GridItem,
@@ -26,7 +26,7 @@ const determineCellVerticalPosition = (
         lastRow += 1;
     }
 
-    let showContent = false;
+    let showContent: boolean;
 
     const rowSpan = lastRow - firstRow + 1;
 

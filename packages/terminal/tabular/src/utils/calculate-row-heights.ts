@@ -19,7 +19,7 @@ type AlignCellContentFunction = (cell: GridItem, totalWidth: number) => string[]
  * @param cell {GridItem} The cell instance to find.
  * @returns The row index of the first occurrence.
  */
-type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | null)[][], rowIndex: number, colIndex: number, cell: GridItem) => number;
+type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | undefined)[][], rowIndex: number, colIndex: number, cell: GridItem) => number;
 
 /**
  * Calculates the required visual height (number of lines) for each logical row in a grid.
@@ -33,7 +33,7 @@ type FindFirstOccurrenceRowFunction = (gridLayout: (GridItem | null)[][], rowInd
  * @returns An array where each index corresponds to a logical row index and the value is its visual height.
  */
 const calculateRowHeights = (
-    gridLayout: (GridItem | null)[][],
+    gridLayout: (GridItem | undefined)[][],
     columnWidths: number[],
     options: GridOptionsWithDefaults,
     alignCellContent: AlignCellContentFunction,
@@ -94,16 +94,16 @@ const calculateRowHeights = (
 
     if (options.fixedRowHeights) {
         for (let index = 0; index < rowHeights.length; index += 1) {
-            let fixedHeight: number | null | undefined;
+            let fixedHeight: number | undefined;
 
-            if (options.fixedRowHeights[index] !== undefined && options.fixedRowHeights[index] !== null) {
+            if (options.fixedRowHeights[index] !== undefined) {
                 fixedHeight = options.fixedRowHeights[index];
-            } else if (options.fixedRowHeights.length === 1 && options.fixedRowHeights[0] !== undefined && options.fixedRowHeights[0] !== null) {
+            } else if (options.fixedRowHeights.length === 1 && options.fixedRowHeights[0] !== undefined) {
                 // eslint-disable-next-line prefer-destructuring
                 fixedHeight = options.fixedRowHeights[0];
             }
 
-            if (fixedHeight !== undefined && fixedHeight !== null) {
+            if (fixedHeight !== undefined) {
                 rowHeights[index] = Math.max(1, fixedHeight);
 
                 isRowFixed[index] = true;

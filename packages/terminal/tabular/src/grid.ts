@@ -24,7 +24,10 @@ import findFirstOccurrenceRow from "./utils/find-first-occurrence-row";
 import { EMPTY_CELL_REPRESENTATION, normalizeGridCell } from "./utils/normalize-cell";
 import padAndAlignContent from "./utils/pad-and-align-content";
 
-const applyColor = (char: string, color: AnsiColorFunction | AnsiColorObject | null | undefined): string => {
+const NEWLINE_REGEX = /\r?\n/;
+const WHITESPACE_REGEX = /\s+/;
+
+const applyColor = (char: string, color: AnsiColorFunction | AnsiColorObject | undefined): string => {
     if (!char || !color) {
         return char;
     }
@@ -85,7 +88,7 @@ export class Grid {
      * Create the initial grid layout array (will be dynamically sized later)
      * @returns An empty grid layout array
      */
-    private static createGridLayout(): (GridItem | null)[][] {
+    private static createGridLayout(): (GridItem | undefined)[][] {
         return [];
     }
 
@@ -125,7 +128,7 @@ export class Grid {
             ...options, // User options override defaults
             // Ensure required options are present or derived if possible
 
-            columns: options.columns ?? 1, // Default columns to 1 if not provided
+            columns: options.columns,
             // Ensure fixedRowHeights is an array if provided as a number
             fixedRowHeights,
             // Recalculate showBorders based on final border presence
@@ -137,7 +140,7 @@ export class Grid {
         if (terminalWidth === undefined) {
             const { columns } = terminalSize();
 
-            terminalWidth = columns ?? 80;
+            terminalWidth = columns;
         }
 
         this.#terminalWidth = terminalWidth;
@@ -262,13 +265,15 @@ export class Grid {
      * Will be modified by placing items into it.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    private placeItems(gridLayout: (GridItem | null)[][]): void {
+    private placeItems(gridLayout: (GridItem | undefined)[][]): void {
         let currentRow = 0;
         let currentCol = 0;
 
         const maxRows = this.#options.rows > 0 ? this.#options.rows : Number.POSITIVE_INFINITY; // Use explicit rows option if set
 
-        for (const item of this.#items) {
+        for (let itemIndex = 0; itemIndex < this.#items.length; itemIndex += 1) {
+            const item = this.#items[itemIndex] as InternalGridItem;
+
             // Skip placement for designated empty cells that don't span
             if (item.content === EMPTY_CELL_REPRESENTATION && !(item.rowSpan && item.rowSpan > 1) && !(item.colSpan && item.colSpan > 1)) {
                 if (this.#options.autoFlow === "row") {
@@ -313,7 +318,7 @@ export class Grid {
                 attempts += 1;
                 // Ensure the grid layout array is tall enough for the placement check
                 while (searchRow + itemRowSpan > gridLayout.length) {
-                    gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
+                    gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
                 }
 
                 // Check if the item fits at the current search position
@@ -361,7 +366,7 @@ export class Grid {
                     searchRow += 1;
                     // Ensure grid is tall enough for the *next* check
                     while (searchRow + itemRowSpan > gridLayout.length) {
-                        gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
+                        gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
                     }
                     // Wrap search cursor if it goes past the bottom
                     const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
@@ -414,7 +419,7 @@ export class Grid {
 
         // Trim any fully empty rows added during placement if rows option was dynamic
         if (this.#options.rows === 0) {
-            while (gridLayout.length > 0 && gridLayout.at(-1)?.every((cell) => cell === null)) {
+            while (gridLayout.length > 0 && gridLayout.at(-1)?.every((cell) => cell === undefined)) {
                 gridLayout.pop();
             }
         }
@@ -431,7 +436,7 @@ export class Grid {
      * @returns True if the item can be placed at the position
      */
     private canPlaceItem(
-        gridLayout: (GridItem | null)[][],
+        gridLayout: (GridItem | undefined)[][],
         startRow: number,
         startCol: number,
         colSpan: number,
@@ -452,7 +457,7 @@ export class Grid {
                 }
 
                 for (let col = startCol; col < startCol + colSpan; col += 1) {
-                    if (gridLayout[row]?.[col] !== null) {
+                    if (gridLayout[row]?.[col] !== undefined) {
                         return false;
                     }
                 }
@@ -465,12 +470,12 @@ export class Grid {
     }
 
     /**
-     * Computes the wrapped line.
-     * @param originalWidth The original width of the content
-     * @param lines The lines of the
-     * @param cellMaxWidth The maximum width of the cell
-     * @param canWordWrap Whether the content can be word wrapped
-     * @returns The width of the wrapped content
+     * Computes the effective display width after considering word wrap and content constraints.
+     * @param originalWidth The unwrapped visual width of the content
+     * @param lines The content split into individual text lines
+     * @param cellMaxWidth The upper bound for content width in the cell
+     * @param canWordWrap Whether word wrapping is enabled for this content
+     * @returns The adjusted content width after applying wrap heuristics
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity, class-methods-use-this
     private computeWrappedContentWidth(originalWidth: number, lines: string[], cellMaxWidth: number, canWordWrap: boolean): number {
@@ -482,11 +487,11 @@ export class Grid {
                 // since words cannot be broken across lines
                 let wordBasedWidth = 0;
 
-                for (const line of lines) {
-                    const words = line.split(/\s+/);
+                for (let li = 0; li < lines.length; li += 1) {
+                    const words = (lines[li] as string).split(WHITESPACE_REGEX);
 
-                    for (const word of words) {
-                        wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                    for (let wi = 0; wi < words.length; wi += 1) {
+                        wordBasedWidth = Math.max(wordBasedWidth, Math.min(getStringWidth(words[wi] as string), cellMaxWidth));
                     }
                 }
 
@@ -500,11 +505,11 @@ export class Grid {
             // This prevents one column from dominating while ensuring readability
             let maxWordWidth = 0;
 
-            for (const line of lines) {
-                const words = line.split(/\s+/);
+            for (let li = 0; li < lines.length; li += 1) {
+                const words = (lines[li] as string).split(WHITESPACE_REGEX);
 
-                for (const word of words) {
-                    maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(word), cellMaxWidth));
+                for (let wi = 0; wi < words.length; wi += 1) {
+                    maxWordWidth = Math.max(maxWordWidth, Math.min(getStringWidth(words[wi] as string), cellMaxWidth));
                 }
             }
 
@@ -522,13 +527,13 @@ export class Grid {
      * @param startCol Starting column index
      * @param item The item to place
      */
-    private placeItem(gridLayout: (GridItem | null)[][], startRow: number, startCol: number, item: GridItem): void {
+    private placeItem(gridLayout: (GridItem | undefined)[][], startRow: number, startCol: number, item: GridItem): void {
         const rowSpan = item.rowSpan ?? 1;
         const colSpan = item.colSpan ?? 1;
 
         for (let row = startRow; row < startRow + rowSpan; row += 1) {
             while (row >= gridLayout.length) {
-                gridLayout.push(Array.from<GridItem | null>({ length: this.#options.columns }).fill(null));
+                gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
             }
 
             for (let col = startCol; col < startCol + colSpan; col += 1) {
@@ -537,7 +542,7 @@ export class Grid {
                         // eslint-disable-next-line no-console
                         console.error(`Logic error: Row ${String(row)} not found in placeItem despite check.`);
                         // eslint-disable-next-line no-param-reassign
-                        gridLayout[row] = Array.from<GridItem | null>({ length: this.#options.columns }).fill(null);
+                        gridLayout[row] = Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined);
                     }
 
                     // eslint-disable-next-line no-param-reassign
@@ -548,14 +553,14 @@ export class Grid {
     }
 
     /**
-     * Calculates the total width of the grid including columns, gaps, and borders.
-     * @param columnWidths {number[]} The array of calculated column widths.
-     * @returns The total width of the grid.
+     * Calculates the total rendered width of the grid including columns, gaps, and borders.
+     * @param columnWidths {number[]} The per-column content widths to sum.
+     * @returns The full rendered width including structural elements.
      */
     private calculateTotalGridWidth(columnWidths: number[]): number {
         let totalWidth = 0;
 
-        const borderStyle = this.#options.showBorders ? this.#options.border : null;
+        const borderStyle = this.#options.showBorders ? this.#options.border : undefined;
 
         if (borderStyle) {
             totalWidth += borderStyle.bodyLeft.width;
@@ -595,7 +600,7 @@ export class Grid {
 
         let fixedWidth = 0;
         const numberColumns = columnWidths.length;
-        const borderStyle = this.#options.showBorders ? this.#options.border : null;
+        const borderStyle = this.#options.showBorders ? this.#options.border : undefined;
 
         // Calculate fixed width components (borders and gaps)
         if (borderStyle) {
@@ -606,7 +611,7 @@ export class Grid {
         if (numberColumns > 1) {
             fixedWidth += (numberColumns - 1) * this.#options.gap;
 
-            const innerBorderJoinWidth = borderStyle?.bodyJoin.width ?? 0; // Keep ?? here as borderStyle can be null
+            const innerBorderJoinWidth = borderStyle?.bodyJoin.width ?? 0; // Keep ?? here as borderStyle can be undefined
 
             fixedWidth += (numberColumns - 1) * innerBorderJoinWidth;
         }
@@ -651,10 +656,12 @@ export class Grid {
                 })
                 .toSorted((a, b) => b.remainder - a.remainder);
 
-            for (const { index } of indices) {
+            for (let ii = 0; ii < indices.length; ii += 1) {
                 if (remainingWidth <= 0) {
                     break;
                 }
+
+                const { index } = indices[ii] as { index: number; remainder: number };
 
                 // Add safety check for index bounds before incrementing
 
@@ -675,7 +682,7 @@ export class Grid {
      * @returns Array of balanced column widths.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    private calculateBalancedColumnWidths(gridLayout: (GridItem | null)[][]): number[] {
+    private calculateBalancedColumnWidths(gridLayout: (GridItem | undefined)[][]): number[] {
         // First calculate minimum widths and collect growable column info
         const minWidthsResult = this.calculateMinimumColumnWidthsWithGrowableInfo(gridLayout);
         const minColumnWidths = minWidthsResult.widths;
@@ -686,7 +693,7 @@ export class Grid {
         const effectiveMaxWidth = hasMax ? Math.min(this.#options.maxWidth as number, this.#terminalWidth) : this.#terminalWidth;
 
         // Calculate structural width (borders and gaps)
-        const borderStyle = this.#options.showBorders ? this.#options.border : null;
+        const borderStyle = this.#options.showBorders ? this.#options.border : undefined;
         let structuralWidth = 0;
 
         if (borderStyle) {
@@ -767,10 +774,12 @@ export class Grid {
 
                 // Distribute remaining width one by one to growable columns
                 while (remainingWidth > 0 && columnsToGrow.length > 0) {
-                    for (const colIndex of columnsToGrow) {
+                    for (let gi = 0; gi < columnsToGrow.length; gi += 1) {
                         if (remainingWidth <= 0) {
                             break;
                         }
+
+                        const colIndex = columnsToGrow[gi] as number;
 
                         adjustedWidths[colIndex] = (adjustedWidths[colIndex] ?? 0) + 1;
                         remainingWidth -= 1;
@@ -793,7 +802,7 @@ export class Grid {
      * @returns Object with widths array and growableColumns array.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    private calculateMinimumColumnWidthsWithGrowableInfo(gridLayout: (GridItem | null)[][]): { growableColumns: number[]; widths: number[] } {
+    private calculateMinimumColumnWidthsWithGrowableInfo(gridLayout: (GridItem | undefined)[][]): { growableColumns: number[]; widths: number[] } {
         const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
         const growableColumns: number[] = [];
         const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
@@ -815,7 +824,7 @@ export class Grid {
 
                 const colSpan = cell.colSpan ?? 1;
                 const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                const lines = String(cell.content ?? "").split(/\r?\n/);
+                const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
 
                 // Determine if this cell can word wrap
                 const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
@@ -823,8 +832,8 @@ export class Grid {
                 let contentWidth = 0;
 
                 // First, calculate the full content width needed
-                for (const line of lines) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                for (let li = 0; li < lines.length; li += 1) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
                 }
 
                 // Determine appropriate minimum width based on wrapping capability
@@ -859,7 +868,7 @@ export class Grid {
 
                 if (colSpan > 1) {
                     const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                    const lines = String(cell.content ?? "").split(/\r?\n/);
+                    const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
 
                     // Determine if this cell can word wrap
                     const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
@@ -867,8 +876,8 @@ export class Grid {
                     let contentWidth = 0;
 
                     // First, calculate the full content width needed
-                    for (const line of lines) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                    for (let li = 0; li < lines.length; li += 1) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
@@ -881,8 +890,8 @@ export class Grid {
                     // Calculate current total width of spanned columns
                     let currentWidthOfSpannedColumns = 0;
 
-                    for (const width of columnWidths.slice(colIndex, colIndex + colSpan)) {
-                        currentWidthOfSpannedColumns += width ?? 0;
+                    for (let si = colIndex; si < colIndex + colSpan; si += 1) {
+                        currentWidthOfSpannedColumns += columnWidths[si] ?? 0;
                     }
 
                     if (totalWidthNeeded > currentWidthOfSpannedColumns) {
@@ -908,7 +917,7 @@ export class Grid {
      * @returns Array of column widths.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    private calculateColumnWidths(gridLayout: (GridItem | null)[][]): number[] {
+    private calculateColumnWidths(gridLayout: (GridItem | undefined)[][]): number[] {
         // If fixed column widths are provided and match the column count, check for holes
         if (this.#options.fixedColumnWidths && this.#options.fixedColumnWidths.length === this.#options.columns) {
             const fixed = this.#options.fixedColumnWidths;
@@ -936,7 +945,9 @@ export class Grid {
                 let currentContent = 0;
                 const holeIndices: number[] = [];
 
-                for (const [i, element] of fixed.entries()) {
+                for (let i = 0; i < fixed.length; i += 1) {
+                    const element = fixed[i];
+
                     if (typeof element === "number" && Number.isFinite(element)) {
                         seed[i] = element;
                         currentContent += element;
@@ -949,19 +960,19 @@ export class Grid {
                 let remaining = Math.max(0, availableContent - currentContent);
                 const evenWidth = holeIndices.length > 0 ? Math.floor(remaining / holeIndices.length) : 0;
 
-                for (const i of holeIndices) {
-                    seed[i] = evenWidth;
+                for (let hi = 0; hi < holeIndices.length; hi += 1) {
+                    seed[holeIndices[hi] as number] = evenWidth;
                 }
 
                 remaining -= evenWidth * holeIndices.length;
 
                 // Distribute remainder (one pixel per hole from start)
-                for (const i of holeIndices) {
+                for (let hi = 0; hi < holeIndices.length; hi += 1) {
                     if (remaining <= 0) {
                         break;
                     }
 
-                    (seed[i] as number) += 1;
+                    (seed[holeIndices[hi] as number] as number) += 1;
                     remaining -= 1;
                 }
 
@@ -997,12 +1008,12 @@ export class Grid {
 
                 const colSpan = cell.colSpan ?? 1;
                 const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                const lines = String(cell.content ?? "").split(/\r?\n/);
+                const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
 
                 let contentWidth = 0;
 
-                for (const line of lines) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                for (let li = 0; li < lines.length; li += 1) {
+                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
                 }
 
                 if (colSpan === 1) {
@@ -1029,15 +1040,15 @@ export class Grid {
 
                 if (colSpan > 1) {
                     const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                    const lines = String(cell.content ?? "").split(/\r?\n/);
+                    const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
                     // Determine if this cell can word wrap
                     const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
 
                     let contentWidth = 0;
 
                     // First, calculate the full content width needed
-                    for (const line of lines) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
+                    for (let li = 0; li < lines.length; li += 1) {
+                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(lines[li] as string), cellMaxWidth));
                     }
 
                     // Determine appropriate minimum width based on wrapping capability
@@ -1046,8 +1057,8 @@ export class Grid {
                     // Calculate total width currently occupied by the columns this cell will span
                     let currentWidthOfSpannedColumns = 0;
 
-                    for (const width of columnWidths.slice(colIndex, colIndex + colSpan)) {
-                        currentWidthOfSpannedColumns += width;
+                    for (let si = colIndex; si < colIndex + colSpan; si += 1) {
+                        currentWidthOfSpannedColumns += columnWidths[si] ?? 0;
                     }
 
                     // Calculate the structural width (gaps, borders) within the span using pre-calculated value
@@ -1111,7 +1122,7 @@ export class Grid {
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private renderVisualRowContent(
-        gridLayout: (GridItem | null)[][],
+        gridLayout: (GridItem | undefined)[][],
         rowIndex: number,
         visualLineIndex: number,
         columnWidths: number[],
@@ -1123,10 +1134,10 @@ export class Grid {
             return "";
         }
 
-        const borderAnsiColor = this.#options.borderColor ?? this.#options.foregroundColor ?? null;
+        const borderAnsiColor = this.#options.borderColor ?? this.#options.foregroundColor ?? undefined;
 
         const lineParts: string[] = []; // Use array for parts
-        const borderChars = this.#options.showBorders && this.#options.border ? getVerticalBorderChars(this.#options.border) : null;
+        const borderChars = this.#options.showBorders && this.#options.border ? getVerticalBorderChars(this.#options.border) : undefined;
         const leftBorderChar = borderChars && borderChars.left.width > 0 ? borderChars.left.char : "";
         const rightBorderChar = borderChars && borderChars.right.width > 0 ? borderChars.right.char : "";
         const joinSeparator = borderChars && borderChars.join.width > 0 ? borderChars.join.char : "";
@@ -1139,10 +1150,10 @@ export class Grid {
         let col = 0;
 
         while (col < this.#options.columns) {
-            const cell: GridItem | null = row[col] ?? null;
+            const cell: GridItem | undefined = row[col] ?? undefined;
 
             let currentCellColSpan = 1; // Track the span of the segment being processed
-            let segmentToRender = "";
+            let segmentToRender: string;
 
             if (cell) {
                 const colSpan: number = cell.colSpan ?? 1;
@@ -1182,8 +1193,7 @@ export class Grid {
 
                 const vAlign = cell.vAlign ?? "top";
 
-                let targetContentIndex = -1;
-                let renderContentOnRow = false;
+                let targetContentIndex: number;
 
                 switch (vAlign) {
                     case "bottom": {
@@ -1226,7 +1236,8 @@ export class Grid {
                     }
                 }
 
-                renderContentOnRow = targetContentIndex >= 0 && targetContentIndex < actualContentHeight;
+                const renderContentOnRow = targetContentIndex >= 0 && targetContentIndex < actualContentHeight;
+
                 segmentToRender = " ".repeat(Math.max(0, currentCellTotalWidth)); // Default to spaces
 
                 if (renderContentOnRow) {
@@ -1261,7 +1272,7 @@ export class Grid {
                     segmentToRender = applyColor(segmentToRender, this.#options.backgroundColor);
                 }
             } else {
-                // Handle null cell (part of another cell's span)
+                // Handle empty cell (part of another cell's span)
 
                 const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
 
@@ -1335,7 +1346,7 @@ export class Grid {
         let processedLines: string[];
         const contentString = String(cell.content ?? "");
 
-        processedLines = contentString.includes("\n") || contentString.includes("\r") ? contentString.split(/\r?\n/) : [contentString];
+        processedLines = contentString.includes("\n") || contentString.includes("\r") ? contentString.split(NEWLINE_REGEX) : [contentString];
 
         // Apply word wrap
         if (this.#options.wordWrap && cell.wordWrap !== false) {
@@ -1350,6 +1361,7 @@ export class Grid {
             const truncateOptions = typeof cell.truncate === "object" ? cell.truncate : optionsTruncate;
 
             processedLines = processedLines.map((line) => truncate(line, baseContentWidth, truncateOptions));
+        // eslint-disable-next-line sonarjs/deprecation -- backward compatibility for deprecated truncateOverflow option
         } else if (this.#options.truncateOverflow) {
             // Ensure lines fit even if truncate/wrap are off
             // @deprecated This fallback truncation is deprecated. Use `truncate` or `wordWrap` options instead.
@@ -1380,7 +1392,7 @@ export class Grid {
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private renderHorizontalBorder(
-        gridLayout: (GridItem | null)[][],
+        gridLayout: (GridItem | undefined)[][],
         rowHeights: number[],
         rowIndex: number,
         columnWidths: number[],
@@ -1406,9 +1418,9 @@ export class Grid {
 
         // Adjust edge characters for vertical spans
         if (borderType === "middle" && nextRowIndex !== -1) {
-            const cellAboveLeftmost = gridLayout[rowIndex]?.[0] ?? null;
+            const cellAboveLeftmost = gridLayout[rowIndex]?.[0] ?? undefined;
 
-            const cellBelowLeftmost = gridLayout[nextRowIndex]?.[0] ?? null;
+            const cellBelowLeftmost = gridLayout[nextRowIndex]?.[0] ?? undefined;
 
             if (cellAboveLeftmost && cellBelowLeftmost && cellAboveLeftmost === cellBelowLeftmost) {
                 finalLeftChar = simpleVerticalChar;
@@ -1416,9 +1428,9 @@ export class Grid {
 
             const lastColIndex = this.#options.columns - 1;
 
-            const cellAboveRightmost = gridLayout[rowIndex]?.[lastColIndex] ?? null;
+            const cellAboveRightmost = gridLayout[rowIndex]?.[lastColIndex] ?? undefined;
 
-            const cellBelowRightmost = gridLayout[nextRowIndex]?.[lastColIndex] ?? null;
+            const cellBelowRightmost = gridLayout[nextRowIndex]?.[lastColIndex] ?? undefined;
 
             if (cellAboveRightmost && cellBelowRightmost && cellAboveRightmost === cellBelowRightmost) {
                 finalRightChar = simpleVerticalChar;
@@ -1433,14 +1445,14 @@ export class Grid {
             middleSegments.push(applyColor(applyColor(finalLeftChar, this.#options.borderColor), this.#options.backgroundColor));
         }
 
-        let segment = "";
+        let segment: string;
 
         for (let col = 0; col < this.#options.columns; col += 1) {
-            const cellAbove: GridItem | null = gridLayout[rowIndex]?.[col] ?? null;
+            const cellAbove: GridItem | undefined = gridLayout[rowIndex]?.[col] ?? undefined;
 
-            const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? gridLayout[nextRowIndex]?.[col] ?? null : null;
+            const cellBelow: GridItem | undefined = borderType === "middle" && nextRowIndex !== -1 ? gridLayout[nextRowIndex]?.[col] ?? undefined : undefined;
 
-            let definingCell: GridItem | null = null;
+            let definingCell: GridItem | undefined;
             let isStartCol = false;
 
             if (cellAbove && (col === 0 || gridLayout[rowIndex]?.[col - 1] !== cellAbove)) {
@@ -1484,7 +1496,7 @@ export class Grid {
             // Determine segment: content, spaces, or dashes
             if (borderType === "middle" && isVerticalSpan && definingCell) {
                 // CASE: Cell spans vertically across this MIDDLE border
-                const isMiddleAligned = definingCell?.vAlign === "middle";
+                const isMiddleAligned = definingCell.vAlign === "middle";
                 // Use cached vertical position
                 const { firstRow, lastRow } = this.getCachedCellVerticalPosition(gridLayout, rowIndex, col, definingCell);
                 const rowSpanCount = lastRow - firstRow + 1;
@@ -1525,21 +1537,13 @@ export class Grid {
                         // No content line falls here, render spaces covering the full width including internal structure
                         const segmentWidth
                             = columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0)
-                                + (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
+                                + (colSpan - 1) * (this.#options.gap + this.#options.border.bodyJoin.width);
 
                         segment = applyColor(" ".repeat(segmentWidth), this.#options.borderColor);
                     }
                 }
 
                 middleSegments.push(applyColor(segment, this.#options.backgroundColor));
-            } else if (cellAbove === null && borderType !== "top" && borderType !== "bottom") {
-                // CASE: Empty cell in the row above a MIDDLE border
-
-                const width = columnWidths[col] ?? 0;
-
-                segment = bodyWidth > 0 ? bodyChar.repeat(width) : " ".repeat(width);
-
-                middleSegments.push(applyColor(applyColor(segment, this.#options.borderColor), this.#options.backgroundColor));
             } else {
                 // CASE: Top/Bottom border OR cell does NOT span vertically across middle border
                 const segmentParts: string[] = [];
@@ -1598,7 +1602,7 @@ export class Grid {
     // eslint-disable-next-line sonarjs/cognitive-complexity
     private determineJoinChar(
         borderType: BorderType,
-        gridLayout: (GridItem | null)[][],
+        gridLayout: (GridItem | undefined)[][],
         rowIndex: number,
         nextRowIndex: number,
         colIndex: number,
@@ -1615,11 +1619,11 @@ export class Grid {
         if (borderType !== "middle") {
             const hChars = getHorizontalBorderChars(borderStyle, borderType);
 
-            const cellLeft = gridLayout[rowIndex]?.[colIndex] ?? null;
+            const cellLeft = gridLayout[rowIndex]?.[colIndex] ?? undefined;
             const checkRightCol = rightColIndex === -1 ? colIndex + 1 : rightColIndex;
 
-            const cellRight = gridLayout[rowIndex]?.[checkRightCol] ?? null;
-            const spansHorizontally = cellLeft !== null && cellRight !== null && cellLeft === cellRight;
+            const cellRight = gridLayout[rowIndex]?.[checkRightCol] ?? undefined;
+            const spansHorizontally = cellLeft !== undefined && cellRight !== undefined && cellLeft === cellRight;
 
             const joinCharDefinition = spansHorizontally ? hChars.body : hChars.join;
 
@@ -1635,18 +1639,18 @@ export class Grid {
 
         const verticalJoinCharDefinition = borderStyle.bodyJoin;
 
-        const cellAboveLeft = gridLayout[rowIndex]?.[colIndex] ?? null;
+        const cellAboveLeft = gridLayout[rowIndex]?.[colIndex] ?? undefined;
 
-        const cellBelowLeft = gridLayout[nextRowIndex]?.[colIndex] ?? null;
+        const cellBelowLeft = gridLayout[nextRowIndex]?.[colIndex] ?? undefined;
 
-        const cellAboveRight = gridLayout[rowIndex]?.[rightColIndex] ?? null;
+        const cellAboveRight = gridLayout[rowIndex]?.[rightColIndex] ?? undefined;
 
-        const cellBelowRight = gridLayout[nextRowIndex]?.[rightColIndex] ?? null;
+        const cellBelowRight = gridLayout[nextRowIndex]?.[rightColIndex] ?? undefined;
 
-        const leftSpansVertically = cellAboveLeft !== null && cellBelowLeft !== null && cellAboveLeft === cellBelowLeft;
-        const rightSpansVertically = cellAboveRight !== null && cellBelowRight !== null && cellAboveRight === cellBelowRight;
-        const aboveSpansHorizontally = cellAboveLeft !== null && cellAboveRight !== null && cellAboveLeft === cellAboveRight;
-        const belowSpansHorizontally = cellBelowLeft !== null && cellBelowRight !== null && cellBelowLeft === cellBelowRight;
+        const leftSpansVertically = cellAboveLeft !== undefined && cellBelowLeft !== undefined && cellAboveLeft === cellBelowLeft;
+        const rightSpansVertically = cellAboveRight !== undefined && cellBelowRight !== undefined && cellAboveRight === cellBelowRight;
+        const aboveSpansHorizontally = cellAboveLeft !== undefined && cellAboveRight !== undefined && cellAboveLeft === cellAboveRight;
+        const belowSpansHorizontally = cellBelowLeft !== undefined && cellBelowRight !== undefined && cellBelowLeft === cellBelowRight;
 
         let joinCharDefinition: BorderComponent | undefined;
         const middleHChars = getHorizontalBorderChars(borderStyle, "middle");
@@ -1688,14 +1692,14 @@ export class Grid {
      * @returns String representation of the grid
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    private renderGrid(gridLayout: (GridItem | null)[][], columnWidths: number[]): string {
+    private renderGrid(gridLayout: (GridItem | undefined)[][], columnWidths: number[]): string {
         if (gridLayout.length === 0) {
             return "";
         }
 
         const lines: string[] = [];
         const rowHeights = calculateRowHeights(gridLayout, columnWidths, this.#options, this.alignCellContent.bind(this), findFirstOccurrenceRow);
-        const topBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "top") : null;
+        const topBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "top") : undefined;
 
         if (topBorderChars && topBorderChars.body.width > 0) {
             lines.push(this.renderHorizontalBorder(gridLayout, rowHeights, 0, columnWidths, "top"));
@@ -1708,7 +1712,7 @@ export class Grid {
                 lines.push(this.renderVisualRowContent(gridLayout, rowIndex, visualLineIndex, columnWidths, rowHeights));
             }
 
-            const middleBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "middle") : null;
+            const middleBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "middle") : undefined;
 
             if (rowIndex < gridLayout.length - 1 && middleBorderChars && middleBorderChars.body.width > 0) {
                 // Check if any cell in the current row does not continue into the next row
@@ -1725,7 +1729,7 @@ export class Grid {
 
                         const nextCell = nextRow[col];
 
-                        // If cells are different or one is null while the other isn't, we need a border
+                        // If cells are different or one is undefined while the other isn't, we need a border
                         if (currentCell !== nextCell) {
                             needsBorder = true;
                             break;
@@ -1740,7 +1744,7 @@ export class Grid {
             }
         }
 
-        const bottomBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "bottom") : null;
+        const bottomBorderChars = this.#options.showBorders && this.#options.border ? getHorizontalBorderChars(this.#options.border, "bottom") : undefined;
 
         if (bottomBorderChars && bottomBorderChars.body.width > 0) {
             // Pass rowHeights, not columnWidths
@@ -1759,7 +1763,7 @@ export class Grid {
      * @returns The cached or calculated vertical position.
      */
     private getCachedCellVerticalPosition(
-        gridLayout: (GridItem | null)[][],
+        gridLayout: (GridItem | undefined)[][],
         rowIndex: number,
         colIndex: number,
         cell: GridItem,
