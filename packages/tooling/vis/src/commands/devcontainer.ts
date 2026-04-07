@@ -1,0 +1,122 @@
+import type { Command } from "@visulima/cerebro";
+import { render } from "@visulima/tui";
+import isInCi from "is-in-ci";
+import React from "react";
+
+import { TEMPLATES } from "../tui/components/devcontainer/catalogs/templates";
+import { readDevcontainerJson, writeDevcontainerJson } from "../tui/components/devcontainer/devcontainer-io";
+import { DevcontainerStore } from "../tui/components/devcontainer/DevcontainerStore";
+import type { DevcontainerConfig } from "../tui/components/devcontainer/types";
+import VisDevcontainerApp from "../tui/components/devcontainer/VisDevcontainerApp";
+
+const devcontainer: Command = {
+    group: "Scaffold & Config",
+    alias: "dc",
+    description: "Create or update .devcontainer/devcontainer.json interactively",
+    examples: [
+        ["vis devcontainer", "Launch interactive devcontainer config editor"],
+        ["vis dc", "Alias for devcontainer"],
+        ["vis devcontainer --template node-pnpm", "Start from Node.js + pnpm template"],
+    ],
+    execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo or project directory.");
+        }
+
+        const workspaceRoot = wsRoot;
+        const templateId = options.template as string | undefined;
+        const outputPath = options.output as string | undefined;
+        const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
+
+        // Try to read existing devcontainer.json
+        const existing = readDevcontainerJson(workspaceRoot);
+        let initialConfig = existing?.config ?? null;
+        const hadComments = existing?.hadComments ?? false;
+
+        // If --template provided, use that as starting config
+        if (templateId && !existing) {
+            const template = TEMPLATES.find((t) => t.id === templateId);
+
+            if (!template) {
+                const validIds = TEMPLATES.map((t) => t.id).join(", ");
+
+                throw new Error(`Unknown template "${templateId}". Valid templates: ${validIds}`);
+            }
+
+            initialConfig = template.config;
+        }
+
+        // Non-TTY mode: output JSON or generate from template
+        if (!isTTY) {
+            if (initialConfig) {
+                logger.info(JSON.stringify(initialConfig, null, 2));
+            } else {
+                logger.error("No existing devcontainer.json found. Use --template to generate one in non-TTY mode.");
+                process.exitCode = 1;
+            }
+
+            return;
+        }
+
+        // Ensure stdin is in the right state for ink
+        if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
+            process.stdin.setRawMode(true);
+            process.stdin.ref();
+            process.stdin.resume();
+        }
+
+        // Keep event loop alive while TUI is active
+        const keepAlive = setInterval(() => {}, 1000);
+
+        const store = new DevcontainerStore(initialConfig, hadComments);
+
+        // If --template is provided in create mode, apply it and skip selector
+        if (templateId && !existing) {
+            store.dismissTemplateSelector();
+        }
+
+        let savedConfig: DevcontainerConfig | null = null;
+
+        const instance = render(
+            React.createElement(VisDevcontainerApp, {
+                onSave: (config: DevcontainerConfig) => {
+                    writeDevcontainerJson(workspaceRoot, config, outputPath);
+                    savedConfig = config;
+                },
+                store,
+            }),
+            {
+                alternateScreen: true,
+                exitOnCtrlC: false,
+                interactive: true,
+                patchConsole: true,
+            },
+        );
+
+        await instance.waitUntilExit();
+        clearInterval(keepAlive);
+
+        if (savedConfig) {
+            const target = outputPath ?? ".devcontainer/devcontainer.json";
+
+            logger.info(`DevContainer config saved to ${target}`);
+        }
+    },
+    name: "devcontainer",
+    options: [
+        {
+            alias: "t",
+            description: "Start from a template: node, node-pnpm, node-postgres, node-dind, fullstack, custom",
+            name: "template",
+            type: String,
+        },
+        {
+            alias: "o",
+            description: "Output path (default: .devcontainer/devcontainer.json)",
+            name: "output",
+            type: String,
+        },
+    ],
+};
+
+export default devcontainer;
