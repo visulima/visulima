@@ -10,7 +10,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ alias: "v", name: "verbose", type: Boolean }];
         const args = ["--verbose", "true"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(true);
     });
@@ -21,7 +21,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "verbose", type: Boolean }];
         const args = ["--verbose", "false"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(false);
     });
@@ -32,7 +32,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "verbose", type: Boolean }];
         const args = ["--verbose", "1"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(true);
     });
@@ -43,7 +43,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "verbose", type: Boolean }];
         const args = ["--verbose", "0"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(false);
     });
@@ -54,7 +54,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "verbose", type: Boolean }];
         const args = ["--verbose=true"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(true);
     });
@@ -65,7 +65,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "verbose", type: Boolean }];
         const args = ["--verbose=false"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(false);
     });
@@ -79,7 +79,7 @@ describe("get-boolean-values", () => {
         ];
         const args = ["--verbose", "true", "--debug", "false"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(true);
         expect(result.debug).toBe(false);
@@ -91,7 +91,7 @@ describe("get-boolean-values", () => {
         const options: OptionDefinition[] = [{ name: "output", type: String }];
         const args = ["--output", "dist"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.output).toBeUndefined();
     });
@@ -116,7 +116,7 @@ describe("get-boolean-values", () => {
         ];
         const args = ["--verbose", "true", "file.txt"];
 
-        const result = getBooleanValues(args, options);
+        const result = getBooleanValues(args, options) as Record<string, unknown>;
 
         expect(result.verbose).toBe(true);
     });

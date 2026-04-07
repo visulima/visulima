@@ -9,7 +9,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "verbose", type: Boolean };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result).toBe(option);
     });
@@ -19,7 +19,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "output", type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string}");
     });
@@ -29,7 +29,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "port", type: Number };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline number}");
     });
@@ -39,7 +39,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { multiple: true, name: "files", type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string[]}");
     });
@@ -49,7 +49,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { lazyMultiple: true, name: "files", type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string[]}");
     });
@@ -59,7 +59,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { defaultOption: true, name: "output", type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string} (D)");
     });
@@ -69,7 +69,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "input", required: true, type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string} (R)");
     });
@@ -79,7 +79,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { defaultOption: true, name: "output", required: true, type: String };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string} (D) (R)");
     });
@@ -89,7 +89,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "output", type: String, typeLabel: "custom label" };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("custom label");
     });
@@ -99,7 +99,7 @@ describe("map-option-type-label", () => {
 
         const option: OptionDefinition = { name: "test" };
 
-        const result = mapOptionTypeLabel(option);
+        const result = mapOptionTypeLabel(option) as { typeLabel?: string };
 
         expect(result.typeLabel).toBe("{underline string}");
     });

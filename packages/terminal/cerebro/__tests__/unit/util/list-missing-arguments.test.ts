@@ -43,6 +43,6 @@ describe("util/list-missing-arguments", () => {
         expect(result).toStrictEqual([]);
 
         // testing if test argument in parsedArguments was set to false
-        expect(parsedArguments.test).toBe(false);
+        expect((parsedArguments as Record<string, unknown>).test).toBe(false);
     });
 });

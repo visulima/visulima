@@ -131,14 +131,14 @@ describe(PluginManager, () => {
 
             const initOrder: string[] = [];
             const plugin1: Plugin = {
-                init: async () => {
+                init: () => {
                     initOrder.push("plugin1");
                 },
                 name: "plugin1",
             };
             const plugin2: Plugin = {
                 dependencies: ["plugin1"],
-                init: async () => {
+                init: () => {
                     initOrder.push("plugin2");
                 },
                 name: "plugin2",
@@ -157,7 +157,7 @@ describe(PluginManager, () => {
 
             const initError = new Error("Init failed");
             const plugin: Plugin = {
-                init: async () => {
+                init: () => {
                     throw initError;
                 },
                 name: "test-plugin",
@@ -290,13 +290,13 @@ describe(PluginManager, () => {
 
             const executionOrder: string[] = [];
             const plugin1: Plugin = {
-                beforeCommand: async () => {
+                beforeCommand: () => {
                     executionOrder.push("plugin1");
                 },
                 name: "plugin1",
             };
             const plugin2: Plugin = {
-                beforeCommand: async () => {
+                beforeCommand: () => {
                     executionOrder.push("plugin2");
                 },
                 dependencies: ["plugin1"],
@@ -317,7 +317,7 @@ describe(PluginManager, () => {
 
             const hookError = new Error("Hook failed");
             const plugin: Plugin = {
-                beforeCommand: async () => {
+                beforeCommand: () => {
                     throw hookError;
                 },
                 name: "test-plugin",
@@ -384,7 +384,7 @@ describe(PluginManager, () => {
             const handlerError = new Error("Handler failed");
             const plugin: Plugin = {
                 name: "test-plugin",
-                onError: async () => {
+                onError: () => {
                     throw handlerError;
                 },
             };
@@ -404,14 +404,14 @@ describe(PluginManager, () => {
             const executionOrder: string[] = [];
             const plugin1: Plugin = {
                 name: "plugin1",
-                onError: async () => {
+                onError: () => {
                     executionOrder.push("plugin1");
                 },
             };
             const plugin2: Plugin = {
                 dependencies: ["plugin1"],
                 name: "plugin2",
-                onError: async () => {
+                onError: () => {
                     executionOrder.push("plugin2");
                 },
             };

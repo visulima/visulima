@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HelpCommand from "../../../src/commands/help-command";
 import type { Command as ICommand } from "../../../src/types/command";
+import type { Content } from "../../../src/types/command-line-usage";
 import type { Toolbox as IToolbox } from "../../../src/types/toolbox";
 import commandLineUsage from "../../../src/util/command-line-usage";
 
@@ -118,7 +119,11 @@ describe("command/help", () => {
         // Ensure hidden commands are not included in the output
         const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
 
-        expect(usageCalls.some((section) => section.content?.includes("secret"))).toBe(false);
+        expect(usageCalls.some((section) => {
+            const { content } = section as Content;
+
+            return typeof content === "string" && content.includes("secret");
+        })).toBe(false);
     });
 
     it("should display aliases if present", () => {

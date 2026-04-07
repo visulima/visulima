@@ -123,7 +123,7 @@ describe("readme-command", () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFile).mockResolvedValue(undefined);
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(mockToolbox.logger.debug).toHaveBeenCalledWith(expect.stringContaining("Processing"));
         expect(mockToolbox.logger.warn).toHaveBeenCalledWith(expect.stringContaining("README file not found"));
@@ -150,7 +150,7 @@ describe("readme-command", () => {
         vi.mocked(readFile).mockResolvedValue(existingReadme);
         vi.mocked(writeFile).mockResolvedValue(undefined);
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(vi.mocked(readFile)).toHaveBeenCalledWith(expect.stringContaining("README.md"), "utf8");
         expect(vi.mocked(writeFile)).toHaveBeenCalledWith(expect.stringContaining("README.md"), expect.any(String), "utf8");
@@ -164,7 +164,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { dryRun: true };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(mockToolbox.logger.info).toHaveBeenCalledWith("Dry run mode - README not written");
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Generated README content"));
@@ -179,7 +179,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { readmePath: "CUSTOM.md" };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         const writeCall = vi.mocked(writeFile).mock.calls[0];
 
@@ -201,7 +201,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { multi: true, outputDir: "custom-docs" };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("custom-docs"), { recursive: true });
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("README generated successfully"));
@@ -220,7 +220,7 @@ describe("readme-command", () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFile).mockResolvedValue(undefined);
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         const writeCall = vi.mocked(writeFile).mock.calls[0];
 
@@ -249,7 +249,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { aliases: true };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(mockToolbox.logger.debug).toHaveBeenCalledWith(expect.stringContaining("Processing"));
     });
@@ -263,7 +263,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { multi: true };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         // Should create files for grouped commands
         expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("docs"), { recursive: true });
@@ -278,7 +278,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { version: "2.0.0" };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         const writeCall = vi.mocked(writeFile).mock.calls[0];
 
@@ -304,7 +304,7 @@ describe("readme-command", () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFile).mockResolvedValue(undefined);
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         const writeCall = vi.mocked(writeFile).mock.calls[0];
 
@@ -326,7 +326,7 @@ describe("readme-command", () => {
 
         mockToolbox.options = { multi: true, outputDir: "docs/commands" };
 
-        await readmeCommand.execute?.(mockToolbox);
+        await readmeCommand.execute(mockToolbox);
 
         expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("docs/commands"), { recursive: true });
     });

@@ -44,7 +44,7 @@ describe("completion-command", () => {
         delete process.env.SHELL;
         delete process.env.STARSHIP_SHELL;
 
-        await completionCommand.execute?.(mockToolbox);
+        await completionCommand.execute(mockToolbox);
 
         expect(mockToolbox.logger.error).toHaveBeenCalledWith("Could not detect current shell");
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Usage:"));
@@ -67,7 +67,7 @@ describe("completion-command", () => {
 
         mockToolbox.options = { runtime: "bun", shell: "zsh" };
 
-        await completionCommand.execute?.(mockToolbox);
+        await completionCommand.execute(mockToolbox);
 
         // Should not throw any errors
         expect(mockToolbox.logger.error).not.toHaveBeenCalled();
@@ -78,7 +78,7 @@ describe("completion-command", () => {
 
         mockToolbox.options = { shell: "zsh" };
 
-        await completionCommand.execute?.(mockToolbox);
+        await completionCommand.execute(mockToolbox);
 
         // Should not throw any errors and should use auto-detected runtime
         expect(mockToolbox.logger.error).not.toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe("completion-command", () => {
 
         mockToolbox.options = { shell: "invalid-shell" };
 
-        await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow("Invalid shell type");
+        await expect(completionCommand.execute(mockToolbox)).rejects.toThrow("Invalid shell type");
 
         // Verify error was logged with custom error handling (combined message)
         expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Invalid shell type"));
@@ -101,7 +101,7 @@ describe("completion-command", () => {
 
         mockToolbox.options = { runtime: "invalid-runtime", shell: "zsh" };
 
-        await expect(completionCommand.execute?.(mockToolbox)).rejects.toThrow("Invalid runtime");
+        await expect(completionCommand.execute(mockToolbox)).rejects.toThrow("Invalid runtime");
 
         // Verify error was logged with custom error handling (combined message)
         expect(mockToolbox.logger.error).toHaveBeenCalledWith(expect.stringContaining("Invalid runtime"));

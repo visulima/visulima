@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { Toolbox } from "../../src";
 import { Cerebro as Cli } from "../../src";
 
 const CONFLICTS_BUILTIN_RE = /conflicts with a built-in global option/;
@@ -141,8 +142,8 @@ describe("addGlobalOption", () => {
 
         await cli.run({ shouldExitProcess: false });
 
-        const toolbox = execute.mock.calls[0]?.[0];
+        const toolbox = execute.mock.calls[0][0] as Toolbox;
 
-        expect(toolbox?.options?.cwd).toBe("/tmp");
+        expect(toolbox.options.cwd).toBe("/tmp");
     });
 });
