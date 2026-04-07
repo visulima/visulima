@@ -1,6 +1,6 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Tab, Tabs, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
-import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import QuitDialog from "../QuitDialog";
 import { filterExtensions, filterFeatures } from "./catalogs/filters";
@@ -94,6 +94,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
     const [searchActive, setSearchActive] = useState(false);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [focusedPanel, setFocusedPanel] = useState<"editor" | "preview">("editor");
+    const [listScrollOffset, setListScrollOffset] = useState(0);
 
     // Port input: accumulate locally, submit on Enter
     const [addingPort, setAddingPort] = useState(false);
@@ -131,6 +132,36 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
     }, []);
 
     const fieldCount = getFieldCount(state.section, state.config, state.featureSearch, state.extensionSearch);
+
+    // Viewport height for scrollable lists:
+    // total rows - VIS header(1) - tabs(1) - description+margin(2) - editor border(2) - section header(1) - footer(2) = 9
+    const listViewportHeight = Math.max(1, rows - 9);
+
+    // Keep selected item in view (scroll-follow)
+    useEffect(() => {
+        if (state.section !== "features" && state.section !== "extensions") {
+            return;
+        }
+
+        setListScrollOffset((current) => {
+            // Scroll down if selected is below viewport
+            if (state.fieldIndex >= current + listViewportHeight) {
+                return state.fieldIndex - listViewportHeight + 1;
+            }
+
+            // Scroll up if selected is above viewport
+            if (state.fieldIndex < current) {
+                return state.fieldIndex;
+            }
+
+            return current;
+        });
+    }, [state.fieldIndex, state.section, listViewportHeight]);
+
+    // Reset scroll offset when switching sections or changing search
+    useEffect(() => {
+        setListScrollOffset(0);
+    }, [state.section, state.featureSearch, state.extensionSearch]);
 
     const handleSave = useCallback(() => {
         const cleanConfig = store.cleanConfig();
@@ -585,6 +616,13 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 return;
             }
 
+            // "A" (uppercase) - apply all suggested mounts
+            if (input === "A" && state.section === "mounts") {
+                store.applySuggestedMounts();
+
+                return;
+            }
+
             // "a" key - add entry (env, mounts)
             if (input === "a") {
                 if (state.section === "environment") {
@@ -638,11 +676,24 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                     if (state.fieldIndex < containerKeys.length) {
                         store.removeEnvVar("container", containerKeys[state.fieldIndex] as string);
+
+                        // Clamp fieldIndex
+                        if (containerKeys.length === 1) {
+                            // Deleted last container entry, stay at the add row
+                        } else if (state.fieldIndex >= containerKeys.length - 1) {
+                            store.setFieldIndex(containerKeys.length - 2);
+                        }
                     } else {
                         const remoteIndex = state.fieldIndex - containerKeys.length - 1;
 
                         if (remoteIndex >= 0 && remoteIndex < remoteKeys.length) {
                             store.removeEnvVar("remote", remoteKeys[remoteIndex] as string);
+
+                            if (remoteKeys.length === 1) {
+                                // Deleted last remote entry, stay at remote add row
+                            } else if (remoteIndex >= remoteKeys.length - 1) {
+                                store.setFieldIndex(state.fieldIndex - 1);
+                            }
                         }
                     }
                 }
@@ -670,7 +721,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
             <Box alignItems="center" flexDirection="column" height={rows} justifyContent="center" width={columns}>
                 <Box borderColor="cyan" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1} width={60}>
                     <Box justifyContent="center" marginBottom={1}>
-                        <Text bold color="cyan">Select a Template</Text>
+                        <Text bold color="cyan">
+                            Select a Template
+                        </Text>
                     </Box>
                     {TEMPLATES.map((template, index) => {
                         const isSelected = index === state.templateIndex;
@@ -687,11 +740,20 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                     })}
                     <Box justifyContent="center" marginTop={1}>
                         <Text dimColor>
-                            <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                            <Text bold color="white">
+                                {"\u2191\u2193"}
+                            </Text>{" "}
+                            navigate
                             {"  "}
-                            <Text bold color="white">Enter</Text> select
+                            <Text bold color="white">
+                                Enter
+                            </Text>{" "}
+                            select
                             {"  "}
-                            <Text bold color="white">Esc</Text> blank
+                            <Text bold color="white">
+                                Esc
+                            </Text>{" "}
+                            blank
                         </Text>
                     </Box>
                 </Box>
@@ -723,21 +785,16 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 <FeaturesSection
                     config={state.config}
                     fieldIndex={state.fieldIndex}
+                    scrollOffset={listScrollOffset}
                     searchText={state.featureSearch}
+                    viewportHeight={listViewportHeight}
                 />
             );
             break;
         }
 
         case "ports": {
-            sectionContent = (
-                <PortsSection
-                    addingPort={addingPort}
-                    addPortValue={addPortValue}
-                    config={state.config}
-                    fieldIndex={state.fieldIndex}
-                />
-            );
+            sectionContent = <PortsSection addingPort={addingPort} addPortValue={addPortValue} config={state.config} fieldIndex={state.fieldIndex} />;
             break;
         }
 
@@ -760,7 +817,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 <ExtensionsSection
                     config={state.config}
                     fieldIndex={state.fieldIndex}
+                    scrollOffset={listScrollOffset}
                     searchText={state.extensionSearch}
+                    viewportHeight={listViewportHeight}
                 />
             );
             break;
@@ -769,17 +828,19 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         case "environment": {
             sectionContent = (
                 <Box flexDirection="column">
-                    <EnvironmentSection
-                        config={state.config}
-                        fieldIndex={state.fieldIndex}
-                    />
+                    <EnvironmentSection config={state.config} fieldIndex={state.fieldIndex} />
                     {addingEnv !== null && (
                         <Box marginTop={1} paddingX={1}>
                             <Text color="cyan">
-                                Add {addingEnv} env: {addEnvPhase === "key" ? (
-                                    <Text>key=<Text color="yellow">{addEnvKey || "_"}</Text> (Enter to set value)</Text>
+                                Add {addingEnv} env:{" "}
+                                {addEnvPhase === "key" ? (
+                                    <Text>
+                                        key=<Text color="yellow">{addEnvKey || "_"}</Text> (Enter to set value)
+                                    </Text>
                                 ) : (
-                                    <Text>{addEnvKey}=<Text color="yellow">{addEnvValue || "_"}</Text> (Enter to confirm, Esc to cancel)</Text>
+                                    <Text>
+                                        {addEnvKey}=<Text color="yellow">{addEnvValue || "_"}</Text> (Enter to confirm, Esc to cancel)
+                                    </Text>
                                 )}
                             </Text>
                         </Box>
@@ -794,11 +855,13 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 <MountsSection
                     addingMount={addingMount}
                     config={state.config}
+                    detectedPm={state.detectedPm}
                     fieldIndex={state.fieldIndex}
                     mountPhase={mountPhase}
                     mountSource={mountSource}
                     mountTarget={mountTarget}
                     mountType={mountType}
+                    suggestedMounts={state.suggestedMounts}
                 />
             );
             break;
@@ -827,42 +890,64 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0}>
-            <Box flexGrow={1} gap={2} paddingX={1}>
+            <Box flexGrow={1} flexWrap="wrap" gap={2} paddingX={1}>
                 <Box gap={1}>
-                    <Text bold color="white">{"\u2190\u2192"}</Text>
-                    <Text dimColor>TABS</Text>
-                </Box>
-                <Box gap={1}>
-                    <Text bold color="white">{"\u2191\u2193"}</Text>
-                    <Text dimColor>NAV</Text>
-                </Box>
-                <Box gap={1}>
-                    <Text bold color="white">Tab</Text>
-                    <Text dimColor>PANEL</Text>
-                </Box>
-                <Box gap={1}>
-                    <Text bold color="white">s</Text>
-                    <Text dimColor>SAVE</Text>
-                </Box>
-                <Box gap={1}>
-                    <Text bold color="white">q</Text>
+                    <Text bold color="white">
+                        q
+                    </Text>
                     <Text dimColor>QUIT</Text>
                 </Box>
                 <Box gap={1}>
-                    <Text bold color="white">?</Text>
+                    <Text bold color="white">
+                        ?
+                    </Text>
                     <Text dimColor>HELP</Text>
+                </Box>
+                <Box gap={1}>
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>
+                    <Text dimColor>NAV</Text>
+                </Box>
+                {(state.section === "features" || state.section === "extensions") && (
+                    <Box gap={1}>
+                        <Text bold color="white">
+                            Space
+                        </Text>
+                        <Text dimColor>CHECK</Text>
+                    </Box>
+                )}
+                <Box gap={1}>
+                    <Text bold color="white">
+                        {"\u2190\u2192"}
+                    </Text>
+                    <Text dimColor>TABS</Text>
+                </Box>
+                <Box gap={1}>
+                    <Text bold color="white">
+                        Tab
+                    </Text>
+                    <Text dimColor>PANEL</Text>
+                </Box>
+                {(state.section === "features" || state.section === "extensions") && (
+                    <Box gap={1}>
+                        <Text bold color="white">
+                            /
+                        </Text>
+                        <Text dimColor>FILTER</Text>
+                    </Box>
+                )}
+                <Box gap={1}>
+                    <Text bold color="white">
+                        s
+                    </Text>
+                    <Text dimColor>SAVE</Text>
                 </Box>
             </Box>
             <Box paddingX={1}>
-                {saveMessage && (
-                    <Text color="green">{saveMessage} </Text>
-                )}
-                {state.isDirty && (
-                    <Text color="yellow">[modified]</Text>
-                )}
-                {!state.isDirty && !saveMessage && (
-                    <Text dimColor>[saved]</Text>
-                )}
+                {saveMessage && <Text color="green">{saveMessage} </Text>}
+                {state.isDirty && <Text color="yellow">[modified]</Text>}
+                {!state.isDirty && !saveMessage && <Text dimColor>[saved]</Text>}
             </Box>
         </Box>
     );
@@ -871,12 +956,22 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
-                    <Text bold color="white">{"\u2191\u2193"}</Text> scroll{" "}
-                    <Text bold color="white">?</Text>/<Text bold color="white">Esc</Text> close
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>{" "}
+                    scroll{" "}
+                    <Text bold color="white">
+                        ?
+                    </Text>
+                    /
+                    <Text bold color="white">
+                        Esc
+                    </Text>{" "}
+                    close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -885,49 +980,136 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
             <Box flexDirection="column" marginBottom={1}>
                 <Box marginBottom={1}>
                     <Text dimColor>{"\u2500\u2500 "}</Text>
-                    <Text bold color="white">NAVIGATION</Text>
+                    <Text bold color="white">
+                        NAVIGATION
+                    </Text>
                 </Box>
-                <Text>  <Text bold color="white">{"\u2190\u2192"}</Text><Text dimColor> Switch tabs</Text></Text>
-                <Text>  <Text bold color="white">{"\u2191\u2193"}</Text>/<Text bold color="white">j/k</Text><Text dimColor> Navigate within section</Text></Text>
-                <Text>  <Text bold color="white">Tab</Text><Text dimColor> Switch editor/preview panel</Text></Text>
-                <Text>  <Text bold color="white">Enter</Text><Text dimColor> Edit selected field</Text></Text>
-                <Text>  <Text bold color="white">Esc</Text><Text dimColor> Stop editing / cancel</Text></Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        {"\u2190\u2192"}
+                    </Text>
+                    <Text dimColor> Switch tabs</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>
+                    /
+                    <Text bold color="white">
+                        j/k
+                    </Text>
+                    <Text dimColor> Navigate within section</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        Tab
+                    </Text>
+                    <Text dimColor> Switch editor/preview panel</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        Enter
+                    </Text>
+                    <Text dimColor> Edit selected field</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        Esc
+                    </Text>
+                    <Text dimColor> Stop editing / cancel</Text>
+                </Text>
             </Box>
             <Box flexDirection="column" marginBottom={1}>
                 <Box marginBottom={1}>
                     <Text dimColor>{"\u2500\u2500 "}</Text>
-                    <Text bold color="white">FEATURES / EXTENSIONS</Text>
+                    <Text bold color="white">
+                        FEATURES / EXTENSIONS
+                    </Text>
                 </Box>
-                <Text>  <Text bold color="white">Space</Text><Text dimColor> Toggle selection</Text></Text>
-                <Text>  <Text bold color="white">/</Text><Text dimColor> Search / filter</Text></Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        Space
+                    </Text>
+                    <Text dimColor> Toggle selection</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        /
+                    </Text>
+                    <Text dimColor> Search / filter</Text>
+                </Text>
             </Box>
             <Box flexDirection="column" marginBottom={1}>
                 <Box marginBottom={1}>
                     <Text dimColor>{"\u2500\u2500 "}</Text>
-                    <Text bold color="white">LISTS (Ports, Mounts, Env)</Text>
+                    <Text bold color="white">
+                        LISTS (Ports, Mounts, Env)
+                    </Text>
                 </Box>
-                <Text>  <Text bold color="white">a</Text><Text dimColor> Add new entry</Text></Text>
-                <Text>  <Text bold color="white">d</Text><Text dimColor> Delete selected entry</Text></Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        a
+                    </Text>
+                    <Text dimColor> Add new entry</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        d
+                    </Text>
+                    <Text dimColor> Delete selected entry</Text>
+                </Text>
             </Box>
             <Box flexDirection="column">
                 <Box marginBottom={1}>
                     <Text dimColor>{"\u2500\u2500 "}</Text>
-                    <Text bold color="white">ACTIONS</Text>
+                    <Text bold color="white">
+                        ACTIONS
+                    </Text>
                 </Box>
-                <Text>  <Text bold color="white">s</Text><Text dimColor> Save configuration</Text></Text>
-                <Text>  <Text bold color="white">q</Text><Text dimColor> Quit</Text></Text>
-                <Text>  <Text bold color="white">?</Text><Text dimColor> Toggle help</Text></Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        s
+                    </Text>
+                    <Text dimColor> Save configuration</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        q
+                    </Text>
+                    <Text dimColor> Quit</Text>
+                </Text>
+                <Text>
+                    {" "}
+                    <Text bold color="white">
+                        ?
+                    </Text>
+                    <Text dimColor> Toggle help</Text>
+                </Text>
             </Box>
         </Dialog>
     );
 
     // ── Preview panel (always visible) ──────────────────────────────
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when config changes
+    const jsonPreview = useMemo(() => store.getJsonPreview(), [state.config]);
+
     const previewPanel = (
         <PreviewPanel
             focused={focusedPanel === "preview"}
             hadComments={state.hadComments}
-            jsonPreview={store.getJsonPreview()}
+            jsonPreview={jsonPreview}
             mode={state.mode}
             scrollRef={previewScrollRef}
         />
@@ -942,14 +1124,16 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     return (
         <Box flexDirection="column" height={rows} width={columns}>
-            {/* Header */}
-            <Box borderBottom={false} borderColor="cyan" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0} paddingX={1}>
-                <Text bold color="cyan">vis devcontainer</Text>
-                <Text dimColor> - {state.mode === "create" ? "Create" : "Edit"} .devcontainer/devcontainer.json</Text>
+            {/* VIS badge header */}
+            <Box flexShrink={0} gap={1} paddingX={1}>
+                <Text bold inverse>
+                    {" VIS "}
+                </Text>
+                <Text wrap="truncate">{state.mode === "create" ? "Create" : "Edit"} devcontainer</Text>
             </Box>
 
             {/* Tab bar */}
-            <Box flexShrink={0} paddingX={1}>
+            <Box flexShrink={0} paddingX={1} paddingY={1}>
                 <Tabs
                     defaultValue={state.section}
                     keyMap={{ useNumbers: false, useTab: false }}
@@ -966,8 +1150,9 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                     ))}
                 </Tabs>
             </Box>
+
             {/* Section description */}
-            <Box flexShrink={0} paddingX={2}>
+            <Box flexShrink={0} paddingRight={2}>
                 <Text dimColor wrap="truncate">
                     {EDITOR_SECTIONS.find((s) => s.id === state.section)?.description ?? ""}
                 </Text>
@@ -976,13 +1161,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
             {/* Content area: editor + preview side-by-side */}
             <Box flexDirection="row" flexGrow={1} overflow="hidden">
                 {/* Editor panel */}
-                <Box
-                    borderColor={focusedPanel === "editor" ? "cyan" : "gray"}
-                    borderStyle="single"
-                    flexDirection="column"
-                    flexGrow={1}
-                    overflow="hidden"
-                >
+                <Box borderColor={focusedPanel === "editor" ? "white" : "gray"} borderStyle="single" flexDirection="column" flexGrow={1} overflow="hidden">
                     {sectionContent}
                 </Box>
 

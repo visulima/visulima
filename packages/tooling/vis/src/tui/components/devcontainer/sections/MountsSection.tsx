@@ -1,16 +1,19 @@
 import { Box, Text } from "@visulima/tui";
 import React from "react";
 
+import type { PackageManager } from "../catalogs/mount-suggestions";
 import type { DevcontainerConfig, MountEntry } from "../types";
 
 interface MountsSectionProps {
     readonly addingMount: boolean;
     readonly config: DevcontainerConfig;
+    readonly detectedPm: PackageManager | null;
     readonly fieldIndex: number;
     readonly mountPhase: "source" | "target" | "type";
     readonly mountSource: string;
     readonly mountTarget: string;
     readonly mountType: "bind" | "tmpfs" | "volume";
+    readonly suggestedMounts: MountEntry[];
 }
 
 const formatMount = (mount: MountEntry | string): string => {
@@ -21,31 +24,71 @@ const formatMount = (mount: MountEntry | string): string => {
     return `[${mount.type}] ${mount.source} \u2192 ${mount.target}`;
 };
 
-const MountsSection = ({ addingMount, config, fieldIndex, mountPhase, mountSource, mountTarget, mountType }: MountsSectionProps): React.JSX.Element => {
+const MountsSection = ({
+    addingMount,
+    config,
+    detectedPm,
+    fieldIndex,
+    mountPhase,
+    mountSource,
+    mountTarget,
+    mountType,
+    suggestedMounts,
+}: MountsSectionProps): React.JSX.Element => {
     const mounts = config.mounts ?? [];
 
     return (
         <Box flexDirection="column" paddingX={1}>
-            <Box flexShrink={0} marginBottom={1}>
-                <Text bold color="cyan">Volume Mounts</Text>
-                <Text dimColor> ({mounts.length} mounts)</Text>
+            <Box flexShrink={0} gap={1} paddingX={1}>
+                <Text bold color="cyan">
+                    {mounts.length} mounts
+                </Text>
+                {detectedPm && (
+                    <Text dimColor>
+                        — detected: <Text color="white">{detectedPm}</Text>
+                    </Text>
+                )}
             </Box>
+
+            {/* Suggested mounts banner */}
+            {suggestedMounts.length > 0 && !addingMount && (
+                <Box borderColor="yellow" borderStyle="single" flexDirection="column" marginBottom={1} marginTop={1} paddingX={1}>
+                    <Box flexShrink={0}>
+                        <Text bold color="yellow">Suggested mounts</Text>
+                        <Text dimColor> — press <Text bold color="white">A</Text> to add all</Text>
+                    </Box>
+                    {suggestedMounts.map((mount, index) => (
+                        <Box flexShrink={0} key={`suggestion-${String(index)}`}>
+                            <Text dimColor wrap="truncate">
+                                {"  + "}
+                                {formatMount(mount)}
+                            </Text>
+                        </Box>
+                    ))}
+                </Box>
+            )}
+
+            {/* Current mounts */}
             {mounts.length > 0 && (
                 <Box flexDirection="column" marginBottom={1}>
                     {mounts.map((mount, index) => {
                         const isSelected = index === fieldIndex;
 
                         return (
-                            <Box flexShrink={0} key={`mount-${String(index)}`}>
-                                <Text color={isSelected ? "cyan" : undefined} inverse={isSelected} wrap="truncate">
-                                    {isSelected ? " \u276f " : "   "}
-                                    {formatMount(mount)}
-                                </Text>
+                            <Box flexShrink={0} height={1} key={`mount-${String(index)}`}>
+                                <Text>{isSelected ? ">" : " "}</Text>
+                                <Box flexGrow={1}>
+                                    <Text bold={isSelected} inverse={isSelected} wrap="truncate">
+                                        {" "}
+                                        {formatMount(mount)}
+                                    </Text>
+                                </Box>
                             </Box>
                         );
                     })}
                 </Box>
             )}
+
             {/* Add row */}
             {!addingMount && (
                 <Box flexShrink={0}>
@@ -57,6 +100,7 @@ const MountsSection = ({ addingMount, config, fieldIndex, mountPhase, mountSourc
                     </Text>
                 </Box>
             )}
+
             {/* Interactive add form */}
             {addingMount && (
                 <Box borderColor="cyan" borderStyle="single" flexDirection="column" marginTop={1} paddingX={1}>
@@ -110,18 +154,14 @@ const MountsSection = ({ addingMount, config, fieldIndex, mountPhase, mountSourc
                     </Box>
                 </Box>
             )}
-            {mounts.length === 0 && !addingMount && (
+
+            {mounts.length === 0 && !addingMount && suggestedMounts.length === 0 && (
                 <Box marginTop={1}>
                     <Text dimColor>
                         Tip: Use volume mounts for node_modules and caches to improve performance.
                     </Text>
                 </Box>
             )}
-            <Box flexShrink={0} marginTop={1}>
-                <Text dimColor wrap="truncate">
-                    <Text bold color="white">a</Text>/<Text bold color="white">Enter</Text> add mount  <Text bold color="white">d</Text> remove  <Text bold color="white">{"\u2191\u2193"}</Text> navigate
-                </Text>
-            </Box>
         </Box>
     );
 };

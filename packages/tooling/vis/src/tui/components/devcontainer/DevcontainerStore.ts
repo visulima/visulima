@@ -1,3 +1,5 @@
+import type { PackageManager } from "./catalogs/mount-suggestions";
+import { getSuggestedMounts } from "./catalogs/mount-suggestions";
 import type { DevcontainerTemplate } from "./catalogs/templates";
 import { TEMPLATES } from "./catalogs/templates";
 import type { DevcontainerConfig, MountEntry, SectionId } from "./types";
@@ -8,6 +10,8 @@ import { SECTION_ORDER } from "./types";
 export interface DevcontainerState {
     /** The configuration being edited. */
     config: DevcontainerConfig;
+    /** Detected package manager from the workspace. */
+    detectedPm: PackageManager | null;
     /** Search text for extensions section. */
     extensionSearch: string;
     /** Search text for features section. */
@@ -28,6 +32,8 @@ export interface DevcontainerState {
     section: SectionId;
     /** Whether to show the template selector dialog. */
     showTemplateSelector: boolean;
+    /** Suggested mounts based on PM and features. */
+    suggestedMounts: MountEntry[];
     /** Selected template index in the selector. */
     templateIndex: number;
 }
@@ -45,12 +51,14 @@ export class DevcontainerStore {
 
     #state: DevcontainerState;
 
-    public constructor(config: DevcontainerConfig | null, hadComments: boolean) {
+    public constructor(config: DevcontainerConfig | null, hadComments: boolean, detectedPm: PackageManager | null = null) {
         const isCreate = config === null;
         const initial = config ?? { name: "" };
+        const cloned = deepClone(initial);
 
         this.#state = {
-            config: deepClone(initial),
+            config: cloned,
+            detectedPm,
             extensionSearch: "",
             featureSearch: "",
             fieldEditing: false,
@@ -61,6 +69,7 @@ export class DevcontainerStore {
             originalConfig: isCreate ? null : deepClone(initial),
             section: "general",
             showTemplateSelector: isCreate,
+            suggestedMounts: getSuggestedMounts(detectedPm, cloned.features ?? {}, cloned.mounts ?? []),
             templateIndex: 0,
         };
     }
@@ -132,12 +141,12 @@ export class DevcontainerStore {
         const template = TEMPLATES.find((t: DevcontainerTemplate) => t.id === templateId);
 
         if (template) {
-            this.#emit({
+            this.#emit(this.#withSuggestions({
                 ...this.#state,
                 config: deepClone(template.config),
                 isDirty: true,
                 showTemplateSelector: false,
-            });
+            }));
         }
     }
 
@@ -167,11 +176,11 @@ export class DevcontainerStore {
             features[featureId] = {};
         }
 
-        this.#emit({
+        this.#emit(this.#withSuggestions({
             ...this.#state,
             config: { ...this.#state.config, features },
             isDirty: true,
-        });
+        }));
     }
 
     public setFeatureSearch(search: string): void {
@@ -181,7 +190,14 @@ export class DevcontainerStore {
     // ── Ports ───────────────────────────────────────────────────────
 
     public addPort(port: number | string): void {
-        const ports = [...(this.#state.config.forwardPorts ?? []), port];
+        const existing = this.#state.config.forwardPorts ?? [];
+
+        // Prevent duplicates
+        if (existing.includes(port)) {
+            return;
+        }
+
+        const ports = [...existing, port];
 
         this.#emit({
             ...this.#state,
@@ -265,11 +281,11 @@ export class DevcontainerStore {
     public addMount(mount: MountEntry): void {
         const mounts = [...(this.#state.config.mounts ?? []), mount];
 
-        this.#emit({
+        this.#emit(this.#withSuggestions({
             ...this.#state,
             config: { ...this.#state.config, mounts },
             isDirty: true,
-        });
+        }));
     }
 
     public removeMount(index: number): void {
@@ -277,11 +293,26 @@ export class DevcontainerStore {
 
         mounts.splice(index, 1);
 
-        this.#emit({
+        this.#emit(this.#withSuggestions({
             ...this.#state,
             config: { ...this.#state.config, mounts: mounts.length > 0 ? mounts : undefined },
             isDirty: true,
-        });
+        }));
+    }
+
+    /** Add all currently suggested mounts to the config. */
+    public applySuggestedMounts(): void {
+        if (this.#state.suggestedMounts.length === 0) {
+            return;
+        }
+
+        const mounts = [...(this.#state.config.mounts ?? []), ...this.#state.suggestedMounts];
+
+        this.#emit(this.#withSuggestions({
+            ...this.#state,
+            config: { ...this.#state.config, mounts },
+            isDirty: true,
+        }));
     }
 
     // ── Lifecycle commands ───────────────────────────────────────────
@@ -389,6 +420,18 @@ export class DevcontainerStore {
         }
 
         return config;
+    }
+
+    /** Recalculate suggested mounts for the given state. */
+    #withSuggestions(state: DevcontainerState): DevcontainerState {
+        return {
+            ...state,
+            suggestedMounts: getSuggestedMounts(
+                state.detectedPm,
+                state.config.features ?? {},
+                state.config.mounts ?? [],
+            ),
+        };
     }
 
     #emit(newState: DevcontainerState): void {
