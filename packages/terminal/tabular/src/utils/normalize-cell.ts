@@ -31,7 +31,7 @@ export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
             content = EMPTY_CELL_REPRESENTATION;
         } else if (typeof content !== "string") {
             throw new TypeError(
-                `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${String(cell)} (type: ${typeof cell})`,
+                `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${JSON.stringify(cell)} (type: ${typeof cell})`,
             );
         }
 
@@ -41,6 +41,6 @@ export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
     // If it's none of the above, throw an error (e.g., bigint, boolean, function)
     // Use String() for potentially non-primitive types in the error message
     throw new TypeError(
-        `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${String(cell)} (type: ${typeof cell})`,
+        `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${JSON.stringify(cell)} (type: ${typeof cell})`,
     );
 };

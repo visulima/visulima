@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { createTable, Table } from "../src";
 
+const HEADER_PATTERN = /^│\s*Component\s*│\s*Tests\s*│\s*Coverage\s*│/;
+
 describe("table core functionality", () => {
     it("should handle empty tables", () => {
         expect.assertions(1);
@@ -163,9 +165,7 @@ describe("table core functionality", () => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 table.addRow([{ content: { a: "b" } as any }]);
                 table.toString();
-            }).toThrow(
-                "Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received [object Object] (type: object)",
-            );
+            }).toThrow("Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received");
         });
     });
 
@@ -242,9 +242,7 @@ describe("table core functionality", () => {
             );
 
             // Verify the complete header structure
-            const headerPattern = /^│\s*Component\s*│\s*Tests\s*│\s*Coverage\s*│/;
-
-            expect(headerLine).toMatch(headerPattern);
+            expect(headerLine).toMatch(HEADER_PATTERN);
         });
 
         it("should handle column spans while maintaining width consistency", () => {

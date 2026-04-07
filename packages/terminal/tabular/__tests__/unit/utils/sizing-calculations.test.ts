@@ -5,6 +5,8 @@ import calculateCellTotalWidth from "../../../src/utils/calculate-cell-total-wid
 import calculateRowHeights from "../../../src/utils/calculate-row-heights";
 import computeRowLogicalWidth from "../../../src/utils/compute-row-logical-width";
 
+const NEWLINE_REGEX = /\r?\n/;
+
 describe("grid Sizing Calculations", () => {
     describe(calculateCellTotalWidth, () => {
         it("returns width for a single column span", () => {
@@ -45,9 +47,9 @@ describe("grid Sizing Calculations", () => {
         // Helper functions (consider moving to a shared test util if used elsewhere)
         const alignCellContent = (cell: GridItem) =>
             // Simulate content split by newlines
-            String(cell.content ?? "").split(/\r?\n/);
+            String(cell.content ?? "").split(NEWLINE_REGEX);
 
-        const findFirstOccurrenceRow = (gridLayout: (GridItem | null)[][], startRow: number, startCol: number, cell: GridItem) => {
+        const findFirstOccurrenceRow = (gridLayout: (GridItem | undefined)[][], startRow: number, startCol: number, cell: GridItem) => {
             let firstRow = startRow;
 
             while (firstRow > 0 && gridLayout[firstRow - 1]?.[startCol] === cell) {
