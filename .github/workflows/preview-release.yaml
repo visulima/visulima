@@ -80,21 +80,27 @@ jobs:
                   pr: "${{ github.event.pull_request.number }}"
                   name: "bindings-(.+)"
                   name_is_regexp: true
-                  path: "packages/tooling/task-runner"
+                  path: "artifacts"
                   if_no_artifact_found: "ignore"
                   allow_forks: false
 
-            - name: "Flatten native binding artifacts"
+            - name: "Distribute native artifacts to platform packages"
               if: "${{ steps.native-artifacts.outcome == 'success' }}"
               shell: "bash"
               run: |
-                  find packages/tooling/task-runner -name "*.node" -path "*/bindings-*/*" -exec mv {} packages/tooling/task-runner/ \;
-                  rm -rf packages/tooling/task-runner/bindings-*/
+                  # task-runner: move matching .node files and distribute to npm packages
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
+                  cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
 
-            - name: "Move native artifacts to platform packages"
-              if: "${{ steps.native-artifacts.outcome == 'success' }}"
-              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
-              working-directory: "packages/tooling/task-runner"
+                  # tui: move matching .node files and distribute to npm packages
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \;
+                  cd packages/terminal/tui && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: move matching .node files and distribute to npm packages
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
+                  cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  rm -rf artifacts/
 
             - name: "Build"
               shell: "bash"
