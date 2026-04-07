@@ -31,7 +31,7 @@ const aiSolutionResponse = (rawText: string): string => {
         .split("\n")
         .map((link) => JSON.parse(link) as { title: string; url: string });
 
-    return `${description.replaceAll(/"([^"]*)"(\s|\.)/g, "<code>$1</code> ")}
+    return `${description.replaceAll(/"([^"]*)"(?:\s|\.)/g, "<code>$1</code> ")}
 
 ## Links
 

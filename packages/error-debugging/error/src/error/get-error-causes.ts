@@ -6,12 +6,11 @@ import type { VisulimaError } from "./visulima-error";
  * Will return an array of all causes in the error in the order they occurred.
  */
 
-const getErrorCauses = <E = Error | VisulimaError | unknown>(error: E): E[] => {
-    const seen = new Set();
-    const causes = [];
+const getErrorCauses = <E = Error | VisulimaError>(error: E): E[] => {
+    const seen = new Set<unknown>();
+    const causes: E[] = [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let currentError: E | any = error;
+    let currentError: unknown = error;
 
     while (currentError) {
         // Check for circular reference
@@ -22,17 +21,17 @@ const getErrorCauses = <E = Error | VisulimaError | unknown>(error: E): E[] => {
             break;
         }
 
-        causes.push(currentError);
+        causes.push(currentError as E);
         seen.add(currentError);
 
-        if (!currentError.cause) {
+        if (typeof currentError !== "object" || !("cause" in currentError)) {
             break;
         }
 
-        currentError = currentError.cause;
+        currentError = (currentError as Record<string, unknown>).cause;
     }
 
-    return causes as E[];
+    return causes;
 };
 
 export default getErrorCauses;

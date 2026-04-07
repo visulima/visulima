@@ -402,7 +402,7 @@ describe("error serializer", () => {
 
             public toJSON() {
                 return {
-                    amount: `$${this.value}`,
+                    amount: `$${String(this.value)}`,
                     message: this.message,
                 };
             }
@@ -434,7 +434,7 @@ describe("error serializer", () => {
             amount: 20,
             toJSON() {
                 return {
-                    amount: `$${this.amount}`,
+                    amount: `$${String(this.amount)}`,
                 };
             },
         };
@@ -530,7 +530,7 @@ describe("error serializer", () => {
             // eslint-disable-next-line sonarjs/no-identical-functions
             public toJSON() {
                 return {
-                    amount: `$${this.value}`,
+                    amount: `$${String(this.value)}`,
                     message: this.message,
                 };
             }
@@ -1186,7 +1186,7 @@ describe("error serializer", () => {
 
             class RequiresArgumentsError extends Error {
                 public constructor(message?: string, code?: number) {
-                    super(message || "default");
+                    super(message ?? "default");
                     this.name = "RequiresArgsError";
 
                     // This constructor will work without arguments, but let's make it fail

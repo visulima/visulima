@@ -16,7 +16,7 @@ type RenderableError = AggregateError | Error | VisulimaError;
 
 const getPrefix = (prefix: string, indentation: number | "\t", deep: number): string => {
     if (deep === 0) {
-        return prefix.toString();
+        return prefix;
     }
 
     if (indentation === "\t") {
@@ -63,7 +63,7 @@ const getHint = (error: RenderableError, { color, indentation, prefix }: Options
 
     if (Array.isArray((error as VisulimaError).hint)) {
         for (const line of (error as VisulimaError).hint as string[]) {
-            message += `${(spaces + line).toString()}\n`;
+            message += `${spaces + line}\n`;
         }
     } else {
         message += spaces + ((error as VisulimaError).hint as string);
@@ -79,7 +79,7 @@ const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, ind
 
     return `${getPrefix(prefix, indentation, deep)}at ${trace.methodName ? `${method(trace.methodName)} ` : ""}${fileLine(filePath as string)}:${fileLine(
         trace.line?.toString() ?? "",
-    )}`.toString();
+    )}`;
 };
 
 const getCode = (
@@ -125,7 +125,7 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
         }
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        message += internalRenderError(error_, { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView }, deep + 1);
+        message += internalRenderError(error_ as Error, { ...options, framesMaxLimit: 1, hideErrorCodeView: options.hideErrorErrorsCodeView }, deep + 1);
     }
 
     return `\n${message}`;

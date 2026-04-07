@@ -36,11 +36,11 @@ export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: 
         },
     };
 
-    const hasColumns = loc.start && typeof loc.start.column === "number";
+    const hasColumns = typeof loc.start.column === "number";
 
     let lines = normalizeLF(source).split("\n");
 
-    if (typeof config?.tabWidth === "number") {
+    if (typeof config.tabWidth === "number") {
         lines = lines.map((ln) => ln.replaceAll("\t", " ".repeat(config.tabWidth as number)));
     }
 
@@ -55,7 +55,7 @@ export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: 
             const number = start + 1 + index;
             const hasMarker = markerLines[number];
 
-            const paddedNumber = ` ${number}`.slice(-numberMaxWidth);
+            const paddedNumber = ` ${String(number)}`.slice(-numberMaxWidth);
             const lastMarkerLine = !markerLines[number + 1];
 
             const gutter = ` ${paddedNumber}${config.showGutter ? " |" : ""}`;
@@ -66,6 +66,7 @@ export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: 
                 if (Array.isArray(hasMarker)) {
                     const markerSpacing = line.replaceAll(/[^\t]/g, " ").slice(0, Math.max((hasMarker[0] as number) - 1, 0));
 
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentionally using || to treat 0 as fallback to 1
                     const numberOfMarkers = hasMarker[1] || 1;
 
                     markerLine = [

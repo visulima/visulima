@@ -5,8 +5,7 @@ import type { SerializedError } from "./error-proto";
 import { ErrorProto } from "./error-proto";
 
 type CauseError = Error & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cause: any;
+    cause: unknown;
 };
 
 interface JsonError extends Error {
@@ -19,12 +18,7 @@ const toJsonWasCalled = new WeakSet();
  * Make all properties of an object enumerable recursively.
  * This is needed when toJSON() returns a serialized error that will be used in object spreads.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const makePropertiesEnumerable = (object: any): void => {
-    if (!object || typeof object !== "object") {
-        return;
-    }
-
+const makePropertiesEnumerable = (object: Record<string, unknown>): void => {
     const props = Object.getOwnPropertyNames(object);
 
     for (const prop of props) {
@@ -46,7 +40,7 @@ const makePropertiesEnumerable = (object: any): void => {
                 && !Array.isArray(descriptor.value) // Check if it's a plain object (not Error, Date, etc.)
                 && (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)
             ) {
-                makePropertiesEnumerable(descriptor.value);
+                makePropertiesEnumerable(descriptor.value as Record<string, unknown>);
             }
         }
     }
@@ -64,24 +58,23 @@ const toJSON = (from: JsonError) => {
     // However, if the object is non-extensible (like when toJSON returns 'this'),
     // preserve the original enumerability to match Error prototype behavior
     if (
-        json
-        && typeof json === "object" // Only make properties enumerable if the object is extensible
+        // Only make properties enumerable if the object is extensible
         // Non-extensible objects (like when toJSON returns 'this') should preserve original enumerability
-        && Object.isExtensible(json)
+        Object.isExtensible(json)
     ) {
-        makePropertiesEnumerable(json);
+        makePropertiesEnumerable(json as Record<string, unknown>);
     }
 
     return json;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-const serializeValue = (value: any, seen: Set<Error>, depth: number, options: Options): any => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options: Options): unknown => {
     if (value && value instanceof Uint8Array && value.constructor.name === "Buffer") {
         return "[object Buffer]";
     }
 
-    if (value !== null && typeof value === "object" && typeof value.pipe === "function") {
+    if (value !== null && typeof value === "object" && "pipe" in value && typeof (value as Record<string, unknown>).pipe === "function") {
         return "[object Stream]";
     }
 
@@ -97,11 +90,11 @@ const serializeValue = (value: any, seen: Set<Error>, depth: number, options: Op
         return _serialize(value, options, seen, depth);
     }
 
-    if (options.useToJSON && typeof value.toJSON === "function") {
-        return value.toJSON();
+    if (options.useToJSON && value !== null && typeof value === "object" && "toJSON" in value && typeof (value as Record<string, unknown>).toJSON === "function") {
+        return (value as { toJSON: () => unknown }).toJSON();
     }
 
-    if (typeof value === "object" && value instanceof Date) {
+    if (value instanceof Date) {
         return value.toISOString();
     }
 
@@ -110,7 +103,7 @@ const serializeValue = (value: any, seen: Set<Error>, depth: number, options: Op
     }
 
     if (typeof value === "bigint") {
-        return `${value}n`;
+        return `${String(value)}n`;
     }
 
     if (isPlainObject(value)) {
@@ -123,12 +116,11 @@ const serializeValue = (value: any, seen: Set<Error>, depth: number, options: Op
         // eslint-disable-next-line no-param-reassign
         depth += 1;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const plainObject: Record<any, any> = {};
+        const plainObject: Record<string, unknown> = {};
 
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const key in value) {
-            plainObject[key] = serializeValue(value[key], seen, depth, options);
+            plainObject[key] = serializeValue((value as Record<string, unknown>)[key], seen, depth, options);
         }
 
         return plainObject;
@@ -216,9 +208,11 @@ const _serialize = (
     }
 
     // Handle cause property
-    if ((error as CauseError).cause !== undefined && (error as CauseError).cause !== null) {
-        if ((error as CauseError).cause instanceof Error) {
-            if (seen.has((error as CauseError).cause)) {
+    const causeValue = (error as CauseError).cause;
+
+    if (causeValue !== undefined && causeValue !== null) {
+        if (causeValue instanceof Error) {
+            if (seen.has(causeValue)) {
                 Object.defineProperty(protoError, "cause", {
                     configurable: true,
                     enumerable: true,
@@ -229,13 +223,13 @@ const _serialize = (
                 Object.defineProperty(protoError, "cause", {
                     configurable: true,
                     enumerable: true,
-                    value: _serialize((error as CauseError).cause, options, seen, depth),
+                    value: _serialize(causeValue, options, seen, depth),
                     writable: true,
                 });
             }
         } else {
             // Non-Error cause - serialize it as a regular value
-            const serializedCause = serializeValue((error as CauseError).cause, seen, depth, options);
+            const serializedCause = serializeValue(causeValue, seen, depth, options);
 
             Object.defineProperty(protoError, "cause", {
                 configurable: true,
@@ -253,8 +247,7 @@ const _serialize = (
             continue;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const value = error[key as keyof Error] as any;
+        const value: unknown = error[key as keyof Error];
         const serializedValue = serializeValue(value, seen, depth, options);
 
         // All properties should be enumerable for serialized errors (plain objects)

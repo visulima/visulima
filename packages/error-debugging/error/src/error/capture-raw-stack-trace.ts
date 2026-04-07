@@ -1,4 +1,5 @@
 const captureRawStackTrace = (): string | undefined => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- captureStackTrace is V8-specific and may not exist in all runtimes (e.g. browsers)
     if (!Error.captureStackTrace) {
         return undefined;
     }

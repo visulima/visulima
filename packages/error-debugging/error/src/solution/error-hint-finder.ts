@@ -3,24 +3,24 @@ import type { Solution, SolutionFinder } from "./types";
 type HintError = Error & { hint: Solution | string[] | string | undefined };
 
 const errorHintFinder: SolutionFinder = {
-    handle: async (error: HintError): Promise<Solution | undefined> => {
-        if (error.hint === undefined || error.hint === null) {
-            return undefined;
+    handle: (error: HintError): Promise<Solution | undefined> => {
+        if (error.hint === undefined) {
+            return Promise.resolve(undefined);
         }
 
         if (typeof error.hint === "string" && error.hint !== "") {
-            return { body: error.hint };
+            return Promise.resolve({ body: error.hint });
         }
 
         if (typeof error.hint === "object" && typeof (error.hint as Solution).body === "string") {
-            return error.hint as Solution;
+            return Promise.resolve(error.hint as Solution);
         }
 
         if (Array.isArray(error.hint)) {
-            return { body: error.hint.join("\n") };
+            return Promise.resolve({ body: error.hint.join("\n") });
         }
 
-        return undefined;
+        return Promise.resolve(undefined);
     },
     name: "errorHint",
     priority: 1,

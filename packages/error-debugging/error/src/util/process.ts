@@ -2,14 +2,14 @@ interface Process extends Partial<Omit<typeof globalThis.process, "versions">> {
     versions: Record<string, string>;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-const _process = (globalThis.process || Object.create(null)) as unknown as Process;
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- globalThis.process may not exist in browser environments
+const rawProcess = (globalThis.process ?? (Object.create(null) as object)) as unknown as Process;
 
 const processShims: Partial<Process> = {
     versions: {},
 };
 
-const process: Process = new Proxy(_process, {
+const process: Process = new Proxy(rawProcess, {
     get(target, property: keyof Process) {
         if (property in target) {
             return target[property];
