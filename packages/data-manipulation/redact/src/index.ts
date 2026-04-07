@@ -25,17 +25,14 @@ const recursivelyFilterAttributes = (
     identifier?: string,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
-    for (let index = 0; index < rules.length; index += 1) {
-        const modifier = rules[index] as InternalAnonymize;
-
+    for (const modifier of rules) {
         // fast direct match
         if (!modifier.wildcard && !modifier.deep && hasProperty(copy, modifier.key)) {
             setProperty(copy, modifier.key, modifier.replacement);
         } else {
             const keys = Object.keys(copy);
 
-            for (let keyIndex = 0; keyIndex < keys.length; keyIndex += 1) {
-                const key = keys[keyIndex] as string;
+            for (const key of keys) {
                 const currentIdentifier = identifier ? `${identifier}.${key.toLowerCase()}` : key.toLowerCase();
 
                 if (!modifier.wildcard && key.toLowerCase() === modifier.key) {
@@ -103,9 +100,7 @@ const recursiveFilter = (
 
             const errorKeys = Object.keys(input);
 
-            for (let keyIndex = 0; keyIndex < errorKeys.length; keyIndex += 1) {
-                const key = errorKeys[keyIndex] as string;
-
+            for (const key of errorKeys) {
                 // @ts-expect-error we're literally iterating through attributes, these will exist
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 copy[key] = input[key];
@@ -129,8 +124,7 @@ const recursiveFilter = (
                 if (typeof key === "string" || (typeof key === "object" && key !== null && key.constructor === String)) {
                     let modifierFound = false;
 
-                    for (let index = 0; index < rules.length; index += 1) {
-                        const modifier = rules[index] as InternalAnonymize;
+                    for (const modifier of rules) {
                         const lowerCaseKey = key.toLowerCase();
 
                         if (modifier.key === lowerCaseKey || (modifier.wildcard && wildcard(lowerCaseKey, modifier.key))) {
@@ -207,8 +201,8 @@ const recursiveFilter = (
 
             const filtered: string[] = [];
 
-            for (let index = 0; index < parsedUrlParameters.length; index += 1) {
-                const { key, value } = parsedUrlParameters[index] as { key: string | undefined; value: string };
+            for (const parsedUrlParameter of parsedUrlParameters) {
+                const { key, value } = parsedUrlParameter as { key: string | undefined; value: string };
 
                 if (key === undefined) {
                     const foundModifier = rules.find((modifier) => modifier.key === value.toLowerCase());
@@ -240,10 +234,10 @@ const recursiveFilter = (
 
         saveCopy(input, copy);
 
-        for (let index = 0; index < input.length; index += 1) {
-            const item: unknown = input[index];
-            const currentIdentifier = identifier ? `${identifier}.${index.toString()}`.toLowerCase() : index.toString().toLowerCase();
-            const foundModifier = rules.find((modifier) => modifier.key === index.toString().toLowerCase() || modifier.key === currentIdentifier);
+        for (const [index, item] of input.entries()) {
+            const indexString = index.toString().toLowerCase();
+            const currentIdentifier = identifier ? `${identifier}.${indexString}`.toLowerCase() : indexString;
+            const foundModifier = rules.find((modifier) => modifier.key === indexString || modifier.key === currentIdentifier);
 
             if (foundModifier) {
                 copy.push(foundModifier.replacement);
@@ -292,9 +286,7 @@ export function redact<V>(input: V, rules: Rules, options?: RedactOptions): V {
 
     const preparedModifiers: InternalAnonymize[] = [];
 
-    for (let index = 0; index < rules.length; index += 1) {
-        const modifier = rules[index] as Rules[number];
-
+    for (const modifier of rules) {
         if (
             options?.exclude
             && ((typeof modifier === "string" && options.exclude.includes(modifier))
@@ -327,9 +319,7 @@ export function redact<V>(input: V, rules: Rules, options?: RedactOptions): V {
 
     const returnValue = recursiveFilter(input, examinedObjects, saveCopy, preparedModifiers, options) as V;
 
-    for (let index = 0; index < examinedObjects.length; index += 1) {
-        const examinedObject = examinedObjects[index] as ExaminedObjects;
-
+    for (const examinedObject of examinedObjects) {
         // @ts-expect-error temporarily modifying input objects to avoid infinite recursion
         Reflect.deleteProperty(examinedObject.original, circularReferenceKey);
     }

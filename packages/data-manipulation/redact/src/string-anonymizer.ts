@@ -31,15 +31,14 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
 const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
-    for (let index = 0; index < typesToAnonymize.length; index += 1) {
-        maskMaps[typesToAnonymize[index] as string] = new Map<string, string>();
+    for (const element of typesToAnonymize) {
+        maskMaps[element] = new Map<string, string>();
     }
 
     let outputResult = output;
 
-    for (let index = 0; index < documentTerms.length; index += 1) {
-        const term = documentTerms[index] as IDocumentTerm;
-        const { tag, text } = term;
+    for (const documentTerm of documentTerms) {
+        const { tag, text } = documentTerm;
         const mask = maskText(maskMaps, text, tag);
 
         outputResult = outputResult.replace(text, mask);
@@ -89,8 +88,7 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
 };
 
 const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: string, processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
-    for (let index = 0; index < stringAnonymizeModifiers.length; index += 1) {
-        const modifier = stringAnonymizeModifiers[index] as StringAnonymize;
+    for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
         const rx = new RegExp(pattern, "giu");
@@ -128,13 +126,10 @@ const processTerms = (
         ...(nlpDocument.urls().out("offset") as unknown as CompromiseOffset[]),
     ];
 
-    for (let index = 0; index < processedDocument.length; index += 1) {
-        const documentObject = processedDocument[index] as CompromiseOffset;
+    for (const documentObject of processedDocument) {
         const { terms } = documentObject;
 
-        for (let j = 0; j < terms.length; j += 1) {
-            const term = terms[j] as { tags: string[]; text: string };
-
+        for (const term of terms) {
             // eslint-disable-next-line no-param-reassign
             processedTerms = createDocumentTermsFromTerms(typesToAnonymize, processedTerms, documentObject, term, logger);
         }
@@ -162,9 +157,7 @@ const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOption
     const patternModifiers: StringAnonymize[] = [];
     const typesToAnonymize: string[] = [];
 
-    for (let index = 0; index < modifiers.length; index += 1) {
-        const modifier = modifiers[index] as Exclude<Rules[number], undefined>;
-
+    for (const modifier of modifiers) {
         if (
             options?.exclude
             && ((typeof modifier === "string" && options.exclude.includes(modifier))
