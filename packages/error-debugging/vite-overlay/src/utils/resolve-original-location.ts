@@ -1,4 +1,4 @@
-/* eslint-disable no-for-of-array/no-for-of-array, sonarjs/different-types-comparison, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
+/* eslint-disable sonarjs/different-types-comparison, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import type { ViteDevServer } from "vite";

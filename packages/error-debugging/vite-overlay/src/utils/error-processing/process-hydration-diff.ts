@@ -1,4 +1,4 @@
-/* eslint-disable no-for-of-array/no-for-of-array, no-unsafe-optional-chaining, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
+/* eslint-disable no-unsafe-optional-chaining, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
 const STYLE_TAG_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
 const SCRIPT_TAG_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
 const TEMPLATE_TAG_RE = /<template\b[^>]*>[\s\S]*?<\/template>/gi;

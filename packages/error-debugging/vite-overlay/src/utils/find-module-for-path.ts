@@ -1,4 +1,4 @@
-/* eslint-disable no-for-of-array/no-for-of-array, @typescript-eslint/no-base-to-string, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/prefer-nullish-coalescing */
+/* eslint-disable @typescript-eslint/no-base-to-string, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/prefer-nullish-coalescing */
 import type { ModuleNode, ViteDevServer } from "vite";
 
 const FS_PATH_PREFIX_RE = /^\/@fs\//;

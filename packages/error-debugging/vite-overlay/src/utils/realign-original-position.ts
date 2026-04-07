@@ -4,7 +4,7 @@ const BROADER_CONTEXT_SIZE = 16;
 const MIN_TOKEN_LENGTH = 3;
 const MIN_LINE_LENGTH = 4;
 
-const NEWLINE_SPLIT_RE = /\n/g;
+const NEWLINE_SPLIT_RE = /\n/;
 const WHITESPACE_RE = /\s+/g;
 const TOKEN_START_RE = /[A-Z_$][\w$]{2,}/i;
 const WHITESPACE_CHAR_RE = /\s/;
