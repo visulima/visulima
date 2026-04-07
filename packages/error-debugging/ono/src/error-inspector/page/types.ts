@@ -34,28 +34,28 @@ type HeadersLike = NativeHeaders | CustomHeaders;
 type RequestLikeType = NativeRequest | CustomRequest;
 
 // Flexible RequestLike interface that supports multiple request types
-type RequestLike =
+type RequestLike
     // Native Request (works in Node.js 18+, Bun, Deno, browsers)
-    | NativeRequest
+    = | NativeRequest
     // Node.js IncomingMessage with extensions
-    | (IncomingMessage & {
-          body?: unknown;
-          clone?: () => RequestLike;
-          json?: () => Promise<unknown>;
-          text?: () => Promise<string>;
-      })
+        | (IncomingMessage & {
+            body?: unknown;
+            clone?: () => RequestLike;
+            json?: () => Promise<unknown>;
+            text?: () => Promise<string>;
+        })
     // Custom request-like objects
-    | CustomRequest
+        | CustomRequest
     // Express request objects
-    | {
-          body?: unknown;
-          headers?: Record<string, string | string[]> | HeadersLike;
-          method?: string;
-          off?: (event: string, handler: (chunk: unknown) => void) => void;
-          on?: (event: string, handler: (chunk: unknown) => void) => void;
-          setEncoding?: (encoding: string) => void;
-          url?: string;
-      };
+        | {
+            body?: unknown;
+            headers?: Record<string, string | string[]> | HeadersLike;
+            method?: string;
+            off?: (event: string, handler: (chunk: unknown) => void) => void;
+            on?: (event: string, handler: (chunk: unknown) => void) => void;
+            setEncoding?: (encoding: string) => void;
+            url?: string;
+        };
 
 type ExpressRequest = {
     body?: unknown;

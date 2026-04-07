@@ -40,7 +40,7 @@ const safeGetString = (object: unknown, property: string): string | undefined =>
 };
 
 const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolean => {
-    if (denylist && denylist.some((d) => d.toLowerCase() === name.toLowerCase())) {
+    if (denylist?.some((d) => d.toLowerCase() === name.toLowerCase())) {
         return true;
     }
 
@@ -58,7 +58,7 @@ const normalizeHeadersToEntries = (headers: HeadersInput): [string, HeaderValue]
         if (entries) {
             const entriesResult = entries() as IterableIterator<[string, string]>;
 
-            return [...entriesResult].map(([k, v]: [string, string]) => [k, v as HeaderValue]);
+            return Array.from(entriesResult, ([k, v]: [string, string]) => [k, v as HeaderValue]);
         }
     }
 
@@ -169,7 +169,7 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
                 try {
                     const textMethod = safeGetMethod(cloned, "text");
 
-                    return textMethod ? (await textMethod()) || "" : undefined;
+                    return textMethod ? await textMethod() || "" : undefined;
                 } catch {
                     return undefined;
                 }
@@ -322,7 +322,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             for (const [k, v] of Object.entries(filteredHeaders)) {
                 const value = toSingle(v);
 
-                if (value !== undefined) headersForCurl[k] = value;
+                if (value !== undefined)
+                    headersForCurl[k] = value;
             }
         }
 
@@ -406,7 +407,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
     const renderObjectValue = (object: Record<string, unknown>, depth: number): string => {
         if (Object.keys(object).length === 0) {
-            return '<span class="italic text-[var(--ono-text-muted)]">(empty object)</span>';
+            return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty object)</span>";
         }
 
         if (depth >= 3) {
@@ -426,8 +427,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             })
             .join("");
 
-        const remaining =
-            Object.keys(object).length > 10
+        const remaining
+            = Object.keys(object).length > 10
                 ? `<div class="ml-4 italic text-[var(--ono-text-muted)]">... and ${Object.keys(object).length - 10} more keys</div>`
                 : "";
 
@@ -440,12 +441,12 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
         }
 
         if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-            return renderPrimitiveValue(value as string | number | boolean);
+            return renderPrimitiveValue(value);
         }
 
         if (Array.isArray(value)) {
             if (value.length === 0) {
-                return '<span class="italic text-[var(--ono-text-muted)]">(empty array)</span>';
+                return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty array)</span>";
             }
 
             if (depth >= 3) {
@@ -464,8 +465,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
                 })
                 .join("");
 
-            const remaining =
-                value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--ono-text-muted)]">... and ${value.length - 10} more items</div>` : "";
+            const remaining
+                = value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--ono-text-muted)]">... and ${value.length - 10} more items</div>` : "";
 
             return `<div class="space-y-1">${items}${remaining}</div>`;
         }
@@ -522,7 +523,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 </div>`;
             }
 
-            if (Object.keys(body as object).length === 0) {
+            if (Object.keys(body).length === 0) {
                 return `<div class="px-4 pb-4 pt-2 text-xs text-[var(--ono-text-muted)]">(empty object)</div>`;
             }
 
@@ -554,7 +555,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
         contextKeys.forEach((key) => {
             const value = context[key];
 
-            if (value && typeof value === "object" && (Array.isArray(value) || Object.keys(value as object).length > 0)) {
+            if (value && typeof value === "object" && (Array.isArray(value) || Object.keys(value).length > 0)) {
                 const title = key.charAt(0).toUpperCase() + key.slice(1);
                 const sectionId = `context-${key}`;
 
@@ -690,7 +691,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
       <a href="#context-cookies" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-cookies-${uniqueId}` }).html}
     </div>
-    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(cookiesRecord as Record<string, string | string[]>)}
+    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(cookiesRecord)}
     </div>
   </section>${contextSections.content}
 </div>`;
