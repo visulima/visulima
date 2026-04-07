@@ -3,13 +3,18 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HtmlErrorHandlerOptions } from "./html-error-handler";
 import { htmlErrorHandler } from "./html-error-handler";
 
+type HeaderValue = string | number | string[];
+
 // Mock ServerResponse for HTML generation
+// This class stubs the full ServerResponse interface so the node-style
+// htmlErrorHandler can run unchanged in a fetch context.
+/* eslint-disable class-methods-use-this */
 class MockServerResponse {
     public statusCode: number = 200;
 
     public statusMessage: string = "";
 
-    public headers: Record<string, string | number | string[]> = {};
+    public headers: Record<string, HeaderValue> = {};
 
     public headersSent: boolean = false;
 
@@ -35,7 +40,7 @@ class MockServerResponse {
 
     public readableLength: number = 0;
 
-    public errored: Error | null = null;
+    public errored: Error | undefined = undefined;
 
     public closed: boolean = false;
 
@@ -43,17 +48,11 @@ class MockServerResponse {
 
     public readableDidRead: boolean = false;
 
-    public readableEncoding: BufferEncoding | null = null;
+    public readableEncoding: BufferEncoding | undefined = undefined;
 
     public readableEnded: boolean = false;
 
-    public readableFlowing: boolean | null = null;
-
-    public _events: any;
-
-    public _eventsCount: number = 0;
-
-    public _maxListeners?: number;
+    public readableFlowing: boolean | undefined = undefined;
 
     public body: string = "";
 
@@ -69,25 +68,21 @@ class MockServerResponse {
 
     public useChunkedEncodingByDefault = true;
 
-    public _hasBody = true;
+    public connection: undefined = undefined;
 
-    public _trailer = "";
-
-    public connection = null as any;
-
-    public socket = null as any;
+    public socket: undefined = undefined;
 
     public setHeader(name: string, value: string | number | ReadonlyArray<string>): this {
-        this.headers[name.toLowerCase()] = value as string | number | string[];
+        this.headers[name.toLowerCase()] = value as HeaderValue;
 
         return this;
     }
 
-    public getHeader(name: string): string | number | string[] | undefined {
+    public getHeader(name: string): HeaderValue | undefined {
         return this.headers[name.toLowerCase()];
     }
 
-    public getHeaders(): Record<string, string | number | string[]> {
+    public getHeaders(): Record<string, HeaderValue> {
         return { ...this.headers };
     }
 
@@ -100,30 +95,33 @@ class MockServerResponse {
     }
 
     public removeHeader(name: string): this {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.headers[name.toLowerCase()];
 
         return this;
     }
 
-    public writeHead(statusCode: number, headers?: Record<string, string | number | string[]>): this;
-    public writeHead(statusCode: number, statusMessage?: string, headers?: Record<string, string | number | string[]>): this;
+    public writeHead(statusCode: number, headers?: Record<string, HeaderValue>): this;
+    public writeHead(statusCode: number, statusMessage?: string, headers?: Record<string, HeaderValue>): this;
     public writeHead(
         statusCode: number,
-        statusMessage?: string | Record<string, string | number | string[]>,
-        headers?: Record<string, string | number | string[]>,
+        statusMessage?: string | Record<string, HeaderValue>,
+        headersArgument?: Record<string, HeaderValue>,
     ): this {
         this.statusCode = statusCode;
+
+        let resolvedHeaders = headersArgument;
 
         if (typeof statusMessage === "string") {
             this.statusMessage = statusMessage;
         }
 
         if (typeof statusMessage === "object") {
-            headers = statusMessage;
+            resolvedHeaders = statusMessage;
         }
 
-        if (headers) {
-            Object.assign(this.headers, headers);
+        if (resolvedHeaders) {
+            Object.assign(this.headers, resolvedHeaders);
         }
 
         return this;
@@ -140,9 +138,8 @@ class MockServerResponse {
     public end(data?: string | Buffer, callback?: () => void): this;
     // eslint-disable-next-line @typescript-eslint/unified-signatures
     public end(data?: string | Buffer, encoding?: BufferEncoding, callback?: () => void): this;
-    // @ts-expect-error TS6133: 'callback' is declared but its value is never read.
-
-    public end(data?: string | Buffer, encoding?: BufferEncoding | (() => void), callback?: () => void): this {
+    // @ts-expect-error TS6133: 'encoding' and 'callback' are declared but never read - required for interface compliance.
+    public end(data?: string | Buffer, _encoding?: BufferEncoding | (() => void), _callback?: () => void): this {
         if (data) {
             this.body += data.toString();
         }
@@ -156,74 +153,77 @@ class MockServerResponse {
         this.headersSent = true;
     }
 
-    // Stub methods for interface compliance
-    public addListener = () => this;
+    // Stub methods for interface compliance — these are arrow functions
+    // so ESLint class-methods-use-this does not flag them.
+    public addListener = (): this => this;
 
-    public on = () => this;
+    public on = (): this => this;
 
-    public once = () => this;
+    public once = (): this => this;
 
-    public removeListener = () => this;
+    public removeListener = (): this => this;
 
-    public off = () => this;
+    public off = (): this => this;
 
-    public removeAllListeners = () => this;
+    public removeAllListeners = (): this => this;
 
-    public setMaxListeners = () => this;
+    public setMaxListeners = (): this => this;
 
-    public getMaxListeners = () => 10;
+    public getMaxListeners = (): number => 10;
 
-    public listeners = () => [];
+    public listeners = (): never[] => [];
 
-    public rawListeners = () => [];
+    public rawListeners = (): never[] => [];
 
-    public emit = () => false;
+    public emit = (): boolean => false;
 
-    public eventNames = () => [];
+    public eventNames = (): never[] => [];
 
-    public listenerCount = () => 0;
+    public listenerCount = (): number => 0;
 
-    public prependListener = () => this;
+    public prependListener = (): this => this;
 
-    public prependOnceListener = () => this;
+    public prependOnceListener = (): this => this;
 
     // Additional methods
-    public cork = () => {};
+    public cork = (): void => {};
 
-    public uncork = () => {};
+    public uncork = (): void => {};
 
-    public destroy = () => this;
+    public destroy = (): this => this;
 
-    public read = () => null;
+    public read = (): undefined => undefined;
 
-    public setEncoding = () => this;
+    public setEncoding = (): this => this;
 
-    public pause = () => this;
+    public pause = (): this => this;
 
-    public resume = () => this;
+    public resume = (): this => this;
 
-    public isPaused = () => false;
+    public isPaused = (): boolean => false;
 
-    public destroySoon = () => this;
+    public destroySoon = (): this => this;
 
-    public pipe = () => ({}) as any;
+    // eslint-disable-next-line arrow-body-style
+    public pipe = (): Record<string, never> => ({});
 
-    public unpipe = () => this;
+    public unpipe = (): this => this;
 
-    public unshift = () => {};
+    public unshift = (): void => {};
 
-    public wrap = () => this;
+    public wrap = (): this => this;
 
-    public setTimeout = () => this;
+    public setTimeout = (): this => this;
 
-    public assignSocket = () => {};
+    public assignSocket = (): void => {};
 
-    public detachSocket = () => {};
+    public detachSocket = (): void => {};
 
-    public writeContinue = () => {};
+    public writeContinue = (): void => {};
 
-    public writeEarlyHints = () => {};
+    public writeEarlyHints = (): void => {};
 }
+/* eslint-enable class-methods-use-this */
 
 export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (error: Error, request: Request) => Promise<Response> => {
     const nodeHandler = htmlErrorHandler(options);
@@ -231,8 +231,7 @@ export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (e
     return async (error: Error, request: Request): Promise<Response> => {
         // Create mock request/response for the node handler
         const mockRequest = {
-
-            headers: Object.fromEntries((request as any).headers.entries()),
+            headers: Object.fromEntries(request.headers.entries()),
             method: request.method,
             url: request.url,
         } as IncomingMessage;
@@ -243,7 +242,7 @@ export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (e
         await nodeHandler(error, mockRequest, mockResponse as unknown as ServerResponse);
 
         // Convert the mock response to a fetch Response
-        const contentType = mockResponse.getHeader("content-type") || "text/html; charset=utf-8";
+        const contentType = mockResponse.getHeader("content-type") ?? "text/html; charset=utf-8";
 
         return new Response(mockResponse.body, {
             headers: {

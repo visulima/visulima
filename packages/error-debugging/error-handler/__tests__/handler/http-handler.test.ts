@@ -10,7 +10,7 @@ describe("httpHandler handler", () => {
         expect.assertions(3);
 
         const error = new httpErrors.BadRequest();
-        const handler = await httpHandler(error);
+        const handler = httpHandler(error);
 
         const { req, res } = createMocks({ method: "GET" });
 
@@ -27,7 +27,7 @@ describe("httpHandler handler", () => {
         expect.assertions(3);
 
         const error = new httpErrors.BadRequest();
-        const handler = await httpHandler(error);
+        const handler = httpHandler(error);
 
         const { req, res } = createMocks({
             headers: { accept: "text/html" },
@@ -47,7 +47,7 @@ describe("httpHandler handler", () => {
         expect.assertions(4);
 
         const error = new Error("Exploded");
-        const handler = await httpHandler(error);
+        const handler = httpHandler(error);
 
         const { req, res } = createMocks({
             headers: { accept: "application/problem+json" },
@@ -73,7 +73,7 @@ describe("httpHandler handler", () => {
         expect.assertions(5);
 
         const error = new Error("No Trace Please");
-        const handler = await httpHandler(error, { showTrace: false });
+        const handler = httpHandler(error, { showTrace: false });
 
         const { req, res } = createMocks({
             headers: { accept: "application/problem+json" },
@@ -98,7 +98,7 @@ describe("httpHandler handler", () => {
         expect.assertions(2);
 
         const error = new Error("Generic Error");
-        const handler = await httpHandler(error);
+        const handler = httpHandler(error);
 
         const { req, res } = createMocks({
             headers: { accept: "application/json" },
@@ -116,7 +116,7 @@ describe("httpHandler handler", () => {
         expect.assertions(4);
 
         const error = new httpErrors.BadRequest();
-        const handler = await httpHandler(error);
+        const handler = httpHandler(error);
 
         const { req, res } = createMocks({
             headers: { accept: "application/vnd.api+json" },
@@ -140,7 +140,7 @@ describe("httpHandler handler", () => {
         expect.assertions(2);
 
         const error = new httpErrors.BadRequest();
-        const handler = await httpHandler(error, {
+        const handler = httpHandler(error, {
             extraHandlers: [
                 {
                     handler: (error_, _request, res) => {
@@ -170,7 +170,7 @@ describe("httpHandler handler", () => {
             expect.assertions(3);
 
             const error = new httpErrors.BadRequest();
-            const handler = await fetchHandler(error);
+            const handler = fetchHandler(error);
 
             const request = new Request("http://localhost/test");
 
@@ -188,7 +188,7 @@ describe("httpHandler handler", () => {
             expect.assertions(3);
 
             const error = new httpErrors.BadRequest();
-            const handler = await fetchHandler(error);
+            const handler = fetchHandler(error);
 
             const request = new Request("http://localhost/test", {
                 headers: { accept: "text/html" },
@@ -208,7 +208,7 @@ describe("httpHandler handler", () => {
             expect.assertions(4);
 
             const error = new Error("Exploded");
-            const handler = await fetchHandler(error);
+            const handler = fetchHandler(error);
 
             const request = new Request("http://localhost/test", {
                 headers: { accept: "application/problem+json" },
@@ -231,7 +231,7 @@ describe("httpHandler handler", () => {
             expect.assertions(5);
 
             const error = new Error("No Trace Please");
-            const handler = await fetchHandler(error, { showTrace: false });
+            const handler = fetchHandler(error, { showTrace: false });
 
             const request = new Request("http://localhost/test", {
                 headers: { accept: "application/problem+json" },
@@ -253,7 +253,7 @@ describe("httpHandler handler", () => {
             expect.assertions(2);
 
             const error = new Error("Generic Error");
-            const handler = await fetchHandler(error);
+            const handler = fetchHandler(error);
 
             const request = new Request("http://localhost/test", {
                 headers: { accept: "application/json" },
@@ -269,7 +269,7 @@ describe("httpHandler handler", () => {
             expect.assertions(4);
 
             const error = new httpErrors.BadRequest();
-            const handler = await fetchHandler(error);
+            const handler = fetchHandler(error);
 
             const request = new Request("http://localhost/test", {
                 headers: { accept: "application/vnd.api+json" },
@@ -290,7 +290,7 @@ describe("httpHandler handler", () => {
             expect.assertions(2);
 
             const error = new httpErrors.BadRequest();
-            const handler = await fetchHandler(error, {
+            const handler = fetchHandler(error, {
                 extraHandlers: [
                     {
                         handler: (error_, _request) =>

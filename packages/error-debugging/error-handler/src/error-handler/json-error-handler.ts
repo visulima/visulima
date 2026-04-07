@@ -3,8 +3,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { getReasonPhrase } from "http-status-codes";
 
 import type { ErrorHandler } from "./types";
-import { addStatusCodeToResponse } from "./utils/add-status-code-to-response";
-import { sendJson } from "./utils/send-json";
+import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import sendJson from "./utils/send-json";
 import setErrorHeaders from "./utils/set-error-headers";
 
 export type JsonErrorBody = Record<string, unknown> | unknown[];

@@ -8,23 +8,25 @@ import { textErrorHandler as TextErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, FetchErrorHandlers } from "./types";
 import { xmlErrorHandler as XmlErrorHandler } from "./xml-error-handler";
 
+type HeaderValue = string | number | string[];
+
 // Mock ServerResponse for fetch handler
 class MockServerResponse {
     public statusCode: number = 200;
 
-    public headers: Record<string, string | number | string[]> = {};
+    public headers: Record<string, HeaderValue> = {};
 
-    public _body: string = "";
+    public responseBody: string = "";
 
-    public setHeader(name: string, value: string | number | string[]): void {
+    public setHeader(name: string, value: HeaderValue): void {
         this.headers[name.toLowerCase()] = value;
     }
 
-    public getHeader(name: string): string | number | string[] | undefined {
+    public getHeader(name: string): HeaderValue | undefined {
         return this.headers[name.toLowerCase()];
     }
 
-    public getHeaders(): Record<string, string | number | string[]> {
+    public getHeaders(): Record<string, HeaderValue> {
         return { ...this.headers };
     }
 
@@ -33,15 +35,16 @@ class MockServerResponse {
     }
 
     public write(chunk: string | Buffer): void {
-        this._body += chunk.toString();
+        this.responseBody += chunk.toString();
     }
 
     public end(data?: string | Buffer): void {
         if (data) {
-            this._body += data.toString();
+            this.responseBody += data.toString();
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     public flushHeaders(): void {}
 }
 
@@ -104,11 +107,12 @@ const adaptErrorHandlerToFetch
             // Convert to fetch Response
             const headers: Record<string, string> = {};
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(mockResponse.headers)) {
                 headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
             }
 
-            return new Response(mockResponse._body, {
+            return new Response(mockResponse.responseBody, {
                 headers,
                 status: mockResponse.statusCode,
             });
@@ -120,7 +124,7 @@ const createFetchNegotiatedErrorHandler
             const accept = request.headers.get("accept");
             const chosenType = negotiateContentType(accept);
 
-            let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler || adaptErrorHandlerToFetch(ProblemErrorHandler);
+            let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler ?? adaptErrorHandlerToFetch(ProblemErrorHandler);
 
             // Convert node handlers to fetch handlers
             if (chosenType === "text/html" && defaultHtmlHandler) {
@@ -157,10 +161,15 @@ const createFetchNegotiatedErrorHandler
 
                         break;
                     }
+                    default: {
+                        // Use the default fetchErrorHandler already set above
+                        break;
+                    }
                 }
             }
 
             // Allow consumer overrides via regex
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const { handler, regex } of errorHandlers) {
                 const headerString = accept ?? "";
 
@@ -171,6 +180,7 @@ const createFetchNegotiatedErrorHandler
             }
 
             // Set expose property
+            // eslint-disable-next-line no-param-reassign
             (error as Error & { expose: boolean }).expose = showTrace;
 
             return fetchErrorHandler(error, request);
