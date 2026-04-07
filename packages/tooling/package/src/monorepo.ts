@@ -24,13 +24,15 @@ export interface RootMonorepo<T extends Strategy = Strategy> {
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo> => {
-    const workspaceFilePath = await findUp(["lerna.json", "turbo.json"], {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
+    const workspaceFilePath: string | undefined = await findUp(["lerna.json", "turbo.json"], {
         type: "file",
         ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
-        const lerna = await readJson<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readJson types unresolvable from bundled workspace package
+        const lerna: { packages?: string[]; useWorkspaces?: boolean } = await readJson<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
 
         if (lerna.useWorkspaces || lerna.packages) {
             return {
@@ -40,7 +42,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
         }
     }
 
-    const isTurbo = workspaceFilePath?.endsWith("turbo.json");
+    const isTurbo: boolean | undefined = workspaceFilePath?.endsWith("turbo.json");
 
     try {
         const { packageManager, path } = await findPackageManager(cwd);
@@ -68,8 +70,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
                 };
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Skip this error to show the error message from the next block
         if (!(error instanceof NotFoundError)) {
             throw error;
@@ -90,13 +91,15 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
-    const workspaceFilePath = findUpSync(["lerna.json", "turbo.json"], {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
+    const workspaceFilePath: string | undefined = findUpSync(["lerna.json", "turbo.json"], {
         type: "file",
         ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
-        const lerna = readJsonSync<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readJsonSync types unresolvable from bundled workspace package
+        const lerna: { packages?: string[]; useWorkspaces?: boolean } = readJsonSync<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
 
         if (lerna.useWorkspaces || lerna.packages) {
             return {
@@ -106,7 +109,7 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
         }
     }
 
-    const isTurbo = workspaceFilePath?.endsWith("turbo.json");
+    const isTurbo: boolean | undefined = workspaceFilePath?.endsWith("turbo.json");
 
     try {
         const { packageManager, path } = findPackageManagerSync(cwd);
@@ -134,8 +137,7 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
                 };
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Skip this error to show the error message from the next block
         if (!(error instanceof NotFoundError)) {
             throw error;

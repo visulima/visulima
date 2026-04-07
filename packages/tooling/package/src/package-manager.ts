@@ -5,7 +5,7 @@ import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { dirname, join } from "@visulima/path";
 
-import { parsePackageJson, parsePackageJsonSync } from "./package-json";
+import { parsePackageJsonSync } from "./package-json";
 
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
 
@@ -35,60 +35,9 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     return undefined;
 };
 
-const findPackageManagerOnFile = async (foundFile: string | undefined): Promise<PackageManagerResult> => {
+const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageManagerResult => {
     if (!foundFile) {
-        throw new NotFoundError("Could not find a package manager");
-    }
-
-    if (foundFile.endsWith("package.json")) {
-        const packageJson = await parsePackageJson(foundFile);
-
-        if (packageJson.packageManager) {
-            const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
-            const foundPackageManager = packageManagerNames.find((prefix) => (packageJson.packageManager as string).startsWith(prefix));
-
-            if (foundPackageManager) {
-                return {
-                    packageManager: foundPackageManager,
-                    path: dirname(foundFile),
-                };
-            }
-        }
-    }
-
-    if (foundFile.endsWith("yarn.lock")) {
-        return {
-            packageManager: "yarn",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("package-lock.json") || foundFile.endsWith("npm-shrinkwrap.json")) {
-        return {
-            packageManager: "npm",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("pnpm-lock.yaml")) {
-        return {
-            packageManager: "pnpm",
-            path: dirname(foundFile),
-        };
-    }
-
-    if (foundFile.endsWith("bun.lockb")) {
-        return {
-            packageManager: "bun",
-            path: dirname(foundFile),
-        };
-    }
-
-    throw new NotFoundError("Could not find a package manager");
-};
-
-const findPackageManagerOnFileSync = (foundFile: string | undefined): PackageManagerResult => {
-    if (!foundFile) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
         throw new NotFoundError("Could not find a package manager");
     }
 
@@ -136,6 +85,7 @@ const findPackageManagerOnFileSync = (foundFile: string | undefined): PackageMan
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
     throw new NotFoundError("Could not find a package manager");
 };
 
@@ -148,7 +98,8 @@ const findPackageManagerOnFileSync = (foundFile: string | undefined): PackageMan
  * @throws An `Error` if no lock file is found.
  */
 export const findLockFile = async (cwd?: URL | string): Promise<string> => {
-    const filePath = await findUp(lockFileNames, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
+    const filePath: string | undefined = await findUp(lockFileNames, {
         type: "file",
         ...cwd && { cwd },
     });
@@ -161,7 +112,8 @@ export const findLockFile = async (cwd?: URL | string): Promise<string> => {
 };
 
 export const findLockFileSync = (cwd?: URL | string): string => {
-    const filePath = findUpSync(lockFileNames, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
+    const filePath: string | undefined = findUpSync(lockFileNames, {
         type: "file",
         ...cwd && { cwd },
     });
@@ -191,11 +143,12 @@ export type PackageManagerResult = {
  * @throws An `Error` if no lock file or package.json is found.
  */
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
-    const foundFile = await findUp(packageMangerFindUpMatcher, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
+    const foundFile: string | undefined = await findUp(packageMangerFindUpMatcher, {
         ...cwd && { cwd },
     });
 
-    return findPackageManagerOnFile(foundFile);
+    return resolvePackageManagerFromFile(foundFile);
 };
 
 /**
@@ -210,11 +163,12 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
  */
 
 export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult => {
-    const foundFile = findUpSync(packageMangerFindUpMatcher, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
+    const foundFile: string | undefined = findUpSync(packageMangerFindUpMatcher, {
         ...cwd && { cwd },
     });
 
-    return findPackageManagerOnFileSync(foundFile);
+    return resolvePackageManagerFromFile(foundFile);
 };
 
 /**
@@ -229,17 +183,15 @@ export const getPackageManagerVersion = (name: string): string => execSync(`${na
  * An asynchronous function that detects what package manager executes the process.
  *
  * Supports npm, pnpm, Yarn, cnpm, and bun. And also any other package manager that sets the npm_config_user_agent env variable.
- * @returns A `Promise` that resolves to an object containing the name and version of the package manager,
- * or undefined if the package manager information cannot be determined. The return type of the function
- * is `Promise&lt;{ name: PackageManager | "cnpm"; version: string } | undefined>`.
+ * @returns An object containing the name and version of the package manager,
+ * or undefined if the package manager information cannot be determined.
  */
-export const identifyInitiatingPackageManager = async (): Promise<
+export const identifyInitiatingPackageManager = ():
     | {
         name: PackageManager | "cnpm";
         version: string;
     }
-    | undefined
-> => {
+    | undefined => {
     if (!process.env.npm_config_user_agent) {
         return undefined;
     }
@@ -276,10 +228,8 @@ export const generateMissingPackagesInstallMessage = (
 ): string => {
     const s = missingPackages.length === 1 ? "" : "s";
 
-    if (options.packageManagers === undefined) {
-        // eslint-disable-next-line no-param-reassign
-        options.packageManagers = ["npm", "pnpm", "yarn"];
-    }
+    // eslint-disable-next-line no-param-reassign
+    options.packageManagers ??= ["npm", "pnpm", "yarn"];
 
     if (options.packageManagers.length === 0) {
         throw new Error("No package managers provided, please provide at least one package manager");

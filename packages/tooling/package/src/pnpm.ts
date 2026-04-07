@@ -55,7 +55,8 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
 /** Reads, parses, and resolves catalogs from a pnpm-workspace file found by walking up the directory tree. */
 export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalogs | undefined> => {
     // Find pnpm-workspace.yaml by walking up the directory tree
-    const workspacePath = await findUp("pnpm-workspace.yaml", {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
+    const workspacePath: string | undefined = await findUp("pnpm-workspace.yaml", {
         cwd: dirname(packagePath),
         type: "file",
     });
@@ -64,10 +65,11 @@ export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalog
         return undefined;
     }
 
-    const workspaceData = (await readYaml(workspacePath)) as unknown as Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYaml types unresolvable from bundled workspace package
+    const workspaceData = (await readYaml(workspacePath)) as Record<string, unknown>;
 
     // Check if this package is actually part of the workspace
-    const workspacePackages = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
+    const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
 
     if (!isPackageInWorkspace(workspacePath, packagePath, workspacePackages)) {
         return undefined;
@@ -89,7 +91,8 @@ export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalog
 /** Reads, parses, and resolves catalogs from a pnpm-workspace file found by walking up the directory tree (synchronous). */
 export const readPnpmCatalogsSync = (packagePath: string): PnpmCatalogs | undefined => {
     // Find pnpm-workspace.yaml by walking up the directory tree
-    const workspacePath = findUpSync("pnpm-workspace.yaml", {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
+    const workspacePath: string | undefined = findUpSync("pnpm-workspace.yaml", {
         cwd: dirname(packagePath),
         type: "file",
     });
@@ -98,10 +101,11 @@ export const readPnpmCatalogsSync = (packagePath: string): PnpmCatalogs | undefi
         return undefined;
     }
 
-    const workspaceData = readYamlSync(workspacePath) as unknown as Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYamlSync types unresolvable from bundled workspace package
+    const workspaceData = readYamlSync(workspacePath) as Record<string, unknown>;
 
     // Check if this package is actually part of the workspace
-    const workspacePackages = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
+    const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
 
     if (!isPackageInWorkspace(workspacePath, packagePath, workspacePackages)) {
         return undefined;
@@ -139,6 +143,7 @@ export const resolveCatalogReference = (packageName: string, versionSpec: string
 
 /** Resolves catalog references in a single dependency object. */
 export const resolveDependenciesCatalogReferences = (dependencies: Record<string, string>, catalogs: PnpmCatalogs): void => {
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const [packageName, versionSpec] of Object.entries(dependencies)) {
         if (typeof versionSpec !== "string") {
             continue;
@@ -157,6 +162,7 @@ export const resolveDependenciesCatalogReferences = (dependencies: Record<string
 export const resolveCatalogReferences = (packageJson: JsonObject, catalogs: PnpmCatalogs): void => {
     const dependencyFields = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array -- for-of is more readable; unicorn/no-for-loop conflicts with index-based loops
     for (const field of dependencyFields) {
         if (!packageJson[field] || typeof packageJson[field] !== "object") {
             continue;

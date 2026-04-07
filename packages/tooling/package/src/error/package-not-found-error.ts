@@ -31,10 +31,8 @@ class PackageNotFoundError extends Error {
             }
         }
 
-        if (packageManager === undefined) {
-            // eslint-disable-next-line no-param-reassign
-            packageManager = "npm";
-        }
+        // eslint-disable-next-line no-param-reassign
+        packageManager ??= "npm";
 
         super(`Package '${packageName.join(" ")}' was not found. Please install it using '${packageManager} install ${packageName.join(" ")}'`);
     }
