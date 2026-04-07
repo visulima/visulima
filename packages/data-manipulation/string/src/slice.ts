@@ -127,7 +127,7 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
 
     // eslint-disable-next-line no-cond-assign
     while ((match = RE_ANSI.exec(input)) !== null) {
-        const matchedText = match[0] as string;
+        const matchedText = match[0];
 
         parts.push(input.slice(lastIndex, match.index));
         matches.push(matchedText);
@@ -357,14 +357,12 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
                 if (needsForegroundClose && needsBackgroundClose && input.includes("\u001B[39m") && input.includes("\u001B[49m")) {
                     // Use the original input's order for consistency
                     if (input.indexOf("\u001B[39m") < input.indexOf("\u001B[49m")) {
-                        // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional
-                        closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
+                        // Remove fg/bg closings we've already added (both are always true here)
+                        closingParts.length -= 2;
                         closingParts.push("\u001B[39m", "\u001B[49m");
                     } else if (input.indexOf("\u001B[49m") < input.indexOf("\u001B[39m")) {
-                        // Remove fg/bg closings we've already added
-                        // eslint-disable-next-line sonarjs/no-gratuitous-expressions, sonarjs/no-nested-conditional
-                        closingParts.length -= needsForegroundClose && needsBackgroundClose ? 2 : needsForegroundClose || needsBackgroundClose ? 1 : 0;
+                        // Remove fg/bg closings we've already added (both are always true here)
+                        closingParts.length -= 2;
                         closingParts.push("\u001B[49m", "\u001B[39m");
                     }
                 }
@@ -394,8 +392,8 @@ const processIntoStyledSegments = (input: string, options: SliceOptions): Styled
         segments.push({
             after: closingSequence,
             before: activeStylesString,
-            content: text as string,
-            visibleLength: getStringWidth(text as string, {
+            content: text,
+            visibleLength: getStringWidth(text, {
                 fullWidth: 1,
                 wideWidth: 1,
             }),
@@ -611,7 +609,7 @@ export const slice: (inputString: string, startIndex?: number, endIndex?: number
         if (start === 0 && end === segment.visibleLength) {
             resultParts.push(segment.content);
         } else {
-            const graphemes = [...(config.segmenter as Intl.Segmenter).segment(segment.content)];
+            const graphemes = [...config.segmenter.segment(segment.content)];
 
             resultParts.push(
                 graphemes

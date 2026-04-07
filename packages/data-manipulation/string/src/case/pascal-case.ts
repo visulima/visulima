@@ -43,7 +43,7 @@ const pascalCase = <T extends string = string>(value?: T, options?: CaseOptions)
         return cacheStore.get(cacheKey) as PascalCase<T>;
     }
 
-    const result = joinSegments<PascalCase<T>>(
+    const result = joinSegments(
         splitByCase(value, {
             handleAnsi: options?.handleAnsi,
             handleEmoji: options?.handleEmoji,

@@ -221,14 +221,16 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
         getWidth: getStringWidth,
         // eslint-disable-next-line sonarjs/cognitive-complexity,sonarjs/no-invariant-returns
         onSegment: (segment, stateTracker: AnsiStateTracker) => {
+            const segText = segment.text ?? "";
+
             if (segment.isEscapeSequence) {
-                currentLine += segment.text;
+                currentLine += segText;
             } else {
-                const isSpace = segment.text === " ";
+                const isSpace = segText === " ";
 
                 // Skip zero-width characters
                 if (segment.width === 0) {
-                    currentLine += segment.text;
+                    currentLine += segText;
 
                     return true;
                 }
@@ -251,13 +253,13 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
                         // For trim=false, space gets its own line
 
-                        rows.push(stateTracker.getStartEscapesForAllActiveAttributes() + segment.text);
+                        rows.push(stateTracker.getStartEscapesForAllActiveAttributes() + segText);
 
                         return true;
                     }
                 }
 
-                currentLine += segment.text;
+                currentLine += segText;
                 currentWidth += segment.width;
             }
 
@@ -524,7 +526,7 @@ export const wordWrap = (string: string, options: WordWrapOptions = {}): string 
     }
 
     // Normalize string and clean up zero-width characters
-    let normalizedString = String(string).normalize("NFC").replaceAll("\r\n", "\n");
+    let normalizedString = string.normalize("NFC").replaceAll("\r\n", "\n");
 
     if (removeZeroWidthCharacters) {
         normalizedString = normalizedString.replaceAll(RE_ZERO_WIDTH, "");

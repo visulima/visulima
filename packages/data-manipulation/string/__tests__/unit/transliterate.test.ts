@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import { describe, expect, it } from "vitest";
 
 import transliterate from "../../src/transliterate";

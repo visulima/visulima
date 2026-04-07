@@ -46,7 +46,7 @@ const camelCase = <T extends string = string>(value?: T, options?: CaseOptions):
 
     let firstWord = true;
 
-    const result = joinSegments<CamelCase<T>>(
+    const result = joinSegments(
         splitByCase(value, {
             handleAnsi: options?.handleAnsi,
             handleEmoji: options?.handleEmoji,
@@ -61,9 +61,8 @@ const camelCase = <T extends string = string>(value?: T, options?: CaseOptions):
                 return word;
             }
 
-            // eslint-disable-next-line no-param-reassign
             word = options?.locale?.startsWith("de") ? normalizeGermanEszett(word) : word;
-            // eslint-disable-next-line no-param-reassign
+
             word = options?.locale ? word.toLocaleLowerCase(options.locale) : word.toLowerCase();
 
             if (firstWord) {

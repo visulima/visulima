@@ -6,7 +6,7 @@ import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ESCAPES } from "../constants";
  * @returns The wrapped ANSI hyperlink
  */
 const wrapAnsiHyperlink = (url: string): string => {
-    const escapeChar = ESCAPES.values().next().value;
+    const escapeChar = ESCAPES.values().next().value as string;
 
     return `${escapeChar}${ANSI_ESCAPE_LINK}${url}${ANSI_ESCAPE_BELL}`;
 };

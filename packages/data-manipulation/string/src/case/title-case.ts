@@ -48,7 +48,6 @@ function titleCase<T extends string = string>(value?: T, options?: CaseOptions):
     })
         .map((word: string) => {
             if (options?.locale?.startsWith("de")) {
-                // eslint-disable-next-line no-param-reassign
                 word = normalizeGermanEszett(word);
             }
 

@@ -138,6 +138,6 @@ describe(identifyCase, () => {
     it("should handle null input", () => {
         expect.assertions(1);
 
-        expect(() => identifyCase(null as any)).toThrowError(TypeError);
+        expect(() => identifyCase(null as any)).toThrow(TypeError);
     });
 });

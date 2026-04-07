@@ -1,7 +1,7 @@
 import charmap from "./charmap";
 import { RE_THAI } from "./constants";
 import replaceString from "./replace-string";
-import type { Charmap, Interval, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionReplaceObject, OptionsTransliterate } from "./types";
+import type { Charmap, Interval, IntervalArray, OptionReplaceArray, OptionReplaceCombined, OptionsTransliterate } from "./types";
 import { findStringOccurrences, hasChinese, hasPunctuationOrSpace } from "./utilities";
 import thaiReplacement from "./utils/thai-replacement";
 
@@ -17,9 +17,9 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
 
     const replaceArray: OptionReplaceArray = [];
 
-    for (const key of Object.keys(option as OptionReplaceObject)) {
+    for (const key of Object.keys(option)) {
         if (Object.hasOwn(option, key)) {
-            const value = (option as OptionReplaceObject)[key];
+            const value = option[key];
 
             // Ensure value is a string before pushing
             if (typeof value === "string") {
@@ -48,7 +48,7 @@ const applyThaiRomanization = (input: string): string => {
                 // Find consonant replacement for the captured group
                 const consonantReplace = thaiReplacement.find(([c, , t]) => c === p1 && (!t || t === "c"));
 
-                return consonantReplace && typeof consonantReplace[1] === "string" ? (consonantReplace[1] as string) + replace : p1 + replace;
+                return consonantReplace && typeof consonantReplace[1] === "string" ? consonantReplace[1] + replace : p1 + replace;
             });
         } else {
             output = output.split(search).join(replace);
@@ -112,7 +112,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     let lastCharWasChinese = false;
     let currentIgnoreRangeIndex = 0;
 
-    for (let index = 0; index < input.length; ) {
+    for (let index = 0; index < input.length;) {
         let char: string;
         let charLength = 1;
         let s: string | null | undefined;
@@ -162,7 +162,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
                 const found = Object.hasOwn(currentCharmap, codePointString);
 
                 if (found) {
-                    s = currentCharmap[codePointString as keyof Charmap];
+                    s = currentCharmap[codePointString];
                 } else if (isCurrentCharChinese) {
                     s = char;
                 } else {
@@ -183,9 +183,9 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             const sIsDefinedAndNotEmpty = typeof s === "string" && s.length > 0;
 
             if (
-                lastCharWasChinese && // If the previous character successfully processed was Chinese
-                ((determinedCharWasChinese && sIsDefinedAndNotEmpty) ||
-                    (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)))
+                lastCharWasChinese // If the previous character successfully processed was Chinese
+                && ((determinedCharWasChinese && sIsDefinedAndNotEmpty)
+                    || (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0])))
             ) {
                 // Prev Chinese, Current Chinese: "CN CN" -> Add space before current `s`
                 result += " ";

@@ -37,7 +37,7 @@ const trainCase = <T extends string = string>(value?: T, options?: CaseOptions):
         return cacheStore.get(cacheKey) as TrainCase<T>;
     }
 
-    const result = joinSegments<TrainCase<T>>(
+    const result = joinSegments(
         splitByCase(value, {
             handleAnsi: options?.handleAnsi,
             handleEmoji: options?.handleEmoji,

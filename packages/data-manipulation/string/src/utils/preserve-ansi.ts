@@ -24,6 +24,7 @@ const preserveAnsi = (rawLines: string[]): string => {
     let escapeUrl: string | undefined;
 
     const preString = rawLines.join("\n");
+
     const pre = [...preString];
     let preStringIndex = 0;
 

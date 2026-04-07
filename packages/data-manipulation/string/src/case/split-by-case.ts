@@ -380,8 +380,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         // eslint-disable-next-line no-plusplus
         for (let index = 1; index < width_; index++) {
-            const char = chars[index];
-            const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
+            const char = chars[index] as string;
+            const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             if (isUpperCaseChar === previousIsUpper) {
                 currentSegment += char;
@@ -426,12 +426,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
     // Special handling for Ukrainian and other Cyrillic scripts
     if (
-        locale.startsWith("uk") ||
-        locale.startsWith("ru") ||
-        locale.startsWith("bg") ||
-        locale.startsWith("sr") ||
-        locale.startsWith("mk") ||
-        locale.startsWith("be")
+        locale.startsWith("uk")
+        || locale.startsWith("ru")
+        || locale.startsWith("bg")
+        || locale.startsWith("sr")
+        || locale.startsWith("mk")
+        || locale.startsWith("be")
     ) {
         if (!RE_CYRILLIC.test(s) && !RE_LATIN.test(s)) {
             return [s];
@@ -474,8 +474,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
             // Split on script transitions or case changes within the same script
             if (
-                (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2)) ||
-                (currentType === previousType && !previousIsUpper && isUpperCaseChar)
+                (previousType !== currentType && (previousType === 1 || previousType === 2) && (currentType === 1 || currentType === 2))
+                || (currentType === previousType && !previousIsUpper && isUpperCaseChar)
             ) {
                 result.push(currentSegment);
                 currentSegment = char;
@@ -497,10 +497,10 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // eslint-disable-next-line no-plusplus
         for (let index = 0; index < result.length; index++) {
             if (
-                index < result.length - 1 &&
-                (result[index] as string).length === 1 &&
-                RE_LATIN.test(result[index] as string) &&
-                RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
+                index < result.length - 1
+                && (result[index] as string).length === 1
+                && RE_LATIN.test(result[index] as string)
+                && RE_CYRILLIC.test((result[index + 1] as string)[0] as string)
             ) {
                 finalResult.push((result[index] as string) + (result[index + 1] as string));
                 // Skip the next segment since we merged it by incrementing in the loop
@@ -556,7 +556,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             // eslint-disable-next-line no-plusplus
             for (let index = 1; index < partLength; index++) {
                 const char = part[index] as string;
-                const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
+                const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
                 if (!previousIsUpper && isUpperCaseChar) {
                     result.push(word);
@@ -582,15 +582,15 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         const scriptDetectors: Record<string, (char: string) => boolean> = isJapanese
             ? {
-                  hiragana: (char) => RE_HIRAGANA.test(char),
-                  kanji: (char) => RE_KANJI.test(char),
-                  katakana: (char) => RE_KATAKANA.test(char),
-                  latin: (char) => RE_LATIN.test(char),
-              }
+                hiragana: (char) => RE_HIRAGANA.test(char),
+                kanji: (char) => RE_KANJI.test(char),
+                katakana: (char) => RE_KATAKANA.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            }
             : {
-                  hangul: (char) => RE_HANGUL.test(char),
-                  latin: (char) => RE_LATIN.test(char),
-              };
+                hangul: (char) => RE_HANGUL.test(char),
+                latin: (char) => RE_LATIN.test(char),
+            };
 
         // Pre-compiled Set for Japanese particles - defined once and cached
         const particles = new Set(["が", "で", "と", "に", "の", "は", "へ", "も", "や", "を"]);
@@ -602,12 +602,12 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 false,
                 locale,
                 (previousType, currentType) =>
-                    (previousType === "hiragana" && currentType === "katakana") || // hiragana -> katakana
-                    (previousType === "katakana" && currentType === "hiragana") || // katakana -> hiragana
-                    (previousType === "hiragana" && currentType === "latin") || // hiragana -> latin
-                    (previousType === "katakana" && currentType === "latin") || // katakana -> latin
-                    (previousType === "kanji" && currentType === "latin") || // kanji -> latin
-                    (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji")), // latin -> japanese
+                    (previousType === "hiragana" && currentType === "katakana") // hiragana -> katakana
+                    || (previousType === "katakana" && currentType === "hiragana") // katakana -> hiragana
+                    || (previousType === "hiragana" && currentType === "latin") // hiragana -> latin
+                    || (previousType === "katakana" && currentType === "latin") // katakana -> latin
+                    || (previousType === "kanji" && currentType === "latin") // kanji -> latin
+                    || (previousType === "latin" && (currentType === "hiragana" || currentType === "katakana" || currentType === "kanji")), // latin -> japanese
             );
 
             // Post-process for Japanese particles
@@ -615,7 +615,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
             for (const segment of baseSegments) {
                 if (segment.length === 1 && particles.has(segment) && result.length > 0) {
-                    result[result.length - 1] += segment;
+                    result[result.length - 1] = (result.at(-1) as string) + segment;
                 } else {
                     result.push(segment);
                 }
@@ -631,8 +631,8 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             false,
             locale,
             (previousType, currentType) =>
-                (previousType === "hangul" && currentType === "latin") || // hangul -> latin
-                (previousType === "latin" && currentType === "hangul"), // latin -> hangul
+                (previousType === "hangul" && currentType === "latin") // hangul -> latin
+                || (previousType === "latin" && currentType === "hangul"), // latin -> hangul
         );
     }
 
@@ -650,7 +650,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
         // eslint-disable-next-line no-plusplus
         for (let index = 1; index < width_; index++) {
             const char = chars[index] as string;
-            const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
+            const isUpperCaseChar = char === char.toLocaleUpperCase(locale);
 
             // Special handling for Slovenian characters
             const isSpecialChar = RE_SLOVENIAN_SPECIAL.test(char);
@@ -731,22 +731,22 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     ) {
         // Helper function to check if a character is Indic
         const isIndicChar = (ch: string): boolean =>
-            RE_DEVANAGARI.test(ch) ||
-            RE_BENGALI.test(ch) ||
-            RE_GUJARATI.test(ch) ||
-            RE_GURMUKHI.test(ch) ||
-            RE_KANNADA.test(ch) ||
-            RE_TAMIL.test(ch) ||
-            RE_TELUGU.test(ch) ||
-            RE_MALAYALAM.test(ch) ||
-            RE_SINHALA.test(ch) ||
-            RE_THAI.test(ch) ||
-            RE_LAO.test(ch) ||
-            RE_TIBETAN.test(ch) ||
-            RE_MYANMAR.test(ch) ||
-            RE_ETHIOPIC.test(ch) ||
-            RE_KHMER.test(ch) ||
-            RE_ORIYA.test(ch);
+            RE_DEVANAGARI.test(ch)
+            || RE_BENGALI.test(ch)
+            || RE_GUJARATI.test(ch)
+            || RE_GURMUKHI.test(ch)
+            || RE_KANNADA.test(ch)
+            || RE_TAMIL.test(ch)
+            || RE_TELUGU.test(ch)
+            || RE_MALAYALAM.test(ch)
+            || RE_SINHALA.test(ch)
+            || RE_THAI.test(ch)
+            || RE_LAO.test(ch)
+            || RE_TIBETAN.test(ch)
+            || RE_MYANMAR.test(ch)
+            || RE_ETHIOPIC.test(ch)
+            || RE_KHMER.test(ch)
+            || RE_ORIYA.test(ch);
 
         return handleScriptTransitions(
             s,
@@ -843,6 +843,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
     }
 
     // Handle default case - Latin script with case transitions
+
     const chars = [...s];
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     const width_ = chars.length;
@@ -1160,7 +1161,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
             }
 
             if (token.toUpperCase() === token && !acronymSet.has(token)) {
-                return token.slice(0, 1) + (token as string).slice(1).toLowerCase();
+                return token.slice(0, 1) + token.slice(1).toLowerCase();
             }
 
             return token;
