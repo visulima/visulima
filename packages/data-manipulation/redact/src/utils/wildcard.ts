@@ -1,15 +1,14 @@
 type RollbackString = { index: number; string: string };
 
 /**
- * When a match doesn't continue to the end of the string, this function rolls back to try again with the rest of the string
+ * When a match doesn't continue to the end of the string, this function rolls back to try again with the rest of the string.
  * @param rollbackStrings The list of substrings that appeared prior to the current match
  * @param patternSubstrings The matching list of pattens that need to be matched before the current pattern
  * @returns True if the match was successful, false if it was not
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrings: string[]): boolean => {
-    // eslint-disable-next-line no-plusplus
-    for (let s = 0; s < rollbackStrings.length; ++s) {
+    for (let s = 0; s < rollbackStrings.length; s += 1) {
         let currentString = (rollbackStrings[s] as RollbackString).string; // starting with the rolled back string
         let patternIndex = (rollbackStrings[s] as RollbackString).index;
 
@@ -30,12 +29,10 @@ const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrin
 
             currentString = currentString.slice(currentString.indexOf(patternSubstring) + patternSubstring.length);
 
-            // eslint-disable-next-line no-plusplus
-            patternIndex++;
+            patternIndex += 1;
 
             while (patternSubstrings[patternIndex] === "") {
-                // eslint-disable-next-line no-plusplus
-                patternIndex++;
+                patternIndex += 1;
             }
 
             if (patternIndex >= patternSubstrings.length) {
@@ -54,13 +51,14 @@ const checkRollbackStrings = (rollbackStrings: RollbackString[], patternSubstrin
 
 /**
  * If you put a wildcard at the beginning, for example *Thing then you can match anything or nothing before your string.
+ *
  * So your string could be Best Thing or just Thing and it would match fine.
  * The same is true for the end. Best* would match Best Thing or just Best
  * If you want to match text in the middle of the string, it works the same way.
  * Best*Thing matches both BestThing and Best and crazy Thing.
- * @param input
- * @param pattern
- * @returns
+ * @param input The input string to test
+ * @param pattern The pattern with wildcards
+ * @returns Whether the input matches the pattern
  */
 const wildcard = (
     input: string,
@@ -79,8 +77,7 @@ const wildcard = (
 
     // find pattern beginning
     while (patternSubstrings[patternIndex] === "") {
-        // eslint-disable-next-line no-plusplus
-        patternIndex++;
+        patternIndex += 1;
 
         // if the pattern is just wildcards, it matches
         if (patternIndex === pattern.length) {
@@ -113,12 +110,10 @@ const wildcard = (
 
         currentString = currentString.slice(currentString.indexOf(patternSubstring) + patternSubstring.length);
 
-        // eslint-disable-next-line no-plusplus
-        patternIndex++;
+        patternIndex += 1;
 
         while (patternSubstrings[patternIndex] === "") {
-            // eslint-disable-next-line no-plusplus
-            patternIndex++;
+            patternIndex += 1;
         }
     }
 

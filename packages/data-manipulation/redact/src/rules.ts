@@ -6,6 +6,7 @@
  */
 import type { Rules } from "./types";
 
+/* eslint-disable no-secrets/no-secrets -- regex patterns for date/time matching intentionally have high entropy */
 const standardModifierRules: Rules = [
     { deep: true, key: "apikey", pattern: String.raw`\b[a-zA-Z0-9]{32}\b` },
     { deep: true, key: "awsid", pattern: String.raw`\bAKIA[0-9A-Z]{16}\b` },
@@ -96,5 +97,6 @@ const standardModifierRules: Rules = [
     { deep: true, key: "pass" },
     { deep: true, key: "secret" },
 ];
+/* eslint-enable no-secrets/no-secrets */
 
 export default standardModifierRules;
