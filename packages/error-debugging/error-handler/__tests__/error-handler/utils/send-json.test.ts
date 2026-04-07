@@ -1,7 +1,7 @@
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import { sendJson } from "../../../src/error-handler/utils/send-json";
+import sendJson from "../../../src/error-handler/utils/send-json";
 
 describe(sendJson, () => {
     it("should send JSON with default content type", () => {

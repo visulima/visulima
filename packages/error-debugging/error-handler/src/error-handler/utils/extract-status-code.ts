@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 
-export const extractStatusCode = (error: unknown, fallback: number = StatusCodes.INTERNAL_SERVER_ERROR): number => {
+const extractStatusCode = (error: unknown, fallback: number = StatusCodes.INTERNAL_SERVER_ERROR): number => {
     if (!error) {
         return fallback;
     }
@@ -13,3 +13,5 @@ export const extractStatusCode = (error: unknown, fallback: number = StatusCodes
 
     return fallback;
 };
+
+export default extractStatusCode;

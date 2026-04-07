@@ -11,8 +11,8 @@ import type { ErrorHandler, ErrorHandlers } from "./types";
 import { xmlErrorHandler as XmlErrorHandler } from "./xml-error-handler";
 
 const createNegotiatedErrorHandler
-    = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean, defaultHtmlHandler?: ErrorHandler) =>
-        async (error: Error, request: Request, response: Response): Promise<void> => {
+    = (errorHandlers: ErrorHandlers, showTrace: boolean, defaultHtmlHandler?: ErrorHandler) =>
+        async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
             const accept = new Accepts(request);
 
             // Server preference order
@@ -28,7 +28,7 @@ const createNegotiatedErrorHandler
                 "text/xml",
             ]) as string | false;
 
-            let errorHandler: ErrorHandler = defaultHtmlHandler || ProblemErrorHandler;
+            let errorHandler: ErrorHandler = defaultHtmlHandler ?? ProblemErrorHandler;
 
             if (chosenType === "text/html" && defaultHtmlHandler) {
                 errorHandler = defaultHtmlHandler;
@@ -66,11 +66,15 @@ const createNegotiatedErrorHandler
 
                         break;
                     }
-                // No default
+                    default: {
+                        // Use the default errorHandler already set above
+                        break;
+                    }
                 }
             }
 
             // Allow consumer overrides via regex
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const { handler, regex } of errorHandlers) {
                 const headerValue = request.headers.accept ?? "";
                 const headerString = Array.isArray(headerValue) ? headerValue.join(",") : headerValue;
@@ -81,6 +85,7 @@ const createNegotiatedErrorHandler
                 }
             }
 
+            // eslint-disable-next-line no-param-reassign
             (error as Error & { expose: boolean }).expose = showTrace;
 
             await errorHandler(error, request, response);

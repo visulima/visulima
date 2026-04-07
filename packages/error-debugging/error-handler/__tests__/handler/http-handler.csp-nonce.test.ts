@@ -10,7 +10,7 @@ describe("httpHandler CSP nonce option", () => {
 
         const nonce = "nonce-abc123";
         const error = new httpErrors.BadRequest("With Nonce");
-        const handler = await httpHandler(error, { cspNonce: nonce });
+        const handler = httpHandler(error, { cspNonce: nonce });
 
         const { req, res } = createMocks({
             headers: { accept: "text/html" },

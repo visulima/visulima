@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { extractStatusCode } from "../../../src/error-handler/utils/extract-status-code";
+import extractStatusCode from "../../../src/error-handler/utils/extract-status-code";
 
 describe(extractStatusCode, () => {
     it("should extract status code from error.statusCode", () => {

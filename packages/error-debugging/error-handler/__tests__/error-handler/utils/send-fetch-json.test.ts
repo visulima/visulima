@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sendFetchJson } from "../../../src/error-handler/utils/send-fetch-json";
+import sendFetchJson from "../../../src/error-handler/utils/send-fetch-json";
 
 describe(sendFetchJson, () => {
     it("should create Response with JSON body and default content type", () => {

@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { getReasonPhrase } from "http-status-codes";
 
 import type { ErrorHandler } from "./types";
-import { addStatusCodeToResponse } from "./utils/add-status-code-to-response";
+import addStatusCodeToResponse from "./utils/add-status-code-to-response";
 
 export type HtmlErrorHandlerOptions = {
     // CSP nonce for inline styles and scripts

@@ -5,7 +5,7 @@ import type { HtmlErrorHandlerOptions } from "../../error-handler/html-error-han
 import { htmlErrorHandler } from "../../error-handler/html-error-handler";
 import type { ErrorHandlers } from "../../error-handler/types";
 
-const nodeHandler = async (
+const nodeHandler = (
     error: Error,
     options: HtmlErrorHandlerOptions & {
         extraHandlers?: ErrorHandlers;
@@ -13,13 +13,13 @@ const nodeHandler = async (
         onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
         showTrace?: boolean;
     } = {},
-): Promise<(request: IncomingMessage, response: ServerResponse) => Promise<void>> => {
+): (request: IncomingMessage, response: ServerResponse) => Promise<void> => {
     const defaultHtml = htmlErrorHandler(options);
 
     const negotiated = createNegotiatedErrorHandler(options.extraHandlers ?? [], options.showTrace ?? true, defaultHtml);
 
     return async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
-        if (options?.onError) {
+        if (options.onError) {
             await options.onError(error, request, response);
         }
 

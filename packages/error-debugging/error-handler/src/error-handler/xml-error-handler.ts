@@ -4,7 +4,7 @@ import { getReasonPhrase } from "http-status-codes";
 import { toXML } from "jstoxml";
 
 import type { ErrorHandler } from "./types";
-import { addStatusCodeToResponse } from "./utils/add-status-code-to-response";
+import addStatusCodeToResponse from "./utils/add-status-code-to-response";
 import setErrorHeaders from "./utils/set-error-headers";
 
 export type XmlErrorBody = Record<string, unknown> | unknown[];

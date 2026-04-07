@@ -2,7 +2,7 @@ import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
-import { addStatusCodeToResponse } from "../../../src/error-handler/utils/add-status-code-to-response";
+import addStatusCodeToResponse from "../../../src/error-handler/utils/add-status-code-to-response";
 
 describe(addStatusCodeToResponse, () => {
     it("should set status code from error.statusCode", () => {
