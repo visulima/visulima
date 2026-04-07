@@ -1,6 +1,6 @@
 import { Grid } from "./grid";
 import { DEFAULT_BORDER } from "./style";
-import type { Content, GridItem, GridOptions, TableCell, TableItem, TableOptions } from "./types";
+import type { Content, GridItem, GridOptions, TableCell, TableOptions } from "./types";
 import computeRowLogicalWidth from "./utils/compute-row-logical-width";
 
 /**
@@ -161,13 +161,13 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            const widthArray =
-                this.#options.columnWidths.length >= numberColumns
+            const widthArray
+                = this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
                     : [
-                          ...this.#options.columnWidths,
-                          ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
-                      ];
+                        ...this.#options.columnWidths,
+                        ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
+                    ];
 
             // Only treat as fully fixed if all entries are defined numbers
             const allDefined = widthArray.every((w) => typeof w === "number" && Number.isFinite(w));
@@ -203,7 +203,7 @@ export class Table {
 
                     if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
                         // eslint-disable-next-line unused-imports/no-unused-vars
-                        const { content, href, ...rest } = cellInput as TableItem;
+                        const { content, href, ...rest } = cellInput;
 
                         cellOptions = rest;
                     }
@@ -238,9 +238,9 @@ export class Table {
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
             truncate:
-                this.#options.truncate ||
-                (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number")) ||
-                (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
+                this.#options.truncate
+                || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
+                || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
             truncateOverflow: this.#options.truncateOverflow ?? true,
             wordWrap: this.#options.wordWrap ?? false,
         } satisfies GridOptions;
@@ -274,9 +274,8 @@ export class Table {
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
-                    const { content, href, ...rest } = cellInput as TableItem;
+                    const { content, href, ...rest } = cellInput;
 
-                    // eslint-disable-next-line sonarjs/updated-loop-counter
                     cellInput = href ? `\u001B]8;;${href}\u001B\\${String(content)}\u001B]8;;\u001B\\` : content;
 
                     cellOptions = rest;
@@ -297,8 +296,8 @@ export class Table {
                 }
 
                 // Replace real tab characters with spaces if needed
-                const processedContent =
-                    this.#options.transformTabToSpace && typeof cellInput === "string"
+                const processedContent
+                    = this.#options.transformTabToSpace && typeof cellInput === "string"
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 
