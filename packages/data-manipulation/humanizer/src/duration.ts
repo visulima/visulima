@@ -281,11 +281,7 @@ const formatPieces = (pieces: DurationPiece[], options: InternalOptions, ms: num
         }
     }
 
-    const renderedPieces: string[] = [];
-
-    for (const piece of pieces) {
-        renderedPieces.push(renderPiece(piece, language, options));
-    }
+    const renderedPieces: string[] = pieces.map((piece) => renderPiece(piece, language, options));
 
     let result: string;
 

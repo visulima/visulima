@@ -462,7 +462,6 @@ describe(parseDuration, () => {
         expect(parseDuration("abc")).toBeUndefined();
         expect(parseDuration("100 units")).toBeUndefined(); // 'units' is not a valid unit
         expect(parseDuration("1h 20m blah")).toBeUndefined(); // Extra non-numeric characters after valid parsing
-        // eslint-disable-next-line unicorn/no-null
         expect(parseDuration(null as unknown)).toBeUndefined(); // Use unknown instead of any
         expect(parseDuration(undefined as unknown)).toBeUndefined(); // Use unknown instead of any
         expect(parseDuration(123 as unknown)).toBeUndefined(); // Use unknown instead of any

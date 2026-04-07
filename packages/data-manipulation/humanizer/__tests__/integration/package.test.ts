@@ -16,7 +16,7 @@ describe("usage `@visulima/humanizer` npm package", () => {
         expect(received).toMatchSnapshot();
     });
 
-    it(`should work as ESM package`, async () => {
+    it(`should work as ESM package`, () => {
         expect.assertions(1);
 
         const filename = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/mjs/test.mjs");

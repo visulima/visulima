@@ -1,3 +1,4 @@
+import type { DurationLanguage } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 import getSlavicForm from "./util/duration/get-slavic-form";
 
