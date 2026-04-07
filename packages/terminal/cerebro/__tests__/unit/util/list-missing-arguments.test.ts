@@ -11,6 +11,7 @@ describe("util/list-missing-arguments", () => {
         const commandLineConfig: OptionDefinition<string>[] = [{ name: "test", required: true, type: String }];
         const parsedArguments: CommandLineOptions = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const result = listMissingArguments(commandLineConfig, parsedArguments);
 
         expect(result).toStrictEqual([{ name: "test", required: true, type: String }]);
@@ -24,6 +25,7 @@ describe("util/list-missing-arguments", () => {
             test: "value",
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const result = listMissingArguments(commandLineConfig, parsedArguments);
 
         expect(result).toStrictEqual([]);
@@ -35,6 +37,7 @@ describe("util/list-missing-arguments", () => {
         const commandLineConfig: OptionDefinition<boolean>[] = [{ name: "test", required: true, type: Boolean }];
         const parsedArguments: CommandLineOptions = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const result = listMissingArguments(commandLineConfig, parsedArguments);
 
         expect(result).toStrictEqual([]);

@@ -13,12 +13,12 @@ class OptionListSection extends BaseSection {
 
         let definitions = data.optionList ?? [];
 
-        const hide = Array.isArray(data.hide) ? data.hide : [data.hide].filter(Boolean);
-        const groups = Array.isArray(data.group) ? data.group : [data.group].filter(Boolean);
+        const hide: string[] = Array.isArray(data.hide) ? data.hide : [data.hide].filter((item): item is string => typeof item === "string");
+        const groups: string[] = Array.isArray(data.group) ? data.group : [data.group].filter((item): item is string => typeof item === "string");
 
         /* filter out hidden definitions */
         if (hide.length > 0) {
-            definitions = definitions.filter((definition) => !hide.includes(definition.name));
+            definitions = definitions.filter((definition) => !hide.includes((definition as IOptionDefinition<unknown>).name));
         }
 
         if (data.header) {
@@ -27,8 +27,10 @@ class OptionListSection extends BaseSection {
 
         if (groups.length > 0) {
             definitions = definitions.filter((definition) => {
-                const noGroupMatch = groups.includes("_none") && !definition.group;
-                const groupMatch = this.intersect(Array.isArray(definition.group) ? definition.group : [definition.group], groups);
+                const typedDefinition = definition as IOptionDefinition<unknown>;
+                const noGroupMatch = groups.includes("_none") && !typedDefinition.group;
+                const definitionGroup = typedDefinition.group;
+                const groupMatch = this.intersect(Array.isArray(definitionGroup) ? definitionGroup : [definitionGroup], groups);
 
                 return noGroupMatch || groupMatch ? definition : undefined;
             });
@@ -48,9 +50,11 @@ class OptionListSection extends BaseSection {
             ...data.tableOptions,
         });
 
-        definitions.forEach((definition) =>
-            table.addRow([this.getOptionNames(definition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(definition.description)]),
-        );
+        definitions.forEach((definition) => {
+            const typedDefinition = definition as ArgumentDefinition | IOptionDefinition<unknown>;
+
+            table.addRow([this.getOptionNames(typedDefinition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(typedDefinition.description)]);
+        });
 
         this.add(table.toString());
 

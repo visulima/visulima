@@ -19,7 +19,7 @@ const commandLineCommands = (commands: (string | null)[], argv: string[]): { arg
     const command = (argv[0] && isOption(argv[0])) || argv.length === 0 ? null : argv.shift() ?? null;
 
     if (!commands.includes(command)) {
-        const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: ${command}`);
+        const error: Error & { command?: string | null } = new Error(`Command not recognised: ${String(command)}`);
 
         error.command = command;
         error.name = "INVALID_COMMAND";

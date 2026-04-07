@@ -25,9 +25,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
     const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
         const group = command.group ?? EMPTY_GROUP_KEY;
 
-        if (!accumulator[group]) {
-            accumulator[group] = [];
-        }
+        accumulator[group] ??= [];
 
         accumulator[group].push(command);
 
@@ -59,7 +57,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
             return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
         });
 
-    ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(
         commandLineUsage(
             [
                 {
@@ -188,7 +186,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(commandLineUsage(usageGroups));
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(commandLineUsage(usageGroups));
 };
 
 class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionDefinition<string>, TLogger> {
@@ -214,7 +212,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
         const { footer, header } = runtime.getCommandSection();
 
         if (header) {
-            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(header));
+            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(templateFormat(header));
         }
 
         if (commandName === "help") {
@@ -222,6 +220,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
                 logger,
                 runtime as unknown as ICli<Console>,
                 this.commands as unknown as Map<string, ICommand>,
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- options may be undefined at runtime
                 typeof options?.group === "string" ? options.group : undefined,
             );
         } else {
@@ -229,7 +228,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
         }
 
         if (footer) {
-            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)(templateFormat(footer));
+            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(templateFormat(footer));
         }
     }
 }

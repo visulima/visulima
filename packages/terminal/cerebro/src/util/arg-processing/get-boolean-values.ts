@@ -3,8 +3,8 @@ import getParameterOption from "./get-parameter-option";
 import isBoolean from "./option-is-boolean";
 
 type PartialAndLastOption<T> = {
-    lastName?: string | undefined;
-    lastOption?: PossibleOptionDefinition<T> | undefined;
+    lastName?: string;
+    lastOption?: PossibleOptionDefinition<T>;
     partial: Partial<T>;
 };
 

@@ -62,14 +62,14 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     const { _all, positionals } = parsedArgs;
 
     const hasBooleanValues = Object.keys(booleanValues).length > 0;
-    const mergedAll = hasBooleanValues ? { ..._all, ...booleanValues } : _all;
+    const mergedAll: Record<string, unknown> = hasBooleanValues ? { ...(_all as Record<string, unknown>), ...booleanValues } : (_all as Record<string, unknown>);
 
     if (POSITIONALS_KEY in mergedAll) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete mergedAll[POSITIONALS_KEY];
     }
 
-    toolbox.argument = positionals?.[POSITIONALS_KEY] ?? [];
+    toolbox.argument = (positionals as Record<string, unknown> | undefined)?.[POSITIONALS_KEY] ?? [];
 
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 
@@ -101,7 +101,7 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>, TLogger
     const commandOptions = command.options ?? [];
     const hasCommandOptions = commandOptions.length > 0;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
     let arguments_ = hasCommandOptions ? mergeArguments([...commandOptions, ...defaultOptions]) : mergeArguments(defaultOptions);
 
     if (arguments_.length > 0) {
@@ -116,12 +116,12 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>, TLogger
         arguments_ = [
             {
                 defaultOption: true,
-                description: command.argument?.description,
+                description: command.argument.description,
                 group: "positionals",
                 multiple: true,
                 name: POSITIONALS_KEY,
-                type: command.argument?.type,
-                typeLabel: command.argument?.typeLabel,
+                type: command.argument.type,
+                typeLabel: command.argument.typeLabel,
             },
             ...arguments_,
         ];
@@ -162,4 +162,4 @@ export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogg
     command: ICommand<OD, TLogger>,
     toolbox: IToolbox<TLogger>,
     _commandArgs: CommandLineOptions,
-): Promise<unknown> => { await command.execute(toolbox); };
+): Promise<unknown> => command.execute(toolbox);

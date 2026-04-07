@@ -23,7 +23,7 @@ export interface Content {
 export interface OptionList<O extends OptionDefinition<any> = any> {
     /** If specified, only options from this particular group will be printed.  */
     group?: string[] | string;
-    header?: string | undefined;
+    header?: string;
     /** The names of one of more option definitions to hide from the option list.  */
     hide?: string[] | string;
     /** If specified, the -- prefix will be omitted from the option name. */

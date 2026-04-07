@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { Content as IContent } from "../../../../../src/types/command-line-usage";
 import ContentSection from "../../../../../src/util/command-line-usage/section/content-section";
 
+const CONTENT_ARRAY_RE = /one\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+two/;
+const CONTENT_NESTED_ARRAY_RE = /one\s+two\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+one\s+two/;
+
 const isWindows = process.platform === "win32";
 
 describe("line-usage/content-section", () => {
@@ -24,7 +27,7 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections as IContent).toString();
 
-        expect(/one\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+two/.test(result)).toBe(true);
+        expect(CONTENT_ARRAY_RE.test(result)).toBe(true);
     });
 
     it("should render content: array of string array", () => {
@@ -39,7 +42,7 @@ describe("line-usage/content-section", () => {
 
         const result = new ContentSection(sections as IContent).toString();
 
-        expect(/one\s+two\s[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+one\s+two/.test(result)).toBe(true);
+        expect(CONTENT_NESTED_ARRAY_RE.test(result)).toBe(true);
     });
 
     it("should render content: { options: object, data: string[][]|string[] }", () => {

@@ -28,10 +28,10 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T>
         conflicts?: string[] | string;
 
         /** An initial value for the option. */
-        defaultValue?: T | undefined;
+        defaultValue?: T;
 
         /** A string describing the option. */
-        description?: string | undefined;
+        description?: string;
 
         /** Option is hidden from help */
         hidden?: boolean;
@@ -46,10 +46,10 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T>
          * A setter function (you receive the output from this) enabling you to be specific about the type and value received. Typical values
          * are `String`, `Number` and `Boolean` but you can use a custom function.
          */
-        type?: TypeConstructor<T> | undefined;
+        type?: TypeConstructor<T>;
 
         /** A string to replace the default type string (e.g. &lt;string>). It's often more useful to set a more descriptive type label, like &lt;ms>, &lt;files>, &lt;command>, etc.. */
-        typeLabel?: string | undefined;
+        typeLabel?: string;
     };
 
 export type PossibleOptionDefinition<OD>
@@ -70,10 +70,10 @@ export type ArgumentDefinition<T = unknown> = Omit<OptionDefinition<T>, "multipl
  */
 export interface EnvDefinition<T = string> {
     /** Default value if the environment variable is not set */
-    defaultValue?: T | undefined;
+    defaultValue?: T;
 
     /** A description of what the environment variable does */
-    description?: string | undefined;
+    description?: string;
 
     /** Environment variable is hidden from help */
     hidden?: boolean;
@@ -86,10 +86,10 @@ export interface EnvDefinition<T = string> {
      * Typical values are `String`, `Number`, `Boolean` or custom functions.
      * The function receives `string | undefined` and should return the transformed value.
      */
-    type?: EnvTypeConstructor<T> | undefined;
+    type?: EnvTypeConstructor<T>;
 
     /** A string to replace the default type string (e.g. &lt;string>). Useful for more descriptive type labels. */
-    typeLabel?: string | undefined;
+    typeLabel?: string;
 }
 
 export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition;

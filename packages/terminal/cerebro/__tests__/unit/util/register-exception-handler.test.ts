@@ -67,6 +67,7 @@ describe("register-exception-handler", () => {
 
         const cleanup = registerExceptionHandler(mockLogger as unknown as Console);
         const reason = "String rejection";
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- intentionally testing non-Error rejection
         const promise = Promise.reject(reason);
 
         // Catch the promise rejection to prevent unhandled rejection error

@@ -93,7 +93,7 @@ describe("security", () => {
         it("should throw Error for too many arguments", () => {
             expect.assertions(2);
 
-            const manyArgs = Array.from({ length: 101 }, (_, i) => `arg${i}`);
+            const manyArgs = Array.from({ length: 101 }, (_, i) => `arg${String(i)}`);
 
             expect(() => sanitizeArguments(manyArgs)).toThrow(Error);
             expect(() => sanitizeArguments(manyArgs)).toThrow("Too many arguments");

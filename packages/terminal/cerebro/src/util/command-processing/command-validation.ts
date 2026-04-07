@@ -16,7 +16,9 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger ex
 ): void => {
     const errors: string[] = [];
 
+    // eslint-disable-next-line no-underscore-dangle
     if (commandArguments._unknown) {
+        // eslint-disable-next-line no-underscore-dangle
         commandArguments._unknown.forEach((unknownOption) => {
             const isOption = unknownOption.startsWith("--");
 
@@ -31,7 +33,7 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger ex
                 if (foundAlternatives.length > 0) {
                     const [first, ...rest] = foundAlternatives.map((alternative) => `--${alternative}`);
 
-                    error += rest.length > 0 ? `, did you mean ${first} or ${rest.join(", ")}?` : `, did you mean ${first}?`;
+                    error += rest.length > 0 ? `, did you mean ${first ?? ""} or ${rest.join(", ")}?` : `, did you mean ${first ?? ""}?`;
                 }
             }
 
@@ -53,8 +55,10 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>, TL
     commandArguments: CommandLineOptions,
     command: ICommand<OD, TLogger>,
 ): void => {
-    const missingOptions = command.__requiredOptions__
-        ? listMissingArguments(command.__requiredOptions__, commandArguments, true)
+    // eslint-disable-next-line no-underscore-dangle
+    const requiredOptions = command.__requiredOptions__;
+    const missingOptions = requiredOptions
+        ? listMissingArguments(requiredOptions, commandArguments, true)
         : listMissingArguments(arguments_, commandArguments, false);
 
     if (missingOptions.length > 0) {
@@ -64,6 +68,7 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>, TL
         );
     }
 
+    // eslint-disable-next-line no-underscore-dangle
     if (commandArguments._unknown && commandArguments._unknown.length > 0 && !command.argument) {
         validateUnknownOptions(commandArguments, command);
     }
@@ -78,6 +83,7 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>,
     commandArguments: IToolbox["options"],
     command: ICommand<OD, TLogger>,
 ): void => {
+    // eslint-disable-next-line no-underscore-dangle
     const conflicts = command.__conflictingOptions__ ?? arguments_.filter((argument) => argument.conflicts !== undefined);
 
     if (conflicts.length > 0) {

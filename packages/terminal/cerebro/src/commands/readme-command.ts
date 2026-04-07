@@ -12,7 +12,7 @@ import commandLineUsage from "../util/command-line-usage";
 import { getArch, getCwd, getPlatform, getVersions } from "../util/general/runtime-process";
 
 const slugger = new GithubSlugger();
-const slugify = slugger.slug;
+const slugify = (text: string) => slugger.slug(text);
 
 interface ReadmeOptions {
     aliases?: boolean;
@@ -51,7 +51,7 @@ const formatCommandUsage = (command: ICommand, cliName: string): string => {
     const commandId = fullPath.join(" ");
 
     if (command.argument) {
-        const argumentName = command.argument.name?.toUpperCase() ?? "ARG";
+        const argumentName = command.argument.name.toUpperCase();
         const argumentString = command.argument.required ? argumentName : `[${argumentName}]`;
 
         return `${cliName} ${commandId} ${argumentString}`;
@@ -106,8 +106,7 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
         usageGroups.push({
             header: " Command Options ",
             optionList: command.options.filter(
-                (option): option is OptionDefinition<unknown> =>
-                    typeof option === "object" && option !== null && (!("hidden" in option) || !(option as OptionDefinition<unknown>).hidden),
+                (option): option is OptionDefinition<unknown> => !option.hidden,
             ),
         });
     }
@@ -170,14 +169,12 @@ USAGE
 /**
  * Generates commands section for README.
  */
-const generateCommands = async (commands: ICommand[], cliName: string, _options: ReadmeOptions): Promise<string> => {
-    const commandList = await Promise.all(
-        commands.map(async (command) => {
-            const usage = formatCommandUsage(command, cliName);
+const generateCommands = (commands: ICommand[], cliName: string, _options: ReadmeOptions): string => {
+    const commandList = commands.map((command) => {
+        const usage = formatCommandUsage(command, cliName);
 
-            return `* [\`${usage}\`](#${await slugify(usage)})`;
-        }),
-    );
+        return `* [\`${usage}\`](#${slugify(usage)})`;
+    });
 
     const commandDocumentation = commands.map((command) => renderCommand(command, cliName)).map((s) => `${s.trim()}\n`);
 
@@ -234,7 +231,7 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
                 "",
                 `Commands in the ${group} group.`,
                 "",
-                await generateCommands(groupCommands, cliName, options),
+                generateCommands(groupCommands, cliName, options),
             ]
                 .join("\n")
                 .trim()}\n`;
@@ -263,15 +260,13 @@ const normalizeLineEndings = (text: string): string => text.replaceAll("\r\n", "
 /**
  * Generates table of contents from README content.
  */
-const generateTableOfContents = async (readme: string): Promise<string> => {
+const generateTableOfContents = (readme: string): string => {
     const normalizedReadme = normalizeLineEndings(readme);
-    const toc = await Promise.all(
-        normalizedReadme
-            .split("\n")
-            .filter((line) => line.startsWith("# "))
-            .map((line) => line.trim().slice(2))
-            .map(async (line) => `* [${line}](#${await slugify(line)})`),
-    );
+    const toc = normalizedReadme
+        .split("\n")
+        .filter((line) => line.startsWith("# "))
+        .map((line) => line.trim().slice(2))
+        .map((line) => `* [${line}](#${slugify(line)})`);
 
     return toc.join("\n");
 };
@@ -313,14 +308,14 @@ const readmeCommand: ICommand = {
         const nodeVersion = versions.node ?? "unknown";
 
         const readmeOptions: ReadmeOptions = {
-            aliases: options?.aliases as boolean | undefined,
-            dryRun: options?.dryRun as boolean | undefined,
-            multi: options?.multi as boolean | undefined,
-            nestedTopicsDepth: options?.nestedTopicsDepth as number | undefined,
-            outputDir: (options?.outputDir as string | undefined) ?? "docs",
-            readmePath: (options?.readmePath as string | undefined) ?? "README.md",
-            repositoryPrefix: options?.repositoryPrefix as string | undefined,
-            version: (options?.version as string | undefined) ?? packageVersion ?? undefined,
+            aliases: options.aliases as boolean | undefined,
+            dryRun: options.dryRun as boolean | undefined,
+            multi: options.multi as boolean | undefined,
+            nestedTopicsDepth: options.nestedTopicsDepth as number | undefined,
+            outputDir: (options.outputDir as string | undefined) ?? "docs",
+            readmePath: (options.readmePath as string | undefined) ?? "README.md",
+            repositoryPrefix: options.repositoryPrefix as string | undefined,
+            version: (options.version as string | undefined) ?? packageVersion ?? undefined,
         };
 
         const commandsMap = runtime.getCommands();
@@ -346,7 +341,7 @@ const readmeCommand: ICommand = {
             return path;
         });
 
-        logger.debug(`Processing ${uniqueCommands.length} commands for README generation`);
+        logger.debug(`Processing ${String(uniqueCommands.length)} commands for README generation`);
 
         // Read existing README or create template
         let readme: string;
@@ -372,9 +367,9 @@ const readmeCommand: ICommand = {
             "commands",
             readmeOptions.multi
                 ? await generateMultiCommands(uniqueCommands, outputDirectory, cliName, readmeOptions)
-                : await generateCommands(uniqueCommands, cliName, readmeOptions),
+                : generateCommands(uniqueCommands, cliName, readmeOptions),
         );
-        readme = replaceTag(readme, "toc", await generateTableOfContents(readme));
+        readme = replaceTag(readme, "toc", generateTableOfContents(readme));
         readme = `${readme.trimEnd()}\n`;
 
         // Write README

@@ -5,6 +5,8 @@ import CerebroError from "../../errors/cerebro-error";
  */
 const MAX_NAME_LENGTH = 100;
 
+const NAME_PATTERN = /^[a-z][\w-]*$/i;
+
 /**
  * Validates that a string is not empty or whitespace-only.
  */
@@ -57,7 +59,7 @@ export const validateCommandName = (name: string): string => {
 
     // Prevent excessively long names (DoS protection)
     if (trimmedName.length > MAX_NAME_LENGTH) {
-        throw new CerebroError(`Command name is too long (maximum ${MAX_NAME_LENGTH} characters)`, "INVALID_COMMAND_NAME", {
+        throw new CerebroError(`Command name is too long (maximum ${String(MAX_NAME_LENGTH)} characters)`, "INVALID_COMMAND_NAME", {
             commandName: trimmedName,
             length: trimmedName.length,
         });
@@ -75,7 +77,7 @@ export const validateCommandName = (name: string): string => {
         throw new CerebroError(`Command name "${trimmedName}" contains invalid characters`, "INVALID_COMMAND_NAME", { commandName: trimmedName });
     }
 
-    if (!/^[a-z][\w-]*$/i.test(trimmedName)) {
+    if (!NAME_PATTERN.test(trimmedName)) {
         throw new CerebroError(
             `Command name "${trimmedName}" must start with a letter and contain only letters, numbers, hyphens, and underscores`,
             "INVALID_COMMAND_NAME",
@@ -94,7 +96,7 @@ export const validatePluginName = (name: string): string => {
 
     // Prevent excessively long names (DoS protection)
     if (trimmedName.length > MAX_NAME_LENGTH) {
-        throw new CerebroError(`Plugin name is too long (maximum ${MAX_NAME_LENGTH} characters)`, "INVALID_PLUGIN_NAME", {
+        throw new CerebroError(`Plugin name is too long (maximum ${String(MAX_NAME_LENGTH)} characters)`, "INVALID_PLUGIN_NAME", {
             length: trimmedName.length,
             pluginName: trimmedName,
         });
@@ -112,7 +114,7 @@ export const validatePluginName = (name: string): string => {
         throw new CerebroError(`Plugin name "${trimmedName}" contains invalid characters`, "INVALID_PLUGIN_NAME", { pluginName: trimmedName });
     }
 
-    if (!/^[a-z][\w-]*$/i.test(trimmedName)) {
+    if (!NAME_PATTERN.test(trimmedName)) {
         throw new CerebroError(
             `Plugin name "${trimmedName}" must start with a letter and contain only letters, numbers, hyphens, and underscores`,
             "INVALID_PLUGIN_NAME",

@@ -14,7 +14,7 @@ const getParameterOption = <OD extends OptionDefinition<unknown>>(
 } => {
     const regExpResult = argumentNameRegExp.exec(argument);
 
-    if (regExpResult === undefined || regExpResult === null) {
+    if (regExpResult === null) {
         return {};
     }
 

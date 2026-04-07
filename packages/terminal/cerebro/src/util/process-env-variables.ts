@@ -59,11 +59,14 @@ const transformEnvValue = (envDefinition: EnvDefinition<boolean> | EnvDefinition
 /**
  * Converts an environment variable name to camelCase.
  */
+const UNDERSCORE_CHAR_PATTERN = /_./g;
+const LEADING_UPPERCASE_PATTERN = /^[A-Z]/;
+
 const toCamelCase = (name: string): string =>
     name
         .toLowerCase()
-        .replaceAll(/_./g, (match) => match[1]?.toUpperCase() ?? match)
-        .replace(/^[A-Z]/, (char) => char.toLowerCase());
+        .replaceAll(UNDERSCORE_CHAR_PATTERN, (match) => match[1]?.toUpperCase() ?? match)
+        .replace(LEADING_UPPERCASE_PATTERN, (char) => char.toLowerCase());
 
 /**
  * Processes environment variables from a command definition.

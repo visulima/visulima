@@ -103,16 +103,16 @@ const tabInstance = tab as TabInstance;
  * @param cmd The command instance
  * @param options Command options to register
  */
-const registerCommandOptions = <O extends OptionDefinition<unknown>>(
+const registerCommandOptions = (
     cmd: TabCommand,
     options: ReadonlyArray<
-        | O
         | OptionDefinition<boolean[]>
         | OptionDefinition<boolean>
         | OptionDefinition<number[]>
         | OptionDefinition<number>
         | OptionDefinition<string[]>
         | OptionDefinition<string>
+        | OptionDefinition<unknown>
     >,
 ): void => {
     for (const option of options) {
@@ -122,12 +122,12 @@ const registerCommandOptions = <O extends OptionDefinition<unknown>>(
 
         // Register the primary name
         if (option.name) {
-            cmd.option(option.name, option.description || "");
+            cmd.option(option.name, option.description ?? "");
         }
 
         // Register alias if it exists
         if (option.alias) {
-            cmd.option(option.alias, option.description || "");
+            cmd.option(option.alias, option.description ?? "");
         }
     }
 };
@@ -145,7 +145,7 @@ const registerCommands = (tabInstance: TabInstance, commands: Map<string, IComma
             continue;
         }
 
-        const cmd = tabInstance.command(command.name, command.description || "");
+        const cmd = tabInstance.command(command.name, command.description ?? "");
 
         // Add command options
         if (command.options) {
@@ -241,11 +241,12 @@ const completionCommand: ICommand = {
             type: String,
         } satisfies EnvDefinition,
     ],
+    // eslint-disable-next-line @typescript-eslint/require-await
     execute: async ({ env: toolboxEnv, logger, options, runtime }: IToolbox) => {
         const cliName = runtime.getCliName();
 
         // Use shell from options, or detect from toolbox.env or process.env
-        const shell = (options?.shell as string) || detectShell(toolboxEnv);
+        const shell = (options.shell as string | undefined) ?? detectShell(toolboxEnv);
 
         if (!shell) {
             printUsageInstructions(logger, cliName);
@@ -256,12 +257,12 @@ const completionCommand: ICommand = {
         try {
             // Validate options
             validateShell(shell);
-            validateRuntime(options?.runtime as string | undefined);
+            validateRuntime(options.runtime as string | undefined);
             // Register all commands from the CLI
             registerCommands(tabInstance, runtime.getCommands());
 
             // Use provided runtime or detect it
-            const jsRuntime = (options?.runtime as string) || detectRuntime();
+            const jsRuntime = (options.runtime as string | undefined) ?? detectRuntime();
             const scriptPath = `${jsRuntime} ${cliName}`;
 
             tabInstance.setup(cliName, scriptPath, shell);

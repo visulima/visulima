@@ -10,9 +10,9 @@ import type { Toolbox as IToolbox } from "../../types/toolbox";
  * @param command The command object containing options to process
  * @param command.options The options array to process
  */
-export const processOptionNames = <OD extends OptionDefinition<unknown>>(command: { options?: OD[] }): void => {
+export const processOptionNames = (command: { options?: OptionDefinition<unknown>[] }): void => {
     command.options?.forEach((option) => {
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign,no-underscore-dangle
         option.__camelCaseName__ = camelCase(option.name);
     });
 };
@@ -27,7 +27,7 @@ export const processOptionNames = <OD extends OptionDefinition<unknown>>(command
  * @throws {Error} When a negated option is not of type Boolean
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(command: { name: string; options?: OD[] }): void => {
+export const addNegatableOptions = (command: { name: string; options?: OptionDefinition<unknown>[] }): void => {
     if (!Array.isArray(command.options) || command.options.length === 0) {
         return;
     }
@@ -38,7 +38,7 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
         optionNames.add(option.name);
     }
 
-    const optionsToAdd: OD[] = [];
+    const optionsToAdd: OptionDefinition<unknown>[] = [];
 
     for (const option of command.options) {
         if (option.name.startsWith("no-")) {
@@ -49,11 +49,11 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
                     throw new Error(`Cannot add negated option "${option.name}" to command "${command.name}" because it is not a boolean.`);
                 }
 
-                const negatedOption = {
+                const negatedOption: OptionDefinition<unknown> = {
                     ...option,
                     defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
                     name: nonNegatedName,
-                } as OD;
+                };
 
                 optionsToAdd.push(negatedOption);
                 optionNames.add(nonNegatedName);
@@ -73,17 +73,17 @@ export const addNegatableOptions = <OD extends OptionDefinition<unknown>>(comman
  * @param command The command object with option definitions
  * @param command.options The command options array
  */
-export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+export const mapNegatableOptions = <TLogger extends Console = Console>(
     toolbox: IToolbox<TLogger>,
     command: {
         options?: ReadonlyArray<
-            | O
             | OptionDefinition<boolean[]>
             | OptionDefinition<boolean>
             | OptionDefinition<number[]>
             | OptionDefinition<number>
             | OptionDefinition<string[]>
             | OptionDefinition<string>
+            | OptionDefinition<unknown>
         >;
     },
 ): void => {
@@ -125,6 +125,7 @@ export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger
         const negatedOption = negatedOptionMap.get(negatedKey);
 
         if (negatedOption) {
+            // eslint-disable-next-line no-underscore-dangle
             negatedOption.__negated__ = true;
         }
 
@@ -144,17 +145,17 @@ export const mapNegatableOptions = <O extends OptionDefinition<unknown>, TLogger
  * @param command.options The command options array
  */
 
-export const mapImpliedOptions = <O extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+export const mapImpliedOptions = <TLogger extends Console = Console>(
     toolbox: IToolbox<TLogger>,
     command: {
         options?: ReadonlyArray<
-            | O
             | OptionDefinition<boolean[]>
             | OptionDefinition<boolean>
             | OptionDefinition<number[]>
             | OptionDefinition<number>
             | OptionDefinition<string[]>
             | OptionDefinition<string>
+            | OptionDefinition<unknown>
         >;
     },
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -166,7 +167,9 @@ export const mapImpliedOptions = <O extends OptionDefinition<unknown>, TLogger e
     const optionMapByCamelCase = new Map<string, OptionDefinition<unknown>>();
 
     for (const option of command.options) {
+        // eslint-disable-next-line no-underscore-dangle
         if (option.__camelCaseName__ && option.__negated__ === undefined && option.implies !== undefined) {
+            // eslint-disable-next-line no-underscore-dangle
             optionMapByCamelCase.set(option.__camelCaseName__, option as OptionDefinition<unknown>);
         }
     }
