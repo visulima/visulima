@@ -12,11 +12,7 @@ const getArrayName = (array: TypedArray) => {
         return "Buffer";
     }
 
-    if (array[Symbol.toStringTag]) {
-        return array[Symbol.toStringTag];
-    }
-
-    return array.constructor.name;
+    return array[Symbol.toStringTag];
 };
 
 const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: Options, inspect: InternalInspect): string => {
@@ -45,7 +41,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
         options.truncate -= string.length;
 
         if (array[index] !== array.length && options.truncate <= 3) {
-            output += `${TRUNCATOR}(${array.length - (array[index] as number) + 1})`;
+            output += `${TRUNCATOR}(${String(array.length - (array[index] as number) + 1)})`;
             break;
         }
 

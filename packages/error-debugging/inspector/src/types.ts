@@ -21,8 +21,8 @@ export interface Options {
     quoteStyle: "double" | "single";
     showHidden: boolean;
     showProxy: boolean;
-    stylize: <S extends string>(
-        value: S,
+    stylize: (
+        value: string,
         styleType: LiteralUnion<"bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined", string>,
     ) => string;
     truncate: number;

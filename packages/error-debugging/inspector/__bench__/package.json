@@ -1,18 +1,18 @@
 {
-  "name": "inspector-bench",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test:bench": "vitest bench"
-  },
-  "dependencies": {
-    "@visulima/inspector": "workspace:*",
-    "loupe": "catalog:prod",
-    "object-inspect": "catalog:prod"
-  },
-  "devDependencies": {
-    "@types/object-inspect": "catalog:types",
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test"
-  }
+    "name": "inspector-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/inspector": "workspace:*",
+        "loupe": "catalog:prod",
+        "object-inspect": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/object-inspect": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
 }

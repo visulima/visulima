@@ -62,7 +62,7 @@ export const inspectHTMLElement = (element: Element, object: unknown, options: O
     let children = inspectNodeCollection(element.children, options, inspect, undefined);
 
     if (children && children.length > truncate) {
-        children = `${TRUNCATOR}(${element.children.length})`;
+        children = `${TRUNCATOR}(${String(element.children.length)})`;
     }
 
     return `${head}${propertyContents}${headClose}${children}${tail}`;

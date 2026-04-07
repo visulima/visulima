@@ -14,7 +14,6 @@ describe("sets", () => {
 
         const set = new Set();
 
-        // eslint-disable-next-line unicorn/no-immediate-mutation
         set.add({ a: 1 });
         set.add(["b"]);
 

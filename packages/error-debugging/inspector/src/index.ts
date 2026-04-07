@@ -80,14 +80,17 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     WeakSet: (_value: WeakSet<any>, options: Options) => options.stylize("WeakSet{…}", "special"),
 } as const;
 
+const nodeInspectCustomSymbol = Symbol.for("nodejs.util.inspect.custom");
+
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (globalThis.window === undefined && typeof (value as any)[Symbol.for("nodejs.util.inspect.custom")] === "function") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type
-        return ((value as any)[Symbol.for("nodejs.util.inspect.custom")] as Function)(depth, options);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    if (!("window" in globalThis) && typeof (value as any)[nodeInspectCustomSymbol] === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        return (value as any)[nodeInspectCustomSymbol](depth, options);
     }
 
     if ("inspect" in value && typeof value.inspect === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         return value.inspect(depth, options);
     }
 
@@ -95,8 +98,10 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
         return constructorMap.get(value.constructor)?.(value, options) ?? "unknown";
     }
 
-    if (stringTagMap[type]) {
-        return (stringTagMap[type] as Inspect)(value, options);
+    const tagInspector = stringTagMap[type];
+
+    if (tagInspector) {
+        return tagInspector(value, options);
     }
 
     return "";
@@ -131,9 +136,10 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     }
 
     // If it is a base value that we already support, then use inspector
-    if (baseTypesMap[type as keyof typeof baseTypesMap] !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (baseTypesMap[type as keyof typeof baseTypesMap] as InspectType<any>)(value, options, inspect, indent);
+    const baseInspector = baseTypesMap[type];
+
+    if (baseInspector !== undefined) {
+        return baseInspector(value, options, inspect, indent);
     }
 
     // If `options.customInspect` is set to true then try to use the custom inspector
@@ -149,6 +155,7 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const proto = value ? Object.getPrototypeOf(value) : false;
 
     // If it's a plain Object then use inspector
@@ -177,7 +184,7 @@ const internalInspect = (value: unknown, options: Options, depth: number, seen: 
     }
 
     // We have run out of options! Just stringify the value
-    return (options as Options).stylize(String(value), type);
+    return options.stylize(String(value), type);
 };
 
 export type { Options } from "./types";
@@ -193,7 +200,7 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         quoteStyle: "single",
         showHidden: false,
         showProxy: false,
-        stylize: <S extends string>(s: S) => s.toString(),
+        stylize: (s: string) => s,
         truncate: Number.POSITIVE_INFINITY,
         ...options_,
     } satisfies Options;

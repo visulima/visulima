@@ -36,7 +36,7 @@ const inspectList = (
         const last = index + 1 === list.length;
         const secondToLast = index + 2 === list.length;
 
-        truncated = `${TRUNCATOR}(${list.length - index})`;
+        truncated = `${TRUNCATOR}(${String(list.length - index)})`;
 
         let value = list[index];
 
@@ -64,7 +64,14 @@ const inspectList = (
 
         // Peek at the next string to determine if we should
         // break early before adding this item to the output
-        peek = last ? "" : inspect_(value, from, options, inspect) + (secondToLast ? "" : separator);
+        const peekSuffix = secondToLast ? "" : separator;
+
+        // eslint-disable-next-line unicorn/prefer-ternary
+        if (last) {
+            peek = "";
+        } else {
+            peek = inspect_(value, from, options, inspect) + peekSuffix;
+        }
 
         // If we have one element left, but this element and
         // the next takes over length, the break early
@@ -77,7 +84,7 @@ const inspectList = (
         // If the next element takes us to length -
         // but there are more after that, then we should truncate now
         if (!last && !secondToLast && nextLength + peek.length >= originalLength) {
-            truncated = `${TRUNCATOR}(${list.length - index - 1})`;
+            truncated = `${TRUNCATOR}(${String(list.length - index - 1)})`;
 
             break;
         }

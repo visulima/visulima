@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { inspect } from "../src";
 import h from "./utils/h";
 
-describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
+describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
     beforeEach(() => {
         if (typeof HTMLElement !== "function") {
             class Text {
@@ -52,8 +52,8 @@ describe.skipIf(globalThis.window === undefined)("hTMLElement", () => {
                 }
             }
 
-            if (globalThis.document === undefined) {
-                globalThis.document = {};
+            if (!("document" in globalThis)) {
+                globalThis.document = {} as any;
             }
 
             globalThis.document.createElement = (tagName) => new HTMLElement(tagName);

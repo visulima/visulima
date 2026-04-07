@@ -6,12 +6,12 @@ import { inspect } from "../src";
 import type { Options } from "../src/types";
 import h from "./utils/h";
 
-const stylize: Options["stylize"] = <S extends string>(
-    value: S,
+const stylize: Options["stylize"] = (
+    value: string,
 
-    styleType: string | "bigint" | "boolean" | "date" | "null" | "number" | "regexp" | "special" | "string" | "symbol" | "undefined",
+    styleType: string,
 ): string => {
-    const mapped = {
+    const mapped: Record<string, ColorizeType> = {
         bigint: yellow,
         boolean: yellow,
         date: magenta,
@@ -27,7 +27,7 @@ const stylize: Options["stylize"] = <S extends string>(
     return (mapped[styleType] as ColorizeType)(value);
 };
 
-describe.runIf(globalThis.window === undefined)("colors", () => {
+describe.runIf(!("window" in globalThis))("colors", () => {
     it("should return a date colorized if color is set to true", () => {
         expect.assertions(1);
 
@@ -86,9 +86,9 @@ describe.runIf(globalThis.window === undefined)("colors", () => {
     it("should return a function colorized if color is set to true", () => {
         expect.assertions(1);
 
-        /* eslint-disable-next-line prefer-arrow-callback */
-        const fnStr = function foo() {}.toString();
-        expect(inspect(function foo() {}, { colors: true, stylize })).toBe(`\u001B[36m[Function: ${fnStr}]\u001B[39m`);
+        const functionString = function foo() {}.toString();
+
+        expect(inspect(function foo() {}, { colors: true, stylize })).toBe(`\u001B[36m[Function: ${functionString}]\u001B[39m`);
     });
 
     it("should return a POSITIVE_INFINITY colorized if color is set to true", () => {
