@@ -317,6 +317,8 @@ export default class Ink {
 
     private readonly interactive: boolean;
 
+    private readonly renderThrottleMs: number;
+
     private alternateScreen: boolean;
 
     // Ignore last render after unmounting a tree to prevent empty output before exit
@@ -383,6 +385,7 @@ export default class Ink {
         const unthrottled = options.debug || this.isScreenReaderEnabled;
         const maxFps = options.maxFps ?? 30;
         const renderThrottleMs = maxFps > 0 ? Math.max(1, Math.ceil(1000 / maxFps)) : 0;
+        this.renderThrottleMs = unthrottled ? 0 : renderThrottleMs;
 
         const baseOnRender = unthrottled
             ? this.onRender
@@ -905,6 +908,7 @@ export default class Ink {
                     interactive={this.interactive}
                     onExit={this.handleAppExit}
                     onWaitUntilRenderFlush={this.waitUntilRenderFlush}
+                    renderThrottleMs={this.renderThrottleMs}
                     setCursorPosition={this.setCursorPosition}
                     stderr={this.options.stderr}
                     stdin={this.options.stdin}

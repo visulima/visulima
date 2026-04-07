@@ -45,7 +45,7 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 - **Faster than Ink** on mount (1.3-2.3x), competitive on rerender
 - **Drop-in Ink-compatible** React API
 - **Native Rust diff engine** via NAPI for high-throughput rendering
-- **React hooks** for input, focus, clipboard, mouse, scroll, and window size
+- **React hooks** for input, focus, clipboard, mouse, scroll, animation, and window size
 - **Rich component library** - Box, Text, Spinner, Select, TextInput, Tabs, ScrollView, and more
 - **Cross-platform** native bindings (macOS, Linux glibc/musl, Windows x64/arm64)
 - **Server-side rendering** via `renderToString`
@@ -79,6 +79,30 @@ const App = () => (
 
 render(<App />);
 ```
+
+## Hooks
+
+### `useAnimation(options?)`
+
+Drive frame-based or time-based animations with a shared timer. Multiple `useAnimation` calls consolidate into one render cycle.
+
+```tsx
+import { Text, useAnimation } from "@visulima/tui";
+
+const Spinner = () => {
+    const { frame } = useAnimation({ interval: 80 });
+    const characters = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+    return <Text>{characters[frame % characters.length]}</Text>;
+};
+```
+
+| Option     | Type      | Default | Description                                                                                                                |
+| ---------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                        |
+| `isActive` | `boolean` | `true`  | Whether the animation is running. When set to `false`, the animation stops. When toggled back to `true`, values reset to 0. |
+
+Returns `{ frame, time, delta, reset }`. See the [full hooks reference](https://visulima.com/packages/tui/hooks#useanimation) for detailed return values, more examples (sine waves, physics, pausable, reset), and `maxFps` interaction.
 
 ## Documentation
 

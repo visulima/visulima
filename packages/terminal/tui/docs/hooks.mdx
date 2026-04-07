@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -540,6 +540,138 @@ Notes:
 - Use `stringWidth()` from `@visulima/string` for correct column calculation with wide characters.
 - The cursor is automatically hidden when the component using `useCursor` unmounts.
 - For most text input use cases, prefer the declarative [`<Cursor />`](./components.mdx#cursor) component instead.
+
+## `useAnimation`
+
+Drive frame-based or time-based animations. Returns a frame counter, elapsed time, frame delta, and a reset function. All animations share a single timer internally, so multiple `useAnimation` calls consolidate into one render cycle instead of spawning independent timers.
+
+```tsx
+import { useAnimation, Text } from "@visulima/tui";
+
+const Spinner = () => {
+    const { frame } = useAnimation({ interval: 80 });
+    const characters = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+    return <Text>{characters[frame % characters.length]}</Text>;
+};
+```
+
+### Options
+
+| Option     | Type      | Default | Description                                                                                                                |
+| ---------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                        |
+| `isActive` | `boolean` | `true`  | Whether the animation is running. When set to `false`, the animation stops. When toggled back to `true`, values reset to 0. |
+
+### Return Value
+
+| Field   | Type         | Description                                                                                          |
+| ------- | ------------ | ---------------------------------------------------------------------------------------------------- |
+| `frame` | `number`     | Discrete counter that increments by 1 each interval. Useful for indexed sequences like spinner frames. |
+| `time`  | `number`     | Total elapsed milliseconds since the animation started or was last reset. Useful for continuous math-based animations like sine waves. |
+| `delta` | `number`     | Milliseconds since the previous rendered tick. Accounts for throttled renders. Useful for physics-based or velocity-driven motion. |
+| `reset` | `() => void` | Resets `frame`, `time`, and `delta` to 0 and restarts timing from the current moment.                 |
+
+### Examples
+
+#### Continuous sine-wave animation using `time`
+
+```tsx
+const Pulse = () => {
+    const { time } = useAnimation({ interval: 50 });
+    const brightness = Math.sin((time / 1000) * Math.PI * 2);
+    const width = Math.round((brightness + 1) * 10);
+
+    return <Text color="cyan">{"█".repeat(width)}</Text>;
+};
+```
+
+#### Pausable animation using `isActive`
+
+```tsx
+import { useState } from "react";
+import { Text, useAnimation, useInput } from "@visulima/tui";
+
+const PausableCounter = () => {
+    const [paused, setPaused] = useState(false);
+    const { frame } = useAnimation({ interval: 100, isActive: !paused });
+
+    useInput((input) => {
+        if (input === " ") setPaused((prev) => !prev);
+    });
+
+    return (
+        <Text>
+            Frame: {frame} {paused ? "(paused)" : ""}
+        </Text>
+    );
+};
+```
+
+#### Resettable one-shot animation using `reset`
+
+```tsx
+import { Text, useAnimation, useInput } from "@visulima/tui";
+
+const Flash = () => {
+    const { frame, reset } = useAnimation({ interval: 100 });
+
+    useInput((input) => {
+        if (input === "r") reset();
+    });
+
+    return <Text>{frame < 10 ? "Flash!" : "Press r to flash again"}</Text>;
+};
+```
+
+#### Physics-based motion using `delta`
+
+```tsx
+import { useRef } from "react";
+import { Box, Text, useAnimation } from "@visulima/tui";
+
+const BouncingDot = () => {
+    const posRef = useRef(0);
+    const velRef = useRef(0.05);
+    const { delta } = useAnimation({ interval: 16 });
+
+    posRef.current += velRef.current * delta;
+
+    if (posRef.current > 40 || posRef.current < 0) {
+        velRef.current *= -1;
+        posRef.current = Math.max(0, Math.min(40, posRef.current));
+    }
+
+    return <Text>{" ".repeat(Math.round(posRef.current))}●</Text>;
+};
+```
+
+#### Multiple animations at different speeds
+
+Multiple calls share one internal timer. The scheduler wakes at the earliest deadline and lets slower animations skip that tick.
+
+```tsx
+const Dashboard = () => {
+    const { frame: fast } = useAnimation({ interval: 80 });
+    const { frame: slow } = useAnimation({ interval: 500 });
+
+    const spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    const dots = [".  ", ".. ", "..."];
+
+    return (
+        <Box flexDirection="column">
+            <Text>
+                {spinner[fast % spinner.length]} Loading
+                {dots[slow % dots.length]}
+            </Text>
+        </Box>
+    );
+};
+```
+
+### Interaction with `maxFps`
+
+The `maxFps` option on `render()` controls how often Ink flushes frames to the terminal. `useAnimation` respects this throttle — when `maxFps` is low (e.g., `maxFps: 5`), animation callbacks are coalesced and the `delta` value reflects the actual time between rendered frames, not the interval. The `frame` and `time` values are always computed from elapsed wall-clock time, so they remain accurate regardless of throttling.
 
 ## `useIsScreenReaderEnabled`
 
