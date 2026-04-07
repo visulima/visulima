@@ -162,37 +162,33 @@ describe("edge", () => {
         const error = new Error("💥");
 
         await expect(
-            async () =>
-                await createEdgeRouter()
-                    .use((_, __, next) => {
-                        next();
-                    })
-                    .use(() => {
-                        throw error;
-                    })
-                    .run(request, event),
+            createEdgeRouter()
+                .use((_, __, next) => {
+                    next();
+                })
+                .use(() => {
+                    throw error;
+                })
+                .run(request, event),
         ).rejects.toThrow(error);
 
         await expect(
-            async () =>
-                await createEdgeRouter()
-                    .use((_, __, next) => next())
-                    .use(async () => {
-                        throw error;
-                    })
-                    .run(request, event),
+            createEdgeRouter()
+                .use((_, __, next) => next())
+                .use(async () => {
+                    throw error;
+                })
+                .run(request, event),
         ).rejects.toThrow(error);
 
         await expect(
-            async () =>
-                await createEdgeRouter()
-                    .use((_, __, next) => next())
-                    .use(async (_, __, next) => {
-                        await next();
-                    })
-                    // eslint-disable-next-line compat/compat
-                    .use(async () => await Promise.reject(error))
-                    .run(request, event),
+            createEdgeRouter()
+                .use((_, __, next) => next())
+                .use(async (_, __, next) => {
+                    await next();
+                })
+                .use(async () => await Promise.reject(error))
+                .run(request, event),
         ).rejects.toThrow(error);
     });
 
@@ -301,7 +297,6 @@ describe("edge", () => {
             expect(response.status, "set 500 status code").toBe(500);
 
             await expect(response.text()).resolves.toBe("Internal Server Error");
-            // eslint-disable-next-line security/detect-object-injection
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
             index += 1;
@@ -334,7 +329,6 @@ describe("edge", () => {
             .get(() => {
                 // non error throw
 
-                // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw "";
             })
             .handler()(request, {})
@@ -344,8 +338,7 @@ describe("edge", () => {
 
                 await expect(response.text()).resolves.toBe("Internal Server Error");
 
-                // eslint-disable-next-line security/detect-object-injection
-                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
             });
     });
 
@@ -362,7 +355,6 @@ describe("edge", () => {
 
             await expect(response.text()).resolves.toBe("Internal Server Error");
 
-            // eslint-disable-next-line security/detect-object-injection
             expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
             index += 1;
@@ -504,7 +496,6 @@ describe("edge", () => {
         expect(getPathname({ url: "http://google.com/foo/bar?q=quz" } as Request)).toBe("/foo/bar");
         expect(
             getPathname({
-                // eslint-disable-next-line compat/compat
                 nextUrl: new URL("http://google.com/foo/bar?q=quz"),
                 url: "http://google.com/do/not/use/me",
             } as unknown as Request),

@@ -160,37 +160,33 @@ describe(createRouter, () => {
         const error = new Error("💥");
 
         await expect(
-            async () =>
-                await createRouter()
-                    .use((_, __, next) => {
-                        next();
-                    })
-                    .use(() => {
-                        throw error;
-                    })
-                    .run(request, serverResponse),
+            createRouter()
+                .use((_, __, next) => {
+                    next();
+                })
+                .use(() => {
+                    throw error;
+                })
+                .run(request, serverResponse),
         ).rejects.toThrow(error);
 
         await expect(
-            async () =>
-                await createRouter()
-                    .use((_, __, next) => next())
-                    .use(async () => {
-                        throw error;
-                    })
-                    .run(request, serverResponse),
+            createRouter()
+                .use((_, __, next) => next())
+                .use(async () => {
+                    throw error;
+                })
+                .run(request, serverResponse),
         ).rejects.toThrow(error);
 
         await expect(
-            async () =>
-                await createRouter()
-                    .use((_, __, next) => next())
-                    .use(async (_, __, next) => {
-                        await next();
-                    })
-                    // eslint-disable-next-line compat/compat
-                    .use(async () => await Promise.reject(error))
-                    .run(request, serverResponse),
+            createRouter()
+                .use((_, __, next) => next())
+                .use(async (_, __, next) => {
+                    await next();
+                })
+                .use(async () => await Promise.reject(error))
+                .run(request, serverResponse),
         ).rejects.toThrow(error);
     });
 
@@ -294,7 +290,6 @@ describe(createRouter, () => {
                 expect(this.statusCode, "set 500 status code").toBe(500);
 
                 expect(chunk).toBe("Internal Server Error");
-                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
@@ -322,8 +317,7 @@ describe(createRouter, () => {
             end(chunk) {
                 expect(response.statusCode).toBe(500);
                 expect(chunk).toBe("Internal Server Error");
-                // eslint-disable-next-line security/detect-object-injection
-                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
             },
         } as ServerResponse;
 
@@ -332,7 +326,6 @@ describe(createRouter, () => {
             .get(() => {
                 // non error throw
 
-                // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw "";
             })
             .handler()(request, response2);
@@ -352,7 +345,6 @@ describe(createRouter, () => {
             end(chunk) {
                 expect(this.statusCode, "set 500 status code").toBe(500);
                 expect(chunk).toBe("Internal Server Error");
-                // eslint-disable-next-line security/detect-object-injection
                 expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
 
                 index += 1;
