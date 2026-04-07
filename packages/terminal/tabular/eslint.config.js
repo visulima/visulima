@@ -18,12 +18,6 @@ export default createConfig(
             "prettier.config.js",
             "README.md",
         ],
-        rules: {
-            "jsdoc/match-description": "off",
-            // Disable unicorn/no-for-loop because it conflicts with no-for-of-array/no-for-of-array
-            // which requires index-based for loops instead of for-of on arrays
-            "unicorn/no-for-loop": "off",
-        },
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",
         },
