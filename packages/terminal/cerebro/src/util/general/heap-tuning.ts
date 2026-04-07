@@ -153,11 +153,11 @@ const applyHeapTuning = (options?: HeapTuningOptions): void => {
     const extraFlags: string[] = [];
 
     if (existingOldSpace === undefined) {
-        extraFlags.push(`--max-old-space-size=${oldSpace}`);
+        extraFlags.push(`--max-old-space-size=${String(oldSpace)}`);
     }
 
     if (existingSemiSpace === undefined) {
-        extraFlags.push(`--max-semi-space-size=${semiSpace}`);
+        extraFlags.push(`--max-semi-space-size=${String(semiSpace)}`);
     }
 
     if (extraFlags.length === 0) {

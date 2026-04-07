@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { Cerebro as Cli } from "../../src";
 
+const CONFLICTS_BUILTIN_RE = /conflicts with a built-in global option/;
+const CONFLICTS_BUILTIN_ALIAS_RE = /conflicts with a built-in global option alias/;
+const ALREADY_ADDED_RE = /has already been added/;
+
 describe("addGlobalOption", () => {
     it("should add a custom global option", () => {
         expect.assertions(1);
@@ -66,7 +70,7 @@ describe("addGlobalOption", () => {
                 name: "verbose",
                 type: Boolean,
             });
-        }).toThrow(/conflicts with a built-in global option/);
+        }).toThrow(CONFLICTS_BUILTIN_RE);
     });
 
     it("should throw when adding an option with an alias that conflicts with a built-in alias", () => {
@@ -81,7 +85,7 @@ describe("addGlobalOption", () => {
                 name: "my-help",
                 type: Boolean,
             });
-        }).toThrow(/conflicts with a built-in global option alias/);
+        }).toThrow(CONFLICTS_BUILTIN_ALIAS_RE);
     });
 
     it("should throw when adding a duplicate custom global option", () => {
@@ -101,7 +105,7 @@ describe("addGlobalOption", () => {
                 name: "cwd",
                 type: String,
             });
-        }).toThrow(/has already been added/);
+        }).toThrow(ALREADY_ADDED_RE);
     });
 
     it("should support method chaining", () => {

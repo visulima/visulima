@@ -43,6 +43,7 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
     // @ts-expect-error - Bun is a global in Bun runtime
     if (typeof Bun !== "undefined") {
         // @ts-expect-error - Bun.version exists in Bun runtime
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const version = (Bun.version as string) || "";
         const major = parseMajorVersion(version);
 
@@ -53,6 +54,7 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
     // @ts-expect-error - Deno is a global in Deno runtime
     if (typeof Deno !== "undefined") {
         // @ts-expect-error - Deno.version exists in Deno runtime
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const version = (Deno.version?.deno as string) || "";
         const major = parseMajorVersion(version);
 
@@ -95,7 +97,7 @@ export type RuntimeVersionCheckOptions = {
 export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = {}): Plugin => {
     return {
         description: "Checks if the current runtime version meets the minimum requirement",
-        init: async (context) => {
+        init: (context) => {
             const runtime = detectRuntime();
 
             // Get minimum version for detected runtime
@@ -133,14 +135,14 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
 
             if (runtime.major < minVersion) {
                 context.logger.error(
-                    `cerebro requires ${runtime.type} version ${minVersion} or higher. You have ${runtime.type} ${runtime.version}. Read our version support policy: https://github.com/visulima/visulima#supported-runtimes`,
+                    `cerebro requires ${runtime.type} version ${String(minVersion)} or higher. You have ${runtime.type} ${runtime.version}. Read our version support policy: https://github.com/visulima/visulima#supported-runtimes`,
                 );
 
                 // Use runtime-aware exit function
                 exitProcess(1);
             }
 
-            context.logger.debug(`Runtime version check passed: ${runtime.type} ${runtime.version} >= ${minVersion}`);
+            context.logger.debug(`Runtime version check passed: ${runtime.type} ${runtime.version} >= ${String(minVersion)}`);
         },
         name: "runtime-version-check",
 

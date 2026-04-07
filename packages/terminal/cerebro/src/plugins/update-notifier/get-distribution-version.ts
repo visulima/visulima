@@ -11,7 +11,7 @@ const getDistributionVersion = async (packageName: string, distributionTag: stri
             let body = "";
 
             // eslint-disable-next-line no-return-assign
-            message.on("data", (chunk) => (body += chunk));
+            message.on("data", (chunk) => (body += String(chunk)));
             message.on("end", () => {
                 try {
                     const json = JSON.parse(body) as Record<string, string>;

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { Cerebro as Cli } from "../../src";
 
+const DEPLOY_NOT_FOUND_RE = /deploy invalid.*not found/;
+
 describe("nested commands", () => {
     it("should execute nested command with commandPath", async () => {
         expect.assertions(2);
@@ -72,7 +74,7 @@ describe("nested commands", () => {
         const callArgs = deployProductionExecute.mock.calls[0]?.[0];
 
         expect(callArgs?.options).toBeDefined();
-        expect(callArgs?.options?.["dry-run"] || callArgs?.options?.dryRun).toBe(true);
+        expect(callArgs?.options?.["dry-run"] ?? callArgs?.options?.dryRun).toBe(true);
     });
 
     it("should allow flat and nested commands with same name", async () => {
@@ -205,7 +207,7 @@ describe("nested commands", () => {
             name: "staging",
         });
 
-        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(/deploy invalid.*not found/);
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(DEPLOY_NOT_FOUND_RE);
     });
 
     it("should validate commandPath segments", () => {

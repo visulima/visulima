@@ -28,9 +28,9 @@ const hasNewVersion = async ({
     } else if (debug) {
         // eslint-disable-next-line no-console
         console.error(
-            `Too recent to check for a new update. simpleUpdateNotifier() interval set to ${updateCheckInterval}ms but only ${
-                Date.now() - lastUpdateCheck
-            }ms since last check.`,
+            `Too recent to check for a new update. simpleUpdateNotifier() interval set to ${String(updateCheckInterval)}ms but only ${String(
+                Date.now() - lastUpdateCheck,
+            )}ms since last check.`,
         );
     }
 

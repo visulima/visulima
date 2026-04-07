@@ -227,7 +227,8 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         const hasBooleanValues = Object.keys(booleanValues).length > 0;
 
-        const commandArgs = hasBooleanValues ? ({ ...parsedArgs, _all: { ...parsedArgs._all, ...booleanValues } } as typeof parsedArgs) : parsedArgs;
+        // eslint-disable-next-line no-underscore-dangle
+        const commandArgs = hasBooleanValues ? ({ ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs) : parsedArgs;
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
@@ -343,7 +344,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         } else {
             this.#logger = {
                 ...console,
-                debug: (...args) => {
+                debug: (...args: unknown[]) => {
                     if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
                         // eslint-disable-next-line no-console
                         console.debug(...args);
@@ -503,9 +504,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         processOptionNames(command as { options?: OptionDefinition<unknown>[] });
 
         if (command.options) {
-            // eslint-disable-next-line no-param-reassign
+            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
             command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined) as typeof command.__conflictingOptions__;
-            // eslint-disable-next-line no-param-reassign
+            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
             command.__requiredOptions__ = command.options.filter((option) => option.required === true) as typeof command.__requiredOptions__;
         }
 
@@ -556,38 +557,38 @@ export class Cli<T extends Console = Console> implements ICli<T> {
      * ```
      */
     public addGlobalOption<V = unknown>(option: OptionDefinition<V>): this {
-        const optionDef = option as OptionDefinition<unknown>;
+        const optionDefinition = option as OptionDefinition<unknown>;
 
         // Check for conflicts with built-in global options
         const builtInNames = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.name));
         const builtInAliases = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.alias).filter(Boolean));
 
-        if (builtInNames.has(optionDef.name)) {
-            throw new CerebroError(`Cannot add global option "--${optionDef.name}": it conflicts with a built-in global option`, "DUPLICATE_OPTION", {
-                optionName: optionDef.name,
+        if (builtInNames.has(optionDefinition.name)) {
+            throw new CerebroError(`Cannot add global option "--${optionDefinition.name}": it conflicts with a built-in global option`, "DUPLICATE_OPTION", {
+                optionName: optionDefinition.name,
             });
         }
 
-        if (optionDef.alias && builtInAliases.has(optionDef.alias)) {
+        if (optionDefinition.alias && builtInAliases.has(optionDefinition.alias)) {
             throw new CerebroError(
-                `Cannot add global option with alias "-${String(optionDef.alias)}": it conflicts with a built-in global option alias`,
+                `Cannot add global option with alias "-${optionDefinition.alias}": it conflicts with a built-in global option alias`,
                 "DUPLICATE_OPTION",
-                { alias: optionDef.alias, optionName: optionDef.name },
+                { alias: optionDefinition.alias, optionName: optionDefinition.name },
             );
         }
 
         // Check for conflicts with previously added custom global options
         const existingNames = new Set(this.#customGlobalOptions.map((o) => o.name));
 
-        if (existingNames.has(optionDef.name)) {
-            throw new CerebroError(`Global option "--${optionDef.name}" has already been added`, "DUPLICATE_OPTION", { optionName: optionDef.name });
+        if (existingNames.has(optionDefinition.name)) {
+            throw new CerebroError(`Global option "--${optionDefinition.name}" has already been added`, "DUPLICATE_OPTION", { optionName: optionDefinition.name });
         }
 
-        optionDef.group = "global";
+        optionDefinition.group = "global";
 
-        mapOptionTypeLabel(optionDef);
+        mapOptionTypeLabel(optionDefinition);
 
-        this.#customGlobalOptions.push(optionDef);
+        this.#customGlobalOptions.push(optionDefinition);
 
         return this;
     }
@@ -872,7 +873,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
             let result: unknown;
 
-            if (commandArgs.global?.help) {
+            const globalOptions = commandArgs.global as Record<string, unknown> | undefined;
+
+            if (globalOptions?.help) {
                 const helpCommand = this.#commands.get("help");
 
                 if (!helpCommand) {
@@ -880,7 +883,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 }
 
                 result = await executeCommand(helpCommand, toolbox, commandArgs);
-            } else if (commandArgs.global?.version || commandArgs.global?.V) {
+            } else if (globalOptions?.version ?? globalOptions?.V) {
                 const versionCommand = this.#commands.get("version");
 
                 if (!versionCommand) {
@@ -978,7 +981,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
             let result: unknown;
 
-            if (commandArgs.global?.help) {
+            const runGlobalOptions = commandArgs.global as Record<string, unknown> | undefined;
+
+            if (runGlobalOptions?.help) {
                 const helpCommand = this.#commands.get("help");
 
                 if (!helpCommand) {
@@ -986,7 +991,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
                 }
 
                 result = await executeCommand(helpCommand, toolbox, commandArgs);
-            } else if (commandArgs.global?.version || commandArgs.global?.V) {
+            } else if (runGlobalOptions?.version ?? runGlobalOptions?.V) {
                 const versionCommand = this.#commands.get("version");
 
                 if (!versionCommand) {

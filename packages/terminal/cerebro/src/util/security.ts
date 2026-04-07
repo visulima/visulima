@@ -17,6 +17,8 @@ const MAX_ARGS = 100;
  */
 const DANGEROUS_CHARS = new Set(["\n", "\r", "\t", "\0", "\"", "$", "&", "'", "(", ")", ";", "<", ">", "[", "\\", "]", "`", "{", "|", "}"]);
 
+const ABSOLUTE_PATH_PATTERN = /^[A-Z]:/i;
+
 /**
  * Sanitizes a command argument to prevent injection attacks.
  * @param argument The argument string to sanitize.
@@ -31,7 +33,7 @@ export const sanitizeArgument = (argument: string): string => {
 
     // Check length limit
     if (argument.length > MAX_ARGUMENT_LENGTH) {
-        throw new Error(`Argument is too long (maximum ${MAX_ARGUMENT_LENGTH} characters)`);
+        throw new Error(`Argument is too long (maximum ${String(MAX_ARGUMENT_LENGTH)} characters)`);
     }
 
     // Check for dangerous characters
@@ -58,7 +60,7 @@ export const sanitizeArguments = (args: ReadonlyArray<string>): string[] => {
     }
 
     if (args.length > MAX_ARGS) {
-        throw new Error(`Too many arguments (maximum ${MAX_ARGS})`);
+        throw new Error(`Too many arguments (maximum ${String(MAX_ARGS)})`);
     }
 
     return args.map((argument) => sanitizeArgument(argument));
@@ -84,7 +86,7 @@ export const validateSafePath = (path: string): string => {
     }
 
     // Check for absolute paths that could be dangerous
-    if (sanitizedPath.startsWith("/") || /^[A-Z]:/i.test(sanitizedPath)) {
+    if (sanitizedPath.startsWith("/") || ABSOLUTE_PATH_PATTERN.test(sanitizedPath)) {
         throw new Error("Absolute paths are not allowed");
     }
 

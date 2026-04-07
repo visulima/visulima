@@ -26,7 +26,7 @@ vi.mock(import("github-slugger"), () => {
 
         const nonWordPattern = /[^\w\s-]+/g;
         const separatorPattern = /[\s_-]+/g;
-        const trimPattern = /(^-+)|(-$)/g;
+        const trimPattern = /^-+|-$/g;
 
         return value.toLowerCase().trim().replaceAll(nonWordPattern, "").replaceAll(separatorPattern, "-").replaceAll(trimPattern, "");
     };

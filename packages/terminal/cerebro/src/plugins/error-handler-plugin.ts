@@ -26,7 +26,7 @@ export type ErrorHandlerOptions = {
  * @returns Plugin instance
  */
 export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin => {
-    const handleError = async (error: Error, toolbox: Toolbox) => {
+    const handleError = (error: Error, toolbox: Toolbox) => {
         const { logger, runtime } = toolbox;
         const { detailed = false, exitOnError = true, formatter, logErrors = true, renderOptions = {} } = options;
 

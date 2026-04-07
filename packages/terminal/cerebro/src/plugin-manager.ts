@@ -75,7 +75,7 @@ class PluginManager<T extends Logger = Logger> {
 
         const orderedPlugins = this.getDependencyOrder();
 
-        this.logger.debug(`initializing ${orderedPlugins.length} plugin(s)...`);
+        this.logger.debug(`initializing ${String(orderedPlugins.length)} plugin(s)...`);
 
         for (const plugin of orderedPlugins) {
             if (typeof plugin.init === "function") {

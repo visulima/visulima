@@ -17,7 +17,9 @@ describe("option-processor", () => {
 
             processOptionNames(command);
 
+            // eslint-disable-next-line no-underscore-dangle
             expect(command.options?.[0]?.__camelCaseName__).toBe("testOption");
+            // eslint-disable-next-line no-underscore-dangle
             expect(command.options?.[1]?.__camelCaseName__).toBe("anotherOption");
         });
     });
@@ -46,7 +48,9 @@ describe("option-processor", () => {
                 options: [{ name: "no-input", type: String } as OptionDefinition<string>],
             };
 
-            expect(() => { addNegatableOptions(command); }).toThrow("Cannot add negated option \"no-input\" to command \"test\" because it is not a boolean.");
+            expect(() => {
+                addNegatableOptions(command);
+            }).toThrow("Cannot add negated option \"no-input\" to command \"test\" because it is not a boolean.");
         });
 
         it("should not duplicate existing options", () => {
@@ -81,6 +85,7 @@ describe("option-processor", () => {
             mapNegatableOptions(toolbox, command);
 
             expect(toolbox.options.verbose).toBe(true);
+            // eslint-disable-next-line no-underscore-dangle
             expect(command.options?.[0]?.__negated__).toBe(true);
         });
     });

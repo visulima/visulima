@@ -34,7 +34,7 @@ const createPailLogger = (options?: Partial<ConstructorOptions<string, string>>)
     }
 
     // Use environment-based logLevel unless explicitly provided in options
-    const envLogLevel = (outputLevel && cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL]) || "informational";
+    const envLogLevel = (outputLevel && cerebroLevelToPailLevel[outputLevel as unknown as VERBOSITY_LEVEL]) ?? "informational";
 
     const loggerOptions = {
         ...options,
@@ -42,9 +42,11 @@ const createPailLogger = (options?: Partial<ConstructorOptions<string, string>>)
         processors: options?.processors ? [...processors, ...options.processors] : processors,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const logger = createPail(loggerOptions as Parameters<typeof createPail>[0]);
 
     if (outputLevel === String(VERBOSITY_QUIET)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
         logger.disable();
     }
 

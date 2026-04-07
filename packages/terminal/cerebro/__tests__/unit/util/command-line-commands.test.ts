@@ -53,7 +53,7 @@ describe("util/command-line-commands", () => {
 
         const commands = ["eat", "sleep"];
 
-        const error: Error & { command?: string | null | undefined } = new Error(`Command not recognised: cheese`);
+        const error: Error & { command?: string | null } = new Error(`Command not recognised: cheese`);
 
         error.command = "cheese";
         error.name = "INVALID_COMMAND";

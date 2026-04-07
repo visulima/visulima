@@ -39,9 +39,9 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 ...options,
             };
 
-            const shouldCheck
-                = updateNotifierOptions.alwaysRun
-                    || !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
+            const shouldCheck = Boolean(updateNotifierOptions.alwaysRun)
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional boolean coercion for truthy check
+                || !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
 
             if (!shouldCheck) {
                 logger.debug("Update notifier: skipping check (disabled by environment or flags)");
@@ -49,7 +49,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 return;
             }
 
-            ((logger as Console & { raw?: (...args: unknown[]) => void })?.raw ?? logger.log)("Checking for updates...");
+            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)("Checking for updates...");
 
             try {
                 const hasNewVersion = await import("./has-new-version").then((m) => m.default);
@@ -59,7 +59,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                     // Lazy load heavy dependencies only when update is available
                     const [{ boxen }, { dim, green, reset, yellow }] = await Promise.all([import("@visulima/boxen"), import("@visulima/colorize")]);
 
-                    const template = `Update available ${dim(packageVersion.toString())}${reset(" → ")}${green(updateAvailable)}`;
+                    const template = `Update available ${dim(packageVersion)}${reset(" → ")}${green(updateAvailable)}`;
 
                     logger.error(
                         boxen(template, {

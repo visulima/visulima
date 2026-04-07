@@ -74,8 +74,12 @@ describe(PluginManager, () => {
 
             pluginManager.register(plugin);
 
-            expect(() => { pluginManager.register(plugin); }).toThrow("Plugin \"test-plugin\" is already registered");
-            expect(() => { pluginManager.register(plugin); }).toThrow(Error);
+            expect(() => {
+                pluginManager.register(plugin);
+            }).toThrow("Plugin \"test-plugin\" is already registered");
+            expect(() => {
+                pluginManager.register(plugin);
+            }).toThrow(Error);
         });
 
         it("should throw error when registering after initialization", async () => {
@@ -91,7 +95,9 @@ describe(PluginManager, () => {
             pluginManager.register(plugin1);
             await pluginManager.init({} as PluginContext);
 
-            expect(() => { pluginManager.register(plugin2); }).toThrow("Cannot register plugin \"plugin2\" after initialization");
+            expect(() => {
+                pluginManager.register(plugin2);
+            }).toThrow("Cannot register plugin \"plugin2\" after initialization");
         });
     });
 
