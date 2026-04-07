@@ -1,11 +1,11 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import { chmodSync, constants } from "node:fs";
+import { chmodSync, constants, mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { platform } from "node:process";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
-import { temporaryDirectory } from "tempy";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { findCacheDir as findCacheDirectory, findCacheDirSync as findCacheDirectorySync } from "../../src";
@@ -13,14 +13,14 @@ import { findCacheDir as findCacheDirectory, findCacheDirSync as findCacheDirect
 // Windows does not support chmod in the same way as Unix
 const isWindows = platform === "win32";
 
-describe.each([
+describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync]>([
     ["findCacheDirectory", findCacheDirectory],
     ["findCacheDirectorySync", findCacheDirectorySync],
 ])("%s", (name, function_) => {
     let distribution: string;
 
-    beforeEach(async () => {
-        distribution = temporaryDirectory();
+    beforeEach(() => {
+        distribution = mkdtempSync(join(tmpdir(), "find-cache-dir-"));
     });
 
     afterEach(async () => {
