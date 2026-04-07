@@ -32,11 +32,12 @@ const roUnitMap: Record<string, keyof DurationUnitMeasures> = {
 } as const;
 
 /**
- * Romanian uses "de" before the noun for numbers >= 20 (when not ending in 01-19).
- * See: https://en.wikipedia.org/wiki/Romanian_numbers#Preposition_de
+ * Returns a function that selects the appropriate Romanian unit form based on count.
+ * Romanian uses "de" before the noun for numbers twenty and above (when not ending in 01-19).
+ * @see https://en.wikipedia.org/wiki/Romanian_numbers#Preposition_de
  * @internal
- * @param unit [singular, plural, plural with "de"]
- * @returns Function that returns the appropriate form based on counter
+ * @param unit The unit forms [singular, plural, plural with "de"].
+ * @returns Function that returns the appropriate form based on counter.
  */
 const romanianUnit = (unit: [string, string, string]) => (counter: number): string => {
     if (counter === 1) {

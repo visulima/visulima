@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 import { parse as parseCSV } from "csv-parse";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import type { DurationLanguage } from "../../../src";
 import duration from "../../../src/duration";
 import { durationLanguage as af } from "../../../src/language/af";
 import { durationLanguage as am } from "../../../src/language/am";
@@ -158,8 +157,10 @@ describe("localized duration", () => {
 
             const parser = createReadStream(filePath).pipe(parseCSV({ delimiter: "\t" }));
 
-            for await (const [msString, expectedResult] of parser) {
-                result.push([Number.parseFloat(msString), expectedResult]);
+            for await (const record of parser) {
+                const row = record as [string, string];
+
+                result.push([Number.parseFloat(row[0]), row[1]]);
             }
 
             return result;
@@ -190,7 +191,7 @@ describe("localized duration", () => {
                 expect(
                     duration(milliseconds, {
                         delimiter: "+",
-                        language: importedLanguages[language as keyof typeof importedLanguages] as DurationLanguage,
+                        language: importedLanguages[language as keyof typeof importedLanguages],
                         units: ["y", "mo", "w", "d", "h", "m", "s", "ms"],
                     }),
                     `${language} localization error for ${String(milliseconds)} milliseconds`,
