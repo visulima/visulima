@@ -36,6 +36,6 @@ const computeRowLogicalWidth = (row: TableCell[]): number =>
         }
 
         return total + 1;
-    }, 0) as number;
+    }, 0);
 
 export default computeRowLogicalWidth;

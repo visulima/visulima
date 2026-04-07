@@ -63,7 +63,7 @@ describe("normalizeCell", () => {
         const cell: GridItem = { colSpan: 2, content: "object content" };
         const result = normalizeGridCell(cell);
 
-        expect(result).toStrictEqual<InternalGridItem>({ ...cell, content: "object content" }); // Content already string
+        expect(result).toStrictEqual({ ...cell, content: "object content" }); // Content already string
     });
 
     it("should convert object GridItem content number to string", () => {
@@ -72,7 +72,7 @@ describe("normalizeCell", () => {
         const cell: GridItem = { content: 456, hAlign: "center" };
         const result = normalizeGridCell(cell);
 
-        expect(result).toStrictEqual<InternalGridItem>({ ...cell, content: "456" });
+        expect(result).toStrictEqual({ ...cell, content: "456" });
     });
 
     it("should handle object GridItem with null/undefined content", () => {
@@ -83,8 +83,8 @@ describe("normalizeCell", () => {
         const resultNull = normalizeGridCell(cellNull);
         const resultUndef = normalizeGridCell(cellUndef);
 
-        expect(resultNull).toStrictEqual<InternalGridItem>({ ...cellNull, content: EMPTY_CELL_REPRESENTATION });
-        expect(resultUndef).toStrictEqual<InternalGridItem>({ ...cellUndef, content: EMPTY_CELL_REPRESENTATION });
+        expect(resultNull).toStrictEqual({ ...cellNull, content: EMPTY_CELL_REPRESENTATION });
+        expect(resultUndef).toStrictEqual({ ...cellUndef, content: EMPTY_CELL_REPRESENTATION });
     });
 
     it("should throw error for invalid object type", () => {

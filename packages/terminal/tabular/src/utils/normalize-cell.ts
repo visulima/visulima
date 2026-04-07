@@ -35,7 +35,7 @@ export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
             );
         }
 
-        return { ...(cell as GridItem), content } as InternalGridItem;
+        return { ...cell, content } as InternalGridItem;
     }
 
     // If it's none of the above, throw an error (e.g., bigint, boolean, function)
