@@ -30,11 +30,13 @@ import type { NativeLogUpdate } from "./log-update-native";
 import { createNative } from "./log-update-native";
 import { clearStyledLineCache } from "./measure-text";
 import reconciler from "./reconciler";
+import { renderToStatic } from "./render-node-to-output";
 import render from "./renderer";
 import type ResizeObserver from "./resize-observer";
 import type { ResizeObserverEntry } from "./resize-observer";
 import { measureAndExtractObservers } from "./resize-observer";
 import { calculateScroll } from "./scroll";
+import applyStyles from "./styles";
 import { getWindowSize } from "./utils";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
 
@@ -625,20 +627,25 @@ export default class Ink {
     };
 
     calculateLayout = (): void => {
+        const flushLayoutObservers = (node: dom.DOMElement): void => {
+            const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
+
+            this.calculateScrollAndTriggerObservers(node, observerEntries);
+
+            for (const [observer, entries] of observerEntries) {
+                observer.internalTrigger(entries);
+            }
+        };
+
+        this.prepareYogaTree(this.rootNode, flushLayoutObservers);
+
         const terminalWidth = getWindowSize(this.options.stdout).columns;
 
         this.rootNode.yogaNode!.setWidth(terminalWidth);
 
         this.rootNode.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
 
-        // Calculate scroll state and trigger resize observers after layout
-        const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
-
-        this.calculateScrollAndTriggerObservers(this.rootNode, observerEntries);
-
-        for (const [observer, entries] of observerEntries) {
-            observer.internalTrigger(entries);
-        }
+        flushLayoutObservers(this.rootNode);
     };
 
     private calculateScrollAndTriggerObservers(node: dom.DOMElement, observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>): void {
@@ -679,7 +686,68 @@ export default class Ink {
         this.onRender();
     }
 
+    /**
+     * Walk the DOM tree before Yoga layout to handle StaticRender nodes:
+     * - Re-attach Yoga children if a cached render was invalidated
+     * - Pre-render ink-static-render nodes that don't have a cached render yet
+     */
+    private prepareYogaTree(node: dom.DOMElement, flushLayoutObservers: (node: dom.DOMElement) => void): void {
+        // Re-attach Yoga children if the cached render was invalidated
+        if (node.isYogaTreeDetached && !node.cachedRender && node.yogaNode) {
+            // Re-apply styles to revert any fixed width/height set by setCachedRender
+            node.yogaNode.setWidthAuto();
+            node.yogaNode.setHeightAuto();
+            applyStyles(node.yogaNode, node.style);
+
+            while (node.yogaNode.getChildCount() > 0) {
+                node.yogaNode.removeChild(node.yogaNode.getChild(0));
+            }
+
+            let yogaIndex = 0;
+
+            for (const child of node.childNodes) {
+                const domChild = child as dom.DOMElement;
+
+                if (child.nodeName !== "#text" && domChild.yogaNode) {
+                    node.yogaNode.insertChild(domChild.yogaNode, yogaIndex);
+                    yogaIndex++;
+                }
+            }
+
+            node.isYogaTreeDetached = false;
+            this.markAllTextNodesDirty(node);
+        }
+
+        // Recurse into children
+        for (const child of node.childNodes) {
+            if (child.nodeName !== "#text") {
+                this.prepareYogaTree(child as dom.DOMElement, flushLayoutObservers);
+            }
+        }
+
+        // Pre-render ink-static-render nodes that don't have a cached render
+        if (node.nodeName === "ink-static-render" && !node.cachedRender) {
+            const terminalWidth = getWindowSize(this.options.stdout).columns;
+            const { width } = node.style;
+
+            if (node.yogaNode) {
+                node.yogaNode.setWidth(typeof width === "number" ? width : terminalWidth);
+                node.yogaNode.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
+            }
+
+            flushLayoutObservers(node);
+            renderToStatic(node, {
+                skipStaticElements: false,
+                trackSelection: this.options.trackSelection,
+            });
+        }
+    }
+
     private markAllTextNodesDirty(node: dom.DOMElement): void {
+        if (node.cachedRender) {
+            return;
+        }
+
         if (node.nodeName === "ink-text" && node.yogaNode) {
             node.yogaNode.markDirty();
         }

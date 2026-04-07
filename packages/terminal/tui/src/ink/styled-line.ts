@@ -41,6 +41,8 @@ export class StyledLine {
 
     private spans: StyleSpan[] | undefined;
 
+    private _cachedTrimmedLength?: number;
+
     static empty(length: number): StyledLine {
         const safeLength = Math.min(length, MAX_SAFE_OFFSET);
 
@@ -65,6 +67,7 @@ export class StyledLine {
         }
 
         line.spans = [{ formatFlags: 0, length: safeLength }];
+        line._cachedTrimmedLength = 0;
 
         if (StyledLine.emptyCache.size > 100) {
             StyledLine.emptyCache.clear();
@@ -164,6 +167,7 @@ export class StyledLine {
     }
 
     setInverted(index: number, inverted: boolean): void {
+        this._cachedTrimmedLength = undefined;
         this.updateSpanAt(index, (span) => {
             if (inverted) {
                 span.formatFlags |= INVERSE_MASK;
@@ -174,12 +178,14 @@ export class StyledLine {
     }
 
     setBackgroundColor(index: number, color: string | undefined): void {
+        this._cachedTrimmedLength = undefined;
         this.updateSpanAt(index, (span) => {
             span.bgColor = color;
         });
     }
 
     setForegroundColor(index: number, color: string | undefined): void {
+        this._cachedTrimmedLength = undefined;
         this.updateSpanAt(index, (span) => {
             span.fgColor = color;
         });
@@ -190,6 +196,7 @@ export class StyledLine {
             return;
         }
 
+        this._cachedTrimmedLength = undefined;
         this.ensureInitialized();
 
         const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
@@ -258,6 +265,7 @@ export class StyledLine {
             return;
         }
 
+        this._cachedTrimmedLength = undefined;
         this.ensureInitialized();
 
         const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
@@ -347,6 +355,7 @@ export class StyledLine {
             return;
         }
 
+        this._cachedTrimmedLength = undefined;
         this.ensureInitialized();
 
         const actualCount = Math.min(n, this.length - destinationStart, source.length - srcStart);
@@ -437,6 +446,7 @@ export class StyledLine {
     }
 
     pushChar(value: string, formatFlags: number, fgColor?: string, bgColor?: string, link?: string): void {
+        this._cachedTrimmedLength = undefined;
         this.ensureInitialized();
 
         const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
@@ -499,6 +509,7 @@ export class StyledLine {
                 ...span,
             };
         });
+        result._cachedTrimmedLength = this._cachedTrimmedLength;
 
         return result;
     }
@@ -642,11 +653,17 @@ export class StyledLine {
     }
 
     getTrimmedLength(): number {
+        if (this._cachedTrimmedLength !== undefined) {
+            return this._cachedTrimmedLength;
+        }
+
         if (this.length === 0) {
+            this._cachedTrimmedLength = 0;
             return 0;
         }
 
         if (this.text === undefined || this.charData === undefined) {
+            this._cachedTrimmedLength = 0;
             return 0;
         }
 
@@ -659,7 +676,8 @@ export class StyledLine {
                     = (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
 
                 if (hasStylesOnSpan) {
-                    return currentIndex + 1;
+                    this._cachedTrimmedLength = currentIndex + 1;
+                    return this._cachedTrimmedLength;
                 }
 
                 for (let i = 0; i < span.length; i++) {
@@ -667,7 +685,8 @@ export class StyledLine {
                     const charEnd = currentIndex + 1 < this.length ? this.charData[currentIndex + 1]! & 0x7f_ff : this.text.length;
 
                     if (charEnd - charStart !== 1 || this.text[charStart] !== " ") {
-                        return currentIndex + 1;
+                        this._cachedTrimmedLength = currentIndex + 1;
+                        return this._cachedTrimmedLength;
                     }
 
                     currentIndex--;
@@ -675,6 +694,7 @@ export class StyledLine {
             }
         }
 
+        this._cachedTrimmedLength = 0;
         return 0;
     }
 

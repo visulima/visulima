@@ -52,7 +52,25 @@ export default squashTextNodes;
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
 export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, offsetRef: { current: number }): string => {
+    // Use cached text if available
+    if (node.internal_textCache) {
+        const { map: cachedMap, text } = node.internal_textCache;
+
+        for (const [k, v] of cachedMap.entries()) {
+            map.set(k, {
+                end: v.end + offsetRef.current,
+                start: v.start + offsetRef.current,
+            });
+        }
+
+        offsetRef.current += text.length;
+
+        return text;
+    }
+
     let text = "";
+    const localMap: CharOffsetMap = new Map();
+    const localOffsetRef = { current: 0 };
 
     for (let index = 0; index < node.childNodes.length; index++) {
         const childNode = node.childNodes[index];
@@ -62,20 +80,20 @@ export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, off
         }
 
         let nodeText = "";
-        const startOffset = offsetRef.current;
+        const startOffset = localOffsetRef.current;
 
         if (childNode.nodeName === "#text") {
             nodeText = childNode.nodeValue;
-            map.set(childNode, {
+            localMap.set(childNode, {
                 end: startOffset + nodeText.length,
                 start: startOffset,
             });
-            offsetRef.current += nodeText.length;
+            localOffsetRef.current += nodeText.length;
         } else {
             if (childNode.nodeName === "ink-text" || childNode.nodeName === "ink-virtual-text") {
-                nodeText = squashTextNodesWithMap(childNode, map, offsetRef);
-                map.set(childNode, {
-                    end: offsetRef.current,
+                nodeText = squashTextNodesWithMap(childNode, localMap, localOffsetRef);
+                localMap.set(childNode, {
+                    end: localOffsetRef.current,
                     start: startOffset,
                 });
             }
@@ -87,6 +105,21 @@ export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, off
 
         text += nodeText;
     }
+
+    // Cache the result on the node
+    node.internal_textCache = {
+        map: localMap,
+        text,
+    };
+
+    for (const [k, v] of localMap.entries()) {
+        map.set(k, {
+            end: v.end + offsetRef.current,
+            start: v.start + offsetRef.current,
+        });
+    }
+
+    offsetRef.current += text.length;
 
     return text;
 };
