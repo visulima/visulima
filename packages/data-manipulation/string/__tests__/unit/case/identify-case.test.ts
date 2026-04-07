@@ -138,6 +138,7 @@ describe(identifyCase, () => {
     it("should handle null input", () => {
         expect.assertions(1);
 
-        expect(() => identifyCase(null as any)).toThrow(TypeError);
+        // @ts-expect-error -- testing runtime error for invalid input
+        expect(() => identifyCase(null as unknown as string)).toThrow(TypeError);
     });
 });

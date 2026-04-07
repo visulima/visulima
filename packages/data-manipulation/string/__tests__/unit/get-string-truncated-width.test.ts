@@ -203,9 +203,9 @@ describe(getStringTruncatedWidth, () => {
             expect.assertions(1);
 
             const response = await fetch("https://raw.githubusercontent.com/muan/unicode-emoji-json/main/data-by-group.json");
-            const data = await response.json();
+            const data = (await response.json()) as { emojis: { emoji: string }[] }[];
             // eslint-disable-next-line @typescript-eslint/no-shadow
-            const emojis = data.flatMap(({ emojis }) => emojis.map(({ emoji }) => emoji));
+            const emojis: string[] = data.flatMap(({ emojis }) => emojis.map(({ emoji }) => emoji));
 
             const failures = emojis.filter((emoji: string) => getWidth(emoji) !== 2);
 
@@ -279,7 +279,7 @@ describe(getStringTruncatedWidth, () => {
             };
 
             for (const [char, expectedWidth] of Object.entries(unicodeChars)) {
-                expect(getWidth(char), `${char} should have a width of ${expectedWidth}`).toBe(expectedWidth);
+                expect(getWidth(char), `${char} should have a width of ${String(expectedWidth)}`).toBe(expectedWidth);
             }
         });
 

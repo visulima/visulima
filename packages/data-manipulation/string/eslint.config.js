@@ -24,20 +24,9 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
-            "@stylistic/quotes": "off",
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-misused-spread": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
+            // Custom vitest matcher toEqualAnsi cannot be resolved by typescript-eslint's type checker
             "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/require-await": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            // Conflicts with unicorn/no-for-loop which prefers for-of
-            "no-for-of-array/no-for-of-array": "off",
             "no-secrets/no-secrets": "off",
-            "sonarjs/deprecation": "off",
-            "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
         },
     },

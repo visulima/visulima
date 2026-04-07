@@ -4,7 +4,7 @@ import slugify from "../../src/slugify";
 import type { SlugifyOptions } from "../../src/types";
 
 describe("slugify function", () => {
-    it("should handle main cases", async () => {
+    it("should handle main cases", () => {
         expect.assertions(18);
 
         expect(slugify("Foo Bar")).toBe("foo-bar");
@@ -33,14 +33,14 @@ describe("slugify function", () => {
         expect(slugify("Util APIs")).toBe("util-apis");
     });
 
-    it("should convert basic strings", async () => {
+    it("should convert basic strings", () => {
         expect.assertions(2);
 
         expect(slugify("Hello World")).toBe("hello-world");
         expect(slugify("foo bar baz")).toBe("foo-bar-baz");
     });
 
-    it("should handle accented characters via transliterate", async () => {
+    it("should handle accented characters via transliterate", () => {
         expect.assertions(3);
 
         expect(slugify("Crème Brûlée")).toBe("creme-brulee");
@@ -48,27 +48,27 @@ describe("slugify function", () => {
         expect(slugify("straße")).toBe("strasse");
     });
 
-    it("should handle different whitespace characters (replaced by separator)", async () => {
+    it("should handle different whitespace characters (replaced by separator)", () => {
         expect.assertions(1);
 
         // Whitespace is not in default allowedChars, so it becomes a separator
         expect(slugify("foo\tbar\nbaz")).toBe("foo-bar-baz");
     });
 
-    it("should handle leading/trailing whitespace (removed)", async () => {
+    it("should handle leading/trailing whitespace (removed)", () => {
         expect.assertions(1);
 
         expect(slugify("  leading and trailing spaces  ")).toBe("leading-and-trailing-spaces");
     });
 
-    it("should collapse multiple separators", async () => {
+    it("should collapse multiple separators", () => {
         expect.assertions(2);
 
         expect(slugify("foo --- bar - baz")).toBe("foo-bar-baz");
         expect(slugify("disallowed###chars---become--separators")).toBe("disallowed-chars-become-separators");
     });
 
-    it("should remove disallowed characters (replacing with separator)", async () => {
+    it("should remove disallowed characters (replacing with separator)", () => {
         expect.assertions(3);
 
         expect(slugify("foo!bar?baz#")).toBe("foo-bar-baz"); // !, ?, # not in allowedChars
@@ -76,7 +76,7 @@ describe("slugify function", () => {
         expect(slugify("email@domain.com")).toBe("email-domain.com"); // @ replaced, . kept
     });
 
-    it("should handle leading/trailing separators", async () => {
+    it("should handle leading/trailing separators", () => {
         expect.assertions(3);
 
         expect(slugify("- foo - bar -")).toBe("foo-bar");
@@ -84,7 +84,7 @@ describe("slugify function", () => {
         expect(slugify("--foo--bar--")).toBe("foo-bar");
     });
 
-    it("should handle edge cases", async () => {
+    it("should handle edge cases", () => {
         expect.assertions(3);
 
         expect(slugify("")).toBe("");
@@ -92,21 +92,21 @@ describe("slugify function", () => {
         expect(slugify("!@#$%^")).toBe(""); // All disallowed
     });
 
-    it("should respect the lowercase option", async () => {
+    it("should respect the lowercase option", () => {
         expect.assertions(2);
 
         expect(slugify("Hello World", { lowercase: true, uppercase: false })).toBe("hello-world");
         expect(slugify("Hello World", { lowercase: true, uppercase: true })).toBe("hello-world"); // lowercase wins if both true
     });
 
-    it("should respect the uppercase option", async () => {
+    it("should respect the uppercase option", () => {
         expect.assertions(2);
 
         expect(slugify("Hello World", { lowercase: false, uppercase: true })).toBe("HELLO-WORLD");
         expect(slugify("hello world", { lowercase: false, uppercase: true })).toBe("HELLO-WORLD");
     });
 
-    it("should respect the separator option", async () => {
+    it("should respect the separator option", () => {
         expect.assertions(3);
 
         // Ensure separator is included in allowedChars if needed
@@ -115,7 +115,7 @@ describe("slugify function", () => {
         expect(slugify("multiple--separators", { allowedChars: "a-zA-Z-", separator: "-" })).toBe("multiple-separators");
     });
 
-    it("should respect the allowedChars option", async () => {
+    it("should respect the allowedChars option", () => {
         expect.assertions(3);
 
         // Only allow letters
@@ -126,32 +126,32 @@ describe("slugify function", () => {
         expect(slugify("keep.!@#$-this", { allowedChars: "a-z.!-" })).toBe("keep.!-this");
     });
 
-    it("should respect fixChineseSpacing option", async () => {
+    it("should respect fixChineseSpacing option", () => {
         expect.assertions(2);
 
         expect(slugify("你好世界", { fixChineseSpacing: true })).toBe("ni-hao-shi-jie");
         expect(slugify("你好世界", { fixChineseSpacing: false })).toBe("nihaoshijie");
     });
 
-    it("should respect transliterate ignore option", async () => {
+    it("should respect transliterate ignore option", () => {
         expect.assertions(1);
 
         expect(slugify("Ignore Cœur but not cœur", { ignore: ["Cœur"] })).toBe("ignore-c-ur-but-not-coeur");
     });
 
-    it("should respect transliterate replaceBefore option", async () => {
+    it("should respect transliterate replaceBefore option", () => {
         expect.assertions(1);
 
         expect(slugify("Keep C++ & C#", { replaceBefore: { "C#": "csharp", "C++": "cpp" } })).toBe("keep-cpp-csharp");
     });
 
-    it("should respect transliterate replaceAfter option", async () => {
+    it("should respect transliterate replaceAfter option", () => {
         expect.assertions(1);
 
         expect(slugify("café", { replaceAfter: { e: "é" } })).toBe("caf");
     });
 
-    it("should respect transliterate unknown option", async () => {
+    it("should respect transliterate unknown option", () => {
         expect.assertions(1);
 
         expect(slugify("a🚀b", { unknown: "UNK" })).toBe("aunkb"); // 🚀 -> UNK -> unk
@@ -218,14 +218,14 @@ describe("slugify function", () => {
             ],
         ];
 
-        it.each(tests)("should correctly slugify '%s' with options %o to '%s'", async (input, options, expected) => {
+        it.each(tests)("should correctly slugify '%s' with options %o to '%s'", (input, options, expected) => {
             expect.assertions(1);
 
             expect(slugify(input, options)).toBe(expected);
         });
     });
 
-    it("should handle possessives and contractions", async () => {
+    it("should handle possessives and contractions", () => {
         expect.assertions(5);
 
         // Behavior of apostrophes depends on transliterate's charmap and allowedChars
@@ -237,7 +237,7 @@ describe("slugify function", () => {
         expect(slugify("it-s-hould-not-modify-t-his")).toBe("it-s-hould-not-modify-t-his");
     });
 
-    it("should handle custom separator", async () => {
+    it("should handle custom separator", () => {
         expect.assertions(6);
 
         expect(slugify("foo bar", { separator: "_" })).toBe("foo_bar");
@@ -248,7 +248,7 @@ describe("slugify function", () => {
         expect(slugify("[foo] [bar]", { separator: "." })).toBe("foo.bar");
     });
 
-    it("should handle custom replacements (via replaceBefore)", async () => {
+    it("should handle custom replacements (via replaceBefore)", () => {
         expect.assertions(6);
 
         expect(
@@ -285,7 +285,7 @@ describe("slugify function", () => {
         expect(slugify("Zürich")).toBe("zuerich");
     });
 
-    it("should handle lowercase option", async () => {
+    it("should handle lowercase option", () => {
         expect.assertions(7);
 
         expect(slugify("foo bar", { lowercase: false })).toBe("foo-bar"); // Input is already lowercase
@@ -302,61 +302,61 @@ describe("slugify function", () => {
     describe("language support (relies on charmap.ts)", () => {
         const langOptions = { lowercase: false, separator: " ", transliterate: true }; // Ensure transliteration for these
 
-        it("supports German umlauts", async () => {
+        it("supports German umlauts", () => {
             expect.assertions(1);
 
             expect(slugify("ä ö ü Ä Ö Ü ß", langOptions)).toBe("ae oe ue Ae Oe Ue ss");
         });
 
-        it("supports Vietnamese", async () => {
+        it("supports Vietnamese", () => {
             expect.assertions(1);
 
             expect(slugify("ố Ừ Đ", langOptions)).toBe("o U D");
         });
 
-        it("supports Arabic", async () => {
+        it("supports Arabic", () => {
             expect.assertions(1);
 
             expect(slugify("ث س و", langOptions)).toBe("th s w");
         });
 
-        it("supports Persian / Farsi", async () => {
+        it("supports Persian / Farsi", () => {
             expect.assertions(1);
 
             expect(slugify("چ ی پ", langOptions)).toBe("ch y p");
         });
 
-        it("supports Urdu", async () => {
+        it("supports Urdu", () => {
             expect.assertions(1);
 
             expect(slugify("ٹ ڈ ھ", langOptions)).toBe("t d h");
         });
 
-        it("supports Pashto", async () => {
+        it("supports Pashto", () => {
             expect.assertions(1);
 
             expect(slugify("ګ ړ څ", langOptions)).toBe("g r c");
         });
 
-        it("supports Russian", async () => {
+        it("supports Russian", () => {
             expect.assertions(1);
 
             expect(slugify("Ж п ю", langOptions)).toBe("Zh p yu");
         });
 
-        it("supports Romanian", async () => {
+        it("supports Romanian", () => {
             expect.assertions(1);
 
             expect(slugify("ș Ț", langOptions)).toBe("s T");
         });
 
-        it("supports Turkish", async () => {
+        it("supports Turkish", () => {
             expect.assertions(1);
 
             expect(slugify("İ ı Ş ş Ç ç Ğ ğ", langOptions)).toBe("I i S s C c G g");
         });
 
-        it("supports Armenian", async () => {
+        it("supports Armenian", () => {
             expect.assertions(1);
 
             expect(slugify("Ե ր ե ւ ա ն", langOptions)).toBe("Ye r e w a n"); // Corrected expected based on observed output
@@ -364,7 +364,7 @@ describe("slugify function", () => {
     });
 
     describe("leading/trailing character behavior (no specific preservation options)", () => {
-        it("leading underscore behavior", async () => {
+        it("leading underscore behavior", () => {
             expect.assertions(4);
 
             // Our slugify trims leading separators. If '_' is separator or becomes one.
@@ -375,7 +375,7 @@ describe("slugify function", () => {
             expect(slugify("____-___foo__bar")).toBe("____-___foo__bar"); // Corrected expected: _ is allowed, - is sep
         });
 
-        it("trailing dash behavior", async () => {
+        it("trailing dash behavior", () => {
             expect.assertions(5);
 
             // Our slugify trims trailing separators.

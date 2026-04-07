@@ -21,12 +21,14 @@ describe("string Interface Augmentations", () => {
         it("should handle single string argument", () => {
             const input = "hello";
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: testing type-level string spread behavior
             expectTypeOf([...input, ..."world"]).toEqualTypeOf<"helloworld">();
         });
 
         it("should handle multiple string arguments", () => {
             const input = "hello";
 
+            // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: testing type-level string spread behavior
             expectTypeOf([...input, ..." ", ..."world"]).toEqualTypeOf<"hello world">();
         });
 

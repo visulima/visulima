@@ -4,13 +4,13 @@ import transliterate from "../../src/transliterate";
 import type { OptionsTransliterate } from "../../src/types";
 
 describe("transliterate function", () => {
-    it("should return empty string for empty input", async () => {
+    it("should return empty string for empty input", () => {
         expect.assertions(1);
 
         expect(transliterate("")).toBe("");
     });
 
-    it("should handle basic Latin characters", async () => {
+    it("should handle basic Latin characters", () => {
         expect.assertions(3);
 
         expect(transliterate("Crème Brûlée")).toBe("Creme Brulee");
@@ -18,7 +18,7 @@ describe("transliterate function", () => {
         expect(transliterate("straße")).toBe("strasse");
     });
 
-    it("should use unknown character for unmapped chars", async () => {
+    it("should use unknown character for unmapped chars", () => {
         expect.assertions(2);
 
         const unmappedString = "\u{E000}\u{E001}🚀";
@@ -27,27 +27,27 @@ describe("transliterate function", () => {
         expect(transliterate(unmappedString, { unknown: "?" })).toBe("???");
     });
 
-    it("should trim whitespace if trim option is true", async () => {
+    it("should trim whitespace if trim option is true", () => {
         expect.assertions(2);
 
         expect(transliterate("  hello world  ")).toBe("  hello world  ");
         expect(transliterate("  hello world  ", { trim: true })).toBe("hello world");
     });
 
-    it("should handle ignore option", async () => {
+    it("should handle ignore option", () => {
         expect.assertions(2);
 
         expect(transliterate("Ignore Cœur but not cœur", { ignore: ["Cœur"] })).toBe("Ignore Cœur but not coeur");
         expect(transliterate("Keep éàçüö ignored", { ignore: ["éàçüö"] })).toBe("Keep éàçüö ignored");
     });
 
-    it("should handle replace option (object)", async () => {
+    it("should handle replace option (object)", () => {
         expect.assertions(1);
 
         expect(transliterate("Replace √ symbol", { replaceBefore: { "√": "sqrt" } })).toBe("Replace sqrt symbol");
     });
 
-    it("should handle replace option (array)", async () => {
+    it("should handle replace option (array)", () => {
         expect.assertions(1);
 
         expect(
@@ -60,14 +60,14 @@ describe("transliterate function", () => {
         ).toBe("Replace ab and xy");
     });
 
-    it("should handle replaceAfter option", async () => {
+    it("should handle replaceAfter option", () => {
         expect.assertions(2);
 
         expect(transliterate("cafe", { replaceAfter: { e: "é" } })).toBe("café");
         expect(transliterate("strasse", { replaceAfter: [[/ss/g, "ß"]] })).toBe("straße");
     });
 
-    it("should handle combined options", async () => {
+    it("should handle combined options", () => {
         expect.assertions(1);
 
         const text = "  Ignore Cœur, replace √ with SQRT, then trim!  ";
@@ -82,7 +82,7 @@ describe("transliterate function", () => {
         expect(transliterate(text, options)).toBe("Ignore Cœur, replace Square Root with Square Root, then trim!");
     });
 
-    it("should optionally add space before non-punctuation after Chinese char", async () => {
+    it("should optionally add space before non-punctuation after Chinese char", () => {
         expect.assertions(3);
 
         const text = "中文Äǐǎ";
@@ -105,7 +105,7 @@ describe("transliterate function", () => {
         }
 
         // Use it.each for printable ASCII
-        it.each(printableAsciiCodes)("should leave printable ASCII character %s unchanged", async (code) => {
+        it.each(printableAsciiCodes)("should leave printable ASCII character %s unchanged", (code) => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
@@ -123,7 +123,7 @@ describe("transliterate function", () => {
         }
 
         // Use it.each for C1 controls (default unknown)
-        it.each(c1ControlCodes)("should map C1 control character %s to default unknown ('')", async (code) => {
+        it.each(c1ControlCodes)("should map C1 control character %s to default unknown ('')", (code) => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
@@ -132,7 +132,7 @@ describe("transliterate function", () => {
         });
 
         // Use it.each for C1 controls (specified unknown)
-        it.each(c1ControlCodes)("should map C1 control character %s to specified unknown ('?')", async (code) => {
+        it.each(c1ControlCodes)("should map C1 control character %s to specified unknown ('?')", (code) => {
             expect.assertions(1);
 
             const char = String.fromCodePoint(code);
@@ -150,7 +150,7 @@ describe("transliterate function", () => {
                 "\r\n",
                 "I like pie.\n",
             ].map(String),
-        )("should handle basic input: %s", async (string_) => {
+        )("should handle basic input: %s", (string_) => {
             expect.assertions(1);
 
             expect(transliterate(string_)).toBe(string_);
@@ -185,26 +185,26 @@ describe("transliterate function", () => {
             // Unknown characters
             [`\u0800\u1400${String.fromCodePoint(0xd8_40, 0xdd_00)}`, "\u{20100}"],
             ["🚀", ""], // Expect empty if unknown is default ""
-        ])("should transliterate %s to %s (charmap dependent)", async (string_, result) => {
+        ])("should transliterate %s to %s (charmap dependent)", (string_, result) => {
             expect.assertions(1);
 
             expect(transliterate(string_)).toBe(result);
         });
 
-        it("should correctly transliterate tamil ன", async () => {
+        it("should correctly transliterate tamil ன", () => {
             expect.assertions(1);
 
             expect(transliterate("கன்னியாகுமரி")).toBe("kannnniyaakaumri");
         });
 
-        it("should handle unknown chars with option", async () => {
+        it("should handle unknown chars with option", () => {
             expect.assertions(1);
 
             expect(transliterate("🚀", { unknown: "?" })).toBe("?");
         });
     });
 
-    it("with replace / replaceAfter and ignore options combined", async () => {
+    it("with replace / replaceAfter and ignore options combined", () => {
         expect.assertions(4);
 
         expect(
@@ -226,19 +226,19 @@ describe("transliterate function", () => {
         ).toBe("Ni Good,Shi界!"); // ignore 界, no space added by default logic
     });
 
-    it("supports German umlauts", async () => {
+    it("supports German umlauts", () => {
         expect.assertions(1);
 
         expect(transliterate("ä ö ü Ä Ö Ü ß")).toBe("ae oe ue Ae Oe Ue ss");
     });
 
-    it("supports Vietnamese", async () => {
+    it("supports Vietnamese", () => {
         expect.assertions(1);
 
         expect(transliterate("ố Ừ Đ")).toBe("o U D");
     });
 
-    it("supports Thai", async () => {
+    it("supports Thai", () => {
         expect.assertions(1);
         // Ideal: ochiangmai, Current: oechiiyngaihm
         expect(transliterate("ốเชียงใหม่")).toBe("ochianghaim");
@@ -250,25 +250,25 @@ describe("transliterate function", () => {
             ["ขอบคุณ", "khobkhun"],
             ["ไม่เป็นไร", "maipunrai"],
             ["ประเทศไทย", "prathesthai"],
-        ])("should transliterate Thai '%s' to '%s' (target behavior)", async (input, expected) => {
+        ])("should transliterate Thai '%s' to '%s' (target behavior)", (input, expected) => {
             expect.assertions(1);
             expect(transliterate(input)).toBe(expected);
         });
     });
 
-    it("supports Arabic", async () => {
+    it("supports Arabic", () => {
         expect.assertions(1);
 
         expect(transliterate("ث س و")).toBe("th s w");
     });
 
-    it("supports Persian / Farsi", async () => {
+    it("supports Persian / Farsi", () => {
         expect.assertions(1);
 
         expect(transliterate("چ ی پ")).toBe("ch y p");
     });
 
-    it("supports Urdu", async () => {
+    it("supports Urdu", () => {
         expect.assertions(1);
 
         const input = "ٹ ڈ ھ";
@@ -278,7 +278,7 @@ describe("transliterate function", () => {
         expect(result).toBe(expected);
     });
 
-    it("supports Pashto", async () => {
+    it("supports Pashto", () => {
         expect.assertions(1);
 
         const input = "ګ ړ څ";
@@ -288,115 +288,115 @@ describe("transliterate function", () => {
         expect(result).toBe(expected);
     });
 
-    it("supports Russian", async () => {
+    it("supports Russian", () => {
         expect.assertions(1);
 
         expect(transliterate("Ж п ю")).toBe("Zh p yu");
     });
 
-    it("supports Romanian", async () => {
+    it("supports Romanian", () => {
         expect.assertions(1);
 
         expect(transliterate("ș Ț")).toBe("s T");
     });
 
-    it("supports Turkish", async () => {
+    it("supports Turkish", () => {
         expect.assertions(1);
 
         expect(transliterate("İ ı Ş ş Ç ç Ğ ğ")).toBe("I i S s C c G g");
     });
 
-    it("supports Armenian", async () => {
+    it("supports Armenian", () => {
         expect.assertions(1);
 
         expect(transliterate("Ե ր և ա ն")).toBe("Ye r yev a n");
     });
 
-    it("supports Georgian", async () => {
+    it("supports Georgian", () => {
         expect.assertions(1);
 
         expect(transliterate("თ პ ღ")).toBe("t p gh");
     });
 
-    it("supports Latin", async () => {
+    it("supports Latin", () => {
         expect.assertions(1);
 
         expect(transliterate("Ä Ð Ø")).toBe("Ae D Oe");
     });
 
-    it("supports Czech", async () => {
+    it("supports Czech", () => {
         expect.assertions(1);
 
         expect(transliterate("č ž Ň")).toBe("c z N");
     });
 
-    it("supports Danish", async () => {
+    it("supports Danish", () => {
         expect.assertions(1);
 
         expect(transliterate("æ ø å Æ Ø Å")).toBe("ae oe aa AE Oe Aa");
     });
 
-    it("supports Dhivehi", async () => {
+    it("supports Dhivehi", () => {
         expect.assertions(1);
 
         expect(transliterate("ޝ ޓ ބ")).toBe("sh t b");
     });
 
-    it("supports Greek", async () => {
+    it("supports Greek", () => {
         expect.assertions(1);
 
         expect(transliterate("θ Γ Ξ")).toBe("th G KS");
     });
 
-    it("supports Hungarian", async () => {
+    it("supports Hungarian", () => {
         expect.assertions(1);
 
         expect(transliterate("ű ö Ö")).toBe("u oe Oe");
     });
 
-    it("supports Latvian", async () => {
+    it("supports Latvian", () => {
         expect.assertions(1);
 
         expect(transliterate("ā Ņ Ģ")).toBe("a N G");
     });
 
-    it("supports Lithuanian", async () => {
+    it("supports Lithuanian", () => {
         expect.assertions(1);
 
         expect(transliterate("ą į Š")).toBe("a i S");
     });
 
-    it("supports Macedonian", async () => {
+    it("supports Macedonian", () => {
         expect.assertions(1);
 
         expect(transliterate("Ќ љ Тс")).toBe("Kj lj Ts");
     });
 
-    it("supports Polish", async () => {
+    it("supports Polish", () => {
         expect.assertions(1);
 
         expect(transliterate("ą Ą Ł")).toBe("a A L");
     });
 
-    it("supports Serbian", async () => {
+    it("supports Serbian", () => {
         expect.assertions(1);
 
         expect(transliterate("ђ џ Ђ Љ")).toBe("dj dz Dj Lj");
     });
 
-    it("supports Slovak", async () => {
+    it("supports Slovak", () => {
         expect.assertions(1);
 
         expect(transliterate("ľ Ľ Ŕ")).toBe("l L R");
     });
 
-    it("supports Swedish", async () => {
+    it("supports Swedish", () => {
         expect.assertions(1);
 
         expect(transliterate("ä ö Ä Ö")).toBe("ae oe Ae Oe");
     });
 
-    it("supports Ukrainian", async () => {
+    it("supports Ukrainian", () => {
         expect.assertions(1);
 
         expect(transliterate("Є Ґ ї")).toBe("Ye G yi");
