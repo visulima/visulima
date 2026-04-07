@@ -28,19 +28,13 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
+            // Tests extensively use `any` for mocking HTTP request/response objects (IncomingMessage, ServerResponse)
             "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-floating-promises": "off",
-            "@typescript-eslint/no-implied-eval": "off",
-            // Tests extensively use `any` for mocking HTTP request/response objects
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/restrict-plus-operands": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
             "no-secrets/no-secrets": "off",
-            "sonarjs/no-nested-functions": "off",
-            "sonarjs/no-undefined-argument": "off",
             "unicorn/no-null": "off",
         },
     },

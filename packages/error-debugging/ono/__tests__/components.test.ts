@@ -156,7 +156,7 @@ describe("components", () => {
         it("should handle undefined stack", () => {
             expect.assertions(2);
 
-            const html = rawStackTrace(undefined);
+            const html = rawStackTrace();
 
             expect(html).toContain("Stack Trace");
             expect(html).toBeDefined();

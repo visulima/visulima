@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import createRequestContextPage from "../src/error-inspector/page/create-request-context";
+import type { RequestLike } from "../src/error-inspector/page/types";
 
 describe("context page", () => {
     describe(createRequestContextPage, () => {
@@ -14,7 +15,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -34,7 +35,7 @@ describe("context page", () => {
                 },
                 method: "POST",
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {
                 context: {
@@ -64,7 +65,7 @@ describe("context page", () => {
                 json: () => Promise.resolve({ test: "data" }),
                 method: "POST",
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -82,7 +83,7 @@ describe("context page", () => {
                 method: "POST",
                 text: () => Promise.resolve("plain text body"),
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -101,7 +102,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {
                 headerAllowlist: ["user-agent", "content-type"],
@@ -124,7 +125,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {
                 headerDenylist: ["authorization"],
@@ -144,7 +145,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -164,7 +165,7 @@ describe("context page", () => {
                 },
                 method: "POST",
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -185,7 +186,7 @@ describe("context page", () => {
                 json: () => Promise.resolve({ message: "hello" }),
                 method: "POST",
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const jsonPage = await createRequestContextPage(jsonRequest, {});
 
@@ -200,7 +201,7 @@ describe("context page", () => {
                 method: "POST",
                 text: () => Promise.resolve("plain text"),
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const textPage = await createRequestContextPage(textRequest, {});
 
@@ -216,7 +217,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -235,7 +236,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -250,7 +251,7 @@ describe("context page", () => {
                 headers: undefined,
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -269,18 +270,24 @@ describe("context page", () => {
                 },
                 method: "POST",
                 // eslint-disable-next-line vitest/require-mock-type-parameters
-                on: vi.fn((event, callback) => {
+                on: vi.fn((event: string, callback: (chunk?: unknown) => void) => {
                     if (event === "data") {
                         // Send the large body in chunks
                         const chunks = largeBody.match(/.{1,10000}/g) ?? [];
 
-                        chunks.forEach((chunk) => setTimeout(callback, 0, chunk));
+                        for (const chunk of chunks) {
+                            setTimeout(() => {
+                                callback(chunk);
+                            }, 0);
+                        }
                     } else if (event === "end") {
-                        setTimeout(callback, 0);
+                        setTimeout(() => {
+                            callback();
+                        }, 0);
                     }
                 }),
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {
                 previewBytes: 1000, // Small limit for testing
@@ -299,7 +306,7 @@ describe("context page", () => {
                 json: () => Promise.reject(new Error("Parse error")),
                 method: "POST",
                 url: "http://example.com/api",
-            } as any;
+            } as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 
@@ -314,7 +321,7 @@ describe("context page", () => {
                 headers: {},
                 method: "GET",
                 url: "http://example.com/test",
-            } as any;
+            } as RequestLike;
 
             const complexContext = {
                 app: {
