@@ -107,7 +107,6 @@ const adaptErrorHandlerToFetch
             // Convert to fetch Response
             const headers: Record<string, string> = {};
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(mockResponse.headers)) {
                 headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
             }
@@ -169,7 +168,6 @@ const createFetchNegotiatedErrorHandler
             }
 
             // Allow consumer overrides via regex
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const { handler, regex } of errorHandlers) {
                 const headerString = accept ?? "";
 

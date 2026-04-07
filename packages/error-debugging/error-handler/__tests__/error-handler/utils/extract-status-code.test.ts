@@ -8,7 +8,7 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 404;
+        (error as Error & Record<string, unknown>).statusCode = 404;
 
         const result = extractStatusCode(error);
 
@@ -20,7 +20,7 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).status = 403;
+        (error as Error & Record<string, unknown>).status = 403;
 
         const result = extractStatusCode(error);
 
@@ -32,8 +32,8 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 404;
-        (error as any).status = 403;
+        (error as Error & Record<string, unknown>).statusCode = 404;
+        (error as Error & Record<string, unknown>).status = 403;
 
         const result = extractStatusCode(error);
 
@@ -68,7 +68,7 @@ describe(extractStatusCode, () => {
         testCases.forEach((statusCode) => {
             const error = new Error("Test error");
 
-            (error as any).statusCode = statusCode;
+            (error as Error & Record<string, unknown>).statusCode = statusCode;
 
             const result = extractStatusCode(error);
 
@@ -84,7 +84,7 @@ describe(extractStatusCode, () => {
         testCases.forEach((statusCode) => {
             const error = new Error("Test error");
 
-            (error as any).statusCode = statusCode;
+            (error as Error & Record<string, unknown>).statusCode = statusCode;
 
             const result = extractStatusCode(error);
 
@@ -97,7 +97,7 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 200;
+        (error as Error & Record<string, unknown>).statusCode = 200;
 
         const result = extractStatusCode(error);
 
@@ -109,7 +109,7 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 700;
+        (error as Error & Record<string, unknown>).statusCode = 700;
 
         const result = extractStatusCode(error);
 
@@ -121,7 +121,7 @@ describe(extractStatusCode, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = "404";
+        (error as Error & Record<string, unknown>).statusCode = "404";
 
         const result = extractStatusCode(error);
 
@@ -143,11 +143,11 @@ describe(extractStatusCode, () => {
 
         const error1 = new Error("Test error");
 
-        (error1 as any).statusCode = 399; // Below 400
+        (error1 as Error & Record<string, unknown>).statusCode = 399; // Below 400
 
         const error2 = new Error("Test error");
 
-        (error2 as any).statusCode = 600; // Above 599
+        (error2 as Error & Record<string, unknown>).statusCode = 600; // Above 599
 
         const result1 = extractStatusCode(error1);
         const result2 = extractStatusCode(error2);

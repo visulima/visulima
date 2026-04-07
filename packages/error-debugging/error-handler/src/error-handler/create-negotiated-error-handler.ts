@@ -74,7 +74,6 @@ const createNegotiatedErrorHandler
             }
 
             // Allow consumer overrides via regex
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const { handler, regex } of errorHandlers) {
                 const headerValue = request.headers.accept ?? "";
                 const headerString = Array.isArray(headerValue) ? headerValue.join(",") : headerValue;

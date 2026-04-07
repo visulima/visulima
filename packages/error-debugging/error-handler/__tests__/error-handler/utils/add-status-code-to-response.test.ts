@@ -31,7 +31,7 @@ describe(addStatusCodeToResponse, () => {
 
         const error = new Error("Test error");
 
-        (error as any).status = 403;
+        (error as Error & Record<string, unknown>).status = 403;
 
         addStatusCodeToResponse(res, error);
 
@@ -48,8 +48,8 @@ describe(addStatusCodeToResponse, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 404;
-        (error as any).status = 403;
+        (error as Error & Record<string, unknown>).statusCode = 404;
+        (error as Error & Record<string, unknown>).status = 403;
 
         addStatusCodeToResponse(res, error);
 
@@ -83,7 +83,7 @@ describe(addStatusCodeToResponse, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 403;
+        (error as Error & Record<string, unknown>).statusCode = 403;
 
         addStatusCodeToResponse(res, error);
 
@@ -103,7 +103,7 @@ describe(addStatusCodeToResponse, () => {
 
             const error = new Error("Test error");
 
-            (error as any).statusCode = statusCode;
+            (error as Error & Record<string, unknown>).statusCode = statusCode;
 
             addStatusCodeToResponse(res, error);
 
@@ -124,7 +124,7 @@ describe(addStatusCodeToResponse, () => {
 
             const error = new Error("Test error");
 
-            (error as any).statusCode = statusCode;
+            (error as Error & Record<string, unknown>).statusCode = statusCode;
 
             addStatusCodeToResponse(res, error);
 
@@ -142,7 +142,7 @@ describe(addStatusCodeToResponse, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = 999; // Invalid status code
+        (error as Error & Record<string, unknown>).statusCode = 999; // Invalid status code
 
         addStatusCodeToResponse(res, error);
 
@@ -159,7 +159,7 @@ describe(addStatusCodeToResponse, () => {
 
         const error = new Error("Test error");
 
-        (error as any).statusCode = "404"; // String instead of number
+        (error as Error & Record<string, unknown>).statusCode = "404"; // String instead of number
 
         addStatusCodeToResponse(res, error);
 

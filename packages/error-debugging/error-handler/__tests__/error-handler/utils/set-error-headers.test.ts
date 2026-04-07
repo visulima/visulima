@@ -17,7 +17,7 @@ describe(setErrorHeaders, () => {
         error.headers = {
             "x-custom": "custom",
             "X-Test": "test",
-        } as any;
+        };
 
         setErrorHeaders(res, error);
 
@@ -69,7 +69,7 @@ describe(setErrorHeaders, () => {
 
         error.headers = {
             "Set-Cookie": ["cookie1=value1", "cookie2=value2"],
-        } as any;
+        } as unknown as Record<string, string>;
 
         setErrorHeaders(res, error);
 
@@ -92,7 +92,7 @@ describe(setErrorHeaders, () => {
             "X-Boolean": true,
             "X-Number": 42,
             "X-String": "test",
-        } as any;
+        } as unknown as Record<string, string>;
 
         setErrorHeaders(res, error);
 

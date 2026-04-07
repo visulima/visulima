@@ -1,9 +1,12 @@
+import type { HttpError } from "http-errors";
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import fetchHandler from "../../src/handler/http/fetch-handler";
 import httpHandler from "../../src/handler/http/node-handler";
+
+const YAML_REGEX = /application\/yaml/u;
 
 describe("httpHandler handler", () => {
     it("returns HTML by default when no Accept header is provided", async () => {
@@ -143,11 +146,11 @@ describe("httpHandler handler", () => {
         const handler = httpHandler(error, {
             extraHandlers: [
                 {
-                    handler: (error_, _request, res) => {
-                        res.statusCode = (error_ as any).statusCode ?? 400;
-                        res.end(error_.message);
+                    handler: (error_, _request, response) => {
+                        response.statusCode = (error_ as HttpError).statusCode;
+                        response.end(error_.message);
                     },
-                    regex: /application\/yaml/u,
+                    regex: YAML_REGEX,
                 },
             ],
         });
@@ -295,9 +298,9 @@ describe("httpHandler handler", () => {
                     {
                         handler: (error_, _request) =>
                             new Response((error_ as Error).message, {
-                                status: (error_ as any).statusCode ?? 400,
+                                status: (error_ as HttpError).statusCode,
                             }),
-                        regex: /application\/yaml/u,
+                        regex: YAML_REGEX,
                     },
                 ],
             });

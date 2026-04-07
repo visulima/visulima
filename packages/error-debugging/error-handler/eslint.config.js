@@ -24,19 +24,12 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-floating-promises": "off",
-            "@typescript-eslint/no-shadow": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
+            // External dependency types not fully resolvable in test mocks
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "e18e/prefer-static-regex": "off",
             "unicorn/no-null": "off",
-            "unicorn/prevent-abbreviations": "off",
-            "vitest/prefer-strict-equal": "off",
         },
     },
 );
