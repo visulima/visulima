@@ -14,7 +14,7 @@ import type { TsConfigJson } from "type-fest";
 import type { TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
 
-const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
+const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }) as string);
 
 /** Converts backslashes to forward slashes without resolving ../ segments. */
 const slash = (path: string): string => path.replaceAll("\\", "/");
@@ -130,7 +130,9 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     let config: TsConfigJson;
 
     try {
-        config = readJsonc(tsconfigPath) || {};
+        const parsed = readJsonc(tsconfigPath);
+
+        config = parsed ? (parsed as TsConfigJson) : {};
     } catch {
         throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
     }
@@ -159,7 +161,11 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
         delete config.extends;
 
-        for (const extendsPath of extendsPathList.toReversed()) {
+        const reversedExtends = extendsPathList.toReversed();
+
+        // eslint-disable-next-line unicorn/no-for-loop,no-plusplus -- index-based loop preferred for array performance
+        for (let index = 0; index < reversedExtends.length; index++) {
+            const extendsPath = reversedExtends[index] as string;
             const resolvedExtendsPath = resolveExtendsPath(extendsPath, directoryPath);
 
             if (!resolvedExtendsPath) {
@@ -282,7 +288,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         }
     }
 
-    if (config.compilerOptions?.lib) {
+    if (config.compilerOptions.lib) {
         config.compilerOptions.lib = config.compilerOptions.lib.map((library) => library.toLowerCase()) as TsConfigJson.CompilerOptions.Lib[];
     }
 
@@ -324,8 +330,11 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         config.compilerOptions.moduleDetection = config.compilerOptions.moduleDetection.toLowerCase() as TsConfigJson.CompilerOptions.ModuleDetection;
     }
 
+    // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
     if (config.compilerOptions.importsNotUsedAsValues) {
+        // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
         config.compilerOptions.importsNotUsedAsValues
+            // eslint-disable-next-line sonarjs/deprecation -- must handle deprecated field for backwards compatibility with older tsconfigs
             = config.compilerOptions.importsNotUsedAsValues.toLowerCase() as TsConfigJson.CompilerOptions.ImportsNotUsedAsValues;
     }
 
@@ -396,7 +405,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
 
         if (
-            config?.compilerOptions.moduleDetection === undefined
+            config.compilerOptions.moduleDetection === undefined
             && config.compilerOptions.module
             && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
         ) {
@@ -409,7 +418,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
             if (config.compilerOptions.module !== undefined) {
                 // eslint-disable-next-line default-case
-                switch ((config.compilerOptions?.module).toLocaleLowerCase()) {
+                switch (config.compilerOptions.module.toLocaleLowerCase()) {
                     case "commonjs": {
                         moduleResolution = "node10";
 
@@ -623,7 +632,8 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             const currentModule = config.compilerOptions.module;
             const resolution = config.compilerOptions.moduleResolution?.toLocaleLowerCase();
 
-            const impliesTrue = (currentModule && ["node20", "nodenext"].includes(currentModule)) || resolution === "bundler";
+            const moduleImplies = currentModule !== undefined && ["node20", "nodenext"].includes(currentModule);
+            const impliesTrue = moduleImplies ? true : resolution === "bundler";
 
             if (!impliesTrue && resolution) {
                 // eslint-disable-next-line no-param-reassign
@@ -636,15 +646,10 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             const resolution = config.compilerOptions.moduleResolution.toLocaleLowerCase();
 
             if (!["bundler", "node16", "nodenext"].includes(resolution)) {
-                if (config.compilerOptions.resolvePackageJsonExports === undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    config.compilerOptions.resolvePackageJsonExports = false;
-                }
-
-                if (config.compilerOptions.resolvePackageJsonImports === undefined) {
-                    // eslint-disable-next-line no-param-reassign
-                    config.compilerOptions.resolvePackageJsonImports = false;
-                }
+                // eslint-disable-next-line no-param-reassign
+                config.compilerOptions.resolvePackageJsonExports ??= false;
+                // eslint-disable-next-line no-param-reassign
+                config.compilerOptions.resolvePackageJsonImports ??= false;
             }
         }
     }
@@ -707,7 +712,12 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
         const { paths } = compilerOptions;
 
         if (paths) {
-            for (const name of Object.keys(paths)) {
+            const pathKeys = Object.keys(paths);
+
+            // eslint-disable-next-line unicorn/no-for-loop,no-plusplus -- index-based loop preferred for array performance
+            for (let index = 0; index < pathKeys.length; index++) {
+                const name = pathKeys[index] as string;
+
                 paths[name] = (paths[name] as string[]).map((filePath) => interpolateConfigDirectory(filePath, configDirectory) ?? filePath);
             }
         }
@@ -717,7 +727,9 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
         }
     }
 
-    for (const property of filesProperties) {
+    // eslint-disable-next-line no-plusplus -- index-based loop preferred for array performance
+    for (let index = 0; index < filesProperties.length; index++) {
+        const property = filesProperties[index] as (typeof filesProperties)[number];
         const value = config[property];
 
         if (value) {

@@ -16,17 +16,22 @@ import type { PackageJson } from "type-fest";
 
 import type { Cache } from "../types";
 
-const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
+const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }) as string);
 
-const getPnpApi = () => {
+interface PnpApiResult {
+    resolveRequest: (request: string, issuer: string, options?: { extensions?: string[] }) => string | null;
+}
+
+const getPnpApi = (): PnpApiResult | undefined => {
     // @ts-ignore - This is a private API
     const { findPnpApi } = Module;
 
     // https://yarnpkg.com/advanced/pnpapi/#requirepnpapi
-    return findPnpApi?.(process.cwd());
+    return (findPnpApi as ((cwd: string) => PnpApiResult | undefined) | undefined)?.(process.cwd());
 };
 
-const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ignoreExports?: boolean, cache?: Cache<string>) => {
+// eslint-disable-next-line sonarjs/function-return-type -- false is an intentional sentinel value distinguishing "blocked" from "not found"
+const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ignoreExports?: boolean, cache?: Cache<string>): string | false | undefined => {
     const cacheKey = `resolveFromPackageJsonPath:${packageJsonPath}:${subpath}:${ignoreExports ? "yes" : "no"}`;
 
     if (cache?.has(cacheKey)) {
@@ -92,9 +97,9 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
         return undefined;
     }
 
-    const [orgOrName, ...remaining] = requestedPath.split("/");
+    const [orgOrName = "", ...remaining] = requestedPath.split("/");
 
-    const packageName = ((orgOrName as string).startsWith("@") ? `${orgOrName as string}/${remaining.shift()}` : orgOrName) as string;
+    const packageName = orgOrName.startsWith("@") ? `${orgOrName}/${String(remaining.shift())}` : orgOrName;
     const subpath = remaining.join("/");
 
     const pnpApi = getPnpApi();

@@ -29,17 +29,15 @@ export type TsConfigResult = {
 export const findTsConfig = async (cwd?: URL | string, options: Options = {}): Promise<TsConfigResult> => {
     const configFileName = options.configFileName ?? "tsconfig.json";
 
-    let filePath = await findUp(configFileName, {
+    let filePath: string | undefined = await findUp(configFileName, {
         ...cwd && { cwd },
         type: "file",
     });
 
-    if (!filePath) {
-        filePath = await findUp("jsconfig.json", {
-            ...cwd && { cwd },
-            type: "file",
-        });
-    }
+    filePath ??= await findUp("jsconfig.json", {
+        ...cwd && { cwd },
+        type: "file",
+    });
 
     if (!filePath) {
         throw new NotFoundError(`No such file or directory, for '${configFileName}' or 'jsconfig.json' found.`);
@@ -68,17 +66,15 @@ export const findTsConfig = async (cwd?: URL | string, options: Options = {}): P
 export const findTsConfigSync = (cwd?: URL | string, options: Options = {}): TsConfigResult => {
     const configFileName = options.configFileName ?? "tsconfig.json";
 
-    let filePath = findUpSync(configFileName, {
+    let filePath: string | undefined = findUpSync(configFileName, {
         ...cwd && { cwd },
         type: "file",
     });
 
-    if (!filePath) {
-        filePath = findUpSync("jsconfig.json", {
-            ...cwd && { cwd },
-            type: "file",
-        });
-    }
+    filePath ??= findUpSync("jsconfig.json", {
+        ...cwd && { cwd },
+        type: "file",
+    });
 
     if (!filePath) {
         throw new NotFoundError(`No such file or directory, for '${configFileName}' or 'jsconfig.json' found.`);

@@ -24,7 +24,6 @@ export default createConfig(
     {
         files: ["./__tests__/**"],
         rules: {
-            "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/require-await": "off",
@@ -45,12 +44,12 @@ export default createConfig(
         },
     },
     {
+        // External dependency types not resolvable by ESLint's type checker
         files: ["./src/find-tsconfig.ts"],
         rules: {
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
         },
     },
     {
@@ -60,29 +59,24 @@ export default createConfig(
         },
     },
     {
+        // External dependency types not resolvable by ESLint's type checker
         files: ["./src/read-tsconfig.ts"],
         rules: {
-            "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "no-for-of-array/no-for-of-array": "off",
-            "no-unsafe-optional-chaining": "off",
-            "sonarjs/deprecation": "off",
         },
     },
     {
+        // External dependency types not resolvable by ESLint's type checker
         files: ["./src/utils/resolve-extends-path.ts"],
         rules: {
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/restrict-template-expressions": "off",
-            "sonarjs/function-return-type": "off",
         },
     },
     {
+        // External dependency types not resolvable by ESLint's type checker
         files: ["./src/write-tsconfig.ts"],
         rules: {
             "@typescript-eslint/no-unsafe-call": "off",
