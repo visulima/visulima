@@ -9,8 +9,8 @@
 const urlDelimiters = "#;/?:@&";
 const urlParameterRegex = new RegExp(String.raw`([${urlDelimiters}][^${urlDelimiters}=\s]+=[^${urlDelimiters}=\s]*)`, "g");
 
-const parseUrlParameters = (input: string): { key: string | null; value: string }[] => {
-    const segments = [];
+const parseUrlParameters = (input: string): { key: string | undefined; value: string }[] => {
+    const segments: { key: string | undefined; value: string }[] = [];
 
     let previousEndIndex = 0;
 
@@ -18,11 +18,11 @@ const parseUrlParameters = (input: string): { key: string | null; value: string 
 
     let match = urlParameterRegex.exec(input);
 
-    while (match != undefined) {
+    while (match !== null) {
         const { 0: text, index } = match;
 
         segments.push({
-            key: null,
+            key: undefined,
             value: input.slice(previousEndIndex, index + 1),
         });
 
@@ -40,7 +40,7 @@ const parseUrlParameters = (input: string): { key: string | null; value: string 
 
     if (lastSegment.length > 0) {
         segments.push({
-            key: null,
+            key: undefined,
             value: lastSegment,
         });
     }
