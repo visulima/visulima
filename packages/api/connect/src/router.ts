@@ -20,20 +20,22 @@ export type Route<H> = {
 );
 
 export class Router<H extends FunctionLike> {
-    public static async exec<FL extends FunctionLike>(fns: (Nextable<FL> | undefined)[], ...arguments_: Parameters<FL>): Promise<any> {
+    public static exec<FL extends FunctionLike>(fns: (Nextable<FL> | undefined)[], ...arguments_: Parameters<FL>): Promise<unknown> {
         let index = 0;
 
         const next = () => {
-            // eslint-disable-next-line no-plusplus,@typescript-eslint/naming-convention,no-underscore-dangle
-            const function_ = fns[++index];
+            index += 1;
+            const currentFunction = fns[index];
 
-            if (function_ === undefined) {
+            if (currentFunction === undefined) {
                 return Promise.resolve();
             }
 
-            return function_(...arguments_, next);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return currentFunction(...arguments_, next);
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return (fns[index] as FunctionLike)(...arguments_, next);
     }
 
@@ -83,7 +85,9 @@ export class Router<H extends FunctionLike> {
         const parameters: Record<string, string> = {};
         const isHead = method === "HEAD";
 
-        for (const route of this.routes) {
+        for (let routeIndex = 0; routeIndex < this.routes.length; routeIndex += 1) {
+            const route = this.routes[routeIndex] as Route<Nextable<H>>;
+
             if (
                 route.method !== method
                 // matches any method
@@ -106,12 +110,14 @@ export class Router<H extends FunctionLike> {
                     continue;
                 }
 
-                // eslint-disable-next-line no-void
-                if (matches.groups !== void 0) {
-                    Object.keys(matches.groups).forEach((key) => {
+                if (matches.groups !== undefined) {
+                    const groupKeys = Object.keys(matches.groups);
+
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
+                    for (const key of groupKeys) {
                         // @ts-expect-error @TODO: fix this
                         parameters[key] = matches.groups[key] as string;
-                    });
+                    }
                 }
 
                 matched = true;
@@ -122,12 +128,11 @@ export class Router<H extends FunctionLike> {
                     continue;
                 }
 
-                for (let index = 0; index < route.keys.length;) {
-                    const parameterKey = route.keys[index];
+                for (let index = 0; index < route.keys.length; index += 1) {
+                    const parameterKey = route.keys[index] as string;
 
                     // @ts-expect-error @TODO: fix this
-                    // eslint-disable-next-line no-plusplus
-                    parameters[parameterKey] = matches[++index];
+                    parameters[parameterKey] = matches[index + 1];
                 }
 
                 matched = true;
@@ -137,6 +142,7 @@ export class Router<H extends FunctionLike> {
 
             if (matched) {
                 fns.push(
+                    // eslint-disable-next-line sonarjs/function-return-type
                     ...route.fns.flatMap((function_) => {
                         if (function_ instanceof Router) {
                             const { base } = function_;
@@ -184,7 +190,7 @@ export class Router<H extends FunctionLike> {
 
         // mount subrouter
         // eslint-disable-next-line no-param-reassign
-        fns = fns.map((function_) => {
+        fns = fns.map((function_): Nextable<H> | Router<H> => {
             if (function_ instanceof Router) {
                 if (typeof base === "string") {
                     return function_.clone(base);

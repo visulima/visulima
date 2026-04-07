@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-namespace
 import type * as z from "zod";
 
 import withZod from "./adapter/with-zod";
@@ -15,10 +16,10 @@ import type {
     ValueOrPromise,
 } from "./types";
 
-const onNoMatch = async (request: Request) =>
-    new Response(request.method === "HEAD" ? null : `Route ${request.method} ${request.url} not found`, { status: 404 });
+const onNoMatch = (request: Request) =>
+    new Response(request.method === "HEAD" ? undefined : `Route ${request.method} ${request.url} not found`, { status: 404 });
 
-const onError = async (error: unknown) => {
+const onError = (error: unknown) => {
     // eslint-disable-next-line no-console
     console.error(error);
 
@@ -31,6 +32,7 @@ export const getPathname = (request: Request & { nextUrl?: URL }): string =>
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | void>;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends z.ZodObject<any> = z.ZodObject<any>> {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<R, Context>> = this.add.bind(this, "");
 
@@ -79,10 +81,12 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         return r;
     }
 
-    public handler(): (request: R, context_: Context) => Promise<any> | ReturnType<FunctionLike> | ValueOrPromise<RResponse> {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    public handler(): (request: R, context_: Context) => Promise<RResponse | void> {
         const { routes } = this.router as Router<FunctionLike>;
 
-        return async (request: R, context_: Context): Promise<any> => {
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        return async (request: R, context_: Context): Promise<RResponse | void> => {
             // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-method-this-argument
             const result = this.router.find(request.method as HttpMethod, getPathname(request));
 
@@ -91,7 +95,8 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             try {
                 return await (result.fns.length === 0 || result.middleOnly
                     ? this.onNoMatch(request, context_, routes)
-                    : Router.exec(result.fns, request, context_));
+                    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+                    : Router.exec(result.fns, request, context_)) as RResponse | void;
             } catch (error) {
                 return await this.onError(error, request, context_, routes);
             }
@@ -122,7 +127,13 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             base = "/";
         }
 
-        this.router.use(base, ...fns.map((function_) => function_ instanceof EdgeRouter ? function_.router : function_));
+        this.router.use(base, ...fns.map((function_) => {
+            if (function_ instanceof EdgeRouter) {
+                return function_.router;
+            }
+
+            return function_;
+        }));
 
         return this;
     }

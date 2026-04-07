@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+// eslint-disable-next-line import/no-namespace
 import type * as z from "zod";
 
 import withZod from "./adapter/with-zod";
@@ -17,12 +18,12 @@ import type {
     ValueOrPromise,
 } from "./types";
 
-const onNoMatch = async (request: IncomingMessage, response: ServerResponse) => {
+const onNoMatch = (request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 404;
-    response.end(request.method === "HEAD" ? undefined : `Route ${request.method} ${request.url} not found`);
+    response.end(request.method === "HEAD" ? undefined : `Route ${String(request.method)} ${String(request.url)} not found`);
 };
 
-const onError = async (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
+const onError = (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 500;
 
     // eslint-disable-next-line no-console
@@ -42,6 +43,7 @@ export type RequestHandler<Request extends IncomingMessage, Response extends Ser
 export class NodeRouter<
     Request extends IncomingMessage = IncomingMessage,
     Response extends ServerResponse = ServerResponse,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema extends z.ZodObject<any> = z.ZodObject<never>,
 > {
     public all: RouteShortcutMethod<this, Schema, RequestHandler<Request, Response>> = this.add.bind(this, "");
@@ -127,7 +129,13 @@ export class NodeRouter<
             base = "/";
         }
 
-        this.router.use(base, ...fns.map((function_) => (function_ instanceof NodeRouter ? function_.router : function_)));
+        this.router.use(base, ...fns.map((function_) => {
+            if (function_ instanceof NodeRouter) {
+                return function_.router;
+            }
+
+            return function_;
+        }));
 
         return this;
     }
@@ -173,7 +181,8 @@ export class NodeRouter<
 export const createRouter = <
     Request extends IncomingMessage,
     Response extends ServerResponse,
-    Schema extends z.ZodObject<any> = z.ZodObject,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Schema extends z.ZodObject<any> = z.ZodObject<never>,
 >(
     options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {},
 ): NodeRouter<Request, Response, Schema> => new NodeRouter<Request, Response, Schema>(options);
