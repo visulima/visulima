@@ -6,6 +6,9 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import type { SerializedError } from "../../../src";
 import { addKnownErrorConstructor, deserializeError, isErrorLike, NonError, serializeError } from "../../../src";
 
+/** Helper type for deserialized errors with dynamic extra properties. */
+type ErrorWithProps = Error & Record<string, unknown>;
+
 describe("error serializer", () => {
     it("should serializes Error objects", () => {
         expect.assertions(3);
@@ -310,7 +313,7 @@ describe("error serializer", () => {
     it("should only destroy parent references", () => {
         expect.assertions(4);
 
-        const error: Error & { one?: any; two?: any } = new Error("foo");
+        const error: Error & { one?: unknown; two?: unknown } = new Error("foo");
 
         const common = { thing: error };
 
@@ -421,9 +424,9 @@ describe("error serializer", () => {
         expect.assertions(2);
 
         class CustomError extends Error {
-            private readonly value: any;
+            private readonly value: unknown;
 
-            public constructor(value: any) {
+            public constructor(value: unknown) {
                 super("foo");
                 this.name = this.constructor.name;
                 this.value = value;
@@ -889,7 +892,7 @@ describe("error serializer", () => {
 
             expect(deserialized).toBeInstanceOf(Error);
             expect(deserialized.message).toBe("foo");
-            expect((deserialized as any).customProperty).toBe(true);
+            expect((deserialized as ErrorWithProps).customProperty).toBe(true);
         });
 
         it("should deserialize with cause property", () => {
@@ -925,9 +928,9 @@ describe("error serializer", () => {
 
             expect(deserialized).toBeInstanceOf(Error);
             expect(deserialized.message).toBe("outer error");
-            expect((deserialized as any).innerError).toBeInstanceOf(Error);
-            expect(((deserialized as any).innerError as Error).message).toBe("inner error");
-            expect(((deserialized as any).innerError as Error).name).toBe("Error");
+            expect((deserialized as ErrorWithProps).innerError).toBeInstanceOf(Error);
+            expect(((deserialized as ErrorWithProps).innerError as Error).message).toBe("inner error");
+            expect(((deserialized as ErrorWithProps).innerError as Error).name).toBe("Error");
         });
 
         it("should deserialize AggregateError", () => {
@@ -984,10 +987,10 @@ describe("error serializer", () => {
             expect(deserialized).toBeInstanceOf(Error);
             expect(deserialized.message).toBe("outer");
             // The nested property should be deserialized
-            expect((deserialized as any).nested).toBeInstanceOf(Error);
-            expect(((deserialized as any).nested as Error).message).toBe("inner");
+            expect((deserialized as ErrorWithProps).nested).toBeInstanceOf(Error);
+            expect(((deserialized as ErrorWithProps).nested as Error).message).toBe("inner");
             // The deeply nested property should be wrapped in NonError
-            // expect(((deserialized as any).nested as any).deeply).toBeInstanceOf(NonError);
+            // expect(((deserialized as ErrorWithProps).nested as any).deeply).toBeInstanceOf(NonError);
         });
 
         it("should preserve serialized string values like '[object Buffer]' without further processing", () => {
@@ -1006,9 +1009,9 @@ describe("error serializer", () => {
             expect(deserialized.message).toBe("Test error");
 
             // These should remain as strings, not be processed or dropped
-            expect((deserialized as any).data).toBe("[object Buffer]");
-            expect((deserialized as any).bufferInfo).toBe("[object Buffer]");
-            expect((deserialized as any).streamData).toBe("[object Stream]");
+            expect((deserialized as ErrorWithProps).data).toBe("[object Buffer]");
+            expect((deserialized as ErrorWithProps).bufferInfo).toBe("[object Buffer]");
+            expect((deserialized as ErrorWithProps).streamData).toBe("[object Stream]");
         });
 
         it("should preserve mixed serialized values including strings and objects", () => {
@@ -1029,20 +1032,20 @@ describe("error serializer", () => {
             expect(deserialized.message).toBe("Mixed data error");
 
             // Serialized values should remain as strings
-            expect((deserialized as any).serializedBuffer).toBe("[object Buffer]");
-            expect((deserialized as any).serializedStream).toBe("[object Stream]");
+            expect((deserialized as ErrorWithProps).serializedBuffer).toBe("[object Buffer]");
+            expect((deserialized as ErrorWithProps).serializedStream).toBe("[object Stream]");
 
             // Regular values should be preserved as-is
-            expect((deserialized as any).regularString).toBe("normal string");
-            expect((deserialized as any).numberValue).toBe(42);
-            expect((deserialized as any).booleanValue).toBe(true);
+            expect((deserialized as ErrorWithProps).regularString).toBe("normal string");
+            expect((deserialized as ErrorWithProps).numberValue).toBe(42);
+            expect((deserialized as ErrorWithProps).booleanValue).toBe(true);
 
             // Plain objects should be preserved as plain objects during deserialization
-            expect((deserialized as any).nestedObject).toStrictEqual({ key: "value" });
+            expect((deserialized as ErrorWithProps).nestedObject).toStrictEqual({ key: "value" });
 
-            expectTypeOf((deserialized as any).nestedObject).toBeObject();
+            expectTypeOf((deserialized as ErrorWithProps).nestedObject).toBeObject();
 
-            expect((deserialized as any).nestedObject).not.toBeInstanceOf(NonError);
+            expect((deserialized as ErrorWithProps).nestedObject).not.toBeInstanceOf(NonError);
         });
 
         it("should demonstrate round-trip serialization preserving serialized values", () => {
@@ -1057,7 +1060,7 @@ describe("error serializer", () => {
             const serialized = serializeError(originalError);
 
             // Verify the serialized form has the expected string representation
-            expect((serialized as any).data).toBe("[object Buffer]");
+            expect((serialized as Record<string, unknown> & SerializedError).data).toBe("[object Buffer]");
 
             // Now deserialize it back
             const deserialized = deserializeError(serialized);
@@ -1065,10 +1068,10 @@ describe("error serializer", () => {
             // The deserialized error should preserve the "[object Buffer]" string
             expect(deserialized).toBeInstanceOf(Error);
             expect(deserialized.message).toBe("💩");
-            expect((deserialized as any).data).toBe("[object Buffer]");
+            expect((deserialized as ErrorWithProps).data).toBe("[object Buffer]");
 
             // The string should remain exactly as it was during serialization
-            expectTypeOf((deserialized as any).data).toBeString();
+            expectTypeOf((deserialized as ErrorWithProps).data).toBeString();
         });
 
         it("should not process or drop serialized string representations during deserialization", () => {
@@ -1094,13 +1097,13 @@ describe("error serializer", () => {
             expect(deserialized.message).toBe("Serialization test");
 
             // All serialized string representations should be preserved as strings
-            expect((deserialized as any).bufferData).toBe("[object Buffer]");
-            expect((deserialized as any).streamData).toBe("[object Stream]");
-            expect((deserialized as any).functionData).toBe("[Function: anonymous]");
+            expect((deserialized as ErrorWithProps).bufferData).toBe("[object Buffer]");
+            expect((deserialized as ErrorWithProps).streamData).toBe("[object Stream]");
+            expect((deserialized as ErrorWithProps).functionData).toBe("[Function: anonymous]");
 
             // Primitive values should be preserved
-            expect((deserialized as any).numberData).toBe(42);
-            expect((deserialized as any).stringData).toBe("plain string");
+            expect((deserialized as ErrorWithProps).numberData).toBe(42);
+            expect((deserialized as ErrorWithProps).stringData).toBe("plain string");
         });
     });
 
@@ -1138,7 +1141,7 @@ describe("error serializer", () => {
             }
 
             expect(() => {
-                addKnownErrorConstructor(BadError as any);
+                addKnownErrorConstructor(BadError as unknown as ErrorConstructor);
             }).toThrow("The error constructor \"BadError\" is not compatible");
         });
 
