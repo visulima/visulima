@@ -31,9 +31,9 @@ const randomItem = <T>(array: T[]): T => array[Math.floor(Math.random() * array.
 
 const generate = (string: number | string) => {
     const random1 = randomItem(["rock", "paper", "scissors"]);
-    const random2 = randomItem(["blue", "green", "yellow", "red"]);
+    const random2 = randomItem(["blue", "green", "yellow", "red"] as const);
 
-    return `${string}:${colorize[random2](random1)} `;
+    return `${String(string)}:${colorize[random2](random1)} `;
 };
 
 describe(slice, () => {
@@ -175,7 +175,7 @@ describe(slice, () => {
     it("should handle null issue correctly when slicing special emoji strings", () => {
         expect.assertions(1);
 
-        const s = '\u001B[1mautotune.flipCoin("easy as") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m';
+        const s = "\u001B[1mautotune.flipCoin(\"easy as\") ? 🎂 : 🍰 \u001B[33m★\u001B[39m\u001B[22m";
         const result = slice(s, 38);
 
         expect(result).not.toContain("null");

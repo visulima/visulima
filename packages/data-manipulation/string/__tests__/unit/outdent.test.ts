@@ -5,9 +5,9 @@ import { outdent } from "../../src";
 // Helper function to create template strings array
 const makeStrings = (...strings: string[]): TemplateStringsArray => {
     // eslint-disable-next-line no-param-reassign
-    (strings as any as { raw: ReadonlyArray<string> }).raw = strings;
+    (strings as unknown as { raw: ReadonlyArray<string> }).raw = strings;
 
-    return strings as any as TemplateStringsArray;
+    return strings as unknown as TemplateStringsArray;
 };
 
 describe(outdent, () => {

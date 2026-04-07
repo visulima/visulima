@@ -8,6 +8,7 @@ describe(checkEscapeSequence, () => {
         expect.assertions(1);
 
         const text = "\u001B[31mHello";
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: splitting string into char array for ANSI parsing
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
@@ -22,6 +23,7 @@ describe(checkEscapeSequence, () => {
         expect.assertions(1);
 
         const text = "\u001B]8;;https://example.com\u0007Hello";
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: splitting string into char array for ANSI parsing
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
@@ -36,6 +38,7 @@ describe(checkEscapeSequence, () => {
         expect.assertions(1);
 
         const text = "Hello World";
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: splitting string into char array for ANSI parsing
         const chars = [...text];
 
         const result = checkEscapeSequence(chars, 0);
