@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { Toolbox } from "../../src";
 import { Cerebro as Cli } from "../../src";
 
 describe("cli", () => {
@@ -163,10 +164,10 @@ describe("cli", () => {
 
         expect(execute).toHaveBeenCalledTimes(1);
 
-        const toolbox = execute.mock.calls[0]?.[0];
+        const toolbox = execute.mock.calls[0][0] as Toolbox;
 
-        expect(toolbox?.options?.clean).toBe(false);
-        expect(toolbox?.options?.noClean).toBeUndefined();
+        expect(toolbox.options.clean).toBe(false);
+        expect(toolbox.options.noClean).toBeUndefined();
     });
 
     it("should allow --clean flag and set clean to true in options", async () => {
@@ -188,9 +189,9 @@ describe("cli", () => {
 
         expect(execute).toHaveBeenCalledTimes(1);
 
-        const toolbox = execute.mock.calls[0]?.[0];
+        const toolbox = execute.mock.calls[0][0] as Toolbox;
 
-        expect(toolbox?.options?.clean).toBe(true);
+        expect(toolbox.options.clean).toBe(true);
     });
 
     it("should throw error when both --clean and --no-clean are provided", async () => {
@@ -216,7 +217,7 @@ describe("cli", () => {
             expect.assertions(3);
 
             const buildExecute = vi.fn().mockResolvedValue("build-result");
-            const deployExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const deployExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 const result = await runtime.runCommand("build", { argv: ["--production"] });
 
                 return result;
@@ -254,7 +255,7 @@ describe("cli", () => {
             expect.assertions(2);
 
             const testExecute = vi.fn();
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test", { argv: ["arg1", "arg2"] });
             });
 
@@ -285,7 +286,7 @@ describe("cli", () => {
             expect.assertions(2);
 
             const testExecute = vi.fn();
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test", { argv: [], customOption: "custom-value" });
             });
 
@@ -318,7 +319,7 @@ describe("cli", () => {
 
             const testExecute = vi.fn().mockResolvedValue("test-result");
             let parentResult: unknown;
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 parentResult = await runtime.runCommand("test");
 
                 return parentResult;
@@ -345,7 +346,7 @@ describe("cli", () => {
         it("should throw CommandNotFoundError when command does not exist", async () => {
             expect.assertions(2);
 
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("nonexistent");
             });
 
@@ -364,7 +365,7 @@ describe("cli", () => {
         it("should throw error when command has no execute function", async () => {
             expect.assertions(1);
 
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("invalid");
             });
 
@@ -388,7 +389,7 @@ describe("cli", () => {
         it("should validate required options for called command", async () => {
             expect.assertions(1);
 
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test");
             });
 
@@ -411,7 +412,7 @@ describe("cli", () => {
         it("should validate conflicting options for called command", async () => {
             expect.assertions(1);
 
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test", { argv: ["--option1", "value1", "--option2", "value2"] });
             });
 
@@ -440,7 +441,7 @@ describe("cli", () => {
             const beforeCommandHook = vi.fn();
             const afterCommandHook = vi.fn();
             const testExecute = vi.fn().mockResolvedValue("test-result");
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test");
             });
 
@@ -477,7 +478,7 @@ describe("cli", () => {
 
             const testError = new Error("Test command failed");
             const testExecute = vi.fn().mockRejectedValue(testError);
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test");
             });
 
@@ -502,10 +503,10 @@ describe("cli", () => {
             expect.assertions(4);
 
             const buildExecute = vi.fn().mockResolvedValue("build-result");
-            const testExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const testExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("build");
             });
-            const deployExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+            const deployExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
                 await runtime.runCommand("test");
             });
 
@@ -531,7 +532,7 @@ describe("cli", () => {
             expect(buildExecute).toHaveBeenCalledTimes(1);
             expect(testExecute).toHaveBeenCalledTimes(1);
             expect(deployExecute).toHaveBeenCalledTimes(1);
-            await expect(buildExecute.mock.results[0]?.value).resolves.toBe("build-result");
+            await expect((buildExecute.mock.results[0] as { value: Promise<string> }).value).resolves.toBe("build-result");
         });
     });
 
@@ -549,7 +550,7 @@ describe("cli", () => {
             process.env.TEST_NUMBER_VAR = "42";
             process.env.TEST_BOOL_VAR = "true";
 
-            const execute = vi.fn().mockImplementation(({ env }) => {
+            const execute = vi.fn().mockImplementation(({ env }: Toolbox) => {
                 expect(env.testStringVar).toBe("test-string");
                 expect(env.testNumberVar).toBe(42);
                 expect(env.testBoolVar).toBe(true);
@@ -586,7 +587,7 @@ describe("cli", () => {
 
             delete process.env.TEST_VAR;
 
-            const execute = vi.fn().mockImplementation(({ env }) => {
+            const execute = vi.fn().mockImplementation(({ env }: Toolbox) => {
                 expect(env.testVar).toBe("default-value");
                 expect(env.testNumber).toBe(100);
                 expect(env.testBool).toBe(false);
@@ -626,7 +627,7 @@ describe("cli", () => {
 
             process.env.TEST_VAR = "env-value";
 
-            const execute = vi.fn().mockImplementation(({ env }) => {
+            const execute = vi.fn().mockImplementation(({ env }: Toolbox) => {
                 expect(env.testVar).toBe("env-value");
             });
 
@@ -655,7 +656,7 @@ describe("cli", () => {
             process.env.TEST_ENV_VAR_NAME = "value1";
             process.env.ANOTHER_TEST_VAR = "value2";
 
-            const execute = vi.fn().mockImplementation(({ env }) => {
+            const execute = vi.fn().mockImplementation(({ env }: Toolbox) => {
                 expect(env.testEnvVarName).toBe("value1");
                 expect(env.anotherTestVar).toBe("value2");
             });
@@ -722,7 +723,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error?.message).toContain("Logger object is missing required methods: debug");
-            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+            expect((error as { code?: string } | undefined)?.code).toBe("INVALID_INPUT");
         });
 
         it("should throw error when logger is missing multiple methods", () => {
@@ -738,7 +739,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error?.message).toContain("Logger object is missing required methods: info, log, warn");
-            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+            expect((error as { code?: string } | undefined)?.code).toBe("INVALID_INPUT");
         });
 
         it("should throw error when logger method is not a function", () => {
@@ -756,7 +757,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error?.message).toContain("Logger object is missing required methods: debug");
-            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+            expect((error as { code?: string } | undefined)?.code).toBe("INVALID_INPUT");
         });
 
         it("should throw error when logger method is null", () => {
@@ -774,7 +775,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error?.message).toContain("Logger object is missing required methods: debug");
-            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+            expect((error as { code?: string } | undefined)?.code).toBe("INVALID_INPUT");
         });
 
         it("should throw error when logger method is undefined", () => {
@@ -792,7 +793,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error?.message).toContain("Logger object is missing required methods: debug");
-            expect((error as { code?: string })?.code).toBe("INVALID_INPUT");
+            expect((error as { code?: string } | undefined)?.code).toBe("INVALID_INPUT");
         });
 
         it("should include missing methods in error context", () => {
@@ -808,7 +809,7 @@ describe("cli", () => {
             const error = getError(createCli);
 
             expect(error).toHaveProperty("context");
-            expect((error as { context?: { missingMethods?: string[] } })?.context?.missingMethods).toStrictEqual(["info", "log", "warn"]);
+            expect((error as { context?: { missingMethods?: string[] } } | undefined)?.context?.missingMethods).toStrictEqual(["info", "log", "warn"]);
         });
 
         it("should work with console object as logger", () => {

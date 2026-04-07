@@ -15,7 +15,7 @@ describe("register-exception-handler", () => {
         };
 
         // Mock process.exit to prevent test from actually exiting
-        originalExit = process.exit;
+        originalExit = process.exit.bind(process);
         process.exit = vi.fn() as typeof process.exit;
     });
 
@@ -122,6 +122,7 @@ describe("register-exception-handler", () => {
 
         // Handler should not be called (process.exit should not be called either)
         expect(mockLogger.error).not.toHaveBeenCalled();
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- process.exit is mocked with vi.fn()
         expect(process.exit).not.toHaveBeenCalled();
     });
 

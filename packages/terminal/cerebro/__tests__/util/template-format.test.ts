@@ -13,8 +13,7 @@ describe("template-format", () => {
     it("should return empty string for null input", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- intentionally testing null input
-        expect(templateFormat(null as any)).toBe("");
+        expect(templateFormat(null as unknown as string)).toBe("");
     });
 
     it("should return the string as-is for plain text", () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { Toolbox } from "../../src";
 import { Cerebro as Cli } from "../../src";
 
 const DEPLOY_NOT_FOUND_RE = /deploy invalid.*not found/;
@@ -71,10 +72,10 @@ describe("nested commands", () => {
         expect(deployProductionExecute).toHaveBeenCalledTimes(1);
 
         // Options are processed and available in the toolbox
-        const callArgs = deployProductionExecute.mock.calls[0]?.[0];
+        const callArgs = deployProductionExecute.mock.calls[0][0] as Toolbox;
 
-        expect(callArgs?.options).toBeDefined();
-        expect(callArgs?.options?.["dry-run"] ?? callArgs?.options?.dryRun).toBe(true);
+        expect(callArgs.options).toBeDefined();
+        expect(callArgs.options["dry-run"] ?? callArgs.options.dryRun).toBe(true);
     });
 
     it("should allow flat and nested commands with same name", async () => {
@@ -106,8 +107,8 @@ describe("nested commands", () => {
 
         expect(flatBuildExecute).toHaveBeenCalledTimes(1);
         expect(nestedBuildExecute).toHaveBeenCalledTimes(1);
-        await expect(flatBuildExecute.mock.results[0]?.value).resolves.toBe("flat-build");
-        await expect(nestedBuildExecute.mock.results[0]?.value).resolves.toBe("nested-build");
+        await expect((flatBuildExecute.mock.results[0] as { value: Promise<string> }).value).resolves.toBe("flat-build");
+        await expect((nestedBuildExecute.mock.results[0] as { value: Promise<string> }).value).resolves.toBe("nested-build");
     });
 
     it("should throw error for duplicate nested command paths", () => {
@@ -134,7 +135,7 @@ describe("nested commands", () => {
         expect.assertions(2);
 
         const deployStagingExecute = vi.fn().mockResolvedValue("staging-deployed");
-        const deployExecute = vi.fn().mockImplementation(async ({ runtime }) => {
+        const deployExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
             const result = await runtime.runCommand("deploy staging");
 
             return result;

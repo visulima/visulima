@@ -45,8 +45,8 @@ describe("emptyToolbox", () => {
                 return undefined;
             },
             getPackageVersion: () => "1.0.0",
-            async run(): Promise<void> {
-                return undefined;
+            run(): Promise<void> {
+                return Promise.resolve();
             },
             setCommandSection() {
                 return undefined;

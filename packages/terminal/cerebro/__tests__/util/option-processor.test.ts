@@ -18,9 +18,9 @@ describe("option-processor", () => {
             processOptionNames(command);
 
             // eslint-disable-next-line no-underscore-dangle
-            expect(command.options?.[0]?.__camelCaseName__).toBe("testOption");
+            expect(command.options[0].__camelCaseName__).toBe("testOption");
             // eslint-disable-next-line no-underscore-dangle
-            expect(command.options?.[1]?.__camelCaseName__).toBe("anotherOption");
+            expect(command.options[1].__camelCaseName__).toBe("anotherOption");
         });
     });
 
@@ -36,8 +36,8 @@ describe("option-processor", () => {
             addNegatableOptions(command);
 
             expect(command.options).toHaveLength(2);
-            expect(command.options?.[1]?.name).toBe("verbose");
-            expect(command.options?.[1]?.defaultValue).toBe(true);
+            expect(command.options[1]?.name).toBe("verbose");
+            expect(command.options[1]?.defaultValue).toBe(true);
         });
 
         it("should not add negated options for non-boolean types", () => {
@@ -86,7 +86,7 @@ describe("option-processor", () => {
 
             expect(toolbox.options.verbose).toBe(true);
             // eslint-disable-next-line no-underscore-dangle
-            expect(command.options?.[0]?.__negated__).toBe(true);
+            expect(command.options[0].__negated__).toBe(true);
         });
     });
 
