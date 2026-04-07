@@ -28,14 +28,9 @@ export default createConfig(
     {
         files: ["**/*.test.ts"],
         rules: {
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-unsafe-argument": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
+            // External dep types (@visulima/fs, @visulima/path) unresolvable by typescript-eslint
             "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/require-await": "off",
-            "e18e/ban-dependencies": "off",
             "no-secrets/no-secrets": "off",
-            "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
         },
     },
