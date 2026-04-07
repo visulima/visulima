@@ -9,8 +9,7 @@ describe(detectPm, () => {
         const pm = detectPm(process.cwd());
 
         expect(["pnpm", "npm", "yarn", "bun"]).toContain(pm.name);
-
-        expectTypeOf(pm.version).toBeString();
+        expect(typeof pm.version).toBe("string");
     });
 
     it("should detect pnpm for this monorepo", () => {

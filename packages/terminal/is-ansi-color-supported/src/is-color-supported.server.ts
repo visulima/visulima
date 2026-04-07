@@ -63,6 +63,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     const hasForceColor = FORCE_COLOR in environment;
     const forceColorValue = environment[FORCE_COLOR] ?? undefined;
     const forceColorValueIsString = Object.prototype.toString.call(forceColorValue).slice(8, -1) === "String";
+    const forceColorValueIsNumber = typeof forceColorValue === "number";
 
     let forceColor: ColorSupportLevel | undefined;
 
@@ -74,6 +75,8 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         forceColor = SPACE_16_COLORS;
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
         forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
+    } else if (forceColorValueIsNumber) {
+        forceColor = Math.min(forceColorValue as unknown as number, 3) as ColorSupportLevel;
     }
 
     if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {

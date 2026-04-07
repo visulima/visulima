@@ -197,7 +197,11 @@ const fromBase = (base: 2 | 10) => {
         return 1024;
     }
 
-    return 1000;
+    if (base === 10) {
+        return 1000;
+    }
+
+    throw new Error("Unsupported base.");
 };
 
 /**

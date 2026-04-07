@@ -8,8 +8,7 @@ describe(randomName, () => {
 
         const name = randomName();
 
-        expectTypeOf(name).toBeString();
-
+        expect(typeof name).toBe("string");
         expect(name).toMatch(/^[a-z]+-[a-z]+$/);
     });
 

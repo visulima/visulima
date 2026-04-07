@@ -67,11 +67,11 @@ describe("rpc/functions/annotations", () => {
                 y: 100,
             } as Parameters<typeof createAnnotation>[1]);
 
-            expect(result.id).toBe(true);
+            expect(result.id).toBeTruthy();
             expect(result.id.length).toBeGreaterThan(10); // UUID
             expect(result.status).toBe("pending");
-            expect(result.createdAt).toBe(true);
-            expect(result.updatedAt).toBe(true);
+            expect(result.createdAt).toBeTruthy();
+            expect(result.updatedAt).toBeTruthy();
         });
 
         it("does NOT allow client to inject server fields", async () => {
@@ -152,7 +152,7 @@ describe("rpc/functions/annotations", () => {
 
             expect(result?.status).toBe("resolved");
             expect(result?.resolvedBy).toBe("human");
-            expect(result?.resolvedAt).toBe(true);
+            expect(result?.resolvedAt).toBeTruthy();
         });
 
         it("sets resolvedBy to agent when specified", async () => {

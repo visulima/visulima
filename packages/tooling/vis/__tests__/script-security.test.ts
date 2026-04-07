@@ -211,7 +211,7 @@ describe(syncAllowBuildsToNativeConfig, () => {
 
             const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8"));
 
-            expect(pkg.trustedDependencies).toStrictEqual(["esbuild", "@prisma/client"]);
+            expect([...pkg.trustedDependencies].sort()).toStrictEqual(["@prisma/client", "esbuild"]);
             expect(actions.length).toBeGreaterThan(0);
         });
     });

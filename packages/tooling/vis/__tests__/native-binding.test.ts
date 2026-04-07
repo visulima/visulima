@@ -28,12 +28,13 @@ describe("native-binding", () => {
 
     describe("isNativeAvailable", () => {
         it("should return a boolean", async () => {
-            expect.assertions(1);
-
             vi.resetModules();
             const { isNativeAvailable } = await import("../src/native-binding");
 
-            expectTypeOf(isNativeAvailable()).toBeBoolean();
+            const result = isNativeAvailable();
+
+            expectTypeOf(result).toBeBoolean();
+            expect(typeof result === "boolean").toBe(true);
         });
     });
 });

@@ -8,7 +8,7 @@
  * @throws {TypeError} When substring is not a string or is empty.
  */
 export const countOccurrences = (value: string, substring: string): number => {
-    const source = value;
+    const source = String(value);
 
     if (typeof substring !== "string") {
         throw new TypeError("Expected character");

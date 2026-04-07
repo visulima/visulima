@@ -1,6 +1,7 @@
+const { inspect } = require("node:util");
 const colorize = require("@visulima/colorize");
 
-console.log(colorize);
+console.log(inspect(colorize, { colors: false }));
 
 const { Colorize, red, green, hex } = require("@visulima/colorize");
 

@@ -35,6 +35,11 @@ const config = getVitestConfig({
     plugins: [virtualModuleStubs],
     test: {
         environment: "jsdom",
+        environmentOptions: {
+            jsdom: {
+                url: "http://localhost",
+            },
+        },
         passWithNoTests: true,
         setupFiles: ["./__tests__/setup.ts"],
     },
