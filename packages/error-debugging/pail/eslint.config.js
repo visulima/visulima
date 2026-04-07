@@ -55,10 +55,4 @@ export default createConfig(
             "vitest/unbound-method": "off",
         },
     },
-    {
-        files: ["src/reporter/http/utils/compression.ts", "src/reporter/http/utils/retry.ts"],
-        rules: {
-            "sonarjs/file-name-differ-from-class": "off",
-        },
-    },
 );
