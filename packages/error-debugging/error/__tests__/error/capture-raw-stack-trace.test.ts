@@ -16,7 +16,7 @@ describe(captureRawStackTrace, () => {
     it("should return undefined when Error.captureStackTrace is not available", () => {
         expect.assertions(1);
 
-        const originalCaptureStackTrace = Error.captureStackTrace;
+        const originalCaptureStackTrace = Error.captureStackTrace.bind(Error);
 
         Error.captureStackTrace = undefined;
 
