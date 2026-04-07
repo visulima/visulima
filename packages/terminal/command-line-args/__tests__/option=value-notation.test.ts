@@ -16,7 +16,7 @@ describe("option=value notation", () => {
         expect(result.three).toBe("3");
     });
 
-    it('value contains "="', () => {
+    it("value contains \"=\"", () => {
         expect.assertions(5);
 
         const optionDefinitions = [{ name: "url" }, { name: "two" }, { name: "three" }];
