@@ -13,9 +13,15 @@ const noop: AnyHandler = async () => {
     /** noop */
 };
 
+const REGEX_FOO_HELLO = /^\/foo\/(?<hello>\w+)\/?$/u;
+const REGEX_FOO_TITLE = /^\/foo\/(?<title>\w+)\/?$/u;
+const REGEX_FOO_OPTIONAL_TITLE = /^\/foo(?:\/(?<title>\w+))?\/?$/u;
+const REGEX_FOO_WILD = /^\/foo\/(?<wild>.*)$/u;
+const REGEX_NOT_SUPPORTED = /\/not\/supported/u;
+
 const testRoute = (rr: Route<any>, { route, ...match }: Partial<Route<any> & { route: string }>) => {
     // @ts-expect-error: pattern does not always exist
-
+    // eslint-disable-next-line unused-imports/no-unused-vars -- destructured to exclude from comparison
     const { pattern, ...r } = rr;
 
     expect(r, "~> has same route").toStrictEqual(match);
@@ -74,7 +80,7 @@ describe("router", () => {
             route: "/bar",
         });
 
-        context.add("PUT", /^\/foo\/(?<hello>\w+)\/?$/u, noop);
+        context.add("PUT", REGEX_FOO_HELLO, noop);
 
         expect(context.routes, String.raw`added "PUT /^[/]foo[/](?<hello>\w+)[/]?$/" route successfully`).toHaveLength(3);
 
@@ -523,7 +529,7 @@ describe("router", () => {
 
         context.add(
             "GET",
-            /^\/foo\/(?<title>\w+)\/?$/u,
+            REGEX_FOO_TITLE,
             ((request) => {
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, String.raw`~> 1st "GET /^[/]foo[/](?<title>\w+)[/]?$/" ran first`).toBe(1);
@@ -572,7 +578,7 @@ describe("router", () => {
                 // eslint-disable-next-line no-plusplus
                 expect(request.chain++, "~~> ran 2nd").toBe(1);
             }) as AnyHandler)
-            .add("GET", /^\/foo(?:\/(?<title>\w+))?\/?$/u, ((request) => {
+            .add("GET", REGEX_FOO_OPTIONAL_TITLE, ((request) => {
                 expect(true, String.raw`~> ran "GET /^[/]foo[/](?<title>\w+)?[/]?$/" route`).toBe(true); // x2
 
                 if (!isRoot) {
@@ -588,7 +594,7 @@ describe("router", () => {
                     expect(request.chain++, "~~> ran 2nd").toBe(1);
                 }
             }) as AnyHandler)
-            .add("GET", /^\/foo\/(?<wild>.*)$/u, ((request) => {
+            .add("GET", REGEX_FOO_WILD, ((request) => {
                 expect(true, "~> ran \"GET /^[/]foo[/](?<wild>.*)$/\" route").toBe(true);
 
                 expect(request.params.wild, "~~> saw \"params.wild\" value").toBe("bar");
@@ -705,7 +711,7 @@ describe("router", () => {
         });
 
         // unsupported
-        expect(() => new Router().use(/\/not\/supported/u, subContext), "throws unsupported message").toThrow(
+        expect(() => new Router().use(REGEX_NOT_SUPPORTED, subContext), "throws unsupported message").toThrow(
             new Error("Mounting a router to RegExp base is not supported"),
         );
     });

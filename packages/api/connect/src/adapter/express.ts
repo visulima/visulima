@@ -9,8 +9,8 @@ const expressWrapper
     = <Request extends IncomingMessage, Response extends ServerResponse>(
         function_: ExpressRequestHandler<Request, Response>,
     ): Nextable<RequestHandler<Request, Response>> =>
-        async (request, response, next) =>
-            new Promise<void>((resolve, reject: (reason: Error) => void): void => {
+        async (request, response, next) => {
+            await new Promise<void>((resolve, reject: (reason: Error) => void): void => {
                 function_(request, response, (error) => {
                     if (error) {
                         reject(error);
@@ -18,8 +18,10 @@ const expressWrapper
                         resolve();
                     }
                 });
-            // eslint-disable-next-line promise/no-callback-in-promise
-            }).then(next);
+            });
+
+            return next();
+        };
 
 export type ExpressRequestHandler<Request, Response> = (request: Request, response: Response, next: NextFunction) => void;
 

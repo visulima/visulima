@@ -15,7 +15,22 @@ const METHODS = ["GET", "HEAD", "PATCH", "DELETE", "POST", "PUT", "OPTIONS", "CO
 
 const testUrl = "http://localhost/foo/bar";
 const badFunction = () => {
-    // throw new Error("bad function");
+    // intentionally empty - represents a no-op handler for testing
+};
+
+const createErrorResponseTester = (
+    consoleSpy: ReturnType<typeof vi.spyOn>,
+    error: Error,
+    getIndex: () => number,
+    incrementIndex: () => void,
+) => async (response: Response) => {
+    expect(response.status, "set 500 status code").toBe(500);
+
+    await expect(response.text()).resolves.toBe("Internal Server Error");
+
+    expect(consoleSpy.mock.calls[getIndex()], `called console.error ${getIndex()}`).toStrictEqual([error]);
+
+    incrementIndex();
 };
 
 describe("edge", () => {
@@ -293,14 +308,9 @@ describe("edge", () => {
         const baseFunction = (_request: Request, _event: unknown, next: any) => next();
 
         let index = 0;
-        const testResponse = async (response: Response) => {
-            expect(response.status, "set 500 status code").toBe(500);
-
-            await expect(response.text()).resolves.toBe("Internal Server Error");
-            expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
-
+        const testResponse = createErrorResponseTester(consoleSpy, error, () => index, () => {
             index += 1;
-        };
+        });
 
         const request = { method: "GET", url: "http://localhost/" } as Request;
 
@@ -350,15 +360,9 @@ describe("edge", () => {
 
         let index = 0;
 
-        const testResponse = async (response: Response) => {
-            expect(response.status, "set 500 status code").toBe(500);
-
-            await expect(response.text()).resolves.toBe("Internal Server Error");
-
-            expect(consoleSpy.mock.calls[index], `called console.error ${index}`).toStrictEqual([error]);
-
+        const testResponse = createErrorResponseTester(consoleSpy, error, () => index, () => {
             index += 1;
-        };
+        });
 
         const request = { method: "GET", url: "http://localhost/" } as Request;
 
@@ -456,9 +460,9 @@ describe("edge", () => {
         const request = {} as Request & { params?: Record<string, string> };
 
         const context2 = createEdgeRouter().get("/hello/:name");
-        // @ts-expect-error: internal
 
-        context2.prepareRequest(request, context2.router.find("GET", "/hello/world"));
+        // @ts-expect-error: accessing private static method for testing
+        EdgeRouter.prepareRequest(request, (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"));
 
         expect(request.params, "params are attached").toStrictEqual({ name: "world" });
 
@@ -466,11 +470,11 @@ describe("edge", () => {
             params: { age: "20" },
         };
 
-        // @ts-expect-error: internal
-        context2.prepareRequest(
+        // @ts-expect-error: accessing private static method for testing
+        EdgeRouter.prepareRequest(
             requestWithParameters as unknown as Request,
-            // @ts-expect-error: internal
-            context2.router.find("GET", "/hello/world"),
+            // @ts-expect-error: accessing private router for testing
+            (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"),
         );
 
         expect(requestWithParameters.params, "params are merged").toStrictEqual({ age: "20", name: "world" });
@@ -479,11 +483,11 @@ describe("edge", () => {
             params: { name: "sunshine" },
         };
 
-        // @ts-expect-error: internal
-        context2.prepareRequest(
+        // @ts-expect-error: accessing private static method for testing
+        EdgeRouter.prepareRequest(
             requestWithParameters2 as unknown as Request,
-            // @ts-expect-error: internal
-            context2.router.find("GET", "/hello/world"),
+            // @ts-expect-error: accessing private router for testing
+            (context2 as unknown as { router: { find: (m: string, p: string) => unknown } }).router.find("GET", "/hello/world"),
         );
 
         expect(requestWithParameters2.params, "params are merged (existing takes precedence)").toStrictEqual({ name: "sunshine" });
