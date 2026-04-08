@@ -1,3 +1,25 @@
+## @visulima/error-handler [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.10...@visulima/error-handler@2.0.0-alpha.11) (2026-04-08)
+
+### Bug Fixes
+
+* **error-handler:** properly fix eslint errors in code ([591179f](https://github.com/visulima/visulima/commit/591179fb1b56587986449878a95abfc18f6d735b))
+* **error-handler:** remove remaining eslint suppressions with proper code fixes ([58b05d6](https://github.com/visulima/visulima/commit/58b05d6cb5d98c29e0abe57af35120696504b22b))
+* **error-handler:** resolve eslint errors ([ab613b8](https://github.com/visulima/visulima/commit/ab613b8683677fd0ca7e09b06b3fe94e59df9bd0))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **error-handler:** add tsconfig.eslint.json for type-aware linting ([8e52a91](https://github.com/visulima/visulima/commit/8e52a916c1b7a0262b5ef097985be5ccaa735401))
+* **error-handler:** apply prettier formatting ([eeb50dd](https://github.com/visulima/visulima/commit/eeb50ddf301722cb7f1439001d2b1c06e88797ae))
+* **error-handler:** migrate .prettierrc.cjs to prettier.config.js ([6fb8eb8](https://github.com/visulima/visulima/commit/6fb8eb8832335f8b249cded58fe78c3ee5edc000))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.9
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+
 ## @visulima/error-handler [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.9...@visulima/error-handler@2.0.0-alpha.10) (2026-03-26)
 
 ### Features
