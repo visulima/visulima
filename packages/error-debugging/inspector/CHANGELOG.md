@@ -1,3 +1,19 @@
+## @visulima/inspector [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.6...@visulima/inspector@2.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **inspector:** properly fix eslint errors in code ([f7ff9ba](https://github.com/visulima/visulima/commit/f7ff9ba8b343dd90e9ceeed1cbb2599eed52cdef))
+
+### Miscellaneous Chores
+
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **inspector:** add tsconfig.eslint.json for type-aware linting ([8080c1a](https://github.com/visulima/visulima/commit/8080c1a8f2bea1fbb4079d66d60e4a125a0f7516))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+
 ## @visulima/inspector [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.5...@visulima/inspector@2.0.0-alpha.6) (2026-03-26)
 
 ### Features
