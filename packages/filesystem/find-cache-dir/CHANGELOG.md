@@ -1,3 +1,24 @@
+## @visulima/find-cache-dir [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.6...@visulima/find-cache-dir@3.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **find-cache-dir:** remove remaining eslint suppressions with proper code fixes ([3963089](https://github.com/visulima/visulima/commit/396308918a15627efdbbf561c73db2837806c2aa))
+* **find-cache-dir:** resolve eslint errors ([a3ca4f4](https://github.com/visulima/visulima/commit/a3ca4f4978ae00e50d02d344165afad251de7241))
+
+### Miscellaneous Chores
+
+* **filesystem:** remove empty dependency objects from package.json ([76ffc54](https://github.com/visulima/visulima/commit/76ffc545660695dde19130d1c01d9bd1aaf2ca98))
+* **find-cache-dir:** add tsconfig.eslint.json for type-aware linting ([caee085](https://github.com/visulima/visulima/commit/caee08596310daf50378e8249774c6a544020dab))
+* **find-cache-dir:** apply auto-fix formatting ([fface98](https://github.com/visulima/visulima/commit/fface98531ba7901663fb6ea6b4cabfcadcadd5c))
+* **find-cache-dir:** apply prettier formatting ([ab10fab](https://github.com/visulima/visulima/commit/ab10fab66ed7b56a3a0c04f1b4a7b64f762ebb42))
+* **find-cache-dir:** migrate .prettierrc.cjs to prettier.config.js ([c325af8](https://github.com/visulima/visulima/commit/c325af85b66fa5d2507f20acd5d29f41c1bbfc47))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/find-cache-dir [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.5...@visulima/find-cache-dir@3.0.0-alpha.6) (2026-03-26)
 
 ### Features
