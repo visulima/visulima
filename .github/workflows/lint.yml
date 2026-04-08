@@ -54,10 +54,11 @@ jobs:
                   token: "${{ github.token }}"
                   filters: ".github/file-filters.yml"
 
-    eslint:
+    # Consolidated: eslint + types + attw (build once, lint three times)
+    ts-lint:
         if: "needs.files-changed.outputs.frontend_lintable == 'true'"
         needs: "files-changed"
-        name: "Lint (eslint)"
+        name: "Lint (eslint, types, attw)"
         runs-on: "ubuntu-latest"
         steps:
             - name: "Harden Runner"
@@ -102,61 +103,11 @@ jobs:
             - name: "lint eslint"
               run: "pnpm run lint:affected:eslint --files=${{ steps.files.outputs.all_changed_files }}"
 
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
-
-    attw:
-        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
-        needs: "files-changed"
-        name: "Lint (are the types wrong)"
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
-                  fetch-depth: 0
-
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
-              id: "setSHAs"
-              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
-
-            - name: "Setup resources and environment"
-              id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
-              with:
-                  node-version: "22.x"
-                  cache-prefix: "lint"
-
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-
-            - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
+            - name: "lint typescript types"
+              run: "pnpm run lint:affected:types --files=${{ steps.files.outputs.all_changed_files }}"
 
             - name: "lint attw"
               run: "pnpm run lint:affected:attw --files=${{ steps.files.outputs.all_changed_files }}"
-
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
@@ -205,62 +156,6 @@ jobs:
 
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json --files=${{ steps.files.outputs.all_changed_files }}"
-
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
-
-    types-lint:
-        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
-        needs: "files-changed"
-        name: "Lint (Typescript types)"
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
-                  fetch-depth: 0
-
-            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
-              id: "setSHAs"
-              uses: "nrwl/nx-set-shas@3e9ad7370203c1e93d109be57f3b72eb0eb511b1" # v4
-
-            - name: "Setup resources and environment"
-              id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
-              with:
-                  node-version: "22.x"
-                  cache-prefix: "lint"
-
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@c65cd883420fd2eb864698a825fc4162dd94482c" # v44.5.7
-              with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
-
-            - name: "Build"
-              run: "pnpm run build:affected:packages --files=${{ steps.files.outputs.all_changed_files }}"
-
-            - name: "lint typescript files"
-              run: "pnpm run lint:affected:types --files=${{ steps.files.outputs.all_changed_files }}"
-
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
@@ -367,7 +262,11 @@ jobs:
             - name: "Use Node.js 22.x"
               uses: "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020" # v4.4.0
               with:
-                  node-version: "20.19.6"
+                  node-version: "22.x"
                   cache: "pnpm"
 
-                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
+            - name: "Install dependencies"
+              run: "pnpm install --frozen-lockfile"
+
+            - name: "Lint markdown"
+              run: "pnpm run lint:text"
