@@ -1,3 +1,28 @@
+## @visulima/tsconfig [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.6...@visulima/tsconfig@3.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **tsconfig:** add node types and fix implicit any parameter ([1744d82](https://github.com/visulima/visulima/commit/1744d82a07fca03f2e6ff660b918e9b2623acf69))
+* **tsconfig:** add TypeScript 6.0 compatibility for implicit compiler defaults ([19de98f](https://github.com/visulima/visulima/commit/19de98f2640c143c6f5e84eda214c84584cf980c))
+* **tsconfig:** align parsing with get-tsconfig for files/include, path inheritance, and TS 6.0 ([0c9d4be](https://github.com/visulima/visulima/commit/0c9d4be347f6ee4212dbe98026a7cd1d465bc2de))
+* **tsconfig:** properly fix eslint errors in code ([95a2142](https://github.com/visulima/visulima/commit/95a2142f816f9ae0d50caaf235a71f9d03ab71cf))
+* **tsconfig:** remove remaining eslint suppressions with proper code fixes ([57a45bb](https://github.com/visulima/visulima/commit/57a45bbc4e00e1c688a12367dc734c1553a17a6a))
+* **tsconfig:** resolve eslint errors ([5848320](https://github.com/visulima/visulima/commit/5848320dc88a6080cf507eda724f57f9a6800434))
+
+### Miscellaneous Chores
+
+* **tooling:** remove empty dependency objects from package.json ([dc52a23](https://github.com/visulima/visulima/commit/dc52a23bc1e2d36f4ec71ca67506bf6861a02929))
+* **tsconfig:** add tsconfig.eslint.json for type-aware linting ([2c01b30](https://github.com/visulima/visulima/commit/2c01b30e740cdbf75f96317053fd78a56fb2ccc9))
+* **tsconfig:** apply prettier formatting ([85f32f5](https://github.com/visulima/visulima/commit/85f32f5f072edef750a4ff41d8b25918d26a4641))
+* **tsconfig:** migrate .prettierrc.cjs to prettier.config.js ([bbf2a3b](https://github.com/visulima/visulima/commit/bbf2a3b0f6e23ea39dfeb583b0d100a407c8adaf))
+* **tsconfig:** sort fixture package.json fields ([370c336](https://github.com/visulima/visulima/commit/370c336d2e1331fe05d2231d92a2b3b456c77620))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/tsconfig [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.5...@visulima/tsconfig@3.0.0-alpha.6) (2026-03-26)
 
 ### Features
