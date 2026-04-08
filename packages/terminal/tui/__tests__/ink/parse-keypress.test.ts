@@ -38,19 +38,19 @@ describe("parse-keypress", () => {
         expect(key.shift).toBe(false);
     });
 
-    it("unmapped ctrl sequence returns undefined name", () => {
+    it("unmapped ctrl sequence returns empty name", () => {
         // ESC [ 1 ; 5 X — X is not a mapped function key letter
         const key = parseKeypress("\u001B[1;5X");
 
-        expect(key.name).toBeUndefined();
+        expect(key.name).toBe("");
         expect(key.ctrl).toBe(true);
     });
 
-    it("another unmapped ctrl sequence returns undefined name", () => {
+    it("another unmapped ctrl sequence returns empty name", () => {
         // ESC [ 1 ; 5 Y — Y is not a mapped function key letter
         const key = parseKeypress("\u001B[1;5Y");
 
-        expect(key.name).toBeUndefined();
+        expect(key.name).toBe("");
         expect(key.ctrl).toBe(true);
     });
 
