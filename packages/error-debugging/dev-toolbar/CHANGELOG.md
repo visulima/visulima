@@ -1,3 +1,24 @@
+## @visulima/dev-toolbar [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.7...@visulima/dev-toolbar@1.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **dev-toolbar:** resolve eslint errors ([225128a](https://github.com/visulima/visulima/commit/225128ab192d318b9d997ad793c7c43384e2431e))
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+
+### Miscellaneous Chores
+
+* added og images ([02d9d1e](https://github.com/visulima/visulima/commit/02d9d1e47be3ce75679ea89e857dc4e4bfe4946b))
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **dev-toolbar:** add tsconfig.eslint.json for type-aware linting ([d2c864a](https://github.com/visulima/visulima/commit/d2c864a01f9c4805975596c9de8af4a04ac4beaa))
+* **dev-toolbar:** apply auto-fix formatting ([3a80a7d](https://github.com/visulima/visulima/commit/3a80a7daaadcc9705ebb153bfea617e4a5029379))
+* **dev-toolbar:** apply prettier formatting ([a6d5528](https://github.com/visulima/visulima/commit/a6d5528602966810f03eb30c7883b8fd53088d40))
+* **dev-toolbar:** expand braceless if statements to block syntax ([b059279](https://github.com/visulima/visulima/commit/b059279c444036b52c94515d852ec20cd782692e))
+* **dev-toolbar:** expand inline if-return to block syntax ([db834ab](https://github.com/visulima/visulima/commit/db834ab5b42ff3dca9ef90e478c690e8367d4df8))
+* **dev-toolbar:** expand inline if-return to block syntax ([90ffee8](https://github.com/visulima/visulima/commit/90ffee895f5fa746932e6a4e2a3323b621af763f))
+* **dev-toolbar:** migrate .prettierrc.cjs to prettier.config.js ([1cd3cc7](https://github.com/visulima/visulima/commit/1cd3cc72156127384babc0238cfe90b328683cf3))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.6...@visulima/dev-toolbar@1.0.0-alpha.7) (2026-03-26)
 
 ### Features
