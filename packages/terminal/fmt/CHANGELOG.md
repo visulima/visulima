@@ -1,3 +1,16 @@
+## @visulima/fmt [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.7...@visulima/fmt@2.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **fmt:** resolve eslint errors ([45181b2](https://github.com/visulima/visulima/commit/45181b24520bcb2ee766497e677f7fcd6f8182d8))
+
+### Miscellaneous Chores
+
+* **fmt:** add tsconfig.eslint.json for type-aware linting ([d47f7c0](https://github.com/visulima/visulima/commit/d47f7c0068c69d0f9de86c2d6653ba5d3b55ab48))
+* **fmt:** apply prettier formatting ([1e9c241](https://github.com/visulima/visulima/commit/1e9c241d498a92740cb9d6b5ff040d200738669a))
+* **fmt:** migrate .prettierrc.cjs to prettier.config.js ([c699d91](https://github.com/visulima/visulima/commit/c699d916dd5c9a00bcec10f2ae073774d932cb3d))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+
 ## @visulima/fmt [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.6...@visulima/fmt@2.0.0-alpha.7) (2026-03-26)
 
 ### Features
