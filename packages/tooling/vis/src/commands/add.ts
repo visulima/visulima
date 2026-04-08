@@ -265,7 +265,7 @@ const add: Command = {
         }
 
         // Typosquat check (unless disabled)
-        if (!options["no-typosquat-check"]) {
+        if (!options.noTyposquatCheck) {
             const parsed = packages.map((p: string) => parsePackageArgument(p));
             const result = await runTyposquatCheck(
                 parsed.map((p) => p.name),
@@ -291,7 +291,7 @@ const add: Command = {
         }
 
         // Socket.dev pre-add check (unless disabled)
-        if (!options["no-socket-check"]) {
+        if (!options.noSocketCheck) {
             const socketOptions = buildSocketOptions(visConfig?.security?.socket);
 
             if (socketOptions) {
@@ -317,12 +317,12 @@ const add: Command = {
                 exact: (options.exact as boolean) || false,
                 filter: toStringArray(options.filter),
                 global: (options.global as boolean) || false,
-                optional: (options["save-optional"] as boolean) || false,
+                optional: (options.saveOptional as boolean) || false,
                 packages,
-                peer: (options["save-peer"] as boolean) || false,
-                saveDev: (options["save-dev"] as boolean) || false,
+                peer: (options.savePeer as boolean) || false,
+                saveDev: (options.saveDev as boolean) || false,
                 workspace: (options.workspace as boolean) || false,
-                workspaceRoot: (options["workspace-root"] as boolean) || false,
+                workspaceRoot: (options.workspaceRoot as boolean) || false,
             },
             cwd,
             logger,

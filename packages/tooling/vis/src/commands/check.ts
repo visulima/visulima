@@ -41,7 +41,7 @@ const check: Command = {
         const workspaceRoot = wsRoot;
 
         // ── Security config audit mode ───────────────────────────────
-        if (options["security-config"]) {
+        if (options.securityConfig) {
             const pm = detectPm(workspaceRoot);
 
             printSecurityReport(visConfig ?? {}, pm.name);
@@ -96,7 +96,7 @@ const check: Command = {
             ignore: toFilterArray(configDefaults.ignore),
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...argument],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-            security: !options["no-security"],
+            security: !options.noSecurity,
             target: target as UpdateTarget,
         };
 
@@ -156,7 +156,7 @@ const check: Command = {
         }
 
         const format = (options.format as string) ?? configDefaults.format ?? "table";
-        const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
+        const analysisType = validateAnalysisType((options.aiType as string | undefined) ?? "impact");
         const aiResult = options.ai ? await runAiAnalysis(outdated, logger, visConfig?.ai, analysisType) : undefined;
 
         // Interactive TUI mode: TTY + table format
@@ -234,7 +234,7 @@ const check: Command = {
             }
         }
 
-        if (options["exit-code"] && outdated.length > 0) {
+        if (options.exitCode && outdated.length > 0) {
             process.exitCode = 1;
         }
     },

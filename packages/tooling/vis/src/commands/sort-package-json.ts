@@ -92,7 +92,7 @@ const sortPackageJson: Command = {
         const cwd = wsRoot ?? process.cwd();
         const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as { sortScripts?: boolean } | undefined;
         const check = (options.check as boolean) || false;
-        const sortScripts = (options["sort-scripts"] as boolean) || config?.sortScripts || false;
+        const sortScripts = (options.sortScripts as boolean) || config?.sortScripts || false;
         const files = findPackageJsonFiles(cwd);
 
         if (files.length === 0) {

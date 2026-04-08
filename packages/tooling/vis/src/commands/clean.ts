@@ -95,7 +95,7 @@ const clean: Command = {
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const shouldRemoveLockfile = (options.lockfile as boolean) || false;
-        const dryRun = (options["dry-run"] as boolean) || false;
+        const dryRun = (options.dryRun as boolean) || false;
 
         // --dry-run uses TS walker since native cleanWorkspace is destructive
         if (dryRun) {

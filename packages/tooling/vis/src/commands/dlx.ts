@@ -34,7 +34,7 @@ const dlx: Command = {
                 additionalPackages,
                 args: rest,
                 package: pkg as string,
-                shellMode: (options["shell-mode"] as boolean) || false,
+                shellMode: (options.shellMode as boolean) || false,
                 silent: (options.silent as boolean) || false,
             },
             cwd,

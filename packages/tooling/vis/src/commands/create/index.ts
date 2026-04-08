@@ -299,7 +299,7 @@ const create: Command = {
         // Tracks whether the user already confirmed overwriting a non-empty directory
         let userConfirmedOverwrite = false;
 
-        if (args.length === 0 && isTTY && !options["no-interactive"]) {
+        if (args.length === 0 && isTTY && !options.noInteractive) {
             // ── Interactive mode ──────────────────────────────────
             const answers = await runInteractivePrompts({
                 cwd,
@@ -343,7 +343,7 @@ const create: Command = {
             }
 
             editor = options.editor === "vscode" ? "vscode" : editor;
-            gitInit = Boolean(options["git-init"]) || gitInit;
+            gitInit = Boolean(options.gitInit) || gitInit;
         }
 
         // Validate

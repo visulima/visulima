@@ -108,13 +108,13 @@ const ai: Command = {
     execute: async ({ logger, options, visConfig }) => {
         const format = (options.format as string) ?? "table";
 
-        if (options["cache-stats"]) {
+        if (options.cacheStats) {
             handleCacheStats(format, logger);
 
             return;
         }
 
-        if (options["clear-cache"]) {
+        if (options.clearCache) {
             const aiDeleted = clearCache();
             const socketDeleted = clearSocketCache();
 

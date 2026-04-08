@@ -329,7 +329,7 @@ const optimize: Command = {
         }
 
         const pm = detectPm(wsRoot);
-        const isDryRun = Boolean(options["dry-run"]);
+        const isDryRun = Boolean(options.dryRun);
         const isProduction = Boolean(options.prod);
         const isPin = Boolean(options.pin);
 
@@ -451,7 +451,7 @@ const optimize: Command = {
             }
 
             // Run install
-            if (selectedSocket.length > 0 && !options["no-install"]) {
+            if (selectedSocket.length > 0 && !options.noInstall) {
                 info(`\nRunning ${pm.name} install to update lockfile...`);
 
                 const installOptions = {

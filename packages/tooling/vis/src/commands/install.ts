@@ -20,7 +20,7 @@ const install: Command = {
         const cwd = wsRoot ?? process.cwd();
 
         // Scan package.json deps for typosquats (unless disabled)
-        if (!options["no-typosquat-check"]) {
+        if (!options.noTyposquatCheck) {
             const shouldContinue = await scanDepsForTyposquats(cwd, visConfig?.security?.typosquatAllowlist);
 
             if (!shouldContinue) {
@@ -39,15 +39,15 @@ const install: Command = {
                 dev: (options.dev as boolean) || false,
                 filter: filters,
                 force: (options.force as boolean) || false,
-                frozenLockfile: (options["frozen-lockfile"] as boolean) || false,
-                ignoreScripts: (options["ignore-scripts"] as boolean) || false,
-                lockfileOnly: (options["lockfile-only"] as boolean) || false,
-                noOptional: (options["no-optional"] as boolean) || false,
+                frozenLockfile: (options.frozenLockfile as boolean) || false,
+                ignoreScripts: (options.ignoreScripts as boolean) || false,
+                lockfileOnly: (options.lockfileOnly as boolean) || false,
+                noOptional: (options.noOptional as boolean) || false,
                 offline: (options.offline as boolean) || false,
                 prod: (options.prod as boolean) || false,
                 recursive: (options.recursive as boolean) || false,
                 silent: (options.silent as boolean) || false,
-                workspaceRoot: (options["workspace-root"] as boolean) || false,
+                workspaceRoot: (options.workspaceRoot as boolean) || false,
             },
             cwd,
             logger,

@@ -435,7 +435,7 @@ const doctor: Command = {
                 )}\n`,
             );
 
-            if (options["exit-code"] && (results.vulnCount > 0 || results.socketIssues.alerts > 0)) {
+            if (options.exitCode && (results.vulnCount > 0 || results.socketIssues.alerts > 0)) {
                 process.exitCode = 1;
             }
 
@@ -504,7 +504,7 @@ const doctor: Command = {
             displayActions(results);
         }
 
-        if (options["exit-code"]) {
+        if (options.exitCode) {
             const hasIssues = options.strict
                 ? results.vulnCount > 0 || results.socketIssues.alerts > 0 || results.outdated.length > 0 || results.duplicates.length > 0
                 : results.vulnCount > 0 || results.socketIssues.alerts > 0;
