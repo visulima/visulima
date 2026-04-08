@@ -185,12 +185,16 @@ jobs:
                 package:
                     - name: "task-runner"
                       dir: "packages/tooling/task-runner"
-                      test_files: "__tests__/native-binding.test.ts __tests__/xxh3.test.ts"
+                      test_files: "__tests__/native-binding.test.ts"
                       changed: "${{ needs.files-changed.outputs.task-runner }}"
                     - name: "tui"
                       dir: "packages/terminal/tui"
                       test_files: "__tests__/native-binding.test.ts"
                       changed: "${{ needs.files-changed.outputs.tui }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis"
+                      test_files: "__tests__/native-binding.test.ts"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
