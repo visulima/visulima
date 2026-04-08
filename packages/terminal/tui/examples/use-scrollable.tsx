@@ -8,7 +8,8 @@
  *
  * Run: node --import @oxc-node/core/register examples/scroll-test.tsx
  */
-import { Box, render, Text, useApp, useInput, useScrollable } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput, useScrollable } from "@visulima/tui/react";
 import React, { useCallback } from "react";
 
 const ITEMS = Array.from({ length: 40 }, (_, i) => {

@@ -14,7 +14,8 @@
  * - Enter to submit, Ctrl+C to quit
  */
 
-import { Box, render, Text, useApp, useMouse, useScrollable, useTextInput, useWindowSize } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useMouse, useScrollable, useTextInput, useWindowSize } from "@visulima/tui/react";
 import React, { useCallback, useState } from "react";
 
 interface LogEntry {

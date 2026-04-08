@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unnecessary-condition, react-refresh/only-export-components, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/border-backgrounds
-import { Box, render, Text } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render } from "@visulima/tui/react";
 import React from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {

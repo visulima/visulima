@@ -7,7 +7,7 @@ import { Renderer, TerminalGuard } from "./native-binding";
 const DEC_2026_ON = "\u001B[?2026h";
 const DEC_2026_OFF = "\u001B[?2026l";
 
-export class RatatatApp extends EventEmitter {
+export class TuiApp extends EventEmitter {
     private renderer: RendererInstance;
 
     private terminal: TerminalGuardInstance | null = null;

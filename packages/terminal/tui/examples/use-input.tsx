@@ -1,7 +1,8 @@
 /* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-shadow, @typescript-eslint/no-unnecessary-condition, react-refresh/only-export-components, react/no-unescaped-entities, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-input
-import { Box, render, Text, useApp, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput } from "@visulima/tui/react";
 import React from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {

@@ -13,9 +13,28 @@ Use this page to decide which entry to import and where each API lives.
 
 | If you want to…                                    | Use entry point       | Why                                                              |
 | -------------------------------------------------- | --------------------- | ---------------------------------------------------------------- |
-| Build a React TUI with components and hooks        | `@visulima/tui/react` | Includes the React renderer and Ink-compatible API               |
+| Build a React TUI with components and hooks (Ink)  | `@visulima/tui`       | Full Ink-compatible component library with 50+ components        |
+| Build a React TUI with the native renderer          | `@visulima/tui/react` | Native renderer with Rust-backed diff engine                     |
 | Paint terminal cells directly from a `Uint32Array` | `@visulima/tui/core`  | Lowest-level runtime, direct control over render loop and buffer |
 | Test TUI components in isolation                   | `@visulima/tui/test`  | Framework-agnostic render + mock streams for testing             |
+
+## `@visulima/tui`
+
+The default entry point — full Ink-compatible React component library.
+
+Primary exports:
+
+- `render`, `renderToString`
+- components: `Box`, `Text`, `Spinner`, `ProgressBar`, `SelectInput`, `MultiSelect`, `TextInput`, `ConfirmInput`, `Textarea`, `Slider`, `Alert`, `Badge`, `BigText`, `Code`, `DiffView`, `Dialog`, `FilePicker`, `Gradient`, `Help`, `Link`, `Markdown`, `Paginator`, `Stopwatch`, `Timer`, `Tab`, `Tabs`, `Table`, `TreeView`, `ScrollView`, `ScrollList`, and more
+- hooks: `useInput`, `useApp`, `useFocus`, `useFocusManager`, `useAnimation`, `useTimer`, `useStopwatch`, `useKeyBindings`, `usePaste`, `useClipboard`, `useWindowSize`, `useBoxMetrics`, and more
+
+```bash npm2yarn
+npm install @visulima/tui react
+```
+
+```typescript
+import { render, Box, Text, Spinner, useInput, useTimer } from "@visulima/tui";
+```
 
 ## `@visulima/tui/core`
 
@@ -30,7 +49,7 @@ Primary exports:
 - `terminalSize`
 - `Cell`, `StyleMasks`
 - `InputParser`
-- `RatatatApp`
+- `TuiApp`
 - `createInlineLoop`
 
 ```bash npm2yarn
@@ -43,22 +62,25 @@ import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
 
 ## `@visulima/tui/react`
 
-React adapter and Ink-compatible component/hook surface.
+Native React renderer — uses a Rust-backed diff engine for high-performance rendering.
 
 Depends on `@visulima/tui/core` for terminal output and native diffing.
 
 Primary exports:
 
 - `render`, `renderInline`, `renderToString`
-- components: `Box`, `Text`, `Static`, `Transform`, `Spinner`, `ProgressBar`, `SelectInput`, `MultiSelect`, `TextInput`, `ConfirmInput`, `Newline`, `Spacer`
-- hooks: `useInput`, `useApp`, `useFocus`, `useFocusManager`, `useAnimation`, `usePaste`, `useMouse`, `useScrollable`, `useTextInput`, and more
+- components: `Static`, `DevTools`
+- hooks: `useInput`, `useApp`, `useFocus`, `useFocusManager`, `useMouse`, `useScrollable`, `useTextInput`, `useWindowSize`, and more
+
+> Components (`Box`, `Text`, `Spinner`, etc.) are imported from the main `@visulima/tui` entry point — the native renderer uses the same components.
 
 ```bash npm2yarn
 npm install @visulima/tui react
 ```
 
 ```typescript
-import { render, Box, Text, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useInput } from "@visulima/tui/react";
 ```
 
 ## `@visulima/tui/test`

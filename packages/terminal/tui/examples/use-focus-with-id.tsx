@@ -4,7 +4,8 @@
  * Press 1/2/3 to focus by ID, Tab/Shift+Tab to cycle, Esc to quit.
  * Run: node --import @oxc-node/core/register examples/use-focus-with-id.tsx
  */
-import { Box, render, Text, useApp, useFocus, useFocusManager, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useFocus, useFocusManager, useInput } from "@visulima/tui/react";
 import React from "react";
 
 const FocusWithId = () => {

@@ -10,7 +10,7 @@
  * Run: node --import @oxc-node/core/register examples/spinner.tsx
  */
 
-import { Box, render, Spinner, Text, useApp, useInput } from "@visulima/tui/react";
+import { Box, render, Spinner, Text, useApp, useInput } from "@visulima/tui";
 import React, { useEffect, useState } from "react";
 
 const App = () => {

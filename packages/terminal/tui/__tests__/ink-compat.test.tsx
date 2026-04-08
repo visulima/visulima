@@ -1,7 +1,10 @@
 import React, { Suspense, useState, useTransition } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, Newline, renderToString, Spacer, Static, Text, useFocus, useStderr, useStdout } from "../src/react/index";
+import { _Box as Box, _Spacer as Spacer, _Text as Text } from "../src/react/react";
+import { renderToString, Static, useFocus, useStderr, useStdout } from "../src/react/index";
+
+const Newline: React.FC<{ count?: number }> = ({ count = 1 }) => React.createElement(Text, {}, "\n".repeat(count));
 
 const BLOCK_CHARS_RE = /[█▓▒░▪▫●○◆◇]/;
 

@@ -276,6 +276,13 @@ export type Options = {
     patchConsole: boolean;
     standardReactLayoutTiming?: boolean;
 
+    /**
+     * Whether to track text selection state during rendering.
+     *
+     * @default false
+     */
+    trackSelection?: boolean;
+
     stderr: NodeJS.WriteStream;
 
     stdin: NodeJS.ReadStream;

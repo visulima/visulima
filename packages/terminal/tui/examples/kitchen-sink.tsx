@@ -19,16 +19,11 @@
  * Run: node --import @oxc-node/core/register examples/kitchen-sink.tsx
  */
 // @ts-nocheck
+import { Box, Newline, Spacer, Text } from "@visulima/tui";
 import {
-    Box,
     DevTools,
-    Newline,
-    ProgressBar,
     render,
-    Spacer,
-    Spinner,
     Static,
-    Text,
     useApp,
     useFocus,
     useFocusManager,
@@ -39,6 +34,34 @@ import {
     useWindowSize,
 } from "@visulima/tui/react";
 import React, { useEffect, useRef, useState } from "react";
+
+// ─── Ratatat-local Spinner & ProgressBar ────────────────────────────────────
+// The ink-based <Spinner> and <ProgressBar> live in @visulima/tui and depend on
+// ink's AnimationContext. The kitchen-sink uses the Ratatat renderer, so we
+// provide lightweight local versions that work without that context.
+
+const DEFAULT_SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+const Spinner = ({ frames = DEFAULT_SPINNER_FRAMES, interval = 80, ...textProps }) => {
+    const resolvedFrames = frames.length > 0 ? frames : ["-"];
+    const [index, setIndex] = React.useState(0);
+
+    React.useEffect(() => {
+        if (interval <= 0 || resolvedFrames.length <= 1) return;
+        const timer = setInterval(() => setIndex((p) => (p + 1) % resolvedFrames.length), interval);
+        return () => clearInterval(timer);
+    }, [interval, resolvedFrames]);
+
+    return React.createElement(Text, textProps, resolvedFrames[index] ?? "-");
+};
+
+const ProgressBar = ({ value, max = 100, width = 20, bracket = true, completeChar = "█", incompleteChar = "░", showPercentage = true, ...textProps }) => {
+    const ratio = Math.max(0, Math.min(value, max)) / (max > 0 ? max : 1);
+    const filled = Math.round(ratio * Math.max(1, width));
+    const body = completeChar.repeat(filled) + incompleteChar.repeat(Math.max(0, width - filled));
+    const bar = bracket ? `[${body}]` : body;
+    return React.createElement(Text, textProps, showPercentage ? `${bar} ${Math.round(ratio * 100)}%` : bar);
+};
 
 // ─── Section list ─────────────────────────────────────────────────────────────
 

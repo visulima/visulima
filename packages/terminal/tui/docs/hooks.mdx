@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useKeyBindings, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useTimer, useStopwatch, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -313,7 +313,7 @@ if (palette?.background) {
 
 Returns `palette` (with `foreground`, `background`, `cursor`, and `colors` array of 16 ANSI colors as hex strings), `isLoading`, and `isSupported`. Low-level `queryTerminalPalette()` and `isTerminalPaletteQuerySupported()` are also exported.
 
-## `useMouse` (Ratatat-only)
+## `useMouse` (native renderer only)
 
 Low-level callback hook for mouse events. Subscribe to every mouse event with full modifier info.
 
@@ -338,7 +338,7 @@ useMouse((event) => {
 
 > For higher-level mouse hooks with element hover/click detection, see [Mouse Support](./mouse) (Ink layer, imported from `@visulima/tui`).
 
-## `useTextInput` (Ratatat-only)
+## `useTextInput` (native renderer only)
 
 Managed text input with cursor and editing shortcuts.
 
@@ -376,7 +376,7 @@ return (
 
 Supported editing keys: arrows, Home/End, Backspace/Delete, Ctrl+A/E/U/K/W, Enter, paste.
 
-## `useScrollable` (Ratatat-only)
+## `useScrollable` (native renderer only)
 
 Virtual scrolling state for fixed-height viewports.
 
@@ -672,6 +672,128 @@ const Dashboard = () => {
 ### Interaction with `maxFps`
 
 The `maxFps` option on `render()` controls how often Ink flushes frames to the terminal. `useAnimation` respects this throttle — when `maxFps` is low (e.g., `maxFps: 5`), animation callbacks are coalesced and the `delta` value reflects the actual time between rendered frames, not the interval. The `frame` and `time` values are always computed from elapsed wall-clock time, so they remain accurate regardless of throttling.
+
+## `useTimer`
+
+A countdown timer hook built on `useAnimation`. Returns the remaining time and control methods.
+
+```tsx
+import { useTimer } from "@visulima/tui";
+
+const { remaining, isRunning, isFinished, start, stop, toggle, reset } = useTimer({
+    duration: 60_000,
+    interval: 1000,
+    onTimeout: () => console.log("Time's up!"),
+});
+```
+
+### Options
+
+| Option      | Type         | Default | Description                         |
+| ----------- | ------------ | ------- | ----------------------------------- |
+| `duration`  | `number`     | _(required)_ | Countdown duration in milliseconds |
+| `interval`  | `number`     | `1000`  | Tick frequency in milliseconds      |
+| `autoStart` | `boolean`    | `false` | Start counting immediately          |
+| `onTimeout` | `() => void` | —       | Called once when time reaches zero   |
+
+### Return Value
+
+| Field        | Type         | Description                                |
+| ------------ | ------------ | ------------------------------------------ |
+| `remaining`  | `number`     | Milliseconds remaining (clamped to >= 0)   |
+| `isRunning`  | `boolean`    | Whether the timer is counting down         |
+| `isFinished` | `boolean`    | Whether the countdown has reached zero     |
+| `start`      | `() => void` | Start the countdown                        |
+| `stop`       | `() => void` | Pause the countdown                        |
+| `toggle`     | `() => void` | Toggle between running and stopped         |
+| `reset`      | `() => void` | Reset to original duration and stop        |
+
+For a visual component, see [`<Timer>`](./components#timer).
+
+## `useStopwatch`
+
+A count-up stopwatch hook built on `useAnimation`. Returns elapsed time, control methods, and lap functionality.
+
+```tsx
+import { useStopwatch } from "@visulima/tui";
+
+const { elapsed, isRunning, start, stop, toggle, reset, lap, laps } = useStopwatch({
+    interval: 100,
+    autoStart: true,
+});
+```
+
+### Options
+
+| Option      | Type      | Default | Description                    |
+| ----------- | --------- | ------- | ------------------------------ |
+| `interval`  | `number`  | `1000`  | Tick frequency in milliseconds |
+| `autoStart` | `boolean` | `false` | Start counting immediately     |
+
+### Return Value
+
+| Field       | Type         | Description                                |
+| ----------- | ------------ | ------------------------------------------ |
+| `elapsed`   | `number`     | Milliseconds elapsed since start/reset     |
+| `isRunning` | `boolean`    | Whether the stopwatch is running           |
+| `start`     | `() => void` | Start counting                             |
+| `stop`      | `() => void` | Pause counting                             |
+| `toggle`    | `() => void` | Toggle between running and stopped         |
+| `reset`     | `() => void` | Reset to zero, clear laps, and stop        |
+| `lap`       | `() => number` | Capture current elapsed time; returns it |
+| `laps`      | `number[]`   | Accumulated lap times                      |
+
+For a visual component, see [`<Stopwatch>`](./components#stopwatch).
+
+## `useKeyBindings`
+
+Declarative keybinding hook. Registers multiple key bindings with handlers and returns the enabled bindings for display in a [`<Help>`](./components#help) component.
+
+```tsx
+import { useKeyBindings, Help } from "@visulima/tui";
+
+const { bindings } = useKeyBindings([
+    { binding: { key: "q", description: "Quit" }, handler: () => exit() },
+    { binding: { key: ["upArrow", "k"], description: "Move up", group: "Navigation" }, handler: () => moveUp() },
+    { binding: { key: "ctrl+s", description: "Save" }, handler: () => save() },
+    { binding: { key: "escape", description: "Cancel", enabled: false }, handler: () => cancel() },
+]);
+
+<Help bindings={bindings} />
+```
+
+### Key Binding Format
+
+The `key` field supports:
+- **Single character**: `"q"`, `"a"`, `" "` (space)
+- **Special key name**: `"return"`, `"escape"`, `"upArrow"`, `"leftArrow"`, `"backspace"`, `"tab"`, `"pageUp"`, `"pageDown"`, `"home"`, `"end"`, `"delete"`
+- **Modifier combo**: `"ctrl+c"`, `"meta+s"`, `"shift+tab"` (modifier + key)
+- **Array**: `["upArrow", "k"]` — matches any of the listed keys
+
+### KeyBinding type
+
+```ts
+type KeyBinding = {
+    key: string | readonly string[];
+    description: string;
+    enabled?: boolean;   // default: true
+    group?: string;      // for Help grouping
+};
+```
+
+### Options
+
+| Option     | Type      | Default | Description                    |
+| ---------- | --------- | ------- | ------------------------------ |
+| `isActive` | `boolean` | `true`  | Whether input is captured      |
+
+### Return Value
+
+| Field      | Type           | Description                              |
+| ---------- | -------------- | ---------------------------------------- |
+| `bindings` | `KeyBinding[]` | Enabled bindings, for passing to `<Help>` |
+
+Disabled bindings (`enabled: false`) are excluded from both the returned array and keyboard matching.
 
 ## `useIsScreenReaderEnabled`
 

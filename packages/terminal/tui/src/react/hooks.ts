@@ -2,17 +2,17 @@
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import type { InputParser, MouseEvent, RatatatApp } from "../core/index";
+import type { InputParser, MouseEvent, TuiApp } from "../core/index";
 import type { LayoutNode } from "./layout";
 
-export interface RatatatContextProps {
-    app: RatatatApp;
+export interface TuiContextProps {
+    app: TuiApp;
     input: InputParser;
     writeStderr: (text: string) => void;
     writeStdout: (text: string) => void;
 }
 
-export const RatatatContext: Context<RatatatContextProps | null> = createContext<RatatatContextProps | null>(null);
+export const TuiContext: Context<TuiContextProps | null> = createContext<TuiContextProps | null>(null);
 
 export interface Key {
     backspace: boolean;
@@ -41,10 +41,10 @@ export type InputHandler = (input: string, key: Key) => void;
  * Always invokes the latest handler passed by the caller.
  */
 export const useInput = (handler: InputHandler): void => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     if (!context) {
-        throw new Error("useInput must be used within a Ratatat App environment");
+        throw new Error("useInput must be used within a TUI App environment");
     }
 
     // 1. Stable ref initialized with the first handler value
@@ -187,10 +187,10 @@ export type PasteHandler = (text: string) => void;
  * listener is active.
  */
 export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): void => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     if (!context) {
-        throw new Error("usePaste must be used within a Ratatat App environment");
+        throw new Error("usePaste must be used within a TUI App environment");
     }
 
     const { isActive = true } = options;
@@ -219,14 +219,14 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
 };
 
 /**
- * Raw access to the RatatatContext — app instance + input parser.
+ * Raw access to the TuiContext — app instance + input parser.
  * Useful for advanced integrations (e.g. DevTools, custom hooks).
  */
-export const useRatatatContext = (): RatatatContextProps => {
-    const context = useContext(RatatatContext);
+export const useTuiContext = (): TuiContextProps => {
+    const context = useContext(TuiContext);
 
     if (!context)
-        throw new Error("useRatatatContext must be used within a Ratatat App environment");
+        throw new Error("useTuiContext must be used within a TUI App environment");
 
     return context;
 };
@@ -236,16 +236,16 @@ export const useRatatatContext = (): RatatatContextProps => {
  * exit() triggers a clean shutdown (restores terminal, stops input, exits process).
  */
 export const useApp = (): { exit: () => void; quit: () => void } => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     if (!context) {
-        throw new Error("useApp must be used within a Ratatat App environment");
+        throw new Error("useApp must be used within a TUI App environment");
     }
 
     return {
         // Ink-compatible: const { exit } = useApp()
         exit: () => context.app.quit(),
-        // ratatat-native: direct app access
+        // internal: direct app access
         quit: () => context.app.quit(),
     };
 };
@@ -255,10 +255,10 @@ export const useApp = (): { exit: () => void; quit: () => void } => {
  * Ink-compatible: const { columns, rows } = useWindowSize()
  */
 export const useWindowSize = (): { columns: number; rows: number } => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     if (!context) {
-        throw new Error("useWindowSize must be used within a Ratatat App environment");
+        throw new Error("useWindowSize must be used within a TUI App environment");
     }
 
     const [size, setSize] = useState(() => context.app.getSize());
@@ -289,7 +289,7 @@ const toRawNewlines = (text: string) => text.replaceAll(/\r?\n/g, "\r\n");
  * Output is buffered while the alternate screen is active and flushed on exit.
  */
 export const useStdout = (): { stdout: NodeJS.WriteStream & { fd: 1 }; write: (text: string) => void } => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     return {
         stdout: process.stdout,
@@ -305,7 +305,7 @@ export const useStdout = (): { stdout: NodeJS.WriteStream & { fd: 1 }; write: (t
  * Output is buffered while the alternate screen is active and flushed on exit.
  */
 export const useStderr = (): { stderr: NodeJS.WriteStream & { fd: 2 }; write: (text: string) => void } => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     return {
         stderr: process.stderr,
@@ -368,7 +368,7 @@ const emptyMetrics: BoxMetrics = { height: 0, left: 0, top: 0, width: 0 };
  * Ink-compatible: const { width, height, left, top, hasMeasured } = useBoxMetrics(ref)
  */
 export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsResult => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
     const [metrics, setMetrics] = useState<BoxMetrics>(emptyMetrics);
     const [hasMeasured, setHasMeasured] = useState(false);
 
@@ -414,14 +414,14 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
 
 /**
  * Returns whether a screen reader is enabled.
- * Ratatat stub: always returns false — no screen reader support.
+ * Stub: always returns false — no screen reader support.
  * Ink-compatible: const isEnabled = useIsScreenReaderEnabled()
  */
 export const useIsScreenReaderEnabled = (): boolean => false;
 
 /**
  * Returns cursor positioning controls.
- * Ratatat stub: ratatat hides the cursor during rendering (alternate screen).
+ * Stub: the native renderer hides the cursor during rendering (alternate screen).
  * setCursorPosition is a no-op — provided for Ink API compatibility only.
  * Ink-compatible: const { setCursorPosition } = useCursor()
  */
@@ -520,10 +520,10 @@ export type MouseHandler = (event: MouseEvent) => void;
  * button values: 'left' | 'right' | 'middle' | 'scrollUp' | 'scrollDown'
  */
 export const useMouse = (handler: MouseHandler): void => {
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     if (!context)
-        throw new Error("useMouse must be used within a Ratatat App environment");
+        throw new Error("useMouse must be used within a TUI App environment");
 
     const handlerRef = useRef<MouseHandler>(handler);
 
@@ -734,7 +734,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
     });
 
     // Bracketed paste — insert full paste text at cursor
-    const context = useContext(RatatatContext);
+    const context = useContext(TuiContext);
 
     useEffect(() => {
         if (!context || !isActive) {

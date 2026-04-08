@@ -16,7 +16,8 @@
 import { exec } from "node:child_process";
 import os from "node:os";
 
-import { Box, render, Spacer, Text, useApp, useInput, useWindowSize } from "@visulima/tui/react";
+import { Box, Spacer, Text } from "@visulima/tui";
+import { render, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useEffect, useRef, useState } from "react";
 
 if (process.platform === "win32") {

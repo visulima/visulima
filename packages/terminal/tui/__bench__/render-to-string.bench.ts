@@ -3,7 +3,7 @@ import { Box as InkBox, renderToString as inkRenderToString, Text as InkText } f
 import React from "react";
 import { bench, describe } from "vitest";
 
-import { renderToString } from "../dist/react/render-to-string.js";
+import { renderToString } from "../src/react/render-to-string";
 
 const TuiSimpleApp = () => {
     return React.createElement(

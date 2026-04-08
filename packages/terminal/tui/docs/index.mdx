@@ -15,14 +15,15 @@ description: "React-based TUI library powered by a native Rust diff engine, drop
 - **Rust diff engine** — Native NAPI binding emits only changed terminal cells as ANSI
 - **Three rendering modes** — React, raw-buffer, and inline mode
 - **Full hook set** — Input, paste, mouse, focus, scrollable, text input, window size
-- **Ratatat-only extras** — `<Spinner>`, `<ProgressBar>`, `useMouse`, `useScrollable`, `useTextInput`
+- **Native renderer extras** — `useMouse`, `useScrollable`, `useTextInput`, `DevTools`, `renderInline`
 - **TypeScript first** — Full type safety with exported types
 - **Testing utilities** — Framework-agnostic `render()` + mock streams via `@visulima/tui/test`
 
 ## Quick Start
 
 ```tsx
-import { render, Box, Text, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
 function Counter() {
@@ -69,6 +70,6 @@ render(<Counter />);
         Test components with mock streams and frame capture
     </Card>
     <Card title="API Reference" href="/ink-compat">
-        Ink compatibility matrix and Ratatat-only exports
+        Ink compatibility matrix and native-only exports
     </Card>
 </Cards>

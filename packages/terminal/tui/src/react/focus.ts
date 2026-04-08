@@ -30,7 +30,7 @@ export const FocusContext: Context<FocusContextProps> = createContext<FocusConte
     remove() {},
 });
 
-FocusContext.displayName = "RatatatFocusContext";
+FocusContext.displayName = "TuiFocusContext";
 
 // ─── Focus provider ───────────────────────────────────────────────────────────
 

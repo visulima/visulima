@@ -20,7 +20,8 @@
  * Run: node --import @oxc-node/core/register examples/sierpinski.tsx
  */
 // @ts-nocheck
-import { Box, render, Text, useApp, useFocus, useFocusManager, useInput, useWindowSize } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useFocus, useFocusManager, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 // React internals call performance.measure() on every reconcile.

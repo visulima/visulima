@@ -14,7 +14,8 @@
  * Run: node --import @oxc-node/core/register examples/use-paste.tsx
  */
 
-import { Box, render, Text, useApp, useInput, usePaste } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput, usePaste } from "@visulima/tui/react";
 import React, { useState } from "react";
 
 type EventLine = {

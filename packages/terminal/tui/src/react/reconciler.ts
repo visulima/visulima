@@ -10,7 +10,7 @@ import type { Styles } from "./styles";
 import { applyStyles, resolveColor } from "./styles";
 import { getStringWidth } from "./text-width";
 
-type Type = "box" | "text";
+type Type = "box" | "ink-box" | "ink-text" | "text";
 type Props = any;
 type Container = LayoutNode;
 type Instance = LayoutNode;
@@ -34,9 +34,9 @@ export function setOnAfterCommit(function_: (() => void) | null): void {
 let currentUpdatePriority = NoEventPriority;
 
 /**
- * Resolve Ink-compatible color/style props into ratatat's numeric fg/bg/styles values.
+ * Resolve Ink-compatible color/style props into the native renderer's numeric fg/bg/styles values.
  * Ink uses: color="green", backgroundColor="red", bold, italic, dim, underline, etc.
- * Ratatat uses: fg=&lt;ansi-index>, bg=&lt;ansi-index>, styles=&lt;bitfield>
+ * Native renderer uses: fg=&lt;ansi-index>, bg=&lt;ansi-index>, styles=&lt;bitfield>
  */
 function resolveNodeColors(props: Props): { bg: number; fg: number; styles: number } {
     // fg: explicit numeric fg > color prop > 255 (terminal default)
@@ -160,7 +160,7 @@ const hostConfig: ReactReconciler.HostConfig<
 
         applyStyles(node.yogaNode, stylesToApply);
 
-        // Resolve color/style props (Ink-compat + ratatat-native)
+        // Resolve color/style props (Ink-compat + native)
         const { bg, fg, styles } = resolveNodeColors(props);
 
         node.fg = fg;
@@ -317,4 +317,4 @@ const hostConfig: ReactReconciler.HostConfig<
     warnsIfNotActing: true,
 } as any;
 
-export const RatatatReconciler: ReturnType<typeof ReactReconciler> = ReactReconciler(hostConfig);
+export const TuiReconciler: ReturnType<typeof ReactReconciler> = ReactReconciler(hostConfig);
