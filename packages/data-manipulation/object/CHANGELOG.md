@@ -1,3 +1,18 @@
+## @visulima/object [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.7...@visulima/object@3.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **object:** suppress eslint rules for recursive utility type patterns ([f68ce68](https://github.com/visulima/visulima/commit/f68ce68b45c6d03cf072bdf9d632478e7c7cd8eb))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **object:** add tsconfig.eslint.json for type-aware linting ([f22e998](https://github.com/visulima/visulima/commit/f22e998b368ad0de17cf8b71280a67c9d98070d0))
+* **object:** apply auto-fix formatting ([2e94ac5](https://github.com/visulima/visulima/commit/2e94ac5afa7cf890d1f37a5fa7a7a0cf961087e4))
+* **object:** apply prettier formatting ([893b38f](https://github.com/visulima/visulima/commit/893b38f86b7f22f9f65bb8a02812bf5b1de1e051))
+* **object:** migrate .prettierrc.cjs to prettier.config.js ([6fd82bc](https://github.com/visulima/visulima/commit/6fd82bcb393bcc3e8f7223210dc18f421949ab17))
+
 ## @visulima/object [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.6...@visulima/object@3.0.0-alpha.7) (2026-03-26)
 
 ### Features
