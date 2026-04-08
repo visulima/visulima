@@ -83,7 +83,7 @@ describe("use-box-metrics", () => {
             );
         };
 
-        const { waitUntilRenderFlush } = render(<Test />, { debug: true, stdout });
+        const { waitUntilRenderFlush } = render(<Test />, { debug: true, interactive: true, stdout });
 
         await waitUntilRenderFlush();
         await delay(50);

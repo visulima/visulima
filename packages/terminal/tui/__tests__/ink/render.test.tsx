@@ -56,6 +56,7 @@ const term = (fixture: string, args: string[] = []) => {
 
     const env = {
         ...process.env,
+        CI: "false",
         NODE_NO_WARNINGS: "1",
     };
 
@@ -189,7 +190,7 @@ describe("render", () => {
             </Box>
         );
 
-        const { unmount } = render(<Test />, { stdout });
+        const { unmount } = render(<Test />, { interactive: true, stdout });
 
         const contentWrites = getContentWrites(stdout.write);
 

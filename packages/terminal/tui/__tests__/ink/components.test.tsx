@@ -605,6 +605,7 @@ describe("components", () => {
 
         const { rerender, unmount, waitUntilExit } = render(<Dynamic items={[]} />, {
             debug: true,
+            interactive: true,
             stdout,
         });
 

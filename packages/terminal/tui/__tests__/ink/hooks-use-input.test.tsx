@@ -33,21 +33,21 @@ describe("hooks-use-input", () => {
 
             // Send 5 delete keys with enough delay between them for React concurrent
             // scheduler to process each update. The fixture has a 30ms blocking useMemo
-            // per deferred update, so we need generous delays.
+            // per deferred update, so we need generous delays (400ms for CI).
             for (let index = 0; index < 5; index++) {
                 ps.write("\u001B[3~");
-                await sleep(200);
+                await sleep(400);
             }
 
             // Poll for React concurrent mode to process all transitions instead of fixed delay
-            await waitFor(() => ps.output.includes("query:"), 5000);
+            await waitFor(() => ps.output.includes("query:"), 8000);
 
             ps.write("\r");
             await ps.waitForExit();
 
             expect(ps.output).toContain('FINAL query:"" deferred:""');
         },
-        15_000,
+        20_000,
     );
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {

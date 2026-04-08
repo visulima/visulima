@@ -68,7 +68,7 @@ describe("cursor", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        const { unmount } = render(<InputApp />, { stdin, stdout });
+        const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -85,7 +85,7 @@ describe("cursor", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        const { unmount } = render(<InputApp />, { stdin, stdout });
+        const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -103,7 +103,7 @@ describe("cursor", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        const { unmount } = render(<InputApp />, { stdin, stdout });
+        const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -123,7 +123,7 @@ describe("cursor", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        const { unmount } = render(<InputApp />, { stdin, stdout });
+        const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -168,7 +168,7 @@ describe("cursor", () => {
             return <Box>{showChild ? <CursorChild /> : <Text>no cursor</Text>}</Box>;
         };
 
-        const { unmount } = render(<Parent />, { stdin, stdout });
+        const { unmount } = render(<Parent />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -266,7 +266,7 @@ describe("cursor", () => {
             );
         };
 
-        const { unmount } = render(<MultiLineApp />, { stdin, stdout });
+        const { unmount } = render(<MultiLineApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -321,7 +321,7 @@ describe("cursor", () => {
             </Box>
         );
 
-        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -347,7 +347,7 @@ describe("cursor", () => {
             </Box>
         );
 
-        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -382,7 +382,7 @@ describe("cursor", () => {
             );
         };
 
-        const { unmount } = render(<InlineInputApp />, { stdin, stdout });
+        const { unmount } = render(<InlineInputApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(2)));
@@ -414,7 +414,7 @@ describe("cursor", () => {
             </Box>
         );
 
-        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -440,7 +440,7 @@ describe("cursor", () => {
             </Box>
         );
 
-        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));

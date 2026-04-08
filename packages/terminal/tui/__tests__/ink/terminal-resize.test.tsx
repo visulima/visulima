@@ -27,7 +27,7 @@ describe("terminal-resize", () => {
             );
         };
 
-        const { waitUntilRenderFlush } = render(<Test />, { stdout });
+        const { waitUntilRenderFlush } = render(<Test />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
 
@@ -59,7 +59,7 @@ describe("terminal-resize", () => {
         };
 
         const initialListenerCount = stdout.listenerCount("resize");
-        const { unmount, waitUntilRenderFlush } = render(<Test />, { stdout });
+        const { unmount, waitUntilRenderFlush } = render(<Test />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
 
@@ -87,7 +87,7 @@ describe("terminal-resize", () => {
             );
         };
 
-        const { unmount, waitUntilRenderFlush } = render(<Test />, { stdout });
+        const { unmount, waitUntilRenderFlush } = render(<Test />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
         unmount();
@@ -112,7 +112,7 @@ describe("terminal-resize", () => {
             return <Text>{columns}</Text>;
         };
 
-        const { waitUntilRenderFlush } = render(<Test />, { stdout });
+        const { waitUntilRenderFlush } = render(<Test />, { interactive: true, stdout });
 
         await waitUntilRenderFlush();
 
@@ -130,7 +130,7 @@ describe("terminal-resize", () => {
             </Box>
         );
 
-        render(<Test />, { stdout });
+        render(<Test />, { interactive: true, stdout });
 
         const initialOutput = stripAnsi(getWriteContents(stdout)[0]!);
 
@@ -159,7 +159,7 @@ describe("terminal-resize", () => {
             </Box>
         );
 
-        render(<Test />, { stdout });
+        render(<Test />, { interactive: true, stdout });
 
         const initialOutput = getWriteContents(stdout)[0]!;
 
@@ -184,7 +184,7 @@ describe("terminal-resize", () => {
             </Box>
         );
 
-        render(<Test />, { stdout });
+        render(<Test />, { interactive: true, stdout });
 
         const initialOutput = stripAnsi(getWriteContents(stdout)[0]!);
 
@@ -218,7 +218,7 @@ describe("terminal-resize", () => {
             </Box>
         );
 
-        const { rerender } = render(<Test />, { stdout });
+        const { rerender } = render(<Test />, { interactive: true, stdout });
 
         const initialOutput = stripAnsi(getWriteContents(stdout)[0]!);
 
