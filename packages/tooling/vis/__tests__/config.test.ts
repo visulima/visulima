@@ -12,7 +12,7 @@ describe(defineConfig, () => {
 
         const config = defineConfig({});
 
-        expect(config.security?.minimumReleaseAge).toBe(SECURITY_DEFAULTS.minimumReleaseAge);
+        expect(config.security?.minimumReleaseAge).toBeUndefined();
         expect(config.security?.trustPolicy).toBe("no-downgrade");
         expect(config.security?.trustPolicyIgnoreAfter).toBe(SECURITY_DEFAULTS.trustPolicyIgnoreAfter);
         expect(config.security?.blockExoticSubdeps).toBe(true);
@@ -136,7 +136,7 @@ describe(loadVisConfig, () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const config = await loadVisConfig(temporaryDirectory);
 
-        expect(config.security?.minimumReleaseAge).toBe(SECURITY_DEFAULTS.minimumReleaseAge);
+        expect(config.security?.minimumReleaseAge).toBeUndefined();
         expect(config.security?.trustPolicy).toBe("no-downgrade");
         expect(config.security?.blockExoticSubdeps).toBe(true);
     });

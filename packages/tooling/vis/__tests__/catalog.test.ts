@@ -36,6 +36,7 @@ import {
     parseVersion,
     readCatalogs,
     readPackageJsonDeps,
+    resolvePackageTarget,
     restoreFromBackup,
 } from "../src/catalog";
 
@@ -701,6 +702,430 @@ describe(findTargetVersion, () => {
 
         expect(findTargetVersion(v, "1.2.0-beta.1", "^1.0.0", "minor", true)).toBe("1.2.0-beta.1");
     });
+    it("should filter out immature versions when maturity options are provided", () => {
+        expect.assertions(1);
+
+        const v = ["1.0.0", "1.1.0", "1.2.0", "2.0.0"];
+        const now = Date.now();
+        const publishTimes = new Map([
+            ["1.0.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["1.1.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["1.2.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["2.0.0", new Date(now - 1000).toISOString()], // published 1 second ago
+        ]);
+
+        // minimumReleaseAge = 20160 minutes (14 days), 2.0.0 is too new
+        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
+            minimumReleaseAge: 20_160,
+            packageName: "react",
+            publishTimes,
+        })).toBe("1.2.0");
+    });
+
+    it("should skip maturity check for excluded packages", () => {
+        expect.assertions(1);
+
+        const v = ["1.0.0", "2.0.0"];
+        const now = Date.now();
+        const publishTimes = new Map([
+            ["1.0.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["2.0.0", new Date(now - 1000).toISOString()],
+        ]);
+
+        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
+            minimumReleaseAge: 20_160,
+            minimumReleaseAgeExclude: ["react"],
+            packageName: "react",
+            publishTimes,
+        })).toBe("2.0.0");
+    });
+
+    it("should filter immature versions in minor mode", () => {
+        expect.assertions(1);
+
+        const v = ["1.0.0", "1.1.0", "1.2.0", "2.0.0"];
+        const now = Date.now();
+        const publishTimes = new Map([
+            ["1.0.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["1.1.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+            ["1.2.0", new Date(now - 1000).toISOString()], // too new
+            ["2.0.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
+        ]);
+
+        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false, {
+            minimumReleaseAge: 20_160,
+            packageName: "lodash",
+            publishTimes,
+        })).toBe("1.1.0");
+    });
+
+    it("should return latest when no maturity options are provided", () => {
+        expect.assertions(1);
+
+        expect(findTargetVersion(["1.0.0", "2.0.0"], "2.0.0", "^1.0.0", "latest", false)).toBe("2.0.0");
+    });
+});
+
+// --- resolvePackageTarget ---
+
+describe(resolvePackageTarget, () => {
+    it("should return global target when no packageMode", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("react", "latest")).toBe("latest");
+    });
+
+    it("should return global target when package does not match any pattern", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("react", "latest", { typescript: "minor" })).toBe("latest");
+    });
+
+    it("should match exact package name", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("typescript", "latest", { typescript: "minor" })).toBe("minor");
+    });
+
+    it("should match glob pattern", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("@types/node", "latest", { "@types/*": "patch" })).toBe("patch");
+    });
+
+    it("should match regex pattern", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("@vue/compiler-sfc", "latest", { "/^@vue/": "patch" })).toBe("patch");
+    });
+
+    it("should not match regex that does not apply", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("react", "latest", { "/^@vue/": "patch" })).toBe("latest");
+    });
+
+    it("should return the first matching pattern", () => {
+        expect.assertions(1);
+
+        expect(resolvePackageTarget("typescript", "latest", {
+            "typescript": "minor",
+            "/^type/": "patch",
+        })).toBe("minor");
+    });
+});
+
+// --- includeLocked (collectEntries via checkOutdated) ---
+
+describe("includeLocked option", () => {
+    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+            const packageName = url.replace("https://registry.npmjs.org/", "");
+            const data = responses[packageName];
+
+            if (!data || data === "error") {
+                return { ok: false, status: 404, statusText: "Not Found" } as Response;
+            }
+
+            const versionsObject: Record<string, unknown> = {};
+
+            for (const v of data.versions) {
+                versionsObject[v] = {};
+            }
+
+            return {
+                json: async () => {
+                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
+                },
+                ok: true,
+            } as Response;
+        });
+    };
+
+    it("should skip pinned versions by default", async () => {
+        expect.assertions(1);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should include pinned versions when includeLocked is true", async () => {
+        expect.assertions(2);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: true, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.packageName).toBe("react");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should not skip versions with ^ or ~ prefix", async () => {
+        expect.assertions(1);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- packageMode (via checkOutdated) ---
+
+describe("packageMode option", () => {
+    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+            const packageName = url.replace("https://registry.npmjs.org/", "");
+            const data = responses[packageName];
+
+            if (!data || data === "error") {
+                return { ok: false, status: 404, statusText: "Not Found" } as Response;
+            }
+
+            const versionsObject: Record<string, unknown> = {};
+
+            for (const v of data.versions) {
+                versionsObject[v] = {};
+            }
+
+            return {
+                json: async () => {
+                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
+                },
+                ok: true,
+            } as Response;
+        });
+    };
+
+    it("should use per-package target override", async () => {
+        expect.assertions(2);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "18.3.0", "19.0.0"] },
+            typescript: { latest: "5.5.0", versions: ["5.3.0", "5.4.0", "5.5.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"], ["typescript", "^5.3.0"]])]]);
+        const options: CatalogCheckOptions = {
+            exclude: [],
+            ignore: [],
+            include: [],
+            includeLocked: false,
+            includePrerelease: false,
+            packageMode: { typescript: "minor" },
+            target: "latest",
+        };
+        const result = await checkOutdated(catalogs, options);
+
+        // react should get latest (19.0.0), typescript should be constrained to minor (5.5.0 is same major)
+        const reactEntry = result.outdated.find((e) => e.packageName === "react");
+        const tsEntry = result.outdated.find((e) => e.packageName === "typescript");
+
+        expect(reactEntry?.targetVersion).toBe("19.0.0");
+        expect(tsEntry?.targetVersion).toBe("5.5.0");
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- depFields (readPackageJsonDeps) ---
+
+describe("depFields option", () => {
+    it("should read overrides field when configured", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-depfields-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "app",
+                overrides: { lodash: "^4.17.21" },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { depFields: ["dependencies", "overrides"] });
+
+        expect(result.get(".:dependencies")?.has("react")).toBe(true);
+        expect(result.get(".:overrides")?.has("lodash")).toBe(true);
+    });
+
+    it("should read pnpm.overrides nested field when configured", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-depfields-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "app",
+                pnpm: { overrides: { lodash: "^4.17.21" } },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { depFields: ["dependencies", "pnpm.overrides"] });
+
+        expect(result.get(".:dependencies")?.has("react")).toBe(true);
+        expect(result.get(".:pnpm.overrides")?.has("lodash")).toBe(true);
+    });
+
+    it("should skip $ references in overrides", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-depfields-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "app",
+                overrides: { "react-dom": "$react", lodash: "^4.17.21" },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { depFields: ["overrides"] });
+        const overrides = result.get(".:overrides");
+
+        expect(overrides?.has("lodash")).toBe(true);
+        expect(overrides?.has("react-dom")).toBe(false);
+    });
+
+    it("should use default dep types when depFields is not set", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-depfields-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "app",
+                overrides: { lodash: "^4.17.21" },
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+
+        expect(result.get(".:dependencies")?.has("react")).toBe(true);
+        expect(result.has(".:overrides")).toBe(false);
+    });
+});
+
+// --- hasPackageJsonDeps with extended fields ---
+
+describe("hasPackageJsonDeps with overrides/resolutions", () => {
+    it("should return true when package.json has overrides", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "app", overrides: { lodash: "^4.17.21" } }));
+
+        expect(hasPackageJsonDeps(root)).toBe(true);
+    });
+
+    it("should return true when package.json has resolutions", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "app", resolutions: { lodash: "^4.17.21" } }));
+
+        expect(hasPackageJsonDeps(root)).toBe(true);
+    });
+
+    it("should return true when package.json has pnpm.overrides", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "app", pnpm: { overrides: { lodash: "^4.17.21" } } }));
+
+        expect(hasPackageJsonDeps(root)).toBe(true);
+    });
+});
+
+// --- applyPackageJsonUpdates with nested fields ---
+
+describe("applyPackageJsonUpdates with nested dep types", () => {
+    it("should update pnpm.overrides using dot-path", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-nested-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({ name: "app", pnpm: { overrides: { lodash: "^4.17.0" } } }, undefined, 2),
+        );
+
+        applyPackageJsonUpdates(root, [
+            {
+                catalogName: ".:pnpm.overrides",
+                currentRange: "^4.17.0",
+                newRange: "^4.17.21",
+                packageName: "lodash",
+                targetVersion: "4.17.21",
+                updateType: "patch",
+            },
+        ]);
+
+        const updated = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+        expect(updated.pnpm.overrides.lodash).toBe("^4.17.21");
+        expect(updated.name).toBe("app");
+    });
+
+    it("should update overrides field directly", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-nested-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({ name: "app", overrides: { lodash: "^4.17.0" } }, undefined, 2),
+        );
+
+        applyPackageJsonUpdates(root, [
+            {
+                catalogName: ".:overrides",
+                currentRange: "^4.17.0",
+                newRange: "^4.17.21",
+                packageName: "lodash",
+                targetVersion: "4.17.21",
+                updateType: "patch",
+            },
+        ]);
+
+        const updated = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+        expect(updated.overrides.lodash).toBe("^4.17.21");
+    });
 });
 
 // --- hasCatalogs ---
@@ -917,7 +1342,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -938,7 +1363,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -962,7 +1387,7 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -988,7 +1413,7 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: ["react"], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: ["react"], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1013,7 +1438,7 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: ["react*"], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: ["react*"], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         // Only vue should be checked (react excluded)
@@ -1039,7 +1464,7 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: ["react"], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["react"], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         // react is ignored, only vue is checked
@@ -1068,7 +1493,7 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: ["@types/*"], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["@types/*"], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1086,7 +1511,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: ["vue"], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["vue"], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1103,7 +1528,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -1123,7 +1548,7 @@ describe(checkOutdated, () => {
             ["default", new Map([["react", "^18.0.0"]])],
             ["dev", new Map([["react", "^18.0.0"]])],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         // Two outdated entries (one per catalog) but fetch called once
@@ -1141,7 +1566,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "minor" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "minor" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1159,7 +1584,7 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "patch" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "patch" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1177,12 +1602,131 @@ describe(checkOutdated, () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const onProgress = vi.fn<(current: number, total: number) => void>();
 
         await checkOutdated(catalogs, options, undefined, onProgress);
 
         expect(onProgress).toHaveBeenCalledWith(1, 1);
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- checkOutdated: target and filteredByTarget ---
+
+describe("checkOutdated target behavior", () => {
+    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+            const packageName = url.replace("https://registry.npmjs.org/", "");
+            const data = responses[packageName];
+
+            if (!data || data === "error") {
+                return { ok: false, status: 404, statusText: "Not Found" } as Response;
+            }
+
+            const versionsObject: Record<string, unknown> = {};
+
+            for (const v of data.versions) {
+                versionsObject[v] = {};
+            }
+
+            return {
+                json: async () => {
+                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
+                },
+                ok: true,
+            } as Response;
+        });
+    };
+
+    it("should include major updates when target is latest", async () => {
+        expect.assertions(3);
+
+        mockFetch({
+            prisma: { latest: "7.7.0", versions: ["6.19.2", "7.7.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["prisma", "6.19.2"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: true, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.packageName).toBe("prisma");
+        expect(result.outdated[0]?.updateType).toBe("major");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should exclude major updates when target is minor", async () => {
+        expect.assertions(1);
+
+        mockFetch({
+            prisma: { latest: "7.7.0", versions: ["6.19.2", "7.7.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["prisma", "^6.19.2"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "minor" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should report filteredByTarget when target is not latest", async () => {
+        expect.assertions(3);
+
+        mockFetch({
+            prisma: { latest: "7.7.0", versions: ["6.19.2", "7.7.0"] },
+            react: { latest: "19.0.0", versions: ["18.2.0", "18.3.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["prisma", "^6.19.2"], ["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "minor" };
+        const result = await checkOutdated(catalogs, options);
+
+        // react has a minor update (18.3.0), prisma has no minor update
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.packageName).toBe("react");
+
+        // prisma should be in filteredByTarget (has major update 7.7.0 but excluded by minor target)
+        expect(result.filteredByTarget.some((e) => e.packageName === "prisma")).toBe(true);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty filteredByTarget when target is latest", async () => {
+        expect.assertions(1);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.filteredByTarget).toHaveLength(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should include pinned versions with includeLocked and target latest", async () => {
+        expect.assertions(3);
+
+        mockFetch({
+            prisma: { latest: "7.7.0", versions: ["6.19.2", "7.7.0"] },
+        });
+
+        const catalogs = new Map([["backend", new Map([["prisma", "6.19.2"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: true, includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.packageName).toBe("prisma");
+        expect(result.outdated[0]?.newRange).toBe("7.7.0");
 
         vi.restoreAllMocks();
     });
@@ -2518,7 +3062,7 @@ describe("checkOutdated with npmrcConfig", () => {
         });
 
         const catalogs = new Map([["default", new Map([["@myorg/utils", "^1.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
         const npmrcConfig: NpmrcConfig = {
             authTokens: new Map(),
             defaultRegistry: "https://registry.npmjs.org",
@@ -2549,7 +3093,7 @@ describe("checkOutdated with npmrcConfig", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^1.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
 
         await checkOutdated(catalogs, options);
 
