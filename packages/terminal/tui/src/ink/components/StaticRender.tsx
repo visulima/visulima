@@ -18,7 +18,7 @@
  */
 
 import type { ReactNode } from "react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { DOMElement } from "../dom";
 import type { Styles } from "../styles";
@@ -30,19 +30,27 @@ export type Props = {
 };
 
 const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
-    const ref = useRef<DOMElement>(null);
-    const [isRendered, setIsRendered] = useState(false);
+    const nodeRef = useRef<DOMElement | null>(null);
+    // Track rendered state in a ref to avoid triggering React state updates
+    // during the commit phase (prepareYogaTree calls internal_onRendered
+    // synchronously during layout, which would cause a "nested component
+    // updates from render" warning with useState/useReducer).
+    const isRenderedRef = useRef(false);
 
-    useEffect(() => {
-        const node = ref.current;
+    const refCallback = useCallback((node: DOMElement | null) => {
+        nodeRef.current = node;
 
         if (node) {
             node.internal_onRendered = () => {
-                setIsRendered(true);
+                isRenderedRef.current = true;
             };
         }
+    }, []);
 
+    useEffect(() => {
         return () => {
+            const node = nodeRef.current;
+
             if (node) {
                 node.cachedRender = undefined;
                 node.internal_onRendered = undefined;
@@ -58,8 +66,8 @@ const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
     }, [style, width]);
 
     return (
-        <ink-static-render ref={ref} style={mergedStyle}>
-            {isRendered ? null : children()}
+        <ink-static-render ref={refCallback} style={mergedStyle}>
+            {isRenderedRef.current ? null : children()}
         </ink-static-render>
     );
 };
