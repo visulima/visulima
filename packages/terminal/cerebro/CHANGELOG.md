@@ -1,3 +1,49 @@
+## @visulima/cerebro [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.9...@visulima/cerebro@3.0.0-alpha.10) (2026-04-08)
+
+### Features
+
+* **cerebro:** add addGlobalOption API for CLI-wide options ([ccc1cc0](https://github.com/visulima/visulima/commit/ccc1cc085ed0189be49ab8da7d9dbbc69ba07c72))
+* **cerebro:** add heap-tuning and compile-cache performance helpers ([aebd564](https://github.com/visulima/visulima/commit/aebd56425b8e0e3fac0e5c6cec3697cdfe376881))
+
+### Bug Fixes
+
+* **cerebro:** properly fix eslint errors in code ([2ba0003](https://github.com/visulima/visulima/commit/2ba00034172b33072af1ae09109652b6571f4474))
+* **cerebro:** remove remaining eslint suppressions with proper code fixes ([a872fb4](https://github.com/visulima/visulima/commit/a872fb477866b921a79a42eb4645fda97f1b83d3))
+* **cerebro:** resolve eslint errors ([7159a69](https://github.com/visulima/visulima/commit/7159a6910d94042b834bdda4b6929d529532d272))
+
+### Documentation
+
+* **cerebro:** document addGlobalOption and getGlobalOptions APIs ([92b38bf](https://github.com/visulima/visulima/commit/92b38bf19115b1469b7e3cbe439305f4d27342e8))
+* **cerebro:** fix markdown formatting in migration guide ([66aaab6](https://github.com/visulima/visulima/commit/66aaab6e25ba2ffca707decaacc3a899850e91f5))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **cerebro:** add tsconfig.eslint.json for type-aware linting ([f14bd4c](https://github.com/visulima/visulima/commit/f14bd4ccef02397a97abf60b0be91e58faf4f5e8))
+* **cerebro:** apply linter fixes and prior session changes ([f50c294](https://github.com/visulima/visulima/commit/f50c294aa41c4c5bbbf8c1c1e3f4d4dcdb5be07f))
+* **cerebro:** apply prettier formatting ([2649ac5](https://github.com/visulima/visulima/commit/2649ac5e3dfda9b816087f34e0feab28a4496cbb))
+* **cerebro:** migrate .prettierrc.cjs to prettier.config.js ([133284e](https://github.com/visulima/visulima/commit/133284ef72efd7639dd147a2c5552c514cb84bff))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+* update docs ([8eb4d08](https://github.com/visulima/visulima/commit/8eb4d085de9315b63328286b42b8ce5e9f424579))
+
+### Tests
+
+* **cerebro:** add tests for options after positional arguments ([f321be8](https://github.com/visulima/visulima/commit/f321be8b56aa79fcf49b98f19d4a2620ae52dc34))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.9
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.9
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.7
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.7
+* **@visulima/pail:** upgraded to 4.0.0-alpha.10
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+* **@visulima/string:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/cerebro [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.8...@visulima/cerebro@3.0.0-alpha.9) (2026-03-26)
 
 ### Features
