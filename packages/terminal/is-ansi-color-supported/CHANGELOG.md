@@ -1,3 +1,17 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.7...@visulima/is-ansi-color-supported@3.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** resolve eslint errors ([0dc2a10](https://github.com/visulima/visulima/commit/0dc2a10efb727473fa108979c6171098a3cefacb))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+
+### Miscellaneous Chores
+
+* **is-ansi-color-supported:** add tsconfig.eslint.json for type-aware linting ([81cc05a](https://github.com/visulima/visulima/commit/81cc05abf7ef84398d8b90816f9802580ca3a639))
+* **is-ansi-color-supported:** apply prettier formatting ([9efa94d](https://github.com/visulima/visulima/commit/9efa94d0a4f392857665ffc010e41f86a92d3dc0))
+* **is-ansi-color-supported:** migrate .prettierrc.cjs to prettier.config.js ([b25b9c9](https://github.com/visulima/visulima/commit/b25b9c9c4858f6c562b4952eb6d0862b56de98b6))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.6...@visulima/is-ansi-color-supported@3.0.0-alpha.7) (2026-03-26)
 
 ### Features
