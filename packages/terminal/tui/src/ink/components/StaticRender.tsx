@@ -18,7 +18,7 @@
  */
 
 import type { ReactNode } from "react";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 import type { DOMElement } from "../dom";
 import type { Styles } from "../styles";
@@ -30,26 +30,29 @@ export type Props = {
 };
 
 const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
-    const nodeRef = useRef<DOMElement | null>(null);
+    const ref = useRef<DOMElement>(null);
     // Track rendered state in a ref to avoid triggering React state updates
     // during the commit phase (prepareYogaTree calls internal_onRendered
-    // synchronously during layout, which would cause a "nested component
-    // updates from render" warning with useState/useReducer).
+    // synchronously during layout).
     const isRenderedRef = useRef(false);
 
-    const refCallback = useCallback((node: DOMElement | null) => {
-        nodeRef.current = node;
+    // useLayoutEffect fires synchronously during commit, before paint — this
+    // ensures internal_onRendered is attached before prepareYogaTree runs in
+    // the live rendering pipeline. In renderToString, useLayoutEffect also
+    // fires synchronously so state updates it triggers are reflected.
+    useLayoutEffect(() => {
+        const node = ref.current;
 
         if (node) {
             node.internal_onRendered = () => {
                 isRenderedRef.current = true;
             };
         }
-    }, []);
+    });
 
     useEffect(() => {
         return () => {
-            const node = nodeRef.current;
+            const node = ref.current;
 
             if (node) {
                 node.cachedRender = undefined;
@@ -66,7 +69,7 @@ const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
     }, [style, width]);
 
     return (
-        <ink-static-render ref={refCallback} style={mergedStyle}>
+        <ink-static-render ref={ref} style={mergedStyle}>
             {isRenderedRef.current ? null : children()}
         </ink-static-render>
     );

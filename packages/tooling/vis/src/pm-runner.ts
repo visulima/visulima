@@ -114,6 +114,10 @@ const detectPmFallback = (cwd: string): PmInfo => {
 };
 
 const detectPm = (cwd: string): PmInfo => {
+    if (!existsSync(cwd)) {
+        throw new Error(`Could not detect package manager in ${cwd}. Directory does not exist.`);
+    }
+
     try {
         const detected = requireNative().detectPackageManager(cwd);
 
