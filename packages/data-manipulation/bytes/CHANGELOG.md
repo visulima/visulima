@@ -1,3 +1,19 @@
+## @visulima/bytes [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.7...@visulima/bytes@3.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **bytes:** add eslint-disable for runtime Buffer availability checks ([c579fd4](https://github.com/visulima/visulima/commit/c579fd4be50eaa152e82ab54a698d47dda9997c6))
+
+### Miscellaneous Chores
+
+* **bytes:** add tsconfig.eslint.json for type-aware linting ([b000842](https://github.com/visulima/visulima/commit/b000842b06c549d9336dbb95cd9dd2ed56749a00))
+* **bytes:** apply auto-fix formatting ([b007819](https://github.com/visulima/visulima/commit/b007819d9e4a4bb08cb802b16a0f6cc330fb1102))
+* **bytes:** apply prettier formatting ([9d2226c](https://github.com/visulima/visulima/commit/9d2226c2b7ec9b4631444f956ff047cfa1b32526))
+* **bytes:** expand inline if-return to block syntax ([4388518](https://github.com/visulima/visulima/commit/43885187afac28f0de8b56f42c5a601f095bcc3b))
+* **bytes:** expand inline if-return to block syntax ([5b313f2](https://github.com/visulima/visulima/commit/5b313f240f3161893100dcc35858ebd1630d7765))
+* **bytes:** migrate .prettierrc.cjs to prettier.config.js ([ddc08da](https://github.com/visulima/visulima/commit/ddc08da039cb51a296147514d5683b5340051a98))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+
 ## @visulima/bytes [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.6...@visulima/bytes@3.0.0-alpha.7) (2026-03-26)
 
 ### Features
