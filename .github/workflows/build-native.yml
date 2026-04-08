@@ -32,6 +32,7 @@ jobs:
             task-runner: "${{ steps.changes.outputs.task-runner }}"
             tui: "${{ steps.changes.outputs.tui }}"
             vis: "${{ steps.changes.outputs.vis }}"
+            any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
@@ -67,28 +68,17 @@ jobs:
                         - 'packages/tooling/vis/index.js'
                         - '.github/workflows/build-native.yml'
 
+    # Build all changed packages per target (8 runners instead of 24)
     build:
-        name: "Build ${{ matrix.package.name }} - ${{ matrix.settings.target }}"
+        name: "Build native - ${{ matrix.settings.target }}"
         needs: "files-changed"
         if: |
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch' ||
-            needs.files-changed.outputs.task-runner == 'true' ||
-            needs.files-changed.outputs.tui == 'true' ||
-            needs.files-changed.outputs.vis == 'true'
+            needs.files-changed.outputs.any-changed == 'true'
         strategy:
             fail-fast: false
             matrix:
-                package:
-                    - name: "task-runner"
-                      dir: "packages/tooling/task-runner"
-                      changed: "${{ needs.files-changed.outputs.task-runner }}"
-                    - name: "tui"
-                      dir: "packages/terminal/tui"
-                      changed: "${{ needs.files-changed.outputs.tui }}"
-                    - name: "vis"
-                      dir: "packages/tooling/vis"
-                      changed: "${{ needs.files-changed.outputs.vis }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
@@ -117,84 +107,130 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - name: "Skip unchanged package"
-              id: "skip-check"
-              if: "github.event_name == 'pull_request' && matrix.package.changed != 'true'"
-              run: "echo 'Skipping — no changes detected for ${{ matrix.package.name }}'"
-
             - name: "Git checkout"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               with:
                   persist-credentials: false
 
-            - name: "Cache native build output"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
-              id: "native-cache"
+            # --- Cache per package ---
+            - name: "Cache task-runner native build"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
+              id: "cache-task-runner"
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
-                  path: "${{ matrix.package.dir }}/*.node"
-                  key: "native-${{ matrix.package.name }}-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', format('{0}/native/Cargo.toml', matrix.package.dir), format('{0}/native/Cargo.lock', matrix.package.dir), format('{0}/native/build.rs', matrix.package.dir), format('{0}/native/src/**', matrix.package.dir)) }}"
+                  path: "packages/tooling/task-runner/*.node"
+                  key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**') }}"
+
+            - name: "Cache tui native build"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
+              id: "cache-tui"
+              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              with:
+                  path: "packages/terminal/tui/*.node"
+                  key: "native-tui-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/terminal/tui/native/Cargo.toml', 'packages/terminal/tui/native/Cargo.lock', 'packages/terminal/tui/native/build.rs', 'packages/terminal/tui/native/src/**') }}"
+
+            - name: "Cache vis native build"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
+              id: "cache-vis"
+              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              with:
+                  path: "packages/tooling/vis/*.node"
+                  key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**') }}"
+
+            # Determine if any package actually needs building (not all cached)
+            # A skipped cache step (package unchanged) has outcome='skipped' and empty cache-hit,
+            # so we must check both that the cache step ran AND missed.
+            - name: "Check if build is needed"
+              id: "need-build"
+              shell: "bash"
+              run: |
+                  NEED="false"
+                  if [[ "${{ steps.cache-task-runner.outcome }}" == "success" && "${{ steps.cache-task-runner.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-tui.outcome }}" == "success" && "${{ steps.cache-tui.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-vis.outcome }}" == "success" && "${{ steps.cache-vis.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  echo "any=$NEED" >> "$GITHUB_OUTPUT"
 
             - name: "Setup resources and environment"
-              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true'"
+              if: "steps.need-build.outputs.any == 'true'"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
-                  cache-prefix: "build-native-${{ matrix.package.name }}"
+                  cache-prefix: "build-native"
                   run-signatures-audit: false
 
             - name: "Install Rust toolchain"
-              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true'"
+              if: "steps.need-build.outputs.any == 'true'"
               uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
               with:
-                  cache-key: "build-native-${{ matrix.package.name }}"
+                  cache-key: "build-native"
                   save-cache: "${{ github.ref_name == 'main' }}"
                   tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
 
             - name: "Add Rust target"
-              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true'"
+              if: "steps.need-build.outputs.any == 'true'"
               run: "rustup target add ${{ matrix.settings.target }}"
 
             - name: "Install Zig (cross-compilation)"
-              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true' && matrix.settings.cross == '-x'"
+              if: "steps.need-build.outputs.any == 'true' && matrix.settings.cross == '-x'"
               uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
               with:
                   version: "0.14.1"
 
-            - name: "Build native"
-              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true'"
+            # --- Build each changed package ---
+            - name: "Build task-runner native"
+              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true') && steps.cache-task-runner.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
-              working-directory: "${{ matrix.package.dir }}"
+              working-directory: "packages/tooling/task-runner"
 
-            - name: "Upload artifact"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
+            - name: "Build tui native"
+              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true') && steps.cache-tui.outputs.cache-hit != 'true'"
+              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+              working-directory: "packages/terminal/tui"
+
+            - name: "Build vis native"
+              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true') && steps.cache-vis.outputs.cache-hit != 'true'"
+              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+              working-directory: "packages/tooling/vis"
+
+            # --- Upload artifacts per package ---
+            - name: "Upload task-runner artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
-                  name: "bindings-${{ matrix.package.name }}-${{ matrix.settings.target }}"
-                  path: "${{ matrix.package.dir }}/*.node"
+                  name: "bindings-task-runner-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner/*.node"
                   if-no-files-found: "error"
 
+            - name: "Upload tui artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
+              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              with:
+                  name: "bindings-tui-${{ matrix.settings.target }}"
+                  path: "packages/terminal/tui/*.node"
+                  if-no-files-found: "error"
+
+            - name: "Upload vis artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
+              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              with:
+                  name: "bindings-vis-${{ matrix.settings.target }}"
+                  path: "packages/tooling/vis/*.node"
+                  if-no-files-found: "error"
+
+    # Test native bindings on real hardware (4 runners instead of 12)
     test-native:
-        name: "Test ${{ matrix.package.name }} - ${{ matrix.settings.target }}"
+        name: "Test native - ${{ matrix.settings.target }}"
         needs: ["files-changed", "build"]
         strategy:
             fail-fast: false
             matrix:
-                package:
-                    - name: "task-runner"
-                      dir: "packages/tooling/task-runner"
-                      test_files: "__tests__/native-binding.test.ts"
-                      changed: "${{ needs.files-changed.outputs.task-runner }}"
-                    - name: "tui"
-                      dir: "packages/terminal/tui"
-                      test_files: "__tests__/native-binding.test.ts"
-                      changed: "${{ needs.files-changed.outputs.tui }}"
-                    - name: "vis"
-                      dir: "packages/tooling/vis"
-                      test_files: "__tests__/native-binding.test.ts"
-                      changed: "${{ needs.files-changed.outputs.vis }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
@@ -213,31 +249,56 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true' || needs.files-changed.outputs.tui == 'true' || needs.files-changed.outputs.vis == 'true'"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               with:
                   persist-credentials: false
 
             - name: "Setup resources and environment"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true' || needs.files-changed.outputs.tui == 'true' || needs.files-changed.outputs.vis == 'true'"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
-                  cache-prefix: "build-native-${{ matrix.package.name }}-test"
+                  cache-prefix: "build-native-test"
                   run-signatures-audit: false
 
-            - name: "Download artifact"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
+            # --- Download and test each changed package ---
+            - name: "Download task-runner artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
               uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
               with:
-                  name: "bindings-${{ matrix.package.name }}-${{ matrix.settings.target }}"
-                  path: "${{ matrix.package.dir }}"
+                  name: "bindings-task-runner-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner"
 
-            - name: "Run native binding tests"
-              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
-              run: "pnpm vitest run ${{ matrix.package.test_files }}"
-              working-directory: "${{ matrix.package.dir }}"
+            - name: "Test task-runner native binding"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/tooling/task-runner"
+
+            - name: "Download tui artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
+              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
+              with:
+                  name: "bindings-tui-${{ matrix.settings.target }}"
+                  path: "packages/terminal/tui"
+
+            - name: "Test tui native binding"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/terminal/tui"
+
+            - name: "Download vis artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
+              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
+              with:
+                  name: "bindings-vis-${{ matrix.settings.target }}"
+                  path: "packages/tooling/vis"
+
+            - name: "Test vis native binding"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/tooling/vis"
 
     # This check runs once all build jobs have passed
     build-native-required-check:

@@ -33,8 +33,48 @@ concurrency:
 permissions: {}
 
 jobs:
+    files-changed:
+        name: "Detect Cargo Deny changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        outputs:
+            task-runner: "${{ steps.changes.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Check for file changes"
+              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
+              id: "changes"
+              with:
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/Cargo.lock'
+                        - 'packages/tooling/task-runner/native/deny.toml'
+                      tui:
+                        - 'packages/terminal/tui/native/Cargo.lock'
+                        - 'packages/terminal/tui/native/deny.toml'
+                      vis:
+                        - 'packages/tooling/vis/native/Cargo.lock'
+                        - 'packages/tooling/vis/native/deny.toml'
+
     deny:
         name: "Cargo Deny (${{ matrix.package.name }})"
+        needs: "files-changed"
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.tui == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
         runs-on: "ubuntu-latest"
         strategy:
             fail-fast: false
@@ -42,10 +82,16 @@ jobs:
                 package:
                     - name: "task-runner"
                       dir: "packages/tooling/task-runner/native"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
                     - name: "tui"
                       dir: "packages/terminal/tui/native"
+                      changed: "${{ needs.files-changed.outputs.tui }}"
                     - name: "vis"
                       dir: "packages/tooling/vis/native"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
+                exclude:
+                    - package:
+                          changed: "false"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0

@@ -68,7 +68,7 @@ jobs:
               with:
                   ref: "${{ github.event.pull_request.head.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 30 # seconds
+                  wait-interval: 15 # seconds
                   check-name: "Check Native Build"
                   allowed-conclusions: "success,skipped,neutral"
 
@@ -107,10 +107,6 @@ jobs:
               run: |
                   files="${{ steps.files.outputs.all_changed_files }}";
                   pnpm run build:affected:prod:packages --files=${files//\\/\/}
-
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
             - name: "Preview Release"
               shell: "bash"

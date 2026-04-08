@@ -39,7 +39,7 @@ jobs:
               with:
                   ref: "${{ github.event.pull_request.head.sha || github.sha }}"
                   repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 60 # seconds
+                  wait-interval: 30 # seconds
                   running-workflow-name: "Semantic Release" # wait for all other checks to complete
                   allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
                   ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot"
@@ -98,10 +98,6 @@ jobs:
               env:
                   # This is needed for the colorize integration test
                   TEST_PROD_BUILD: "true"
-
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
 
             - name: "Upload code coverage to codecov"
               uses: "anolilab/workflows/step/codecov@main"
