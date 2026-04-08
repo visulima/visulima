@@ -1,3 +1,27 @@
+## @visulima/email [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.12...@visulima/email@1.0.0-alpha.13) (2026-04-08)
+
+### Bug Fixes
+
+* **email:** properly fix eslint errors in code ([ec1645b](https://github.com/visulima/visulima/commit/ec1645b3a4c7e471e7af74bac203ce34b950cdd3))
+* **email:** remove remaining eslint suppressions with proper code fixes ([02367a9](https://github.com/visulima/visulima/commit/02367a9212ba72d90274b6e408e98a09ddb03b39))
+* **email:** resolve eslint errors ([d35b6fe](https://github.com/visulima/visulima/commit/d35b6fe1e6ee4c19456b8428639529c75c0a97d3))
+
+### Miscellaneous Chores
+
+* **email:** add tsconfig.eslint.json for type-aware linting ([65a33f4](https://github.com/visulima/visulima/commit/65a33f4fa4b4771055a0267c679c62658813f746))
+* **email:** apply prettier formatting ([362576d](https://github.com/visulima/visulima/commit/362576dd10e86707b0da2be7a27c7f6cb287e340))
+* **email:** expand inline if-return to block syntax ([5e39aa0](https://github.com/visulima/visulima/commit/5e39aa0c563c1dd401337e485728635431f1da13))
+* **email:** migrate .prettierrc.cjs to prettier.config.js ([f0caf3c](https://github.com/visulima/visulima/commit/f0caf3c1e2e5cc13a9a8bd5a14acc4f24e3f3a00))
+* **email:** remove empty dependency objects from package.json ([0737b35](https://github.com/visulima/visulima/commit/0737b353aabceefe962dab9971ee0c09e9f055fe))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/email [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.11...@visulima/email@1.0.0-alpha.12) (2026-03-26)
 
 ### Features
