@@ -35,9 +35,11 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
 
     const native = loadNativeBindings();
 
-    // The native Rust addon cannot use node-pty or expose Node.js Writable streams,
-    // so fall back to the JS runner when any command needs stdin piping or PTY.
-    const needsJsFallback = configs.some((c) => c.stdin === "pipe" || c.stdin === "pty");
+    // Fall back to the JS runner when:
+    // - any command needs stdin piping or PTY (native addon can't do those)
+    // - onEvent streaming is requested (native addon's NAPI callback can emit
+    //   null events on some platforms/CI, making it unreliable for streaming)
+    const needsJsFallback = configs.some((c) => c.stdin === "pipe" || c.stdin === "pty") || !!options.onEvent;
 
     if (native && !needsJsFallback) {
         const nativeOptions = {
@@ -59,18 +61,6 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
                 stdin: c.stdin,
             };
         });
-
-        if (options.onEvent) {
-            const userCallback = options.onEvent;
-
-            return native.runConcurrent(nativeCommands, nativeOptions, (event) => {
-                // The native binding may emit null events (e.g. when a process
-                // handle is cleaned up); skip them to avoid crashing user callbacks.
-                if (event != null) {
-                    userCallback(event as unknown as ProcessEvent);
-                }
-            });
-        }
 
         return native.runConcurrentBatch(nativeCommands, nativeOptions);
     }
