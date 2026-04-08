@@ -194,6 +194,13 @@ export type DOMElement = InkNode & {
     isStaticDirty?: boolean;
 
     /**
+     * Callback invoked after prepareYogaTree() caches the render output for
+     * an ink-static-render node. StaticRender uses this to set `isRendered`
+     * state, which prevents React from re-reconciling children once cached.
+     */
+    internal_onRendered?: () => void;
+
+    /**
      * Whether the Yoga subtree has been detached (children removed from Yoga layout)
      * because a cachedRender was set. When cachedRender is invalidated,
      * prepareYogaTree() re-attaches the children before the next layout pass.
