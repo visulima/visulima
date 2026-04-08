@@ -1,3 +1,17 @@
+## @visulima/iso-locale [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.5...@visulima/iso-locale@1.0.0-alpha.6) (2026-04-08)
+
+### Bug Fixes
+
+* **iso-locale:** resolve eslint errors ([8f24691](https://github.com/visulima/visulima/commit/8f246919ecf1c5d08a3f85a019d8857bcbf31c4f))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **iso-locale:** add tsconfig.eslint.json for type-aware linting ([0322596](https://github.com/visulima/visulima/commit/0322596031774fef5e1bbbce188de31d2033824b))
+* **iso-locale:** apply prettier formatting ([420b06e](https://github.com/visulima/visulima/commit/420b06e28f37beea0679b16f2ada733518e2cffe))
+* **iso-locale:** migrate .prettierrc.cjs to prettier.config.js ([ecc98a0](https://github.com/visulima/visulima/commit/ecc98a0b65de3b5c97cc5b12bd55732e193b2dc9))
+
 ## @visulima/iso-locale [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.4...@visulima/iso-locale@1.0.0-alpha.5) (2026-03-26)
 
 ### Features
