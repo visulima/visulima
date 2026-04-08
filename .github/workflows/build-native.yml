@@ -68,7 +68,7 @@ jobs:
                         - 'packages/tooling/vis/index.js'
                         - '.github/workflows/build-native.yml'
 
-    # Build all changed packages per target (8 runners instead of 24)
+    # Build all changed packages per target, test inline on native-runnable targets
     build:
         name: "Build native - ${{ matrix.settings.target }}"
         needs: "files-changed"
@@ -82,10 +82,13 @@ jobs:
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
+                      testable: true
                     - target: "aarch64-apple-darwin"
                       os: "macos-latest"
+                      testable: true
                     - target: "x86_64-unknown-linux-gnu"
                       os: "ubuntu-latest"
+                      testable: true
                     - target: "x86_64-unknown-linux-musl"
                       os: "ubuntu-latest"
                       cross: "-x"
@@ -97,6 +100,7 @@ jobs:
                       cross: "-x"
                     - target: "x86_64-pc-windows-msvc"
                       os: "windows-latest"
+                      testable: true
                     - target: "aarch64-pc-windows-msvc"
                       os: "windows-latest"
         runs-on: "${{ matrix.settings.os }}"
@@ -156,8 +160,9 @@ jobs:
                   fi
                   echo "any=$NEED" >> "$GITHUB_OUTPUT"
 
+            # Setup Node.js/pnpm — needed for building AND for running vitest on testable targets
             - name: "Setup resources and environment"
-              if: "steps.need-build.outputs.any == 'true'"
+              if: "steps.need-build.outputs.any == 'true' || matrix.settings.testable"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
@@ -224,85 +229,25 @@ jobs:
                   path: "packages/tooling/vis/*.node"
                   if-no-files-found: "error"
 
-    # Test native bindings on real hardware (4 runners instead of 12)
-    test-native:
-        name: "Test native - ${{ matrix.settings.target }}"
-        needs: ["files-changed", "build"]
-        strategy:
-            fail-fast: false
-            matrix:
-                settings:
-                    - target: "x86_64-apple-darwin"
-                      os: "macos-latest"
-                    - target: "aarch64-apple-darwin"
-                      os: "macos-latest"
-                    - target: "x86_64-unknown-linux-gnu"
-                      os: "ubuntu-latest"
-                    - target: "x86_64-pc-windows-msvc"
-                      os: "windows-latest"
-        runs-on: "${{ matrix.settings.os }}"
-
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true' || needs.files-changed.outputs.tui == 'true' || needs.files-changed.outputs.vis == 'true'"
-              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
-              with:
-                  persist-credentials: false
-
-            - name: "Setup resources and environment"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true' || needs.files-changed.outputs.tui == 'true' || needs.files-changed.outputs.vis == 'true'"
-              id: "setup"
-              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
-              with:
-                  node-version: "22"
-                  cache-prefix: "build-native-test"
-                  run-signatures-audit: false
-
-            # --- Download and test each changed package ---
-            - name: "Download task-runner artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
-              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
-              with:
-                  name: "bindings-task-runner-${{ matrix.settings.target }}"
-                  path: "packages/tooling/task-runner"
-
+            # --- Test native bindings inline (only on targets that can run natively) ---
             - name: "Test task-runner native binding"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true')"
               run: "pnpm vitest run __tests__/native-binding.test.ts"
               working-directory: "packages/tooling/task-runner"
 
-            - name: "Download tui artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
-              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
-              with:
-                  name: "bindings-tui-${{ matrix.settings.target }}"
-                  path: "packages/terminal/tui"
-
             - name: "Test tui native binding"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true')"
               run: "pnpm vitest run __tests__/native-binding.test.ts"
               working-directory: "packages/terminal/tui"
 
-            - name: "Download vis artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
-              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
-              with:
-                  name: "bindings-vis-${{ matrix.settings.target }}"
-                  path: "packages/tooling/vis"
-
             - name: "Test vis native binding"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true')"
               run: "pnpm vitest run __tests__/native-binding.test.ts"
               working-directory: "packages/tooling/vis"
 
     # This check runs once all build jobs have passed
     build-native-required-check:
-        needs: ["files-changed", "build", "test-native"]
+        needs: ["files-changed", "build"]
         name: "Check Native Build"
         if: "always()"
         runs-on: "ubuntu-24.04"
