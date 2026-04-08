@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui",
-    "version": "0.0.1",
+    "version": "1.0.0-alpha.1",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
         "visulima",
@@ -92,10 +92,10 @@
     "dependencies": {
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
-        "@visulima/ansi": "workspace:*",
-        "@visulima/colorize": "workspace:*",
-        "@visulima/string": "workspace:*",
-        "@visulima/tabular": "workspace:*",
+        "@visulima/ansi": "4.0.0-alpha.8",
+        "@visulima/colorize": "2.0.0-alpha.8",
+        "@visulima/string": "3.0.0-alpha.9",
+        "@visulima/tabular": "4.0.0-alpha.9",
         "cfonts": "3.3.1",
         "diff": "catalog:prod",
         "eventemitter3": "catalog:prod",
@@ -126,7 +126,7 @@
         "@types/scheduler": "catalog:types",
         "@types/stack-utils": "catalog:types",
         "@types/ws": "catalog:types",
-        "@visulima/boxen": "workspace:*",
+        "@visulima/boxen": "3.0.0-alpha.9",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
