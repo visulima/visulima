@@ -1,3 +1,25 @@
+## @visulima/storage [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.10...@visulima/storage@1.0.0-alpha.11) (2026-04-08)
+
+### Bug Fixes
+
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+* **storage:** fix tsconfig.eslint.json to extend local tsconfig ([af2628a](https://github.com/visulima/visulima/commit/af2628ae8a8bc6f10693a96c9280feb81da2c0eb))
+
+### Miscellaneous Chores
+
+* **storage:** apply prettier formatting ([b2fa58d](https://github.com/visulima/visulima/commit/b2fa58d4364fa580b321b2df47a4264fd22eb070))
+* **storage:** expand inline if-return to block syntax ([29671ac](https://github.com/visulima/visulima/commit/29671ac54f22ae01029f40be73dbd745a1e9a8f9))
+* **storage:** migrate .prettierrc.cjs to prettier.config.js ([98b0fe6](https://github.com/visulima/visulima/commit/98b0fe60cd98ea4c33b8a54ee0b2229ad3c1d4c1))
+* **storage:** remove empty dependency objects from package.json ([ddfeb08](https://github.com/visulima/visulima/commit/ddfeb08fd392ad2553a1ce833dd331540ecc8b09))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.9
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.9
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/storage [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.9...@visulima/storage@1.0.0-alpha.10) (2026-03-26)
 
 ### Features
