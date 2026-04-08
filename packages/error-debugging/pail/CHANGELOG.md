@@ -1,3 +1,34 @@
+## @visulima/pail [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.9...@visulima/pail@4.0.0-alpha.10) (2026-04-08)
+
+### Features
+
+* **pail:** add braille progress bar style with rounded caps and peak marker ([8302d7f](https://github.com/visulima/visulima/commit/8302d7faeab02ce9bb02beec706158685ab5a2dd))
+
+### Bug Fixes
+
+* **pail:** properly fix eslint errors in code ([31e1eba](https://github.com/visulima/visulima/commit/31e1ebac710bbadee4167278ac6b0ada83d3408b))
+* **pail:** remove remaining eslint suppressions with proper code fixes ([ea50721](https://github.com/visulima/visulima/commit/ea50721882ba2848dd60f29d02fc5eff5b885757))
+* **pail:** resolve eslint errors ([966eabe](https://github.com/visulima/visulima/commit/966eabe1d8d4bd3109665dea6dea792c69b23f39))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **pail:** add tsconfig.eslint.json for type-aware linting ([273fb33](https://github.com/visulima/visulima/commit/273fb33273641c6a69678bdb1645da5c414958fb))
+* **pail:** apply prettier formatting ([0416b36](https://github.com/visulima/visulima/commit/0416b3644faee118c4be0090d431aa5ca1249559))
+* **pail:** migrate .prettierrc.cjs to prettier.config.js ([4787521](https://github.com/visulima/visulima/commit/47875216a2841d9d99a78e8f15a2c5cb5ad5850a))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.8
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.7
+* **@visulima/redact:** upgraded to 3.0.0-alpha.8
+* **@visulima/string:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/pail [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.8...@visulima/pail@4.0.0-alpha.9) (2026-03-26)
 
 ### Features
