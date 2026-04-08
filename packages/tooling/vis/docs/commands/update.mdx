@@ -32,30 +32,31 @@ vis update --rollback               # Restore catalog from last backup
 
 ## Options
 
-| Option                 | Alias | Default  | Description                                               |
-| ---------------------- | ----- | -------- | --------------------------------------------------------- |
-| `--latest`             | `-L`  | `false`  | Update to latest version (ignore semver range)            |
-| `--target`             | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch` (catalog)    |
-| `--dry-run`            | `-d`  | `false`  | Preview changes without applying                          |
-| `--global`             | `-g`  | `false`  | Update global packages                                    |
-| `--recursive`          | `-r`  | `false`  | Update recursively in all workspace packages              |
-| `--filter`             |       |          | Filter packages in monorepo                               |
-| `--workspace-root`     | `-w`  | `false`  | Include workspace root                                    |
-| `--dev`                | `-D`  | `false`  | Update only devDependencies                               |
-| `--prod`               | `-P`  | `false`  | Update only dependencies                                  |
-| `--interactive`        | `-i`  | `false`  | Interactive mode                                          |
-| `--no-optional`        |       | `false`  | Don't update optionalDependencies                         |
-| `--no-save`            |       | `false`  | Update lockfile only                                      |
-| `--include`            |       |          | Glob pattern to include packages (repeatable, catalog)    |
-| `--exclude`            |       |          | Glob pattern to exclude packages (repeatable, catalog)    |
-| `--prerelease`         |       | `false`  | Include prerelease versions (catalog)                     |
-| `--security`           |       | `false`  | Check for known security vulnerabilities (OSV.dev)        |
-| `--no-catalog`         |       | `false`  | Skip catalog mode, use package manager directly           |
-| `--format`             |       | `table`  | Output format: `table`, `json`, or `minimal`              |
-| `--changelog`          |       | `false`  | Show changelog URLs for updated packages                  |
-| `--install`            |       | `true`   | Run install after catalog update (`--no-install` to skip) |
-| `--rollback`           |       | `false`  | Restore catalog file from the last backup                 |
-| `--no-typosquat-check` |       | `false`  | Skip typosquat name check for package arguments           |
+| Option                 | Alias | Default  | Description                                                        |
+| ---------------------- | ----- | -------- | ------------------------------------------------------------------ |
+| `--latest`             | `-L`  | `false`  | Update to latest version (ignore semver range)                     |
+| `--target`             | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch` (catalog)             |
+| `--dry-run`            | `-d`  | `false`  | Preview changes without applying                                   |
+| `--global`             | `-g`  | `false`  | Update global packages                                             |
+| `--recursive`          | `-r`  | `false`  | Update recursively in all workspace packages                       |
+| `--filter`             |       |          | Filter packages in monorepo                                        |
+| `--workspace-root`     | `-w`  | `false`  | Include workspace root                                             |
+| `--dev`                | `-D`  | `false`  | Update only devDependencies                                        |
+| `--prod`               | `-P`  | `false`  | Update only dependencies                                           |
+| `--interactive`        | `-i`  | `false`  | Interactive mode                                                   |
+| `--no-optional`        |       | `false`  | Don't update optionalDependencies                                  |
+| `--include-locked`     | `-l`  | `false`  | Include packages with pinned/exact versions (no `^` or `~` prefix) |
+| `--no-save`            |       | `false`  | Update lockfile only                                               |
+| `--include`            |       |          | Glob pattern to include packages (repeatable, catalog)             |
+| `--exclude`            |       |          | Glob pattern to exclude packages (repeatable, catalog)             |
+| `--prerelease`         |       | `false`  | Include prerelease versions (catalog)                              |
+| `--security`           |       | `false`  | Check for known security vulnerabilities (OSV.dev)                 |
+| `--no-catalog`         |       | `false`  | Skip catalog mode, use package manager directly                    |
+| `--format`             |       | `table`  | Output format: `table`, `json`, or `minimal`                       |
+| `--changelog`          |       | `false`  | Show changelog URLs for updated packages                           |
+| `--install`            |       | `true`   | Run install after catalog update (`--no-install` to skip)          |
+| `--rollback`           |       | `false`  | Restore catalog file from the last backup                          |
+| `--no-typosquat-check` |       | `false`  | Skip typosquat name check for package arguments                    |
 
 ## How It Works
 
@@ -118,3 +119,71 @@ vis update --rollback
 ```
 
 The backup is stored alongside the catalog file (e.g., `pnpm-workspace.yaml.backup`).
+
+## Configuration
+
+These settings can be defined in `vis.config.ts` under the `update` key:
+
+```typescript
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    update: {
+        target: "minor",
+        exclude: ["@types/*"],
+        includeLocked: false,
+        packageMode: {
+            typescript: "minor",
+            "/^@vue/": "patch",
+        },
+        depFields: [
+            "dependencies",
+            "devDependencies",
+            "optionalDependencies",
+            "peerDependencies",
+            "overrides",
+        ],
+    },
+});
+```
+
+### `includeLocked`
+
+By default, packages with pinned/exact versions (no `^` or `~` prefix, e.g., `"react": "18.2.0"`) are skipped during update checks. Set `includeLocked: true` or pass `--include-locked` to opt them in.
+
+### `packageMode`
+
+Per-package or per-pattern update target overrides. Keys can be:
+
+- **Exact names**: `"typescript"` — matches only that package
+- **Glob patterns**: `"@types/*"` — matches any `@types/` package
+- **Regex patterns**: `"/^@vue/"` — wrapped in `/`, uses regex matching
+
+Values are `"latest"`, `"minor"`, or `"patch"`. Unmatched packages use the global `target`.
+
+### `depFields`
+
+Controls which dependency fields are scanned for outdated packages. Beyond the standard fields (`dependencies`, `devDependencies`, `optionalDependencies`, `peerDependencies`), you can include:
+
+- `"overrides"` — npm overrides
+- `"resolutions"` — yarn resolutions
+- `"pnpm.overrides"` — pnpm overrides (nested field)
+
+Values that reference other dependencies (e.g., `"$react"` in npm overrides) are automatically skipped.
+
+### Maturity Period
+
+The `update.minimumReleaseAge` setting (in minutes) filters out versions published too recently, so you don't adopt packages that might be yanked or found malicious shortly after publishing.
+
+This is separate from `security.minimumReleaseAge` (which applies at install time). The update setting is **not enabled by default** — all published versions are eligible for updates unless you opt in.
+
+```typescript
+export default defineConfig({
+    update: {
+        minimumReleaseAge: 1440, // 24 hours
+        minimumReleaseAgeExclude: ["webpack", "@myorg/*"],
+    },
+});
+```
+
+If `minimumReleaseAge` is also configured in your package manager's native config (`pnpm-workspace.yaml` or `package.json`), vis will warn when the values are out of sync.
