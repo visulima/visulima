@@ -1,3 +1,25 @@
+## @visulima/tabular [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.8...@visulima/tabular@4.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **tabular:** properly fix eslint errors in code ([080e133](https://github.com/visulima/visulima/commit/080e1338ec7ad62f9e8968c45c89d19b3861d2be))
+* **tabular:** remove remaining eslint suppressions with proper code fixes ([ab4df11](https://github.com/visulima/visulima/commit/ab4df11daa3cb902b30a4a130d6f49fbd191a47b))
+* **tabular:** resolve eslint errors ([56241e8](https://github.com/visulima/visulima/commit/56241e864ae8cdff5953af813c140b3c4c4e49de))
+
+### Miscellaneous Chores
+
+* **tabular:** add tsconfig.eslint.json for type-aware linting ([8992e0d](https://github.com/visulima/visulima/commit/8992e0dc0e239f7df169d1e8ae7cbcbea6e36ca0))
+* **tabular:** apply prettier formatting ([0a4c1af](https://github.com/visulima/visulima/commit/0a4c1afdd98ad09eecf1e8b30e45e7f9f01f2731))
+* **tabular:** migrate .prettierrc.cjs to prettier.config.js ([9eadc5b](https://github.com/visulima/visulima/commit/9eadc5bbafd2ad891e2ecaf7ad4b29b4d0b0b02f))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+* **@visulima/string:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/tabular [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.7...@visulima/tabular@4.0.0-alpha.8) (2026-03-26)
 
 ### Features
