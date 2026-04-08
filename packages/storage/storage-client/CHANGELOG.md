@@ -1,3 +1,16 @@
+## @visulima/storage-client [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.9...@visulima/storage-client@1.0.0-alpha.10) (2026-04-08)
+
+### Bug Fixes
+
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+
+### Miscellaneous Chores
+
+* **storage-client:** add tsconfig.eslint.json for type-aware linting ([1186874](https://github.com/visulima/visulima/commit/1186874ad63ee5425715cc4d3b6478f0ea0a40a9))
+* **storage-client:** apply prettier formatting ([276d731](https://github.com/visulima/visulima/commit/276d731dc9a4acc60522c65dc8cf4ec6095beaa5))
+* **storage-client:** migrate .prettierrc.cjs to prettier.config.js ([e4e463b](https://github.com/visulima/visulima/commit/e4e463b3a2246062891db1a4bcbc967781e0e14f))
+* **storage:** remove empty dependency objects from package.json ([ddfeb08](https://github.com/visulima/visulima/commit/ddfeb08fd392ad2553a1ce833dd331540ecc8b09))
+
 ## @visulima/storage-client [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.8...@visulima/storage-client@1.0.0-alpha.9) (2026-03-26)
 
 ### Features
