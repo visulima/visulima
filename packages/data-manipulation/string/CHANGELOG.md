@@ -1,3 +1,31 @@
+## @visulima/string [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.8...@visulima/string@3.0.0-alpha.9) (2026-04-08)
+
+### Features
+
+* **string): native indent implementation; refactor(tui:** replace indent-string and is-fullwidth-code-point ([1368488](https://github.com/visulima/visulima/commit/136848850242ddeae91320dd21d6fdeb0760768c))
+* **string:** add east-asian-width, isFullwidthCodePoint exports and fix utilities ([b44e0c5](https://github.com/visulima/visulima/commit/b44e0c5b4e5cff7b39d9148516f7ed510bb35bb6))
+* **string:** add indent, strip-indent, dedent, redent, isFullwidthCodePoint, and east-asian-width helpers ([5441f3c](https://github.com/visulima/visulima/commit/5441f3c883256165b36c0d9580bbb44cc36e9a62))
+
+### Bug Fixes
+
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+* **string:** properly fix eslint errors in code ([184b6a3](https://github.com/visulima/visulima/commit/184b6a30bb3d49185f64a0a6d88f693bd61644f9))
+* **string:** remove remaining eslint suppressions with proper code fixes ([c2e183e](https://github.com/visulima/visulima/commit/c2e183ed1cdb8fe54d46c5376eca0208a9b65b0f))
+* **string:** resolve eslint errors ([18f4366](https://github.com/visulima/visulima/commit/18f43665e335b66f2960b4ebffc510efe9df9b6e))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **string:** add tsconfig.eslint.json for type-aware linting ([b29661d](https://github.com/visulima/visulima/commit/b29661dc2cf32823f4aff40ac3c7b6a3e12b678e))
+* **string:** apply prettier formatting ([ed0e3a1](https://github.com/visulima/visulima/commit/ed0e3a15ff5d387ae4897eb0d4ed8a0a864951c2))
+* **string:** migrate .prettierrc.cjs to prettier.config.js ([750ddba](https://github.com/visulima/visulima/commit/750ddba531071ff5b4d74a5e13799630c8d55c27))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+
 ## @visulima/string [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.7...@visulima/string@3.0.0-alpha.8) (2026-03-26)
 
 ### Features
