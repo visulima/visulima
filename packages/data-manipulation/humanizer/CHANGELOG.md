@@ -1,3 +1,19 @@
+## @visulima/humanizer [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.8...@visulima/humanizer@3.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **humanizer:** properly fix eslint errors in code ([cb00491](https://github.com/visulima/visulima/commit/cb00491092837af7e1fb519e7fee4d1567f51e34))
+* **humanizer:** remove remaining eslint suppressions with proper code fixes ([ec9c058](https://github.com/visulima/visulima/commit/ec9c058bcd0524c6843198679faad9f9f8b546e0))
+* **humanizer:** resolve eslint errors ([4dea64f](https://github.com/visulima/visulima/commit/4dea64f9cd70b6d6a485c59993a6b26c2a15ea7f))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **humanizer:** add tsconfig.eslint.json for type-aware linting ([3c39145](https://github.com/visulima/visulima/commit/3c391453b8ad7a75598384a152e62cd4d44141ca))
+* **humanizer:** apply prettier formatting ([f66629e](https://github.com/visulima/visulima/commit/f66629e5138777948bc3bef31eb17d8f27aa120e))
+* **humanizer:** migrate .prettierrc.cjs to prettier.config.js ([85c09a7](https://github.com/visulima/visulima/commit/85c09a74f03e3d6450b9ec25a97b5a4123ca2ea4))
+
 ## @visulima/humanizer [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.7...@visulima/humanizer@3.0.0-alpha.8) (2026-03-26)
 
 ### Features
