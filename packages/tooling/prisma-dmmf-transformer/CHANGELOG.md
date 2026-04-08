@@ -1,3 +1,16 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.7...@visulima/prisma-dmmf-transformer@3.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** suppress eslint rules for intentional type patterns ([6e929af](https://github.com/visulima/visulima/commit/6e929af84a7b1b3483b03a120680af9a7badf36f))
+
+### Miscellaneous Chores
+
+* **prisma-dmmf-transformer:** add tsconfig.eslint.json for type-aware linting ([e0d54f4](https://github.com/visulima/visulima/commit/e0d54f4400889bde8d8809946f43de4454a0fea0))
+* **prisma-dmmf-transformer:** apply prettier formatting ([e5e36c3](https://github.com/visulima/visulima/commit/e5e36c3025b1de0191d8569b568acfb60131013e))
+* **prisma-dmmf-transformer:** migrate .prettierrc.cjs to prettier.config.js ([130bb18](https://github.com/visulima/visulima/commit/130bb18cd5953a9c457f9b0917927095e36a1b12))
+* **tooling:** remove empty dependency objects from package.json ([dc52a23](https://github.com/visulima/visulima/commit/dc52a23bc1e2d36f4ec71ca67506bf6861a02929))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.6...@visulima/prisma-dmmf-transformer@3.0.0-alpha.7) (2026-03-26)
 
 ### Features
