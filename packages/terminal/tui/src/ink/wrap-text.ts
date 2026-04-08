@@ -6,6 +6,7 @@ import type { Styles } from "./styles";
 const cache: Record<string, string> = {};
 
 const wrapWordMode: Record<string, string> = {
+    hard: "STRICT_WIDTH",
     wrap: "BREAK_WORDS",
     "wrap-anywhere": "BREAK_AT_CHARACTERS",
     "wrap-preserve-words": "PRESERVE_WORDS",

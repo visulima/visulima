@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 import reconciler from "../reconciler";
 import { useStdinContext } from "./use-stdin";
@@ -51,6 +51,10 @@ const usePaste = (handler: (text: string) => void, options: Options = {}): void 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { internal_eventEmitter, setBracketedPasteMode, setRawMode } = useStdinContext();
 
+    // Wrap the user's handler in useEffectEvent so the effect never
+    // re-subscribes when the handler identity changes between renders.
+    const stableHandler = useEffectEvent(handler);
+
     useEffect(() => {
         if (options.isActive === false) {
             return;
@@ -75,7 +79,7 @@ const usePaste = (handler: (text: string) => void, options: Options = {}): void 
             // updates triggered by paste, matching the priority of useInput.
             // @ts-expect-error Types require 5 arguments (fn, a, b, c, d) but only fn is needed at runtime.
             reconciler.discreteUpdates(() => {
-                handler(text);
+                stableHandler(text);
             });
         };
 
@@ -84,7 +88,7 @@ const usePaste = (handler: (text: string) => void, options: Options = {}): void 
         return () => {
             internal_eventEmitter.removeListener("paste", handlePaste);
         };
-    }, [options.isActive, internal_eventEmitter, handler]);
+    }, [options.isActive, internal_eventEmitter]);
 };
 
 export default usePaste;

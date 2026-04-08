@@ -3,7 +3,7 @@
  *
  * These map 1:1 to SGR (Select Graphic Rendition) attributes and are stored
  * in the `formatFlags` field of StyleSpan objects. The FULL_WIDTH_MASK is
- * also used in StyledLine.charData entries (bit 15 / 0x8000 of Uint16Array).
+ * also used in StyledLine.charData entries (bit 30 / 0x40000000 of number[]).
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
  */

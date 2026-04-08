@@ -550,7 +550,7 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
                 key.shift = !!(modifier & 1);
                 key.code = code;
 
-                key.name = keyName[code]!;
+                key.name = keyName[code] ?? "";
                 key.shift = isShiftKey(code) || key.shift;
                 key.ctrl = isCtrlKey(code) || key.ctrl;
             }

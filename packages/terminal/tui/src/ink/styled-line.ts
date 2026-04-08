@@ -4,11 +4,11 @@
  * Instead of one heap-allocated object per visible character, StyledLine stores:
  *
  * - `text: string` — concatenated raw character values
- * - `charData: Uint16Array` — per-character: 15-bit offset into text | 1-bit full-width flag
+ * - `charData: number[]` — per-character: 30-bit offset into text | 1-bit full-width flag
  * - `spans: StyleSpan[]` — run-length encoded style information
  *
  * For an 80-column line this reduces allocations from ~80 objects to
- * 1 string + 1 typed array + typically 1-5 span objects.
+ * 1 string + 1 array + typically 1-5 span objects.
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
  * @license Apache-2.0
@@ -28,7 +28,8 @@ export type StyleSpan = {
     link?: string;
 };
 
-const MAX_SAFE_OFFSET = 0x7f_ff; // 32767
+const OFFSET_MASK = 0x3f_ff_ff_ff;
+const FULL_WIDTH_FLAG = 0x40_00_00_00;
 
 export class StyledLine {
     public length: number = 0;
@@ -37,20 +38,18 @@ export class StyledLine {
 
     private text: string | undefined;
 
-    private charData: Uint16Array | undefined;
+    private charData: number[] | undefined;
 
     private spans: StyleSpan[] | undefined;
 
     private _cachedTrimmedLength?: number;
 
     static empty(length: number): StyledLine {
-        const safeLength = Math.min(length, MAX_SAFE_OFFSET);
-
-        if (safeLength <= 0) {
+        if (length <= 0) {
             return new StyledLine();
         }
 
-        const cached = StyledLine.emptyCache.get(safeLength);
+        const cached = StyledLine.emptyCache.get(length);
 
         if (cached) {
             return cached.clone();
@@ -58,26 +57,22 @@ export class StyledLine {
 
         const line = new StyledLine();
 
-        line.length = safeLength;
-        line.text = " ".repeat(safeLength);
-        line.charData = new Uint16Array(Math.max(safeLength, 16));
+        line.length = length;
+        line.text = " ".repeat(length);
+        line.charData = Array.from({ length });
 
-        for (let i = 0; i < safeLength; i++) {
+        for (let i = 0; i < length; i++) {
             line.charData[i] = i;
         }
 
-        line.spans = [{ formatFlags: 0, length: safeLength }];
+        line.spans = [{ formatFlags: 0, length }];
         line._cachedTrimmedLength = 0;
-
-        if (StyledLine.emptyCache.size > 100) {
-            StyledLine.emptyCache.clear();
-        }
 
         Object.freeze(line.spans[0]);
         Object.freeze(line.spans);
         Object.freeze(line);
 
-        StyledLine.emptyCache.set(safeLength, line);
+        StyledLine.emptyCache.set(length, line);
 
         return line.clone();
     }
@@ -87,8 +82,8 @@ export class StyledLine {
             return "";
         }
 
-        const start = this.charData![index]! & 0x7f_ff;
-        const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text.length;
+        const start = this.charData![index]! & OFFSET_MASK;
+        const end = index + 1 < this.length ? this.charData![index + 1]! & OFFSET_MASK : this.text.length;
 
         return this.text.slice(start, end);
     }
@@ -102,8 +97,8 @@ export class StyledLine {
             return "";
         }
 
-        const textStart = this.charData![start]! & 0x7f_ff;
-        const textEnd = end < this.length ? this.charData![end]! & 0x7f_ff : this.text.length;
+        const textStart = this.charData![start]! & OFFSET_MASK;
+        const textEnd = end < this.length ? this.charData![end]! & OFFSET_MASK : this.text.length;
 
         return this.text.slice(textStart, textEnd);
     }
@@ -131,7 +126,7 @@ export class StyledLine {
             return false;
         }
 
-        return (this.charData[index]! & 0x80_00) !== 0;
+        return (this.charData[index]! & FULL_WIDTH_FLAG) !== 0;
     }
 
     hasStyles(index: number): boolean {
@@ -202,33 +197,26 @@ export class StyledLine {
         const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
         const cleanFormatFlags = formatFlags & ~FULL_WIDTH_MASK;
 
-        const start = this.charData![index]! & 0x7f_ff;
-        const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text!.length;
+        const start = this.charData![index]! & OFFSET_MASK;
+        const end = index + 1 < this.length ? this.charData![index + 1]! & OFFSET_MASK : this.text!.length;
         const oldLength = end - start;
+        const newLength = value.length;
 
-        let newValue = value;
-
-        if (this.text!.length - oldLength + value.length > MAX_SAFE_OFFSET) {
-            newValue = value.slice(0, Math.max(0, MAX_SAFE_OFFSET - (this.text!.length - oldLength)));
-        }
-
-        const newLength = newValue.length;
-
-        this.text = this.text!.slice(0, start) + newValue + this.text!.slice(end);
+        this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
 
         if (oldLength !== newLength) {
             const diff = newLength - oldLength;
 
             for (let i = index + 1; i < this.length; i++) {
                 const data = this.charData![i]!;
-                const oldOffset = data & 0x7f_ff;
-                const fw = data & 0x80_00;
+                const oldOffset = data & OFFSET_MASK;
+                const fw = data & FULL_WIDTH_FLAG;
 
                 this.charData![i] = (oldOffset + diff) | fw;
             }
         }
 
-        this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
+        this.charData![index] = start | (isFullWidth ? FULL_WIDTH_FLAG : 0);
 
         this.splitSpansAt(index);
         this.splitSpansAt(index + 1);
@@ -271,8 +259,8 @@ export class StyledLine {
         const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
         const cleanFormatFlags = formatFlags & ~FULL_WIDTH_MASK;
 
-        const start = this.charData![index]! & 0x7f_ff;
-        const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text!.length;
+        const start = this.charData![index]! & OFFSET_MASK;
+        const end = index + 1 < this.length ? this.charData![index + 1]! & OFFSET_MASK : this.text!.length;
         const oldLength = end - start;
 
         // Fast path: same-length replacement (no offset adjustment needed)
@@ -282,7 +270,7 @@ export class StyledLine {
                 this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
             }
 
-            this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
+            this.charData![index] = start | (isFullWidth ? FULL_WIDTH_FLAG : 0);
         } else {
             // Slow path: different length, need offset adjustment
             this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
@@ -293,11 +281,11 @@ export class StyledLine {
                 for (let i = index + 1; i < this.length; i++) {
                     const data = this.charData![i]!;
 
-                    this.charData![i] = ((data & 0x7f_ff) + diff) | (data & 0x80_00);
+                    this.charData![i] = ((data & OFFSET_MASK) + diff) | (data & FULL_WIDTH_FLAG);
                 }
             }
 
-            this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
+            this.charData![index] = start | (isFullWidth ? FULL_WIDTH_FLAG : 0);
         }
 
         // Check if the style at this index already matches — if so, skip
@@ -361,8 +349,8 @@ export class StyledLine {
         const actualCount = Math.min(n, this.length - destinationStart, source.length - srcStart);
 
         // Rebuild text in the destination range
-        const destinationTextStart = this.charData![destinationStart]! & 0x7f_ff;
-        const destinationTextEnd = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & 0x7f_ff : this.text!.length;
+        const destinationTextStart = this.charData![destinationStart]! & OFFSET_MASK;
+        const destinationTextEnd = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & OFFSET_MASK : this.text!.length;
 
         // Build new text segment from source
         let newSegment = "";
@@ -382,7 +370,7 @@ export class StyledLine {
         for (let i = 0; i < actualCount; i++) {
             const srcFullWidth = source.getFullWidth(srcStart + i);
 
-            this.charData![destinationStart + i] = offset | (srcFullWidth ? 0x80_00 : 0);
+            this.charData![destinationStart + i] = offset | (srcFullWidth ? FULL_WIDTH_FLAG : 0);
             offset += source.getValue(srcStart + i).length;
         }
 
@@ -391,7 +379,7 @@ export class StyledLine {
             for (let i = destinationStart + actualCount; i < this.length; i++) {
                 const data = this.charData![i]!;
 
-                this.charData![i] = ((data & 0x7f_ff) + diff) | (data & 0x80_00);
+                this.charData![i] = ((data & OFFSET_MASK) + diff) | (data & FULL_WIDTH_FLAG);
             }
         }
 
@@ -454,28 +442,9 @@ export class StyledLine {
 
         const offset = this.text!.length;
 
-        if (value !== "\u2026" && offset + value.length > MAX_SAFE_OFFSET - 1) {
-            if (offset < MAX_SAFE_OFFSET && !this.text!.endsWith("\u2026")) {
-                this.pushChar("\u2026", formatFlags, fgColor, bgColor, link);
-            }
-
-            return;
-        }
-
-        if (offset + value.length > MAX_SAFE_OFFSET) {
-            return;
-        }
-
         this.text = (this.text ?? "") + value;
 
-        if (this.length >= this.charData!.length) {
-            const newData = new Uint16Array(this.charData!.length * 2 || 16);
-
-            newData.set(this.charData!);
-            this.charData = newData;
-        }
-
-        this.charData![this.length] = offset | (isFullWidth ? 0x80_00 : 0);
+        this.charData!.push(offset | (isFullWidth ? FULL_WIDTH_FLAG : 0));
 
         const lastSpan = this.spans!.at(-1);
 
@@ -503,7 +472,7 @@ export class StyledLine {
 
         result.length = this.length;
         result.text = this.text;
-        result.charData = this.charData.slice(0, Math.max(this.length, 16));
+        result.charData = [...this.charData];
         result.spans = this.spans!.map((span) => {
             return {
                 ...span,
@@ -533,17 +502,17 @@ export class StyledLine {
         const result = new StyledLine();
 
         result.length = actualEnd - actualStart;
-        result.charData = new Uint16Array(Math.max(result.length, 16));
+        result.charData = Array.from({ length: result.length });
 
-        const textStart = this.charData[actualStart]! & 0x7f_ff;
-        const textEnd = actualEnd < this.length ? this.charData[actualEnd]! & 0x7f_ff : this.text!.length;
+        const textStart = this.charData[actualStart]! & OFFSET_MASK;
+        const textEnd = actualEnd < this.length ? this.charData[actualEnd]! & OFFSET_MASK : this.text!.length;
 
         result.text = this.text!.slice(textStart, textEnd);
 
         for (let i = 0; i < result.length; i++) {
             const oldData = this.charData[actualStart + i]!;
-            const oldOffset = oldData & 0x7f_ff;
-            const fw = oldData & 0x80_00;
+            const oldOffset = oldData & OFFSET_MASK;
+            const fw = oldData & FULL_WIDTH_FLAG;
 
             result.charData[i] = (oldOffset - textStart) | fw;
         }
@@ -593,42 +562,30 @@ export class StyledLine {
             return allLines[0]!.clone();
         }
 
-        let totalTextLength = 0;
         let totalChars = 0;
 
         for (const line of allLines) {
-            totalTextLength += line.getText().length;
             totalChars += line.length;
-        }
-
-        if (totalTextLength > MAX_SAFE_OFFSET) {
-            let result: StyledLine = this.clone();
-
-            for (const other of others) {
-                result = result.instanceConcat(other);
-            }
-
-            return result;
         }
 
         const result = new StyledLine();
 
         result.length = totalChars;
         result.text = allLines.map((l) => l.getText()).join("");
-        result.charData = new Uint16Array(Math.max(totalChars, 16));
+        result.charData = Array.from({ length: totalChars });
 
         let currentChar = 0;
         let currentOffset = 0;
 
         for (const line of allLines) {
-            const lineCharData = (line as unknown as { charData?: Uint16Array }).charData;
+            const lineCharData = (line as unknown as { charData?: number[] }).charData;
             const lineText = line.getText();
 
             if (lineCharData) {
                 for (let i = 0; i < line.length; i++) {
                     const data = lineCharData[i]!;
-                    const lineOffset = data & 0x7f_ff;
-                    const fw = data & 0x80_00;
+                    const lineOffset = data & OFFSET_MASK;
+                    const fw = data & FULL_WIDTH_FLAG;
 
                     result.charData[currentChar + i] = (currentOffset + lineOffset) | fw;
                 }
@@ -681,8 +638,8 @@ export class StyledLine {
                 }
 
                 for (let i = 0; i < span.length; i++) {
-                    const charStart = this.charData[currentIndex]! & 0x7f_ff;
-                    const charEnd = currentIndex + 1 < this.length ? this.charData[currentIndex + 1]! & 0x7f_ff : this.text.length;
+                    const charStart = this.charData[currentIndex]! & OFFSET_MASK;
+                    const charEnd = currentIndex + 1 < this.length ? this.charData[currentIndex + 1]! & OFFSET_MASK : this.text.length;
 
                     if (charEnd - charStart !== 1 || this.text[charStart] !== " ") {
                         this._cachedTrimmedLength = currentIndex + 1;
@@ -748,7 +705,7 @@ export class StyledLine {
         }
 
         const thisCharData = this.charData;
-        const otherCharData = (other as unknown as { charData?: Uint16Array }).charData;
+        const otherCharData = (other as unknown as { charData?: number[] }).charData;
 
         if (thisCharData && otherCharData) {
             for (let i = 0; i < this.length; i++) {
@@ -854,29 +811,18 @@ export class StyledLine {
             return;
         }
 
-        const safeWidth = Math.min(minWidth, MAX_SAFE_OFFSET);
-
         this.ensureInitialized();
 
         const oldLength = this.length;
-        const extraCount = safeWidth - oldLength;
+        const extraCount = minWidth - oldLength;
         const oldTextLength = this.text!.length;
-
-        // Do NOT extend text — new cells are empty (zero-length) placeholders
-        // Grow charData if needed
-        if (this.charData!.length < safeWidth) {
-            const newCharData = new Uint16Array(safeWidth);
-
-            newCharData.set(this.charData!.subarray(0, oldLength));
-            this.charData = newCharData;
-        }
 
         // All new cells point to the same offset (end of text) — zero-length values
         for (let i = 0; i < extraCount; i++) {
-            this.charData![oldLength + i] = oldTextLength;
+            this.charData!.push(oldTextLength);
         }
 
-        this.length = safeWidth;
+        this.length = minWidth;
 
         // Extend the last span or add a new default span
         const lastSpan = this.spans!.at(-1);
@@ -888,10 +834,10 @@ export class StyledLine {
         }
     }
 
-    private ensureInitialized(initialCapacity = 16): void {
+    private ensureInitialized(): void {
         if (this.charData === undefined) {
             this.text = "";
-            this.charData = new Uint16Array(Math.max(this.length, initialCapacity));
+            this.charData = Array.from({ length: this.length });
             this.spans = this.length > 0 ? [{ formatFlags: 0, length: this.length }] : [];
 
             if (this.length > 0 && this.text.length === 0) {
@@ -902,88 +848,6 @@ export class StyledLine {
                 }
             }
         }
-    }
-
-    private instanceConcat(other: StyledLine): StyledLine {
-        const spaceForOther = MAX_SAFE_OFFSET - 1 - this.getText().length;
-
-        if (spaceForOther <= 0) {
-            if (this.getText().length < MAX_SAFE_OFFSET && !this.getText().endsWith("...")) {
-                const result = this.clone();
-
-                result.pushChar("...", 0);
-
-                return result;
-            }
-
-            return this.clone();
-        }
-
-        let otherTextLengthToTake = 0;
-        let otherCharsToTake = 0;
-
-        for (let i = 0; i < other.length; i++) {
-            const value = other.getValue(i);
-
-            if (otherTextLengthToTake + value.length > spaceForOther) {
-                break;
-            }
-
-            otherTextLengthToTake += value.length;
-            otherCharsToTake++;
-        }
-
-        const truncated = otherCharsToTake < other.length;
-        const result = new StyledLine();
-
-        result.length = this.length + otherCharsToTake + (truncated ? 1 : 0);
-        result.text = this.getText() + other.getText().slice(0, otherTextLengthToTake) + (truncated ? "..." : "");
-        result.charData = new Uint16Array(Math.max(result.length, 16));
-
-        if (this.charData) {
-            result.charData.set(this.charData.subarray(0, this.length), 0);
-        }
-
-        const textOffset = this.getText().length;
-        const otherCharData = (other as unknown as { charData?: Uint16Array }).charData;
-
-        if (otherCharData) {
-            for (let i = 0; i < otherCharsToTake; i++) {
-                const oldData = otherCharData[i]!;
-                const oldOffset = oldData & 0x7f_ff;
-                const fw = oldData & 0x80_00;
-
-                result.charData[this.length + i] = (oldOffset + textOffset) | fw;
-            }
-        }
-
-        if (truncated) {
-            result.charData[this.length + otherCharsToTake] = this.getText().length + otherTextLengthToTake;
-        }
-
-        const otherSpans: StyleSpan[] = [];
-        let remaining = otherCharsToTake;
-
-        for (const span of other.getSpans()) {
-            if (remaining <= 0) {
-                break;
-            }
-
-            const take = Math.min(remaining, span.length);
-
-            otherSpans.push({ ...span, length: take });
-            remaining -= take;
-        }
-
-        result.spans = [...this.getSpans(), ...otherSpans];
-
-        if (truncated) {
-            result.spans.push({ formatFlags: 0, length: 1 });
-        }
-
-        result.mergeSpans();
-
-        return result;
     }
 
     private splitSpansAt(index: number): void {

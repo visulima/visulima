@@ -118,6 +118,33 @@ describe("borders", () => {
         );
     });
 
+    const negativeBorderTests = [
+        {
+            height: 1,
+            name: "regression - negative border width or height (width 1, height 1)",
+            width: 1,
+        },
+        {
+            height: 0,
+            name: "regression - negative border width or height (width 0, height 0)",
+            width: 0,
+        },
+    ];
+
+    for (const { height, name, width } of negativeBorderTests) {
+        it(name, () => {
+            expect.assertions(1);
+
+            expect(() => {
+                renderToString(
+                    <Box borderStyle="round" height={height} width={width}>
+                        <Text>Hello World</Text>
+                    </Box>,
+                );
+            }).not.toThrow();
+        });
+    }
+
     it("single node - box with padding", () => {
         expect.assertions(1);
 
