@@ -1,3 +1,17 @@
+## @visulima/html [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.6...@visulima/html@1.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **html:** suppress no-base-to-string for intentional String() coercions ([258b6c0](https://github.com/visulima/visulima/commit/258b6c000d7b06e0c216a0eeb3d729d3009fee3a))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **html:** add tsconfig.eslint.json for type-aware linting ([1661c2c](https://github.com/visulima/visulima/commit/1661c2c215e768e9d814ac00facb41d10d45276e))
+* **html:** apply auto-fix formatting ([9491631](https://github.com/visulima/visulima/commit/9491631e4a188a6ecdb36a9afc9bd31393190390))
+* **html:** apply prettier formatting ([2c8e184](https://github.com/visulima/visulima/commit/2c8e184252d348986e1415f17f3c713f8cbd5ca0))
+* **html:** migrate .prettierrc.cjs to prettier.config.js ([63aa430](https://github.com/visulima/visulima/commit/63aa430c8ad29de43c67a65fc3022834389484f0))
+
 ## @visulima/html [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.5...@visulima/html@1.0.0-alpha.6) (2026-03-26)
 
 ### Features
