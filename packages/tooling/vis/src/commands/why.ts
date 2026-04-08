@@ -37,7 +37,7 @@ const why: Command = {
                 global: (options.global as boolean) || false,
                 json: (options.json as boolean) || false,
                 long: (options.long as boolean) || false,
-                noOptional: (options["no-optional"] as boolean) || false,
+                noOptional: (options.noOptional as boolean) || false,
                 packages,
                 parseable: (options.parseable as boolean) || false,
                 prod: (options.prod as boolean) || false,

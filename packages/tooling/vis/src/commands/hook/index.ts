@@ -130,7 +130,7 @@ const hook: Command = {
     ],
     execute: async ({ argument, logger, options }) => {
         const action = argument[0] ?? "install";
-        const hooksDirectory = (options["hooks-dir"] as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
+        const hooksDirectory = (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
 
         switch (action) {
             case "install": {

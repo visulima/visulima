@@ -258,7 +258,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const isJson = (options.format as string) === "json" || Boolean(options.json);
     const showFixes = Boolean(options.fix);
-    const showAccepted = Boolean(options["show-accepted"]);
+    const showAccepted = Boolean(options.showAccepted);
     const socketConfig = visConfig?.security?.socket;
     const acceptedRisks = socketConfig?.acceptedRisks;
 
@@ -368,7 +368,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         process.stdout.write(`${JSON.stringify(jsonResult, undefined, 2)}\n`);
 
-        if (options["exit-code"] && jsonResult.summary.issues > 0) {
+        if (options.exitCode && jsonResult.summary.issues > 0) {
             process.exitCode = 1;
         }
 
@@ -566,7 +566,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
-    if (options["exit-code"] && unacknowledgedCount > 0) {
+    if (options.exitCode && unacknowledgedCount > 0) {
         process.exitCode = 1;
     }
 };

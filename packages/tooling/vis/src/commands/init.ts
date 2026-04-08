@@ -178,7 +178,7 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
     success(`Created ${configPath}`);
     info("  Secure defaults applied automatically by defineConfig().");
 
-    if (options["sync-native"]) {
+    if (options.syncNative) {
         const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, {});
 
         for (const action of actions) {
@@ -228,7 +228,7 @@ const init: Command = {
         const configPath = existingConfig ?? join(cwd, "vis.config.ts");
         const isTTY = Boolean(process.stdin.isTTY) && options.interactive !== false;
 
-        if (isTTY && !options["no-interactive"]) {
+        if (isTTY && !options.noInteractive) {
             await runInteractiveInit(cwd, pm, configPath);
         } else {
             runStaticInit(cwd, pm, options, configPath);

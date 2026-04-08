@@ -102,7 +102,7 @@ const analyze: Command = {
         };
 
         // Fetch vulnerabilities if security analysis or explicitly requested
-        const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
+        const analysisType = validateAnalysisType((options.aiType as string | undefined) ?? "impact");
 
         if (analysisType === "security" || options.security) {
             logger.info("Checking for known vulnerabilities...\n");

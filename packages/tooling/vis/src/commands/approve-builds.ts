@@ -40,7 +40,7 @@ const approveBuilds: Command = {
             }
 
             // Fall through to sync-native if requested (don't return early)
-            if (!options["sync-native"]) {
+            if (!options.syncNative) {
                 return;
             }
         } else {
@@ -80,7 +80,7 @@ const approveBuilds: Command = {
         }
 
         // Sync to native PM config if requested
-        if (options["sync-native"]) {
+        if (options.syncNative) {
             const allowBuilds = visConfig?.security?.allowBuilds ?? {};
 
             if (Object.keys(allowBuilds).length === 0) {
