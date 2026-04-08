@@ -20,12 +20,10 @@ const CONFIG_FILES: string[] = ["vis.config.ts", "vis.config.mts", "vis.config.c
  * @see https://github.com/lirantal/awesome-npm-security-best-practices
  */
 const SECURITY_DEFAULTS: Required<
-    Pick<NonNullable<VisConfig["security"]>, "blockExoticSubdeps" | "minimumReleaseAge" | "strictDepBuilds" | "trustPolicy" | "trustPolicyIgnoreAfter">
+    Pick<NonNullable<VisConfig["security"]>, "blockExoticSubdeps" | "strictDepBuilds" | "trustPolicy" | "trustPolicyIgnoreAfter">
 > = {
     /** Block transitive dependencies from using git repos or tarball URLs. */
     blockExoticSubdeps: true,
-    /** 14-day cooldown (20 160 minutes). Most malicious packages are caught within hours to days. */
-    minimumReleaseAge: 20_160,
     /** Make unapproved build scripts a hard error instead of a warning. */
     strictDepBuilds: true,
     /** Fail if a package's trust level has decreased compared to prior releases. */

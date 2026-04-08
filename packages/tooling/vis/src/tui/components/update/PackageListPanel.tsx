@@ -1,4 +1,4 @@
-import { Box, ScrollBar, Text } from "@visulima/tui";
+import { Box, ScrollBar, Tab, Tabs, Text } from "@visulima/tui";
 
 import type { OutdatedEntry } from "../../../catalog";
 import { scoreColor } from "../../../socket-security";
@@ -12,12 +12,12 @@ const UPDATE_TYPE_COLORS: Record<string, string> = {
     patch: "green",
 };
 
-const FILTER_LABELS: { key: FilterType; label: string; shortcut: string }[] = [
-    { key: "all", label: "All", shortcut: "1" },
-    { key: "major", label: "Major", shortcut: "2" },
-    { key: "minor", label: "Minor", shortcut: "3" },
-    { key: "patch", label: "Patch", shortcut: "4" },
-    { key: "security", label: "Security", shortcut: "5" },
+const FILTER_TABS: readonly { id: FilterType; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "major", label: "Major" },
+    { id: "minor", label: "Minor" },
+    { id: "patch", label: "Patch" },
+    { id: "security", label: "Security" },
 ];
 
 // ── Sub-components ──────────────────────────────────────────────────────
@@ -117,11 +117,14 @@ interface PackageListPanelProps {
     filterActive: boolean;
     filterText: string;
     filterType: FilterType;
+    filteredOutCount: number;
     focused: boolean;
     groupedByCatalog: Map<string, OutdatedEntry[]>;
     isDryRun: boolean;
     scrollOffset: number;
     selectedIndex: number;
+    totalCatalogEntries: number;
+    totalChecked: number;
     totalEntries: number;
     viewportHeight: number;
 }
@@ -132,11 +135,14 @@ const PackageListPanel = ({
     filterActive,
     filterText,
     filterType,
+    filteredOutCount,
     focused,
     groupedByCatalog,
     isDryRun,
     scrollOffset,
     selectedIndex,
+    totalCatalogEntries,
+    totalChecked,
     totalEntries,
     viewportHeight,
 }: PackageListPanelProps): React.JSX.Element => {
@@ -180,7 +186,13 @@ const PackageListPanel = ({
     }
 
     const summaryText = summaryParts.length > 0 ? ` (${summaryParts.join(", ")})` : "";
-    const checkedCount = checkedEntries.size;
+    let checkedCount = 0;
+
+    for (const e of entries) {
+        if (checkedEntries.has(e.packageName)) {
+            checkedCount++;
+        }
+    }
 
     // Build flat row list
     const rows: React.JSX.Element[] = [];
@@ -222,9 +234,11 @@ const PackageListPanel = ({
                 </Text>
                 <Text wrap="truncate">
                     {totalEntries}
+                    {totalChecked > 0 ? `/${totalChecked}` : ""}
                     {" "}
                     outdated
                     {summaryText}
+                    {totalCatalogEntries > totalChecked ? ` · ${totalCatalogEntries - totalChecked} dupes` : ""}
                 </Text>
                 {!isDryRun && checkedCount > 0 && (
                     <Text dimColor>
@@ -237,25 +251,21 @@ const PackageListPanel = ({
                 )}
             </Box>
 
-            {/* Filter type bar — below header */}
-            <Box flexShrink={0} gap={1} paddingX={1} paddingY={1}>
-                {FILTER_LABELS.map((f) => {
-                    const isActive = filterType === f.key;
-
-                    return (
-                        <Box key={f.key}>
-                            <Text dimColor={!isActive}>[</Text>
-                            <Text bold={isActive} color={isActive ? "cyan" : "gray"}>
-                                {f.shortcut}
-                            </Text>
-                            <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-                                {" "}
-                                {f.label}
-                            </Text>
-                        </Box>
-                    );
-                })}
+            {/* Filter tabs — below header */}
+            <Box flexShrink={0} paddingX={1} paddingY={1}>
+                <Tabs
+                    isFocused={focused}
+                    keyMap={{ next: [], previous: [], useNumbers: false, useTab: false }}
+                    onChange={() => {}}
+                    showIndex={false}
+                    value={filterType}
+                >
+                    {FILTER_TABS.map(({ id, label }) => (
+                        <Tab key={id} name={id}>
+                            {label}
+                        </Tab>
+                    ))}
+                </Tabs>
             </Box>
 
             {/* Text filter input */}
@@ -269,8 +279,28 @@ const PackageListPanel = ({
                 </Box>
             )}
 
-            {/* Package list with scrollbar */}
-            <Box flexDirection="row" flexGrow={1} overflow="hidden">
+            {/* Filtered-out packages note */}
+            {filteredOutCount > 0 && (
+                <Box flexShrink={0} paddingX={1}>
+                    <Text color="yellow">
+                        {"\u26A0"}
+                        {" "}
+                        {filteredOutCount}
+                        {" "}
+                        package
+                        {filteredOutCount === 1 ? "" : "s"}
+                        {" "}
+                        filtered out by target constraint — press
+                        {" "}
+                        <Text bold color="white">f</Text>
+                        {" "}
+                        to view
+                    </Text>
+                </Box>
+            )}
+
+            {/* Package list with scrollbar — key forces remount on filter change to clear stale content */}
+            <Box flexDirection="row" flexGrow={1} key={`list-${filterType}-${filterText}`} overflow="hidden">
                 <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingLeft={1}>
                     <Box flexDirection="column" marginTop={-scrollOffset}>
                         {rows}

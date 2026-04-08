@@ -2,6 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import type { OutdatedEntry } from "../../../catalog";
 import QuitDialog from "../QuitDialog";
 import PackageDetailPanel from "./PackageDetailPanel";
 import PackageListPanel from "./PackageListPanel";
@@ -12,14 +13,7 @@ import type { FilterType, UpdateStore } from "./UpdateStore";
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
-
-const FILTER_KEYS: Record<string, FilterType> = {
-    1: "all",
-    2: "major",
-    3: "minor",
-    4: "patch",
-    5: "security",
-};
+const EMPTY_ENTRIES: OutdatedEntry[] = [];
 
 // ── Component ───────────────────────────────────────────────────────────
 
@@ -27,17 +21,25 @@ interface VisUpdateAppProps {
     /** 0 = no auto-exit (default), >0 = countdown seconds */
     autoExitSeconds?: number;
     changelogUrls?: Map<string, string>;
+    /** Total unique packages checked by the registry. */
+    checkedCount?: number;
+    /** Total catalog entries (before deduplication). */
+    totalCatalogEntries?: number;
+    /** Packages that have newer versions but were filtered out by the target constraint. */
+    filteredOutEntries?: OutdatedEntry[];
     isDryRun: boolean;
     store: UpdateStore;
 }
 
-const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: VisUpdateAppProps): React.JSX.Element => {
+const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, filteredOutEntries = EMPTY_ENTRIES, isDryRun, store, totalCatalogEntries = 0 }: VisUpdateAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
 
     const [helpVisible, setHelpVisible] = useState(false);
+    const [filteredOutVisible, setFilteredOutVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
+    const filteredOutScrollRef = useRef<ScrollViewRef>(null);
     const detailScrollRef = useRef<ScrollViewRef>(null);
     const confirmScrollRef = useRef<ScrollViewRef>(null);
     const [listScrollOffset, setListScrollOffset] = useState(0);
@@ -123,6 +125,19 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                 return;
             }
 
+            // Filtered-out dialog
+            if (filteredOutVisible) {
+                if (key.escape || input === "f" || input === "q") {
+                    setFilteredOutVisible(false);
+                } else if (key.downArrow || input === "j") {
+                    filteredOutScrollRef.current?.scrollBy(1);
+                } else if (key.upArrow || input === "k") {
+                    filteredOutScrollRef.current?.scrollBy(-1);
+                }
+
+                return;
+            }
+
             // Confirm dialog — u/Enter confirms, Esc/q cancels, arrows scroll
             if (confirmVisible) {
                 if (input === "u" || key.return) {
@@ -179,9 +194,24 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                 return;
             }
 
-            // Filter type shortcuts
-            if (FILTER_KEYS[input]) {
-                store.setFilterType(FILTER_KEYS[input]);
+            // Filter tab navigation (left/right arrows when list is focused)
+            if (state.focusedPanel === "list" && (key.leftArrow || key.rightArrow)) {
+                const tabs: FilterType[] = ["all", "major", "minor", "patch", "security"];
+                const currentIndex = tabs.indexOf(state.filterType);
+                const nextIndex = key.rightArrow
+                    ? (currentIndex + 1) % tabs.length
+                    : (currentIndex - 1 + tabs.length) % tabs.length;
+
+                setListScrollOffset(0);
+                detailScrollRef.current?.scrollToTop();
+                store.setFilterType(tabs[nextIndex]!);
+
+                return;
+            }
+
+            // Filtered-out packages dialog
+            if (input === "f" && filteredOutEntries.length > 0) {
+                setFilteredOutVisible((previous) => !previous);
 
                 return;
             }
@@ -201,12 +231,14 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                 }
 
                 if (key.backspace) {
+                    setListScrollOffset(0);
                     store.setFilter(state.filterText.slice(0, -1));
 
                     return;
                 }
 
                 if (input && !key.ctrl && !key.meta) {
+                    setListScrollOffset(0);
                     store.setFilter(state.filterText + input);
 
                     return;
@@ -419,12 +451,29 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
         );
     }
 
+    if (filteredOutEntries.length > 0) {
+        footerItems.push(
+            <Box gap={1} key="fo">
+                <Text bold color="yellow">
+                    f
+                </Text>
+                <Text dimColor>FILTERED ({filteredOutEntries.length})</Text>
+            </Box>,
+        );
+    }
+
     footerItems.push(
-        <Box gap={1} key="f">
+        <Box gap={1} key="lr">
             <Text bold color="white">
-                1-5 /
+                {"\u2190\u2192"}
             </Text>
             <Text dimColor>FILTER</Text>
+        </Box>,
+        <Box gap={1} key="f">
+            <Text bold color="white">
+                /
+            </Text>
+            <Text dimColor>SEARCH</Text>
         </Box>,
         <Box gap={1} key="t">
             <Text bold color="white">
@@ -543,48 +592,12 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                         FILTERS
                     </Text>
                 </Box>
-                <Box>
-                    <Box width={24}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                1
-                            </Text>
-                            <Text dimColor> All</Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            2
-                        </Text>
-                        <Text dimColor> Major</Text>
-                    </Text>
-                </Box>
-                <Box>
-                    <Box width={24}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                3
-                            </Text>
-                            <Text dimColor> Minor</Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            4
-                        </Text>
-                        <Text dimColor> Patch</Text>
-                    </Text>
-                </Box>
                 <Text>
                     <Text bold color="white">
                         {" "}
-                        5
+                        {"\u2190\u2192"}
                     </Text>
-                    <Text dimColor> Security only</Text>
+                    <Text dimColor> Switch filter tab</Text>
                 </Text>
                 <Text>
                     <Text bold color="white">
@@ -593,6 +606,15 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                     </Text>
                     <Text dimColor> Text filter</Text>
                 </Text>
+                {filteredOutEntries.length > 0 && (
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            f
+                        </Text>
+                        <Text dimColor> View filtered-out packages</Text>
+                    </Text>
+                )}
             </Box>
             <Box flexDirection="column">
                 <Box marginBottom={1}>
@@ -702,6 +724,70 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
         </Dialog>
     );
 
+    // ── Filtered-out dialog ───────────────────────────────────────
+
+    const filteredOutDialog = filteredOutEntries.length > 0
+        ? (
+            <Dialog
+                footer={(
+                    <Text dimColor>
+                        <Text bold color="white">
+                            {"\u2191\u2193"}
+                        </Text>
+                        {" "}
+                        scroll
+                        {"  "}
+                        <Text bold color="white">
+                            f
+                        </Text>
+                        /
+                        <Text bold color="white">
+                            Esc
+                        </Text>
+                        {" "}
+                        close
+                    </Text>
+                )}
+                scrollRef={filteredOutScrollRef}
+                title={`${filteredOutEntries.length} PACKAGE${filteredOutEntries.length === 1 ? "" : "S"} FILTERED BY TARGET`}
+                visible={filteredOutVisible}
+                width={70}
+            >
+                <Box flexDirection="column">
+                    <Box marginBottom={1}>
+                        <Text dimColor>
+                            These packages have newer versions available but are excluded by
+                            {" "}
+                            the current target constraint. Use
+                            {" "}
+                            <Text bold color="white">--target latest</Text>
+                            {" "}
+                            to include them.
+                        </Text>
+                    </Box>
+                    {filteredOutEntries.map((e) => (
+                        <Box gap={1} key={e.packageName}>
+                            <Text>
+                                {" "}
+                                {e.packageName}
+                            </Text>
+                            <Text dimColor>
+                                {e.currentRange}
+                                {" "}
+                                {"\u2192"}
+                                {" "}
+                                {e.newRange}
+                            </Text>
+                            <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>
+                                {e.updateType}
+                            </Text>
+                        </Box>
+                    ))}
+                </Box>
+            </Dialog>
+        )
+        : null;
+
     // ── Panels ──────────────────────────────────────────────────────
 
     const listPanel = (
@@ -711,12 +797,15 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
             filterActive={state.filterActive}
             filterText={state.filterText}
             filterType={state.filterType}
+            filteredOutCount={filteredOutEntries.length}
             focused={state.focusedPanel === "list"}
             groupedByCatalog={state.groupedByCatalog}
             isDryRun={isDryRun}
             scrollOffset={listScrollOffset}
             selectedIndex={state.selectedIndex}
-            totalEntries={store.getFilteredEntries().length}
+            totalCatalogEntries={totalCatalogEntries}
+            totalChecked={checkedCount}
+            totalEntries={filteredEntries.length}
             viewportHeight={listViewportHeight}
         />
     );
@@ -744,6 +833,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                 </Box>
                 {footer}
                 {confirmDialog}
+                {filteredOutDialog}
                 <QuitDialog
                     autoExitSeconds={autoExitSeconds || 3}
                     onCancel={() => {
@@ -766,6 +856,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
             <Box flexGrow={1}>{detailPanel}</Box>
             {footer}
             {confirmDialog}
+            {filteredOutDialog}
             <QuitDialog
                 autoExitSeconds={autoExitSeconds || 3}
                 onCancel={() => {

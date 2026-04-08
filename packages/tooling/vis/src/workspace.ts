@@ -313,6 +313,15 @@ interface VisConfig {
     };
     /** Update command defaults */
     update?: {
+        /**
+         * Dependency fields to scan for outdated packages.
+         * Beyond the standard fields, supports:
+         * - `"overrides"` (npm)
+         * - `"resolutions"` (yarn)
+         * - `"pnpm.overrides"`
+         * @default ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]
+         */
+        depFields?: string[];
         exclude?: string[];
         format?: "json" | "minimal" | "table";
 
@@ -324,7 +333,42 @@ interface VisConfig {
          */
         ignore?: string[];
         include?: string[];
+
+        /**
+         * Include packages with pinned/exact versions (no `^` or `~` prefix).
+         * By default, pinned versions are skipped during update checks.
+         * @default false
+         */
+        includeLocked?: boolean;
         install?: boolean;
+
+        /**
+         * Minimum number of minutes since a version was published before
+         * vis will consider it for updates. This mirrors pnpm's
+         * `minimumReleaseAge` — a single setting that applies to both
+         * install and update.
+         *
+         * Not set by default. If your package manager config
+         * (`pnpm-workspace.yaml`) has `minimumReleaseAge`, vis will
+         * read it from there as a fallback.
+         * @example 1440 // 24 hours
+         */
+        minimumReleaseAge?: number;
+
+        /**
+         * Package names/patterns excluded from the minimumReleaseAge check.
+         * @example ["webpack", "@myorg/*"]
+         */
+        minimumReleaseAgeExclude?: string[];
+
+        /**
+         * Per-package or per-pattern update target overrides.
+         * Keys are exact package names, glob patterns, or regex patterns
+         * wrapped in `/` (e.g., `/^@vue/`).
+         * Values are `"latest"`, `"minor"`, or `"patch"`.
+         * @example { "typescript": "minor", "/^@vue/": "patch" }
+         */
+        packageMode?: Record<string, "latest" | "minor" | "patch">;
         prerelease?: boolean;
         security?: boolean;
         target?: "latest" | "minor" | "patch";
