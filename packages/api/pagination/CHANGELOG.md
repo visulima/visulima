@@ -1,3 +1,17 @@
+## @visulima/pagination [5.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.8...@visulima/pagination@5.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **pagination:** remove unnecessary Number() type conversions ([1393f87](https://github.com/visulima/visulima/commit/1393f8721e3824af7fdf59361ddd1e445bc2bff5))
+
+### Miscellaneous Chores
+
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **pagination:** add tsconfig.eslint.json for type-aware linting ([d66266c](https://github.com/visulima/visulima/commit/d66266cf401e974d7dda3418228daa06d6ec7253))
+* **pagination:** apply auto-fix formatting ([343ccc0](https://github.com/visulima/visulima/commit/343ccc01b8e398f11bd592f865dec6d04b3a8fca))
+* **pagination:** apply prettier formatting ([8e4e960](https://github.com/visulima/visulima/commit/8e4e9609ac04bd3aee32ba8b73af49d995849fe2))
+* **pagination:** migrate .prettierrc.cjs to prettier.config.js ([17c14e6](https://github.com/visulima/visulima/commit/17c14e69da0aa3beee75631cb33266fd41060e86))
+
 ## @visulima/pagination [5.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.7...@visulima/pagination@5.0.0-alpha.8) (2026-03-26)
 
 ### Features
