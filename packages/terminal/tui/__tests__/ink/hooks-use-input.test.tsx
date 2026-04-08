@@ -39,8 +39,8 @@ describe("hooks-use-input", () => {
                 await sleep(400);
             }
 
-            // Poll for React concurrent mode to process all transitions instead of fixed delay
-            await waitFor(() => ps.output.includes("query:"), 8000);
+            // Wait for both query and deferredQuery to be empty (fixture signals __SYNCED__)
+            await waitFor(() => ps.output.includes("__SYNCED__"), 10_000);
 
             ps.write("\r");
             await ps.waitForExit();

@@ -11,6 +11,7 @@ const App = () => {
     const [, startTransition] = useTransition();
     const [deferredQuery, setDeferredQuery] = useState("abcde");
     const done = useRef(false);
+    const syncedSignaled = useRef(false);
 
     useInput((input, key) => {
         if (key.return) {
@@ -51,6 +52,13 @@ const App = () => {
     useEffect(() => {
         process.stdout.write("__READY__");
     }, []);
+
+    useEffect(() => {
+        if (query === "" && deferredQuery === "" && !syncedSignaled.current) {
+            syncedSignaled.current = true;
+            process.stdout.write("__SYNCED__");
+        }
+    }, [query, deferredQuery]);
 
     return (
         <Box flexDirection="column">
