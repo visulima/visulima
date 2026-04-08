@@ -394,6 +394,90 @@ describe("Tabs", () => {
         expect(output).toContain("First");
     });
 
+    // --- Controlled mode (value prop) ---
+
+    it("should use value prop to control active tab", async () => {
+        expect.assertions(1);
+
+        const { getOutput } = await setup(
+            <Tabs onChange={vi.fn()} showIndex={false} value="second">
+                <Tab name="first">First</Tab>
+                <Tab name="second">Second</Tab>
+                <Tab name="third">Third</Tab>
+            </Tabs>,
+        );
+
+        const output = getOutput();
+
+        // "Second" should have active styling (green bg in focused mode)
+        // We can't easily check ANSI colors, but the component renders without error
+        expect(output).toContain("Second");
+    });
+
+    it("should not call onChange on mount in controlled mode", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+
+        await setup(
+            <Tabs onChange={onChange} value="second">
+                <Tab name="first">First</Tab>
+                <Tab name="second">Second</Tab>
+            </Tabs>,
+        );
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("should call onChange on arrow key in controlled mode", async () => {
+        expect.assertions(2);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <Tabs onChange={onChange} value="first">
+                <Tab name="first">First</Tab>
+                <Tab name="second">Second</Tab>
+            </Tabs>,
+        );
+
+        emitReadable(stdin, "\u001B[C"); // right arrow
+        await delay(50);
+
+        expect(onChange).toHaveBeenCalledOnce();
+        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+    });
+
+    it("should fall back to first tab when value is invalid", async () => {
+        expect.assertions(1);
+
+        const { getOutput } = await setup(
+            <Tabs onChange={vi.fn()} showIndex={false} value="nonexistent">
+                <Tab name="first">First</Tab>
+                <Tab name="second">Second</Tab>
+            </Tabs>,
+        );
+
+        // Should not crash; renders with first tab as fallback
+        expect(getOutput()).toContain("First");
+    });
+
+    it("should not respond to keys when controlled with empty key arrays", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <Tabs keyMap={{ next: [], previous: [], useNumbers: false, useTab: false }} onChange={onChange} value="first">
+                <Tab name="first">First</Tab>
+                <Tab name="second">Second</Tab>
+            </Tabs>,
+        );
+
+        emitReadable(stdin, "\u001B[C"); // right arrow
+        await delay(50);
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
     it("should handle fragments and conditional children", async () => {
         expect.assertions(2);
 

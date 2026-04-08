@@ -73,7 +73,8 @@ export type Props = {
     readonly colors?: TabColors;
 
     /**
-     * Name of the tab to select initially.
+     * Name of the tab to select initially (uncontrolled mode).
+     * Ignored when `value` is provided.
      */
     readonly defaultValue?: string;
 
@@ -107,6 +108,13 @@ export type Props = {
      * @default true
      */
     readonly showIndex?: boolean;
+
+    /**
+     * Controlled active tab name. When provided, the component is controlled —
+     * the parent owns the active tab state and must update it via `onChange`.
+     * When omitted, the component manages its own state (uncontrolled mode).
+     */
+    readonly value?: string;
 
     /**
      * Width of the container Box. Also determines the separator width in column layouts.
@@ -166,6 +174,7 @@ export default function Tabs({
     keyMap: keyMapProp,
     onChange,
     showIndex = true,
+    value,
     width,
 }: Props): ReactElement {
     const tabs = collectTabs(children);
@@ -175,23 +184,39 @@ export default function Tabs({
     tabsRef.current = tabs;
 
     const isColumn = flexDirection === "column" || flexDirection === "column-reverse";
+    const isControlled = value !== undefined;
 
-    const [activeTab, setActiveTab] = useState(() => {
-        if (defaultValue == null || tabCount === 0) {
+    const [internalTab, setInternalTab] = useState(() => {
+        const initial = value ?? defaultValue;
+
+        if (initial == null || tabCount === 0) {
             return 0;
         }
 
-        const foundIndex = tabs.findIndex((tab) => tab.props.name === defaultValue);
+        const foundIndex = tabs.findIndex((tab) => tab.props.name === initial);
 
         return foundIndex === -1 ? 0 : foundIndex;
     });
+
+    // In controlled mode, derive activeTab from value prop
+    const activeTab = isControlled
+        ? Math.max(0, tabs.findIndex((tab) => tab.props.name === value))
+        : internalTab;
+
+    const setActiveTab = isControlled
+        ? () => {} // no-op in controlled mode; parent drives state via onChange
+        : setInternalTab;
 
     const onChangeRef = useRef(onChange);
 
     onChangeRef.current = onChange;
 
-    // Notify initial tab on mount
+    // Notify initial tab on mount (uncontrolled only)
     useEffect(() => {
+        if (isControlled) {
+            return;
+        }
+
         const tab = tabsRef.current[activeTab];
 
         if (tab) {
@@ -206,6 +231,11 @@ export default function Tabs({
     const useNumbers = keyMapProp?.useNumbers ?? true;
     const useTab = keyMapProp?.useTab ?? true;
 
+    // Use a ref for activeTab so callbacks always see the latest value
+    const activeTabRef = useRef(activeTab);
+
+    activeTabRef.current = activeTab;
+
     const handleTabChange = useCallback((index: number) => {
         setActiveTab(index);
 
@@ -214,35 +244,31 @@ export default function Tabs({
         if (tab) {
             onChangeRef.current(tab.props.name, tab);
         }
-    }, []);
+    }, [setActiveTab]);
 
     const moveToNext = useCallback(() => {
-        setActiveTab((current) => {
-            const next = current + 1 >= tabCount ? 0 : current + 1;
+        const next = (activeTabRef.current + 1) % tabCount;
 
-            const tab = tabsRef.current[next];
+        setActiveTab(next);
 
-            if (tab) {
-                onChangeRef.current(tab.props.name, tab);
-            }
+        const tab = tabsRef.current[next];
 
-            return next;
-        });
-    }, [tabCount]);
+        if (tab) {
+            onChangeRef.current(tab.props.name, tab);
+        }
+    }, [tabCount, setActiveTab]);
 
     const moveToPrevious = useCallback(() => {
-        setActiveTab((current) => {
-            const previous = current - 1 < 0 ? tabCount - 1 : current - 1;
+        const previous = (activeTabRef.current - 1 + tabCount) % tabCount;
 
-            const tab = tabsRef.current[previous];
+        setActiveTab(previous);
 
-            if (tab) {
-                onChangeRef.current(tab.props.name, tab);
-            }
+        const tab = tabsRef.current[previous];
 
-            return previous;
-        });
-    }, [tabCount]);
+        if (tab) {
+            onChangeRef.current(tab.props.name, tab);
+        }
+    }, [tabCount, setActiveTab]);
 
     useInput(
         useCallback(
