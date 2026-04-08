@@ -16,7 +16,8 @@
  *   q / Esc / Ctrl+C   quit
  */
 // @ts-nocheck
-import { Box, render, Text, useApp, useInput, useWindowSize } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── FPS counter ─────────────────────────────────────────────────────────────

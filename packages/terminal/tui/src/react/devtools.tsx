@@ -1,12 +1,12 @@
 /* eslint-disable jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description */
 /**
- * DevTools — optional development overlay for Ratatat apps.
+ * DevTools — optional development overlay for TUI apps.
  *
  * Wraps your app and renders a HUD in the bottom-right corner.
  * Render rate is measured from actual render events (not a timer guess).
  *
  * Usage:
- *   import { DevTools } from 'ratatat'
+ *   import { DevTools } from '@visulima/tui/react'
  *
  *   render(
  *     &lt;DevTools>
@@ -21,8 +21,8 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 
-import { useRatatatContext, useWindowSize } from "./hooks";
-import { Box, Spacer, Text } from "./react";
+import { useTuiContext, useWindowSize } from "./hooks";
+import { _Box as Box, _Spacer as Spacer, _Text as Text } from "./react";
 
 export interface DevToolsProps {
     children: React.ReactNode;
@@ -35,7 +35,7 @@ export interface DevToolsProps {
  * Returns FPS averaged over the last 500ms window.
  */
 function useFpsCounter() {
-    const { app } = useRatatatContext();
+    const { app } = useTuiContext();
     const [fps, setFps] = useState(0);
     const frames = useRef(0);
     const windowStart = useRef(Date.now());

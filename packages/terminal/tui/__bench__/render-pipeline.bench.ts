@@ -2,9 +2,9 @@
 import React from "react";
 import { bench, describe } from "vitest";
 
-import { LayoutNode } from "../dist/react/layout.js";
-import { RatatatReconciler } from "../dist/react/reconciler.js";
-import { renderTreeToBuffer } from "../dist/react/renderer.js";
+import { LayoutNode } from "../src/react/layout";
+import { TuiReconciler } from "../src/react/reconciler";
+import { renderTreeToBuffer } from "../src/react/renderer";
 
 const COLS = 80;
 const ROWS = 24;
@@ -62,14 +62,14 @@ const makeContainer = () => {
     root.yogaNode.setHeight(ROWS);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const container = (RatatatReconciler as any).createContainer(root, 0, null, false, null, "", () => {}, null);
+    const container = (TuiReconciler as any).createContainer(root, 0, null, false, null, "", () => {}, null);
 
     return { buffer: new Uint32Array(CELLS * 2), container, root };
 };
 
 const doRender = (ctx: ReturnType<typeof makeContainer>, element: React.ReactElement) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    RatatatReconciler.updateContainer(element as any, ctx.container, null, () => {});
+    TuiReconciler.updateContainer(element as any, ctx.container, null, () => {});
     ctx.root.calculateLayout(COLS, ROWS);
     renderTreeToBuffer(ctx.root, ctx.buffer, COLS, ROWS);
 };

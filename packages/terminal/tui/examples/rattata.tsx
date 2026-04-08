@@ -16,7 +16,8 @@
  * Run: node --import @oxc-node/core/register examples/rattata.tsx
  */
 // @ts-nocheck
-import { Box, render, Text, useApp, useInput, useScrollable, useWindowSize } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput, useScrollable, useWindowSize } from "@visulima/tui/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

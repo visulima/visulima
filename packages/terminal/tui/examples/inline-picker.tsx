@@ -9,7 +9,8 @@
  * Run: node --import @oxc-node/core/register examples/inline-picker.tsx
  */
 
-import { Box, renderInline, Text, useApp, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { renderInline, useApp, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
 const ITEMS = [

@@ -3,164 +3,24 @@
 import React from "react";
 
 import type { InlineOptions } from "../core/index";
-import { createInlineLoop, InputParser, RatatatApp, terminalSize } from "../core/index";
+import { createInlineLoop, InputParser, TuiApp, terminalSize } from "../core/index";
 import { FocusProvider, useFocusManager } from "./focus";
-import { RatatatContext, useInput } from "./hooks";
+import { TuiContext, useInput } from "./hooks";
 import { LayoutNode } from "./layout";
-import { RatatatReconciler, setOnAfterCommit } from "./reconciler";
+import { TuiReconciler, setOnAfterCommit } from "./reconciler";
 import { renderTreeToBuffer } from "./renderer";
-import type { Styles } from "./styles";
 
-export interface BoxProps extends Styles {
-    bg?: number;
-    children?: React.ReactNode;
-    fg?: number;
-    styles?: number;
-}
+// ─── Internal element creators ──────────────────────────────────────────────
+// These are thin wrappers for the native reconciler's "box"/"text" element types.
+// They are NOT exported — public consumers import components from @visulima/tui (ink).
+// Internal code (DevTools, TabHandler, Static) uses these to create native elements.
 
-export interface TextProps extends Styles {
-    bg?: number;
-    children?: React.ReactNode;
-    /** Ink compat alias for `dim` */
-    dimColor?: boolean;
-    fg?: number;
-    styles?: number;
-}
-
-export const Box: React.FC<BoxProps> = (props) => React.createElement("box", props, props.children);
-
-export const Text: React.FC<TextProps> = (props) =>
-    // Wrap simple strings inside a text layout node
-    React.createElement("text", props, props.children);
-
-// ─── Spinner ──────────────────────────────────────────────────────────────────
-
-const DEFAULT_SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-
-export interface SpinnerProps extends Omit<TextProps, "children"> {
-    /**
-     * Animation frames. Defaults to Braille spinner frames.
-     */
-    frames?: ReadonlyArray<string>;
-
-    /**
-     * Interval between frame updates in milliseconds.
-     * Default: 80ms
-     */
-    interval?: number;
-}
-
-/**
- * Animated single-character spinner.
- * @example
- * ```tsx
- * <Spinner color="cyan" />
- * <Spinner frames={['-', '\\', '|', '/']} interval={100} color="yellow" />
- * ```
- */
-export const Spinner: React.FC<SpinnerProps> = ({ frames = DEFAULT_SPINNER_FRAMES, interval = 80, ...textProps }) => {
-    const resolvedFrames = frames.length > 0 ? frames : ["-"];
-    const [index, setIndex] = React.useState(0);
-
-    React.useEffect(() => {
-        if (interval <= 0 || resolvedFrames.length <= 1) {
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setIndex((previous) => (previous + 1) % resolvedFrames.length);
-        }, interval);
-
-        return () => clearInterval(timer);
-    }, [interval, resolvedFrames]);
-
-    return React.createElement(Text, textProps, resolvedFrames[index] ?? "-");
-};
-
-// ─── ProgressBar ──────────────────────────────────────────────────────────────
-
-export interface ProgressBarProps extends Omit<TextProps, "children"> {
-    /** Wrap bar body with surrounding brackets. Default: true */
-    bracket?: boolean;
-    /** Character used for the completed segment. Default: █ */
-    completeChar?: string;
-    /** Character used for the remaining segment. Default: ░ */
-    incompleteChar?: string;
-    /** Maximum value. Default: 100 */
-    max?: number;
-    /** Render percentage text after the bar. Default: true */
-    showPercentage?: boolean;
-    /** Current value. */
-    value: number;
-    /** Number of cells used for the bar body. Default: 20 */
-    width?: number;
-}
-
-/**
- * Terminal progress bar with optional percentage suffix.
- * @example
- * ```tsx
- * <ProgressBar value={42} color="green" />
- * <ProgressBar value={downloaded} max={total} width={30} showPercentage={false} />
- * ```
- */
-export const ProgressBar: React.FC<ProgressBarProps> = ({
-    bracket = true,
-    completeChar = "█",
-    incompleteChar = "░",
-    max = 100,
-    showPercentage = true,
-    value,
-    width = 20,
-    ...textProps
-}) => {
-    const safeMax = max > 0 ? max : 1;
-    const safeWidth = Math.max(1, Math.floor(width));
-    const clamped = Math.max(0, Math.min(value, safeMax));
-    const ratio = clamped / safeMax;
-
-    const filled = Math.round(ratio * safeWidth);
-    const body = completeChar.repeat(filled) + incompleteChar.repeat(Math.max(0, safeWidth - filled));
-    const percent = Math.round(ratio * 100);
-
-    const bar = bracket ? `[${body}]` : body;
-    const output = showPercentage ? `${bar} ${percent}%` : bar;
-
-    return React.createElement(Text, textProps, output);
-};
-
-/**
- * Renders a newline character — equivalent to a line break in the layout.
- * Ink-compatible: &lt;Newline count={2} />
- */
-export interface NewlineProps {
-    count?: number;
-}
-export const Newline: React.FC<NewlineProps> = ({ count = 1 }) => React.createElement(Text, {}, "\n".repeat(count));
-
-/**
- * Flexible spacer that fills available space in the parent flex container.
- * Ink-compatible: &lt;Spacer />
- */
-export const Spacer: React.FC = () => React.createElement(Box, { flexGrow: 1 });
-
-/**
- * Applies a string transformation to its children's text content.
- * The transform function receives the concatenated text of all children
- * and must return the transformed string.
- * Ink-compatible: &lt;Transform transform={s => s.toUpperCase()}>{children}&lt;/Transform>
- */
-export interface TransformProps {
-    children?: React.ReactNode;
-    transform: (s: string, index: number) => string;
-}
-export const Transform: React.FC<TransformProps> = ({ children, transform }) => {
-    if (children === undefined || children === null) {
-        return null;
-    }
-
-    return React.createElement("box", { flexShrink: 1, transform }, children);
-};
+/** @internal */
+export const _Box: React.FC<Record<string, any>> = (props) => React.createElement("box", props, props.children);
+/** @internal */
+export const _Text: React.FC<Record<string, any>> = (props) => React.createElement("text", props, props.children);
+/** @internal */
+export const _Spacer: React.FC = () => React.createElement(_Box, { flexGrow: 1 });
 
 /**
  * Internal component that handles Tab/Shift+Tab for focus cycling.
@@ -188,7 +48,7 @@ const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // Global mount utility
 /** Ink-compat render options */
 export interface RenderOptions {
-    /** Ignored — Ratatat is always concurrent */
+    /** Ignored — the native renderer is always concurrent */
     concurrent?: boolean;
     /** Ignored */
     debug?: boolean;
@@ -198,15 +58,15 @@ export interface RenderOptions {
     incrementalRendering?: boolean;
     /** Target frames per second for the render loop. Default: 60 */
     maxFps?: number;
-    /** Ignored — Ratatat always patches console */
+    /** Ignored — the native renderer always patches console */
     patchConsole?: boolean;
 }
 
 /** Return value of render() — Ink-compatible instance handle */
 export interface Instance {
-    /** ratatat-internal: direct app access */
-    app: RatatatApp;
-    /** ratatat-internal: input parser */
+    /** Internal: direct app access */
+    app: TuiApp;
+    /** Internal: input parser */
     input: InputParser;
     rerender: (element: React.ReactElement) => void;
     unmount: () => void;
@@ -214,7 +74,7 @@ export interface Instance {
 }
 
 export function render(element: React.ReactElement, options?: RenderOptions): Instance {
-    const app = new RatatatApp();
+    const app = new TuiApp();
     const input = new InputParser(process.stdin);
 
     const rootNode = new LayoutNode();
@@ -224,7 +84,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     rootNode.yogaNode.setHeight(height);
 
     // Hook Reconciler up to the root Yoga Node container
-    const container = RatatatReconciler.createContainer(
+    const container = TuiReconciler.createContainer(
         rootNode,
         0, // Legacy root
         null, // hydrate
@@ -238,7 +98,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     // Wrap element — reused on rerender()
     const wrap = (element_: React.ReactElement) =>
         React.createElement(
-            RatatatContext.Provider,
+            TuiContext.Provider,
             {
                 value: {
                     app,
@@ -250,7 +110,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
             React.createElement(FocusProvider, null, React.createElement(TabHandler, null, element_)),
         );
 
-    RatatatReconciler.updateContainer(wrap(element) as any, container, null, () => {});
+    TuiReconciler.updateContainer(wrap(element) as any, container, null, () => {});
 
     // Paint function: layout + render to buffer + Rust diff/write
     const calcLayout = (w: number, h: number) => rootNode.calculateLayout(w, h);
@@ -287,7 +147,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
         clearInterval(renderLoop);
         // Unmount the React tree so effects/subscriptions are cleaned up,
         // then free the root Yoga node to avoid native memory leaks.
-        RatatatReconciler.updateContainer(null as any, container, null, () => {});
+        TuiReconciler.updateContainer(null as any, container, null, () => {});
         rootNode.destroy();
         app.stop();
         input.stop();
@@ -328,12 +188,12 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     paintNow();
 
     return {
-        // Internal access — not part of Ink's public API but useful for ratatat-native code
+        // Internal access — not part of Ink's public API but useful for native renderer code
         app,
         input,
         /** Re-render with a new root element */
         rerender(newElement: React.ReactElement) {
-            RatatatReconciler.updateContainer(wrap(newElement) as any, container, null, () => {});
+            TuiReconciler.updateContainer(wrap(newElement) as any, container, null, () => {});
         },
         /** Unmount the app and restore the terminal */
         unmount() {
@@ -389,11 +249,11 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
         writeStdout: (t: string) => stdoutLines.push(t),
     };
 
-    const container = RatatatReconciler.createContainer(rootNode, 0, null, false, null, "", (error: Error) => console.error(error), null);
+    const container = TuiReconciler.createContainer(rootNode, 0, null, false, null, "", (error: Error) => console.error(error), null);
 
     const wrap = (element_: React.ReactElement) =>
         React.createElement(
-            RatatatContext.Provider,
+            TuiContext.Provider,
             {
                 value: {
                     app: appLike as any,
@@ -405,7 +265,7 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
             React.createElement(FocusProvider, null, React.createElement(TabHandler, null, element_)),
         );
 
-    RatatatReconciler.updateContainer(wrap(element) as any, container, null, () => {});
+    TuiReconciler.updateContainer(wrap(element) as any, container, null, () => {});
 
     let pendingCommit = false;
 

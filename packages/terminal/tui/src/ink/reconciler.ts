@@ -15,7 +15,6 @@ import {
     createTextNode,
     emitLayoutListeners,
     insertBeforeNode,
-    markNodeAsDirty,
     removeChildNode,
     setAttribute,
     setStyle,

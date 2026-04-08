@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, react-hooks/exhaustive-deps, react-refresh/only-export-components, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stderr
-import { render, Text, useStderr } from "@visulima/tui/react";
+import { Text } from "@visulima/tui";
+import { render, useStderr } from "@visulima/tui/react";
 import React from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {

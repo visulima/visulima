@@ -1,7 +1,8 @@
 /* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-floating-promises, @typescript-eslint/no-shadow, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, consistent-return, no-promise-executor-return, react-refresh/only-export-components, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/suspense
-import { render, Text } from "@visulima/tui/react";
+import { Text } from "@visulima/tui";
+import { render } from "@visulima/tui/react";
 import React, { Suspense } from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {

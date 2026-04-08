@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions, func-style, no-empty, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-transition
-import { Box, render, Text, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useInput } from "@visulima/tui/react";
 import React, { useState, useTransition } from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {

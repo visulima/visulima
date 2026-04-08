@@ -2,7 +2,8 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/counter
 // Original: https://github.com/vadimdemedes/ink/tree/master/examples/counter
-import { render, Text } from "@visulima/tui/react";
+import { Text } from "@visulima/tui";
+import { render } from "@visulima/tui/react";
 import React from "react";
 
 // React 18 Scheduler Polyfills for Node

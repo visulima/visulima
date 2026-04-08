@@ -7,7 +7,8 @@
  *
  * Run: node --import @oxc-node/core/register examples/static.tsx
  */
-import { Box, render, Static, Text } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, Static } from "@visulima/tui/react";
 import React, { useEffect, useState } from "react";
 
 type TestResult = {

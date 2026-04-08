@@ -4,9 +4,9 @@ import React from "react";
 
 import { Cell } from "../core/index";
 import { FocusProvider } from "./focus";
-import { RatatatContext } from "./hooks";
+import { TuiContext } from "./hooks";
 import { LayoutNode } from "./layout";
-import { RatatatReconciler } from "./reconciler";
+import { TuiReconciler } from "./reconciler";
 import { renderTreeToBuffer } from "./renderer";
 
 export interface RenderToStringOptions {
@@ -46,10 +46,10 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
         writeStdout: (_t: string) => {},
     };
 
-    const wrapped = React.createElement(RatatatContext.Provider, { value: noopContext }, React.createElement(FocusProvider, null, element));
+    const wrapped = React.createElement(TuiContext.Provider, { value: noopContext }, React.createElement(FocusProvider, null, element));
 
     // Create container in legacy (synchronous) mode
-    const container = RatatatReconciler.createContainer(
+    const container = TuiReconciler.createContainer(
         rootNode,
         0, // LegacyRoot
         null,
@@ -61,8 +61,8 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
     );
 
     // Render synchronously
-    RatatatReconciler.updateContainerSync(wrapped as any, container, null, () => {});
-    RatatatReconciler.flushSyncWork();
+    TuiReconciler.updateContainerSync(wrapped as any, container, null, () => {});
+    TuiReconciler.flushSyncWork();
 
     // Layout and paint into a buffer
     rootNode.calculateLayout(cols, rows);
@@ -96,8 +96,8 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
     }
 
     // Teardown: unmount the tree so reconciler cleans up
-    RatatatReconciler.updateContainerSync(null as any, container, null, () => {});
-    RatatatReconciler.flushSyncWork();
+    TuiReconciler.updateContainerSync(null as any, container, null, () => {});
+    TuiReconciler.flushSyncWork();
     rootNode.destroy();
 
     return lines.join("\n");

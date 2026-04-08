@@ -120,7 +120,7 @@ export type Styles = {
     dim?: boolean;
     display?: "flex" | "none";
 
-    // Terminal-specific numeric props (ratatat native)
+    // Terminal-specific numeric props (native renderer)
     fg?: number | string;
     flexBasis?: number | string;
     flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";

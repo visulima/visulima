@@ -4,7 +4,8 @@
  * Press Tab to cycle focus forward, Shift+Tab to cycle backward.
  * Run: node --import @oxc-node/core/register examples/use-focus.tsx
  */
-import { Box, render, Text, useApp, useFocus, useInput } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useFocus, useInput } from "@visulima/tui/react";
 import React from "react";
 
 const Item = ({ label }: { label: string }) => {

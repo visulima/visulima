@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-> Part of the [Ratatat docs](index.md). See also: [Render Loop](render-loop.md) · [Raw Buffer API](raw-buffer.md)
+> Part of the [TUI docs](index.md). See also: [Render Loop](render-loop.md) · [Raw Buffer API](raw-buffer.md)
 
 Key design decisions made during development, with rationale.
 
@@ -8,7 +8,7 @@ Key design decisions made during development, with rationale.
 
 ## Render loop: game engine style `setInterval` poll
 
-Ratatat uses a `setInterval`-driven render loop (default 60fps) rather than painting synchronously from `resetAfterCommit`. React 18's concurrent scheduler in Node.js uses `setImmediate` to batch and defer work — timer-driven state updates (`setTimeout`, streaming, async) pile up and don't commit until the next user input event flushes the scheduler. This makes the `resetAfterCommit` hook unreliable as a paint trigger.
+The native renderer uses a `setInterval`-driven render loop (default 60fps) rather than painting synchronously from `resetAfterCommit`. React 18's concurrent scheduler in Node.js uses `setImmediate` to batch and defer work — timer-driven state updates (`setTimeout`, streaming, async) pile up and don't commit until the next user input event flushes the scheduler. This makes the `resetAfterCommit` hook unreliable as a paint trigger.
 
 The loop decouples painting from React scheduling: `resetAfterCommit` sets a `pendingCommit` flag, the loop polls and paints when set. Worst-case latency is one frame interval (16ms at 60fps). `maxFps` is tunable via `render()` options. See [render-loop.md](render-loop.md) for full detail.
 
@@ -26,7 +26,7 @@ The loop decouples painting from React scheduling: `resetAfterCommit` sets a `pe
 
 ## `useApp()` returns `{ exit, quit }`
 
-Ink uses `const { exit } = useApp()`. `exit` is the Ink-compat alias; `quit` is the ratatat-native name. Both call the same underlying `app.quit()`.
+Ink uses `const { exit } = useApp()`. `exit` is the Ink-compat alias; `quit` is the native renderer name. Both call the same underlying `app.quit()`.
 
 ## `FocusProvider` + `TabHandler` wired inside `render()`
 
@@ -52,7 +52,7 @@ The prior decision to skip `free()` was a misdiagnosis. The "Child already has a
 
 ## stdout buffering during alternate screen
 
-`useStdout`/`useStderr` writes are buffered in `RatatatApp.stdoutBuffer`/`stderrBuffer` while the alternate screen is active, then flushed after `stop()` restores the normal screen. This prevents TUI corruption. Ink uses a different approach (inline cursor-up rewrite via `log-update`) because it doesn't use an alternate screen.
+`useStdout`/`useStderr` writes are buffered in `TuiApp.stdoutBuffer`/`stderrBuffer` while the alternate screen is active, then flushed after `stop()` restores the normal screen. This prevents TUI corruption. Ink uses a different approach (inline cursor-up rewrite via `log-update`) because it doesn't use an alternate screen.
 
 ## Both `setRawMode` calls required
 

@@ -15,7 +15,8 @@
  * Run: node --import @oxc-node/core/register examples/use-clipboard.tsx
  */
 
-import { Box, render, Text, useApp, useClipboard, useInput } from "@visulima/tui";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useClipboard, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
 const App = () => {

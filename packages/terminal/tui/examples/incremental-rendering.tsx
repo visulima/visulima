@@ -11,7 +11,8 @@
  * Run: node --import @oxc-node/core/register examples/incremental-rendering.tsx
  */
 // @ts-nocheck
-import { Box, render, Text, useApp, useInput, useWindowSize } from "@visulima/tui/react";
+import { Box, Text } from "@visulima/tui";
+import { render, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useEffect, useState } from "react";
 
 const SERVICES = [
