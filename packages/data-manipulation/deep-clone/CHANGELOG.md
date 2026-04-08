@@ -1,3 +1,16 @@
+## @visulima/deep-clone [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.8...@visulima/deep-clone@4.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **deep-clone:** resolve eslint errors and include bench files in tsconfig ([1704120](https://github.com/visulima/visulima/commit/17041206df127961cfc96ce5f1202594eb8592e9))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **deep-clone:** add tsconfig.eslint.json for type-aware linting ([01d9837](https://github.com/visulima/visulima/commit/01d9837e60da9d8491a7c5bf8cfd45861f6954f0))
+* **deep-clone:** apply prettier formatting ([be602cc](https://github.com/visulima/visulima/commit/be602cc1d5b9da5a1c43c7d47e5cc6b8487147b3))
+* **deep-clone:** migrate .prettierrc.cjs to prettier.config.js ([1373f0f](https://github.com/visulima/visulima/commit/1373f0f32344e66af5d42168ebde534dcb5284dd))
+
 ## @visulima/deep-clone [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.7...@visulima/deep-clone@4.0.0-alpha.8) (2026-03-26)
 
 ### Features
