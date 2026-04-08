@@ -1,3 +1,19 @@
+## @visulima/ono [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.8...@visulima/ono@2.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **ono:** properly fix eslint errors in code ([ca1d1a2](https://github.com/visulima/visulima/commit/ca1d1a2aa4d4db69f2f38d2b85d8df5e32b906fb))
+* **ono:** remove remaining eslint suppressions with proper code fixes ([ab20811](https://github.com/visulima/visulima/commit/ab20811c01df07a836303c4b4a478de79d1d338c))
+* **ono:** resolve eslint errors ([4d8e045](https://github.com/visulima/visulima/commit/4d8e0455f2420bef082e3aa3f00e76461e8c17c8))
+* **ono:** use min-dark/min-light shiki themes for code highlighting ([793a345](https://github.com/visulima/visulima/commit/793a345bbb9dc6520ce8d37a3488a83b1cbe8ce2))
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/ono [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.7...@visulima/ono@2.0.0-alpha.8) (2026-03-26)
 
 ### Features
