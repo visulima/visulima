@@ -224,9 +224,12 @@ describe("cursor", () => {
         );
 
         await act(() => {
-            const result = render(<Test />, { concurrent: true, stdin, stdout });
+            const result = render(<Test />, { concurrent: true, interactive: true, stdin, stdout });
             currentUnmount = result.unmount;
         });
+
+        // Wait for the fallback to appear
+        await waitFor(() => getWriteCalls(stdout).join("").includes("loading"));
 
         const fallbackOutput = getWriteCalls(stdout).join("");
 
