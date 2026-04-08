@@ -391,7 +391,7 @@ const renderNodeToOutput = (
             }
         }
 
-        if (node.nodeName === "ink-root" || node.nodeName === "ink-box") {
+        if (node.nodeName === "ink-root" || node.nodeName === "ink-box" || node.nodeName === "ink-static-render") {
             for (const childNode of node.childNodes) {
                 renderNodeToOutput(childNode as DOMElement, output, {
                     absoluteOffsetX: absX + scrollOffsetX,
