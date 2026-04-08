@@ -1,3 +1,18 @@
+## @visulima/redact [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.7...@visulima/redact@3.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **redact:** properly fix eslint errors in code ([4bf52d3](https://github.com/visulima/visulima/commit/4bf52d39b0cca1ced0179d74e1e167b27f6a70ec))
+* **redact:** remove remaining eslint suppressions with proper code fixes ([8054ca5](https://github.com/visulima/visulima/commit/8054ca5f670c4f84037f4fa7ed6808289d9a2717))
+* **redact:** resolve eslint errors ([7463acb](https://github.com/visulima/visulima/commit/7463acb09f62d0d16057f11c7a7d4c9cef58bbc9))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **redact:** add tsconfig.eslint.json for type-aware linting ([ca3a1bf](https://github.com/visulima/visulima/commit/ca3a1bfc733aed1ed86549b4bea2acdc0f339b31))
+* **redact:** apply prettier formatting ([bb74a79](https://github.com/visulima/visulima/commit/bb74a79fc06c12c11eb574fc84dd23d67e2988fb))
+* **redact:** migrate .prettierrc.cjs to prettier.config.js ([6f2b7d1](https://github.com/visulima/visulima/commit/6f2b7d16eb26d8c45e96560458ba4786a06c41d8))
+
 ## @visulima/redact [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.6...@visulima/redact@3.0.0-alpha.7) (2026-03-26)
 
 ### Features
