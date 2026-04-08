@@ -27,7 +27,8 @@ const REGISTRY_PROTOCOL_REGEX = /^https?:\/\//;
 const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
-const VALID_DEP_TYPES = new Set(["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]);
+const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
+const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "resolutions", "pnpm.overrides"]);
 
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
@@ -75,12 +76,17 @@ interface CatalogCheckOptions {
     exclude: string[];
     ignore: string[];
     include: string[];
+    includeLocked: boolean;
     includePrerelease: boolean;
+    minimumReleaseAge?: number;
+    minimumReleaseAgeExclude?: string[];
+    packageMode?: Record<string, UpdateTarget>;
     security?: boolean;
     target: UpdateTarget;
 }
 
 interface ReadCatalogOptions {
+    depFields?: string[];
     dev?: boolean;
     prod?: boolean;
 }
@@ -432,7 +438,11 @@ const getDepTypesToInclude = (options?: ReadCatalogOptions): string[] => {
         return ["dependencies"];
     }
 
-    return ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
+    if (options?.depFields && options.depFields.length > 0) {
+        return options.depFields;
+    }
+
+    return DEFAULT_DEP_TYPES;
 };
 
 const collectInternalPackageNames = (workspaceRoot: string, rootName: string | undefined, workspaceDirectories: string[]): Set<string> => {
@@ -461,6 +471,42 @@ const collectInternalPackageNames = (workspaceRoot: string, rootName: string | u
     return names;
 };
 
+const getNestedField = (object: Record<string, unknown>, path: string): Record<string, string> | undefined => {
+    const parts = path.split(".");
+    let current: unknown = object;
+
+    for (const part of parts) {
+        if (current && typeof current === "object") {
+            current = (current as Record<string, unknown>)[part];
+        } else {
+            return undefined;
+        }
+    }
+
+    return typeof current === "object" && current !== null ? (current as Record<string, string>) : undefined;
+};
+
+const setNestedField = (object: Record<string, unknown>, path: string, key: string, value: string): void => {
+    const parts = path.split(".");
+    let current: Record<string, unknown> = object;
+
+    for (const part of parts.slice(0, -1)) {
+        if (!current[part] || typeof current[part] !== "object") {
+            current[part] = {};
+        }
+
+        current = current[part] as Record<string, unknown>;
+    }
+
+    const lastPart = parts.at(-1)!;
+
+    if (!current[lastPart] || typeof current[lastPart] !== "object") {
+        current[lastPart] = {};
+    }
+
+    (current[lastPart] as Record<string, string>)[key] = value;
+};
+
 const filterExternalDeps = (deps: Record<string, string>, internalNames: Set<string>): Map<string, string> => {
     const filtered = new Map<string, string>();
 
@@ -469,7 +515,7 @@ const filterExternalDeps = (deps: Record<string, string>, internalNames: Set<str
             continue;
         }
 
-        if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range.startsWith("catalog:")) {
+        if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range.startsWith("catalog:") || range.startsWith("$")) {
             continue;
         }
 
@@ -502,7 +548,7 @@ const scanDirectoryDeps = (
     }
 
     for (const depType of depTypes) {
-        const deps = pkg[depType] as Record<string, string> | undefined;
+        const deps = depType.includes(".") ? getNestedField(pkg, depType) : (pkg[depType] as Record<string, string> | undefined);
 
         if (!deps || typeof deps !== "object") {
             continue;
@@ -574,7 +620,7 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
     try {
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
 
-        return !!(pkg.dependencies || pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies);
+        return !!(pkg.dependencies || pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies || pkg.overrides || pkg.resolutions || getNestedField(pkg, "pnpm.overrides"));
     } catch {
         return false;
     }
@@ -607,7 +653,9 @@ const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
         const pkg = readJsonSync(filePath) as Record<string, Record<string, string>>;
 
         for (const { depType, newRange, packageName } of fileUpdates) {
-            if (pkg[depType]) {
+            if (depType.includes(".")) {
+                setNestedField(pkg as Record<string, unknown>, depType, packageName, newRange);
+            } else if (pkg[depType]) {
                 pkg[depType][packageName] = newRange;
             }
         }
@@ -765,6 +813,8 @@ const getRegistryForPackage = (packageName: string, config: NpmrcConfig): { toke
 
 interface RegistryVersionInfo {
     latest: string;
+    /** Map of version string to ISO publish time (populated when minimumReleaseAge is set). */
+    publishTimes?: Map<string, string>;
     versions: string[];
 }
 
@@ -774,11 +824,15 @@ const fetchPackageVersions = async (
     packageName: string,
     registryConfig?: { authToken?: string; url: string },
     timeoutMs: number = DEFAULT_FETCH_TIMEOUT,
+    fetchPublishTimes: boolean = false,
 ): Promise<RegistryVersionInfo> => {
     const baseUrl = (registryConfig?.url ?? "https://registry.npmjs.org").replace(TRAILING_SLASH_REGEX, "");
     const url = `${baseUrl}/${packageName}`;
 
-    const headers: Record<string, string> = { Accept: "application/vnd.npm.install-v1+json" };
+    // Use abbreviated metadata by default; full metadata when publish times are needed
+    const headers: Record<string, string> = fetchPublishTimes
+        ? { Accept: "application/json" }
+        : { Accept: "application/vnd.npm.install-v1+json" };
 
     if (registryConfig?.authToken) {
         headers["Authorization"] = `Bearer ${registryConfig.authToken}`;
@@ -796,12 +850,22 @@ const fetchPackageVersions = async (
             throw new Error(`Failed to fetch ${packageName}: ${String(response.status)} ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { "dist-tags"?: Record<string, string>; versions?: Record<string, unknown> };
+        const data = (await response.json()) as {
+            "dist-tags"?: Record<string, string>;
+            time?: Record<string, string>;
+            versions?: Record<string, unknown>;
+        };
 
-        return {
+        const result: RegistryVersionInfo = {
             latest: data["dist-tags"]?.["latest"] ?? "",
             versions: Object.keys(data.versions ?? {}),
         };
+
+        if (fetchPublishTimes && data.time) {
+            result.publishTimes = new Map(Object.entries(data.time));
+        }
+
+        return result;
     } finally {
         clearTimeout(timeout);
     }
@@ -946,14 +1010,120 @@ const fetchVulnerabilities = async (
     }
 };
 
+// --- Per-package target resolution ---
+
+const packageModeRegexCache = new Map<string, RegExp>();
+
+const resolvePackageTarget = (
+    packageName: string,
+    globalTarget: UpdateTarget,
+    packageMode?: Record<string, UpdateTarget>,
+): UpdateTarget => {
+    if (!packageMode) {
+        return globalTarget;
+    }
+
+    for (const [pattern, target] of Object.entries(packageMode)) {
+        if (pattern.startsWith("/") && pattern.endsWith("/")) {
+            let regex = packageModeRegexCache.get(pattern);
+
+            if (!regex) {
+                regex = new RegExp(pattern.slice(1, -1));
+                packageModeRegexCache.set(pattern, regex);
+            }
+
+            if (regex.test(packageName)) {
+                return target;
+            }
+        } else if (pattern === packageName || matchesPattern(packageName, pattern)) {
+            return target;
+        }
+    }
+
+    return globalTarget;
+};
+
 // --- Target version resolution ---
 
-const findTargetVersion = (versions: string[], latest: string, currentRange: string, target: UpdateTarget, includePrerelease: boolean): string | undefined => {
+interface MaturityOptions {
+    minimumReleaseAge?: number;
+    minimumReleaseAgeExclude?: string[];
+    packageName?: string;
+    publishTimes?: Map<string, string>;
+}
+
+/** Returns true when a version is too new (published less than `minAgeMs` milliseconds ago). */
+const isTooNew = (version: string, publishTimes: Map<string, string> | undefined, minAgeMs: number): boolean => {
+    const publishDate = publishTimes?.get(version);
+
+    if (!publishDate) {
+        return false;
+    }
+
+    return Date.now() - new Date(publishDate).getTime() < minAgeMs;
+};
+
+/** Resolves the effective minimum age in milliseconds, returning 0 when age filtering is disabled. */
+const resolveMinAgeMs = (maturity?: MaturityOptions): number => {
+    if (!maturity?.minimumReleaseAge) {
+        return 0;
+    }
+
+    const isExcluded = maturity.packageName && maturity.minimumReleaseAgeExclude?.some((p) => matchesPattern(maturity.packageName!, p));
+
+    return isExcluded ? 0 : maturity.minimumReleaseAge * 60 * 1000;
+};
+
+/** Filters and sorts version candidates that are newer than `current`, optionally constrained by major/minor and maturity. */
+const filterCandidates = (
+    versions: string[],
+    current: ParsedVersion,
+    includePrerelease: boolean,
+    minAgeMs: number,
+    publishTimes: Map<string, string> | undefined,
+    constraint?: (parsed: ParsedVersion) => boolean,
+): string | undefined => {
+    const best = versions
+        .map((v) => ({ parsed: parseVersion(v), raw: v }))
+        .filter((v): v is { parsed: ParsedVersion; raw: string } => {
+            if (!v.parsed) {
+                return false;
+            }
+
+            if (!includePrerelease && v.parsed.prerelease !== "") {
+                return false;
+            }
+
+            if (!isNewer(current, v.parsed)) {
+                return false;
+            }
+
+            if (minAgeMs && isTooNew(v.raw, publishTimes, minAgeMs)) {
+                return false;
+            }
+
+            return constraint ? constraint(v.parsed) : true;
+        })
+        .toSorted((a, b) => rcompare(a.raw, b.raw));
+
+    return best[0]?.raw;
+};
+
+const findTargetVersion = (
+    versions: string[],
+    latest: string,
+    currentRange: string,
+    target: UpdateTarget,
+    includePrerelease: boolean,
+    maturity?: MaturityOptions,
+): string | undefined => {
     const current = parseVersion(currentRange);
 
     if (!current) {
         return undefined;
     }
+
+    const minAgeMs = resolveMinAgeMs(maturity);
 
     if (target === "latest") {
         const latestParsed = parseVersion(latest);
@@ -970,43 +1140,30 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             return undefined;
         }
 
-        return latest;
+        if (!minAgeMs || !isTooNew(latest, maturity?.publishTimes, minAgeMs)) {
+            return latest;
+        }
+
+        // Latest is too new — fall back to the newest mature version
+        return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes);
     }
 
     // For minor/patch, find highest constrained version
-    const candidates = versions
-        .map((v) => {
-            return { parsed: parseVersion(v), raw: v };
-        })
-        .filter((v): v is { parsed: ParsedVersion; raw: string } => {
-            if (!v.parsed) {
-                return false;
-            }
+    const constraint = target === "patch"
+        ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
+        : (p: ParsedVersion): boolean => p.major === current.major;
 
-            if (!includePrerelease && v.parsed.prerelease !== "") {
-                return false;
-            }
-
-            if (!isNewer(current, v.parsed)) {
-                return false;
-            }
-
-            if (target === "patch") {
-                return v.parsed.major === current.major && v.parsed.minor === current.minor;
-            }
-
-            // target === "minor"
-            return v.parsed.major === current.major;
-        })
-        .toSorted((a, b) => rcompare(a.raw, b.raw));
-
-    return candidates[0]?.raw;
+    return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, constraint);
 };
 
 // --- Check outdated ---
 
 interface CheckOutdatedResult {
+    /** Total number of unique packages checked (after filtering). */
+    checkedCount: number;
     failed: string[];
+    /** Packages that have newer versions on "latest" but were excluded by the target constraint. */
+    filteredByTarget: OutdatedEntry[];
     ignored: string[];
     outdated: OutdatedEntry[];
 }
@@ -1025,6 +1182,15 @@ const collectEntries = (
             // Skip non-version protocols
             if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range === "*") {
                 continue;
+            }
+
+            // Skip pinned (exact) versions unless includeLocked is set
+            if (!options.includeLocked) {
+                const prefix = extractPrefix(range);
+
+                if (!prefix) {
+                    continue;
+                }
             }
 
             // Check ignore list before other filters
@@ -1046,6 +1212,7 @@ const fetchVersionsBatched = async (
     uniquePackages: string[],
     npmrcConfig: NpmrcConfig | undefined,
     onProgress: ((current: number, total: number) => void) | undefined,
+    fetchPublishTimes: boolean = false,
 ): Promise<{ failed: string[]; versionCache: Map<string, RegistryVersionInfo> }> => {
     const versionCache = new Map<string, RegistryVersionInfo>();
     const failed: string[] = [];
@@ -1058,7 +1225,7 @@ const fetchVersionsBatched = async (
         const results = await Promise.allSettled(
             batch.map(async (name) => {
                 const registry = npmrcConfig ? getRegistryForPackage(name, npmrcConfig) : undefined;
-                const info = await fetchPackageVersions(name, registry ? { authToken: registry.token, url: registry.url } : undefined);
+                const info = await fetchPackageVersions(name, registry ? { authToken: registry.token, url: registry.url } : undefined, DEFAULT_FETCH_TIMEOUT, fetchPublishTimes);
 
                 versionCache.set(name, info);
 
@@ -1100,7 +1267,13 @@ const buildOutdatedEntries = (
             continue;
         }
 
-        const targetVersion = findTargetVersion(info.versions, info.latest, entry.range, options.target, options.includePrerelease);
+        const effectiveTarget = resolvePackageTarget(entry.packageName, options.target, options.packageMode);
+        const targetVersion = findTargetVersion(info.versions, info.latest, entry.range, effectiveTarget, options.includePrerelease, {
+            minimumReleaseAge: options.minimumReleaseAge,
+            minimumReleaseAgeExclude: options.minimumReleaseAgeExclude,
+            packageName: entry.packageName,
+            publishTimes: info.publishTimes,
+        });
 
         if (!targetVersion) {
             continue;
@@ -1220,6 +1393,15 @@ const computeCacheHash = (
 
     parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
     parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")},ig=${options.ignore.join(",")}`);
+    parts.push(`locked=${String(options.includeLocked)}`);
+    parts.push(`mra=${String(options.minimumReleaseAge ?? 0)}`);
+
+    if (options.packageMode) {
+        const modeEntries = Object.entries(options.packageMode).map(([k, v]) => `${k}=${v}`).toSorted().join(",");
+
+        parts.push(`pkgMode=${modeEntries}`);
+    }
+
     parts.push(`socket=${String(socketEnabled ?? false)}`);
 
     if (acceptedRiskKeys && acceptedRiskKeys.length > 0) {
@@ -1299,14 +1481,26 @@ const checkOutdated = async (
     const { entries, ignored } = collectEntries(catalogs, options);
     const uniquePackages = [...new Set(entries.map((entry) => entry.packageName))];
 
-    const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
+    const needPublishTimes = Boolean(options.minimumReleaseAge && options.minimumReleaseAge > 0);
+    const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress, needPublishTimes);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
+
+    // Compute packages filtered out by target constraint (have updates on "latest" but not on current target)
+    let filteredByTarget: OutdatedEntry[] = [];
+
+    if (options.target !== "latest") {
+        const outdatedNames = new Set(outdated.map((e) => e.packageName));
+        const latestOptions = { ...options, packageMode: undefined, target: "latest" as UpdateTarget };
+        const allLatest = buildOutdatedEntries(entries, versionCache, latestOptions);
+
+        filteredByTarget = allLatest.filter((e) => !outdatedNames.has(e.packageName));
+    }
 
     if ((options.security || socketOptions) && outdated.length > 0) {
         await enrichWithSecurity(outdated, entries, socketOptions, acceptedRisks);
     }
 
-    const result = { failed, ignored, outdated };
+    const result = { checkedCount: uniquePackages.length, failed, filteredByTarget, ignored, outdated };
 
     if (workspaceRoot) {
         writeOutdatedCache(workspaceRoot, hash, result);
@@ -1934,6 +2128,7 @@ export type {
     CatalogProvider,
     ChangelogInfo,
     CheckOutdatedResult,
+    MaturityOptions,
     NpmrcConfig,
     OutdatedEntry,
     OutputFormat,
@@ -1976,6 +2171,7 @@ export {
     promptPackageSelection,
     readCatalogs,
     readPackageJsonDeps,
+    resolvePackageTarget,
     restoreFromBackup,
     toFilterArray,
 };

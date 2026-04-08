@@ -24,6 +24,7 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
                 <Text>
                     {" "}
                     Checking
+                    {" "}
                     {String(total)}
                     {" "}
                     catalog dependencies

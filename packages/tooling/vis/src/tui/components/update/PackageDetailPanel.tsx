@@ -77,7 +77,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                 </Text>
             </Box>
 
-            <ScrollView flexGrow={1} flexShrink={1} paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray">
+            <ScrollView flexGrow={1} flexShrink={1} paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 {/* Version info */}
                 <Text />
 

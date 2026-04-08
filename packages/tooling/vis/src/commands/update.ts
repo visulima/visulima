@@ -1,7 +1,10 @@
 import { execSync } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
-import { red } from "@visulima/colorize";
+import { red, yellow } from "@visulima/colorize";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { readYamlSync } from "@visulima/fs/yaml";
+import { join } from "@visulima/path";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 import { render, renderToString, Text } from "@visulima/tui";
 import isInCi from "is-in-ci";
@@ -39,21 +42,46 @@ import type { VisConfig } from "../workspace";
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 type FilterOption = string | string[] | undefined;
 
+/**
+ * Reads `minimumReleaseAge` from the package manager's native config.
+ * Returns the value in minutes, or undefined if not set.
+ */
+const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageManager: string): number | undefined => {
+    try {
+        if (packageManager === "pnpm") {
+            const yamlPath = join(workspaceRoot, "pnpm-workspace.yaml");
+
+            if (isAccessibleSync(yamlPath)) {
+                const data = readYamlSync(yamlPath) as { minimumReleaseAge?: number } | undefined;
+
+                if (typeof data?.minimumReleaseAge === "number") {
+                    return data.minimumReleaseAge;
+                }
+            }
+        } else if (packageManager === "bun") {
+            const pkgPath = join(workspaceRoot, "package.json");
+
+            if (isAccessibleSync(pkgPath)) {
+                const pkg = readJsonSync(pkgPath) as { minimumReleaseAge?: number };
+
+                if (typeof pkg.minimumReleaseAge === "number") {
+                    return pkg.minimumReleaseAge;
+                }
+            }
+        }
+    } catch {
+        // Non-critical: if parsing fails, skip the sync check
+    }
+
+    return undefined;
+};
+
 const buildCatalogCheckOptions = (
     options: Record<string, unknown>,
-    configDefaults: {
-        exclude?: string[];
-        format?: string;
-        ignore?: string[];
-        include?: string[];
-        install?: boolean;
-        prerelease?: boolean;
-        security?: boolean;
-        target?: string;
-    },
+    configDefaults: NonNullable<VisConfig["update"]>,
     argument: string[],
 ): CatalogCheckOptions => {
-    const target = (options.target as string) ?? configDefaults.target ?? "latest";
+    const target = (options.latest as boolean) ? "latest" : (options.target as string) ?? configDefaults.target ?? "latest";
 
     if (!["latest", "minor", "patch"].includes(target)) {
         throw new Error(`Invalid target "${target}". Use: latest, minor, or patch.`);
@@ -63,15 +91,33 @@ const buildCatalogCheckOptions = (
         exclude: [...toFilterArray(options.exclude as FilterOption), ...toFilterArray(configDefaults.exclude)],
         ignore: toFilterArray(configDefaults.ignore),
         include: [...toFilterArray(options.include as FilterOption), ...toFilterArray(configDefaults.include), ...argument],
+        includeLocked: (options.includeLocked as boolean) || configDefaults.includeLocked || false,
         includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
+        minimumReleaseAge: configDefaults.minimumReleaseAge,
+        minimumReleaseAgeExclude: configDefaults.minimumReleaseAgeExclude,
+        packageMode: configDefaults.packageMode,
         security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
         target: target as UpdateTarget,
     };
 };
 
+const logFilteredByTarget = (entries: OutdatedEntry[], logger: Console): void => {
+    if (entries.length === 0) {
+        return;
+    }
+
+    logger.info(
+        `\n${yellow("\u26A0")} ${String(entries.length)} package${entries.length === 1 ? "" : "s"} skipped by target constraint (use --target latest to include):`,
+    );
+
+    for (const entry of entries) {
+        logger.info(`    ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}  (${entry.updateType})`);
+    }
+};
+
 const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console): void => {
     if (format === "json") {
-        process.stdout.write(`${formatOutdatedJson({ failed, ignored: [], outdated: entries })}\n`);
+        process.stdout.write(`${formatOutdatedJson({ checkedCount: 0, failed, filteredByTarget: [], ignored: [], outdated: entries })}\n`);
     } else if (format === "minimal") {
         process.stdout.write(`${formatOutdatedMinimal(entries)}\n`);
     } else {
@@ -140,8 +186,40 @@ const executeCatalogUpdate = async (
     logger: Console,
 ): Promise<void> => {
     const configDefaults = visConfig.update ?? {};
+
+    // Warn about flags that have no effect in catalog mode
+    const ignoredCatalogFlags: [string, string][] = [
+        ["global", "--global is not supported in catalog mode"],
+        ["recursive", "--recursive is not needed in catalog mode (catalogs are workspace-level)"],
+        ["filter", "--filter is not supported in catalog mode (use --include/--exclude instead)"],
+        ["no-save", "--no-save is not supported in catalog mode"],
+        ["workspace-root", "--workspace-root is not needed in catalog mode"],
+        ["no-optional", "--no-optional is not supported in catalog mode"],
+    ];
+
+    for (const [flag, message] of ignoredCatalogFlags) {
+        if (options[flag]) {
+            logger.warn(`${yellow("\u26A0")} ${message}, ignoring.`);
+        }
+    }
+
+    // Resolve minimumReleaseAge: vis config → PM-native config → undefined (disabled)
+    const pmNativeAge = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
+    const effectiveAge = configDefaults.minimumReleaseAge ?? pmNativeAge;
+
+    // Warn if both are set but differ
+    if (configDefaults.minimumReleaseAge !== undefined && pmNativeAge !== undefined && configDefaults.minimumReleaseAge !== pmNativeAge) {
+        const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
+
+        logger.warn(
+            `${yellow("\u26A0")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, `
+            + `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
+        );
+    }
+
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager, {
+        depFields: configDefaults.depFields,
         dev: options.dev as boolean | undefined,
         prod: options.prod as boolean | undefined,
     });
@@ -152,7 +230,8 @@ const executeCatalogUpdate = async (
         return;
     }
 
-    const checkOptions = buildCatalogCheckOptions(options, configDefaults, argument);
+    const resolvedDefaults = { ...configDefaults, minimumReleaseAge: effectiveAge };
+    const checkOptions = buildCatalogCheckOptions(options, resolvedDefaults, argument);
 
     let totalDeps = 0;
 
@@ -184,7 +263,7 @@ const executeCatalogUpdate = async (
 
     const socketOptions = buildSocketOptions(visConfig.security?.socket);
 
-    const { failed, ignored, outdated } = await checkOutdated(
+    const { checkedCount, failed, filteredByTarget, ignored, outdated } = await checkOutdated(
         catalogs,
         checkOptions,
         npmrcConfig,
@@ -199,6 +278,8 @@ const executeCatalogUpdate = async (
         progressInstance.unmount();
     }
 
+    const upToDate = checkedCount - outdated.length - failed.length;
+
     if (failed.length > 0) {
         logger.warn(`Failed to fetch: ${failed.join(", ")}`);
     }
@@ -207,8 +288,27 @@ const executeCatalogUpdate = async (
         logger.info(`Skipped ${String(ignored.length)} ignored package${ignored.length === 1 ? "" : "s"}: ${ignored.join(", ")}`);
     }
 
+    if (!isTTY && checkedCount > outdated.length) {
+        const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
+        const dedupeNote = totalCatalogEntries > checkedCount ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)` : "";
+
+        logger.info(
+            `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(outdated.length)} outdated, ${String(upToDate)} up-to-date`
+            + (failed.length > 0 ? `, ${String(failed.length)} failed` : "")
+            + (filteredByTarget.length > 0 ? `, ${String(filteredByTarget.length)} skipped by target` : ""),
+        );
+    }
+
     if (outdated.length === 0) {
-        logger.info("All catalog dependencies are up to date.");
+        if (filteredByTarget.length > 0) {
+            logger.info(
+                `All catalog dependencies are up to date within the current target.`
+                + `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:`
+                + `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} \u2192 ${e.newRange}  (${e.updateType})`).join("\n")}`,
+            );
+        } else {
+            logger.info("All catalog dependencies are up to date.");
+        }
 
         return;
     }
@@ -219,12 +319,12 @@ const executeCatalogUpdate = async (
     let aiResult: AiAnalysisResult | undefined;
 
     if (options.ai) {
-        const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
+        const analysisType = validateAnalysisType((options.aiType as string | undefined) ?? "impact");
 
         aiResult = await runAiAnalysis(outdated, logger, visConfig.ai, analysisType);
     }
 
-    const isDryRun = Boolean(options["dry-run"]);
+    const isDryRun = Boolean(options.dryRun);
 
     // Interactive TUI mode: TTY + table format
     if (isTTY && format === "table") {
@@ -256,8 +356,11 @@ const executeCatalogUpdate = async (
             React.createElement(VisUpdateApp, {
                 autoExitSeconds,
                 changelogUrls,
+                checkedCount,
+                filteredOutEntries: filteredByTarget,
                 isDryRun,
                 store,
+                totalCatalogEntries: totalDeps,
             }),
             {
                 alternateScreen: true,
@@ -302,6 +405,45 @@ const executeCatalogUpdate = async (
         process.stdout.write("\n");
         logger.info(formatSummary(outdated));
 
+        if (checkedCount > outdated.length) {
+            const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
+            const dedupeNote = totalCatalogEntries > checkedCount ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)` : "";
+
+            logger.info(
+                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date`
+                + (failed.length > 0 ? `, ${String(failed.length)} failed` : ""),
+            );
+        }
+
+        if (filteredByTarget.length > 0) {
+            process.stdout.write("\n");
+
+            const skippedLabel = `${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? "" : "s"} skipped by target constraint (use --target latest to include):`;
+
+            process.stdout.write(
+                `${renderToString(
+                    React.createElement(Text, { color: "yellow" }, `  ${skippedLabel}`),
+                    { columns },
+                )}\n`,
+            );
+
+            for (const entry of filteredByTarget) {
+                process.stdout.write(
+                    `${renderToString(
+                        React.createElement(
+                            Text,
+                            null,
+                            "     ",
+                            React.createElement(Text, { dimColor: true }, entry.packageName),
+                            `  ${entry.currentRange} \u2192 ${entry.newRange}`,
+                            React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
+                        ),
+                        { columns },
+                    )}\n`,
+                );
+            }
+        }
+
         // If user selected entries to apply (exitResult is the checked entries array)
         const toApply = Array.isArray(exitResult) ? (exitResult as OutdatedEntry[]) : [];
 
@@ -319,7 +461,7 @@ const executeCatalogUpdate = async (
     // Static output mode (non-TTY, CI, json, minimal)
     if (isDryRun) {
         if (format === "json") {
-            const output: Record<string, unknown> = { failed, ignored, outdated };
+            const output: Record<string, unknown> = { failed, filteredByTarget, ignored, outdated };
 
             if (aiResult) {
                 output.aiAnalysis = aiResult;
@@ -334,6 +476,8 @@ const executeCatalogUpdate = async (
                 logger.info("");
                 logger.info(formatAiAnalysis(aiResult));
             }
+
+            logFilteredByTarget(filteredByTarget, logger);
         }
 
         return;
@@ -358,6 +502,7 @@ const executeCatalogUpdate = async (
 
     logger.info(`Updating ${String(toApply.length)} catalog dependencies...\n`);
     writeFormattedOutput(toApply, [], format, logger);
+    logFilteredByTarget(filteredByTarget, logger);
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
@@ -378,12 +523,12 @@ const executePmWrapper = (
         global: options.global as boolean,
         interactive: options.interactive as boolean,
         latest: (options.latest as boolean) || options.target === "latest",
-        noOptional: options["no-optional"] as boolean,
-        noSave: options["no-save"] as boolean,
+        noOptional: options.noOptional as boolean,
+        noSave: options.noSave as boolean,
         packages: argument,
         prod: options.prod as boolean,
         recursive: options.recursive as boolean,
-        workspaceRoot: options["workspace-root"] as boolean,
+        workspaceRoot: options.workspaceRoot as boolean,
     };
 
     const { command, warnings } = resolveUpdateCommand(packageManager, version, updateOptions);
@@ -394,7 +539,7 @@ const executePmWrapper = (
 
     const fullCommand = `${command.bin} ${command.args.join(" ")}`.trim();
 
-    if (options["dry-run"]) {
+    if (options.dryRun) {
         logger.info(`Would run: ${fullCommand}`);
 
         return;
@@ -453,7 +598,7 @@ const update: Command = {
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
         // Typosquat check
-        if (!options["no-typosquat-check"]) {
+        if (!options.noTyposquatCheck) {
             if (argument.length > 0) {
                 // Explicit package arguments: offer name correction
                 const parsed = argument.map((a: string) => parsePackageArgument(a));
@@ -511,7 +656,7 @@ const update: Command = {
         }
 
         // Catalog mode: pnpm/bun with catalogs detected, unless --no-catalog
-        const useCatalogMode = !options["no-catalog"] && hasCatalogs(workspaceRoot, packageManager);
+        const useCatalogMode = !options.noCatalog && hasCatalogs(workspaceRoot, packageManager);
 
         if (useCatalogMode) {
             await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument, logger);
@@ -594,6 +739,13 @@ const update: Command = {
             defaultValue: false,
             description: "Don't update optionalDependencies",
             name: "no-optional",
+            type: Boolean,
+        },
+        {
+            alias: "l",
+            defaultValue: false,
+            description: "Include packages with pinned/exact versions (no ^ or ~ prefix)",
+            name: "include-locked",
             type: Boolean,
         },
         {

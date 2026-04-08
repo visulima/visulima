@@ -83,8 +83,15 @@ export class UpdateStore {
 
     #allEntries: OutdatedEntry[];
 
+    #recommendationMap: Map<string, AiRecommendation> | null = null;
+
     public constructor(entries: OutdatedEntry[], aiResult: AiAnalysisResult | null = null) {
         this.#allEntries = entries;
+
+        if (aiResult) {
+            this.#recommendationMap = new Map(aiResult.recommendations.map((r) => [r.package, r]));
+        }
+
         this.#state = {
             aiResult,
             allChecked: true,
@@ -123,7 +130,7 @@ export class UpdateStore {
 
     /** Get AI recommendation for a specific package. */
     public getRecommendation(packageName: string): AiRecommendation | undefined {
-        return this.#state.aiResult?.recommendations.find((r) => r.package === packageName);
+        return this.#recommendationMap?.get(packageName);
     }
 
     /** Get the list of checked entries (for apply). */
@@ -178,18 +185,20 @@ export class UpdateStore {
 
     public setFilterActive(active: boolean): void {
         if (active !== this.#state.filterActive) {
-            this.#emit({
-                ...this.#state,
-                filterActive: active,
-                filterText: active ? this.#state.filterText : "",
-                ...active
-                    ? {}
-                    : {
-                        entries: filterEntries(this.#allEntries, this.#state.filterType, ""),
-                        groupedByCatalog: groupByCatalog(filterEntries(this.#allEntries, this.#state.filterType, "")),
-                        selectedIndex: 0,
-                    },
-            });
+            if (active) {
+                this.#emit({ ...this.#state, filterActive: true });
+            } else {
+                const newEntries = filterEntries(this.#allEntries, this.#state.filterType, "");
+
+                this.#emit({
+                    ...this.#state,
+                    entries: newEntries,
+                    filterActive: false,
+                    filterText: "",
+                    groupedByCatalog: groupByCatalog(newEntries),
+                    selectedIndex: 0,
+                });
+            }
         }
     }
 
