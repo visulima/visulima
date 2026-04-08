@@ -416,11 +416,13 @@ export type Styles = {
      * - `wrap-anywhere` — Break at any character boundary, even when a whitespace break exists earlier.
      * - `wrap-preserve-words` — Wrap at word boundaries; never break inside words (long words may overflow).
      * - `wrap-strict` — Enforce exact width; always break at the column limit.
+     * - `hard` — Alias for `wrap-strict`. Fills each line to the full column width, breaking words mid-word as needed.
      * - `truncate` / `truncate-end` — Truncate at the end with an ellipsis.
      * - `truncate-start` — Truncate at the start with an ellipsis.
      * - `truncate-middle` — Truncate in the middle with an ellipsis.
      */
     readonly textWrap?:
+        | "hard"
         | "wrap"
         | "wrap-anywhere"
         | "wrap-preserve-words"

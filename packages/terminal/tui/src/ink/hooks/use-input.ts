@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return, e18e/prefer-static-regex */
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 
 import { IMECompositionBuffer, isIMEInput } from "../ime-utils";
 import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress";
@@ -187,10 +187,10 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
     // IME composition buffer ref
     const imeBufferRef = useRef<IMECompositionBuffer | undefined>(undefined);
-    const inputHandlerRef = useRef(inputHandler);
 
-    // Keep inputHandler ref up to date
-    inputHandlerRef.current = inputHandler;
+    // Wrap the user's handler in useEffectEvent so the effect never
+    // re-subscribes when the handler identity changes between renders.
+    const stableInputHandler = useEffectEvent(inputHandler);
 
     // Initialize IME buffer
     useEffect(() => {
@@ -226,7 +226,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
                 // @ts-expect-error Types require 5 arguments (fn, a, b, c, d) but only fn is needed at runtime.
                 reconciler.discreteUpdates(() => {
-                    inputHandlerRef.current(text, key);
+                    stableInputHandler(text, key);
                 });
             },
             timeout: imeTimeout,
@@ -281,10 +281,10 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 hyper: keypress.hyper ?? false,
                 leftArrow: keypress.name === "left",
                 // `parseKeypress` parses \u001B\u001B[A (meta + up arrow) as meta = false
-                // but with option = true, so we need to take this into account here
-                // to avoid breaking changes in Ink.
-                // TODO(vadimdemedes): consider removing this in the next major version.
-                meta: keypress.meta || keypress.name === "escape" || keypress.option,
+                // but with option = true, so we need to take this into account here.
+                // Plain Escape no longer sets meta — only actual Alt/Meta modifier
+                // combinations do.
+                meta: keypress.meta || keypress.option,
                 numLock: keypress.numLock ?? false,
                 pageDown: keypress.name === "pagedown",
                 pageUp: keypress.name === "pageup",
@@ -337,12 +337,19 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 return;
             }
 
+            // Skip unmapped key codes that have no name and produced no input
+            // text — calling the handler with empty values would be confusing
+            // and could cause crashes in user code that doesn't expect it.
+            if (!keypress.name && input === "") {
+                return;
+            }
+
             // Use discreteUpdates to assign DiscreteEventPriority to state
             // updates from keyboard input, ensuring they are processed at the
             // highest priority in concurrent mode.
             // @ts-expect-error Types require 5 arguments (fn, a, b, c, d) but only fn is needed at runtime.
             reconciler.discreteUpdates(() => {
-                inputHandler(input, key);
+                stableInputHandler(input, key);
             });
         };
 
@@ -351,7 +358,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
         return () => {
             internal_eventEmitter.removeListener("input", handleData);
         };
-    }, [options.isActive, stdin, internal_exitOnCtrlC, inputHandler, imeEnabled]);
+    }, [options.isActive, stdin, internal_exitOnCtrlC, imeEnabled]);
 };
 
 export default useInput;

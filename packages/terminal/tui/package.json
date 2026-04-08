@@ -163,7 +163,7 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
-        "react": ">=19.0.0",
+        "react": ">=19.2.0",
         "react-devtools-core": ">=6.1.2",
         "react-reconciler": ">=0.33.0"
     },

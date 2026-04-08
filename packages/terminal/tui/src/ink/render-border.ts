@@ -118,7 +118,7 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
         const showLeftBorder = node.style.borderLeft !== false;
         const showRightBorder = node.style.borderRight !== false;
 
-        const contentWidth = width - (showLeftBorder ? 1 : 0) - (showRightBorder ? 1 : 0);
+        const contentWidth = Math.max(0, width - (showLeftBorder ? 1 : 0) - (showRightBorder ? 1 : 0));
 
         // ── Top border (with optional titles) ──────────────────────
         let topBorder: string | undefined;
@@ -150,6 +150,8 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
         if (showBottomBorder) {
             verticalBorderHeight -= 1;
         }
+
+        verticalBorderHeight = Math.max(0, verticalBorderHeight);
 
         let leftBorder = "";
 
