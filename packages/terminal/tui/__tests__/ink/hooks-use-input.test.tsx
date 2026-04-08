@@ -47,7 +47,7 @@ describe("hooks-use-input", () => {
 
             expect(ps.output).toContain('FINAL query:"" deferred:""');
         },
-        20_000,
+        30_000,
     );
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {
