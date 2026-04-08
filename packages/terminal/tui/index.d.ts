@@ -11,31 +11,31 @@
  * and partial-screen modes where the renderer doesn't own row 0.
  */
 export declare class Renderer {
-    constructor(width: number, height: number);
-    /** Get the current width. */
-    get width(): number;
-    /** Get the current height. */
-    get height(): number;
-    /** Resize the renderer and reset the front buffer. */
-    resize(width: number, height: number): void;
-    /**
-     * Set a row offset for inline/partial-screen modes.
-     * All cursor positioning will be shifted down by this many rows.
-     * Does not reset the front buffer — call resize() if you need a full redraw.
-     */
-    setRowOffset(offset: number): void;
-    render(backBuffer: Uint32Array): void;
-    /**
-     * Generate the ANSI diff string without writing to stdout.
-     * Used by benchmarks to measure diff performance without I/O.
-     */
-    renderDiff(backBuffer: Uint32Array): string;
-    /**
-     * Write raw bytes to stdout through the same handle the renderer uses.
-     * Use this for cursor rewind sequences in inline mode to avoid
-     * interleaving with Node's process.stdout.write.
-     */
-    writeRaw(data: string): void;
+  constructor(width: number, height: number)
+  /** Get the current width. */
+  get width(): number
+  /** Get the current height. */
+  get height(): number
+  /** Resize the renderer and reset the front buffer. */
+  resize(width: number, height: number): void
+  /**
+   * Set a row offset for inline/partial-screen modes.
+   * All cursor positioning will be shifted down by this many rows.
+   * Does not reset the front buffer — call resize() if you need a full redraw.
+   */
+  setRowOffset(offset: number): void
+  render(backBuffer: Uint32Array): void
+  /**
+   * Generate the ANSI diff string without writing to stdout.
+   * Used by benchmarks to measure diff performance without I/O.
+   */
+  renderDiff(backBuffer: Uint32Array): string
+  /**
+   * Write raw bytes to stdout through the same handle the renderer uses.
+   * Use this for cursor rewind sequences in inline mode to avoid
+   * interleaving with Node's process.stdout.write.
+   */
+  writeRaw(data: string): void
 }
 
 /**
@@ -46,25 +46,25 @@ export declare class Renderer {
  * Node process crashes or the guard is garbage-collected.
  */
 export declare class TerminalGuard {
-    /**
-     * Enter raw mode, switch to the alternate screen, and hide the cursor.
-     * Optionally enable SGR mouse tracking and bracketed paste mode.
-     */
-    constructor(mouse?: boolean | undefined | null);
-    /**
-     * Restore the terminal to its original state.
-     * Safe to call multiple times — only the first call has any effect.
-     */
-    leave(): void;
-    /** Query the current terminal size. */
-    getSize(): TerminalSize;
+  /**
+   * Enter raw mode, switch to the alternate screen, and hide the cursor.
+   * Optionally enable SGR mouse tracking and bracketed paste mode.
+   */
+  constructor(mouse?: boolean | undefined | null)
+  /**
+   * Restore the terminal to its original state.
+   * Safe to call multiple times — only the first call has any effect.
+   */
+  leave(): void
+  /** Query the current terminal size. */
+  getSize(): TerminalSize
 }
 
 /** Query the current terminal size without entering any special mode. */
-export declare function terminalSize(): TerminalSize;
+export declare function terminalSize(): TerminalSize
 
 /** Terminal size returned from `TerminalGuard::get_size()`. */
 export interface TerminalSize {
-    cols: number;
-    rows: number;
+  cols: number
+  rows: number
 }
