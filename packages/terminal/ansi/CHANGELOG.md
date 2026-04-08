@@ -1,3 +1,25 @@
+## @visulima/ansi [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.7...@visulima/ansi@4.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **ansi:** correct DECSWT and DECSIN escape sequences ([#592](https://github.com/visulima/visulima/issues/592)) ([ca6b028](https://github.com/visulima/visulima/commit/ca6b0289d9ef3e453ad0e424172c6f7aee58b711))
+* **ansi:** properly fix eslint errors in code ([6da2c5f](https://github.com/visulima/visulima/commit/6da2c5fbac6669163ba55e5b7b4062a10940de90))
+* **ansi:** remove remaining eslint suppressions with proper code fixes ([27715b6](https://github.com/visulima/visulima/commit/27715b64843f0cd211f53b32bc752ef743bb52ef))
+* **ansi:** resolve eslint errors ([c1ed26b](https://github.com/visulima/visulima/commit/c1ed26b7b528f388446e830a93ae6cc4abee636c))
+
+### Miscellaneous Chores
+
+* **ansi:** add tsconfig.eslint.json for type-aware linting ([779ade8](https://github.com/visulima/visulima/commit/779ade858be2ec544486c354eed1dc8fc3f377f9))
+* **ansi:** apply prettier formatting ([8ad7895](https://github.com/visulima/visulima/commit/8ad7895e4ad2fcaa78b542ce69e63f903208ee03))
+* **ansi:** migrate .prettierrc.cjs to prettier.config.js ([1507e7a](https://github.com/visulima/visulima/commit/1507e7a245ff053929eedce92d2caf58b83ede40))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/ansi [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.6...@visulima/ansi@4.0.0-alpha.7) (2026-03-26)
 
 ### Features
