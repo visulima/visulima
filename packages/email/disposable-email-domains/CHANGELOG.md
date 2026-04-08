@@ -1,3 +1,34 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.11...@visulima/disposable-email-domains@1.0.0-alpha.12) (2026-04-08)
+
+### Bug Fixes
+
+* **disposable-email-domains:** add missing .js extensions to ESM imports ([c9a14d5](https://github.com/visulima/visulima/commit/c9a14d557f88201c95e9894212b47723b699d6f2))
+* **disposable-email-domains:** resolve eslint errors ([294850a](https://github.com/visulima/visulima/commit/294850a337b35e0e60d499a20a92b890c2fa762f))
+
+### Documentation
+
+* **disposable-email-domains:** update contributing sources table and timestamp ([2919ed0](https://github.com/visulima/visulima/commit/2919ed07a478695e452441a845f7de36a5d87280))
+* **disposable-email-domains:** update domain counts and performance stats ([0e5021b](https://github.com/visulima/visulima/commit/0e5021b561e5b7592ae3ca7a6a9af94ecc6816f0))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **disposable-email-domains:** add tsconfig.eslint.json for type-aware linting ([a9b6093](https://github.com/visulima/visulima/commit/a9b60936b123bef3362e8ea3b51b4960fbd03a19))
+* **disposable-email-domains:** apply auto-fix formatting ([544041c](https://github.com/visulima/visulima/commit/544041cb47668bf64f8bfefdf7ae9160deb3908f))
+* **disposable-email-domains:** apply formatting ([2670c08](https://github.com/visulima/visulima/commit/2670c0843d05d2b0d667690cf0cc2508dacdff83))
+* **disposable-email-domains:** apply prettier formatting ([dca941a](https://github.com/visulima/visulima/commit/dca941aebee89c3d721f79d6ca80760b633ea3f1))
+* **disposable-email-domains:** apply prettier formatting ([967a2c7](https://github.com/visulima/visulima/commit/967a2c75ff25df2840c8257072dc31e7757babcf))
+* **disposable-email-domains:** migrate .prettierrc.cjs to prettier.config.js ([c98c927](https://github.com/visulima/visulima/commit/c98c927b87b7de95cd2c0f282003afd1fcc2130a))
+* **disposable-email-domains:** update README with latest domain stats ([be1c5b4](https://github.com/visulima/visulima/commit/be1c5b44544fe384162885fdfcb8d3d0d9d8fa95))
+* **disposable-email-domains:** update README with latest domain stats ([68754ac](https://github.com/visulima/visulima/commit/68754ac486089b715a6b786f937fceff49db3e31))
+* **email:** remove empty dependency objects from package.json ([0737b35](https://github.com/visulima/visulima/commit/0737b353aabceefe962dab9971ee0c09e9f055fe))
+* update lockfile and disposable-email-domains README ([acf9849](https://github.com/visulima/visulima/commit/acf984987ca5037586337e571d2fe0415178d6f0))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.9
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.10...@visulima/disposable-email-domains@1.0.0-alpha.11) (2026-03-26)
 
 ### Features
