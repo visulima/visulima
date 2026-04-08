@@ -1,3 +1,16 @@
+## @visulima/content-safety [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.4...@visulima/content-safety@1.0.0-alpha.5) (2026-04-08)
+
+### Bug Fixes
+
+* **content-safety:** resolve eslint errors ([a10a4c1](https://github.com/visulima/visulima/commit/a10a4c11b7dd80422937ad0d56e5d3db9bb9a6a4))
+
+### Miscellaneous Chores
+
+* **content-safety:** add tsconfig.eslint.json for type-aware linting ([3c92a47](https://github.com/visulima/visulima/commit/3c92a471db831145228c694b313152d9eeeae7e3))
+* **content-safety:** apply prettier formatting ([e0f4964](https://github.com/visulima/visulima/commit/e0f496468fe988246e6788d51f784a0ca21a906a))
+* **content-safety:** migrate .prettierrc.cjs to prettier.config.js ([77a2464](https://github.com/visulima/visulima/commit/77a2464b5bdde276b941b43ad41175264e4b767e))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+
 ## @visulima/content-safety [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.3...@visulima/content-safety@1.0.0-alpha.4) (2026-03-26)
 
 ### Features
