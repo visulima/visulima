@@ -1,3 +1,26 @@
+## @visulima/boxen [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.8...@visulima/boxen@3.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **boxen:** remove remaining eslint suppressions with proper code fixes ([da594ee](https://github.com/visulima/visulima/commit/da594ee2403c03886137293c69e87944feba01a5))
+* **boxen:** resolve eslint errors ([69daf5d](https://github.com/visulima/visulima/commit/69daf5d9d50a208e5c1bf17f91990f5bc465b9ac))
+
+### Miscellaneous Chores
+
+* **boxen:** add tsconfig.eslint.json for type-aware linting ([0cbef9d](https://github.com/visulima/visulima/commit/0cbef9dc94e8136433e3d01760f2f81abb583935))
+* **boxen:** apply auto-fix formatting ([6e0e929](https://github.com/visulima/visulima/commit/6e0e929db65279570c27e94ad63c244fa9f039ed))
+* **boxen:** apply prettier formatting ([04c86f9](https://github.com/visulima/visulima/commit/04c86f99d10eedaac1727696c86a1f7e39cce2b4))
+* **boxen:** migrate .prettierrc.cjs to prettier.config.js ([b18eace](https://github.com/visulima/visulima/commit/b18eace05c6db089931d5323e7034f8f8655aa07))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+* **@visulima/string:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/boxen [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.7...@visulima/boxen@3.0.0-alpha.8) (2026-03-26)
 
 ### Features
