@@ -1,3 +1,32 @@
+## @visulima/vite-overlay [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.10...@visulima/vite-overlay@2.0.0-alpha.11) (2026-04-08)
+
+### Bug Fixes
+
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+* **vite-overlay:** properly fix eslint errors in code ([296daaa](https://github.com/visulima/visulima/commit/296daaa240daebe8b87f7706d07f9eb802106563))
+* **vite-overlay:** remove remaining eslint suppressions with proper code fixes ([5d06168](https://github.com/visulima/visulima/commit/5d061688210a8c23a214f03407bcafb759b7656a))
+* **vite-overlay:** resolve eslint errors ([816dd2b](https://github.com/visulima/visulima/commit/816dd2b55146247f56171854234b4e6e1f0bb2ed))
+
+### Miscellaneous Chores
+
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **vite-overlay:** add tsconfig.eslint.json for type-aware linting ([508f071](https://github.com/visulima/visulima/commit/508f071c3d6bdc3fc962899c102444d6d10e5932))
+* **vite-overlay:** apply prettier formatting ([01e49b1](https://github.com/visulima/visulima/commit/01e49b1771db9b1158344ab6437dfba2b65f5c70))
+* **vite-overlay:** clean up unnecessary comments in CSS ([b073df9](https://github.com/visulima/visulima/commit/b073df90b6b664d2d5762d68ba93c52bba5f31b4))
+* **vite-overlay:** expand inline if-return to block syntax ([b41e0b4](https://github.com/visulima/visulima/commit/b41e0b417a5faf290df9c7c2d0e320929d43f56f))
+* **vite-overlay:** expand inline if-return to block syntax ([786c763](https://github.com/visulima/visulima/commit/786c763420fcfc844d4b794eb9ede7d27c86d8ec))
+* **vite-overlay:** migrate .prettierrc.cjs to prettier.config.js ([d0446cb](https://github.com/visulima/visulima/commit/d0446cb30b01547f86781a5b6094fc449337d387))
+
+### Code Refactoring
+
+* **vite-overlay:** apply Nothing design system ([c0376e5](https://github.com/visulima/visulima/commit/c0376e5237667c03692cabb25006f3a86e396bde)), closes [#D71921](https://github.com/visulima/visulima/issues/D71921)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/vite-overlay [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.9...@visulima/vite-overlay@2.0.0-alpha.10) (2026-03-26)
 
 ### Features
