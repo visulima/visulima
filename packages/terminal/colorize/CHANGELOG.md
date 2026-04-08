@@ -1,3 +1,23 @@
+## @visulima/colorize [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.7...@visulima/colorize@2.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **colorize:** properly fix eslint errors in code ([c9941a4](https://github.com/visulima/visulima/commit/c9941a42e04570c7a4f39e4f65424b507a58352d))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+
+### Miscellaneous Chores
+
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* **colorize:** add tsconfig.eslint.json for type-aware linting ([0a2b596](https://github.com/visulima/visulima/commit/0a2b596b74df932cf492400029ecdaf572b8f474))
+* **colorize:** apply prettier formatting ([f572dc4](https://github.com/visulima/visulima/commit/f572dc47f1398070adc5d4879d9f99870fe71760))
+* **colorize:** migrate .prettierrc.cjs to prettier.config.js ([6d84ecc](https://github.com/visulima/visulima/commit/6d84eccbfba7ff59fd7463ef973b80d50d85f464))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/colorize [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.6...@visulima/colorize@2.0.0-alpha.7) (2026-03-26)
 
 ### Features
