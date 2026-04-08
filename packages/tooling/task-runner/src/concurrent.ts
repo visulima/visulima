@@ -64,7 +64,11 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
             const userCallback = options.onEvent;
 
             return native.runConcurrent(nativeCommands, nativeOptions, (event) => {
-                userCallback(event as unknown as ProcessEvent);
+                // The native binding may emit null events (e.g. when a process
+                // handle is cleaned up); skip them to avoid crashing user callbacks.
+                if (event != null) {
+                    userCallback(event as unknown as ProcessEvent);
+                }
             });
         }
 
