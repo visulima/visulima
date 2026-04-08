@@ -14,6 +14,7 @@ describe("alternate screen", () => {
 
         const { unmount } = render(<Text>Hello</Text>, {
             alternateScreen: true,
+            interactive: true,
             stdout,
         });
 
@@ -29,6 +30,7 @@ describe("alternate screen", () => {
 
         const { unmount } = render(<Text>Hello</Text>, {
             alternateScreen: true,
+            interactive: true,
             stdout,
         });
 
@@ -49,6 +51,7 @@ describe("alternate screen", () => {
 
         const { unmount, waitUntilExit } = render(<Text>Hello</Text>, {
             alternateScreen: true,
+            interactive: true,
             stdout,
         });
 
@@ -69,6 +72,7 @@ describe("alternate screen", () => {
 
         const { unmount } = render(<Text>Secret Content</Text>, {
             alternateScreen: true,
+            interactive: true,
             stdout,
         });
 
@@ -108,6 +112,7 @@ describe("alternate screen", () => {
 
         const { unmount } = render(<CountingApp />, {
             alternateScreen: true,
+            interactive: true,
             stdout,
         });
 

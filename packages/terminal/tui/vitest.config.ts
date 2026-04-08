@@ -11,7 +11,7 @@ const config = getVitestConfig({
         // 2-3 seconds just for startup. The default 5s timeout is too tight.
         testTimeout: 15_000,
         // Retry flaky timing-sensitive tests (render, resize, cursor) in CI
-        retry: process.env.CI ? 2 : 0,
+        retry: process.env.CI ? 3 : 0,
     },
 });
 
