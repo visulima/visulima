@@ -1,3 +1,28 @@
+## @visulima/crud [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.8...@visulima/crud@3.0.0-alpha.9) (2026-04-08)
+
+### Bug Fixes
+
+* **crud:** fix packem build by adding externals, types, and missing deps ([391443f](https://github.com/visulima/visulima/commit/391443fb8d215760c0244d4a5a7e404026d520a6))
+
+### Miscellaneous Chores
+
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **crud:** add tsconfig.eslint.json for type-aware linting ([1d92809](https://github.com/visulima/visulima/commit/1d92809571908a03b70d2a8aa18be1b8cbb6db8d))
+* **crud:** apply prettier formatting ([9499add](https://github.com/visulima/visulima/commit/9499add951d9d55ba4c438f0b9360928e676c995))
+* **crud:** migrate .prettierrc.cjs to prettier.config.js ([17e09d4](https://github.com/visulima/visulima/commit/17e09d43561fafcdb8009ae334febaf62811659f))
+* **crud:** sort package.json fields ([6009768](https://github.com/visulima/visulima/commit/600976801578afcd170fcc889bcf534a8123b293))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+### Build System
+
+* **api-platform, crud:** migrate from tsup to packem ([e8aadac](https://github.com/visulima/visulima/commit/e8aadac072738c7c75e3a6a1478318922f2ceeac))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.9
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/crud [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.7...@visulima/crud@3.0.0-alpha.8) (2026-03-26)
 
 ### Features
