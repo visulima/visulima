@@ -1,3 +1,23 @@
+## @visulima/command-line-args [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.6...@visulima/command-line-args@2.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **command-line-args:** parse known options after defaultOption positional values ([da113c3](https://github.com/visulima/visulima/commit/da113c3c93158e10f276d128b3f6ab1fcae3a5f0))
+* **command-line-args:** properly fix eslint errors in code ([21f3df6](https://github.com/visulima/visulima/commit/21f3df64802293cbae00db8e0b81c0bd4145dd88))
+* **command-line-args:** resolve eslint errors ([f76440c](https://github.com/visulima/visulima/commit/f76440cc9b27cdbd29eb20ba0c6040129888517c))
+
+### Miscellaneous Chores
+
+* **command-line-args:** add tsconfig.eslint.json for type-aware linting ([b6b91bc](https://github.com/visulima/visulima/commit/b6b91bc7fcc3de55cd432f6e5bbc01acd4b53918))
+* **command-line-args:** apply prettier formatting ([bbe507c](https://github.com/visulima/visulima/commit/bbe507c8bbdb2e2f24cde8eb1a78c0ef6b79b2d8))
+* **command-line-args:** migrate .prettierrc.cjs to prettier.config.js ([f1f4ab4](https://github.com/visulima/visulima/commit/f1f4ab4f77d14f0877311b0b943dc8ed37b1c73d))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+
 ## @visulima/command-line-args [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.5...@visulima/command-line-args@2.0.0-alpha.6) (2026-03-26)
 
 ### Features
