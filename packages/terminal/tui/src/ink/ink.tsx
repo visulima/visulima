@@ -750,6 +750,11 @@ export default class Ink {
                 skipStaticElements: false,
                 trackSelection: this.options.trackSelection,
             });
+
+            // Notify the StaticRender component that the cache is ready so it
+            // can stop rendering children (avoids React re-reconciling the
+            // subtree on subsequent renders).
+            node.internal_onRendered?.();
         }
     }
 

@@ -26,6 +26,7 @@ declare global {
         type StaticRender = {
             cachedRender?: Region;
             children?: ReactNode;
+            internal_onRendered?: () => void;
             key?: Key;
             ref?: unknown;
             style?: DOMElement["style"];
