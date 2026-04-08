@@ -1,3 +1,16 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.6...@visulima/jsdoc-open-api@3.0.0-alpha.7) (2026-04-08)
+
+### Miscellaneous Chores
+
+* **jsdoc-open-api:** add tsconfig.eslint.json for type-aware linting ([dd9a888](https://github.com/visulima/visulima/commit/dd9a88810a864e5ef8ee9a1cdf3cf742a4549cb3))
+* **jsdoc-open-api:** apply prettier formatting ([25dae1b](https://github.com/visulima/visulima/commit/25dae1bd4d911921c1926c0212751cf4179087aa))
+* **jsdoc-open-api:** migrate .prettierrc.cjs to prettier.config.js ([cbe2931](https://github.com/visulima/visulima/commit/cbe2931b52a65fcb2e86960acdc31c8ebc3c9c74))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.5...@visulima/jsdoc-open-api@3.0.0-alpha.6) (2026-03-26)
 
 ### Features
