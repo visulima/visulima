@@ -290,8 +290,7 @@
         "test:ui:vite-overlay": "pnpm --filter \"vite-overlay\" run test:ui",
         "test:ui:web": "pnpm --filter \"www\" run test:ui",
         "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
-        "test:web": "pnpm --filter \"www\" run test",
-        "update:deps": "taze"
+        "test:web": "pnpm --filter \"www\" run test"
     },
     "browserslist": [
         "extends browserslist-config-anolilab"
@@ -323,7 +322,6 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "sort-package-json": "catalog:dev",
-        "taze": "catalog:cli",
         "textlint": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
