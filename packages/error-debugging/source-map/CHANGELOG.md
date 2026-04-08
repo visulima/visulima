@@ -1,3 +1,22 @@
+## @visulima/source-map [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.6...@visulima/source-map@3.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **source-map:** resolve eslint errors ([ba54d04](https://github.com/visulima/visulima/commit/ba54d04e342fd90abfe70d1db6d519da93652ba2))
+
+### Miscellaneous Chores
+
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **source-map:** add tsconfig.eslint.json for type-aware linting ([36a8bef](https://github.com/visulima/visulima/commit/36a8bef2a415dc595a96c7e55f25cbce34e395da))
+* **source-map:** apply auto-fix formatting ([351d57d](https://github.com/visulima/visulima/commit/351d57df78f87c6179d6092ebf4d7526d49b6de4))
+* **source-map:** apply prettier formatting ([64ac891](https://github.com/visulima/visulima/commit/64ac89101c12da54dc00553bcd4c28ecc22c2dc7))
+* **source-map:** migrate .prettierrc.cjs to prettier.config.js ([2a814e1](https://github.com/visulima/visulima/commit/2a814e1cd4deeae251c9150b64860d407490eafd))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/source-map [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.5...@visulima/source-map@3.0.0-alpha.6) (2026-03-26)
 
 ### Features
