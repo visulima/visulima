@@ -1,3 +1,33 @@
+## @visulima/api-platform [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.7...@visulima/api-platform@4.0.0-alpha.8) (2026-04-08)
+
+### Bug Fixes
+
+* **api-platform:** finalize packem config with validation and node10 compat ([8c48298](https://github.com/visulima/visulima/commit/8c4829837117aae855c0a2aad0ceee6a41122483))
+* **api-platform:** fix packem build with externals and isolated declarations ([2849a72](https://github.com/visulima/visulima/commit/2849a729ec5e08f0a2ba74abfdb4d3d398e07c87))
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+
+### Miscellaneous Chores
+
+* **api-platform:** add tsconfig.eslint.json for type-aware linting ([f7a49f0](https://github.com/visulima/visulima/commit/f7a49f0eba9d28d3c93c19a5460ae6673bf86d62))
+* **api-platform:** migrate .prettierrc.cjs to prettier.config.js ([6273cfa](https://github.com/visulima/visulima/commit/6273cfad25dee29a972346b6a0fa94819bf4ec63))
+* **api-platform:** sort package.json fields ([a965510](https://github.com/visulima/visulima/commit/a96551017e9f032ecbf5cc73e848c0bd9b7f25d6))
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **connect:** apply prettier formatting ([8ecf930](https://github.com/visulima/visulima/commit/8ecf93071cb0087a8c49520cc594a753dba5e39d))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+
+### Build System
+
+* **api-platform, crud:** migrate from tsup to packem ([e8aadac](https://github.com/visulima/visulima/commit/e8aadac072738c7c75e3a6a1478318922f2ceeac))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.8
+* **@visulima/fs:** upgraded to 5.0.0-alpha.7
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.7
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+* **@visulima/crud:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/api-platform [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.6...@visulima/api-platform@4.0.0-alpha.7) (2026-03-26)
 
 ### Features
