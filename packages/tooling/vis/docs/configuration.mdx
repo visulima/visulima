@@ -78,17 +78,28 @@ Set defaults for `vis check` and `vis update` to avoid repeating options:
         "target": "minor",
         "include": ["@company/*"],
         "exclude": ["legacy-*", "deprecated-*"],
-        "prerelease": false
+        "prerelease": false,
+        "includeLocked": false,
+        "packageMode": {
+            "typescript": "minor",
+            "@types/*": "patch"
+        },
+        "depFields": ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "overrides"]
     }
 }
 ```
 
-| Property     | Type       | Default    | Description                            |
-| ------------ | ---------- | ---------- | -------------------------------------- |
-| `target`     | `string`   | `"latest"` | Default update target                  |
-| `include`    | `string[]` | `[]`       | Glob patterns to always include        |
-| `exclude`    | `string[]` | `[]`       | Glob patterns to always exclude        |
-| `prerelease` | `boolean`  | `false`    | Whether to include prerelease versions |
+| Property        | Type                          | Default         | Description                                                       |
+| --------------- | ----------------------------- | --------------- | ----------------------------------------------------------------- |
+| `target`        | `string`                      | `"latest"`      | Default update target                                             |
+| `include`       | `string[]`                    | `[]`            | Glob patterns to always include                                   |
+| `exclude`       | `string[]`                    | `[]`            | Glob patterns to always exclude                                   |
+| `prerelease`    | `boolean`                     | `false`         | Whether to include prerelease versions                            |
+| `includeLocked` | `boolean`                     | `false`         | Include packages with pinned/exact versions (no `^` or `~`)       |
+| `packageMode`   | `Record<string, string>`      | -               | Per-package target overrides (exact name, glob, or `/regex/`)     |
+| `depFields`     | `string[]`                    | standard fields | Dependency fields to scan (`overrides`, `resolutions`, etc.)      |
+| `minimumReleaseAge` | `number`                  | -               | Min minutes since publish before a version is eligible for update  |
+| `minimumReleaseAgeExclude` | `string[]`         | `[]`            | Packages excluded from the maturity period check                  |
 
 ## Full Example
 
