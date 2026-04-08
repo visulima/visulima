@@ -1,5 +1,5 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { Box, Text } from "@visulima/tui";
+import { Box, StaticRender, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusIcon, isCacheStatus } from "../status-utils";
@@ -24,29 +24,33 @@ const TaskSummaryView = ({ entries }: TaskSummaryViewProps): React.JSX.Element =
     const separator = DASH.repeat(width);
 
     return (
-        <Box flexDirection="column">
-            <Text dimColor>{separator}</Text>
-            <Text bold> Task Summary</Text>
-            <Text dimColor>{separator}</Text>
-            <Text />
-            {entries.map((entry) => {
-                const icon = entry.status ? getStatusIcon(entry.status) : "?";
-                const elapsed = entry.elapsed === undefined ? "" : ` ${formatMs(entry.elapsed)}`;
-                const cacheLabel = entry.status && isCacheStatus(entry.status) ? " [cache]" : "";
+        <StaticRender>
+            {() => (
+                <Box flexDirection="column">
+                    <Text dimColor>{separator}</Text>
+                    <Text bold> Task Summary</Text>
+                    <Text dimColor>{separator}</Text>
+                    <Text />
+                    {entries.map((entry) => {
+                        const icon = entry.status ? getStatusIcon(entry.status) : "?";
+                        const elapsed = entry.elapsed === undefined ? "" : ` ${formatMs(entry.elapsed)}`;
+                        const cacheLabel = entry.status && isCacheStatus(entry.status) ? " [cache]" : "";
 
-                return (
-                    <Text key={entry.taskId}>
-                        {"  "}
-                        {icon}
-                        {"  "}
-                        {entry.taskId}
-                        {cacheLabel ? <Text dimColor>{cacheLabel}</Text> : null}
-                        {elapsed ? <Text dimColor>{elapsed}</Text> : null}
-                    </Text>
-                );
-            })}
-            <Text />
-        </Box>
+                        return (
+                            <Text key={entry.taskId}>
+                                {"  "}
+                                {icon}
+                                {"  "}
+                                {entry.taskId}
+                                {cacheLabel ? <Text dimColor>{cacheLabel}</Text> : null}
+                                {elapsed ? <Text dimColor>{elapsed}</Text> : null}
+                            </Text>
+                        );
+                    })}
+                    <Text />
+                </Box>
+            )}
+        </StaticRender>
     );
 };
 

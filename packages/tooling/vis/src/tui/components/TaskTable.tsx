@@ -1,4 +1,4 @@
-import { Box, Text } from "@visulima/tui";
+import { Box, StaticRender, Text } from "@visulima/tui";
 
 import { ELLIPSIS } from "../symbols";
 import type { TaskRowData } from "./TaskRow";
@@ -27,16 +27,20 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
     return (
         <Box flexDirection="column">
             {/* Table header */}
-            <Box>
-                <Box width={3} />
-                <Box flexGrow={1} />
-                <Box justifyContent="flex-end" width={7}>
-                    <Text bold>Cache</Text>
-                </Box>
-                <Box justifyContent="flex-end" width={14}>
-                    <Text bold>Duration</Text>
-                </Box>
-            </Box>
+            <StaticRender>
+                {() => (
+                    <Box>
+                        <Box width={3} />
+                        <Box flexGrow={1} />
+                        <Box justifyContent="flex-end" width={7}>
+                            <Text bold>Cache</Text>
+                        </Box>
+                        <Box justifyContent="flex-end" width={14}>
+                            <Text bold>Duration</Text>
+                        </Box>
+                    </Box>
+                )}
+            </StaticRender>
 
             {/* Running tasks */}
             {running.map((r) => (
