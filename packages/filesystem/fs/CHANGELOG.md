@@ -1,3 +1,25 @@
+## @visulima/fs [5.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.6...@visulima/fs@5.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **fs:** prevent walk/walkSync from crashing on symlinks pointing to files ([e6338b0](https://github.com/visulima/visulima/commit/e6338b0c169048240762d22fe14152e370f7e862))
+* **fs:** properly fix eslint errors in code ([da36de3](https://github.com/visulima/visulima/commit/da36de37493cdd65aa28505d5fbdd671ce842663))
+* **fs:** remove remaining eslint suppressions with proper code fixes ([cede286](https://github.com/visulima/visulima/commit/cede2869d5a31a3b2cd020f2050dddbfd742a619))
+* **fs:** resolve eslint errors ([817fd4d](https://github.com/visulima/visulima/commit/817fd4d0f5f74debaf222837b94bd1f3a16d66ae))
+
+### Miscellaneous Chores
+
+* **filesystem:** remove empty dependency objects from package.json ([76ffc54](https://github.com/visulima/visulima/commit/76ffc545660695dde19130d1c01d9bd1aaf2ca98))
+* **fs:** add tsconfig.eslint.json for type-aware linting ([701b2cb](https://github.com/visulima/visulima/commit/701b2cb4801dbefe12db85ff3c772c6a8a975539))
+* **fs:** apply prettier formatting ([29bc3ed](https://github.com/visulima/visulima/commit/29bc3eda63666c911c8810be20e3b550eaab7377))
+* **fs:** migrate .prettierrc.cjs to prettier.config.js ([fa37870](https://github.com/visulima/visulima/commit/fa37870179d8dbebe210229a9fd00296efac5f4d))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.8
+* **@visulima/error:** upgraded to 6.0.0-alpha.8
+
 ## @visulima/fs [5.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.5...@visulima/fs@5.0.0-alpha.6) (2026-03-26)
 
 ### Features
