@@ -1,3 +1,26 @@
+## @visulima/vis [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.4...@visulima/vis@1.0.0-alpha.5) (2026-04-09)
+
+### Features
+
+* **vis:** add includeLocked, packageMode, depFields, maturity period to update command ([4cf85e1](https://github.com/visulima/visulima/commit/4cf85e163e392d9dd48c3119c13d3e7a7c9a782e))
+
+### Bug Fixes
+
+* **vis:** use camelCase option names for cerebro CLI flags ([7f187a5](https://github.com/visulima/visulima/commit/7f187a557eb85ced5e2995b4e1a7cebc61484c45))
+
+### Documentation
+
+* **vis:** document new update command options and configuration ([3e72240](https://github.com/visulima/visulima/commit/3e72240dbddebb3abf896a6c941e713ba460a73d))
+
+### Tests
+
+* **vis:** add tests for update command features and fix config tests ([52635db](https://github.com/visulima/visulima/commit/52635db43243e47f781bc8bd3e79d620b72ecfb5))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.0-alpha.2
+
 ## @visulima/vis [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.3...@visulima/vis@1.0.0-alpha.4) (2026-04-08)
 
 ### Features
