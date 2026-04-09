@@ -1,3 +1,5 @@
+## @visulima/ono [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.9...@visulima/ono@2.0.0-alpha.10) (2026-04-09)
+
 ## @visulima/ono [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.8...@visulima/ono@2.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
