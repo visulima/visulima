@@ -329,7 +329,7 @@ const renderNodeToOutput = (
                     if (currentWidth > maxWidth) {
                         const textWrap = node.style.textWrap ?? "wrap";
 
-                        text = wrapText(text, maxWidth, textWrap);
+                        text = wrapText(text, Math.floor(maxWidth), textWrap);
                     }
                 }
 

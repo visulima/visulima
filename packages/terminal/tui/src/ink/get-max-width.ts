@@ -3,6 +3,12 @@ import Yoga from "yoga-layout";
 
 const getMaxWidth = (yogaNode: YogaNode): number =>
     yogaNode.getComputedWidth()
+    - Math.max(
+        0,
+        yogaNode.getComputedLeft()
+            + yogaNode.getComputedWidth()
+            - (yogaNode.getParent()?.getComputedWidth() ?? yogaNode.getComputedWidth()),
+    )
     - yogaNode.getComputedPadding(Yoga.EDGE_LEFT)
     - yogaNode.getComputedPadding(Yoga.EDGE_RIGHT)
     - yogaNode.getComputedBorder(Yoga.EDGE_LEFT)
