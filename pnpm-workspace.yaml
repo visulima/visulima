@@ -43,13 +43,9 @@ packages:
   - "packages/tooling/tsconfig/__fixtures__/package/mjs"
 
 auditConfig:
+  ignoreGhsas:
+    - GHSA-chqc-8p9q-pq6q
   ignoreCves:
-    - GHSA-45h5-66jx-r2wf
-    - GHSA-92fh-27vv-894w
-    - GHSA-p6mc-m468-83gw
-    - GHSA-pfq8-rq6v-vf5m
-    - GHSA-xxjr-mmjv-4gpg
-    - GHSA-v2wj-7wpq-c8vv
     - CVE-2022-37620
     - CVE-2020-8203
     - CVE-2025-67898
