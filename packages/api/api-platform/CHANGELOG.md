@@ -1,3 +1,5 @@
+## @visulima/api-platform [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.8...@visulima/api-platform@4.0.0-alpha.9) (2026-04-09)
+
 ## @visulima/api-platform [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.7...@visulima/api-platform@4.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
