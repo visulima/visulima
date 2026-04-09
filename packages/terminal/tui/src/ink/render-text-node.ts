@@ -81,7 +81,7 @@ export const handleTextNode = (
     const maxWidth = getMaxWidth(node.yogaNode!);
 
     let lines: StyledLine[]
-        = currentWidth > maxWidth ? wrapOrTruncateStyledLine(styledLine, maxWidth, node.style.textWrap ?? "wrap") : splitStyledLineByNewline(styledLine);
+        = currentWidth > maxWidth ? wrapOrTruncateStyledLine(styledLine, Math.floor(maxWidth), node.style.textWrap ?? "wrap") : splitStyledLineByNewline(styledLine);
 
     lines = applyPaddingToStyledLines(node, lines);
 

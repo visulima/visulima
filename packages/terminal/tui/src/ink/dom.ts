@@ -373,7 +373,7 @@ const measureTextNode = function (node: DOMNode, width: number): { height: numbe
     }
 
     const textWrap = node.style?.textWrap ?? "wrap";
-    const wrappedText = wrapText(text, width, textWrap);
+    const wrappedText = wrapText(text, Math.floor(width), textWrap);
 
     return measureText(wrappedText);
 };
