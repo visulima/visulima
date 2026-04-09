@@ -1,3 +1,9 @@
+## @visulima/tui [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.1...@visulima/tui@1.0.0-alpha.2) (2026-04-09)
+
+### Features
+
+* **tui:** add controlled value prop to Tabs component ([df1158d](https://github.com/visulima/visulima/commit/df1158dc036f7159ef909f497453e2e5dd1058df))
+
 ## @visulima/tui 1.0.0-alpha.1 (2026-04-08)
 
 ### Features
