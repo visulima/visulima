@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, eraseLines, resetTerminal } from "@visulima/ansi";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, eraseLines } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
 // autoBind removed — only methods passed as callbacks need binding,
 // and those are defined as arrow function properties.
@@ -1359,7 +1359,12 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
-            this.options.stdout.write(resetTerminal + this.fullStaticOutput + output);
+            // Use a viewport-only clear (CSI H + CSI 2J) instead of resetTerminal
+            // (which includes CSI 3J + RIS). Emitting CSI 3J during a rerender wipes
+            // the terminal scrollback buffer in VT-compliant terminals (tmux, xterm.js,
+            // Microsoft Terminal, WezTerm, Alacritty, Kitty, Ghostty, etc.), destroying
+            // the user's history. See vadimdemedes/ink#935.
+            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + output);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;
