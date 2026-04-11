@@ -18,6 +18,13 @@ const SKIP_TOKENS = ["[skip ci]", "[ci skip]", "[no ci]", "[vis skip]", "[nx ski
 const FORCE_TOKENS = ["[vis deploy]", "[nx deploy]"] as const;
 
 /**
+ * Token prefixes accepted for per-project commit-message gating. `vis` is
+ * the canonical form; `nx` is kept so teams migrating from `nx-ignore`
+ * don't have to rewrite their commit automation.
+ */
+const PER_PROJECT_TOKEN_PREFIXES = ["vis", "nx"] as const;
+
+/**
  * CI-provider environment variables carrying the previously deployed SHA,
  * probed in priority order. Only providers that *actually* invoke a custom
  * ignore script (Vercel, Netlify) or that we commonly wrap manually in a
@@ -76,12 +83,17 @@ interface IgnoreDecision {
     reason: IgnoreReason;
 }
 
+/** Extra fields that decisions from the affected-detection path carry. */
+type DecisionExtras = Partial<Pick<IgnoreDecision, "affectedProjects" | "base" | "head">>;
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 /**
  * Returns the first non-empty value from the CI env var priority list,
  * or `undefined` if nothing is set. Reads from `env` (defaults to
  * `process.env`) so tests can inject fixtures without clobbering globals.
+ * @param env Environment dictionary to probe. Defaults to `process.env`.
+ * @returns The resolved base SHA (trimmed) or `undefined` if no known CI env var is set.
  */
 const resolveCiBaseSha = (env: NodeJS.ProcessEnv = process.env): string | undefined => {
     for (const name of CI_BASE_SHA_ENV_VARS) {
@@ -133,6 +145,8 @@ const isRefReachable = async (cwd: string, ref: string): Promise<boolean> => {
  * Reads the subject+body of the most recent commit. Returns an empty
  * string on any failure — the caller treats missing messages as "no
  * keywords present" rather than erroring out.
+ * @param cwd Absolute path to the git repository's working directory.
+ * @returns The raw commit message (subject + body), or `""` on failure.
  */
 const readLastCommitMessage = async (cwd: string): Promise<string> => {
     try {
@@ -145,28 +159,83 @@ const readLastCommitMessage = async (cwd: string): Promise<string> => {
 };
 
 /**
+ * Returns `true` if the commit message contains a per-project token of
+ * the form `[&lt;prefix> &lt;verb> &lt;project>]` for any of the supported
+ * prefixes (`vis` or the legacy `nx`).
+ * @param message Raw commit message to scan.
+ * @param verb The action verb embedded in the token (`"skip"` or `"deploy"`).
+ * @param project The project name the token is scoped to.
+ * @returns `true` on the first matching token, `false` otherwise.
+ */
+const matchesPerProjectToken = (message: string, verb: "deploy" | "skip", project: string): boolean =>
+    PER_PROJECT_TOKEN_PREFIXES.some((prefix) => message.includes(`[${prefix} ${verb} ${project}]`));
+
+/**
  * Returns `true` if the commit message contains any skip token,
  * including the per-project form `[vis skip &lt;project>]`. Accepts both
  * `vis` and legacy `nx` tokens so users migrating from nx-ignore don't
  * need to rewrite their commit automation.
+ * @param message Raw commit message to scan.
+ * @param project The project whose per-project tokens should also match.
+ * @returns `true` if any skip token is present, `false` otherwise.
  */
 const commitHasSkipMessage = (message: string, project: string): boolean =>
     SKIP_TOKENS.some((token) => message.includes(token))
-    || message.includes(`[vis skip ${project}]`)
-    || message.includes(`[nx skip ${project}]`);
+    || matchesPerProjectToken(message, "skip", project);
 
 /**
  * Returns `true` if the commit message contains any force-deploy token,
  * including the per-project form `[vis deploy &lt;project>]`.
+ * @param message Raw commit message to scan.
+ * @param project The project whose per-project tokens should also match.
+ * @returns `true` if any force-deploy token is present, `false` otherwise.
  */
 const commitHasForceDeployMessage = (message: string, project: string): boolean =>
     FORCE_TOKENS.some((token) => message.includes(token))
-    || message.includes(`[vis deploy ${project}]`)
-    || message.includes(`[nx deploy ${project}]`);
+    || matchesPerProjectToken(message, "deploy", project);
+
+/**
+ * Builds a `"build"` decision record. Factory helper that collapses the
+ * otherwise-repetitive object literals in `ignore.ts`.
+ * @param project The project the decision applies to.
+ * @param reason Stable reason code.
+ * @param message Human-readable message.
+ * @param extra Optional base/head/affectedProjects when available.
+ * @returns A fully-populated `IgnoreDecision` with `action: "build"`.
+ */
+const decideBuild = (project: string, reason: IgnoreReason, message: string, extra?: DecisionExtras): IgnoreDecision => {
+    return {
+        action: "build",
+        message,
+        project,
+        reason,
+        ...extra,
+    };
+};
+
+/**
+ * Builds a `"skip"` decision record. Companion to `decideBuild`.
+ * @param project The project the decision applies to.
+ * @param reason Stable reason code.
+ * @param message Human-readable message.
+ * @param extra Optional base/head/affectedProjects when available.
+ * @returns A fully-populated `IgnoreDecision` with `action: "skip"`.
+ */
+const decideSkip = (project: string, reason: IgnoreReason, message: string, extra?: DecisionExtras): IgnoreDecision => {
+    return {
+        action: "skip",
+        message,
+        project,
+        reason,
+        ...extra,
+    };
+};
 
 /**
  * Renders a decision as a single human-readable line. Pure formatter;
  * doesn't print anything itself.
+ * @param decision The decision to format.
+ * @returns A one-line string with an emoji prefix and the message.
  */
 const formatDecisionLine = (decision: IgnoreDecision): string => {
     const prefix = decision.action === "skip" ? "\u{1F6D1}" : "\u2705";
@@ -185,6 +254,9 @@ const formatDecisionLine = (decision: IgnoreDecision): string => {
  *   With --exit-zero-on-build:
  *     skip  → 0
  *     build → 0
+ * @param decision The decision to map.
+ * @param exitZeroOnBuild If `true`, builds exit with `0` instead of `1`.
+ * @returns The literal exit code (`0` or `1`).
  */
 const exitCodeFor = (decision: IgnoreDecision, exitZeroOnBuild: boolean): 0 | 1 => {
     if (decision.action === "skip") {
@@ -199,10 +271,14 @@ export {
     CI_BASE_SHA_ENV_VARS,
     commitHasForceDeployMessage,
     commitHasSkipMessage,
+    decideBuild,
+    decideSkip,
     exitCodeFor,
     FORCE_TOKENS,
     formatDecisionLine,
     isRefReachable,
+    matchesPerProjectToken,
+    PER_PROJECT_TOKEN_PREFIXES,
     readLastCommitMessage,
     resolveCiBaseSha,
     SKIP_TOKENS,

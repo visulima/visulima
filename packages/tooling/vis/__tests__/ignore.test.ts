@@ -13,10 +13,13 @@ import {
     CI_BASE_SHA_ENV_VARS,
     commitHasForceDeployMessage,
     commitHasSkipMessage,
+    decideBuild,
+    decideSkip,
     exitCodeFor,
     FORCE_TOKENS,
     formatDecisionLine,
     isRefReachable,
+    matchesPerProjectToken,
     readLastCommitMessage,
     resolveCiBaseSha,
     SKIP_TOKENS,
@@ -37,8 +40,12 @@ const createTemporaryGitRepo = (): { cleanup: () => void; commit: (message: stri
     execSync("git config user.name 'Test'", { cwd: root });
     execSync("git config commit.gpgsign false", { cwd: root });
 
+    // Monotonic counter keeps test filenames unique without relying on
+    // Date.now() + Math.random() (which can collide inside a single ms).
+    let fileSeq = 0;
+
     const commit = (message: string): string => {
-        writeFileSync(join(root, `f-${Date.now()}-${Math.random()}`), "x");
+        writeFileSync(join(root, `f-${fileSeq++}`), "x");
         execSync("git add -A", { cwd: root });
         execSync(`git commit -q -m ${JSON.stringify(message)}`, { cwd: root });
 
@@ -224,6 +231,82 @@ describe(exitCodeFor, () => {
         expect.assertions(2);
         expect(exitCodeFor(decisionSkip, true)).toBe(0);
         expect(exitCodeFor(decisionBuild, true)).toBe(0);
+    });
+});
+
+// ─── matchesPerProjectToken ──────────────────────────────────────────
+
+describe(matchesPerProjectToken, () => {
+    it("matches vis prefix for the given verb and project", () => {
+        expect.assertions(2);
+        expect(matchesPerProjectToken("chore: [vis skip my-app]", "skip", "my-app")).toBe(true);
+        expect(matchesPerProjectToken("fix: [vis deploy my-app]", "deploy", "my-app")).toBe(true);
+    });
+
+    it("matches legacy nx prefix for backward compatibility", () => {
+        expect.assertions(2);
+        expect(matchesPerProjectToken("chore: [nx skip my-app]", "skip", "my-app")).toBe(true);
+        expect(matchesPerProjectToken("fix: [nx deploy my-app]", "deploy", "my-app")).toBe(true);
+    });
+
+    it("rejects a different project name", () => {
+        expect.assertions(1);
+        expect(matchesPerProjectToken("chore: [vis skip other]", "skip", "my-app")).toBe(false);
+    });
+
+    it("rejects the wrong verb", () => {
+        expect.assertions(1);
+        // A force-deploy token should not be treated as a skip token.
+        expect(matchesPerProjectToken("chore: [vis deploy my-app]", "skip", "my-app")).toBe(false);
+    });
+});
+
+// ─── decideBuild / decideSkip ────────────────────────────────────────
+
+describe("decision factories", () => {
+    it("decideBuild returns a build decision with the given fields", () => {
+        expect.assertions(1);
+
+        const decision = decideBuild("my-app", "project-affected", "hello");
+
+        expect(decision).toStrictEqual({
+            action: "build",
+            message: "hello",
+            project: "my-app",
+            reason: "project-affected",
+        });
+    });
+
+    it("decideSkip merges extra base/head/affectedProjects", () => {
+        expect.assertions(1);
+
+        const decision = decideSkip("my-app", "project-not-affected", "nope", {
+            affectedProjects: ["other"],
+            base: "HEAD~1",
+            head: "HEAD",
+        });
+
+        expect(decision).toStrictEqual({
+            action: "skip",
+            affectedProjects: ["other"],
+            base: "HEAD~1",
+            head: "HEAD",
+            message: "nope",
+            project: "my-app",
+            reason: "project-not-affected",
+        });
+    });
+
+    it("decideBuild accepts extras without clobbering the action", () => {
+        expect.assertions(2);
+
+        const decision = decideBuild("my-app", "project-affected", "go", {
+            affectedProjects: ["my-app"],
+            base: "main",
+        });
+
+        expect(decision.action).toBe("build");
+        expect(decision.affectedProjects).toStrictEqual(["my-app"]);
     });
 });
 

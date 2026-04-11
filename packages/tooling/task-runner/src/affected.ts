@@ -4,12 +4,14 @@ import { execFile } from "node:child_process";
 import type { AffectedScope, ProjectConfiguration, ProjectGraph } from "./types";
 
 /**
- * Validates a git ref to prevent command injection.
- * Only allows characters valid in git refs: alphanumeric, ., -, _, /, ~, ^
+ * Validates a git ref to prevent command injection and `git` option injection.
+ * Only allows characters valid in git refs (alphanumeric, `.`, `-`, `_`, `/`,
+ * `~`, `^`, `@`, `{`, `}`) and rejects leading dashes so values like `--help`
+ * cannot be interpreted as options when passed positionally to `git`.
  */
 const validateGitRef = (ref: string): void => {
-    if (!/^[\w.\-/~^@{}]+$/.test(ref)) {
-        throw new Error(`Invalid git ref: "${ref}". Only alphanumeric characters, dots, dashes, underscores, slashes, tildes, carets, and @ are allowed.`);
+    if (!/^[\w./~^@{}][\w.\-/~^@{}]*$/.test(ref)) {
+        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, and @.`);
     }
 };
 
