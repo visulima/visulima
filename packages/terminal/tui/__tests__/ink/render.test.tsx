@@ -5,7 +5,7 @@ import process from "node:process";
 import { Writable } from "node:stream";
 import url from "node:url";
 
-import { eraseLines, resetTerminal, strip as stripAnsi } from "@visulima/ansi";
+import { clearScreenAndHomeCursor, eraseLines, eraseScreenAndScrollback, resetTerminal, strip as stripAnsi } from "@visulima/ansi";
 import { boxen } from "@visulima/boxen";
 import delay from "delay";
 import type { ReactElement } from "react";
@@ -109,13 +109,15 @@ const getContentWrites = (writeSpy: any): string[] =>
 // eslint-disable-next-line vitest/prefer-describe-function-title -- String title is conventional for test describe blocks
 describe("render", () => {
     it.skipIf(!ptyAvailable)("do not erase screen", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const ps = term("erase", ["4"]);
 
         await ps.waitForExit();
 
         expect(ps.output).not.toContain(resetTerminal);
+        // Regression guard for vadimdemedes/ink#935: no scrollback wipe on rerender.
+        expect(ps.output).not.toContain(eraseScreenAndScrollback);
 
         ["A", "B", "C"].forEach((letter) => {
             expect(ps.output).toContain(letter);
@@ -123,13 +125,15 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than viewport", async () => {
-        expect.assertions(7);
+        expect.assertions(8);
 
         const ps = term("erase-with-static", ["4"]);
 
         await ps.waitForExit();
 
         expect(ps.output).not.toContain(resetTerminal);
+        // Regression guard for vadimdemedes/ink#935: no scrollback wipe on rerender.
+        expect(ps.output).not.toContain(eraseScreenAndScrollback);
 
         ["A", "B", "C", "D", "E", "F"].forEach((letter) => {
             expect(ps.output).toContain(letter);
@@ -137,14 +141,21 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("erase screen", async () => {
-        expect.assertions(4);
+        expect.assertions(6);
 
         const ps = term("erase", ["3"]);
 
         await ps.waitForExit();
-        await waitFor(() => ps.output.includes(resetTerminal) && ps.output.includes("C"));
+        await waitFor(() => ps.output.includes(clearScreenAndHomeCursor) && ps.output.includes("C"));
 
-        expect(ps.output).toContain(resetTerminal);
+        // Fullscreen rerenders must clear the viewport so the next frame starts at the top.
+        expect(ps.output).toContain(clearScreenAndHomeCursor);
+
+        // Regression guard for vadimdemedes/ink#935: the render loop must never emit
+        // the scrollback-erase sequence (CSI 3J) or RIS (ESC c) — doing so wipes the
+        // user's terminal history in VT-compliant terminals (tmux, xterm.js, Alacritty, …).
+        expect(ps.output).not.toContain(eraseScreenAndScrollback);
+        expect(ps.output).not.toContain(resetTerminal);
 
         ["A", "B", "C"].forEach((letter) => {
             expect(ps.output).toContain(letter);
