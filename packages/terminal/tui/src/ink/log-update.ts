@@ -4,7 +4,7 @@ import type { Writable } from "node:stream";
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
 import type { CursorPosition } from "./cursor-helpers";
-import { buildCursorOnlySequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged, hideCursorEscape } from "./cursor-helpers";
+import { buildCursorOnlySequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
 
 export type { CursorPosition } from "./cursor-helpers";
 
@@ -133,7 +133,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         previousLineCount = lines.length;
 
         if (!activeCursor && cursorWasShown) {
-            stream.write(hideCursorEscape);
+            stream.write(cursorHide);
         }
 
         if (activeCursor) {
@@ -317,7 +317,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         previousLines = lines;
 
         if (!activeCursor && cursorWasShown) {
-            stream.write(hideCursorEscape);
+            stream.write(cursorHide);
         }
 
         if (activeCursor) {
