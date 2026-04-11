@@ -4,7 +4,7 @@ export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, f
 
 // Cache
 export type { CachedResult, CacheOptions } from "./cache";
-export { Cache, formatCacheSize, parseCacheSize } from "./cache";
+export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } from "./cache";
 
 // Command parser
 export type { ParseCommandsOptions } from "./command-parser";

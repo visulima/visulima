@@ -38,6 +38,14 @@ interface CacheOptions {
 const DEFAULT_MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
+ * Directory name (relative to `workspaceRoot`) where the task runner writes
+ * its cache by default. Exported so callers that manage the cache from the
+ * outside — e.g. a CLI `cache clean` command — can reach the same default
+ * without hard-coding the literal.
+ */
+const DEFAULT_CACHE_DIRECTORY_NAME = ".task-runner-cache";
+
+/**
  * Removes a cache entry directory.
  */
 const removeEntry = async (entryPath: string): Promise<void> => {
@@ -130,7 +138,7 @@ class Cache {
 
     public constructor(options: CacheOptions) {
         this.#workspaceRoot = options.workspaceRoot;
-        this.#cacheDirectory = options.cacheDirectory ?? join(options.workspaceRoot, ".task-runner-cache");
+        this.#cacheDirectory = options.cacheDirectory ?? join(options.workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
         this.#maxCacheAge = options.maxCacheAge ?? DEFAULT_MAX_CACHE_AGE;
         this.#maxCacheSize = options.maxCacheSize ? parseCacheSize(options.maxCacheSize) : undefined;
     }
@@ -441,4 +449,4 @@ class Cache {
 }
 
 export type { CachedResult, CacheOptions };
-export { Cache, formatCacheSize, parseCacheSize };
+export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize };

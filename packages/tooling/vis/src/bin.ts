@@ -14,6 +14,7 @@ import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
 import auditCommand from "./commands/audit";
+import cacheCommand from "./commands/cache";
 import checkCommand from "./commands/check";
 import ciCommand from "./commands/ci";
 import cleanCommand from "./commands/clean";
@@ -139,6 +140,7 @@ cli.addCommand(pmCommand);
 // Project & environment commands
 cli.addCommand(initCommand);
 cli.addCommand(cleanCommand);
+cli.addCommand(cacheCommand);
 cli.addCommand(createCommand);
 cli.addCommand(devcontainerCommand);
 cli.addCommand(upgradeCommand);
