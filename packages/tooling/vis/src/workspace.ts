@@ -14,6 +14,7 @@ import type {
 } from "@visulima/task-runner";
 import type { Configuration as StagedConfig } from "lint-staged";
 
+import type { CodeownersConfig } from "./codeowners";
 import { applyPreset, defaultCacheForType, type VisTargetConfiguration } from "./target-options";
 
 interface PackageJson {
@@ -111,6 +112,12 @@ interface VisConfig {
         /** Use a specific provider instead of auto-detecting (e.g., `"claude"`, `"gemini"`). */
         provider?: string;
     };
+
+    /**
+     * Code ownership configuration. Controls how `vis sync codeowners`
+     * renders the generated CODEOWNERS file.
+     */
+    codeowners?: CodeownersConfig;
 
     /**
      * Project dependency constraints.

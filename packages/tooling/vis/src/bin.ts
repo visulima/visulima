@@ -36,6 +36,7 @@ import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
+import syncCommand from "./commands/sync";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
@@ -110,6 +111,7 @@ cli.addCommand(analyzeCommand);
 cli.addCommand(migrateCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
+cli.addCommand(syncCommand);
 
 // Package management commands
 cli.addCommand(installCommand);
