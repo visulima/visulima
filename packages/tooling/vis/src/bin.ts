@@ -14,6 +14,7 @@ import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
 import auditCommand from "./commands/audit";
 import checkCommand from "./commands/check";
+import ciCommand from "./commands/ci";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
@@ -98,6 +99,7 @@ cli.addPlugin(securityEnforcementPlugin);
 
 // Workspace commands
 cli.addCommand(runCommand);
+cli.addCommand(ciCommand);
 cli.addCommand(graphCommand);
 cli.addCommand(affectedCommand);
 cli.addCommand(hookCommand);
