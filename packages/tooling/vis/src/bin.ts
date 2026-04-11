@@ -20,6 +20,7 @@ import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
 import devcontainerCommand from "./commands/devcontainer";
 import dlxCommand from "./commands/dlx";
+import dockerCommand from "./commands/docker";
 import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
@@ -112,6 +113,7 @@ cli.addCommand(migrateCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
 cli.addCommand(syncCommand);
+cli.addCommand(dockerCommand);
 
 // Package management commands
 cli.addCommand(installCommand);
