@@ -42,6 +42,40 @@ packages:
   - "packages/tooling/tsconfig/__fixtures__/package/cjs"
   - "packages/tooling/tsconfig/__fixtures__/package/mjs"
 
+allowBuilds:
+  '@parcel/watcher': true
+  '@pnpm/exe': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  '@swc/core': true
+  '@tailwindcss/oxide': true
+  '@tree-sitter-grammars/tree-sitter-yaml': true
+  '@visulima/string': true
+  aws-crt: true
+  core-js: true
+  core-js-pure: true
+  dtrace-provider: true
+  edgedriver: true
+  es5-ext: true
+  esbuild: true
+  geckodriver: true
+  msw: true
+  nx: true
+  node-pty: true
+  oxc-resolver: true
+  prisma: true
+  protobufjs: true
+  rs-module-lexer: true
+  sharp: true
+  svelte-preprocess: true
+  tree-sitter: true
+  tree-sitter-json: true
+  unrs-resolver: true
+  vue-demi: true
+  workerd: true
+  yarn: true
+
 auditConfig:
   ignoreGhsas:
     - GHSA-chqc-8p9q-pq6q
@@ -52,6 +86,8 @@ auditConfig:
     - CVE-2025-13465
     - CVE-2025-69874
     - CVE-2026-0540
+
+autoInstallPeers: true
 
 blockExoticSubdeps: true
 
@@ -119,7 +155,7 @@ catalogs:
     '@netlify/blobs': 10.7.4
     '@nuxt/kit': 4.4.2
     '@opentelemetry/api': 1.9.1
-    '@pnpm/exe': 10.33.0
+    '@pnpm/exe': 11.0.0-rc.0
     '@remix-run/headers': 0.19.0
     '@semantic-release/exec': ^7.1.0
     '@shikijs/langs': ^4.0.2
@@ -688,6 +724,8 @@ catalogs:
 
 dedupeInjectedDeps: true
 
+dedupePeerDependents: true
+
 disallowWorkspaceCycles: true
 
 ignoreWorkspaceCycles: false
@@ -709,40 +747,6 @@ minimumReleaseAgeExclude:
   - '@types/*'
   - '@tanstack/*'
   - '@jrichman/ink'
-
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@pnpm/exe'
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@scarf/scarf'
-  - '@swc/core'
-  - '@tailwindcss/oxide'
-  - '@tree-sitter-grammars/tree-sitter-yaml'
-  - '@visulima/string'
-  - aws-crt
-  - core-js
-  - core-js-pure
-  - dtrace-provider
-  - edgedriver
-  - es5-ext
-  - esbuild
-  - geckodriver
-  - msw
-  - nx
-  - node-pty
-  - oxc-resolver
-  - prisma
-  - protobufjs
-  - rs-module-lexer
-  - sharp
-  - svelte-preprocess
-  - tree-sitter
-  - tree-sitter-json
-  - unrs-resolver
-  - vue-demi
-  - workerd
-  - yarn
 
 overrides:
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
@@ -864,10 +868,28 @@ overrides:
 
 preferWorkspacePackages: true
 
+publicHoistPattern:
+  - secure-password
+  - zod
+  - '@visulima/packem'
+  # Needed for crud package to work properly. Don't remove these entries.
+  - '*prisma*'
+  # Needed for api-platform package to work properly. Don't remove these entries.
+  - '*redoc*'
+  # Needed for all packages to work properly. Don't remove these entries.
+  - '*eslint*'
+  - '@prettier/plugin-*'
+  - '*prettier-plugin-*'
+  - '*textlint-*'
+
+saveExact: true
+
 saveWorkspaceProtocol: true
 
 sharedWorkspaceLockfile: true
 
 strictDepBuilds: true
+
+strictPeerDependencies: false
 
 trustPolicy: accept
