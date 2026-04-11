@@ -5,7 +5,7 @@ import process from "node:process";
 import { Writable } from "node:stream";
 import url from "node:url";
 
-import { cursorTo, eraseLines, eraseScreen, eraseScreenAndScrollback, resetTerminal, strip as stripAnsi } from "@visulima/ansi";
+import { clearScreenAndHomeCursor, eraseLines, eraseScreenAndScrollback, resetTerminal, strip as stripAnsi } from "@visulima/ansi";
 import { boxen } from "@visulima/boxen";
 import delay from "delay";
 import type { ReactElement } from "react";
@@ -18,10 +18,6 @@ import { run } from "../helpers/ink-run";
 import waitFor from "../helpers/wait-for";
 
 const require = createRequire(import.meta.url);
-
-// Viewport-only clear emitted by Ink on fullscreen rerenders — matches the
-// constant used in vadimdemedes/ink#936 (the upstream fix for ink#935).
-const eraseScreenSequence = eraseScreen + cursorTo(0, 0);
 
 const _request = createRequire(import.meta.url);
 const ptyAvailable = (() => {
@@ -150,10 +146,10 @@ describe("render", () => {
         const ps = term("erase", ["3"]);
 
         await ps.waitForExit();
-        await waitFor(() => ps.output.includes(eraseScreenSequence) && ps.output.includes("C"));
+        await waitFor(() => ps.output.includes(clearScreenAndHomeCursor) && ps.output.includes("C"));
 
         // Fullscreen rerenders must clear the viewport so the next frame starts at the top.
-        expect(ps.output).toContain(eraseScreenSequence);
+        expect(ps.output).toContain(clearScreenAndHomeCursor);
 
         // Regression guard for vadimdemedes/ink#935: the render loop must never emit
         // the scrollback-erase sequence (CSI 3J) or RIS (ESC c) — doing so wipes the
