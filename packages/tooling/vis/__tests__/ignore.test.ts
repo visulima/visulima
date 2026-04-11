@@ -190,6 +190,22 @@ describe(validateGitRef, () => {
         expect(() => { validateGitRef("$(whoami)"); }).toThrow(/Invalid git ref/);
         expect(() => { validateGitRef("`whoami`"); }).toThrow(/Invalid git ref/);
     });
+
+    it("rejects refs starting with a dash (prevents git flag injection)", () => {
+        expect.assertions(4);
+        // A leading dash makes `${ref}^{commit}` look like a `git` option
+        // to `git rev-parse --verify`, bypassing the positional argument path.
+        expect(() => { validateGitRef("--help"); }).toThrow(/Invalid git ref/);
+        expect(() => { validateGitRef("-rf"); }).toThrow(/Invalid git ref/);
+        expect(() => { validateGitRef("--base=main"); }).toThrow(/Invalid git ref/);
+        expect(() => { validateGitRef("-"); }).toThrow(/Invalid git ref/);
+    });
+
+    it("still accepts dashes in the middle of refs", () => {
+        expect.assertions(2);
+        expect(() => { validateGitRef("feature-branch"); }).not.toThrow();
+        expect(() => { validateGitRef("release-v1.2.3"); }).not.toThrow();
+    });
 });
 
 // ─── exitCodeFor ─────────────────────────────────────────────────────

@@ -172,12 +172,12 @@ jobs:
 
 Commit-message keywords take precedence over git diff detection, for emergency bypasses:
 
-| Token                    | Effect                            |
-| ------------------------ | --------------------------------- |
-| `[skip ci]`              | Skip build (all projects)         |
-| `[vis skip <project>]`   | Skip build for one project        |
-| `[vis deploy]`           | Force build (all projects)        |
-| `[vis deploy <project>]` | Force build for one project       |
+| Token                                        | Effect                            |
+| -------------------------------------------- | --------------------------------- |
+| `[skip ci]` / `[ci skip]` / `[no ci]` / `[vis skip]` | Skip build (all projects)   |
+| `[vis skip <project>]`                       | Skip build for one project        |
+| `[vis deploy]`                               | Force build (all projects)        |
+| `[vis deploy <project>]`                     | Force build for one project       |
 
 Legacy `[nx skip]` / `[nx deploy]` tokens are also accepted for teams migrating from `nx-ignore`. See the [`vis ignore` reference](../commands/ignore) for the full list of options and reason codes.
 

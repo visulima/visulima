@@ -34,8 +34,13 @@ const CI_BASE_SHA_ENV_VARS = [
     "CI_COMMIT_BEFORE_SHA", // GitLab CI
 ] as const;
 
-/** Whitelist for git refs passed to `git` — prevents command injection. */
-const GIT_REF_RE = /^[\w.\-/~^@{}]+$/;
+/**
+ * Whitelist for git refs passed to `git` — prevents command injection.
+ * Requires the first character to be non-dash so values like `--help` or
+ * `--base=main` cannot masquerade as git options when passed positionally
+ * to `git rev-parse` / `git diff`.
+ */
+const GIT_REF_RE = /^[\w./~^@{}][\w.\-/~^@{}]*$/;
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -92,11 +97,17 @@ const resolveCiBaseSha = (env: NodeJS.ProcessEnv = process.env): string | undefi
 
 /**
  * Throws if the given string contains characters outside the safe git-ref
- * alphabet. Mirrors the validation used by task-runner's affected logic.
+ * alphabet or begins with a dash. Mirrors the validation used by
+ * task-runner's affected logic and additionally rejects leading dashes to
+ * prevent `git` option injection when the ref is passed as a positional
+ * argument to `execFile("git", [...])`.
+ *
+ * Throws `Error` if the ref is invalid; otherwise returns nothing.
+ * @param ref The git ref to validate (e.g. `"HEAD"`, `"main"`, `"abc123"`).
  */
 const validateGitRef = (ref: string): void => {
     if (!GIT_REF_RE.test(ref)) {
-        throw new Error(`Invalid git ref: "${ref}". Only alphanumeric characters, dots, dashes, underscores, slashes, tildes, carets, and @ are allowed.`);
+        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, and @.`);
     }
 };
 
@@ -104,6 +115,9 @@ const validateGitRef = (ref: string): void => {
  * Returns `true` if `ref` resolves to a commit object in the given repo.
  * Used to detect unreachable base refs (e.g. Vercel's shallow clone) so
  * we can silently fall back to `HEAD~1`.
+ * @param cwd Absolute path to the git repository's working directory.
+ * @param ref The git ref to probe. Should already be validated by `validateGitRef` to avoid `git` option injection.
+ * @returns `true` if the ref resolves to a commit, `false` otherwise (including when `git` itself fails or is unavailable).
  */
 const isRefReachable = async (cwd: string, ref: string): Promise<boolean> => {
     try {

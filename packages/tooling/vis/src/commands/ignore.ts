@@ -142,89 +142,108 @@ const ignore: Command = {
             });
         }
 
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace);
+        // Steps 3-5 are wrapped in a try/catch so any failure in
+        // buildProjectGraph, validateGitRef, isRefReachable, or
+        // getAffectedProjects triggers the same defensive-build fallback
+        // as the workspace discovery step above, rather than bubbling
+        // up to cerebro's error handler (which would emit a non-zero
+        // exit and a stack trace — wrong semantics for a CI ignore hook).
+        try {
+            const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
-        // 3) Resolve base ref: explicit flag > CI env var > HEAD~1, with
-        //    reachability fallback for shallow clones.
-        const explicitBase = (options.base as string | undefined)?.trim();
-        const ciBase = resolveCiBaseSha();
-        let baseRef = explicitBase || ciBase || "HEAD~1";
-        const headRef = ((options.head as string | undefined)?.trim()) || "HEAD";
+            // 3) Resolve base ref: explicit flag > CI env var > HEAD~1, with
+            //    reachability fallback for shallow clones.
+            const explicitBase = (options.base as string | undefined)?.trim();
+            const ciBase = resolveCiBaseSha();
+            let baseRef = explicitBase || ciBase || "HEAD~1";
+            const headRef = ((options.head as string | undefined)?.trim()) || "HEAD";
 
-        validateGitRef(baseRef);
-        validateGitRef(headRef);
+            validateGitRef(baseRef);
+            validateGitRef(headRef);
 
-        debug(`resolved base ref: ${baseRef} (source: ${explicitBase ? "flag" : ciBase ? "ci-env" : "default"})`);
+            debug(`resolved base ref: ${baseRef} (source: ${explicitBase ? "flag" : ciBase ? "ci-env" : "default"})`);
 
-        if (!(await isRefReachable(workspaceRoot, baseRef))) {
-            debug(`base ref ${baseRef} not reachable — falling back to HEAD~1`);
-            baseRef = "HEAD~1";
-        }
+            if (!(await isRefReachable(workspaceRoot, baseRef))) {
+                debug(`base ref ${baseRef} not reachable — falling back to HEAD~1`);
+                baseRef = "HEAD~1";
+            }
 
-        debug(`comparing ${baseRef}...${headRef}`);
+            debug(`comparing ${baseRef}...${headRef}`);
 
-        // 4) Validate scope options.
-        const validScopes = new Set<AffectedScope>(["deep", "direct", "none"]);
-        const downstream = ((options.downstream as string | undefined) ?? "deep") as AffectedScope;
-        const upstream = ((options.upstream as string | undefined) ?? "none") as AffectedScope;
+            // 4) Validate scope options.
+            const validScopes = new Set<AffectedScope>(["deep", "direct", "none"]);
+            const downstream = ((options.downstream as string | undefined) ?? "deep") as AffectedScope;
+            const upstream = ((options.upstream as string | undefined) ?? "none") as AffectedScope;
 
-        if (!validScopes.has(downstream)) {
-            throw new Error(`Invalid --downstream value: "${downstream}". Must be "none", "direct", or "deep".`);
-        }
+            if (!validScopes.has(downstream)) {
+                throw new Error(`Invalid --downstream value: "${downstream}". Must be "none", "direct", or "deep".`);
+            }
 
-        if (!validScopes.has(upstream)) {
-            throw new Error(`Invalid --upstream value: "${upstream}". Must be "none", "direct", or "deep".`);
-        }
+            if (!validScopes.has(upstream)) {
+                throw new Error(`Invalid --upstream value: "${upstream}". Must be "none", "direct", or "deep".`);
+            }
 
-        // 5) Run affected detection.
-        const affectedOptions: AffectedOptions = {
-            base: baseRef,
-            downstream,
-            head: headRef,
-            projectGraph,
-            projects: workspace.projects,
-            upstream,
-            workspaceRoot,
-        };
+            // 5) Run affected detection.
+            const affectedOptions: AffectedOptions = {
+                base: baseRef,
+                downstream,
+                head: headRef,
+                projectGraph,
+                projects: workspace.projects,
+                upstream,
+                workspaceRoot,
+            };
 
-        const result = await getAffectedProjects(affectedOptions);
+            const result = await getAffectedProjects(affectedOptions);
 
-        debug(`changed files: ${result.changedFiles.length}`);
-        debug(`affected projects: ${result.affectedProjects.join(", ") || "(none)"}`);
+            debug(`changed files: ${result.changedFiles.length}`);
+            debug(`affected projects: ${result.affectedProjects.join(", ") || "(none)"}`);
 
-        if (result.changedFiles.length === 0) {
+            if (result.changedFiles.length === 0) {
+                return emit({
+                    action: "skip",
+                    affectedProjects: [],
+                    base: baseRef,
+                    head: headRef,
+                    message: `No files changed between ${baseRef}...${headRef}`,
+                    project,
+                    reason: "no-changes",
+                });
+            }
+
+            if (result.affectedProjects.includes(project)) {
+                return emit({
+                    action: "build",
+                    affectedProjects: result.affectedProjects,
+                    base: baseRef,
+                    head: headRef,
+                    message: `Build ${project}: affected by ${result.changedFiles.length} changed file(s)`,
+                    project,
+                    reason: "project-affected",
+                });
+            }
+
             return emit({
                 action: "skip",
-                affectedProjects: [],
-                base: baseRef,
-                head: headRef,
-                message: `No files changed between ${baseRef}...${headRef}`,
-                project,
-                reason: "no-changes",
-            });
-        }
-
-        if (result.affectedProjects.includes(project)) {
-            return emit({
-                action: "build",
                 affectedProjects: result.affectedProjects,
                 base: baseRef,
                 head: headRef,
-                message: `Build ${project}: affected by ${result.changedFiles.length} changed file(s)`,
+                message: `Skip ${project}: not affected by changes between ${baseRef}...${headRef}`,
                 project,
-                reason: "project-affected",
+                reason: "project-not-affected",
+            });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            logger.error(`Affected detection failed: ${errorMessage}`);
+
+            return emit({
+                action: "build",
+                message: `Affected detection failed (${errorMessage}) — building defensively`,
+                project,
+                reason: "workspace-error",
             });
         }
-
-        return emit({
-            action: "skip",
-            affectedProjects: result.affectedProjects,
-            base: baseRef,
-            head: headRef,
-            message: `Skip ${project}: not affected by changes between ${baseRef}...${headRef}`,
-            project,
-            reason: "project-not-affected",
-        });
     },
     group: "Run & Execute",
     name: "ignore",
