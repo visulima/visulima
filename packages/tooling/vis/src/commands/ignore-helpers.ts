@@ -46,6 +46,13 @@ const CI_BASE_SHA_ENV_VARS = [
  * Requires the first character to be non-dash so values like `--help` or
  * `--base=main` cannot masquerade as git options when passed positionally
  * to `git rev-parse` / `git diff`.
+ *
+ * NOTE: This is intentionally mirrored in
+ * `packages/tooling/task-runner/src/affected.ts` (`validateGitRef`). If
+ * you change the regex or error message here, update the mirror too —
+ * `ignore-helpers.ts` cannot import from `@visulima/task-runner` without
+ * pulling the whole run-graph module through ESM evaluation, which would
+ * break test isolation for `vitest run __tests__/ignore.test.ts`.
  */
 const GIT_REF_RE = /^[\w./~^@{}][\w.\-/~^@{}]*$/;
 
@@ -113,13 +120,12 @@ const resolveCiBaseSha = (env: NodeJS.ProcessEnv = process.env): string | undefi
  * task-runner's affected logic and additionally rejects leading dashes to
  * prevent `git` option injection when the ref is passed as a positional
  * argument to `execFile("git", [...])`.
- *
- * Throws `Error` if the ref is invalid; otherwise returns nothing.
  * @param ref The git ref to validate (e.g. `"HEAD"`, `"main"`, `"abc123"`).
+ * @throws {Error} If `ref` does not match `GIT_REF_RE`. Returns `void` on success.
  */
 const validateGitRef = (ref: string): void => {
     if (!GIT_REF_RE.test(ref)) {
-        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, and @.`);
+        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character or one of _ . / ~ ^ @ { } and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, @, and braces.`);
     }
 };
 
