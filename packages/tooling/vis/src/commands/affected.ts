@@ -69,6 +69,13 @@ const affected: Command = {
 
         logger.info(`Affected projects: ${result.affectedProjects.join(", ")}`);
 
+        // Forward the changed file list to the run command via an env var.
+        // The run command then threads it into tasks that opt in via
+        // `options.affectedFiles` ("args", "env", or "both").
+        if (result.changedFiles.length > 0) {
+            process.env["VIS_AFFECTED_FILES"] = result.changedFiles.join(" ");
+        }
+
         // Forward relevant options to the run command
         const argv: string[] = [target, `--projects=${result.affectedProjects.join(",")}`];
 
@@ -88,7 +95,11 @@ const affected: Command = {
             argv.push(`--partition=${String(options.partition)}`);
         }
 
-        await runtime.runCommand("run", { argv });
+        try {
+            await runtime.runCommand("run", { argv });
+        } finally {
+            delete process.env["VIS_AFFECTED_FILES"];
+        }
     },
     name: "affected",
     options: [

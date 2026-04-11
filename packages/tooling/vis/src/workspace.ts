@@ -3,6 +3,8 @@ import { join, resolve } from "@visulima/path";
 import type {
     ConstraintsConfig,
     DependencyType,
+    InputDefinition,
+    NamedInputs,
     ProjectConfiguration,
     ProjectGraph,
     ProjectGraphDependency,
@@ -12,6 +14,8 @@ import type {
 } from "@visulima/task-runner";
 import type { Configuration as StagedConfig } from "lint-staged";
 
+import { applyPreset, defaultCacheForType, type VisTargetConfiguration } from "./target-options";
+
 interface PackageJson {
     bin?: Record<string, string> | string;
     dependencies?: Record<string, string>;
@@ -20,6 +24,81 @@ interface PackageJson {
     peerDependencies?: Record<string, string>;
     scripts?: Record<string, string>;
     workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
+}
+
+/**
+ * Declared code-owner assignment for a path glob within a project.
+ * Mirrors moon's `owners` shape so migrations can round-trip cleanly.
+ */
+export interface OwnersEntry {
+    /** File/glob pattern relative to the project root. */
+    path: string;
+    /** Owner handles (e.g. `@visulima/core-team`). */
+    owners: string[];
+    /** Optional notification channel (e.g. Slack, Teams). */
+    channel?: string;
+}
+
+/**
+ * Per-project metadata surfaced by `project.json`. Extended beyond the
+ * minimal `projectType` / `tags` / `sourceRoot` fields we historically
+ * parsed to include targets, owners, and layer/stack classification.
+ */
+export interface ProjectJson {
+    /** Vis-style target definitions (merged on top of package.json scripts). */
+    targets?: Record<string, VisTargetConfiguration>;
+    /** Project type — library or application. */
+    projectType?: "application" | "library";
+    /** Source root, used for display and language inference. */
+    sourceRoot?: string;
+    /** Filterable tags. */
+    tags?: string[];
+    /** Project layer, used for constraint inheritance and query filtering. */
+    layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
+    /** Tech stack. */
+    stack?: "backend" | "data" | "frontend" | "infrastructure" | "systems";
+    /** Primary language — informational and query-able. */
+    language?: string;
+    /** Code owners for paths inside this project. */
+    owners?: OwnersEntry[];
+    /** Project-level metadata. */
+    project?: {
+        title?: string;
+        description?: string;
+        channel?: string;
+        owner?: string;
+        maintainers?: string[];
+    };
+    /** Implicit dependencies on other projects. */
+    implicitDependencies?: string[];
+}
+
+/**
+ * A scope predicate used by {@link VisConfig.taskDefaults}.
+ * All listed constraints must match for the block to apply.
+ */
+export interface TaskDefaultsScope {
+    /** Match projects tagged with any of these tags. */
+    tags?: string[];
+    /** Match on project type. */
+    projectType?: "application" | "library";
+    /** Match on project layer. */
+    layer?: ProjectJson["layer"] | ProjectJson["layer"][];
+    /** Match on project stack. */
+    stack?: ProjectJson["stack"] | ProjectJson["stack"][];
+    /** Match on primary language. */
+    language?: string | string[];
+}
+
+/**
+ * A single task-defaults block — a set of target defaults gated by an
+ * optional scope predicate.
+ */
+export interface TaskDefaultsBlock {
+    /** Optional scope predicate; if omitted, the block applies universally. */
+    scope?: TaskDefaultsScope;
+    /** Target default configurations. */
+    targets: Record<string, Partial<VisTargetConfiguration>>;
 }
 
 interface VisConfig {
@@ -298,7 +377,45 @@ interface VisConfig {
      */
     staged?: StagedConfig;
     /** Target default configurations */
-    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+    targetDefaults?: Record<string, Partial<VisTargetConfiguration>>;
+
+    /**
+     * Named file-group patterns, reusable from target `inputs` via the
+     * `@filegroup:<name>` token. File groups are resolved relative to each
+     * project root at discovery time.
+     * @example
+     * ```
+     * fileGroups: {
+     *   sources: ["src/**\/*.ts", "!src/**\/*.test.ts"],
+     *   tests: ["**\/*.test.ts"],
+     * }
+     * ```
+     */
+    fileGroups?: Record<string, string[]>;
+
+    /**
+     * Named input patterns inherited by every project target. Equivalent
+     * to task-runner's `namedInputs` but configurable from the vis config.
+     */
+    namedInputs?: NamedInputs;
+
+    /**
+     * Cascading task-default blocks. Each block may scope its targets to a
+     * subset of projects via `scope`. Blocks are evaluated in order; later
+     * blocks override earlier ones when the same field is set.
+     *
+     * Scope matching is additive — if `scope` is omitted, the block applies
+     * to every project.
+     * @example
+     * ```
+     * taskDefaults: [
+     *   { scope: { tags: ["frontend"] }, targets: { build: { cache: true } } },
+     *   { scope: { projectType: "library" }, targets: { lint: { cache: true } } },
+     * ]
+     * ```
+     */
+    taskDefaults?: TaskDefaultsBlock[];
+
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
     /** Terminal UI configuration */
@@ -519,32 +636,234 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
     return patterns.length > 0 ? patterns : undefined;
 };
 
+const FILE_GROUP_PREFIX = "@filegroup:";
+
 /**
- * Creates script-based targets from package.json scripts.
+ * Returns true if the named {@link TaskDefaultsBlock} scope matches the
+ * given project metadata. Missing scope fields are treated as "any".
+ */
+const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: ProjectJson | undefined, projectType: "application" | "library"): boolean => {
+    if (!scope) {
+        return true;
+    }
+
+    if (scope.projectType && scope.projectType !== projectType) {
+        return false;
+    }
+
+    if (scope.tags && scope.tags.length > 0) {
+        const projectTags = new Set(projectJson?.tags ?? []);
+        const hasOverlap = scope.tags.some((tag) => projectTags.has(tag));
+
+        if (!hasOverlap) {
+            return false;
+        }
+    }
+
+    if (scope.layer) {
+        const needed = Array.isArray(scope.layer) ? scope.layer : [scope.layer];
+
+        if (projectJson?.layer === undefined || !needed.includes(projectJson.layer)) {
+            return false;
+        }
+    }
+
+    if (scope.stack) {
+        const needed = Array.isArray(scope.stack) ? scope.stack : [scope.stack];
+
+        if (projectJson?.stack === undefined || !needed.includes(projectJson.stack)) {
+            return false;
+        }
+    }
+
+    if (scope.language) {
+        const needed = Array.isArray(scope.language) ? scope.language : [scope.language];
+
+        if (projectJson?.language === undefined || !needed.includes(projectJson.language)) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+/**
+ * Returns the merged target defaults that apply to a project, combining
+ * the flat `config.targetDefaults` with all matching `config.taskDefaults`
+ * blocks in declaration order. Later entries override earlier ones.
+ */
+const collectTargetDefaults = (
+    config: VisConfig,
+    projectJson: ProjectJson | undefined,
+    projectType: "application" | "library",
+): Record<string, Partial<VisTargetConfiguration>> => {
+    const merged: Record<string, Partial<VisTargetConfiguration>> = {};
+
+    for (const [name, defaults] of Object.entries(config.targetDefaults ?? {})) {
+        merged[name] = { ...defaults };
+    }
+
+    for (const block of config.taskDefaults ?? []) {
+        if (!scopeMatches(block.scope, projectJson, projectType)) {
+            continue;
+        }
+
+        for (const [name, defaults] of Object.entries(block.targets)) {
+            merged[name] = { ...merged[name], ...defaults };
+        }
+    }
+
+    return merged;
+};
+
+/**
+ * Resolves `@filegroup:<name>` tokens in an inputs array into their
+ * concrete patterns defined at the workspace level.
+ */
+const resolveFileGroupInputs = (
+    inputs: (string | InputDefinition)[] | undefined,
+    fileGroups: Record<string, string[]> | undefined,
+): (string | InputDefinition)[] | undefined => {
+    if (!inputs) {
+        return inputs;
+    }
+
+    const resolved: (string | InputDefinition)[] = [];
+
+    for (const input of inputs) {
+        if (typeof input === "string" && input.startsWith(FILE_GROUP_PREFIX)) {
+            const groupName = input.slice(FILE_GROUP_PREFIX.length);
+            const group = fileGroups?.[groupName];
+
+            if (group) {
+                resolved.push(...group);
+            }
+
+            continue;
+        }
+
+        resolved.push(input);
+    }
+
+    return resolved;
+};
+
+/**
+ * Merges a script-derived target with any declarative target definition
+ * from project.json and applies scoped defaults. Also applies presets and
+ * default-cache-for-type logic.
+ */
+const mergeTarget = (
+    name: string,
+    scriptCommand: string | undefined,
+    projectTarget: VisTargetConfiguration | undefined,
+    defaults: Partial<VisTargetConfiguration> | undefined,
+    fileGroups: Record<string, string[]> | undefined,
+): VisTargetConfiguration => {
+    // Base = defaults <- project.json target <- {command?: scriptCommand}
+    const base: VisTargetConfiguration = {
+        ...defaults,
+        ...projectTarget,
+        options: {
+            ...defaults?.options,
+            ...projectTarget?.options,
+        },
+    };
+
+    if (scriptCommand && base.command === undefined && base.executor === undefined) {
+        base.command = scriptCommand;
+    }
+
+    if (base.inputs) {
+        base.inputs = resolveFileGroupInputs(base.inputs, fileGroups);
+    }
+
+    // Apply preset after merging user options so that explicit user
+    // settings win over preset defaults.
+    const withPreset = applyPreset(base);
+
+    // Apply type-based cache default only if user didn't already set it.
+    if (withPreset.cache === undefined) {
+        withPreset.cache = defaultCacheForType(withPreset.type);
+    }
+
+    // Type-based default for persistent: `run` types are persistent by default.
+    if (withPreset.type === "run" && withPreset.options?.persistent === undefined) {
+        withPreset.options = { ...withPreset.options, persistent: true };
+    }
+
+    return withPreset;
+};
+
+/**
+ * Creates script-based targets from package.json scripts, merging any
+ * matching project.json target declaration + scoped defaults + file groups.
  */
 const createTargetsFromScripts = (
-    scripts: Record<string, string>,
-    targetDefaults?: Record<string, Partial<TargetConfiguration>>,
-): Record<string, TargetConfiguration> => {
-    const targets: Record<string, TargetConfiguration> = {};
+    scripts: Record<string, string> | undefined,
+    projectTargets: Record<string, VisTargetConfiguration> | undefined,
+    defaults: Record<string, Partial<VisTargetConfiguration>>,
+    fileGroups: Record<string, string[]> | undefined,
+): Record<string, VisTargetConfiguration> => {
+    const targets: Record<string, VisTargetConfiguration> = {};
+    const seen = new Set<string>();
 
-    for (const [scriptName, scriptCommand] of Object.entries(scripts)) {
-        const defaults = targetDefaults?.[scriptName];
+    for (const [name, command] of Object.entries(scripts ?? {})) {
+        seen.add(name);
+        targets[name] = mergeTarget(name, command, projectTargets?.[name], defaults[name], fileGroups);
+    }
 
-        targets[scriptName] = {
-            ...defaults,
-            command: scriptCommand,
-        };
+    // project.json-only targets (no matching script) — e.g. declarative-only.
+    for (const [name, projectTarget] of Object.entries(projectTargets ?? {})) {
+        if (seen.has(name)) {
+            continue;
+        }
+
+        targets[name] = mergeTarget(name, undefined, projectTarget, defaults[name], fileGroups);
     }
 
     return targets;
 };
 
 /**
+ * Extended project configuration exposed on the discovered workspace.
+ * Adds vis-specific metadata (layer, stack, language, owners) on top of
+ * the task-runner `ProjectConfiguration`.
+ */
+export interface VisProjectConfiguration extends ProjectConfiguration {
+    /** Owners entries declared in project.json. */
+    owners?: OwnersEntry[];
+    /** Project layer classification (matches moon's layer hierarchy). */
+    layer?: ProjectJson["layer"];
+    /** Project stack classification. */
+    stack?: ProjectJson["stack"];
+    /** Primary language identifier. */
+    language?: string;
+    /** Human-readable metadata block. */
+    project?: ProjectJson["project"];
+    /** Raw targets with vis-specific options retained. */
+    targets?: Record<string, TargetConfiguration>;
+}
+
+/**
+ * Per-project options cache indexed by project name. Used by the run
+ * command to read vis-specific target options without reparsing.
+ */
+export type ProjectOptionsIndex = Map<string, Record<string, VisTargetConfiguration>>;
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
-const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { config: VisConfig; workspace: WorkspaceConfiguration } => {
-    const projects: Record<string, ProjectConfiguration> = {};
+const discoverWorkspace = (
+    workspaceRoot: string,
+    config: VisConfig = {},
+): {
+    config: VisConfig;
+    projectOptions: ProjectOptionsIndex;
+    workspace: WorkspaceConfiguration;
+} => {
+    const projects: Record<string, VisProjectConfiguration> = {};
+    const projectOptions: ProjectOptionsIndex = new Map();
 
     // Find workspace patterns
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
@@ -575,9 +894,7 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
 
         // Check for project.json for additional configuration
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
-        const projectJson = readJsonFileSafe<{ projectType?: "application" | "library"; sourceRoot?: string; tags?: string[] }>(projectJsonPath);
-
-        const targets = pkg.scripts ? createTargetsFromScripts(pkg.scripts, config.targetDefaults) : {};
+        const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
 
         // Determine project type: explicit project.json > bin heuristic > default
         let projectType: "application" | "library" = "library";
@@ -589,16 +906,43 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
             projectType = "application";
         }
 
+        const defaults = collectTargetDefaults(config, projectJson, projectType);
+
+        const visTargets = createTargetsFromScripts(pkg.scripts, projectJson?.targets, defaults, config.fileGroups);
+
+        // Stash the full vis-target map so commands can read options.
+        projectOptions.set(pkg.name, visTargets);
+
+        // Strip vis-specific fields before handing to task-runner. task-runner
+        // only understands `options?: Record<string, unknown>`, so we pass the
+        // VisTargetOptions object through as an opaque overrides bag.
+        const sanitizedTargets: Record<string, TargetConfiguration> = {};
+
+        for (const [targetName, target] of Object.entries(visTargets)) {
+            const { preset: _preset, type: _type, options, ...rest } = target;
+
+            sanitizedTargets[targetName] = {
+                ...rest,
+                ...(options ? { options: options as unknown as Record<string, unknown> } : {}),
+            };
+        }
+
         projects[pkg.name] = {
+            implicitDependencies: projectJson?.implicitDependencies,
+            language: projectJson?.language,
+            layer: projectJson?.layer,
+            owners: projectJson?.owners,
+            project: projectJson?.project,
             projectType,
             root: projectDirectory,
             sourceRoot: projectJson?.sourceRoot ?? `${projectDirectory}/src`,
+            stack: projectJson?.stack,
             tags: projectJson?.tags,
-            targets,
+            targets: sanitizedTargets,
         };
     }
 
-    return { config, workspace: { projects } };
+    return { config, projectOptions, workspace: { projects } };
 };
 
 /**
@@ -657,6 +1001,6 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 };
 
 export type { PackageJson, VisConfig };
-export { buildProjectGraph, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns };
+export { buildProjectGraph, collectTargetDefaults, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns, scopeMatches };
 
 export { type Configuration as StagedConfig } from "lint-staged";

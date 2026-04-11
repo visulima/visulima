@@ -13,10 +13,70 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import {
+    detectCurrentOs,
+    loadEnvFile,
+    matchesOs,
+    resolveTargetShell,
+    shouldRunInCI,
+    type VisTargetConfiguration,
+    type VisTargetOptions,
+} from "../target-options";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
+
+/** Environment variable used to pass affected files into the run command. */
+const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
+
+/**
+ * Runs persistent tasks (dev servers, watch mode) as a concurrent batch.
+ * Persistent tasks never cache and never return a "result" — they run
+ * until interrupted or until all of them exit.
+ */
+const runPersistentTasks = async (
+    tasks: Task[],
+    workspaceRoot: string,
+    affectedFiles: string[] | undefined,
+): Promise<void> => {
+    const commands = tasks
+        .map((task) => {
+            const command = task.overrides["command"] as string | undefined;
+
+            if (!command) {
+                return undefined;
+            }
+
+            const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
+            const cwd = visOptions?.runFromWorkspaceRoot
+                ? workspaceRoot
+                : task.projectRoot
+                    ? task.projectRoot.startsWith("/")
+                        ? task.projectRoot
+                        : `${workspaceRoot}/${task.projectRoot}`
+                    : workspaceRoot;
+
+            const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
+            const affectedEnv = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+                ? { [AFFECTED_FILES_ENV]: affectedFiles.join(" ") }
+                : {};
+
+            return {
+                command,
+                cwd,
+                env: { ...envFileVars, ...affectedEnv },
+                name: task.id,
+            };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+    if (commands.length === 0) {
+        return;
+    }
+
+    await runConcurrently(commands, { killOthers: ["failure"] });
+};
 
 /**
  * Maximum output buffer size per task (512 KB).
@@ -60,6 +120,82 @@ class OutputRingBuffer {
 }
 
 /**
+ * Extract vis target options from a Task. Target options travel through
+ * task-runner as part of `task.overrides.visOptions`, opaquely to the
+ * runner but recovered here for per-task behaviour tweaks.
+ */
+const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
+    const options = task.overrides["visOptions"];
+
+    if (options && typeof options === "object") {
+        return options as VisTargetOptions;
+    }
+
+    return undefined;
+};
+
+/** Builds the command args list for `affectedFiles` forwarding. */
+const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
+    if (!affectedFiles || affectedFiles.length === 0 || mode === false || mode === undefined) {
+        return command;
+    }
+
+    if (mode === "args" || mode === "both") {
+        const quoted = affectedFiles.map((f) => `"${f.replaceAll("\"", "\\\"")}"`).join(" ");
+
+        return `${command} ${quoted}`;
+    }
+
+    return command;
+};
+
+/**
+ * Serializes tasks that share a mutex name. Keyed by mutex name, each
+ * entry is the tail of a promise chain — a task acquires the mutex by
+ * awaiting the current tail, then replaces it with its own completion
+ * promise.
+ */
+type MutexPool = Map<string, Promise<void>>;
+
+const withMutex = async <T>(pool: MutexPool, name: string | undefined, run: () => Promise<T>): Promise<T> => {
+    if (!name) {
+        return run();
+    }
+
+    const previous = pool.get(name) ?? Promise.resolve();
+    let release!: () => void;
+    const next = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    const chained = previous.then(() => next);
+
+    pool.set(name, chained);
+
+    await previous;
+
+    try {
+        return await run();
+    } finally {
+        release();
+
+        // Only clear the pool entry if we are still the tail — another
+        // task may have enqueued itself after us.
+        if (pool.get(name) === chained) {
+            pool.delete(name);
+        }
+    }
+};
+
+interface ExecutorDependencies {
+    affectedFiles?: string[];
+    mutexPool?: MutexPool;
+    onOutput?: (taskId: string, text: string) => void;
+    onOutputReplace?: (taskId: string, fullContent: string) => void;
+    stdinRegistry?: Map<string, StdinEntry>;
+    workspaceRoot: string;
+}
+
+/**
  * Creates an async task executor using the concurrent process runner.
  *
  * Uses the native Rust addon (setsid/killpg process groups, tokio I/O)
@@ -68,21 +204,53 @@ class OutputRingBuffer {
  *
  * Output is collected in a ring buffer capped at MAX_OUTPUT_BYTES to
  * prevent unbounded memory growth with long-running tasks like dev servers.
+ *
+ * The executor also honors vis-specific target options carried on the task:
+ * `envFile`, `runFromWorkspaceRoot`, `retryCount`/`retryDelay`, `mutex`,
+ * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
 const createConcurrentExecutor = (
-    workspaceRoot: string,
-    stdinRegistry?: Map<string, StdinEntry>,
-    onOutput?: (taskId: string, text: string) => void,
-    onOutputReplace?: (taskId: string, fullContent: string) => void,
-) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
-    const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
-    const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+    deps: ExecutorDependencies,
+) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
+    const { affectedFiles, mutexPool, onOutput, onOutputReplace, stdinRegistry, workspaceRoot } = deps;
 
-    const command = task.overrides["command"] as string | undefined;
+    const visOptions = getTaskOptions(task);
+    const currentOs = detectCurrentOs();
 
-    if (!command) {
+    const useWorkspaceCwd = visOptions?.runFromWorkspaceRoot === true;
+    const baseCwd = useWorkspaceCwd ? workspaceRoot : (execOptions.cwd ?? task.projectRoot ?? workspaceRoot);
+    const resolvedCwd = baseCwd.startsWith("/") ? baseCwd : `${workspaceRoot}/${baseCwd}`;
+
+    const rawCommand = task.overrides["command"] as string | undefined;
+
+    if (!rawCommand) {
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
+
+    // Append affected files as command args when requested.
+    const commandWithAffected = buildAffectedFilesArgs(rawCommand, affectedFiles, visOptions?.affectedFiles);
+
+    // Per-target shell override: wrap the command in the custom shell.
+    const customShell = resolveTargetShell(visOptions, currentOs);
+    const command = customShell ? `${customShell} -c ${JSON.stringify(commandWithAffected)}` : commandWithAffected;
+
+    // Load dotenv file if configured.
+    const envFileVars = visOptions?.envFile
+        ? loadEnvFile(resolvedCwd, visOptions.envFile)
+        : undefined;
+
+    // Forward affected files via VIS_AFFECTED_FILES when requested.
+    const affectedFilesEnv: Record<string, string> = {};
+
+    if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
+        affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join(" ");
+    }
+
+    const mergedEnv: Record<string, string> = {
+        ...envFileVars,
+        ...execOptions.env,
+        ...affectedFilesEnv,
+    };
 
     const isPty = Boolean(stdinRegistry);
 
@@ -119,23 +287,36 @@ const createConcurrentExecutor = (
         }
     };
 
-    const result = await runConcurrently(
-        [{
-            command,
-            cwd: resolvedCwd,
-            env: options.env,
-            name: task.id,
-            ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
-        }],
-        { killOthers: ["failure"], onEvent },
-    );
+    const runOnce = async (): Promise<{ code: number; terminalOutput: string }> => {
+        const retryCount = visOptions?.retryCount ?? 0;
+        const retryDelay = visOptions?.retryDelay;
 
-    const closeEvent = result.closeEvents[0];
+        const result = await runConcurrently(
+            [{
+                command,
+                cwd: resolvedCwd,
+                env: mergedEnv,
+                name: task.id,
+                ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
+            }],
+            {
+                killOthers: ["failure"],
+                onEvent,
+                ...(retryCount > 0
+                    ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } }
+                    : {}),
+            },
+        );
 
-    return {
-        code: closeEvent?.exitCode ?? 1,
-        terminalOutput: termBuf ? termBuf.toString() : output!.toString(),
+        const closeEvent = result.closeEvents[0];
+
+        return {
+            code: closeEvent?.exitCode ?? 1,
+            terminalOutput: termBuf ? termBuf.toString() : output!.toString(),
+        };
     };
+
+    return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
 };
 
 const run: Command = {
@@ -164,7 +345,7 @@ const run: Command = {
         }
 
         const workspaceRoot = wsRoot;
-        const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const { config, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         // Enforce project constraints if configured
@@ -192,34 +373,91 @@ const run: Command = {
             }
         }
 
-        const projectsWithTarget = projectNames.filter((name) => {
-            const project = workspace.projects[name];
+        const currentOs = detectCurrentOs();
 
-            return project?.targets?.[target] !== undefined;
-        });
+        // Read affected files from env (set by `vis affected`) if any.
+        const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
+        const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split(" ").filter(Boolean) : undefined;
+
+        // Discover vis target options per project for this target.
+        const projectsWithTarget: string[] = [];
+        const projectTargetIndex = new Map<string, VisTargetConfiguration>();
+
+        for (const name of projectNames) {
+            const visTargets = projectOptions.get(name);
+            const visTarget = visTargets?.[target];
+
+            if (!visTarget) {
+                continue;
+            }
+
+            const visOptions = visTarget.options;
+
+            // Internal tasks can only run as dependencies, not from the CLI directly.
+            if (visOptions?.internal) {
+                continue;
+            }
+
+            // OS filter — skip tasks that can't run on this OS.
+            if (!matchesOs(visOptions, currentOs)) {
+                logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
+                continue;
+            }
+
+            // CI filter — skip tasks with runInCI: false when in CI.
+            if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
+                logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
+                continue;
+            }
+
+            projectsWithTarget.push(name);
+            projectTargetIndex.set(name, visTarget);
+        }
 
         if (projectsWithTarget.length === 0) {
-            logger.info(`No projects have the "${target}" target.`);
+            logger.info(`No projects have the "${target}" target (after applying filters).`);
 
             return;
         }
 
         let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
             const project = workspace.projects[projectName];
-            const targetConfig = project?.targets?.[target];
+            const visTarget = projectTargetIndex.get(projectName)!;
             const taskTarget: TaskTarget = { project: projectName, target };
             const taskId = `${projectName}:${target}`;
 
             return {
-                cache: targetConfig?.cache ?? config.targetDefaults?.[target]?.cache,
+                cache: visTarget.cache,
                 id: taskId,
-                outputs: targetConfig?.outputs ?? config.targetDefaults?.[target]?.outputs ?? [],
-                overrides: { command: targetConfig?.command },
-                parallelism: targetConfig?.parallelism ?? config.targetDefaults?.[target]?.parallelism,
+                outputs: visTarget.outputs ?? [],
+                overrides: {
+                    command: visTarget.command,
+                    ...(visTarget.options ? { visOptions: visTarget.options } : {}),
+                },
+                parallelism: visTarget.parallelism,
                 projectRoot: project?.root,
                 target: taskTarget,
             };
         });
+
+        // Partition tasks into persistent vs non-persistent. Persistent tasks
+        // (e.g. dev servers) are never cached and run last, outside the task
+        // graph, so they don't block dependency resolution.
+        const persistentTasks: Task[] = [];
+        const regularTasks: Task[] = [];
+
+        for (const task of initialTasks) {
+            const opts = getTaskOptions(task);
+
+            if (opts?.persistent) {
+                task.cache = false;
+                persistentTasks.push(task);
+            } else {
+                regularTasks.push(task);
+            }
+        }
+
+        initialTasks = regularTasks;
 
         // Apply CI job partitioning if --partition or VIS_PARTITION is set
         const partition = parsePartition(options.partition as string | undefined);
@@ -266,12 +504,15 @@ const run: Command = {
             const stdinRegistry = new Map<string, StdinEntry>();
             const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, stdinRegistry });
             const { lifeCycle, store } = dynamic;
-            const taskExecutor = createConcurrentExecutor(
-                workspaceRoot,
+            const mutexPool: MutexPool = new Map();
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                mutexPool,
+                onOutput: (taskId, text) => store.addOutput(taskId, text),
+                onOutputReplace: (taskId, fullContent) => store.setOutput(taskId, fullContent),
                 stdinRegistry,
-                (taskId, text) => store.addOutput(taskId, text),
-                (taskId, fullContent) => store.setOutput(taskId, fullContent),
-            );
+                workspaceRoot,
+            });
 
             // Run tasks in a loop — supports rerun (r) and single-task retry (R)
             let loopAction: "quit" | "rerun" | "retry" = "rerun";
@@ -386,8 +627,17 @@ const run: Command = {
             }
 
             await dynamic.renderIsDone;
+
+            if (persistentTasks.length > 0) {
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
+            }
         } else {
-            const taskExecutor = createConcurrentExecutor(workspaceRoot);
+            const mutexPool: MutexPool = new Map();
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                mutexPool,
+                workspaceRoot,
+            });
             const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
             const results = await defaultTaskRunner(initialTasks, runnerOptions, {
@@ -414,6 +664,10 @@ const run: Command = {
 
             if (hasFailure) {
                 throw new Error("Some tasks failed.");
+            }
+
+            if (persistentTasks.length > 0) {
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
             }
         }
     },
