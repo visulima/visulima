@@ -26,7 +26,8 @@ import {
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
-import { buildProjectGraph, discoverWorkspace } from "../workspace";
+import { startWatcher } from "../watch";
+import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } from "../workspace";
 
 /** Environment variable used to pass affected files into the run command. */
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
@@ -661,26 +662,84 @@ const run: Command = {
             });
             const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
-            const results = await defaultTaskRunner(initialTasks, runnerOptions, {
-                lifeCycle,
-                projectGraph,
-                taskExecutor,
-                taskGraph,
-                workspaceRoot,
-            });
+            const runOnce = async (): Promise<boolean> => {
+                const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+                    lifeCycle,
+                    projectGraph,
+                    taskExecutor,
+                    taskGraph,
+                    workspaceRoot,
+                });
 
-            if (options.summarize) {
-                const summary = generateRunSummary(results, taskGraph, startTime);
+                if (options.summarize) {
+                    const summary = generateRunSummary(results, taskGraph, startTime);
 
-                await writeRunSummary(summary, workspaceRoot);
-            }
-
-            let hasFailure = false;
-
-            for (const [, result] of results) {
-                if (result.status === "failure") {
-                    hasFailure = true;
+                    await writeRunSummary(summary, workspaceRoot);
                 }
+
+                let hasFailure = false;
+
+                for (const [, result] of results) {
+                    if (result.status === "failure") {
+                        hasFailure = true;
+                    }
+                }
+
+                return hasFailure;
+            };
+
+            const hasFailure = await runOnce();
+
+            if (options.watch) {
+                // Watch mode: block on file changes until user interrupts.
+                // Collect absolute project roots to watch.
+                const absoluteRoots = projectsWithTarget
+                    .map((name) => {
+                        const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+                        const root = project?.root;
+
+                        if (!root) {
+                            return undefined;
+                        }
+
+                        return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
+                    })
+                    .filter((p): p is string => p !== undefined);
+
+                logger.info(`Watching ${absoluteRoots.length} project(s) — edit a file to rerun, Ctrl+C to exit.`);
+
+                let running = false;
+
+                const handle = startWatcher({
+                    onChange: async (paths) => {
+                        if (running) {
+                            return;
+                        }
+
+                        running = true;
+
+                        try {
+                            logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
+                            await runOnce();
+                        } finally {
+                            running = false;
+                        }
+                    },
+                    paths: absoluteRoots,
+                });
+
+                // Block until SIGINT.
+                await new Promise<void>((resolve) => {
+                    const onSigint = (): void => {
+                        process.off("SIGINT", onSigint);
+                        handle.close();
+                        resolve();
+                    };
+
+                    process.on("SIGINT", onSigint);
+                });
+
+                return;
             }
 
             if (hasFailure) {
@@ -744,6 +803,12 @@ const run: Command = {
             description: "Filter matched projects by a query (e.g. 'language=typescript && tag=lib')",
             name: "query",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Rerun affected tasks on file change. Ctrl+C to exit.",
+            name: "watch",
+            type: Boolean,
         },
     ],
 };

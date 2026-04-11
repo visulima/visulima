@@ -7,6 +7,7 @@ import { findMonorepoRootSync } from "@visulima/package";
 import { join } from "@visulima/path";
 
 import pkg from "../package.json";
+import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
 import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
@@ -103,6 +104,7 @@ cli.addPlugin(securityEnforcementPlugin);
 cli.addCommand(runCommand);
 cli.addCommand(ciCommand);
 cli.addCommand(graphCommand);
+cli.addCommand(actionGraphCommand);
 cli.addCommand(affectedCommand);
 cli.addCommand(hookCommand);
 cli.addCommand(updateCommand);
