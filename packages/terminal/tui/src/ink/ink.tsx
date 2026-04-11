@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, eraseLines } from "@visulima/ansi";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, cursorTo, eraseLines, eraseScreen } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
 // autoBind removed — only methods passed as callbacks need binding,
 // and those are defined as arrow function properties.
@@ -169,6 +169,14 @@ const shouldClearTerminalForFrame = ({
         || shouldClearOnUnmount
     );
 };
+
+// Viewport-only clear used by the fullscreen rerender path. Equivalent to
+// `CSI 2J` + `CSI 1;1H`: erases the visible screen and moves the cursor to
+// the top-left corner without touching the scrollback buffer. This matches
+// the upstream fix in vadimdemedes/ink#936 for vadimdemedes/ink#935, which
+// replaced `clearTerminal` (emitting `CSI 3J` + RIS) with this sequence so
+// terminal scrollback history is preserved across rerenders.
+const eraseScreenSequence: string = eraseScreen + cursorTo(0, 0);
 
 const isErrorInput = (value: unknown): value is Error => value instanceof Error || Object.prototype.toString.call(value) === "[object Error]";
 
@@ -1359,12 +1367,13 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
-            // Use a viewport-only clear (CSI H + CSI 2J) instead of resetTerminal
+            // Use a viewport-only clear (CSI 2J + CSI 1;1H) instead of resetTerminal
             // (which includes CSI 3J + RIS). Emitting CSI 3J during a rerender wipes
             // the terminal scrollback buffer in VT-compliant terminals (tmux, xterm.js,
             // Microsoft Terminal, WezTerm, Alacritty, Kitty, Ghostty, etc.), destroying
-            // the user's history. See vadimdemedes/ink#935.
-            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + output);
+            // the user's history. See vadimdemedes/ink#935 and the upstream fix in
+            // vadimdemedes/ink#936.
+            this.options.stdout.write(eraseScreenSequence + this.fullStaticOutput + output);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;
