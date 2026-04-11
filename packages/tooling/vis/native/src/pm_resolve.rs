@@ -19,6 +19,24 @@ fn validate_pm(pm: &str) -> napi::Result<()> {
     }
 }
 
+/// Parses the leading integer from a version string (e.g. "11.0.0-rc.0" -> Some(11)).
+/// Returns `None` when the version string does not start with a decimal digit
+/// (e.g. "latest", "workspace:*").
+fn parse_major(version: &str) -> Option<u32> {
+    let digits: String = version.chars().take_while(|c| c.is_ascii_digit()).collect();
+    digits.parse::<u32>().ok()
+}
+
+/// Returns `true` when the given pnpm version string is v11 or newer.
+/// Unknown versions (e.g. "latest") are treated as v11+ so we surface the
+/// forward-compatible warning rather than silently allowing removed usage.
+fn is_pnpm_v11_plus(version: &str) -> bool {
+    match parse_major(version) {
+        Some(major) => major >= 11,
+        None => true,
+    }
+}
+
 // ── Install ──────────────────────────────────────────────────────────
 
 #[napi(object)]
@@ -714,14 +732,61 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> n
 
 // ── Link / Unlink ────────────────────────────────────────────────────
 
+/// Returns `true` when the target looks like a filesystem path (absolute,
+/// relative, or Windows-style) rather than a bare package name.
+fn is_path_like(target: &str) -> bool {
+    target.starts_with('/')
+        || target.starts_with('\\')
+        || target.starts_with("./")
+        || target.starts_with(".\\")
+        || target.starts_with("../")
+        || target.starts_with("..\\")
+        || target == "."
+        || target == ".."
+        // Windows drive-letter (e.g. "C:/foo")
+        || (target.len() >= 3
+            && target.as_bytes()[1] == b':'
+            && (target.as_bytes()[2] == b'/' || target.as_bytes()[2] == b'\\'))
+}
+
 #[napi(catch_unwind)]
-pub fn resolve_link(pm: String, target: Option<String>) -> napi::Result<ResolvedCommand> {
+pub fn resolve_link(
+    pm: String,
+    version: String,
+    target: Option<String>,
+) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
     let mut args = vec!["link".to_string()];
+    let mut warnings = Vec::new();
+
+    // pnpm v11 removes arg-less `pnpm link` and global-store name resolution.
+    // Only `pnpm link <path>` continues to work.
+    if pm == "pnpm" && is_pnpm_v11_plus(&version) {
+        match &target {
+            None => {
+                warnings.push(
+                    "pnpm v11 removed arg-less `pnpm link`. Pass an explicit path, e.g. `vis link ./packages/my-pkg`."
+                        .into(),
+                );
+            }
+            Some(t) if !is_path_like(t) => {
+                warnings.push(format!(
+                    "pnpm v11 removed global-store name resolution for `pnpm link {t}`. Use a relative or absolute path instead."
+                ));
+            }
+            _ => {}
+        }
+    }
+
     if let Some(t) = target {
         args.push(t);
     }
-    Ok(ResolvedCommand { bin: pm, args, warnings: Vec::new() })
+
+    Ok(ResolvedCommand {
+        bin: pm,
+        args,
+        warnings,
+    })
 }
 
 #[napi(catch_unwind)]

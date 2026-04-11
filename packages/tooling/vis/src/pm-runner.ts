@@ -161,7 +161,7 @@ const runOutdated = (pm: PmInfo, options: OutdatedOptions, cwd: string, logger: 
     resolveAndRun((native) => native.resolveOutdated(pm.name, pm.version, options), cwd, logger);
 
 const runLink = (pm: PmInfo, target: string | null, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveLink(pm.name, target), cwd, logger);
+    resolveAndRun((native) => native.resolveLink(pm.name, pm.version, target), cwd, logger);
 
 const runUnlink = (pm: PmInfo, packages: string[], recursive: boolean, cwd: string, logger: Console): number =>
     resolveAndRun((native) => native.resolveUnlink(pm.name, pm.version, packages, recursive), cwd, logger);

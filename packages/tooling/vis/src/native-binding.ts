@@ -143,7 +143,7 @@ interface NativeBindings {
     resolveDlx: (pm: string, version: string, options: DlxOptions) => ResolvedCommand;
     resolveExec: (pm: string, version: string, options: ExecOptions) => ResolvedCommand;
     resolveInstall: (pm: string, version: string, options: InstallOptions) => ResolvedCommand;
-    resolveLink: (pm: string, target: string | null) => ResolvedCommand;
+    resolveLink: (pm: string, version: string, target: string | null) => ResolvedCommand;
     resolveOutdated: (pm: string, version: string, options: OutdatedOptions) => ResolvedCommand;
     resolvePmCommand: (pm: string, version: string, subcommand: string, extraArgs: string[]) => ResolvedCommand;
     resolveRemove: (pm: string, version: string, options: RemoveOptions) => ResolvedCommand;

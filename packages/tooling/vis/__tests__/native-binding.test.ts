@@ -617,6 +617,50 @@ describe("native addon integration", () => {
             expect(result.args).toStrictEqual(["link"]);
         });
 
+        it("should not warn on pnpm v10 link with bare name", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "10.0.0", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        it("should warn about arg-less link on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0-rc.0", null);
+
+            expect(result.args).toStrictEqual(["link"]);
+            expect(result.warnings.some((w) => w.includes("arg-less") && w.includes("v11"))).toBe(true);
+        });
+
+        it("should warn about bare package name on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings.some((w) => w.includes("global-store") || w.includes("path"))).toBe(true);
+        });
+
+        it("should not warn about path target on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "./local-pkg");
+
+            expect(result.args).toStrictEqual(["link", "./local-pkg"]);
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        it("should not warn on pnpm v11 for absolute path", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "/home/user/pkg");
+
+            expect(result.warnings).toHaveLength(0);
+        });
+
         it("should resolve unlink with recursive", () => {
             expect.assertions(1);
 
