@@ -2,6 +2,7 @@ import type { Command } from "@visulima/cerebro";
 import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
+import { filterProjectsByQuery } from "../selectors";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const affected: Command = {
@@ -67,7 +68,20 @@ const affected: Command = {
             return;
         }
 
-        logger.info(`Affected projects: ${result.affectedProjects.join(", ")}`);
+        // Apply --query filter on top of the affected set.
+        let affectedProjects = result.affectedProjects;
+
+        if (options.query) {
+            affectedProjects = filterProjectsByQuery(affectedProjects, workspace, options.query as string);
+
+            if (affectedProjects.length === 0) {
+                logger.info(`Query "${String(options.query)}" matched no affected projects.`);
+
+                return;
+            }
+        }
+
+        logger.info(`Affected projects: ${affectedProjects.join(", ")}`);
 
         // Forward the changed file list to the run command via an env var.
         // The run command then threads it into tasks that opt in via
@@ -77,7 +91,7 @@ const affected: Command = {
         }
 
         // Forward relevant options to the run command
-        const argv: string[] = [target, `--projects=${result.affectedProjects.join(",")}`];
+        const argv: string[] = [target, `--projects=${affectedProjects.join(",")}`];
 
         if (options.parallel !== undefined) {
             argv.push(`--parallel=${String(options.parallel)}`);
@@ -148,6 +162,11 @@ const affected: Command = {
         {
             description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
             name: "partition",
+            type: String,
+        },
+        {
+            description: "Filter affected projects by a query (e.g. 'language=typescript && tag=lib')",
+            name: "query",
             type: String,
         },
     ],

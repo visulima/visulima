@@ -13,6 +13,7 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import {
     detectCurrentOs,
     loadEnvFile,
@@ -329,15 +330,20 @@ const run: Command = {
     description: "Run a target across workspace projects",
     examples: [
         ["vis run build", "Run build on all projects"],
+        ["vis run :build", "Run build on all projects (moon-style)"],
+        ["vis run ~:test", "Run test on the project closest to the current directory"],
+        ["vis run \"#frontend:build\"", "Run build on projects tagged 'frontend'"],
+        ["vis run my-pkg:build", "Run build on a single named project"],
+        ["vis run :build --query \"language=typescript && tag=lib\"", "Filter by project metadata"],
         ["vis run test --projects=pkg-a,pkg-b", "Run test on specific projects"],
         ["vis run build --parallel=5", "Run build with 5 parallel tasks"],
         ["vis run build --no-cache", "Run build without caching"],
     ],
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        const target = argument[0];
+        const rawSelector = argument[0];
 
-        if (!target) {
-            throw new Error("Missing target. Usage: vis run <target>");
+        if (!rawSelector) {
+            throw new Error("Missing target. Usage: vis run <target> or vis run <selector>");
         }
 
         if (!wsRoot) {
@@ -361,7 +367,11 @@ const run: Command = {
             }
         }
 
-        let projectNames = Object.keys(workspace.projects);
+        // Resolve the target selector. Supports `:t`, `~:t`, `#tag:t`, `pkg:t`,
+        // and the legacy bare `t` form (which behaves like `:t`).
+        const selectorResult = resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
+        const target = selectorResult.target;
+        let projectNames = selectorResult.projects;
 
         if (options.projects) {
             const requested = new Set((options.projects as string).split(",").map((p: string) => p.trim()));
@@ -370,6 +380,17 @@ const run: Command = {
 
             if (projectNames.length === 0) {
                 throw new Error(`No matching projects found for: ${String(options.projects)}`);
+            }
+        }
+
+        // Apply --query filter (language=X && tag=Y style).
+        if (options.query) {
+            projectNames = filterProjectsByQuery(projectNames, workspace, options.query as string);
+
+            if (projectNames.length === 0) {
+                logger.info(`Query "${String(options.query)}" matched no projects.`);
+
+                return;
             }
         }
 
@@ -718,6 +739,11 @@ const run: Command = {
             description: "Skip project constraint validation",
             name: "skip-constraints",
             type: Boolean,
+        },
+        {
+            description: "Filter matched projects by a query (e.g. 'language=typescript && tag=lib')",
+            name: "query",
+            type: String,
         },
     ],
 };
