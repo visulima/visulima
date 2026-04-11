@@ -94,6 +94,7 @@ vis hook install
 | `vis init`              |       | Initialize vis.config.ts with security defaults                   |
 | `vis run <target>`      |       | Run a target across workspace projects with caching               |
 | `vis affected <target>` |       | Run tasks only on projects affected by git changes                |
+| `vis ignore <project>`  |       | CI build gating for Vercel / Netlify "Ignored Build Step"         |
 | `vis graph`             |       | Visualize the project dependency graph                            |
 | `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs             |
 | `vis update [packages]` | `up`  | Update packages to their latest versions                          |
@@ -102,6 +103,76 @@ vis hook install
 | `vis audit`             |       | Audit dependencies for security vulnerabilities                   |
 | `vis clean`             |       | Remove build artifacts, caches, and node_modules                  |
 | `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                    |
+
+### CI build gating (`vis ignore`)
+
+`vis ignore <project>` decides whether a deploy should proceed, based on whether `<project>` is affected by the current commit. It uses **inverted exit codes** so it drops directly into Vercel's "Ignored Build Step" and Netlify's `ignore` field:
+
+- Exit `0` → the project is **not** affected, platform **cancels** the build.
+- Exit `1` → the project **is** affected, platform **continues** the build.
+
+Commit-message keywords take precedence over git-diff detection:
+
+- Skip: `[skip ci]`, `[ci skip]`, `[no ci]`, `[vis skip]`, `[vis skip <project>]` (legacy `[nx skip]` tokens also accepted for easy migration).
+- Force deploy: `[vis deploy]`, `[vis deploy <project>]` (and legacy `[nx deploy]`).
+
+#### Vercel
+
+Settings → Git → **Ignored Build Step**:
+
+```
+npx @visulima/vis ignore my-app
+```
+
+#### Netlify
+
+`netlify.toml`:
+
+```toml
+[build]
+ignore = "npx @visulima/vis ignore my-app"
+```
+
+#### GitHub Actions / GitLab CI (preflight)
+
+Where a platform doesn't offer a custom ignore hook, run `vis ignore` as a preflight step with `--exit-zero-on-build` to use normal exit semantics and gate downstream jobs via an output:
+
+```yaml
+- name: Check if my-app is affected
+  id: gate
+  run: npx @visulima/vis ignore my-app --json > decision.json
+- name: Read decision
+  run: echo "action=$(jq -r .action decision.json)" >> "$GITHUB_OUTPUT"
+```
+
+#### Supported platforms matrix
+
+| Platform             | Native hook                  | `vis ignore` works?                                 |
+| -------------------- | ---------------------------- | --------------------------------------------------- |
+| **Vercel**           | Ignored Build Step           | Yes — drop-in                                       |
+| **Netlify**          | `ignore` in `netlify.toml`   | Yes — drop-in                                       |
+| **GitHub Actions**   | None (CI gating only)        | Yes — via `--json` + job `if:` conditions           |
+| **GitLab CI**        | None (CI gating only)        | Yes — via `--json` + `rules:`                       |
+| **Cloudflare Pages** | Build Watch Paths (globs)    | No — platform doesn't invoke custom scripts         |
+| **Cloudflare Workers Builds** | Build Watch Paths    | No — same reason                                    |
+| **Render**           | Build Filters (globs)        | No — [feature request open](https://feedback.render.com/features/p/skip-service-deployment-with-commandscript) |
+| **AWS Amplify**      | `[skip-cd]` commit keyword   | No — no custom-command hook                         |
+
+For platforms without a native hook, use their built-in path filtering alongside `vis` — or move CI gating into GitHub Actions / GitLab CI and wrap `vis ignore --json` there.
+
+#### Options
+
+| Flag                           | Default                       | Description                                             |
+| ------------------------------ | ----------------------------- | ------------------------------------------------------- |
+| `--base <ref>`                 | CI env var, then `HEAD~1`     | Git base ref for the affected comparison                |
+| `--head <ref>`                 | `HEAD`                        | Git head ref for the affected comparison                |
+| `--downstream <none\|direct\|deep>` | `deep`                   | How far to follow dependents of changed projects        |
+| `--upstream <none\|direct\|deep>`   | `none`                   | How far to follow dependencies of changed projects      |
+| `--json`                       | off                           | Emit the decision as JSON on stdout instead of text     |
+| `--exit-zero-on-build`         | off                           | Disable inverted exit codes (build exits 0, not 1)      |
+| `--verbose`                    | off                           | Print the decision path for debugging                   |
+
+Base ref resolution order: explicit `--base` flag → `CACHED_COMMIT_REF` (Netlify) → `VERCEL_GIT_PREVIOUS_SHA` (Vercel) → `GITHUB_BASE_REF` (GitHub Actions) → `CI_COMMIT_BEFORE_SHA` (GitLab CI) → `HEAD~1`. If the resolved ref isn't reachable (e.g. Vercel's shallow clone), it silently falls back to `HEAD~1`.
 
 ## Documentation
 
