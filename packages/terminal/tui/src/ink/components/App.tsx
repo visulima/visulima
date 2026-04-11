@@ -2,7 +2,7 @@
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
-import { cursorShow } from "@visulima/ansi";
+import { BracketedPasteMode, cursorShow, resetMode, setMode } from "@visulima/ansi";
 import type { ReactNode } from "react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -20,6 +20,11 @@ import StdoutContext from "./StdoutContext";
 const tab = "\t";
 const shiftTab = "\u001B[Z";
 const escape = "\u001B";
+
+// Precomputed once at module load — `BracketedPasteMode` is a DEC private mode
+// (code 2004) exported by @visulima/ansi; setMode/resetMode emit `CSI ?2004h/l`.
+const enableBracketedPaste = setMode(BracketedPasteMode);
+const disableBracketedPaste = resetMode(BracketedPasteMode);
 
 type AnimationSubscriber = {
     readonly callback: (currentTime: number) => void;
@@ -369,7 +374,7 @@ const App = ({
 
             if (isEnabled) {
                 if (bracketedPasteModeEnabledCount.current === 0) {
-                    stdout.write("\u001B[?2004h");
+                    stdout.write(enableBracketedPaste);
                 }
 
                 bracketedPasteModeEnabledCount.current++;
@@ -382,7 +387,7 @@ const App = ({
             }
 
             if (--bracketedPasteModeEnabledCount.current === 0) {
-                stdout.write("\u001B[?2004l");
+                stdout.write(disableBracketedPaste);
             }
         },
         [stdout],
@@ -581,7 +586,7 @@ const App = ({
 
             if (bracketedPasteModeEnabledCount.current > 0) {
                 if (stdout.isTTY && canWriteToStdout) {
-                    stdout.write("\u001B[?2004l");
+                    stdout.write(disableBracketedPaste);
                 }
 
                 bracketedPasteModeEnabledCount.current = 0;

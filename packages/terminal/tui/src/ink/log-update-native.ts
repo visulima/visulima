@@ -9,6 +9,7 @@
  * by comparing the current buffer against the previous frame cell-by-cell.
  */
 import type { RendererConstructor, RendererInstance } from "../core/native-binding";
+import { bsu, esu } from "./write-synchronized";
 
 export type NativeLogUpdate = {
     clear: () => void;
@@ -106,14 +107,14 @@ export const createNative = (stream: NodeJS.WriteStream): NativeLogUpdate | unde
 
             // Wrap in synchronized update (DEC 2026)
             if (stream.isTTY) {
-                renderer.writeRaw("\u001B[?2026h");
+                renderer.writeRaw(bsu);
             }
 
             try {
                 renderer.render(buffer);
             } finally {
                 if (stream.isTTY) {
-                    renderer.writeRaw("\u001B[?2026l");
+                    renderer.writeRaw(esu);
                 }
             }
         },

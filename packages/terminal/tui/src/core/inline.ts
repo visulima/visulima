@@ -13,11 +13,30 @@
  * render tick.
  */
 
+import {
+    BracketedPasteMode,
+    createDecMode,
+    cursorHide,
+    cursorPosition,
+    cursorShow,
+    cursorToColumn1,
+    cursorUp,
+    eraseLine,
+    REQUEST_CURSOR_POSITION,
+    resetMode,
+    setMode,
+} from "@visulima/ansi";
+
 import type { RendererInstance } from "./native-binding";
 import { Renderer, terminalSize } from "./native-binding";
 
-const DEC_2026_ON = "\u001B[?2026h";
-const DEC_2026_OFF = "\u001B[?2026l";
+// DEC Private Mode 2026 — Synchronized Output. Precomputed once.
+const SynchronizedOutputMode = createDecMode(2026);
+const DEC_2026_ON = setMode(SynchronizedOutputMode);
+const DEC_2026_OFF = resetMode(SynchronizedOutputMode);
+
+const enableBracketedPaste = setMode(BracketedPasteMode);
+const disableBracketedPaste = resetMode(BracketedPasteMode);
 
 export interface InlineOptions {
     /** Frames per second. Default: 60 */
@@ -77,7 +96,7 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
 
     function startRendering(cursorRow: number) {
         regionTopRow = cursorRow - renderRows;
-        write(`\u001B[${renderRows}A\u001B[1G`);
+        write(cursorUp(renderRows) + cursorToColumn1);
 
         // rowOffset: Rust emits \x1b[offset+bufRow+1;colH
         // We need offset+0+1 = regionTopRow+1 → offset = regionTopRow
@@ -116,10 +135,10 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
         // Pre-render setup: these writes happen BEFORE the first render tick.
         // The CPR response arrives asynchronously, so these will have flushed
         // through Node's stdout before Rust's stdout is used.
-        write("\u001B[?25l"); // hide cursor
-        write("\u001B[?2004h"); // enable bracketed paste for usePaste/useTextInput
+        write(cursorHide);
+        write(enableBracketedPaste); // for usePaste/useTextInput
         write("\n".repeat(renderRows));
-        write("\u001B[6n"); // CPR request
+        write(REQUEST_CURSOR_POSITION);
 
         process.on("SIGINT", stop);
 
@@ -148,18 +167,18 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
                 // Use absolute positioning — cursor could be anywhere after last render.
                 // Region occupies terminal rows (regionTopRow+1) through (regionTopRow+renderRows).
                 for (let i = 0; i < renderRows; i++) {
-                    write(`\u001B[${regionTopRow + 1 + i};1H\u001B[2K`);
+                    write(cursorPosition(regionTopRow + 1 + i, 1) + eraseLine);
                 }
 
                 // Leave cursor at top of cleared region
-                write(`\u001B[${regionTopRow + 1};1H`);
+                write(cursorPosition(regionTopRow + 1, 1));
             } else {
                 // preserve: move cursor just below the region so prompt appears after content
-                write(`\u001B[${regionTopRow + renderRows + 1};1H`);
+                write(cursorPosition(regionTopRow + renderRows + 1, 1));
             }
 
-            write("\u001B[?2004l"); // disable bracketed paste
-            write("\u001B[?25h"); // show cursor
+            write(disableBracketedPaste);
+            write(cursorShow);
         }
 
         if (process.stdin.isTTY)

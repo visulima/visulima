@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, eraseLines, resetTerminal } from "@visulima/ansi";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, eraseLines } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
 // autoBind removed — only methods passed as callbacks need binding,
 // and those are defined as arrow function properties.
@@ -19,7 +19,6 @@ import Yoga from "yoga-layout";
 
 import { accessibilityContext as AccessibilityContext } from "./components/AccessibilityContext";
 import App from "./components/App";
-import { hideCursorEscape, showCursorEscape } from "./cursor-helpers";
 import * as dom from "./dom";
 import instances from "./instances";
 import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
@@ -1093,7 +1092,7 @@ export default class Ink {
 
                     // Switch back to the primary screen buffer
                     this.writeBestEffort(this.options.stdout, ALT_SCREEN_OFF);
-                    this.writeBestEffort(this.options.stdout, showCursorEscape);
+                    this.writeBestEffort(this.options.stdout, cursorShow);
                     this.alternateScreen = false;
                 } else if (!this.interactive) {
                     // Non-interactive environments don't handle erasing ansi escapes well.
@@ -1261,7 +1260,7 @@ export default class Ink {
 
         if (this.alternateScreen) {
             this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
-            this.writeBestEffort(this.options.stdout, hideCursorEscape);
+            this.writeBestEffort(this.options.stdout, cursorHide);
         }
     }
 
@@ -1359,7 +1358,13 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
-            this.options.stdout.write(resetTerminal + this.fullStaticOutput + output);
+            // Use a viewport-only clear (CSI H + CSI 2J) instead of resetTerminal
+            // (which includes CSI 3J + RIS). Emitting CSI 3J during a rerender wipes
+            // the terminal scrollback buffer in VT-compliant terminals (tmux, xterm.js,
+            // Microsoft Terminal, WezTerm, Alacritty, Kitty, Ghostty, etc.), destroying
+            // the user's history. See vadimdemedes/ink#935 and the upstream fix in
+            // vadimdemedes/ink#936.
+            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + output);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;

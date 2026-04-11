@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention, import/no-named-as-default, unicorn/no-null */
+import { createDecMode, resetMode, setMode } from "@visulima/ansi";
 import EventEmitter from "eventemitter3";
 
 import type { RendererInstance, TerminalGuardInstance } from "./native-binding";
 import { Renderer, TerminalGuard } from "./native-binding";
 
-const DEC_2026_ON = "\u001B[?2026h";
-const DEC_2026_OFF = "\u001B[?2026l";
+// DEC Private Mode 2026 — Synchronized Output. Precomputed once.
+// `setMode`/`resetMode` emit `CSI ?2026h` / `CSI ?2026l`.
+const SynchronizedOutputMode = createDecMode(2026);
+const DEC_2026_ON = setMode(SynchronizedOutputMode);
+const DEC_2026_OFF = resetMode(SynchronizedOutputMode);
 
 export class TuiApp extends EventEmitter {
     private renderer: RendererInstance;

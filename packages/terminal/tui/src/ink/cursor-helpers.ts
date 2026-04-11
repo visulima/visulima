@@ -1,14 +1,9 @@
-import { cursorDown, cursorTo, cursorUp } from "@visulima/ansi";
+import { cursorDown, cursorHide, cursorShow, cursorTo, cursorUp } from "@visulima/ansi";
 
 export type CursorPosition = {
     x: number;
     y: number;
 };
-
-const showCursorEscape = "\u001B[?25h";
-const hideCursorEscape = "\u001B[?25l";
-
-export { hideCursorEscape, showCursorEscape };
 
 /**
  * Compare two cursor positions. Returns true if they differ.
@@ -26,7 +21,7 @@ export const buildCursorSuffix = (visibleLineCount: number, cursorPosition: Curs
 
     const moveUp = visibleLineCount - cursorPosition.y;
 
-    return (moveUp > 0 ? cursorUp(moveUp) : "") + cursorTo(cursorPosition.x) + showCursorEscape;
+    return (moveUp > 0 ? cursorUp(moveUp) : "") + cursorTo(cursorPosition.x) + cursorShow;
 };
 
 /**
@@ -58,7 +53,7 @@ export type CursorOnlyInput = {
  * Hides cursor if it was previously shown, returns to bottom, then repositions.
  */
 export const buildCursorOnlySequence = (input: CursorOnlyInput): string => {
-    const hidePrefix = input.cursorWasShown ? hideCursorEscape : "";
+    const hidePrefix = input.cursorWasShown ? cursorHide : "";
     const returnToBottom = buildReturnToBottom(input.previousLineCount, input.previousCursorPosition);
     const cursorSuffix = buildCursorSuffix(input.visibleLineCount, input.cursorPosition);
 
@@ -74,5 +69,5 @@ export const buildReturnToBottomPrefix = (cursorWasShown: boolean, previousLineC
         return "";
     }
 
-    return hideCursorEscape + buildReturnToBottom(previousLineCount, previousCursorPosition);
+    return cursorHide + buildReturnToBottom(previousLineCount, previousCursorPosition);
 };

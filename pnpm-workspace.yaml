@@ -125,7 +125,7 @@ catalogs:
     '@shikijs/langs': ^4.0.2
     '@shikijs/themes': ^4.0.2
     '@sveltejs/adapter-auto': ^7.0.1
-    '@sveltejs/kit': 2.57.0
+    '@sveltejs/kit': ^2.57.1
     '@total-typescript/ts-reset': ^0.6.1
     '@tsconfig/node22': ^22.0.5
     '@vercel/blob': 2.3.3
@@ -754,11 +754,14 @@ overrides:
   '@modelcontextprotocol/sdk@<1.25.2': '>=1.25.2'
   '@modelcontextprotocol/sdk@>=1.10.0 <=1.25.3': '>=1.26.0'
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
+  '@sveltejs/kit@<=2.57.0': '>=2.57.1'
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@<1.12.0: '>=1.12.2'
   axios@<=1.13.4: '>=1.13.5'
+  axios@<1.15.0: '>=1.15.0'
   basic-ftp@<5.2.0: '>=5.2.0'
+  basic-ftp@<=5.2.1: '>=5.2.2'
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   brace-expansion@<5.0.5: '>=5.0.5'
   chrono-node@<2.2.4: '>=2.9.0'
@@ -844,6 +847,7 @@ overrides:
   tar@<=7.5.2: '>=7.5.3'
   tar@<=7.5.3: '>=7.5.4'
   tmp@<=0.2.3: '>=0.2.5'
+  unhead@<2.1.13: '>=2.1.13'
   undici@<6.23.0: '>=6.23.0'
   undici@<6.24.0: '>=6.24.0'
   undici@>=6.0.0 <6.24.0: '>=6.24.0'
