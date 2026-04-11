@@ -1,8 +1,11 @@
 import { execSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+// `mkdtempSync` has no `@visulima/fs` equivalent (it's a node-specific API);
+// writes and removals go through @visulima/fs.
+import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
 
+import { removeSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { IgnoreDecision } from "../src/commands/ignore-helpers";
@@ -43,7 +46,7 @@ const createTemporaryGitRepo = (): { cleanup: () => void; commit: (message: stri
     };
 
     return {
-        cleanup: () => { rmSync(root, { force: true, recursive: true }); },
+        cleanup: () => { removeSync(root); },
         commit,
         root,
     };
@@ -271,7 +274,7 @@ describe(readLastCommitMessage, () => {
 
             expect(message).toBe("");
         } finally {
-            rmSync(outsideRepo, { force: true, recursive: true });
+            removeSync(outsideRepo);
         }
     });
 

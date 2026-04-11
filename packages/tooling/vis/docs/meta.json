@@ -11,6 +11,7 @@
                 "commands/run",
                 "commands/affected",
                 "commands/ci",
+                "commands/ignore",
                 "commands/action-graph",
                 "commands/graph",
                 "commands/sync",
