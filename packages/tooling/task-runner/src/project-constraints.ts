@@ -1,27 +1,53 @@
-import type { ConstraintsConfig, ConstraintViolation, ProjectGraph } from "./types";
+import type { ConstraintsConfig, ConstraintViolation, ProjectConfiguration, ProjectGraph } from "./types";
+
+/**
+ * Layer hierarchy from lowest to highest. A project at a given layer
+ * may only depend on projects at the same index or lower.
+ */
+const LAYER_ORDER: NonNullable<ProjectConfiguration["layer"]>[] = [
+    "configuration",
+    "library",
+    "scaffolding",
+    "tool",
+    "automation",
+    "application",
+];
+
+const layerIndex = (layer: ProjectConfiguration["layer"]): number | undefined => {
+    if (!layer) {
+        return undefined;
+    }
+
+    const idx = LAYER_ORDER.indexOf(layer);
+
+    return idx === -1 ? undefined : idx;
+};
 
 /**
  * Enforces project dependency constraints on a project graph.
  * Returns an array of violations found. Does not throw — the caller
  * decides how to handle violations (fatal error, warning, etc.).
  *
- * Three constraint mechanisms:
+ * Four constraint mechanisms:
  * 1. **Tag relationships**: If a project has a tag listed in `tagRelationships`,
  *    its dependencies must have at least one of the required tags.
  * 2. **Type boundaries**: Controls which project types can depend on which.
  *    By default, no project may depend on an "application" type project.
  * 3. **Dependency kind rules**: Controls rules based on whether the dependency
  *    is a production dependency, devDependency, or peerDependency.
+ * 4. **Layer relationships**: Projects can only depend on projects at the
+ *    same or lower layer (configuration < library < ... < application).
  */
 const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: ConstraintsConfig): ConstraintViolation[] => {
     const violations: ConstraintViolation[] = [];
 
-    const { dependencyKindRules, tagRelationships, typeBoundaries } = constraints;
+    const { dependencyKindRules, enforceLayerRelationships, tagRelationships, typeBoundaries } = constraints;
     const hasTagRules = tagRelationships && Object.keys(tagRelationships).length > 0;
     const hasTypeBoundaries = typeBoundaries !== undefined;
     const hasKindRules = dependencyKindRules !== undefined;
+    const hasLayerRules = enforceLayerRelationships === true;
 
-    if (!hasTagRules && !hasTypeBoundaries && !hasKindRules) {
+    if (!hasTagRules && !hasTypeBoundaries && !hasKindRules && !hasLayerRules) {
         return violations;
     }
 
@@ -123,6 +149,21 @@ const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: Cons
                             sourceProject: projectName,
                         });
                     }
+                }
+            }
+
+            // Layer hierarchy: a project may only depend on the same or lower layer
+            if (hasLayerRules) {
+                const sourceLayer = layerIndex(sourceNode.data.layer);
+                const depLayer = layerIndex(depNode.data.layer);
+
+                if (sourceLayer !== undefined && depLayer !== undefined && depLayer > sourceLayer) {
+                    violations.push({
+                        dependencyProject: dep.target,
+                        message: `Project "${projectName}" (layer: ${sourceNode.data.layer!}) depends on "${dep.target}" (layer: ${depNode.data.layer!}). A "${sourceNode.data.layer!}" project may only depend on projects at the same or lower layer. Hierarchy: ${LAYER_ORDER.join(" < ")}.`,
+                        rule: "layer-relationship",
+                        sourceProject: projectName,
+                    });
                 }
             }
         }
