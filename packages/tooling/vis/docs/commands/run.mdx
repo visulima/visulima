@@ -52,7 +52,7 @@ vis run test --watch                                      # Rerun on file change
 | `--skip-constraints`|       | `false` | Skip project constraint validation                   |
 | `--query`           |       |         | Filter by query (e.g. `language=typescript && tag=lib`) |
 | `--watch`           |       | `false` | Rerun on file change (Ctrl+C to exit)                |
-| `--flaky`           |       | `false` | Show flaky task report after execution               |
+| `--flaky`           |       | `true`  | Show flaky report on failure (`--no-flaky` to suppress) |
 
 ## Query Language
 
@@ -181,13 +181,11 @@ export default defineConfig({
 
 ## Flakiness Report
 
-Pass `--flaky` to see which tasks have historically flaky outcomes:
+When tasks fail and historical run summaries exist (from prior `--summarize` runs), vis automatically shows which of the failed tasks are known to be flaky:
 
 ```bash
-vis run :test --summarize --flaky
+vis run :test --summarize
 ```
-
-The report reads `.task-runner/runs/*.json` summaries (created by `--summarize`) and shows tasks that have both successes and failures across runs:
 
 ```
 Flaky tasks (based on historical runs):

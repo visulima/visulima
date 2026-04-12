@@ -713,10 +713,8 @@ const run: Command = {
                 return;
             }
 
-            if (options.flaky) {
-                const flakyStats = analyzeFlakiness(workspaceRoot, {
-                    minRuns: 2,
-                });
+            if (hasFailure && options.flaky !== false) {
+                const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 });
 
                 if (flakyStats.length > 0) {
                     logger.info("");
@@ -729,9 +727,7 @@ const run: Command = {
 
                     logger.info("");
                 }
-            }
 
-            if (hasFailure) {
                 throw new Error("Some tasks failed.");
             }
 
@@ -800,8 +796,8 @@ const run: Command = {
             type: Boolean,
         },
         {
-            defaultValue: false,
-            description: "Show flaky task report after execution (requires prior --summarize runs)",
+            defaultValue: true,
+            description: "Show flaky task report on failure (use --no-flaky to suppress)",
             name: "flaky",
             type: Boolean,
         },
