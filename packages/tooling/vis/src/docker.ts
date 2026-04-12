@@ -86,6 +86,10 @@ export interface ScaffoldOptions {
  * Computes the full set of projects that must exist in the Docker context
  * to build a given focus set: the focus projects themselves plus every
  * project reachable from them in the workspace dependency graph.
+ *
+ * @param focus - Project names to focus on.
+ * @param projectGraph - The workspace project graph.
+ * @returns A set containing every project in the transitive closure.
  */
 export const resolveFocusProjects = (focus: string[], projectGraph: ProjectGraph): Set<string> => {
     const result = new Set<string>(focus);
@@ -144,13 +148,16 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
 };
 
 /**
- * Build a minimal Docker context at {@link ScaffoldOptions.outDir}:
+ * Build a minimal Docker context at {@link ScaffoldOptions.outDir}.
  *
- * - `<outDir>/workspace/`: root manifests + per-project manifests for
- *   the focus closure. Copy this BEFORE running `pnpm install`/etc.
- * - `<outDir>/sources/`: full source trees for the focus projects
- *   (only when `includeSources` is true). Copy this AFTER install so
- *   your image's install layer remains cache-friendly.
+ * Creates two directories:
+ * - `<outDir>/workspace/` — root manifests + per-project manifests for the
+ *   focus closure. `COPY` this BEFORE `pnpm install` for layer caching.
+ * - `<outDir>/sources/` — full source trees for the focus projects (only
+ *   when {@link ScaffoldOptions.includeSources} is true).
+ *
+ * @param options - Scaffold configuration.
+ * @returns The list of project names included in the scaffold.
  */
 export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: string[] } => {
     const { focus, includeSources = false, outDir, projectGraph, workspace, workspaceRoot } = options;
@@ -161,12 +168,10 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
 
     ensureDir(workspaceDir);
 
-    // Copy top-level manifests (lockfiles, root package.json, vis config, …)
     for (const manifest of ROOT_MANIFEST_FILES) {
         copyFileIfExists(join(workspaceRoot, manifest), join(workspaceDir, manifest));
     }
 
-    // Copy per-project manifests (no source)
     for (const name of projects) {
         const project = workspace.projects[name] as VisProjectConfiguration | undefined;
 
@@ -182,8 +187,6 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         }
     }
 
-    // Focus sources (not dependency sources — those are pulled in by the
-    // package manager as workspace symlinks during install).
     if (includeSources) {
         ensureDir(sourcesDir);
 
@@ -201,8 +204,6 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         }
     }
 
-    // Write a tiny manifest listing the projects in the scaffold so
-    // downstream tools (and `vis docker prune`) can read it.
     writeFileSync(
         join(outDir, "vis-docker-manifest.json"),
         `${JSON.stringify({ focus, projects: [...projects].sort() }, null, 2)}\n`,
@@ -211,16 +212,6 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
     return { projects: [...projects] };
 };
 
-/**
- * Prune a scaffolded Docker context by deleting every workspace project
- * that is not part of the focus closure. Intended to run inside a build
- * stage: after `pnpm install --frozen-lockfile`, call `vis docker prune`
- * to strip unfocused dependency sources from `node_modules/<pkg>`
- * workspace symlinks.
- *
- * This is intentionally conservative — it only removes files the
- * scaffold step would have omitted.
- */
 export interface PruneOptions {
     /** Root of the scaffolded context (containing `vis-docker-manifest.json`). */
     contextRoot: string;
@@ -228,6 +219,17 @@ export interface PruneOptions {
     workspace: WorkspaceConfiguration;
 }
 
+/**
+ * Removes every workspace project that is not in the focus closure.
+ *
+ * Intended to run inside a Docker build stage after installing
+ * dependencies, so unfocused workspace symlinks are stripped from
+ * the final image.
+ *
+ * @param options - Prune configuration.
+ * @returns The list of project root paths that were removed.
+ * @throws If no `vis-docker-manifest.json` exists at the context root.
+ */
 export const pruneDockerContext = (options: PruneOptions): { removed: string[] } => {
     const { contextRoot, workspace, workspaceRoot } = options;
     const manifestPath = join(contextRoot, "vis-docker-manifest.json");

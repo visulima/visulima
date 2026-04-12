@@ -29,7 +29,6 @@ import type { StdinEntry } from "../tui/types";
 import { startWatcher } from "../watch";
 import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } from "../workspace";
 
-/** Environment variable used to pass affected files into the run command. */
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
 /**
@@ -106,7 +105,6 @@ class OutputRingBuffer {
         this.#buffer += text;
 
         if (this.#buffer.length > this.#maxBytes) {
-            // Keep the tail, trim from the front
             this.#buffer = this.#buffer.slice(-this.#maxBytes);
             this.#truncated = true;
         }
@@ -229,19 +227,15 @@ const createConcurrentExecutor = (
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
-    // Append affected files as command args when requested.
     const commandWithAffected = buildAffectedFilesArgs(rawCommand, affectedFiles, visOptions?.affectedFiles);
 
-    // Per-target shell override: wrap the command in the custom shell.
     const customShell = resolveTargetShell(visOptions, currentOs);
     const command = customShell ? `${customShell} -c ${JSON.stringify(commandWithAffected)}` : commandWithAffected;
 
-    // Load dotenv file if configured.
     const envFileVars = visOptions?.envFile
         ? loadEnvFile(resolvedCwd, visOptions.envFile)
         : undefined;
 
-    // Forward affected files via VIS_AFFECTED_FILES when requested.
     const affectedFilesEnv: Record<string, string> = {};
 
     if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
@@ -256,8 +250,6 @@ const createConcurrentExecutor = (
 
     const isPty = Boolean(stdinRegistry);
 
-    // PTY tasks must never be cached — they require live user interaction.
-    // Disable cache before execution so the orchestrator skips both read and write.
     if (isPty) {
         task.cache = false;
     }
@@ -272,8 +264,6 @@ const createConcurrentExecutor = (
 
         if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
             if (termBuf) {
-                // PTY mode: process ANSI sequences through terminal buffer,
-                // then replace (not append) the store output with the current screen state
                 termBuf.write(event.text);
                 onOutputReplace?.(task.id, termBuf.toString());
             } else {
@@ -397,11 +387,9 @@ const run: Command = {
 
         const currentOs = detectCurrentOs();
 
-        // Read affected files from env (set by `vis affected`) if any.
         const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
         const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split(" ").filter(Boolean) : undefined;
 
-        // Discover vis target options per project for this target.
         const projectsWithTarget: string[] = [];
         const projectTargetIndex = new Map<string, VisTargetConfiguration>();
 
@@ -415,18 +403,15 @@ const run: Command = {
 
             const visOptions = visTarget.options;
 
-            // Internal tasks can only run as dependencies, not from the CLI directly.
             if (visOptions?.internal) {
                 continue;
             }
 
-            // OS filter — skip tasks that can't run on this OS.
             if (!matchesOs(visOptions, currentOs)) {
                 logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
                 continue;
             }
 
-            // CI filter — skip tasks with runInCI: false when in CI.
             if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
                 logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
                 continue;
@@ -462,9 +447,6 @@ const run: Command = {
             };
         });
 
-        // Partition tasks into persistent vs non-persistent. Persistent tasks
-        // (e.g. dev servers) are never cached and run last, outside the task
-        // graph, so they don't block dependency resolution.
         const persistentTasks: Task[] = [];
         const regularTasks: Task[] = [];
 
@@ -481,7 +463,6 @@ const run: Command = {
 
         initialTasks = regularTasks;
 
-        // Apply CI job partitioning if --partition or VIS_PARTITION is set
         const partition = parsePartition(options.partition as string | undefined);
 
         if (partition) {
@@ -536,14 +517,11 @@ const run: Command = {
                 workspaceRoot,
             });
 
-            // Run tasks in a loop — supports rerun (r) and single-task retry (R)
             let loopAction: "quit" | "rerun" | "retry" = "rerun";
             let retryTaskId: string | null = null;
 
             while (loopAction !== "quit") {
                 if (loopAction === "rerun") {
-                    // Full rerun of all tasks
-
                     await defaultTaskRunner(initialTasks, runnerOptions, {
                         lifeCycle,
                         projectGraph,
@@ -552,7 +530,6 @@ const run: Command = {
                         workspaceRoot,
                     });
                 } else if (loopAction === "retry" && retryTaskId) {
-                    // Retry a single failed task
                     const task = initialTasks.find((t) => t.id === retryTaskId);
                     const command = task?.overrides["command"] as string | undefined;
 
@@ -614,10 +591,7 @@ const run: Command = {
                     store.markDone();
                 }
 
-                // Wait for user action: quit, rerun, or retry
-
                 loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
-                    // Watch for rerun or retry requests
                     const unsubscribe = store.subscribe(() => {
                         const s = store.getSnapshot();
 
@@ -634,7 +608,6 @@ const run: Command = {
                         }
                     });
 
-                    // Check if user quit -- clean up subscription to avoid leak
                     dynamic.renderIsDone.then(
                         () => {
                             unsubscribe();
@@ -691,8 +664,6 @@ const run: Command = {
             const hasFailure = await runOnce();
 
             if (options.watch) {
-                // Watch mode: block on file changes until user interrupts.
-                // Collect absolute project roots to watch.
                 const absoluteRoots = projectsWithTarget
                     .map((name) => {
                         const project = workspace.projects[name] as VisProjectConfiguration | undefined;
@@ -728,7 +699,6 @@ const run: Command = {
                     paths: absoluteRoots,
                 });
 
-                // Block until SIGINT.
                 await new Promise<void>((resolve) => {
                     const onSigint = (): void => {
                         process.off("SIGINT", onSigint);

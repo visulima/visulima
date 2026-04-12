@@ -30,49 +30,52 @@ const TAG_PROJECT_RE = /^#([a-zA-Z0-9_\-/]+):(.+)$/;
 const NAMED_PROJECT_RE = /^([@a-zA-Z0-9_\-/]+):(.+)$/;
 
 /**
- * Parses a target selector string. Returns `undefined` if the input
- * doesn't match any of the recognised forms.
+ * Parses a target selector string into its component parts.
+ *
+ * @param input - Raw selector string (e.g. `:build`, `~:test`, `#tag:lint`, `pkg:build`, or bare `build`).
+ * @returns The parsed selector, or `undefined` if `input` is empty.
  */
 export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projects"> | undefined => {
     if (input === "") {
         return undefined;
     }
 
-    // `:target` — all projects
     if (input.startsWith(":")) {
         return { kind: "all", target: input.slice(1) };
     }
 
-    // `~:target` — closest project to cwd
     if (input.startsWith("~:")) {
         return { kind: "closest", target: input.slice(2) };
     }
 
-    // `#tag:target`
     const tagMatch = TAG_PROJECT_RE.exec(input);
 
     if (tagMatch && tagMatch[1] && tagMatch[2]) {
         return { kind: "tag", tag: tagMatch[1], target: tagMatch[2] };
     }
 
-    // `project:target` — scoped to a single project
     const projectMatch = NAMED_PROJECT_RE.exec(input);
 
     if (projectMatch && projectMatch[1] && projectMatch[2]) {
-        // Heuristic: if the prefix starts with "@" or contains "/" or "-",
-        // treat it as a project name, not a bare target.
+        // Distinguish `pkg-name:target` from a bare `target` that happens to contain `:`.
         if (projectMatch[1].startsWith("@") || projectMatch[1].includes("/") || projectMatch[1].includes("-")) {
             return { kind: "project", projects: [projectMatch[1]], target: projectMatch[2] } as Omit<ParsedSelector, "projects"> & { projects: string[] };
         }
     }
 
-    // Bare `target` name — legacy form, same as `:target`.
     return { kind: "all", target: input };
 };
 
 /**
- * Resolves a parsed selector against a workspace. Returns the list of
- * candidate project names plus the target name.
+ * Resolves a selector string against a workspace to produce a concrete
+ * list of project names and the target to run.
+ *
+ * @param input - Raw selector string.
+ * @param workspace - The discovered workspace configuration.
+ * @param cwd - Current working directory (used for `~:` closest resolution).
+ * @param workspaceRoot - Absolute path to the workspace root.
+ * @returns An object with `projects` (candidate names) and `target`.
+ * @throws If the selector is invalid or `~:` finds no matching project.
  */
 export const resolveSelector = (
     input: string,
@@ -93,7 +96,6 @@ export const resolveSelector = (
     }
 
     if (parsed.kind === "project") {
-        // Reuse the parsed project list.
         const projects = (parsed as ParsedSelector).projects ?? [];
 
         return { projects, target: parsed.target };
@@ -110,8 +112,6 @@ export const resolveSelector = (
         return { projects: matched, target: parsed.target };
     }
 
-    // closest — walk up from cwd and find the project whose root is
-    // the deepest ancestor of cwd.
     const relCwd = relative(workspaceRoot, cwd) || ".";
     let bestProject: string | undefined;
     let bestRootLength = -1;
@@ -123,7 +123,6 @@ export const resolveSelector = (
             continue;
         }
 
-        // Match both `projectRoot` itself and `projectRoot/...`.
         const isMatch = relCwd === projectRoot || relCwd.startsWith(`${projectRoot}/`);
 
         if (isMatch && projectRoot.length > bestRootLength) {
@@ -164,9 +163,15 @@ interface ParsedQuery {
 const QUERY_CLAUSE_RE = /^(\w+)\s*(!?=)\s*(.+)$/;
 
 /**
- * Parses a query string like `language=typescript && tag=lib`. Very
- * small grammar: a sequence of `field=value` / `field!=value` clauses
- * joined by `&&` or `||`. Only one operator allowed per query.
+ * Parses a query string into a structured predicate.
+ *
+ * Grammar: `<field>=<value>` or `<field>!=<value>` clauses joined by
+ * `&&` (all must match) or `||` (any must match). Mixing operators is
+ * not supported and throws.
+ *
+ * @param input - Raw query string, e.g. `"language=typescript && tag=lib"`.
+ * @returns The parsed query, or `undefined` if the input is empty.
+ * @throws On mixed `&&` / `||` or malformed clauses.
  */
 export const parseQuery = (input: string): ParsedQuery | undefined => {
     const trimmed = input.trim();
@@ -259,8 +264,12 @@ const matchClause = (clause: QueryClause, name: string, project: VisProjectConfi
 };
 
 /**
- * Filters a list of project names by a query string. Returns all inputs
- * unchanged when `query` is undefined or empty.
+ * Filters project names by a query string.
+ *
+ * @param projectNames - Candidate project names to filter.
+ * @param workspace - The workspace configuration (projects must carry vis metadata).
+ * @param query - A query string, or `undefined` / empty to skip filtering.
+ * @returns The subset of `projectNames` that match the query.
  */
 export const filterProjectsByQuery = (
     projectNames: string[],

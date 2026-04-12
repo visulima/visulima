@@ -28,6 +28,13 @@ const shouldIgnore = (path: string): boolean => {
     return IGNORE_PATTERNS.some((pattern) => pattern.test(path));
 };
 
+/**
+ * Starts recursive file watchers on the given paths and invokes
+ * {@link WatchOptions.onChange} after a debounce window.
+ *
+ * @param options - Watcher configuration.
+ * @returns A handle to close all watchers.
+ */
 export const startWatcher = (options: WatchOptions): WatchHandle => {
     const { debounceMs = 150, onChange, paths } = options;
     const watchers: FSWatcher[] = [];

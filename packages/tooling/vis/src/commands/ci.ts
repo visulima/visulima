@@ -84,7 +84,6 @@ const ci: Command = {
         const base = (options.base as string | undefined) ?? defaultBase;
         const head = (options.head as string | undefined) ?? defaultHead;
 
-        // 1. Install dependencies unless disabled.
         if (options.install !== false) {
             logger.info("▸ Installing dependencies");
 
@@ -95,8 +94,6 @@ const ci: Command = {
             logger.info("▸ Skipping install (--no-install)");
         }
 
-        // 2. Run each requested target through `vis affected` so that
-        //    only projects changed in this CI commit are exercised.
         for (const target of targets) {
             logger.info(`▸ Running affected ${target} (base=${base}, head=${head})`);
 

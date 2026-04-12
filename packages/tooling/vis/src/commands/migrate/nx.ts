@@ -42,9 +42,13 @@ const renderVisConfig = (nx: NxJson): string => {
 };
 
 /**
- * Nx -> vis migration. vis's `project.json` shape is already compatible
- * with Nx's, so only `nx.json` (workspace-level named inputs and target
- * defaults) needs translating.
+ * Translates an `nx.json` into a `vis.config.ts`. Per-project
+ * `project.json` files are left untouched — vis reads them natively.
+ *
+ * @param workspaceRoot - Absolute workspace root path.
+ * @param options - Migration options.
+ * @param logger - Logger for user feedback.
+ * @param report - Migration report to append manual steps and warnings.
  */
 export const migrateNx = (
     workspaceRoot: string,

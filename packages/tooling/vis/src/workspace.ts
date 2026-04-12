@@ -767,7 +767,6 @@ const mergeTarget = (
     defaults: Partial<VisTargetConfiguration> | undefined,
     fileGroups: Record<string, string[]> | undefined,
 ): VisTargetConfiguration => {
-    // Base = defaults <- project.json target <- {command?: scriptCommand}
     const base: VisTargetConfiguration = {
         ...defaults,
         ...projectTarget,
@@ -785,16 +784,12 @@ const mergeTarget = (
         base.inputs = resolveFileGroupInputs(base.inputs, fileGroups);
     }
 
-    // Apply preset after merging user options so that explicit user
-    // settings win over preset defaults.
     const withPreset = applyPreset(base);
 
-    // Apply type-based cache default only if user didn't already set it.
     if (withPreset.cache === undefined) {
         withPreset.cache = defaultCacheForType(withPreset.type);
     }
 
-    // Type-based default for persistent: `run` types are persistent by default.
     if (withPreset.type === "run" && withPreset.options?.persistent === undefined) {
         withPreset.options = { ...withPreset.options, persistent: true };
     }
@@ -820,7 +815,6 @@ const createTargetsFromScripts = (
         targets[name] = mergeTarget(name, command, projectTargets?.[name], defaults[name], fileGroups);
     }
 
-    // project.json-only targets (no matching script) — e.g. declarative-only.
     for (const [name, projectTarget] of Object.entries(projectTargets ?? {})) {
         if (seen.has(name)) {
             continue;
@@ -872,7 +866,6 @@ const discoverWorkspace = (
     const projects: Record<string, VisProjectConfiguration> = {};
     const projectOptions: ProjectOptionsIndex = new Map();
 
-    // Find workspace patterns
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
     const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
 
@@ -888,7 +881,6 @@ const discoverWorkspace = (
         throw new Error("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    // Resolve patterns to actual project directories
     const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
 
     for (const projectDirectory of projectDirectories) {
@@ -899,17 +891,14 @@ const discoverWorkspace = (
             continue;
         }
 
-        // Check for project.json for additional configuration
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
         const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
 
-        // Determine project type: explicit project.json > bin heuristic > default
         let projectType: "application" | "library" = "library";
 
         if (projectJson?.projectType) {
             projectType = projectJson.projectType;
         } else if (pkg.bin !== undefined) {
-            // Packages with bin entries are typically applications/CLIs
             projectType = "application";
         }
 
@@ -917,12 +906,8 @@ const discoverWorkspace = (
 
         const visTargets = createTargetsFromScripts(pkg.scripts, projectJson?.targets, defaults, config.fileGroups);
 
-        // Stash the full vis-target map so commands can read options.
         projectOptions.set(pkg.name, visTargets);
 
-        // Strip vis-specific fields before handing to task-runner. task-runner
-        // only understands `options?: Record<string, unknown>`, so we pass the
-        // VisTargetOptions object through as an opaque overrides bag.
         const sanitizedTargets: Record<string, TargetConfiguration> = {};
 
         for (const [targetName, target] of Object.entries(visTargets)) {
@@ -969,14 +954,12 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 
         dependencies[name] = [];
 
-        // Read the package.json to find dependencies
         const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
 
         if (!pkg) {
             continue;
         }
 
-        // Track each dependency source separately to preserve the relationship type
         const depSources: [Record<string, string> | undefined, DependencyType][] = [
             [pkg.dependencies, "static"],
             [pkg.devDependencies, "devDependency"],
@@ -991,7 +974,6 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
             }
 
             for (const depName of Object.keys(deps)) {
-                // Only include workspace-internal dependencies, skip duplicates across sources
                 if (projectNames.has(depName) && !seen.has(depName)) {
                     seen.add(depName);
                     dependencies[name]?.push({

@@ -99,7 +99,6 @@ const satisfiesRange = (actual: string, range: string): boolean => {
                 return false;
             }
         } else if (/^\d/.test(clause)) {
-            // Exact-ish match on major.minor
             const actualParts = actual.split(".");
             const clauseParts = clause.split(".");
 
@@ -115,9 +114,11 @@ const satisfiesRange = (actual: string, range: string): boolean => {
 };
 
 /**
- * Inspect the workspace for runtime-version pins and check whether the
- * current process satisfies them. Returns a list of findings; an empty
- * array means everything matches.
+ * Checks `engines.node`, `.nvmrc`, `.node-version`, and `packageManager`
+ * against the running process.
+ *
+ * @param workspaceRoot - Absolute path to the workspace root.
+ * @returns Findings; an empty array means everything matches.
  */
 export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] => {
     const findings: RuntimeFinding[] = [];

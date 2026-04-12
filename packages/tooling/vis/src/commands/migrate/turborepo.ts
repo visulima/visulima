@@ -118,6 +118,14 @@ const renderVisConfig = (turbo: TurboJson): string => {
     ].join("\n");
 };
 
+/**
+ * Translates a `turbo.json` into a `vis.config.ts`.
+ *
+ * @param workspaceRoot - Absolute workspace root path.
+ * @param options - Migration options.
+ * @param logger - Logger for user feedback.
+ * @param report - Migration report to append manual steps and warnings.
+ */
 export const migrateTurborepo = (
     workspaceRoot: string,
     options: { dryRun?: boolean },

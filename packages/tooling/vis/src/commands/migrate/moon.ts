@@ -138,6 +138,14 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
 
 // ── Migration entry ──────────────────────────────────────────────────
 
+/**
+ * Translates a moon `.moon/tasks.yml` into a `vis.config.ts`.
+ *
+ * @param workspaceRoot - Absolute workspace root path.
+ * @param options - Migration options.
+ * @param logger - Logger for user feedback.
+ * @param report - Migration report to append manual steps and warnings.
+ */
 export const migrateMoon = (
     workspaceRoot: string,
     options: { dryRun?: boolean },
