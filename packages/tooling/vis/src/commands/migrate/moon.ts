@@ -182,6 +182,16 @@ export const migrateMoon = (
         if (task.toolchain) {
             report.warnings.push(`Task "${name}" has a \`toolchain\` field ("${task.toolchain}") which vis does not support — review and remove.`);
         }
+
+        const hasArgsWithSpaces = Array.isArray(task.args) && task.args.some((a) => a.includes(" "));
+
+        if (hasArgsWithSpaces) {
+            report.warnings.push(`Task "${name}" has \`args\` entries containing spaces — vis flattens args into the command string so quoting may need manual adjustment.`);
+        }
+    }
+
+    if (parsed.extends && parsed.extends.length > 0) {
+        report.warnings.push("`extends` was found in the moon config but has no direct vis equivalent — inline the referenced files or use vis's `taskDefaults` blocks.");
     }
 
     if (parsed.implicitDeps && parsed.implicitDeps.length > 0) {

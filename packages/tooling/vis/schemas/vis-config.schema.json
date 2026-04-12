@@ -203,7 +203,10 @@
                 "items": {
                     "oneOf": [
                         { "type": "string" },
-                        { "type": "object" }
+                        { "$ref": "project.schema.json#/$defs/fileSetInput" },
+                        { "$ref": "project.schema.json#/$defs/environmentInput" },
+                        { "$ref": "project.schema.json#/$defs/runtimeInput" },
+                        { "$ref": "project.schema.json#/$defs/externalDependencyInput" }
                     ]
                 }
             }
@@ -253,6 +256,7 @@
         "taskRunnerOptions": {
             "type": "object",
             "description": "Task runner engine options.",
+            "additionalProperties": false,
             "properties": {
                 "parallel": { "oneOf": [{ "type": "number" }, { "type": "boolean" }], "default": 3 },
                 "smartLockfileHashing": { "type": "boolean", "default": false },
@@ -270,6 +274,7 @@
                 "remoteCache": {
                     "type": "object",
                     "required": ["url"],
+                    "additionalProperties": false,
                     "properties": {
                         "url": { "type": "string" },
                         "token": { "type": "string" },

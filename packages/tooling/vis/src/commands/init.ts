@@ -168,7 +168,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             rl.close();
 
             const { execSync } = await import("node:child_process");
-            const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn" : pm.name === "bun" ? "bunx" : "npx";
+            const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn exec" : pm.name === "bun" ? "bunx" : "npx";
 
             for (const tool of existingTools) {
                 info(`    Migrating from ${tool}...`);
@@ -183,10 +183,16 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
                 }
             }
 
-            const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+            // Only write the fallback config if no migration produced one.
+            if (!existsSync(configPath)) {
+                const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
-            writeFileSync(configPath, content);
-            success(`Created ${configPath}`);
+                writeFileSync(configPath, content);
+                success(`Created ${configPath}`);
+            } else {
+                success(`Migrated config written to ${configPath}`);
+            }
+
             note("  Run 'vis doctor' to see your project's full health status.");
 
             return;

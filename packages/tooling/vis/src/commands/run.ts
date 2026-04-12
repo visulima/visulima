@@ -35,6 +35,24 @@ import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } fr
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
 /**
+ * Resolves a task's effective working directory. Returns the workspace
+ * root when `runFromWorkspaceRoot` is set, otherwise resolves
+ * `projectRoot` — keeping absolute paths as-is and prefixing relative
+ * ones with the workspace root.
+ */
+const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runFromWorkspaceRoot: boolean): string => {
+    if (runFromWorkspaceRoot) {
+        return workspaceRoot;
+    }
+
+    if (!projectRoot) {
+        return workspaceRoot;
+    }
+
+    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
+};
+
+/**
  * Runs persistent tasks (dev servers, watch mode) as a concurrent batch.
  * Persistent tasks never cache and never return a "result" — they run
  * until interrupted or until all of them exit.
@@ -53,13 +71,7 @@ const runPersistentTasks = async (
             }
 
             const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
-            const cwd = visOptions?.runFromWorkspaceRoot
-                ? workspaceRoot
-                : task.projectRoot
-                    ? task.projectRoot.startsWith("/")
-                        ? task.projectRoot
-                        : `${workspaceRoot}/${task.projectRoot}`
-                    : workspaceRoot;
+            const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
             const affectedEnv = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
@@ -135,6 +147,14 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
     return undefined;
 };
 
+/**
+ * Wraps a string in single quotes for safe shell execution, escaping
+ * any internal single quotes using the standard `'\''` pattern. Unlike
+ * double quotes, single quotes prevent shell expansion of `$VAR`, `\n`,
+ * and backticks.
+ */
+const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
+
 /** Builds the command args list for `affectedFiles` forwarding. */
 const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
     if (!affectedFiles || affectedFiles.length === 0 || mode === false || mode === undefined) {
@@ -142,7 +162,7 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
     }
 
     if (mode === "args" || mode === "both") {
-        const quoted = affectedFiles.map((f) => `"${f.replaceAll("\"", "\\\"")}"`).join(" ");
+        const quoted = affectedFiles.map(singleQuoteEscape).join(" ");
 
         return `${command} ${quoted}`;
     }
@@ -218,9 +238,11 @@ const createConcurrentExecutor = (
     const visOptions = getTaskOptions(task);
     const currentOs = detectCurrentOs();
 
-    const useWorkspaceCwd = visOptions?.runFromWorkspaceRoot === true;
-    const baseCwd = useWorkspaceCwd ? workspaceRoot : (execOptions.cwd ?? task.projectRoot ?? workspaceRoot);
-    const resolvedCwd = baseCwd.startsWith("/") ? baseCwd : `${workspaceRoot}/${baseCwd}`;
+    const resolvedCwd = resolveCwd(
+        workspaceRoot,
+        execOptions.cwd ?? task.projectRoot,
+        visOptions?.runFromWorkspaceRoot === true,
+    );
 
     const rawCommand = task.overrides["command"] as string | undefined;
 
@@ -231,7 +253,7 @@ const createConcurrentExecutor = (
     const commandWithAffected = buildAffectedFilesArgs(rawCommand, affectedFiles, visOptions?.affectedFiles);
 
     const customShell = resolveTargetShell(visOptions, currentOs);
-    const command = customShell ? `${customShell} -c ${JSON.stringify(commandWithAffected)}` : commandWithAffected;
+    const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
 
     const envFileVars = visOptions?.envFile
         ? loadEnvFile(resolvedCwd, visOptions.envFile)
