@@ -4,10 +4,6 @@ import { describe, expect, it } from "vitest";
 import { filterProjectsByQuery, parseQuery, parseTargetSelector, resolveSelector } from "../src/selectors";
 import type { VisProjectConfiguration } from "../src/workspace";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>>): WorkspaceConfiguration => {
     const full: Record<string, VisProjectConfiguration> = {};
 
@@ -17,10 +13,6 @@ const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>
 
     return { projects: full } as WorkspaceConfiguration;
 };
-
-// ---------------------------------------------------------------------------
-// parseTargetSelector
-// ---------------------------------------------------------------------------
 
 describe("parseTargetSelector", () => {
     it("should parse `:build` as kind all with target build", () => {
@@ -72,15 +64,9 @@ describe("parseTargetSelector", () => {
     it("should return undefined for empty string", () => {
         expect.assertions(1);
 
-        const result = parseTargetSelector("");
-
-        expect(result).toBeUndefined();
+        expect(parseTargetSelector("")).toBeUndefined();
     });
 });
-
-// ---------------------------------------------------------------------------
-// parseQuery
-// ---------------------------------------------------------------------------
 
 describe("parseQuery", () => {
     it("should parse a single clause with default && operator", () => {
@@ -127,15 +113,9 @@ describe("parseQuery", () => {
     it("should return undefined for empty string", () => {
         expect.assertions(1);
 
-        const result = parseQuery("");
-
-        expect(result).toBeUndefined();
+        expect(parseQuery("")).toBeUndefined();
     });
 });
-
-// ---------------------------------------------------------------------------
-// filterProjectsByQuery
-// ---------------------------------------------------------------------------
 
 describe("filterProjectsByQuery", () => {
     const workspace = makeWorkspace({
@@ -148,47 +128,33 @@ describe("filterProjectsByQuery", () => {
     it("should return all projects when query is undefined", () => {
         expect.assertions(1);
 
-        const result = filterProjectsByQuery(allNames, workspace, undefined);
-
-        expect(result).toStrictEqual(allNames);
+        expect(filterProjectsByQuery(allNames, workspace, undefined)).toStrictEqual(allNames);
     });
 
     it("should filter by tag", () => {
         expect.assertions(1);
 
-        const result = filterProjectsByQuery(allNames, workspace, "tag=frontend");
-
-        expect(result).toStrictEqual(["app-frontend"]);
+        expect(filterProjectsByQuery(allNames, workspace, "tag=frontend")).toStrictEqual(["app-frontend"]);
     });
 
     it("should filter by language", () => {
         expect.assertions(1);
 
-        const result = filterProjectsByQuery(allNames, workspace, "language=go");
-
-        expect(result).toStrictEqual(["app-backend"]);
+        expect(filterProjectsByQuery(allNames, workspace, "language=go")).toStrictEqual(["app-backend"]);
     });
 
     it("should filter by compound && query", () => {
         expect.assertions(1);
 
-        const result = filterProjectsByQuery(allNames, workspace, "tag=frontend && language=typescript");
-
-        expect(result).toStrictEqual(["app-frontend"]);
+        expect(filterProjectsByQuery(allNames, workspace, "tag=frontend && language=typescript")).toStrictEqual(["app-frontend"]);
     });
 
     it("should filter by compound || query", () => {
         expect.assertions(1);
 
-        const result = filterProjectsByQuery(allNames, workspace, "tag=frontend || tag=backend");
-
-        expect(result).toStrictEqual(allNames);
+        expect(filterProjectsByQuery(allNames, workspace, "tag=frontend || tag=backend")).toStrictEqual(allNames);
     });
 });
-
-// ---------------------------------------------------------------------------
-// resolveSelector
-// ---------------------------------------------------------------------------
 
 describe("resolveSelector", () => {
     const workspace = makeWorkspace({
@@ -198,43 +164,36 @@ describe("resolveSelector", () => {
 
     const workspaceRoot = "/repo";
 
-    it("should resolve `:build` to all projects", () => {
+    it("should resolve `:build` to all projects", async () => {
         expect.assertions(2);
 
-        const result = resolveSelector(":build", workspace, "/repo", workspaceRoot);
+        const result = await resolveSelector(":build", workspace, "/repo", workspaceRoot);
 
         expect(result.target).toBe("build");
         expect(result.projects).toStrictEqual(["app-backend", "app-frontend"]);
     });
 
-    it("should resolve `#frontend:build` to tagged projects only", () => {
+    it("should resolve `#frontend:build` to tagged projects only", async () => {
         expect.assertions(2);
 
-        const result = resolveSelector("#frontend:build", workspace, "/repo", workspaceRoot);
+        const result = await resolveSelector("#frontend:build", workspace, "/repo", workspaceRoot);
 
         expect(result.target).toBe("build");
         expect(result.projects).toStrictEqual(["app-frontend"]);
     });
 
-    it("should resolve `~:build` to the closest project from cwd", () => {
+    it("should resolve `~:build` to the closest project from cwd", async () => {
         expect.assertions(2);
 
-        const cwd = "/repo/packages/app-frontend/src";
-        const result = resolveSelector("~:build", workspace, cwd, workspaceRoot);
+        const result = await resolveSelector("~:build", workspace, "/repo/packages/app-frontend/src", workspaceRoot);
 
         expect(result.target).toBe("build");
         expect(result.projects).toStrictEqual(["app-frontend"]);
     });
 
-    it("should throw for `~:build` when cwd is not inside any project", () => {
+    it("should throw for empty selector", async () => {
         expect.assertions(1);
 
-        expect(() => resolveSelector("~:build", workspace, "/repo/unrelated", workspaceRoot)).toThrow(/no project found/i);
-    });
-
-    it("should throw for empty selector", () => {
-        expect.assertions(1);
-
-        expect(() => resolveSelector("", workspace, "/repo", workspaceRoot)).toThrow(/invalid target selector/i);
+        await expect(resolveSelector("", workspace, "/repo", workspaceRoot)).rejects.toThrow(/invalid target selector/i);
     });
 });

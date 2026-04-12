@@ -28,7 +28,6 @@ describe(checkRuntimeVersions, () => {
     it("should return no findings when engines.node is satisfied by the current runtime", () => {
         expect.assertions(1);
 
-        // The current process.versions.node should be >=22 per repo requirements
         const actualMajor = Number.parseInt(process.versions.node.split(".")[0]!, 10);
 
         writeFileSync(
@@ -44,7 +43,6 @@ describe(checkRuntimeVersions, () => {
     it("should report an error when engines.node is not satisfied", () => {
         expect.assertions(4);
 
-        // Require a version far above anything currently running
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({ engines: { node: ">=999" } }),
@@ -61,10 +59,8 @@ describe(checkRuntimeVersions, () => {
     it("should report a warning when .nvmrc major version mismatches", () => {
         expect.assertions(4);
 
-        // Create a package.json (required for the function to continue past JSON parse)
         writeFileSync(join(tmpDir, "package.json"), JSON.stringify({}));
 
-        // Pin a completely different major version
         const actualMajor = Number.parseInt(process.versions.node.split(".")[0]!, 10);
         const mismatchedMajor = actualMajor + 10;
 
