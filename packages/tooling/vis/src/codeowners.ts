@@ -39,8 +39,6 @@ const toWorkspacePath = (projectRoot: string, entryPath: string): string => {
         return `/${projectRoot}/`;
     }
 
-    // Preserve wildcards and globs verbatim — they're interpreted by the
-    // CODEOWNERS matcher, not by us.
     if (projectRoot === "" || projectRoot === ".") {
         return `/${trimmed}`;
     }
@@ -96,19 +94,14 @@ const HEADER_LINES = [
 /**
  * Serialises {@link CodeownersLine}s to a valid CODEOWNERS file string.
  */
-export const renderCodeowners = (lines: CodeownersLine[], provider: CodeownersConfig["provider"] = "github"): string => {
+export const renderCodeowners = (lines: CodeownersLine[], _provider: CodeownersConfig["provider"] = "github"): string => {
     const out: string[] = [...HEADER_LINES];
 
     for (const line of lines) {
         const owners = line.owners.join(" ");
         const channel = line.channel ? `    # notify: ${line.channel}` : "";
 
-        if (provider === "bitbucket") {
-            // Bitbucket uses `Rule: <glob>` — different format.
-            out.push(`${line.path} ${owners}${channel}`);
-        } else {
-            out.push(`${line.path} ${owners}${channel}`);
-        }
+        out.push(`${line.path} ${owners}${channel}`);
     }
 
     out.push("");

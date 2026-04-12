@@ -1,17 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import type { MigrateLogger, MigrationReport } from "./types";
+import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
 
-import { join } from "@visulima/path";
-
-import type { MigrationReport } from "./types";
-
-interface Logger {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-}
-
-/**
- * Shape of the subset of turbo.json we care about.
- */
 interface TurboJson {
     extends?: string[];
     globalDependencies?: string[];
@@ -36,52 +25,31 @@ interface TurboTask {
     outputs?: string[];
     persistent?: boolean;
     interactive?: boolean;
-    outputLogs?: "full" | "hash-only" | "new-only" | "errors-only" | "none";
+    outputLogs?: "errors-only" | "full" | "hash-only" | "new-only" | "none";
     passThroughEnv?: string[];
 }
 
-/**
- * Converts a turbo task's `dependsOn` values to vis's `dependsOn`
- * shape. turbo's `^build` (run build on dependencies first) and
- * `project#task` forms translate cleanly.
- */
-const convertDependsOn = (deps: string[]): (string | { target: string; dependencies?: boolean; projects?: string | string[] })[] => {
-    const result: (string | { target: string; dependencies?: boolean; projects?: string | string[] })[] = [];
-
-    for (const dep of deps) {
-        // turbo: `^build` means run `build` on every dependency first
+const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] => {
+    return deps.map((dep) => {
         if (dep.startsWith("^")) {
-            result.push({ dependencies: true, target: dep.slice(1) });
-            continue;
+            return { dependencies: true, target: dep.slice(1) };
         }
 
-        // turbo: `project#task` → explicit project + target
         if (dep.includes("#")) {
             const [project, target] = dep.split("#");
 
-            result.push({ projects: project, target: target! });
-            continue;
+            return { projects: project, target: target! };
         }
 
-        // Plain task name — same project
-        result.push(dep);
-    }
-
-    return result;
+        return dep;
+    });
 };
 
-/**
- * Render the vis.config.ts contents for a migrated turbo.json.
- * We emit a pretty-printed TS file rather than using a formatter so
- * the migration is dependency-free.
- */
 const renderVisConfig = (turbo: TurboJson): string => {
     const tasks = turbo.tasks ?? turbo.pipeline ?? {};
     const targetDefaults: Record<string, Record<string, unknown>> = {};
 
     for (const [taskName, task] of Object.entries(tasks)) {
-        // Skip concrete `project#task` entries — they belong in per-project
-        // config, not in workspace-wide defaults.
         if (taskName.includes("#")) {
             continue;
         }
@@ -136,9 +104,7 @@ const renderVisConfig = (turbo: TurboJson): string => {
         configObject.taskRunnerOptions = { globalEnv: turbo.globalEnv };
     }
 
-    const serialised = JSON.stringify(configObject, null, 4)
-        // Unquote keys so the emitted file looks like idiomatic TS.
-        .replaceAll(/"(\w+)":/g, "$1:");
+    const serialised = serializeConfigObject(configObject);
 
     return [
         "// Migrated from turbo.json by `vis migrate turborepo`.",
@@ -152,52 +118,25 @@ const renderVisConfig = (turbo: TurboJson): string => {
     ].join("\n");
 };
 
-/**
- * Runs the turborepo → vis migration. Reads `turbo.json` from the
- * workspace root and writes `vis.config.ts`. Non-destructive: the
- * original turbo.json is left in place for review.
- */
 export const migrateTurborepo = (
     workspaceRoot: string,
-    options: { dryRun?: boolean } = {},
-    logger: Logger,
+    options: { dryRun?: boolean },
+    logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
-    const turboPath = join(workspaceRoot, "turbo.json");
+    const turbo = readJsonConfig<TurboJson>(workspaceRoot, "turbo.json");
 
-    if (!existsSync(turboPath)) {
+    if (!turbo) {
         logger.warn("No turbo.json found in workspace root — nothing to migrate.");
         report.warnings.push("No turbo.json at workspace root.");
 
         return;
     }
 
-    let turbo: TurboJson;
-
-    try {
-        turbo = JSON.parse(readFileSync(turboPath, "utf8")) as TurboJson;
-    } catch (error) {
-        throw new Error(`Failed to parse ${turboPath}: ${(error as Error).message}`);
-    }
-
-    const visConfigPath = join(workspaceRoot, "vis.config.ts");
-
-    if (existsSync(visConfigPath) && !options.dryRun) {
-        logger.warn("vis.config.ts already exists — refusing to overwrite. Remove it first or run with --dry-run.");
-        report.warnings.push("vis.config.ts already exists; migration skipped writing the file.");
-
-        return;
-    }
-
     const rendered = renderVisConfig(turbo);
 
-    if (options.dryRun) {
-        logger.info("── vis.config.ts (preview) ──");
-        logger.info(rendered);
-        logger.info("── end preview ──");
-    } else {
-        writeFileSync(visConfigPath, rendered);
-        logger.info(`Wrote ${visConfigPath}`);
+    if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
+        return;
     }
 
     report.manualSteps.push(

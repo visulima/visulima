@@ -35,6 +35,8 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
     let timer: NodeJS.Timeout | undefined;
 
     const flush = (): void => {
+        timer = undefined;
+
         const changes = [...pendingChanges];
 
         pendingChanges = new Set();

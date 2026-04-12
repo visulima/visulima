@@ -1,13 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
-import { join } from "@visulima/path";
-
-import type { MigrationReport } from "./types";
-
-interface Logger {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-}
+import type { MigrateLogger, MigrationReport } from "./types";
+import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
 
 interface NxJson {
     namedInputs?: Record<string, (string | Record<string, unknown>)[]>;
@@ -35,8 +27,7 @@ const renderVisConfig = (nx: NxJson): string => {
         configObject.targetDefaults = nx.targetDefaults;
     }
 
-    const serialised = JSON.stringify(configObject, null, 4)
-        .replaceAll(/"(\w+)":/g, "$1:");
+    const serialised = serializeConfigObject(configObject);
 
     return [
         "// Migrated from nx.json by `vis migrate nx`.",
@@ -51,56 +42,33 @@ const renderVisConfig = (nx: NxJson): string => {
 };
 
 /**
- * Nx → vis migration. The good news: vis's `project.json` shape is
- * already compatible with Nx's, so the only thing we need to migrate
- * is `nx.json` (workspace-level named inputs and target defaults).
- * Per-project `project.json` files are left untouched.
+ * Nx -> vis migration. vis's `project.json` shape is already compatible
+ * with Nx's, so only `nx.json` (workspace-level named inputs and target
+ * defaults) needs translating.
  */
 export const migrateNx = (
     workspaceRoot: string,
-    options: { dryRun?: boolean } = {},
-    logger: Logger,
+    options: { dryRun?: boolean },
+    logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
-    const nxJsonPath = join(workspaceRoot, "nx.json");
+    const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");
 
-    if (!existsSync(nxJsonPath)) {
+    if (!nx) {
         logger.warn("No nx.json found in workspace root — nothing to migrate.");
         report.warnings.push("No nx.json at workspace root.");
 
         return;
     }
 
-    let nx: NxJson;
+    const rendered = renderVisConfig(nx);
 
-    try {
-        nx = JSON.parse(readFileSync(nxJsonPath, "utf8")) as NxJson;
-    } catch (error) {
-        throw new Error(`Failed to parse ${nxJsonPath}: ${(error as Error).message}`);
-    }
-
-    const visConfigPath = join(workspaceRoot, "vis.config.ts");
-
-    if (existsSync(visConfigPath) && !options.dryRun) {
-        logger.warn("vis.config.ts already exists — refusing to overwrite. Remove it first or run with --dry-run.");
-        report.warnings.push("vis.config.ts already exists; migration skipped writing the file.");
-
+    if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
         return;
     }
 
-    const rendered = renderVisConfig(nx);
-
-    if (options.dryRun) {
-        logger.info("── vis.config.ts (preview) ──");
-        logger.info(rendered);
-        logger.info("── end preview ──");
-    } else {
-        writeFileSync(visConfigPath, rendered);
-        logger.info(`Wrote ${visConfigPath}`);
-    }
-
     report.manualSteps.push(
-        "Existing project.json files are vis-compatible and have been left untouched. Rename `sourceRoot` → `sourceRoot` is identical; `tags`, `implicitDependencies`, and `targets` translate directly.",
+        "Existing project.json files are vis-compatible and have been left untouched. Rename `sourceRoot` -> `sourceRoot` is identical; `tags`, `implicitDependencies`, and `targets` translate directly.",
     );
 
     if (nx.affected?.defaultBase || nx.defaultBase) {

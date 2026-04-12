@@ -1,178 +1,12 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
+import { readYamlSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import type { MigrationReport } from "./types";
+import type { MigrateLogger, MigrationReport } from "./types";
+import { serializeConfigObject, writeVisConfig } from "./shared";
 
-interface Logger {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-}
-
-/**
- * moon ships YAML configuration files. Rather than pulling in a full
- * YAML parser, we use a deliberately tiny subset parser that only
- * understands the moon task/project config shapes. This is enough for
- * a migration pass and keeps us dependency-free.
- *
- * If the input is more complex than we can parse, we emit a `warning`
- * into the migration report so the user knows to finish the port by
- * hand — we never silently lose fields.
- */
-
-// ── Tiny YAML parser ─────────────────────────────────────────────────
-
-type YamlValue = string | number | boolean | null | YamlValue[] | { [key: string]: YamlValue };
-
-const LINE_RE = /^(\s*)([^\s].*?)(?:\s*#.*)?$/;
-const QUOTED_RE = /^(['"])(.*)\1$/;
-
-const parseScalar = (raw: string): YamlValue => {
-    const trimmed = raw.trim();
-
-    if (trimmed === "") {
-        return "";
-    }
-
-    if (trimmed === "true") {
-        return true;
-    }
-
-    if (trimmed === "false") {
-        return false;
-    }
-
-    if (trimmed === "null" || trimmed === "~") {
-        return null;
-    }
-
-    if (QUOTED_RE.test(trimmed)) {
-        return trimmed.slice(1, -1);
-    }
-
-    const asNumber = Number(trimmed);
-
-    if (!Number.isNaN(asNumber) && /^-?\d/.test(trimmed)) {
-        return asNumber;
-    }
-
-    return trimmed;
-};
-
-/** Parses a minimal indentation-driven YAML subset into JS values. */
-export const parseTinyYaml = (input: string): YamlValue => {
-    const rawLines = input.split(/\r?\n/);
-    const lines: { indent: number; content: string }[] = [];
-
-    for (const raw of rawLines) {
-        const match = LINE_RE.exec(raw);
-
-        if (!match) {
-            continue;
-        }
-
-        const [, indent, content] = match;
-
-        lines.push({ content: content!, indent: indent!.length });
-    }
-
-    let index = 0;
-
-    const parseBlock = (currentIndent: number): YamlValue => {
-        // Inspect the first meaningful line at or beyond currentIndent.
-        if (index >= lines.length) {
-            return null;
-        }
-
-        const first = lines[index]!;
-
-        if (first.indent < currentIndent) {
-            return null;
-        }
-
-        if (first.content.startsWith("- ")) {
-            const array: YamlValue[] = [];
-
-            while (index < lines.length) {
-                const line = lines[index]!;
-
-                if (line.indent < currentIndent) {
-                    break;
-                }
-
-                if (line.indent !== currentIndent) {
-                    break;
-                }
-
-                if (!line.content.startsWith("- ")) {
-                    break;
-                }
-
-                const afterDash = line.content.slice(2).trim();
-
-                if (afterDash.includes(":") && !afterDash.endsWith(":") && !QUOTED_RE.test(afterDash)) {
-                    // Inline object after `- `
-                    const [k, v] = afterDash.split(":").map((s) => s.trim());
-
-                    array.push({ [k!]: parseScalar(v!) });
-                    index++;
-                } else {
-                    array.push(parseScalar(afterDash));
-                    index++;
-                }
-            }
-
-            return array;
-        }
-
-        const object: Record<string, YamlValue> = {};
-
-        while (index < lines.length) {
-            const line = lines[index]!;
-
-            if (line.indent < currentIndent) {
-                break;
-            }
-
-            if (line.indent !== currentIndent) {
-                index++;
-                continue;
-            }
-
-            const colonIndex = line.content.indexOf(":");
-
-            if (colonIndex === -1) {
-                index++;
-                continue;
-            }
-
-            const key = line.content.slice(0, colonIndex).trim();
-            const rest = line.content.slice(colonIndex + 1).trim();
-
-            if (rest === "") {
-                index++;
-
-                // Nested block follows.
-                const nextIndent = lines[index]?.indent ?? currentIndent;
-
-                if (nextIndent > currentIndent) {
-                    object[key] = parseBlock(nextIndent);
-                } else {
-                    object[key] = null;
-                }
-            } else {
-                object[key] = parseScalar(rest);
-                index++;
-            }
-        }
-
-        return object;
-    };
-
-    return parseBlock(0);
-};
-
-// ── Moon shape → vis shape ───────────────────────────────────────────
+// ── Moon config shape ────────────────────────────────────────────────
 
 interface MoonTaskYaml {
     command?: string;
@@ -196,6 +30,8 @@ interface MoonTasksYaml {
     tasks?: Record<string, MoonTaskYaml>;
     taskOptions?: Record<string, unknown>;
 }
+
+// ── Conversion ───────────────────────────────────────────────────────
 
 const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     const target: Record<string, unknown> = {};
@@ -229,9 +65,6 @@ const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     }
 
     if (task.options) {
-        // moon's options map one-to-one to vis's options — they share
-        // the same field names (persistent, interactive, internal,
-        // runInCI, retryCount, affectedFiles, mutex, envFile, osType, …).
         target.options = task.options;
     }
 
@@ -259,8 +92,7 @@ const renderVisConfig = (tasks: MoonTasksYaml): string => {
         configObject.namedInputs = { default: tasks.implicitInputs };
     }
 
-    const serialised = JSON.stringify(configObject, null, 4)
-        .replaceAll(/"(\w+)":/g, "$1:");
+    const serialised = serializeConfigObject(configObject);
 
     return [
         "// Migrated from moon's .moon/tasks.yml by `vis migrate moon`.",
@@ -274,6 +106,8 @@ const renderVisConfig = (tasks: MoonTasksYaml): string => {
     ].join("\n");
 };
 
+// ── Moon file discovery ──────────────────────────────────────────────
+
 const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const moonDir = join(workspaceRoot, ".moon");
 
@@ -281,9 +115,7 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
         return undefined;
     }
 
-    const candidates = ["tasks.yml", "tasks.yaml"];
-
-    for (const name of candidates) {
+    for (const name of ["tasks.yml", "tasks.yaml"]) {
         const filePath = join(moonDir, name);
 
         if (existsSync(filePath)) {
@@ -291,7 +123,6 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
         }
     }
 
-    // Scoped tasks directory: .moon/tasks/<scope>.yml
     const tasksDir = join(moonDir, "tasks");
 
     if (existsSync(tasksDir)) {
@@ -305,10 +136,12 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     return undefined;
 };
 
+// ── Migration entry ──────────────────────────────────────────────────
+
 export const migrateMoon = (
     workspaceRoot: string,
-    options: { dryRun?: boolean } = {},
-    logger: Logger,
+    options: { dryRun?: boolean },
+    logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
     const tasksFile = findMoonTasksFile(workspaceRoot);
@@ -323,32 +156,15 @@ export const migrateMoon = (
     let parsed: MoonTasksYaml;
 
     try {
-        const raw = readFileSync(tasksFile, "utf8");
-        const data = parseTinyYaml(raw);
-
-        parsed = (typeof data === "object" && data !== null && !Array.isArray(data) ? data : {}) as MoonTasksYaml;
+        parsed = readYamlSync<MoonTasksYaml>(tasksFile);
     } catch (error) {
         throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
     }
 
-    const visConfigPath = join(workspaceRoot, "vis.config.ts");
-
-    if (existsSync(visConfigPath) && !options.dryRun) {
-        logger.warn("vis.config.ts already exists — refusing to overwrite. Remove it first or run with --dry-run.");
-        report.warnings.push("vis.config.ts already exists; migration skipped writing the file.");
-
-        return;
-    }
-
     const rendered = renderVisConfig(parsed);
 
-    if (options.dryRun) {
-        logger.info("── vis.config.ts (preview) ──");
-        logger.info(rendered);
-        logger.info("── end preview ──");
-    } else {
-        writeFileSync(visConfigPath, rendered);
-        logger.info(`Wrote ${visConfigPath}`);
+    if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
+        return;
     }
 
     report.manualSteps.push(

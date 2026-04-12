@@ -102,28 +102,28 @@ export const resolveFocusProjects = (focus: string[], projectGraph: ProjectGraph
 };
 
 const ensureDir = (path: string): void => {
-    if (!existsSync(path)) {
-        mkdirSync(path, { recursive: true });
-    }
+    mkdirSync(path, { recursive: true });
 };
 
 const copyFileIfExists = (src: string, dest: string): boolean => {
-    if (!existsSync(src)) {
+    try {
+        ensureDir(dirname(dest));
+        cpSync(src, dest);
+
+        return true;
+    } catch {
         return false;
     }
-
-    ensureDir(dirname(dest));
-    cpSync(src, dest);
-
-    return true;
 };
 
 const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
-    if (!existsSync(src)) {
+    let stats;
+
+    try {
+        stats = statSync(src);
+    } catch {
         return;
     }
-
-    const stats = statSync(src);
 
     if (stats.isFile()) {
         ensureDir(dirname(dest));
@@ -253,10 +253,8 @@ export const pruneDockerContext = (options: PruneOptions): { removed: string[] }
         const absolute = join(workspaceRoot, project.root);
         const rel = relative(workspaceRoot, absolute);
 
-        if (existsSync(absolute)) {
-            rmSync(absolute, { force: true, recursive: true });
-            removed.push(rel);
-        }
+        rmSync(absolute, { force: true, recursive: true });
+        removed.push(rel);
     }
 
     return { removed };
