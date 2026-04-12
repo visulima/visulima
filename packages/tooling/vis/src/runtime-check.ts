@@ -72,7 +72,7 @@ const compareVersions = (a: string, b: string): number => {
  * Falls back to "true" for unrecognised syntax rather than false so we
  * don't spam warnings on exotic ranges.
  */
-const satisfiesRange = (actual: string, range: string): boolean => {
+export const satisfiesRange = (actual: string, range: string): boolean => {
     const normalized = range.trim();
 
     if (normalized === "" || normalized === "*") {

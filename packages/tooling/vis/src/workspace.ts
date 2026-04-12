@@ -497,6 +497,16 @@ interface VisConfig {
         security?: boolean;
         target?: "latest" | "minor" | "patch";
     };
+
+    /**
+     * Minimum vis CLI version required by this workspace. When the
+     * running vis binary is older than this constraint, vis exits with
+     * an actionable error before executing any command.
+     *
+     * Accepts a semver range string (e.g. `">=1.0.0"`, `"^1.2.0"`).
+     * @example ">=1.0.0"
+     */
+    versionConstraint?: string;
 }
 
 const TRAILING_SLASH_RE = /\/+$/;

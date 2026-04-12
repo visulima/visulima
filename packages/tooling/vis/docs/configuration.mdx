@@ -156,6 +156,18 @@ When `enforceLayerRelationships: true`, projects may only depend on projects at 
 configuration < library < scaffolding < tool < automation < application
 ```
 
+### Version Constraint
+
+Enforce a minimum vis CLI version for the workspace:
+
+```typescript
+export default defineConfig({
+    versionConstraint: ">=1.0.0",
+});
+```
+
+When the running vis binary is older than the constraint, vis exits with an actionable error before executing any command. Accepts semver range syntax (`>=1.0.0`, `^1.2.0`, `>=1.0.0 <2.0.0`).
+
 ### CODEOWNERS
 
 Configure `vis sync codeowners` output:

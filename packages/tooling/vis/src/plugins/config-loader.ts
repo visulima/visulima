@@ -3,7 +3,10 @@ import { bold, cyan, red, yellow } from "@visulima/colorize";
 import { findMonorepoRootSync } from "@visulima/package";
 import isInCi from "is-in-ci";
 
+import pkg from "../../package.json";
 import { findVisConfigFile, loadVisConfig } from "../config";
+import { satisfiesRange } from "../runtime-check";
+import type { VisConfig } from "../workspace";
 
 const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {
@@ -15,9 +18,21 @@ const configLoaderPlugin: Plugin = {
 
             toolbox.workspaceRoot = workspaceRoot;
 
-            // Try loading config — if it fails, show actionable error with fix hints
             try {
                 toolbox.visConfig = await loadVisConfig(workspaceRoot);
+
+                const constraint = (toolbox.visConfig as VisConfig | undefined)?.versionConstraint;
+
+                if (constraint && !satisfiesRange(pkg.version, constraint)) {
+                    toolbox.logger.error("");
+                    toolbox.logger.error(red(bold("\u2716 vis version too old")));
+                    toolbox.logger.error(`  vis.config.ts requires vis ${bold(constraint)}, but the current version is ${bold(pkg.version)}.`);
+                    toolbox.logger.error(`  ${yellow("\u2192")} Upgrade: ${cyan("pnpm add -D @visulima/vis@latest")}`);
+                    toolbox.logger.error("");
+                    process.exitCode = 1;
+
+                    return;
+                }
             } catch (configError: unknown) {
                 const configFile = findVisConfigFile(workspaceRoot);
 
