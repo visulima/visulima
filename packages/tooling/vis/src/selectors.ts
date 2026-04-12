@@ -77,12 +77,12 @@ export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projec
  * @returns An object with `projects` (candidate names) and `target`.
  * @throws If the selector is invalid or `~:` finds no matching project.
  */
-export const resolveSelector = (
+export const resolveSelector = async (
     input: string,
     workspace: WorkspaceConfiguration,
     cwd: string,
     workspaceRoot: string,
-): { projects: string[]; target: string } => {
+): Promise<{ projects: string[]; target: string }> => {
     const parsed = parseTargetSelector(input);
 
     if (!parsed) {
@@ -132,6 +132,29 @@ export const resolveSelector = (
     }
 
     if (!bestProject) {
+        if (process.stdout.isTTY) {
+            const { createInterface } = await import("node:readline");
+            const rl = createInterface({ input: process.stdin, output: process.stderr });
+            const allNames = Object.keys(workspace.projects).sort();
+
+            process.stderr.write(`No project found at ${relCwd}. Pick one:\n`);
+
+            for (let i = 0; i < allNames.length; i++) {
+                process.stderr.write(`  ${String(i + 1)}) ${allNames[i]}\n`);
+            }
+
+            const answer = await new Promise<string>((resolve) => {
+                rl.question("> ", resolve);
+            });
+
+            rl.close();
+            const idx = Number.parseInt(answer, 10) - 1;
+
+            if (idx >= 0 && idx < allNames.length) {
+                return { projects: [allNames[idx]!], target: parsed.target };
+            }
+        }
+
         throw new Error(`No project found at or above ${relCwd} for selector "${input}".`);
     }
 

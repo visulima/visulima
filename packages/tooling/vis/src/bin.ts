@@ -30,6 +30,7 @@ import implodeCommand from "./commands/implode";
 import initCommand from "./commands/init";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
+import listCommand from "./commands/list";
 import migrateCommand from "./commands/migrate";
 import optimizeCommand from "./commands/optimize";
 // outdated is now an alias of check
@@ -38,11 +39,14 @@ import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
+import statusCommand from "./commands/status";
 import syncCommand from "./commands/sync";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
+import completionCommand from "@visulima/cerebro/command/completion";
+
 import { injectVersion, setTerminalTitle } from "./output";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
@@ -114,8 +118,11 @@ cli.addCommand(analyzeCommand);
 cli.addCommand(migrateCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
+cli.addCommand(statusCommand);
 cli.addCommand(syncCommand);
 cli.addCommand(dockerCommand);
+cli.addCommand(listCommand);
+cli.addCommand(completionCommand);
 
 // Package management commands
 cli.addCommand(installCommand);

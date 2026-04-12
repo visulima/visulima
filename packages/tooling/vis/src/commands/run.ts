@@ -14,6 +14,7 @@ import {
 import isInCi from "is-in-ci";
 
 import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
+import { compareDuration, formatTimingSummary } from "../run-report";
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import {
     detectCurrentOs,
@@ -24,6 +25,7 @@ import {
     type VisTargetConfiguration,
     type VisTargetOptions,
 } from "../target-options";
+import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
@@ -321,23 +323,17 @@ const run: Command = {
     },
     description: "Run a target across workspace projects",
     examples: [
+        ["vis run", "List all available targets"],
         ["vis run build", "Run build on all projects"],
         ["vis run :build", "Run build on all projects (moon-style)"],
         ["vis run ~:test", "Run test on the project closest to the current directory"],
         ["vis run \"#frontend:build\"", "Run build on projects tagged 'frontend'"],
-        ["vis run my-pkg:build", "Run build on a single named project"],
-        ["vis run :build --query \"language=typescript && tag=lib\"", "Filter by project metadata"],
-        ["vis run test --projects=pkg-a,pkg-b", "Run test on specific projects"],
-        ["vis run build --parallel=5", "Run build with 5 parallel tasks"],
-        ["vis run build --no-cache", "Run build without caching"],
+        ["vis run :build --query \"language=typescript\"", "Filter by project metadata"],
+        ["vis run test --affected", "Run test only on git-changed projects"],
+        ["vis run build --fail-fast", "Stop on first failure"],
+        ["vis run build --dry-run", "Show execution plan without running"],
     ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        const rawSelector = argument[0];
-
-        if (!rawSelector) {
-            throw new Error("Missing target. Usage: vis run <target> or vis run <selector>");
-        }
-
+    execute: async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
@@ -346,7 +342,20 @@ const run: Command = {
         const { config, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
-        // Enforce project constraints if configured
+        const rawSelector = argument[0];
+
+        if (!rawSelector) {
+            const available = collectAvailableTargets(workspace);
+
+            logger.info("Available targets:");
+            logger.info("");
+            logger.info(formatTargetList(available));
+            logger.info("");
+            logger.info("Usage: vis run <target>");
+
+            return;
+        }
+
         if (config.constraints && !options.skipConstraints) {
             const violations = enforceProjectConstraints(projectGraph, config.constraints);
 
@@ -359,9 +368,28 @@ const run: Command = {
             }
         }
 
-        // Resolve the target selector. Supports `:t`, `~:t`, `#tag:t`, `pkg:t`,
-        // and the legacy bare `t` form (which behaves like `:t`).
-        const selectorResult = resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
+        // --affected shorthand: delegate to the affected command
+        if (options.affected) {
+            const argv: string[] = [rawSelector];
+
+            if (options.parallel !== undefined) {
+                argv.push(`--parallel=${String(options.parallel)}`);
+            }
+
+            if (!options.cache) {
+                argv.push("--no-cache");
+            }
+
+            if (options.query) {
+                argv.push(`--query=${String(options.query)}`);
+            }
+
+            await runtime.runCommand("affected", { argv });
+
+            return;
+        }
+
+        const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
         const target = selectorResult.target;
         let projectNames = selectorResult.projects;
 
@@ -423,7 +451,11 @@ const run: Command = {
         }
 
         if (projectsWithTarget.length === 0) {
-            logger.info(`No projects have the "${target}" target (after applying filters).`);
+            const available = collectAvailableTargets(workspace);
+            const suggestion = suggestTarget(target, available);
+            const hint = suggestion ? ` Did you mean "${suggestion}"?` : "";
+
+            logger.info(`No projects have the "${target}" target.${hint}`);
 
             return;
         }
@@ -483,6 +515,45 @@ const run: Command = {
             targetDefaults: config.targetDefaults,
             workspace,
         });
+
+        if (options.dryRun) {
+            const taskCount = Object.keys(taskGraph.tasks).length;
+            const rootCount = taskGraph.roots.length;
+
+            logger.info(`Execution plan (${String(taskCount)} task(s), ${String(rootCount)} root(s)):`);
+            logger.info("");
+
+            const visited = new Set<string>();
+            const walkPlan = (id: string, depth: number): void => {
+                if (visited.has(id)) {
+                    return;
+                }
+
+                visited.add(id);
+
+                for (const dep of taskGraph.dependencies[id] ?? []) {
+                    walkPlan(dep, depth + 1);
+                }
+
+                const task = taskGraph.tasks[id];
+                const indent = "  ".repeat(depth + 1);
+
+                logger.info(`${indent}${id}${task?.cache === false ? " (no-cache)" : ""}`);
+            };
+
+            for (const root of taskGraph.roots) {
+                walkPlan(root, 0);
+            }
+
+            if (persistentTasks.length > 0) {
+                logger.info("");
+                logger.info(`  + ${String(persistentTasks.length)} persistent task(s) (run after graph completes)`);
+            }
+
+            logger.info("");
+
+            return;
+        }
 
         const startTime = Date.now();
 
@@ -636,7 +707,9 @@ const run: Command = {
             });
             const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
-            const runOnce = async (): Promise<boolean> => {
+            const runOnce = async (): Promise<{ hasFailure: boolean; results: import("@visulima/task-runner").TaskResults }> => {
+                const runStart = Date.now();
+
                 const results = await defaultTaskRunner(initialTasks, runnerOptions, {
                     lifeCycle,
                     projectGraph,
@@ -644,6 +717,8 @@ const run: Command = {
                     taskGraph,
                     workspaceRoot,
                 });
+
+                const durationMs = Date.now() - runStart;
 
                 if (options.summarize) {
                     const summary = generateRunSummary(results, taskGraph, startTime);
@@ -659,10 +734,16 @@ const run: Command = {
                     }
                 }
 
-                return hasFailure;
+                const timingLine = formatTimingSummary(results, durationMs);
+                const durationComparison = compareDuration(workspaceRoot, durationMs);
+
+                logger.info("");
+                logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
+
+                return { hasFailure, results };
             };
 
-            const hasFailure = await runOnce();
+            const { hasFailure } = await runOnce();
 
             if (options.watch) {
                 const absoluteRoots = projectsWithTarget
@@ -713,25 +794,27 @@ const run: Command = {
                 return;
             }
 
-            if (hasFailure && options.flaky !== false) {
-                const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 });
+            if (hasFailure) {
+                if (options.flaky !== false) {
+                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 });
 
-                if (flakyStats.length > 0) {
-                    logger.info("");
-                    logger.info("Flaky tasks (based on historical runs):");
-                    logger.info("");
+                    if (flakyStats.length > 0) {
+                        logger.info("");
+                        logger.info("Flaky tasks (based on historical runs):");
+                        logger.info("");
 
-                    for (const line of formatFlakinessTable(flakyStats)) {
-                        logger.info(`  ${line}`);
+                        for (const line of formatFlakinessTable(flakyStats)) {
+                            logger.info(`  ${line}`);
+                        }
+
+                        logger.info("");
                     }
-
-                    logger.info("");
                 }
 
                 throw new Error("Some tasks failed.");
             }
 
-            if (persistentTasks.length > 0) {
+            if (persistentTasks.length > 0 && !options.failFast) {
                 await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
             }
         }
@@ -791,8 +874,20 @@ const run: Command = {
         },
         {
             defaultValue: false,
+            description: "Only run on projects affected by git changes (shorthand for vis affected)",
+            name: "affected",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
             description: "Rerun affected tasks on file change. Ctrl+C to exit.",
             name: "watch",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Stop all tasks on first failure",
+            name: "fail-fast",
             type: Boolean,
         },
         {

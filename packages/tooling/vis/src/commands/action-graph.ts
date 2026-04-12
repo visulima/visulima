@@ -98,7 +98,7 @@ const actionGraph: Command = {
         const { config, workspace } = discoverWorkspace(wsRoot, visConfig);
         const projectGraph = buildProjectGraph(wsRoot, workspace);
 
-        const selectorResult = resolveSelector(rawSelector, workspace, process.cwd(), wsRoot);
+        const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), wsRoot);
         const target = selectorResult.target;
         let projectNames = selectorResult.projects;
 
