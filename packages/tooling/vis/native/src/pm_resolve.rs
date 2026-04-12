@@ -23,18 +23,15 @@ fn validate_pm(pm: &str) -> napi::Result<()> {
 /// Returns `None` when the version string does not start with a decimal digit
 /// (e.g. "latest", "workspace:*").
 fn parse_major(version: &str) -> Option<u32> {
-    let digits: String = version.chars().take_while(|c| c.is_ascii_digit()).collect();
-    digits.parse::<u32>().ok()
+    let end = version.find(|c: char| !c.is_ascii_digit()).unwrap_or(version.len());
+    version[..end].parse::<u32>().ok()
 }
 
-/// Returns `true` when the given pnpm version string is v11 or newer.
-/// Unknown versions (e.g. "latest") are treated as v11+ so we surface the
-/// forward-compatible warning rather than silently allowing removed usage.
-fn is_pnpm_v11_plus(version: &str) -> bool {
-    match parse_major(version) {
-        Some(major) => major >= 11,
-        None => true,
-    }
+/// Returns `Some(true)` when the pnpm major version is >= 11, `Some(false)`
+/// when it is < 11, and `None` when the version string cannot be parsed
+/// (e.g. "latest").
+fn is_pnpm_v11_plus(version: &str) -> Option<bool> {
+    parse_major(version).map(|major| major >= 11)
 }
 
 // ── Install ──────────────────────────────────────────────────────────
@@ -761,20 +758,41 @@ pub fn resolve_link(
 
     // pnpm v11 removes arg-less `pnpm link` and global-store name resolution.
     // Only `pnpm link <path>` continues to work.
-    if pm == "pnpm" && is_pnpm_v11_plus(&version) {
-        match &target {
+    if pm == "pnpm" {
+        match is_pnpm_v11_plus(&version) {
+            Some(true) => match &target {
+                None => {
+                    warnings.push(
+                        "pnpm v11 removed arg-less `pnpm link`. Pass an explicit path, e.g. `vis link ./packages/my-pkg`."
+                            .into(),
+                    );
+                }
+                Some(t) if !is_path_like(t) => {
+                    warnings.push(format!(
+                        "pnpm v11 removed global-store name resolution for `pnpm link {t}`. Use a relative or absolute path instead."
+                    ));
+                }
+                _ => {}
+            },
             None => {
-                warnings.push(
-                    "pnpm v11 removed arg-less `pnpm link`. Pass an explicit path, e.g. `vis link ./packages/my-pkg`."
-                        .into(),
-                );
+                // Unknown version — we can't tell if v11 restrictions apply.
+                // Warn generically for non-path targets so users know it may fail.
+                match &target {
+                    None => {
+                        warnings.push(
+                            "pnpm version unknown. Arg-less `pnpm link` was removed in v11; pass an explicit path to be safe."
+                                .into(),
+                        );
+                    }
+                    Some(t) if !is_path_like(t) => {
+                        warnings.push(format!(
+                            "pnpm version unknown. Global-store name resolution for `pnpm link {t}` was removed in v11; use a path to be safe."
+                        ));
+                    }
+                    _ => {}
+                }
             }
-            Some(t) if !is_path_like(t) => {
-                warnings.push(format!(
-                    "pnpm v11 removed global-store name resolution for `pnpm link {t}`. Use a relative or absolute path instead."
-                ));
-            }
-            _ => {}
+            Some(false) => { /* v10 and below: all link forms are supported */ }
         }
     }
 
@@ -894,7 +912,7 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Resul
                 .map(|(_, s)| s)
                 .collect::<Vec<_>>()
                 .join("@");
-            let bin_name = without_version.split('/').last().unwrap_or(&opts.package).to_string();
+            let bin_name = without_version.rsplit('/').next().unwrap_or(&opts.package).to_string();
             args.push("--".into());
             args.push(if bin_name.is_empty() { opts.package.clone() } else { bin_name });
             args.extend(opts.args);

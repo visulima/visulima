@@ -176,7 +176,14 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         const loaded = esmRequire("../index.js") as NativeBindings;
 
         // Validate that the loaded binding has the expected API surface.
-        if (typeof loaded.detectPackageManager === "function" && typeof loaded.execPmCommand === "function") {
+        // resolveLink is checked to reject stale addons built before the
+        // version parameter was added (the old 2-arg signature would silently
+        // misinterpret arguments).
+        if (
+            typeof loaded.detectPackageManager === "function"
+            && typeof loaded.execPmCommand === "function"
+            && typeof loaded.resolveLink === "function"
+        ) {
             nativeBindings = loaded;
         }
     } catch {

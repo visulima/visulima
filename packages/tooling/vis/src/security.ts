@@ -502,7 +502,12 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             const block = sortedKeys.map((key) => `  ${renderKey(key)}: ${String(merged[key])}`).join("\n");
             const allowBuildsBlock = `allowBuilds:\n${block}\n`;
 
+            // Normalize: ensure trailing newline so the regex can match the final body line.
             let content = readFileSync(filePath, "utf8");
+
+            if (!content.endsWith("\n")) {
+                content += "\n";
+            }
 
             // Replace existing block if present, otherwise append.
             // Matches: "allowBuilds:" followed by zero or more indented (2+ space/tab) lines.

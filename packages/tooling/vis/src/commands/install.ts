@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 
-import { info } from "../output";
+import { error as errorOutput, info } from "../output";
 import { detectPm, runInstall } from "../pm-runner";
 import { scanDepsForTyposquats } from "../typosquats";
 import { toStringArray } from "../utils";
@@ -45,7 +45,15 @@ const install: Command = {
         // and then delegate to a standard frozen-lockfile install.
         if (ciMode) {
             info("Clean install: removing node_modules...");
-            rmSync(join(cwd, "node_modules"), { force: true, recursive: true });
+
+            try {
+                rmSync(join(cwd, "node_modules"), { force: true, recursive: true });
+            } catch (error: unknown) {
+                errorOutput(`Failed to remove node_modules: ${error instanceof Error ? error.message : String(error)}`);
+                process.exitCode = 1;
+
+                return;
+            }
         }
 
         const code = runInstall(

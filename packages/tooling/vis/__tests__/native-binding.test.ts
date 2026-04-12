@@ -661,6 +661,32 @@ describe("native addon integration", () => {
             expect(result.warnings).toHaveLength(0);
         });
 
+        it("should warn generically for unknown pnpm version with bare name", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "latest", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings.some((w) => w.includes("unknown") && w.includes("v11"))).toBe(true);
+        });
+
+        it("should warn generically for unknown pnpm version with no target", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "latest", null);
+
+            expect(result.args).toStrictEqual(["link"]);
+            expect(result.warnings.some((w) => w.includes("unknown") && w.includes("Arg-less"))).toBe(true);
+        });
+
+        it("should not warn for unknown pnpm version with path target", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("pnpm", "latest", "./local-pkg");
+
+            expect(result.warnings).toHaveLength(0);
+        });
+
         it("should resolve unlink with recursive", () => {
             expect.assertions(1);
 
