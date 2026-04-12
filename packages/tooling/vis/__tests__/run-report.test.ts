@@ -1,11 +1,11 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import type { TaskResult } from "@visulima/task-runner";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { compareDuration, formatTimingSummary } from "../src/run-report";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(formatTimingSummary, () => {
     it("should summarize 2 succeeded, 1 cached, 1 failed in 2400ms", () => {
@@ -52,11 +52,20 @@ describe(formatTimingSummary, () => {
 });
 
 describe(compareDuration, () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-run-report-");
+    });
+
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
+    });
+
     it("should report faster than average when current run is quicker", () => {
         expect.assertions(1);
 
-        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-run-report-"));
-        const runsDir = join(temporaryDirectory, ".task-runner", "runs");
+        const runsDir = join(tmpDir, ".task-runner", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 
@@ -64,16 +73,12 @@ describe(compareDuration, () => {
         writeFileSync(join(runsDir, "run-2.json"), JSON.stringify({ duration: 8000, startTime: "2026-01-02T00:00:00Z" }));
         writeFileSync(join(runsDir, "run-3.json"), JSON.stringify({ duration: 10_000, startTime: "2026-01-03T00:00:00Z" }));
 
-        const result = compareDuration(temporaryDirectory, 2000);
-
-        expect(result).toContain("faster than avg");
+        expect(compareDuration(tmpDir, 2000)).toMatch(/faster than avg/);
     });
 
     it("should return undefined when runs directory does not exist", () => {
         expect.assertions(1);
 
-        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-run-report-"));
-
-        expect(compareDuration(temporaryDirectory, 5000)).toBeUndefined();
+        expect(compareDuration(tmpDir, 5000)).toBeUndefined();
     });
 });

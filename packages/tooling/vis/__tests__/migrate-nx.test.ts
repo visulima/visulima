@@ -1,25 +1,20 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { migrateNx } from "../src/commands/migrate/nx";
 import { createMigrationReport } from "../src/commands/migrate/types";
+import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "./test-helpers";
 
 let tmpDir: string;
 
-const logger = {
-    info: () => {},
-    warn: () => {},
-};
-
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "vis-migrate-nx-"));
+    tmpDir = createTemporaryDirectory("vis-migrate-nx-");
 });
 
 afterEach(() => {
-    rmSync(tmpDir, { force: true, recursive: true });
+    cleanupTemporaryDirectory(tmpDir);
 });
 
 describe(migrateNx, () => {
@@ -28,7 +23,7 @@ describe(migrateNx, () => {
 
         const report = createMigrationReport();
 
-        migrateNx(tmpDir, {}, logger, report);
+        migrateNx(tmpDir, {}, createMockLogger(), report);
 
         expect(report.warnings).toContain("No nx.json at workspace root.");
     });
@@ -46,7 +41,7 @@ describe(migrateNx, () => {
 
         const report = createMigrationReport();
 
-        migrateNx(tmpDir, {}, logger, report);
+        migrateNx(tmpDir, {}, createMockLogger(), report);
 
         const configPath = join(tmpDir, "vis.config.ts");
 
@@ -68,8 +63,12 @@ describe(migrateNx, () => {
 
         const report = createMigrationReport();
 
-        migrateNx(tmpDir, {}, logger, report);
+        migrateNx(tmpDir, {}, createMockLogger(), report);
 
-        expect(report.manualSteps.some((s) => s.includes("develop"))).toBe(true);
+        const baseStep = report.manualSteps.find((s) => s.includes("default base branch"));
+
+        expect(baseStep).toBeDefined();
+        expect(baseStep).toContain("develop");
+        expect(baseStep).toContain("--base");
     });
 });

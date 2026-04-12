@@ -1,25 +1,20 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { migrateTurborepo } from "../src/commands/migrate/turborepo";
 import { createMigrationReport } from "../src/commands/migrate/types";
+import { cleanupTemporaryDirectory, createMockLogger, createTemporaryDirectory } from "./test-helpers";
 
 let tmpDir: string;
 
-const logger = {
-    info: () => {},
-    warn: () => {},
-};
-
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "vis-migrate-turbo-"));
+    tmpDir = createTemporaryDirectory("vis-migrate-turbo-");
 });
 
 afterEach(() => {
-    rmSync(tmpDir, { force: true, recursive: true });
+    cleanupTemporaryDirectory(tmpDir);
 });
 
 describe(migrateTurborepo, () => {
@@ -28,7 +23,7 @@ describe(migrateTurborepo, () => {
 
         const report = createMigrationReport();
 
-        migrateTurborepo(tmpDir, {}, logger, report);
+        migrateTurborepo(tmpDir, {}, createMockLogger(), report);
 
         expect(report.warnings).toContain("No turbo.json at workspace root.");
     });
@@ -49,7 +44,7 @@ describe(migrateTurborepo, () => {
 
         const report = createMigrationReport();
 
-        migrateTurborepo(tmpDir, {}, logger, report);
+        migrateTurborepo(tmpDir, {}, createMockLogger(), report);
 
         const configPath = join(tmpDir, "vis.config.ts");
 
@@ -71,7 +66,7 @@ describe(migrateTurborepo, () => {
 
         const report = createMigrationReport();
 
-        migrateTurborepo(tmpDir, {}, logger, report);
+        migrateTurborepo(tmpDir, {}, createMockLogger(), report);
 
         const content = readFileSync(join(tmpDir, "vis.config.ts"), "utf8");
 
@@ -88,7 +83,7 @@ describe(migrateTurborepo, () => {
 
         const report = createMigrationReport();
 
-        migrateTurborepo(tmpDir, {}, logger, report);
+        migrateTurborepo(tmpDir, {}, createMockLogger(), report);
 
         expect(report.warnings.some((w) => w.includes("outputLogs"))).toBe(true);
     });
@@ -103,7 +98,7 @@ describe(migrateTurborepo, () => {
 
         const report = createMigrationReport();
 
-        migrateTurborepo(tmpDir, { dryRun: true }, logger, report);
+        migrateTurborepo(tmpDir, { dryRun: true }, createMockLogger(), report);
 
         expect(existsSync(join(tmpDir, "vis.config.ts"))).toBe(false);
     });

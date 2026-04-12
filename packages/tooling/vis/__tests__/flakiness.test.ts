@@ -1,20 +1,20 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { analyzeFlakiness, formatFlakinessTable } from "../src/flakiness";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(analyzeFlakiness, () => {
     let tmpDir: string;
 
     beforeEach(() => {
-        tmpDir = mkdtempSync(join(tmpdir(), "vis-flakiness-"));
+        tmpDir = createTemporaryDirectory("vis-flakiness-");
     });
 
     afterEach(() => {
-        rmSync(tmpDir, { force: true, recursive: true });
+        cleanupTemporaryDirectory(tmpDir);
     });
 
     it("should return empty array for empty runs directory", () => {

@@ -1,11 +1,11 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { pruneDockerContext, resolveFocusProjects, scaffoldDockerContext } from "../src/docker";
+import { DOCKER_MANIFEST_FILENAME, pruneDockerContext, resolveFocusProjects, scaffoldDockerContext } from "../src/docker";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(resolveFocusProjects, () => {
     it("should include focus project and all transitive dependencies", () => {
@@ -51,11 +51,11 @@ describe(scaffoldDockerContext, () => {
     let tmpDir: string;
 
     beforeEach(() => {
-        tmpDir = mkdtempSync(join(tmpdir(), "vis-docker-scaffold-"));
+        tmpDir = createTemporaryDirectory("vis-docker-scaffold-");
     });
 
     afterEach(() => {
-        rmSync(tmpDir, { force: true, recursive: true });
+        cleanupTemporaryDirectory(tmpDir);
     });
 
     it("should scaffold workspace with root manifests and focused project manifests", () => {
@@ -105,7 +105,7 @@ describe(scaffoldDockerContext, () => {
         expect(existsSync(join(wsDir, "package.json"))).toBe(true);
         expect(existsSync(join(wsDir, "packages", "a", "package.json"))).toBe(true);
         expect(existsSync(join(wsDir, "packages", "b", "package.json"))).toBe(true);
-        expect(existsSync(join(outDir, "vis-docker-manifest.json"))).toBe(true);
+        expect(existsSync(join(outDir, DOCKER_MANIFEST_FILENAME))).toBe(true);
     });
 
     it("should write vis-docker-manifest.json with correct contents", () => {
@@ -144,7 +144,7 @@ describe(scaffoldDockerContext, () => {
             workspaceRoot,
         });
 
-        const manifest = JSON.parse(readFileSync(join(outDir, "vis-docker-manifest.json"), "utf8"));
+        const manifest = JSON.parse(readFileSync(join(outDir, DOCKER_MANIFEST_FILENAME), "utf8"));
 
         expect(manifest.focus).toStrictEqual(["a"]);
         expect(manifest.projects).toStrictEqual(["a"]);
@@ -155,11 +155,11 @@ describe(pruneDockerContext, () => {
     let tmpDir: string;
 
     beforeEach(() => {
-        tmpDir = mkdtempSync(join(tmpdir(), "vis-docker-prune-"));
+        tmpDir = createTemporaryDirectory("vis-docker-prune-");
     });
 
     afterEach(() => {
-        rmSync(tmpDir, { force: true, recursive: true });
+        cleanupTemporaryDirectory(tmpDir);
     });
 
     it("should remove unfocused project directories", () => {
@@ -171,7 +171,7 @@ describe(pruneDockerContext, () => {
         mkdirSync(contextRoot, { recursive: true });
 
         writeFileSync(
-            join(contextRoot, "vis-docker-manifest.json"),
+            join(contextRoot, DOCKER_MANIFEST_FILENAME),
             JSON.stringify({ focus: ["a"], projects: ["a", "b"] }),
         );
 

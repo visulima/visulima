@@ -44,6 +44,9 @@ const collectTransitiveProjectDeps = (start: string, projectGraph: ProjectGraph)
  * the whole source tree. Compare with moon's `moon docker scaffold`.
  */
 
+/** Name of the manifest file written by scaffold and read by prune. */
+export const DOCKER_MANIFEST_FILENAME = "vis-docker-manifest.json";
+
 const MANIFEST_FILES = ["package.json", "project.json"] as const;
 
 const ROOT_MANIFEST_FILES = [
@@ -209,7 +212,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
     }
 
     writeFileSync(
-        join(outDir, "vis-docker-manifest.json"),
+        join(outDir, DOCKER_MANIFEST_FILENAME),
         `${JSON.stringify({ focus, projects: [...projects].sort() }, null, 2)}\n`,
     );
 
@@ -236,16 +239,16 @@ export interface PruneOptions {
  */
 export const pruneDockerContext = (options: PruneOptions): { removed: string[] } => {
     const { contextRoot, workspace, workspaceRoot } = options;
-    const manifestPath = join(contextRoot, "vis-docker-manifest.json");
+    const manifestPath = join(contextRoot, DOCKER_MANIFEST_FILENAME);
 
     if (!existsSync(manifestPath)) {
-        throw new Error(`No vis-docker-manifest.json at ${contextRoot}. Run \`vis docker scaffold\` first.`);
+        throw new Error(`No ${DOCKER_MANIFEST_FILENAME} at ${contextRoot}. Run \`vis docker scaffold\` first.`);
     }
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { focus: string[]; projects: string[] };
 
     if (!Array.isArray(manifest.projects)) {
-        throw new Error(`Invalid vis-docker-manifest.json: "projects" must be an array.`);
+        throw new Error(`Invalid ${DOCKER_MANIFEST_FILENAME}: "projects" must be an array.`);
     }
 
     const keep = new Set(manifest.projects);

@@ -1,19 +1,19 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { readJsonConfig, serializeConfigObject } from "../src/commands/migrate/shared";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 let tmpDir: string;
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "vis-migrate-shared-"));
+    tmpDir = createTemporaryDirectory("vis-migrate-shared-");
 });
 
 afterEach(() => {
-    rmSync(tmpDir, { force: true, recursive: true });
+    cleanupTemporaryDirectory(tmpDir);
 });
 
 describe(serializeConfigObject, () => {
