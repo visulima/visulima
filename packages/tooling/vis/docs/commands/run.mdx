@@ -52,6 +52,7 @@ vis run test --watch                                      # Rerun on file change
 | `--skip-constraints`|       | `false` | Skip project constraint validation                   |
 | `--query`           |       |         | Filter by query (e.g. `language=typescript && tag=lib`) |
 | `--watch`           |       | `false` | Rerun on file change (Ctrl+C to exit)                |
+| `--flaky`           |       | `false` | Show flaky task report after execution               |
 
 ## Query Language
 
@@ -176,4 +177,35 @@ export default defineConfig({
         },
     },
 });
+```
+
+## Flakiness Report
+
+Pass `--flaky` to see which tasks have historically flaky outcomes:
+
+```bash
+vis run :test --summarize --flaky
+```
+
+The report reads `.task-runner/runs/*.json` summaries (created by `--summarize`) and shows tasks that have both successes and failures across runs:
+
+```
+Flaky tasks (based on historical runs):
+
+  Task              Runs  Failures  Rate   Last Failure
+  ────────────────  ────  ────────  ─────  ─────────────────────
+  @myorg/api:test   12    3         25.0%  2026-04-10T14:23:00Z
+  @myorg/web:build  8     1         12.5%  2026-04-08T09:15:00Z
+```
+
+To fix flaky tasks, add `retryCount` to their target options in `project.json`:
+
+```json
+{
+    "targets": {
+        "test": {
+            "options": { "retryCount": 2, "retryDelay": "exponential" }
+        }
+    }
+}
 ```

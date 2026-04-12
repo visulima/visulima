@@ -23,7 +23,6 @@ import devcontainerCommand from "./commands/devcontainer";
 import dlxCommand from "./commands/dlx";
 import dockerCommand from "./commands/docker";
 import doctorCommand from "./commands/doctor";
-import flakyCommand from "./commands/flaky";
 import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
@@ -142,7 +141,6 @@ cli.addCommand(implodeCommand);
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
 cli.addCommand(doctorCommand);
-cli.addCommand(flakyCommand);
 cli.addCommand(optimizeCommand);
 
 // Post-command: upgrade notice + tips

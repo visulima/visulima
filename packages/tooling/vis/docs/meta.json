@@ -22,7 +22,6 @@
                 "commands/install",
                 "commands/dlx",
                 "commands/audit",
-                "commands/flaky",
                 "commands/clean",
                 "commands/hook"
             ]

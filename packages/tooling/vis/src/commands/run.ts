@@ -13,6 +13,7 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import {
     detectCurrentOs,
@@ -712,6 +713,24 @@ const run: Command = {
                 return;
             }
 
+            if (options.flaky) {
+                const flakyStats = analyzeFlakiness(workspaceRoot, {
+                    minRuns: 2,
+                });
+
+                if (flakyStats.length > 0) {
+                    logger.info("");
+                    logger.info("Flaky tasks (based on historical runs):");
+                    logger.info("");
+
+                    for (const line of formatFlakinessTable(flakyStats)) {
+                        logger.info(`  ${line}`);
+                    }
+
+                    logger.info("");
+                }
+            }
+
             if (hasFailure) {
                 throw new Error("Some tasks failed.");
             }
@@ -778,6 +797,12 @@ const run: Command = {
             defaultValue: false,
             description: "Rerun affected tasks on file change. Ctrl+C to exit.",
             name: "watch",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Show flaky task report after execution (requires prior --summarize runs)",
+            name: "flaky",
             type: Boolean,
         },
     ],
