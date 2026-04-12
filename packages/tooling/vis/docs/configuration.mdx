@@ -1,141 +1,290 @@
 ---
 title: Configuration
-description: "Full reference for vis.json configuration options"
+description: "Full reference for vis.config.ts and project.json configuration"
 ---
 
 # Configuration
 
-Create a `vis.json` file in your workspace root to configure target defaults, task runner options, and update preferences.
+vis uses two configuration layers:
 
-## Target Defaults
+- **`vis.config.ts`** — workspace-wide settings (target defaults, security, constraints, codeowners, updates)
+- **`project.json`** — per-project overrides (targets, tags, layer, owners)
 
-Target defaults apply to all projects that have a matching script in their `package.json`:
+## vis.config.ts
 
-```json
-{
-    "targetDefaults": {
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/dist/**"],
-            "inputs": ["{projectRoot}/src/**"],
-            "cache": true,
-            "parallelism": true
-        },
-        "test": {
-            "dependsOn": ["build"],
-            "cache": true
-        },
-        "lint": {
-            "cache": true
-        }
-    }
-}
+Create a `vis.config.ts` in your workspace root:
+
+```typescript
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    // All sections are optional — secure defaults are applied automatically
+});
 ```
 
-| Property      | Type                   | Description                                                                                         |
-| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `dependsOn`   | `(string \| object)[]` | Other targets this target depends on. Use `^build` to depend on dependency projects' `build` target |
-| `outputs`     | `string[]`             | Output file patterns. Use `{projectRoot}` as a placeholder                                          |
-| `inputs`      | `(string \| object)[]` | Input patterns for cache invalidation                                                               |
-| `cache`       | `boolean`              | Whether this target is cacheable                                                                    |
-| `parallelism` | `boolean`              | Whether this target supports parallel execution                                                     |
+Supported file names (checked in order): `vis.config.ts`, `.mts`, `.cts`, `.js`, `.mjs`, `.cjs`.
 
-## Task Runner Options
+### Target Defaults
 
-Configure the underlying task runner behavior:
+Apply default configuration to all projects that have a matching target:
 
-```json
-{
-    "taskRunnerOptions": {
-        "parallel": 5,
-        "smartLockfileHashing": true,
-        "frameworkInference": true,
-        "remoteCache": {
-            "url": "https://cache.example.com",
-            "token": "my-token",
-            "teamId": "my-team"
-        }
-    }
-}
-```
-
-| Option                 | Type      | Default | Description                                     |
-| ---------------------- | --------- | ------- | ----------------------------------------------- |
-| `parallel`             | `number`  | `3`     | Maximum number of parallel tasks                |
-| `smartLockfileHashing` | `boolean` | `false` | Per-package lockfile hashing for better caching |
-| `frameworkInference`   | `boolean` | `false` | Auto-detect framework environment variables     |
-| `remoteCache.url`      | `string`  |         | Remote cache server URL                         |
-| `remoteCache.token`    | `string`  |         | Authentication token                            |
-| `remoteCache.teamId`   | `string`  |         | Team or namespace identifier                    |
-
-## Update Defaults
-
-Set defaults for `vis check` and `vis update` to avoid repeating options:
-
-```json
-{
-    "update": {
-        "target": "minor",
-        "include": ["@company/*"],
-        "exclude": ["legacy-*", "deprecated-*"],
-        "prerelease": false,
-        "includeLocked": false,
-        "packageMode": {
-            "typescript": "minor",
-            "@types/*": "patch"
+```typescript
+export default defineConfig({
+    targetDefaults: {
+        build: {
+            dependsOn: ["^build"],
+            outputs: ["{projectRoot}/dist/**"],
+            inputs: ["{projectRoot}/src/**"],
+            cache: true,
+            type: "build",
         },
-        "depFields": ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "overrides"]
-    }
-}
-```
-
-| Property        | Type                          | Default         | Description                                                       |
-| --------------- | ----------------------------- | --------------- | ----------------------------------------------------------------- |
-| `target`        | `string`                      | `"latest"`      | Default update target                                             |
-| `include`       | `string[]`                    | `[]`            | Glob patterns to always include                                   |
-| `exclude`       | `string[]`                    | `[]`            | Glob patterns to always exclude                                   |
-| `prerelease`    | `boolean`                     | `false`         | Whether to include prerelease versions                            |
-| `includeLocked` | `boolean`                     | `false`         | Include packages with pinned/exact versions (no `^` or `~`)       |
-| `packageMode`   | `Record<string, string>`      | -               | Per-package target overrides (exact name, glob, or `/regex/`)     |
-| `depFields`     | `string[]`                    | standard fields | Dependency fields to scan (`overrides`, `resolutions`, etc.)      |
-| `minimumReleaseAge` | `number`                  | -               | Min minutes since publish before a version is eligible for update  |
-| `minimumReleaseAgeExclude` | `string[]`         | `[]`            | Packages excluded from the maturity period check                  |
-
-## Full Example
-
-```json
-{
-    "targetDefaults": {
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/dist/**"],
-            "cache": true
+        test: {
+            dependsOn: ["build"],
+            cache: true,
         },
-        "test": {
-            "dependsOn": ["build"],
-            "cache": true
+        dev: {
+            preset: "server",
         },
-        "lint": {
-            "cache": true
-        }
     },
-    "taskRunnerOptions": {
-        "parallel": 5,
-        "smartLockfileHashing": true,
-        "frameworkInference": true
+});
+```
+
+| Property        | Type                   | Description                                                  |
+| --------------- | ---------------------- | ------------------------------------------------------------ |
+| `command`       | `string`               | Shell command (overrides package.json script)                 |
+| `dependsOn`     | `(string \| object)[]` | Dependencies. `^build` = run on dep projects first           |
+| `outputs`       | `string[]`             | Output patterns (`{projectRoot}` placeholder supported)      |
+| `inputs`        | `(string \| object)[]` | Input patterns for cache invalidation                        |
+| `cache`         | `boolean`              | Whether cacheable (default depends on `type`)                |
+| `parallelism`   | `boolean`              | Whether supports parallel execution                          |
+| `type`          | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                 |
+| `preset`        | `"server" \| "utility"` | Preset bundle of options                                    |
+| `options`       | `object`               | See [target options](/commands/run#target-options)            |
+
+### File Groups
+
+Named glob collections reusable from target `inputs` via `@filegroup:<name>`:
+
+```typescript
+export default defineConfig({
+    fileGroups: {
+        sources: ["src/**/*.ts", "!src/**/*.test.ts"],
+        tests: ["**/*.test.ts", "**/*.spec.ts"],
+        configs: ["tsconfig.json", "vis.config.ts"],
     },
-    "update": {
-        "target": "minor",
-        "exclude": ["legacy-*"]
+    targetDefaults: {
+        build: {
+            inputs: ["@filegroup:sources", "@filegroup:configs"],
+        },
+        test: {
+            inputs: ["@filegroup:sources", "@filegroup:tests"],
+        },
+    },
+});
+```
+
+### Scoped Task Defaults
+
+Apply target defaults conditionally based on project metadata:
+
+```typescript
+export default defineConfig({
+    taskDefaults: [
+        {
+            scope: { tags: ["frontend"] },
+            targets: {
+                build: { command: "vite build", outputs: ["dist/**"] },
+            },
+        },
+        {
+            scope: { projectType: "library", language: "typescript" },
+            targets: {
+                build: { command: "tsc --build" },
+            },
+        },
+        {
+            scope: { layer: ["tool", "automation"] },
+            targets: {
+                test: { options: { retryCount: 2 } },
+            },
+        },
+    ],
+});
+```
+
+Scope fields (all optional, must all match):
+
+| Field         | Type                     | Description                         |
+| ------------- | ------------------------ | ----------------------------------- |
+| `tags`        | `string[]`               | Project must have any of these tags |
+| `projectType` | `"library" \| "application"` | Project type match             |
+| `layer`       | `string \| string[]`     | Layer match                         |
+| `stack`       | `string \| string[]`     | Stack match                         |
+| `language`    | `string \| string[]`     | Language match                      |
+
+### Constraints
+
+Enforce dependency rules across the workspace:
+
+```typescript
+export default defineConfig({
+    constraints: {
+        enforceLayerRelationships: true,
+        typeBoundaries: {
+            enforceApplicationBoundary: true,
+            allowedDependencyTypes: {
+                application: ["library"],
+            },
+        },
+        tagRelationships: {
+            frontend: ["shared", "frontend"],
+            backend: ["shared", "backend"],
+        },
+        dependencyKindRules: {
+            noDevDependencyOnProductionDep: true,
+            noProductionDependencyOnApplication: true,
+        },
+    },
+});
+```
+
+#### Layer Hierarchy
+
+When `enforceLayerRelationships: true`, projects may only depend on projects at the same or lower layer:
+
+```
+configuration < library < scaffolding < tool < automation < application
+```
+
+### CODEOWNERS
+
+Configure `vis sync codeowners` output:
+
+```typescript
+export default defineConfig({
+    codeowners: {
+        orderBy: "project-id",  // or "file-source" (default)
+        provider: "github",
+        globalPaths: {
+            "/.github/**": ["@myorg/platform"],
+        },
+    },
+});
+```
+
+### Security
+
+Supply-chain security settings (secure defaults applied automatically):
+
+```typescript
+export default defineConfig({
+    security: {
+        strictDepBuilds: true,
+        trustPolicy: "no-downgrade",
+        blockExoticSubdeps: true,
+        minimumReleaseAge: 1440, // 24 hours
+        socket: { enabled: true, minimumScore: 0.4 },
+        allowBuilds: { esbuild: true, "@prisma/client": true },
+    },
+});
+```
+
+### Task Runner Options
+
+```typescript
+export default defineConfig({
+    taskRunnerOptions: {
+        parallel: 5,
+        smartLockfileHashing: true,
+        frameworkInference: true,
+        remoteCache: {
+            url: "https://cache.example.com",
+            token: "my-token",
+            teamId: "my-team",
+        },
+    },
+});
+```
+
+### Update Defaults
+
+```typescript
+export default defineConfig({
+    update: {
+        target: "minor",
+        exclude: ["legacy-*"],
+        packageMode: { typescript: "minor" },
+    },
+});
+```
+
+---
+
+## project.json
+
+Place a `project.json` in each workspace package for per-project configuration. Enable editor autocomplete with the `$schema` field:
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "projectType": "library",
+    "layer": "library",
+    "stack": "frontend",
+    "language": "typescript",
+    "tags": ["frontend", "shared"],
+    "sourceRoot": "src",
+    "implicitDependencies": ["@myorg/config"],
+    "owners": [
+        { "path": "src/**", "owners": ["@myorg/core-team"] }
+    ],
+    "project": {
+        "title": "My Library",
+        "description": "Shared utilities",
+        "owner": "@myorg/core-team"
+    },
+    "targets": {
+        "build": {
+            "command": "tsc --build",
+            "type": "build",
+            "outputs": ["dist/**"]
+        },
+        "dev": {
+            "command": "vite dev",
+            "preset": "server"
+        }
     }
 }
 ```
+
+### Fields
+
+| Field                  | Type           | Description                                          |
+| ---------------------- | -------------- | ---------------------------------------------------- |
+| `$schema`              | `string`       | JSON Schema for editor autocomplete                  |
+| `projectType`          | `string`       | `"library"` or `"application"`                       |
+| `layer`                | `string`       | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application` |
+| `stack`                | `string`       | `backend`, `frontend`, `data`, `infrastructure`, `systems` |
+| `language`             | `string`       | Primary language (e.g. `typescript`, `rust`)          |
+| `tags`                 | `string[]`     | Filterable tags for queries and constraints           |
+| `sourceRoot`           | `string`       | Source root directory (default: `src`)                |
+| `implicitDependencies` | `string[]`     | Projects this project implicitly depends on           |
+| `owners`               | `object[]`     | Code ownership declarations (see [vis sync](/commands/sync)) |
+| `project`              | `object`       | Human-readable metadata (title, description, owner)  |
+| `targets`              | `object`       | Target definitions (see [vis run](/commands/run#target-options)) |
+
+### Targets in project.json
+
+Target definitions in `project.json` are merged on top of package.json scripts. If a target has a `command`, it overrides the script. If not, the package.json script is used as the command.
+
+Targets support all fields from [target options](/commands/run#target-options) including `type`, `preset`, and `options`.
+
+---
 
 ## Workspace Discovery
 
-`vis` automatically discovers your workspace structure:
+vis automatically discovers your workspace structure:
 
 1. **pnpm** — Reads `pnpm-workspace.yaml` for package patterns
-2. **npm/yarn** — Falls back to the `workspaces` field in root `package.json`
-3. **Project metadata** — Reads `project.json` files (Nx-compatible) for additional config like `projectType`, `sourceRoot`, and `tags`
+2. **npm/yarn/bun** — Falls back to the `workspaces` field in root `package.json`
+3. **Project metadata** — Reads `project.json` files for targets, tags, layer, stack, language, owners
 4. **Dependency graph** — Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`

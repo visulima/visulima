@@ -1,0 +1,96 @@
+---
+title: "vis migrate"
+description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged) to vis"
+---
+
+# vis migrate
+
+Translates configuration from competing monorepo tools into vis format. Non-destructive — original config files are left in place for review.
+
+## Usage
+
+```bash
+vis migrate <type> [options]
+```
+
+## Migration Types
+
+### turborepo
+
+Reads `turbo.json` and writes `vis.config.ts` with equivalent `targetDefaults`:
+
+```bash
+vis migrate turborepo
+vis migrate turborepo --dry-run    # Preview without writing
+```
+
+Translates:
+- `tasks` / `pipeline` entries → `targetDefaults`
+- `^build` dependsOn → `{ dependencies: true, target: "build" }`
+- `project#task` → `{ projects: "project", target: "task" }`
+- `globalDependencies` → `taskRunnerOptions.globalInputs`
+- `globalEnv` → `taskRunnerOptions.globalEnv`
+- `persistent` / `interactive` → `options.persistent` / `options.interactive`
+
+Remote cache is flagged in the migration report (vis uses the same Turborepo HTTP protocol).
+
+### nx
+
+Reads `nx.json` and writes `vis.config.ts`:
+
+```bash
+vis migrate nx
+vis migrate nx --dry-run
+```
+
+Translates:
+- `namedInputs` → `namedInputs`
+- `targetDefaults` → `targetDefaults`
+
+Per-project `project.json` files are **left untouched** — vis reads them natively (targets, tags, implicitDependencies, sourceRoot).
+
+### moon
+
+Reads `.moon/tasks.yml` (or the first file in `.moon/tasks/`) and writes `vis.config.ts`:
+
+```bash
+vis migrate moon
+vis migrate moon --dry-run
+```
+
+Translates:
+- `tasks` → `targetDefaults` (command + args merged, deps, inputs, outputs, type, preset, options)
+- `fileGroups` → `fileGroups`
+- `implicitInputs` → `namedInputs.default`
+
+Per-project `moon.yml` files should be manually converted to `project.json` — the field names match (targets, tags, layer, stack, language, owners).
+
+### deps
+
+Migrates package dependencies and scripts (husky → vis hooks):
+
+```bash
+vis migrate deps
+```
+
+### lint-staged
+
+Merges lint-staged config into `vis.config.ts` staged block:
+
+```bash
+vis migrate lint-staged
+```
+
+### all
+
+Runs `deps` + `lint-staged` (does **not** auto-run turborepo/nx/moon — those are opt-in):
+
+```bash
+vis migrate
+```
+
+## Options
+
+| Option      | Default | Description                              |
+| ----------- | ------- | ---------------------------------------- |
+| `--dry-run` | `false` | Preview changes without writing to disk  |

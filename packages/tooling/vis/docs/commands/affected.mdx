@@ -19,24 +19,55 @@ vis affected <target> [options]
 vis affected build
 vis affected test --base=main
 vis affected lint --base=HEAD~5 --head=HEAD
+vis affected test --query "language=typescript"
+vis affected build --downstream=direct
 ```
 
 ## Options
 
-| Option       | Default  | Description                              |
-| ------------ | -------- | ---------------------------------------- |
-| `--base`     | `HEAD~1` | Git base ref for comparison              |
-| `--head`     | `HEAD`   | Git head ref for comparison              |
-| `--parallel` | `3`      | Maximum number of parallel tasks         |
-| `--cache`    | `true`   | Enable caching (`--no-cache` to disable) |
-| `--dry-run`  | `false`  | Show what would run without executing    |
+| Option         | Default  | Description                                              |
+| -------------- | -------- | -------------------------------------------------------- |
+| `--base`       | `HEAD~1` | Git base ref for comparison                              |
+| `--head`       | `HEAD`   | Git head ref for comparison                              |
+| `--downstream` | `deep`   | How far to include dependents: `none`, `direct`, `deep`  |
+| `--upstream`   | `none`   | How far to include dependencies: `none`, `direct`, `deep`|
+| `--parallel`   | `3`      | Maximum number of parallel tasks                         |
+| `--cache`      | `true`   | Enable caching (`--no-cache` to disable)                 |
+| `--dry-run`    | `false`  | Show what would run without executing                    |
+| `--partition`  |          | Partition for distributed CI (e.g. `1/4`)                |
+| `--query`      |          | Filter affected projects by query                        |
+
+## Affected Files Forwarding
+
+When a target declares `options.affectedFiles` in `project.json`, the changed file paths are forwarded to the task process:
+
+```json
+{
+    "targets": {
+        "lint": {
+            "command": "eslint",
+            "options": {
+                "affectedFiles": "args"
+            }
+        }
+    }
+}
+```
+
+| Mode   | Behavior                                                    |
+| ------ | ----------------------------------------------------------- |
+| `args` | Appends changed file paths as command arguments             |
+| `env`  | Sets `VIS_AFFECTED_FILES` environment variable              |
+| `both` | Both of the above                                           |
 
 ## How It Works
 
 1. **Diff** — Runs `git diff` between `--base` and `--head` to find changed files
 2. **Map** — Maps changed files to the projects that contain them
-3. **Expand** — Includes any projects that depend on the changed projects (transitively)
-4. **Execute** — Runs the target on affected projects only, in dependency order
+3. **Expand** — Includes upstream/downstream based on `--upstream`/`--downstream` scope
+4. **Query** — Applies `--query` filter on top of the affected set
+5. **Forward** — Passes changed file list to `vis run` via `VIS_AFFECTED_FILES` env var
+6. **Execute** — Runs the target on affected projects only, in dependency order
 
 ## Use Cases
 
@@ -48,10 +79,24 @@ Only test what changed in a pull request:
 vis affected test --base=origin/main
 ```
 
+Or use `vis ci` which wraps this with auto-detected refs:
+
+```bash
+vis ci lint,test,build
+```
+
 ### Local Development
 
 Run tests for recent changes:
 
 ```bash
 vis affected test --base=HEAD~3
+```
+
+### Scoped CI
+
+Run tests only on affected TypeScript libraries:
+
+```bash
+vis affected test --query "language=typescript && layer=library"
 ```

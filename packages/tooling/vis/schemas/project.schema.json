@@ -1,0 +1,353 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://visulima.dev/schemas/project.schema.json",
+    "title": "vis project.json",
+    "description": "Per-project configuration for @visulima/vis. Place a project.json in each workspace package root.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for editor autocomplete."
+        },
+        "projectType": {
+            "type": "string",
+            "enum": ["library", "application"],
+            "description": "Whether this project is a library (consumed by others) or an application (deployment target)."
+        },
+        "sourceRoot": {
+            "type": "string",
+            "description": "Source root directory, relative to this project's root. Used for display and language inference.",
+            "default": "src"
+        },
+        "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Filterable tags. Used by query language (--query \"tag=frontend\"), scoped task defaults, and tag-relationship constraints."
+        },
+        "layer": {
+            "type": "string",
+            "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"],
+            "description": "Project layer in the dependency hierarchy. When enforceLayerRelationships is enabled, projects may only depend on the same or lower layer: configuration < library < scaffolding < tool < automation < application."
+        },
+        "stack": {
+            "type": "string",
+            "enum": ["backend", "frontend", "data", "infrastructure", "systems"],
+            "description": "Technology stack classification. Used by query language and scoped task defaults."
+        },
+        "language": {
+            "type": "string",
+            "description": "Primary programming language (e.g. \"typescript\", \"rust\", \"go\"). Used by query language and scoped task defaults.",
+            "examples": ["typescript", "javascript", "rust", "go", "python"]
+        },
+        "implicitDependencies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Workspace project names this project implicitly depends on (not expressed in package.json)."
+        },
+        "owners": {
+            "type": "array",
+            "description": "Code ownership declarations. Aggregated by `vis sync codeowners` to generate a CODEOWNERS file.",
+            "items": {
+                "type": "object",
+                "required": ["path", "owners"],
+                "additionalProperties": false,
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "File or glob pattern relative to this project root (e.g. \"src/**\", \".\")."
+                    },
+                    "owners": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Owner handles (e.g. \"@org/team\", \"user@example.com\")."
+                    },
+                    "channel": {
+                        "type": "string",
+                        "description": "Optional notification channel (e.g. Slack channel). Emitted as a trailing comment in CODEOWNERS."
+                    }
+                }
+            }
+        },
+        "project": {
+            "type": "object",
+            "description": "Human-readable project metadata.",
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Display name for the project."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the project's purpose."
+                },
+                "channel": {
+                    "type": "string",
+                    "description": "Primary support channel (e.g. Slack, Teams)."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "Primary owner or team handle."
+                },
+                "maintainers": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "List of maintainer handles."
+                }
+            }
+        },
+        "targets": {
+            "type": "object",
+            "description": "Named build/test/run targets. Merged on top of package.json scripts — the command from scripts is used as the default if no command is set here.",
+            "additionalProperties": {
+                "$ref": "#/$defs/targetConfiguration"
+            }
+        }
+    },
+    "$defs": {
+        "targetConfiguration": {
+            "type": "object",
+            "description": "Configuration for a single target.",
+            "additionalProperties": false,
+            "properties": {
+                "command": {
+                    "type": "string",
+                    "description": "The shell command to execute. Overrides the package.json script of the same name."
+                },
+                "executor": {
+                    "type": "string",
+                    "description": "Alternative to command — an executor identifier."
+                },
+                "cache": {
+                    "type": "boolean",
+                    "description": "Whether this target's results are cacheable. Defaults based on type: build=true, test=true, run=false."
+                },
+                "inputs": {
+                    "type": "array",
+                    "description": "Input patterns for cache invalidation. Supports file globs, @filegroup:<name> references, and structured input definitions.",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            { "$ref": "#/$defs/fileSetInput" },
+                            { "$ref": "#/$defs/environmentInput" },
+                            { "$ref": "#/$defs/runtimeInput" },
+                            { "$ref": "#/$defs/externalDependencyInput" }
+                        ]
+                    }
+                },
+                "outputs": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Output file/directory patterns produced by this target (e.g. \"dist/**\")."
+                },
+                "dependsOn": {
+                    "type": "array",
+                    "description": "Other targets this target depends on. Can be plain target names (same project) or dependency config objects.",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            { "$ref": "#/$defs/targetDependencyConfig" }
+                        ]
+                    }
+                },
+                "configurations": {
+                    "type": "object",
+                    "description": "Named configuration variants (e.g. \"production\", \"development\").",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "parallelism": {
+                    "type": "boolean",
+                    "description": "Whether this target supports parallel execution.",
+                    "default": true
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["build", "test", "run"],
+                    "description": "Semantic task type. Affects caching defaults and CI filtering. build/test are cached by default; run is not.",
+                    "default": "test"
+                },
+                "preset": {
+                    "type": "string",
+                    "enum": ["server", "utility"],
+                    "description": "Preset that pre-fills a bundle of options. 'server': persistent, no cache, no CI. 'utility': no cache, no CI."
+                },
+                "options": {
+                    "$ref": "#/$defs/targetOptions"
+                }
+            }
+        },
+        "targetOptions": {
+            "type": "object",
+            "description": "Vis-specific target options controlling execution behavior.",
+            "additionalProperties": false,
+            "properties": {
+                "persistent": {
+                    "type": "boolean",
+                    "description": "Long-running/never-ending process. Scheduled last, never cached.",
+                    "default": false
+                },
+                "interactive": {
+                    "type": "boolean",
+                    "description": "Serialized with respect to parallel execution; claims stdin for terminal input.",
+                    "default": false
+                },
+                "internal": {
+                    "type": "boolean",
+                    "description": "Hidden from CLI listings. Can only be invoked as a dependency of another task.",
+                    "default": false
+                },
+                "runInCI": {
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string", "enum": ["affected", "always"] }
+                    ],
+                    "description": "Controls whether this task runs in CI. true=always, false=never, 'affected'=only when project is affected, 'always'=even if unaffected.",
+                    "default": true
+                },
+                "retryCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Number of times to retry on failure.",
+                    "default": 0
+                },
+                "retryDelay": {
+                    "oneOf": [
+                        { "type": "integer", "minimum": 0 },
+                        { "type": "string", "const": "exponential" }
+                    ],
+                    "description": "Delay between retries in ms, or \"exponential\" for 2^attempt * 1000ms.",
+                    "default": "exponential"
+                },
+                "affectedFiles": {
+                    "oneOf": [
+                        { "type": "boolean", "const": false },
+                        { "type": "string", "enum": ["args", "env", "both"] }
+                    ],
+                    "description": "How to forward affected files to the task. false=don't, 'args'=as command arguments, 'env'=via VIS_AFFECTED_FILES, 'both'=both.",
+                    "default": false
+                },
+                "envFile": {
+                    "type": "string",
+                    "description": "Dotenv file to load before running. Path relative to the project root.",
+                    "examples": [".env", ".env.local", ".env.production"]
+                },
+                "mutex": {
+                    "type": "string",
+                    "description": "Named mutex. All tasks sharing the same mutex name are serialized.",
+                    "examples": ["db-migration"]
+                },
+                "osType": {
+                    "oneOf": [
+                        { "type": "string", "enum": ["linux", "macos", "windows"] },
+                        {
+                            "type": "array",
+                            "items": { "type": "string", "enum": ["linux", "macos", "windows"] }
+                        }
+                    ],
+                    "description": "Restrict execution to specific operating systems. Tasks on non-matching OS are skipped."
+                },
+                "runFromWorkspaceRoot": {
+                    "type": "boolean",
+                    "description": "Execute from the workspace root instead of the project root.",
+                    "default": false
+                },
+                "shell": {
+                    "type": "string",
+                    "description": "Per-target shell override (cross-platform).",
+                    "examples": ["/bin/bash", "/bin/zsh"]
+                },
+                "unixShell": {
+                    "type": "string",
+                    "description": "Shell override for Linux and macOS. Takes precedence over 'shell'."
+                },
+                "windowsShell": {
+                    "type": "string",
+                    "description": "Shell override for Windows. Takes precedence over 'shell'.",
+                    "examples": ["powershell.exe", "cmd.exe"]
+                },
+                "preset": {
+                    "type": "string",
+                    "enum": ["server", "utility"],
+                    "description": "Preset applied before user options."
+                }
+            }
+        },
+        "targetDependencyConfig": {
+            "type": "object",
+            "description": "Structured dependency on another target.",
+            "required": ["target"],
+            "additionalProperties": false,
+            "properties": {
+                "target": {
+                    "type": "string",
+                    "description": "The target name to depend on."
+                },
+                "dependencies": {
+                    "type": "boolean",
+                    "description": "When true, run this target on all dependency projects first (equivalent to turbo's ^target)."
+                },
+                "projects": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ],
+                    "description": "Specific project name(s) to run this target on."
+                },
+                "params": {
+                    "type": "string",
+                    "enum": ["forward", "ignore"],
+                    "description": "Whether to forward or ignore parameters from the parent task."
+                }
+            }
+        },
+        "fileSetInput": {
+            "type": "object",
+            "required": ["fileset"],
+            "additionalProperties": false,
+            "properties": {
+                "fileset": {
+                    "type": "string",
+                    "description": "Glob pattern for input files (e.g. \"src/**/*.ts\")."
+                }
+            }
+        },
+        "environmentInput": {
+            "type": "object",
+            "required": ["env"],
+            "additionalProperties": false,
+            "properties": {
+                "env": {
+                    "type": "string",
+                    "description": "Environment variable name to include in cache key."
+                }
+            }
+        },
+        "runtimeInput": {
+            "type": "object",
+            "required": ["runtime"],
+            "additionalProperties": false,
+            "properties": {
+                "runtime": {
+                    "type": "string",
+                    "description": "Shell command whose output is included in cache key (e.g. \"node --version\")."
+                }
+            }
+        },
+        "externalDependencyInput": {
+            "type": "object",
+            "required": ["externalDependencies"],
+            "additionalProperties": false,
+            "properties": {
+                "externalDependencies": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "npm package names whose resolved versions are included in cache key."
+                }
+            }
+        }
+    }
+}
