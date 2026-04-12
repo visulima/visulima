@@ -8,6 +8,7 @@ import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "..
 import { error as errorOutput, info, note, success } from "../output";
 import { applyOverrides, readLockfileText } from "../overrides";
 import { detectPm, runInstall } from "../pm-runner";
+import { checkRuntimeVersions } from "../runtime-check";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../socket-security";
 import type { OptimizeEntry } from "../tui/components/optimize/OptimizeStore";
 import type { VisConfig } from "../workspace";
@@ -369,6 +370,19 @@ const doctor: Command = {
 
         if (workspaceDirectories.length > 0) {
             info(`  ${icon(true)} ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`);
+        }
+
+        // Runtime version sanity check (Node, .nvmrc, packageManager field).
+        const runtimeFindings = checkRuntimeVersions(wsRoot);
+
+        if (runtimeFindings.length === 0) {
+            info(`  ${icon(true)} Runtime: Node.js ${process.versions.node} ${green("✓")}`);
+        } else {
+            for (const finding of runtimeFindings) {
+                const colour = finding.severity === "error" ? red : yellow;
+
+                info(`  ${icon(false)} Runtime: ${colour(finding.message)}`);
+            }
         }
 
         info(`\n  Scanning...`);

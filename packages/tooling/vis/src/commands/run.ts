@@ -13,15 +13,89 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
+import { compareDuration, formatTimingSummary } from "../run-report";
+import { filterProjectsByQuery, resolveSelector } from "../selectors";
+import {
+    detectCurrentOs,
+    loadEnvFile,
+    matchesOs,
+    resolveTargetShell,
+    shouldRunInCI,
+    type VisTargetConfiguration,
+    type VisTargetOptions,
+} from "../target-options";
+import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
-import { buildProjectGraph, discoverWorkspace } from "../workspace";
+import { startWatcher } from "../watch";
+import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } from "../workspace";
+
+const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
 /**
- * Maximum output buffer size per task (512 KB).
- * For long-running tasks (vite dev, tsc --watch), only the tail is kept.
- * Short-lived tasks (build, lint) rarely exceed this.
+ * Resolves a task's effective working directory. Returns the workspace
+ * root when `runFromWorkspaceRoot` is set, otherwise resolves
+ * `projectRoot` — keeping absolute paths as-is and prefixing relative
+ * ones with the workspace root.
+ */
+const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runFromWorkspaceRoot: boolean): string => {
+    if (runFromWorkspaceRoot) {
+        return workspaceRoot;
+    }
+
+    if (!projectRoot) {
+        return workspaceRoot;
+    }
+
+    return projectRoot.startsWith("/") ? projectRoot : `${workspaceRoot}/${projectRoot}`;
+};
+
+/**
+ * Runs persistent tasks (dev servers, watch mode) as a concurrent batch.
+ * Persistent tasks never cache and never return a "result" — they run
+ * until interrupted or until all of them exit.
+ */
+const runPersistentTasks = async (
+    tasks: Task[],
+    workspaceRoot: string,
+    affectedFiles: string[] | undefined,
+): Promise<void> => {
+    const commands = tasks
+        .map((task) => {
+            const command = task.overrides["command"] as string | undefined;
+
+            if (!command) {
+                return undefined;
+            }
+
+            const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
+            const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
+
+            const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
+            const affectedEnv = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+                ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
+                : {};
+
+            return {
+                command,
+                cwd,
+                env: { ...envFileVars, ...affectedEnv },
+                name: task.id,
+            };
+        })
+        .filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+    if (commands.length === 0) {
+        return;
+    }
+
+    await runConcurrently(commands, { killOthers: ["failure"] });
+};
+
+/**
+ * Maximum output buffer size per task (256 KB).
  */
 const MAX_OUTPUT_BYTES = 256 * 1024;
 
@@ -44,7 +118,6 @@ class OutputRingBuffer {
         this.#buffer += text;
 
         if (this.#buffer.length > this.#maxBytes) {
-            // Keep the tail, trim from the front
             this.#buffer = this.#buffer.slice(-this.#maxBytes);
             this.#truncated = true;
         }
@@ -60,6 +133,90 @@ class OutputRingBuffer {
 }
 
 /**
+ * Extract vis target options from a Task. Target options travel through
+ * task-runner as part of `task.overrides.visOptions`, opaquely to the
+ * runner but recovered here for per-task behaviour tweaks.
+ */
+const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
+    const options = task.overrides["visOptions"];
+
+    if (options && typeof options === "object") {
+        return options as VisTargetOptions;
+    }
+
+    return undefined;
+};
+
+/**
+ * Wraps a string in single quotes for safe shell execution, escaping
+ * any internal single quotes using the standard `'\''` pattern. Unlike
+ * double quotes, single quotes prevent shell expansion of `$VAR`, `\n`,
+ * and backticks.
+ */
+const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
+
+/** Builds the command args list for `affectedFiles` forwarding. */
+const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
+    if (!affectedFiles || affectedFiles.length === 0 || mode === false || mode === undefined) {
+        return command;
+    }
+
+    if (mode === "args" || mode === "both") {
+        const quoted = affectedFiles.map(singleQuoteEscape).join(" ");
+
+        return `${command} ${quoted}`;
+    }
+
+    return command;
+};
+
+/**
+ * Serializes tasks that share a mutex name. Keyed by mutex name, each
+ * entry is the tail of a promise chain — a task acquires the mutex by
+ * awaiting the current tail, then replaces it with its own completion
+ * promise.
+ */
+type MutexPool = Map<string, Promise<void>>;
+
+const withMutex = async <T>(pool: MutexPool, name: string | undefined, run: () => Promise<T>): Promise<T> => {
+    if (!name) {
+        return run();
+    }
+
+    const previous = pool.get(name) ?? Promise.resolve();
+    let release!: () => void;
+    const next = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    const chained = previous.then(() => next);
+
+    pool.set(name, chained);
+
+    await previous;
+
+    try {
+        return await run();
+    } finally {
+        release();
+
+        // Only clear the pool entry if we are still the tail — another
+        // task may have enqueued itself after us.
+        if (pool.get(name) === chained) {
+            pool.delete(name);
+        }
+    }
+};
+
+interface ExecutorDependencies {
+    affectedFiles?: string[];
+    mutexPool?: MutexPool;
+    onOutput?: (taskId: string, text: string) => void;
+    onOutputReplace?: (taskId: string, fullContent: string) => void;
+    stdinRegistry?: Map<string, StdinEntry>;
+    workspaceRoot: string;
+}
+
+/**
  * Creates an async task executor using the concurrent process runner.
  *
  * Uses the native Rust addon (setsid/killpg process groups, tokio I/O)
@@ -68,26 +225,54 @@ class OutputRingBuffer {
  *
  * Output is collected in a ring buffer capped at MAX_OUTPUT_BYTES to
  * prevent unbounded memory growth with long-running tasks like dev servers.
+ *
+ * The executor also honors vis-specific target options carried on the task:
+ * `envFile`, `runFromWorkspaceRoot`, `retryCount`/`retryDelay`, `mutex`,
+ * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
 const createConcurrentExecutor = (
-    workspaceRoot: string,
-    stdinRegistry?: Map<string, StdinEntry>,
-    onOutput?: (taskId: string, text: string) => void,
-    onOutputReplace?: (taskId: string, fullContent: string) => void,
-) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
-    const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
-    const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+    deps: ExecutorDependencies,
+) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
+    const { affectedFiles, mutexPool, onOutput, onOutputReplace, stdinRegistry, workspaceRoot } = deps;
 
-    const command = task.overrides["command"] as string | undefined;
+    const visOptions = getTaskOptions(task);
+    const currentOs = detectCurrentOs();
 
-    if (!command) {
+    const resolvedCwd = resolveCwd(
+        workspaceRoot,
+        execOptions.cwd ?? task.projectRoot,
+        visOptions?.runFromWorkspaceRoot === true,
+    );
+
+    const rawCommand = task.overrides["command"] as string | undefined;
+
+    if (!rawCommand) {
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
+    const commandWithAffected = buildAffectedFilesArgs(rawCommand, affectedFiles, visOptions?.affectedFiles);
+
+    const customShell = resolveTargetShell(visOptions, currentOs);
+    const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+
+    const envFileVars = visOptions?.envFile
+        ? loadEnvFile(resolvedCwd, visOptions.envFile)
+        : undefined;
+
+    const affectedFilesEnv: Record<string, string> = {};
+
+    if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
+        affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
+    }
+
+    const mergedEnv: Record<string, string> = {
+        ...envFileVars,
+        ...execOptions.env,
+        ...affectedFilesEnv,
+    };
+
     const isPty = Boolean(stdinRegistry);
 
-    // PTY tasks must never be cached — they require live user interaction.
-    // Disable cache before execution so the orchestrator skips both read and write.
     if (isPty) {
         task.cache = false;
     }
@@ -102,8 +287,6 @@ const createConcurrentExecutor = (
 
         if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
             if (termBuf) {
-                // PTY mode: process ANSI sequences through terminal buffer,
-                // then replace (not append) the store output with the current screen state
                 termBuf.write(event.text);
                 onOutputReplace?.(task.id, termBuf.toString());
             } else {
@@ -119,23 +302,36 @@ const createConcurrentExecutor = (
         }
     };
 
-    const result = await runConcurrently(
-        [{
-            command,
-            cwd: resolvedCwd,
-            env: options.env,
-            name: task.id,
-            ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
-        }],
-        { killOthers: ["failure"], onEvent },
-    );
+    const runOnce = async (): Promise<{ code: number; terminalOutput: string }> => {
+        const retryCount = visOptions?.retryCount ?? 0;
+        const retryDelay = visOptions?.retryDelay;
 
-    const closeEvent = result.closeEvents[0];
+        const result = await runConcurrently(
+            [{
+                command,
+                cwd: resolvedCwd,
+                env: mergedEnv,
+                name: task.id,
+                ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
+            }],
+            {
+                killOthers: ["failure"],
+                onEvent,
+                ...(retryCount > 0
+                    ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } }
+                    : {}),
+            },
+        );
 
-    return {
-        code: closeEvent?.exitCode ?? 1,
-        terminalOutput: termBuf ? termBuf.toString() : output!.toString(),
+        const closeEvent = result.closeEvents[0];
+
+        return {
+            code: closeEvent?.exitCode ?? 1,
+            terminalOutput: termBuf ? termBuf.toString() : output!.toString(),
+        };
     };
+
+    return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
 };
 
 const run: Command = {
@@ -147,27 +343,39 @@ const run: Command = {
     },
     description: "Run a target across workspace projects",
     examples: [
+        ["vis run", "List all available targets"],
         ["vis run build", "Run build on all projects"],
-        ["vis run test --projects=pkg-a,pkg-b", "Run test on specific projects"],
-        ["vis run build --parallel=5", "Run build with 5 parallel tasks"],
-        ["vis run build --no-cache", "Run build without caching"],
+        ["vis run :build", "Run build on all projects (moon-style)"],
+        ["vis run ~:test", "Run test on the project closest to the current directory"],
+        ["vis run \"#frontend:build\"", "Run build on projects tagged 'frontend'"],
+        ["vis run :build --query \"language=typescript\"", "Filter by project metadata"],
+        ["vis run test --affected", "Run test only on git-changed projects"],
+        ["vis run build --fail-fast", "Stop on first failure"],
+        ["vis run build --dry-run", "Show execution plan without running"],
     ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        const target = argument[0];
-
-        if (!target) {
-            throw new Error("Missing target. Usage: vis run <target>");
-        }
-
+    execute: async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
         const workspaceRoot = wsRoot;
-        const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const { config, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
-        // Enforce project constraints if configured
+        const rawSelector = argument[0];
+
+        if (!rawSelector) {
+            const available = collectAvailableTargets(workspace);
+
+            logger.info("Available targets:");
+            logger.info("");
+            logger.info(formatTargetList(available));
+            logger.info("");
+            logger.info("Usage: vis run <target>");
+
+            return;
+        }
+
         if (config.constraints && !options.skipConstraints) {
             const violations = enforceProjectConstraints(projectGraph, config.constraints);
 
@@ -180,7 +388,30 @@ const run: Command = {
             }
         }
 
-        let projectNames = Object.keys(workspace.projects);
+        // --affected shorthand: delegate to the affected command
+        if (options.affected) {
+            const argv: string[] = [rawSelector];
+
+            if (options.parallel !== undefined) {
+                argv.push(`--parallel=${String(options.parallel)}`);
+            }
+
+            if (!options.cache) {
+                argv.push("--no-cache");
+            }
+
+            if (options.query) {
+                argv.push(`--query=${String(options.query)}`);
+            }
+
+            await runtime.runCommand("affected", { argv });
+
+            return;
+        }
+
+        const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
+        const target = selectorResult.target;
+        let projectNames = selectorResult.projects;
 
         if (options.projects) {
             const requested = new Set((options.projects as string).split(",").map((p: string) => p.trim()));
@@ -192,36 +423,99 @@ const run: Command = {
             }
         }
 
-        const projectsWithTarget = projectNames.filter((name) => {
-            const project = workspace.projects[name];
+        // Apply --query filter (language=X && tag=Y style).
+        if (options.query) {
+            projectNames = filterProjectsByQuery(projectNames, workspace, options.query as string);
 
-            return project?.targets?.[target] !== undefined;
-        });
+            if (projectNames.length === 0) {
+                logger.info(`Query "${String(options.query)}" matched no projects.`);
+
+                return;
+            }
+        }
+
+        const currentOs = detectCurrentOs();
+
+        const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
+        const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
+
+        const projectsWithTarget: string[] = [];
+        const projectTargetIndex = new Map<string, VisTargetConfiguration>();
+
+        for (const name of projectNames) {
+            const visTargets = projectOptions.get(name);
+            const visTarget = visTargets?.[target];
+
+            if (!visTarget) {
+                continue;
+            }
+
+            const visOptions = visTarget.options;
+
+            if (visOptions?.internal) {
+                continue;
+            }
+
+            if (!matchesOs(visOptions, currentOs)) {
+                logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
+                continue;
+            }
+
+            if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
+                logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
+                continue;
+            }
+
+            projectsWithTarget.push(name);
+            projectTargetIndex.set(name, visTarget);
+        }
 
         if (projectsWithTarget.length === 0) {
-            logger.info(`No projects have the "${target}" target.`);
+            const available = collectAvailableTargets(workspace);
+            const suggestion = suggestTarget(target, available);
+            const hint = suggestion ? ` Did you mean "${suggestion}"?` : "";
+
+            logger.info(`No projects have the "${target}" target.${hint}`);
 
             return;
         }
 
         let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
             const project = workspace.projects[projectName];
-            const targetConfig = project?.targets?.[target];
+            const visTarget = projectTargetIndex.get(projectName)!;
             const taskTarget: TaskTarget = { project: projectName, target };
             const taskId = `${projectName}:${target}`;
 
             return {
-                cache: targetConfig?.cache ?? config.targetDefaults?.[target]?.cache,
+                cache: visTarget.cache,
                 id: taskId,
-                outputs: targetConfig?.outputs ?? config.targetDefaults?.[target]?.outputs ?? [],
-                overrides: { command: targetConfig?.command },
-                parallelism: targetConfig?.parallelism ?? config.targetDefaults?.[target]?.parallelism,
+                outputs: visTarget.outputs ?? [],
+                overrides: {
+                    command: visTarget.command,
+                    ...(visTarget.options ? { visOptions: visTarget.options } : {}),
+                },
+                parallelism: visTarget.parallelism,
                 projectRoot: project?.root,
                 target: taskTarget,
             };
         });
 
-        // Apply CI job partitioning if --partition or VIS_PARTITION is set
+        const persistentTasks: Task[] = [];
+        const regularTasks: Task[] = [];
+
+        for (const task of initialTasks) {
+            const opts = getTaskOptions(task);
+
+            if (opts?.persistent) {
+                task.cache = false;
+                persistentTasks.push(task);
+            } else {
+                regularTasks.push(task);
+            }
+        }
+
+        initialTasks = regularTasks;
+
         const partition = parsePartition(options.partition as string | undefined);
 
         if (partition) {
@@ -241,6 +535,45 @@ const run: Command = {
             targetDefaults: config.targetDefaults,
             workspace,
         });
+
+        if (options.dryRun) {
+            const taskCount = Object.keys(taskGraph.tasks).length;
+            const rootCount = taskGraph.roots.length;
+
+            logger.info(`Execution plan (${String(taskCount)} task(s), ${String(rootCount)} root(s)):`);
+            logger.info("");
+
+            const visited = new Set<string>();
+            const walkPlan = (id: string, depth: number): void => {
+                if (visited.has(id)) {
+                    return;
+                }
+
+                visited.add(id);
+
+                for (const dep of taskGraph.dependencies[id] ?? []) {
+                    walkPlan(dep, depth + 1);
+                }
+
+                const task = taskGraph.tasks[id];
+                const indent = "  ".repeat(depth + 1);
+
+                logger.info(`${indent}${id}${task?.cache === false ? " (no-cache)" : ""}`);
+            };
+
+            for (const root of taskGraph.roots) {
+                walkPlan(root, 0);
+            }
+
+            if (persistentTasks.length > 0) {
+                logger.info("");
+                logger.info(`  + ${String(persistentTasks.length)} persistent task(s) (run after graph completes)`);
+            }
+
+            logger.info("");
+
+            return;
+        }
 
         const startTime = Date.now();
 
@@ -266,21 +599,21 @@ const run: Command = {
             const stdinRegistry = new Map<string, StdinEntry>();
             const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, stdinRegistry });
             const { lifeCycle, store } = dynamic;
-            const taskExecutor = createConcurrentExecutor(
-                workspaceRoot,
+            const mutexPool: MutexPool = new Map();
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                mutexPool,
+                onOutput: (taskId, text) => store.addOutput(taskId, text),
+                onOutputReplace: (taskId, fullContent) => store.setOutput(taskId, fullContent),
                 stdinRegistry,
-                (taskId, text) => store.addOutput(taskId, text),
-                (taskId, fullContent) => store.setOutput(taskId, fullContent),
-            );
+                workspaceRoot,
+            });
 
-            // Run tasks in a loop — supports rerun (r) and single-task retry (R)
             let loopAction: "quit" | "rerun" | "retry" = "rerun";
             let retryTaskId: string | null = null;
 
             while (loopAction !== "quit") {
                 if (loopAction === "rerun") {
-                    // Full rerun of all tasks
-
                     await defaultTaskRunner(initialTasks, runnerOptions, {
                         lifeCycle,
                         projectGraph,
@@ -289,7 +622,6 @@ const run: Command = {
                         workspaceRoot,
                     });
                 } else if (loopAction === "retry" && retryTaskId) {
-                    // Retry a single failed task
                     const task = initialTasks.find((t) => t.id === retryTaskId);
                     const command = task?.overrides["command"] as string | undefined;
 
@@ -351,10 +683,7 @@ const run: Command = {
                     store.markDone();
                 }
 
-                // Wait for user action: quit, rerun, or retry
-
                 loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
-                    // Watch for rerun or retry requests
                     const unsubscribe = store.subscribe(() => {
                         const s = store.getSnapshot();
 
@@ -371,7 +700,6 @@ const run: Command = {
                         }
                     });
 
-                    // Check if user quit -- clean up subscription to avoid leak
                     dynamic.renderIsDone.then(
                         () => {
                             unsubscribe();
@@ -386,34 +714,128 @@ const run: Command = {
             }
 
             await dynamic.renderIsDone;
-        } else {
-            const taskExecutor = createConcurrentExecutor(workspaceRoot);
-            const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
-            const results = await defaultTaskRunner(initialTasks, runnerOptions, {
-                lifeCycle,
-                projectGraph,
-                taskExecutor,
-                taskGraph,
+            if (persistentTasks.length > 0 && !options.failFast) {
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
+            }
+        } else {
+            const mutexPool: MutexPool = new Map();
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                mutexPool,
                 workspaceRoot,
             });
+            const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
 
-            if (options.summarize) {
-                const summary = generateRunSummary(results, taskGraph, startTime);
+            const runOnce = async (): Promise<{ hasFailure: boolean; results: import("@visulima/task-runner").TaskResults }> => {
+                const runStart = Date.now();
 
-                await writeRunSummary(summary, workspaceRoot);
-            }
+                const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+                    lifeCycle,
+                    projectGraph,
+                    taskExecutor,
+                    taskGraph,
+                    workspaceRoot,
+                });
 
-            let hasFailure = false;
+                const durationMs = Date.now() - runStart;
 
-            for (const [, result] of results) {
-                if (result.status === "failure") {
-                    hasFailure = true;
+                if (options.summarize) {
+                    const summary = generateRunSummary(results, taskGraph, startTime);
+
+                    await writeRunSummary(summary, workspaceRoot);
                 }
+
+                let hasFailure = false;
+
+                for (const [, result] of results) {
+                    if (result.status === "failure") {
+                        hasFailure = true;
+                    }
+                }
+
+                const timingLine = formatTimingSummary(results, durationMs);
+                const durationComparison = compareDuration(workspaceRoot, durationMs);
+
+                logger.info("");
+                logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
+
+                return { hasFailure, results };
+            };
+
+            const { hasFailure } = await runOnce();
+
+            if (options.watch) {
+                const absoluteRoots = projectsWithTarget
+                    .map((name) => {
+                        const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+                        const root = project?.root;
+
+                        if (!root) {
+                            return undefined;
+                        }
+
+                        return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
+                    })
+                    .filter((p): p is string => p !== undefined);
+
+                logger.info(`Watching ${absoluteRoots.length} project(s) — edit a file to rerun, Ctrl+C to exit.`);
+
+                let running = false;
+
+                const handle = startWatcher({
+                    onChange: async (paths) => {
+                        if (running) {
+                            return;
+                        }
+
+                        running = true;
+
+                        try {
+                            logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
+                            await runOnce();
+                        } finally {
+                            running = false;
+                        }
+                    },
+                    paths: absoluteRoots,
+                });
+
+                await new Promise<void>((resolve) => {
+                    const onSigint = (): void => {
+                        process.off("SIGINT", onSigint);
+                        handle.close();
+                        resolve();
+                    };
+
+                    process.on("SIGINT", onSigint);
+                });
+
+                return;
             }
 
             if (hasFailure) {
+                if (options.flaky !== false) {
+                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 });
+
+                    if (flakyStats.length > 0) {
+                        logger.info("");
+                        logger.info("Flaky tasks (based on historical runs):");
+                        logger.info("");
+
+                        for (const line of formatFlakinessTable(flakyStats)) {
+                            logger.info(`  ${line}`);
+                        }
+
+                        logger.info("");
+                    }
+                }
+
                 throw new Error("Some tasks failed.");
+            }
+
+            if (persistentTasks.length > 0 && !options.failFast) {
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
             }
         }
     },
@@ -463,6 +885,35 @@ const run: Command = {
             defaultValue: false,
             description: "Skip project constraint validation",
             name: "skip-constraints",
+            type: Boolean,
+        },
+        {
+            description: "Filter matched projects by a query (e.g. 'language=typescript && tag=lib')",
+            name: "query",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Only run on projects affected by git changes (shorthand for vis affected)",
+            name: "affected",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Rerun affected tasks on file change. Ctrl+C to exit.",
+            name: "watch",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Stop all tasks on first failure",
+            name: "fail-fast",
+            type: Boolean,
+        },
+        {
+            defaultValue: true,
+            description: "Show flaky task report on failure (use --no-flaky to suppress)",
+            name: "flaky",
             type: Boolean,
         },
     ],

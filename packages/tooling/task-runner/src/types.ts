@@ -92,6 +92,15 @@ export type TaskResults = Map<string, TaskResult>;
 export interface ProjectConfiguration {
     /** Implicit dependencies on other projects */
     implicitDependencies?: string[];
+    /**
+     * Project layer in the dependency hierarchy. Used by
+     * `enforceLayerRelationships` to ensure projects only depend on
+     * projects at the same or lower layer.
+     *
+     * Hierarchy (lowest → highest):
+     * `configuration < library < scaffolding < tool < automation < application`
+     */
+    layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
     /** The project type */
     projectType?: "library" | "application";
     /** The root directory of the project, relative to workspace root */
@@ -232,6 +241,16 @@ export interface DependencyKindRules {
 export interface ConstraintsConfig {
     /** Rules based on the dependency kind (static vs devDependency vs peerDependency) */
     dependencyKindRules?: DependencyKindRules;
+    /**
+     * When true, projects can only depend on projects at the same or
+     * lower layer in the hierarchy:
+     *
+     *   configuration < library < scaffolding < tool < automation < application
+     *
+     * Projects without an explicit `layer` are unconstrained.
+     * @default false
+     */
+    enforceLayerRelationships?: boolean;
     /** Tag-based dependency rules */
     tagRelationships?: TagRelationships;
     /** Project-type-based dependency rules */
@@ -247,7 +266,7 @@ export interface ConstraintViolation {
     /** Human-readable description of the violation */
     message: string;
     /** The type of rule that was violated */
-    rule: "dependency-kind" | "tag-relationship" | "type-boundary";
+    rule: "dependency-kind" | "layer-relationship" | "tag-relationship" | "type-boundary";
     /** The project that has the invalid dependency */
     sourceProject: string;
 }

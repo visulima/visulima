@@ -43,6 +43,8 @@
             "types": "./dist/config.d.ts",
             "default": "./dist/config.js"
         },
+        "./schemas/project.schema.json": "./schemas/project.schema.json",
+        "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
         "./package.json": "./package.json"
     },
     "bin": {
@@ -51,6 +53,7 @@
     },
     "files": [
         "dist/**",
+        "schemas/**",
         "index.js",
         "README.md",
         "CHANGELOG.md",

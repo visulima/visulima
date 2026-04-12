@@ -3,6 +3,9 @@ import type { Command } from "@visulima/cerebro";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import { migrateLintStaged } from "./lint-staged";
+import { migrateMoon } from "./moon";
+import { migrateNx } from "./nx";
+import { migrateTurborepo } from "./turborepo";
 import type { MigrationReport } from "./types";
 import { createMigrationReport } from "./types";
 
@@ -57,16 +60,19 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
 const migrate: Command = {
     group: "Scaffold & Config",
     argument: {
-        description: "Migration type: all, deps, lint-staged",
+        description: "Migration type: all, deps, lint-staged, turborepo, nx, moon",
         name: "type",
         type: String,
     },
-    description: "Migrate from other tools (husky, lint-staged) to vis",
+    description: "Migrate from other tools (husky, lint-staged, turborepo, nx, moon) to vis",
     examples: [
-        ["vis migrate", "Run all migrations"],
+        ["vis migrate", "Run all built-in migrations (deps + lint-staged)"],
         ["vis migrate deps", "Migrate package dependencies and scripts"],
         ["vis migrate lint-staged", "Migrate lint-staged config to vis.config.ts"],
-        ["vis migrate --dry-run", "Preview changes without applying"],
+        ["vis migrate turborepo", "Translate turbo.json into vis.config.ts"],
+        ["vis migrate nx", "Translate nx.json into vis.config.ts"],
+        ["vis migrate moon", "Translate .moon/tasks.yml into vis.config.ts"],
+        ["vis migrate turborepo --dry-run", "Preview changes without applying"],
     ],
     execute: async ({ argument, logger, options, visConfig, workspaceRoot }) => {
         const action = (argument[0] as string | undefined) ?? "all";
@@ -76,8 +82,10 @@ const migrate: Command = {
         const packageManager = detectPackageManager(root);
         const report = createMigrationReport();
 
-        if (!["all", "deps", "lint-staged"].includes(action)) {
-            throw new Error(`Unknown migration type "${action}". Use "all", "deps", or "lint-staged".`);
+        const knownActions = ["all", "deps", "lint-staged", "turborepo", "nx", "moon"];
+
+        if (!knownActions.includes(action)) {
+            throw new Error(`Unknown migration type "${action}". Use one of: ${knownActions.join(", ")}.`);
         }
 
         if (dryRun) {
@@ -93,6 +101,24 @@ const migrate: Command = {
         if (action === "all" || action === "lint-staged") {
             logger.info("── Migrating lint-staged ──");
             migrateLintStaged(root, { dryRun }, logger, report);
+            logger.info("");
+        }
+
+        if (action === "turborepo") {
+            logger.info("── Migrating turborepo ──");
+            migrateTurborepo(root, { dryRun }, logger, report);
+            logger.info("");
+        }
+
+        if (action === "nx") {
+            logger.info("── Migrating nx ──");
+            migrateNx(root, { dryRun }, logger, report);
+            logger.info("");
+        }
+
+        if (action === "moon") {
+            logger.info("── Migrating moon ──");
+            migrateMoon(root, { dryRun }, logger, report);
             logger.info("");
         }
 

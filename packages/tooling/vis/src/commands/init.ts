@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
@@ -8,6 +8,27 @@ import { findVisConfigFile } from "../config";
 import { info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
+
+/**
+ * Detects competing monorepo tools in the workspace.
+ */
+const detectExistingTools = (cwd: string): string[] => {
+    const found: string[] = [];
+
+    if (existsSync(join(cwd, "turbo.json"))) {
+        found.push("turborepo");
+    }
+
+    if (existsSync(join(cwd, "nx.json"))) {
+        found.push("nx");
+    }
+
+    if (existsSync(join(cwd, ".moon"))) {
+        found.push("moon");
+    }
+
+    return found;
+};
 
 // ── Interactive prompt helpers ──────────────────────────────────────
 
@@ -135,9 +156,51 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         syncNative = await confirm(rl, `  Sync security settings to ${pm.name} config?`);
     }
 
+    // Step 5: Detect competing tools and offer migration
+    const existingTools = detectExistingTools(cwd);
+
+    if (existingTools.length > 0) {
+        info("");
+        info(`  Detected existing tools: ${existingTools.join(", ")}`);
+        const shouldMigrate = await confirm(rl, `  Run \`vis migrate\` for ${existingTools.join(", ")}?`, false);
+
+        if (shouldMigrate) {
+            rl.close();
+
+            const { execSync } = await import("node:child_process");
+            const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn exec" : pm.name === "bun" ? "bunx" : "npx";
+
+            for (const tool of existingTools) {
+                info(`    Migrating from ${tool}...`);
+
+                try {
+                    execSync(`${execPrefix} vis migrate ${tool}`, {
+                        cwd,
+                        stdio: "inherit",
+                    });
+                } catch {
+                    warn(`    Migration from ${tool} had issues — run \`vis migrate ${tool}\` manually.`);
+                }
+            }
+
+            // Only write the fallback config if no migration produced one.
+            if (!existsSync(configPath)) {
+                const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+
+                writeFileSync(configPath, content);
+                success(`Created ${configPath}`);
+            } else {
+                success(`Migrated config written to ${configPath}`);
+            }
+
+            note("  Run 'vis doctor' to see your project's full health status.");
+
+            return;
+        }
+    }
+
     rl.close();
 
-    // Generate and write config
     info("");
 
     const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });

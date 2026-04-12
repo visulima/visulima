@@ -2,6 +2,7 @@ import type { Command } from "@visulima/cerebro";
 import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
+import { filterProjectsByQuery } from "../selectors";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const affected: Command = {
@@ -67,10 +68,25 @@ const affected: Command = {
             return;
         }
 
-        logger.info(`Affected projects: ${result.affectedProjects.join(", ")}`);
+        let affectedProjects = result.affectedProjects;
 
-        // Forward relevant options to the run command
-        const argv: string[] = [target, `--projects=${result.affectedProjects.join(",")}`];
+        if (options.query) {
+            affectedProjects = filterProjectsByQuery(affectedProjects, workspace, options.query as string);
+
+            if (affectedProjects.length === 0) {
+                logger.info(`Query "${String(options.query)}" matched no affected projects.`);
+
+                return;
+            }
+        }
+
+        logger.info(`Affected projects: ${affectedProjects.join(", ")}`);
+
+        if (result.changedFiles.length > 0) {
+            process.env["VIS_AFFECTED_FILES"] = result.changedFiles.join("\n");
+        }
+
+        const argv: string[] = [target, `--projects=${affectedProjects.join(",")}`];
 
         if (options.parallel !== undefined) {
             argv.push(`--parallel=${String(options.parallel)}`);
@@ -88,7 +104,11 @@ const affected: Command = {
             argv.push(`--partition=${String(options.partition)}`);
         }
 
-        await runtime.runCommand("run", { argv });
+        try {
+            await runtime.runCommand("run", { argv });
+        } finally {
+            delete process.env["VIS_AFFECTED_FILES"];
+        }
     },
     name: "affected",
     options: [
@@ -137,6 +157,11 @@ const affected: Command = {
         {
             description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
             name: "partition",
+            type: String,
+        },
+        {
+            description: "Filter affected projects by a query (e.g. 'language=typescript && tag=lib')",
+            name: "query",
             type: String,
         },
     ],
