@@ -83,9 +83,7 @@ const runPersistentTasks = async (
 };
 
 /**
- * Maximum output buffer size per task (512 KB).
- * For long-running tasks (vite dev, tsc --watch), only the tail is kept.
- * Short-lived tasks (build, lint) rarely exceed this.
+ * Maximum output buffer size per task (256 KB).
  */
 const MAX_OUTPUT_BYTES = 256 * 1024;
 
@@ -695,7 +693,7 @@ const run: Command = {
 
             await dynamic.renderIsDone;
 
-            if (persistentTasks.length > 0) {
+            if (persistentTasks.length > 0 && !options.failFast) {
                 await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles);
             }
         } else {

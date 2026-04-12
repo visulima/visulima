@@ -162,7 +162,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     if (existingTools.length > 0) {
         info("");
         info(`  Detected existing tools: ${existingTools.join(", ")}`);
-        const shouldMigrate = await confirm(rl, `  Run \`vis migrate ${existingTools[0]}\` to import config?`, false);
+        const shouldMigrate = await confirm(rl, `  Run \`vis migrate\` for ${existingTools.join(", ")}?`, false);
 
         if (shouldMigrate) {
             rl.close();
@@ -186,6 +186,8 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
             writeFileSync(configPath, content);
+            success(`Created ${configPath}`);
+            note("  Run 'vis doctor' to see your project's full health status.");
 
             return;
         }

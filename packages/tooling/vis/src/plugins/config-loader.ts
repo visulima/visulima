@@ -5,7 +5,7 @@ import isInCi from "is-in-ci";
 
 import pkg from "../../package.json";
 import { findVisConfigFile, loadVisConfig } from "../config";
-import { satisfies } from "semver";
+import { satisfies, validRange } from "semver";
 
 import type { VisConfig } from "../workspace";
 
@@ -23,6 +23,16 @@ const configLoaderPlugin: Plugin = {
                 toolbox.visConfig = await loadVisConfig(workspaceRoot);
 
                 const constraint = (toolbox.visConfig as VisConfig | undefined)?.versionConstraint;
+
+                if (constraint && !validRange(constraint)) {
+                    toolbox.logger.error("");
+                    toolbox.logger.error(red(bold("\u2716 Invalid versionConstraint")));
+                    toolbox.logger.error(`  vis.config.ts has versionConstraint ${bold(JSON.stringify(constraint))}, which is not a valid semver range.`);
+                    toolbox.logger.error("");
+                    process.exitCode = 1;
+
+                    return;
+                }
 
                 if (constraint && !satisfies(pkg.version, constraint)) {
                     toolbox.logger.error("");
