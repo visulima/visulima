@@ -1,0 +1,325 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://visulima.dev/schemas/vis-config.schema.json",
+    "title": "vis.config.ts",
+    "description": "Workspace configuration for @visulima/vis. Used by defineConfig() in vis.config.ts. This schema is for non-TypeScript editors; TypeScript users get autocomplete from defineConfig() types.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "ai": {
+            "type": "object",
+            "description": "AI analysis configuration.",
+            "additionalProperties": false,
+            "properties": {
+                "cacheTtl": { "type": "number", "description": "Cache TTL in milliseconds." },
+                "priority": {
+                    "type": "object",
+                    "description": "Override default provider priority. Higher number = preferred.",
+                    "additionalProperties": { "type": "number" }
+                },
+                "provider": { "type": "string", "description": "Use a specific provider (e.g. \"claude\", \"gemini\")." }
+            }
+        },
+        "codeowners": {
+            "type": "object",
+            "description": "Controls vis sync codeowners output.",
+            "additionalProperties": false,
+            "properties": {
+                "orderBy": {
+                    "type": "string",
+                    "enum": ["file-source", "project-id"],
+                    "default": "file-source"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["github", "gitlab", "bitbucket", "other"],
+                    "default": "github"
+                },
+                "globalPaths": {
+                    "type": "object",
+                    "description": "Workspace-level paths and their owners (e.g. \"/.github/**\": [\"@org/platform\"]).",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "constraints": {
+            "type": "object",
+            "description": "Project dependency constraints enforced before running tasks.",
+            "additionalProperties": false,
+            "properties": {
+                "enforceLayerRelationships": {
+                    "type": "boolean",
+                    "description": "Projects can only depend on the same or lower layer: configuration < library < scaffolding < tool < automation < application.",
+                    "default": false
+                },
+                "tagRelationships": {
+                    "type": "object",
+                    "description": "Tag-based rules. Key = source tag, value = allowed dependency tags.",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                },
+                "typeBoundaries": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "enforceApplicationBoundary": {
+                            "type": "boolean",
+                            "description": "No project may depend on an application.",
+                            "default": true
+                        },
+                        "allowedDependencyTypes": {
+                            "type": "object",
+                            "description": "Maps project types to allowed dependency types.",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": { "type": "string" }
+                            }
+                        }
+                    }
+                },
+                "dependencyKindRules": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "noDevDependencyOnProductionDep": { "type": "boolean", "default": false },
+                        "noProductionDependencyOnApplication": { "type": "boolean", "default": false }
+                    }
+                }
+            }
+        },
+        "create": {
+            "type": "object",
+            "description": "Configuration for vis create scaffolding command.",
+            "additionalProperties": false,
+            "properties": {
+                "auth": { "type": "string", "description": "Authorization token for private templates." },
+                "defaultEditor": { "type": "string", "enum": ["vscode"] },
+                "defaultPm": { "type": "string", "enum": ["pnpm", "npm", "yarn", "bun"] },
+                "defaultProvider": { "type": "string", "enum": ["github", "gitlab", "bitbucket", "sourcehut"], "default": "github" },
+                "gitInit": { "type": "boolean", "default": false },
+                "install": { "type": "boolean", "default": true },
+                "preferOffline": { "type": "boolean", "default": false },
+                "registry": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "boolean", "const": false }
+                    ]
+                },
+                "templates": {
+                    "type": "object",
+                    "description": "Named template aliases mapping short names to giget source strings.",
+                    "additionalProperties": { "type": "string" }
+                }
+            }
+        },
+        "overrides": {
+            "type": "object",
+            "description": "Package override mappings applied during migration.",
+            "additionalProperties": { "type": "string" }
+        },
+        "security": {
+            "type": "object",
+            "description": "Supply-chain security settings.",
+            "additionalProperties": false,
+            "properties": {
+                "allowBuilds": {
+                    "type": "object",
+                    "description": "Allow (true) or deny (false) build scripts per package.",
+                    "additionalProperties": { "type": "boolean" }
+                },
+                "blockExoticSubdeps": { "type": "boolean", "default": false },
+                "minimumReleaseAge": { "type": "number", "description": "Minutes since publish before allowing install.", "default": 0 },
+                "minimumReleaseAgeExclude": { "type": "array", "items": { "type": "string" } },
+                "socket": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "acceptedRisks": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "object",
+                                "required": ["reason", "acceptedAt", "acceptedScore"],
+                                "properties": {
+                                    "reason": { "type": "string" },
+                                    "acceptedAt": { "type": "string", "format": "date-time" },
+                                    "acceptedScore": { "type": "number" }
+                                }
+                            }
+                        },
+                        "apiToken": { "type": "string" },
+                        "cacheTtlMs": { "type": "number", "default": 3600000 },
+                        "enabled": { "type": "boolean", "default": false },
+                        "minimumScore": { "type": "number", "default": 0.4 },
+                        "timeoutMs": { "type": "number", "default": 15000 }
+                    }
+                },
+                "strictDepBuilds": { "type": "boolean", "default": false },
+                "trustPolicy": { "type": "string", "enum": ["off", "no-downgrade"], "default": "off" },
+                "trustPolicyExclude": { "type": "array", "items": { "type": "string" } },
+                "trustPolicyIgnoreAfter": { "type": "number" },
+                "typosquatAllowlist": { "type": "array", "items": { "type": "string" } }
+            }
+        },
+        "sortPackageJson": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "sortScripts": { "type": "boolean", "default": false }
+            }
+        },
+        "staged": {
+            "description": "Staged file patterns and commands (replaces lint-staged). Accepts all lint-staged config forms.",
+            "type": "object",
+            "additionalProperties": {
+                "oneOf": [
+                    { "type": "string" },
+                    { "type": "array", "items": { "type": "string" } }
+                ]
+            }
+        },
+        "targetDefaults": {
+            "type": "object",
+            "description": "Default target configurations applied to all projects with a matching target.",
+            "additionalProperties": { "$ref": "project.schema.json#/$defs/targetConfiguration" }
+        },
+        "fileGroups": {
+            "type": "object",
+            "description": "Named file-group patterns, reusable via @filegroup:<name> in target inputs.",
+            "additionalProperties": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        },
+        "namedInputs": {
+            "type": "object",
+            "description": "Named input patterns inherited by every project target.",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "object" }
+                    ]
+                }
+            }
+        },
+        "taskDefaults": {
+            "type": "array",
+            "description": "Cascading task-default blocks scoped by project metadata.",
+            "items": {
+                "type": "object",
+                "required": ["targets"],
+                "additionalProperties": false,
+                "properties": {
+                    "scope": {
+                        "type": "object",
+                        "description": "Scope predicate — all fields must match for the block to apply.",
+                        "additionalProperties": false,
+                        "properties": {
+                            "tags": { "type": "array", "items": { "type": "string" } },
+                            "projectType": { "type": "string", "enum": ["library", "application"] },
+                            "layer": {
+                                "oneOf": [
+                                    { "type": "string", "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"] },
+                                    { "type": "array", "items": { "type": "string", "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"] } }
+                                ]
+                            },
+                            "stack": {
+                                "oneOf": [
+                                    { "type": "string", "enum": ["backend", "frontend", "data", "infrastructure", "systems"] },
+                                    { "type": "array", "items": { "type": "string", "enum": ["backend", "frontend", "data", "infrastructure", "systems"] } }
+                                ]
+                            },
+                            "language": {
+                                "oneOf": [
+                                    { "type": "string" },
+                                    { "type": "array", "items": { "type": "string" } }
+                                ]
+                            }
+                        }
+                    },
+                    "targets": {
+                        "type": "object",
+                        "additionalProperties": { "$ref": "project.schema.json#/$defs/targetConfiguration" }
+                    }
+                }
+            }
+        },
+        "taskRunnerOptions": {
+            "type": "object",
+            "description": "Task runner engine options.",
+            "properties": {
+                "parallel": { "oneOf": [{ "type": "number" }, { "type": "boolean" }], "default": 3 },
+                "smartLockfileHashing": { "type": "boolean", "default": false },
+                "frameworkInference": { "type": "boolean", "default": false },
+                "autoFingerprint": { "type": "boolean", "default": false },
+                "cacheDiagnostics": { "type": "boolean", "default": false },
+                "cacheDirectory": { "type": "string" },
+                "dryRun": { "type": "boolean", "default": false },
+                "summarize": { "type": "boolean", "default": false },
+                "skipNxCache": { "type": "boolean" },
+                "globalInputs": { "type": "array", "items": { "type": "string" } },
+                "globalEnv": { "type": "array", "items": { "type": "string" } },
+                "maxCacheAge": { "type": "number" },
+                "maxCacheSize": { "type": "string" },
+                "remoteCache": {
+                    "type": "object",
+                    "required": ["url"],
+                    "properties": {
+                        "url": { "type": "string" },
+                        "token": { "type": "string" },
+                        "teamId": { "type": "string" },
+                        "read": { "type": "boolean", "default": true },
+                        "write": { "type": "boolean", "default": true }
+                    }
+                }
+            }
+        },
+        "tui": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "autoExit": {
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "number" }
+                    ],
+                    "description": "Auto-exit TUI after completion. false=stay open, true=3s countdown, number=custom seconds.",
+                    "default": false
+                }
+            }
+        },
+        "update": {
+            "type": "object",
+            "description": "Defaults for vis check and vis update commands.",
+            "additionalProperties": false,
+            "properties": {
+                "depFields": { "type": "array", "items": { "type": "string" } },
+                "exclude": { "type": "array", "items": { "type": "string" } },
+                "format": { "type": "string", "enum": ["table", "json", "minimal"] },
+                "ignore": { "type": "array", "items": { "type": "string" } },
+                "include": { "type": "array", "items": { "type": "string" } },
+                "includeLocked": { "type": "boolean", "default": false },
+                "install": { "type": "boolean" },
+                "minimumReleaseAge": { "type": "number" },
+                "minimumReleaseAgeExclude": { "type": "array", "items": { "type": "string" } },
+                "packageMode": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string", "enum": ["latest", "minor", "patch"] }
+                },
+                "prerelease": { "type": "boolean" },
+                "security": { "type": "boolean" },
+                "target": { "type": "string", "enum": ["latest", "minor", "patch"] }
+            }
+        },
+        "versionConstraint": {
+            "type": "string",
+            "description": "Minimum vis CLI version required. Accepts semver ranges (e.g. \">=1.0.0\", \"^1.2.0\")."
+        }
+    }
+}
