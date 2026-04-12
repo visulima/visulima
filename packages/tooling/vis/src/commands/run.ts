@@ -63,7 +63,7 @@ const runPersistentTasks = async (
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
             const affectedEnv = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
-                ? { [AFFECTED_FILES_ENV]: affectedFiles.join(" ") }
+                ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                 : {};
 
             return {
@@ -242,7 +242,7 @@ const createConcurrentExecutor = (
     const affectedFilesEnv: Record<string, string> = {};
 
     if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
-        affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join(" ");
+        affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
     }
 
     const mergedEnv: Record<string, string> = {
@@ -417,7 +417,7 @@ const run: Command = {
         const currentOs = detectCurrentOs();
 
         const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
-        const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split(" ").filter(Boolean) : undefined;
+        const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
 
         const projectsWithTarget: string[] = [];
         const projectTargetIndex = new Map<string, VisTargetConfiguration>();

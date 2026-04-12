@@ -82,6 +82,14 @@ const renderVisConfig = (turbo: TurboJson): string => {
             entry.outputs = task.outputs;
         }
 
+        if (task.env && task.env.length > 0) {
+            entry.env = task.env;
+        }
+
+        if (task.passThroughEnv && task.passThroughEnv.length > 0) {
+            entry.passThroughEnv = task.passThroughEnv;
+        }
+
         if (Object.keys(options).length > 0) {
             entry.options = options;
         }
@@ -95,13 +103,22 @@ const renderVisConfig = (turbo: TurboJson): string => {
         configObject.targetDefaults = targetDefaults;
     }
 
+    const taskRunnerOptions: Record<string, unknown> = {};
+
     if (turbo.globalDependencies && turbo.globalDependencies.length > 0) {
-        configObject.taskRunnerOptions = {
-            globalInputs: turbo.globalDependencies,
-            ...(turbo.globalEnv && turbo.globalEnv.length > 0 ? { globalEnv: turbo.globalEnv } : {}),
-        };
-    } else if (turbo.globalEnv && turbo.globalEnv.length > 0) {
-        configObject.taskRunnerOptions = { globalEnv: turbo.globalEnv };
+        taskRunnerOptions.globalInputs = turbo.globalDependencies;
+    }
+
+    if (turbo.globalEnv && turbo.globalEnv.length > 0) {
+        taskRunnerOptions.globalEnv = turbo.globalEnv;
+    }
+
+    if (turbo.globalPassThroughEnv && turbo.globalPassThroughEnv.length > 0) {
+        taskRunnerOptions.globalPassThroughEnv = turbo.globalPassThroughEnv;
+    }
+
+    if (Object.keys(taskRunnerOptions).length > 0) {
+        configObject.taskRunnerOptions = taskRunnerOptions;
     }
 
     const serialised = serializeConfigObject(configObject);
@@ -150,6 +167,14 @@ export const migrateTurborepo = (
     report.manualSteps.push(
         "Review targetDefaults in vis.config.ts — project-specific tasks (turbo's project#task syntax) were skipped and should be moved into each project's project.json.",
     );
+
+    const tasks = turbo.tasks ?? turbo.pipeline ?? {};
+
+    const hasOutputLogs = Object.values(tasks).some((t) => t.outputLogs !== undefined);
+
+    if (hasOutputLogs) {
+        report.warnings.push("`outputLogs` was found on one or more tasks but vis has no equivalent setting — review and remove.");
+    }
 
     if (turbo.remoteCache?.enabled) {
         report.manualSteps.push(

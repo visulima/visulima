@@ -25,7 +25,9 @@ export interface WatchOptions {
 const IGNORE_PATTERNS = [/node_modules/, /\.git\//, /\.vis\//, /\.task-runner\//];
 
 const shouldIgnore = (path: string): boolean => {
-    return IGNORE_PATTERNS.some((pattern) => pattern.test(path));
+    const normalized = path.replaceAll("\\", "/");
+
+    return IGNORE_PATTERNS.some((pattern) => pattern.test(normalized));
 };
 
 /**

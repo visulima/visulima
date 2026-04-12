@@ -49,9 +49,9 @@ const docker: Command = {
         }
 
         const { workspace } = discoverWorkspace(wsRoot, visConfig);
-        const projectGraph = buildProjectGraph(wsRoot, workspace);
 
         if (subcommand === "scaffold") {
+            const projectGraph = buildProjectGraph(wsRoot, workspace);
             const focusRaw = options.focus as string | undefined;
 
             if (!focusRaw) {
@@ -59,6 +59,11 @@ const docker: Command = {
             }
 
             const focus = focusRaw.split(",").map((name) => name.trim()).filter(Boolean);
+
+            if (focus.length === 0) {
+                throw new Error("--focus resolved to an empty list. Provide at least one project name.");
+            }
+
             const outDir = join(wsRoot, (options.out as string | undefined) ?? ".vis/docker");
 
             const { projects } = scaffoldDockerContext({

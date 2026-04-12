@@ -44,7 +44,7 @@ const status: Command = {
         const runsDir = join(wsRoot, ".task-runner", "runs");
 
         if (existsSync(runsDir)) {
-            const files = readdirSync(runsDir).filter((f) => f.endsWith(".json"));
+            const files = readdirSync(runsDir).filter((f) => f.endsWith(".json")).sort();
             let totalTasks = 0;
             let cachedTasks = 0;
 

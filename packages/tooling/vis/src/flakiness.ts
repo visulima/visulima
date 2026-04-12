@@ -72,6 +72,10 @@ export const analyzeFlakiness = (
             continue;
         }
 
+        if (!Array.isArray(summary.tasks)) {
+            continue;
+        }
+
         for (const task of summary.tasks) {
             // Skip cached tasks — they didn't actually execute
             if (task.cacheStatus === "HIT" || task.cacheStatus === "REMOTE_HIT" || task.cacheStatus === "SKIPPED") {

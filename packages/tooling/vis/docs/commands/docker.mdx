@@ -57,6 +57,7 @@ RUN pnpm install --frozen-lockfile
 # 2. Sources — only the focus project
 FROM deps AS build
 COPY .vis/docker/sources/ ./
+COPY .vis/docker/vis-docker-manifest.json .vis/docker/
 RUN pnpm --filter my-app build
 RUN vis docker prune --context=.vis/docker
 

@@ -60,7 +60,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
 const migrate: Command = {
     group: "Scaffold & Config",
     argument: {
-        description: "Migration type: all, deps, lint-staged",
+        description: "Migration type: all, deps, lint-staged, turborepo, nx, moon",
         name: "type",
         type: String,
     },

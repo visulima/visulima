@@ -83,10 +83,11 @@ vis migrate lint-staged
 
 ### all
 
-Runs `deps` + `lint-staged` (does **not** auto-run turborepo/nx/moon — those are opt-in):
+Runs `deps` + `lint-staged` (does **not** auto-run turborepo/nx/moon — those are opt-in). Omitting the `<type>` argument defaults to `all`:
 
 ```bash
-vis migrate
+vis migrate        # equivalent to vis migrate all
+vis migrate all
 ```
 
 ## Options

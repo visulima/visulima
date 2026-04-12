@@ -115,8 +115,12 @@ const copyFileIfExists = (src: string, dest: string): boolean => {
         cpSync(src, dest);
 
         return true;
-    } catch {
-        return false;
+    } catch (error: unknown) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+            return false;
+        }
+
+        throw error;
     }
 };
 
@@ -239,6 +243,10 @@ export const pruneDockerContext = (options: PruneOptions): { removed: string[] }
     }
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { focus: string[]; projects: string[] };
+
+    if (!Array.isArray(manifest.projects)) {
+        throw new Error(`Invalid vis-docker-manifest.json: "projects" must be an array.`);
+    }
 
     const keep = new Set(manifest.projects);
     const removed: string[] = [];

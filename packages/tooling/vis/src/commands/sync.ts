@@ -66,8 +66,12 @@ const sync: Command = {
 
             try {
                 existing = readFileSync(outPath, "utf8");
-            } catch {
-                existing = "";
+            } catch (error: unknown) {
+                if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                    existing = "";
+                } else {
+                    throw error;
+                }
             }
 
             if (existing.trim() !== rendered.trim()) {

@@ -93,6 +93,10 @@ const HEADER_LINES = [
 
 /**
  * Serialises {@link CodeownersLine}s to a valid CODEOWNERS file string.
+ *
+ * @param lines - Resolved CODEOWNERS lines.
+ * @param _provider - Reserved for future provider-specific formatting (e.g. Bitbucket syntax).
+ * @returns The full CODEOWNERS file content with header and trailing newline.
  */
 export const renderCodeowners = (lines: CodeownersLine[], _provider: CodeownersConfig["provider"] = "github"): string => {
     const out: string[] = [...HEADER_LINES];

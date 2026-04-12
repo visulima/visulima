@@ -169,6 +169,29 @@ export const migrateMoon = (
         throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
     }
 
+    // Warn about fields that vis does not support directly.
+    for (const [name, task] of Object.entries(parsed.tasks ?? {})) {
+        if (task.env && Object.keys(task.env).length > 0) {
+            report.warnings.push(`Task "${name}" has an \`env\` block which vis does not support — set environment variables in the command or a wrapper script.`);
+        }
+
+        if (task.platform) {
+            report.warnings.push(`Task "${name}" has a \`platform\` field ("${task.platform}") which vis does not support — review and remove.`);
+        }
+
+        if (task.toolchain) {
+            report.warnings.push(`Task "${name}" has a \`toolchain\` field ("${task.toolchain}") which vis does not support — review and remove.`);
+        }
+    }
+
+    if (parsed.implicitDeps && parsed.implicitDeps.length > 0) {
+        report.warnings.push("`implicitDeps` was found in the moon config but has no direct vis equivalent — add explicit `dependsOn` entries in project.json instead.");
+    }
+
+    if (parsed.taskOptions && Object.keys(parsed.taskOptions).length > 0) {
+        report.warnings.push("`taskOptions` was found in the moon config but has no direct vis equivalent — review and apply settings per-target in vis.config.ts.");
+    }
+
     const rendered = renderVisConfig(parsed);
 
     if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {

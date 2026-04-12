@@ -25,18 +25,10 @@ const layerIndex = (layer: ProjectConfiguration["layer"]): number | undefined =>
 
 /**
  * Enforces project dependency constraints on a project graph.
- * Returns an array of violations found. Does not throw — the caller
- * decides how to handle violations (fatal error, warning, etc.).
  *
- * Four constraint mechanisms:
- * 1. **Tag relationships**: If a project has a tag listed in `tagRelationships`,
- *    its dependencies must have at least one of the required tags.
- * 2. **Type boundaries**: Controls which project types can depend on which.
- *    By default, no project may depend on an "application" type project.
- * 3. **Dependency kind rules**: Controls rules based on whether the dependency
- *    is a production dependency, devDependency, or peerDependency.
- * 4. **Layer relationships**: Projects can only depend on projects at the
- *    same or lower layer (configuration < library < ... < application).
+ * @param projectGraph - The workspace project graph to validate.
+ * @param constraints - The constraint rules to enforce.
+ * @returns Array of violations found. Empty means all constraints pass.
  */
 const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: ConstraintsConfig): ConstraintViolation[] => {
     const violations: ConstraintViolation[] = [];

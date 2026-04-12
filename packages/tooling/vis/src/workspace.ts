@@ -800,10 +800,6 @@ const mergeTarget = (
         withPreset.cache = defaultCacheForType(withPreset.type);
     }
 
-    if (withPreset.type === "run" && withPreset.options?.persistent === undefined) {
-        withPreset.options = { ...withPreset.options, persistent: true };
-    }
-
     return withPreset;
 };
 

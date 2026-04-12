@@ -106,7 +106,11 @@ const actionGraph: Command = {
             projectNames = filterProjectsByQuery(projectNames, workspace, options.query as string);
         }
 
-        const candidates = projectNames.filter((name) => workspace.projects[name]?.targets?.[target] !== undefined);
+        const candidates = projectNames.filter((name) => {
+            const project = workspace.projects[name];
+
+            return project !== undefined && project.targets?.[target] !== undefined;
+        });
 
         if (candidates.length === 0) {
             logger.info(`No projects have a "${target}" target.`);
@@ -115,8 +119,8 @@ const actionGraph: Command = {
         }
 
         const initialTasks: Task[] = candidates.map((projectName) => {
-            const project = workspace.projects[projectName];
-            const targetConfig = project?.targets?.[target];
+            const project = workspace.projects[projectName]!;
+            const targetConfig = project.targets?.[target];
             const taskTarget: TaskTarget = { project: projectName, target };
 
             return {
@@ -125,7 +129,7 @@ const actionGraph: Command = {
                 outputs: targetConfig?.outputs ?? [],
                 overrides: { command: targetConfig?.command },
                 parallelism: targetConfig?.parallelism,
-                projectRoot: project?.root,
+                projectRoot: project.root,
                 target: taskTarget,
             };
         });

@@ -167,17 +167,14 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         if (shouldMigrate) {
             rl.close();
 
-            const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
-
-            writeFileSync(configPath, content);
-
             const { execSync } = await import("node:child_process");
+            const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn" : pm.name === "bun" ? "bunx" : "npx";
 
             for (const tool of existingTools) {
                 info(`    Migrating from ${tool}...`);
 
                 try {
-                    execSync(`node ${configPath.replace("vis.config.ts", "node_modules/.bin/vis")} migrate ${tool}`, {
+                    execSync(`${execPrefix} vis migrate ${tool}`, {
                         cwd,
                         stdio: "inherit",
                     });
@@ -185,6 +182,10 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
                     warn(`    Migration from ${tool} had issues — run \`vis migrate ${tool}\` manually.`);
                 }
             }
+
+            const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+
+            writeFileSync(configPath, content);
 
             return;
         }

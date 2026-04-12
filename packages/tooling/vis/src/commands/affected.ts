@@ -83,7 +83,7 @@ const affected: Command = {
         logger.info(`Affected projects: ${affectedProjects.join(", ")}`);
 
         if (result.changedFiles.length > 0) {
-            process.env["VIS_AFFECTED_FILES"] = result.changedFiles.join(" ");
+            process.env["VIS_AFFECTED_FILES"] = result.changedFiles.join("\n");
         }
 
         const argv: string[] = [target, `--projects=${affectedProjects.join(",")}`];
