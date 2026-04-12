@@ -126,7 +126,7 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const tasksDir = join(moonDir, "tasks");
 
     if (existsSync(tasksDir)) {
-        const entries = readdirSync(tasksDir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"));
+        const entries = readdirSync(tasksDir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml")).sort();
 
         if (entries.length > 0) {
             return join(tasksDir, entries[0]!);

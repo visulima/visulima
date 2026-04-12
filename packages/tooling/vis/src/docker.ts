@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 import { dirname, join, relative } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
@@ -131,8 +131,13 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
     let stats;
 
     try {
-        stats = statSync(src);
+        stats = lstatSync(src);
     } catch {
+        return;
+    }
+
+    // Never follow symlinks — they can point outside the workspace or cause loops.
+    if (stats.isSymbolicLink()) {
         return;
     }
 
@@ -146,7 +151,7 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
     ensureDir(dest);
 
     for (const entry of readdirSync(src, { withFileTypes: true })) {
-        if (entry.name === "node_modules" || entry.name === ".git") {
+        if (entry.name === "node_modules" || entry.name === ".git" || entry.isSymbolicLink()) {
             continue;
         }
 
@@ -169,9 +174,19 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
 export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: string[] } => {
     const { focus, includeSources = false, outDir, projectGraph, workspace, workspaceRoot } = options;
 
+    const unknown = focus.filter((name) => workspace.projects[name] === undefined);
+
+    if (unknown.length > 0) {
+        throw new Error(`Unknown focus project(s): ${unknown.join(", ")}. Check project names in your workspace.`);
+    }
+
     const projects = resolveFocusProjects(focus, projectGraph);
     const workspaceDir = join(outDir, "workspace");
     const sourcesDir = join(outDir, "sources");
+
+    // Clear any previous scaffold so stale manifests / sources don't leak across runs.
+    rmSync(workspaceDir, { force: true, recursive: true });
+    rmSync(sourcesDir, { force: true, recursive: true });
 
     ensureDir(workspaceDir);
 
@@ -265,6 +280,11 @@ export const pruneDockerContext = (options: PruneOptions): { removed: string[] }
 
         const absolute = join(workspaceRoot, project.root);
         const rel = relative(workspaceRoot, absolute);
+
+        // Guard against escaping the workspace or deleting the workspace root.
+        if (rel === "" || rel === "." || rel.startsWith("..")) {
+            continue;
+        }
 
         rmSync(absolute, { force: true, recursive: true });
         removed.push(rel);
