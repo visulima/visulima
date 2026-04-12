@@ -9,19 +9,20 @@ import { pruneDockerContext, resolveFocusProjects, scaffoldDockerContext } from 
 
 describe(resolveFocusProjects, () => {
     it("should include focus project and all transitive dependencies", () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const graph: ProjectGraph = {
-            nodes: {},
             dependencies: {
                 A: [{ source: "A", target: "B", type: "static" }],
                 B: [{ source: "B", target: "C", type: "static" }],
                 C: [],
             },
+            nodes: {},
         };
 
         const result = resolveFocusProjects(["A"], graph);
 
+        expect(result.size).toBe(3);
         expect(result.has("A")).toBe(true);
         expect(result.has("B")).toBe(true);
         expect(result.has("C")).toBe(true);
@@ -31,12 +32,12 @@ describe(resolveFocusProjects, () => {
         expect.assertions(2);
 
         const graph: ProjectGraph = {
-            nodes: {},
             dependencies: {
                 A: [{ source: "A", target: "B", type: "static" }],
                 B: [{ source: "B", target: "C", type: "static" }],
                 C: [],
             },
+            nodes: {},
         };
 
         const result = resolveFocusProjects(["C"], graph);
@@ -84,19 +85,19 @@ describe(scaffoldDockerContext, () => {
         };
 
         const graph: ProjectGraph = {
-            nodes: {},
             dependencies: {
                 a: [{ source: "a", target: "b", type: "static" }],
                 b: [],
             },
+            nodes: {},
         };
 
         scaffoldDockerContext({
             focus: ["a"],
             outDir,
-            workspaceRoot,
-            workspace,
             projectGraph: graph,
+            workspace,
+            workspaceRoot,
         });
 
         const wsDir = join(outDir, "workspace");
@@ -129,18 +130,18 @@ describe(scaffoldDockerContext, () => {
         };
 
         const graph: ProjectGraph = {
-            nodes: {},
             dependencies: {
                 a: [],
             },
+            nodes: {},
         };
 
         scaffoldDockerContext({
             focus: ["a"],
             outDir,
-            workspaceRoot,
-            workspace,
             projectGraph: graph,
+            workspace,
+            workspaceRoot,
         });
 
         const manifest = JSON.parse(readFileSync(join(outDir, "vis-docker-manifest.json"), "utf8"));
@@ -193,7 +194,7 @@ describe(pruneDockerContext, () => {
             },
         };
 
-        const { removed } = pruneDockerContext({ contextRoot, workspaceRoot, workspace });
+        const { removed } = pruneDockerContext({ contextRoot, workspace, workspaceRoot });
 
         expect(removed).toContain("packages/c");
         expect(existsSync(projADir)).toBe(true);

@@ -17,7 +17,7 @@ describe(analyzeFlakiness, () => {
         rmSync(tmpDir, { force: true, recursive: true });
     });
 
-    it("should return an empty array for an empty runs directory", () => {
+    it("should return empty array for empty runs directory", () => {
         expect.assertions(1);
 
         mkdirSync(join(tmpDir, ".task-runner", "runs"), { recursive: true });
@@ -25,14 +25,14 @@ describe(analyzeFlakiness, () => {
         expect(analyzeFlakiness(tmpDir)).toStrictEqual([]);
     });
 
-    it("should return an empty array for a non-existent directory", () => {
+    it("should return empty array for non-existent directory", () => {
         expect.assertions(1);
 
-        expect(analyzeFlakiness(join(tmpDir, "does-not-exist"))).toStrictEqual([]);
+        expect(analyzeFlakiness(tmpDir)).toStrictEqual([]);
     });
 
     it("should compute correct flakiness stats from multiple runs", () => {
-        expect.assertions(5);
+        expect.assertions(7);
 
         const runsDir = join(tmpDir, ".task-runner", "runs");
 
@@ -42,8 +42,8 @@ describe(analyzeFlakiness, () => {
             id: "run-1",
             startTime: "2026-01-01T00:00:00Z",
             tasks: [
-                { taskId: "a:build", target: { project: "a", target: "build" }, exitCode: 0, cacheStatus: "MISS", startTime: "2026-01-01T00:00:01Z" },
-                { taskId: "b:test", target: { project: "b", target: "test" }, exitCode: 1, cacheStatus: "MISS", startTime: "2026-01-01T00:00:02Z" },
+                { cacheStatus: "MISS", exitCode: 0, startTime: "2026-01-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-01T00:00:02Z", target: { project: "b", target: "test" }, taskId: "b:test" },
             ],
         };
 
@@ -51,8 +51,8 @@ describe(analyzeFlakiness, () => {
             id: "run-2",
             startTime: "2026-01-02T00:00:00Z",
             tasks: [
-                { taskId: "a:build", target: { project: "a", target: "build" }, exitCode: 1, cacheStatus: "MISS", startTime: "2026-01-02T00:00:01Z" },
-                { taskId: "b:test", target: { project: "b", target: "test" }, exitCode: 0, cacheStatus: "MISS", startTime: "2026-01-02T00:00:02Z" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-02T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
+                { cacheStatus: "MISS", exitCode: 0, startTime: "2026-01-02T00:00:02Z", target: { project: "b", target: "test" }, taskId: "b:test" },
             ],
         };
 
@@ -60,8 +60,8 @@ describe(analyzeFlakiness, () => {
             id: "run-3",
             startTime: "2026-01-03T00:00:00Z",
             tasks: [
-                { taskId: "a:build", target: { project: "a", target: "build" }, exitCode: 0, cacheStatus: "MISS", startTime: "2026-01-03T00:00:01Z" },
-                { taskId: "b:test", target: { project: "b", target: "test" }, exitCode: 1, cacheStatus: "MISS", startTime: "2026-01-03T00:00:02Z" },
+                { cacheStatus: "MISS", exitCode: 0, startTime: "2026-01-03T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-03T00:00:02Z", target: { project: "b", target: "test" }, taskId: "b:test" },
             ],
         };
 
@@ -81,6 +81,8 @@ describe(analyzeFlakiness, () => {
 
         const aBuild = stats.find((s) => s.taskId === "a:build")!;
 
+        expect(aBuild.totalRuns).toBe(3);
+        expect(aBuild.failures).toBe(1);
         expect(aBuild.flakinessRate).toBeCloseTo(1 / 3);
     });
 
@@ -95,7 +97,7 @@ describe(analyzeFlakiness, () => {
             id: "run-1",
             startTime: "2026-01-01T00:00:00Z",
             tasks: [
-                { taskId: "c:lint", target: { project: "c", target: "lint" }, exitCode: 1, cacheStatus: "MISS", startTime: "2026-01-01T00:00:01Z" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-01T00:00:01Z", target: { project: "x", target: "lint" }, taskId: "x:lint" },
             ],
         };
 
@@ -107,7 +109,7 @@ describe(analyzeFlakiness, () => {
     });
 
     it("should exclude runs older than the since filter", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const runsDir = join(tmpDir, ".task-runner", "runs");
 
@@ -117,50 +119,61 @@ describe(analyzeFlakiness, () => {
             id: "run-old",
             startTime: "2025-01-01T00:00:00Z",
             tasks: [
-                { taskId: "d:build", target: { project: "d", target: "build" }, exitCode: 1, cacheStatus: "MISS", startTime: "2025-01-01T00:00:01Z" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2025-01-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
             ],
         };
 
-        const newRun = {
-            id: "run-new",
+        const newRun1 = {
+            id: "run-new-1",
             startTime: "2026-06-01T00:00:00Z",
             tasks: [
-                { taskId: "d:build", target: { project: "d", target: "build" }, exitCode: 1, cacheStatus: "MISS", startTime: "2026-06-01T00:00:01Z" },
+                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-06-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
+            ],
+        };
+
+        const newRun2 = {
+            id: "run-new-2",
+            startTime: "2026-06-02T00:00:00Z",
+            tasks: [
+                { cacheStatus: "MISS", exitCode: 0, startTime: "2026-06-02T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
             ],
         };
 
         writeFileSync(join(runsDir, "run-old.json"), JSON.stringify(oldRun));
-        writeFileSync(join(runsDir, "run-new.json"), JSON.stringify(newRun));
+        writeFileSync(join(runsDir, "run-new-1.json"), JSON.stringify(newRun1));
+        writeFileSync(join(runsDir, "run-new-2.json"), JSON.stringify(newRun2));
 
-        const stats = analyzeFlakiness(tmpDir, { minRuns: 1, since: "2026-01-01T00:00:00Z" });
+        const stats = analyzeFlakiness(tmpDir, { since: "2026-01-01T00:00:00Z" });
 
         expect(stats).toHaveLength(1);
+        expect(stats[0]!.totalRuns).toBe(2);
     });
 });
 
 describe(formatFlakinessTable, () => {
-    it("should return a single message for empty stats", () => {
+    it("should return no-flaky message for empty stats", () => {
         expect.assertions(1);
 
         expect(formatFlakinessTable([])).toStrictEqual(["No flaky tasks detected."]);
     });
 
     it("should produce a table with header containing Task, Runs, and Rate", () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const lines = formatFlakinessTable([
             {
-                taskId: "x:build",
-                project: "x",
-                target: "build",
-                totalRuns: 10,
                 failures: 3,
-                successes: 7,
                 flakinessRate: 0.3,
                 lastFailure: "2026-01-05T00:00:00Z",
+                project: "x",
+                successes: 7,
+                target: "build",
+                taskId: "x:build",
+                totalRuns: 10,
             },
         ]);
 
+        expect(lines.length).toBeGreaterThanOrEqual(3);
         expect(lines[0]).toContain("Task");
         expect(lines[0]).toContain("Runs");
         expect(lines[0]).toContain("Rate");

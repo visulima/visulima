@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 
 import { readYamlSync } from "@visulima/fs";
 import { join } from "@visulima/path";
