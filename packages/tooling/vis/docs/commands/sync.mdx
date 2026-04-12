@@ -1,0 +1,62 @@
+---
+title: "vis sync"
+description: "Synchronise derived workspace artefacts like CODEOWNERS"
+---
+
+# vis sync
+
+Generates workspace-wide artefacts that are derived from per-project configuration.
+
+## Usage
+
+```bash
+vis sync <kind> [options]
+```
+
+## Kinds
+
+### codeowners
+
+Aggregates `owners` entries from every project's `project.json` into a single `CODEOWNERS` file.
+
+```bash
+vis sync codeowners                           # Write to <workspace>/CODEOWNERS
+vis sync codeowners --out=.github/CODEOWNERS  # Custom output path
+vis sync codeowners --check                   # Verify file is up to date (CI guard)
+```
+
+#### project.json owners
+
+Each project declares its code owners:
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "owners": [
+        { "path": "src/**", "owners": ["@myorg/core-team"] },
+        { "path": "docs/**", "owners": ["@myorg/docs-team"], "channel": "#docs-reviews" }
+    ]
+}
+```
+
+#### vis.config.ts codeowners block
+
+```typescript
+export default defineConfig({
+    codeowners: {
+        orderBy: "project-id",          // or "file-source" (default)
+        provider: "github",             // "github" | "gitlab" | "bitbucket" | "other"
+        globalPaths: {
+            "/.github/**": ["@myorg/platform"],
+            "/pnpm-workspace.yaml": ["@myorg/infra"],
+        },
+    },
+});
+```
+
+## Options
+
+| Option    | Default               | Description                                          |
+| --------- | --------------------- | ---------------------------------------------------- |
+| `--out`   | `<workspace>/CODEOWNERS` | Output file path                                  |
+| `--check` | `false`               | Exit non-zero if the existing file is stale          |
