@@ -50,6 +50,24 @@ describe("native addon integration", () => {
         native = loadNativeBindings();
     });
 
+    describe.skipIf(!native)("NATIVE_BINDING_VERSION", () => {
+        it("should export NATIVE_BINDING_VERSION as a number", () => {
+            expect.assertions(2);
+
+            expect(native!.NATIVE_BINDING_VERSION).toBeDefined();
+            expect(typeof native!.NATIVE_BINDING_VERSION).toBe("number");
+        });
+
+        it("should match the expected ABI version in native-binding.ts", () => {
+            expect.assertions(1);
+
+            // If this fails, bump EXPECTED_NATIVE_BINDING_VERSION in
+            // src/native-binding.ts and NATIVE_BINDING_VERSION in
+            // native/src/lib.rs together.
+            expect(native!.NATIVE_BINDING_VERSION).toBe(1);
+        });
+    });
+
     describe.skipIf(!native)("detectPackageManager", () => {
         it("should detect a package manager in the workspace root", () => {
             expect.assertions(3);
