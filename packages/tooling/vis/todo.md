@@ -28,53 +28,11 @@ commit or PR that landed the feature.
 - [x] JSON Schema for project.json + vis-config.schema.json
 - [x] Full docs (7 new pages, 3 rewritten)
 - [x] Unit tests (11 test files)
-- [x] SBOM generation (`vis sbom`) — see [SBOM generation](#sbom-generation-vis-sbom) below
+- [x] SBOM generation (`vis sbom`) — CycloneDX 1.6 JSON/XML, full lockfile closure, per-version licences, `--focus` / `--include-dev`; see `docs/commands/sbom.mdx`
 
 ---
 
 ## Open — Tier 3
-
-### SBOM generation (`vis sbom`)
-
-CycloneDX 1.6 SBOM generator — first monorepo tool to ship
-this (moon, Nx, Turborepo all lack SBOM support).
-
-**Why**: Executive Order 14028, EU Cyber Resilience Act, and PCI DSS 4.0
-all mandate SBOMs for software supply chains. cdxgen exists but is heavy
-(200+ deps, slow on large repos) and not monorepo-aware.
-
-**Delivered**:
-- ✅ CycloneDX 1.6 JSON + XML output (ECMA-424 standard) — XML goes through `jstoxml` (already used by `packages/api/api-platform` and `packages/error-debugging/error-handler`)
-- ✅ Walks the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
-- ✅ Per project: reads `package.json` → name, version, license, author, description, homepage/vcs/issue-tracker references
-- ✅ Lockfile parsing lives in `@visulima/package/lockfile` (`parseNpmLockFile`, `parsePnpmLockFile`, `parseYarnLockFile`, `parseLockFile(Sync)`, `decodeSriIntegrity`) — shared with any other consumer that needs name/version/SRI-integrity from pnpm/npm/yarn lockfiles. `src/sbom/lockfile.ts` is now a thin adapter that translates the package-agnostic `{ algorithm, hex }` shape into CycloneDX's `{ alg, content }`.
-- ✅ `src/sbom/purl.ts` — zero-dep `pkg:npm/…` Package URL builder with proper percent-encoding
-- ✅ `src/sbom/license.ts` — minimal SPDX normaliser covering the ~95 % of npm packages whose `license` field is a known SPDX ID; falls back to `NamedLicense` for everything else, preserves SPDX expressions verbatim
-- ✅ `src/sbom/cyclonedx.ts` — pure builder; output round-trips through `assertValidBom()` (vendored 1.6.1 schema)
-- ✅ `src/commands/sbom.ts` — `vis sbom` Cerebro command with `--focus`, `--format=json|xml`, `--output=<path>|-`, `--include-dev`
-- ✅ Tests:
-  - `__tests__/sbom/cyclonedx.test.ts` — schema-validates emitted BOMs end-to-end (single project + registry dep, dev/prod filtering, project-to-project edges, focus closure, XML serialisation)
-  - `__tests__/sbom/lockfile.test.ts` — npm/pnpm/yarn parser cases + SRI decoding
-  - `__tests__/sbom/purl.test.ts` — scoped/unscoped/lowercase/percent-encoding cases
-  - `__tests__/sbom/license.test.ts` — SPDX normalization, expression detection, legacy object/array forms
-
-**Full-closure walk now lands** ✅:
-- Each parser in `@visulima/package` now also captures per-entry `dependencies` / `peerDependencies` / `optionalDependencies` (npm/pnpm/yarn/bun).
-- `src/sbom/resolve-specifier.ts` matches a `name + specifier` pair against the lockfile's `name → versions` index, preferring `semver.maxSatisfying` for ranges and exact-match for already-resolved specs (pnpm).
-- `buildCycloneDxBom` performs a BFS over the lockfile graph seeded from each in-scope project's direct deps. Transitive packages (e.g. a `body-parser` pulled in by `express`) now appear as standalone components, and registry-to-registry edges land in `dependencies[]`.
-- `--include-dev` filters transitively (dev-only sub-trees aren't walked when the flag is unset).
-- pnpm peer-disambiguated `.pnpm/foo@1.0.0_react@18.0.0/` install dirs are now discovered by the licence lookup (slow-path scan when the un-suffixed dir is absent).
-
-**Scope + Berry fidelity** ✅:
-- `scope: "optional"` now differentiates from `scope: "required"` on registry components. The BFS walks the lockfile graph in two passes (required first, then optional); `optionalDependencies` from any in-scope seed or walked entry always propagate as `optional`, while `required` edges upgrade any prior `optional` marking.
-- Yarn Berry `dependencies:` / `peerDependencies:` / `optionalDependencies:` sub-maps are now parsed. The regex accepts both the v1 space-separated form (`bar "^1.0.0"`) and Berry's colon-separated form (`bar: "npm:^1.0.0"`); the `npm:` protocol prefix is stripped inside `resolveSpecifier` before semver matching.
-
-**Remaining limitations** (documented in `docs/commands/sbom.mdx`):
-- **Yarn Berry integrity is not supported**. Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside CycloneDX 1.6's `HashAlgorithm` enum. Berry entries are parsed in full (name / version / dependencies / edges) but their components emit without a `hashes` entry. All other package managers (npm, pnpm, Yarn Classic, Bun) emit SRI integrity normally.
-- **Binary `bun.lockb` (Bun ≤ 1.0)** is not parsed. Only the text `bun.lock` (Bun 1.1+) is recognised.
-- **`npm-shrinkwrap.json`** is no longer detected as an npm lockfile candidate by this parser (was an alias of `package-lock.json`; dropping keeps the surface small). If you need it, rename it to `package-lock.json` before running `vis sbom`.
-
----
 
 ### Webhook/notifier (`vis.config.ts` pipeline events)
 
