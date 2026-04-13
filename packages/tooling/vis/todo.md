@@ -44,7 +44,7 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 (200+ deps, slow on large repos) and not monorepo-aware.
 
 **Delivered**:
-- ✅ CycloneDX 1.6 JSON + XML output (ECMA-424 standard)
+- ✅ CycloneDX 1.6 JSON + XML output (ECMA-424 standard) — XML goes through `jstoxml` (already used by `packages/api/api-platform` and `packages/error-debugging/error-handler`)
 - ✅ Walks the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
 - ✅ Per project: reads `package.json` → name, version, license, author, description, homepage/vcs/issue-tracker references
 - ✅ `src/sbom/lockfile.ts` — zero-dep parsers for `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock` that extract name + version + SRI integrity hash (decoded from base64 SRI to hex per CycloneDX spec)

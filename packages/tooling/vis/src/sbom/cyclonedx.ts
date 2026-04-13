@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
+import type { XmlElement } from "jstoxml";
+import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../docker";
 import { extractLicenseChoice, type RawLicenseInput } from "./license";
@@ -456,198 +458,215 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 };
 
 /**
- * Minimal CycloneDX 1.6 XML serialiser. Covers the subset of fields
- * our builder emits; nothing more. We hand-roll this rather than
- * pulling in an XML library because the schema is well-defined and
- * the escape surface is tiny.
+ * Serialises a {@link CycloneDxBom} document to CycloneDX 1.6 XML.
+ *
+ * Delegates all escaping, indentation, and attribute serialisation to
+ * the project-standard `jstoxml` library (already used elsewhere in
+ * the monorepo — see `packages/api/api-platform` and
+ * `packages/error-debugging/error-handler`). We only translate our
+ * typed JSON-shaped BOM into jstoxml's `{ _name, _attrs, _content }`
+ * tree.
  */
 export const serializeBomToXml = (bom: CycloneDxBom): string => {
-    const escape = (value: string): string =>
-        value
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll("\"", "&quot;")
-            .replaceAll("'", "&apos;");
-
-    const lines: string[] = [];
-
-    lines.push("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-
-    const rootAttributes: string[] = [
-        "xmlns=\"http://cyclonedx.org/schema/bom/1.6\"",
-        `version="${bom.version ?? 1}"`,
-    ];
+    const rootAttributes: Record<string, string | number> = {
+        xmlns: "http://cyclonedx.org/schema/bom/1.6",
+        version: bom.version ?? 1,
+    };
 
     if (bom.serialNumber) {
-        rootAttributes.push(`serialNumber="${escape(bom.serialNumber)}"`);
+        rootAttributes.serialNumber = bom.serialNumber;
     }
 
-    lines.push(`<bom ${rootAttributes.join(" ")}>`);
+    const content: XmlElement[] = [];
 
     if (bom.metadata) {
-        lines.push("  <metadata>");
-
-        if (bom.metadata.timestamp) {
-            lines.push(`    <timestamp>${escape(bom.metadata.timestamp)}</timestamp>`);
-        }
-
-        if (bom.metadata.tools?.components) {
-            lines.push("    <tools>");
-
-            for (const tool of bom.metadata.tools.components) {
-                lines.push(`      <component type="${escape(tool.type)}">`);
-                lines.push(`        <name>${escape(tool.name)}</name>`);
-
-                if (tool.version) {
-                    lines.push(`        <version>${escape(tool.version)}</version>`);
-                }
-
-                lines.push("      </component>");
-            }
-
-            lines.push("    </tools>");
-        }
-
-        if (bom.metadata.component) {
-            lines.push(...renderComponentXml(bom.metadata.component, "    ", escape));
-        }
-
-        lines.push("  </metadata>");
+        content.push(metadataToXmlElement(bom.metadata));
     }
 
     if (bom.components && bom.components.length > 0) {
-        lines.push("  <components>");
-
-        for (const component of bom.components) {
-            lines.push(...renderComponentXml(component, "    ", escape));
-        }
-
-        lines.push("  </components>");
+        content.push({
+            _content: bom.components.map(componentToXmlElement),
+            _name: "components",
+        });
     }
 
     if (bom.dependencies && bom.dependencies.length > 0) {
-        lines.push("  <dependencies>");
-
-        for (const dep of bom.dependencies) {
-            if (dep.dependsOn && dep.dependsOn.length > 0) {
-                lines.push(`    <dependency ref="${escape(dep.ref)}">`);
-
-                for (const child of dep.dependsOn) {
-                    lines.push(`      <dependency ref="${escape(child)}"/>`);
-                }
-
-                lines.push("    </dependency>");
-            } else {
-                lines.push(`    <dependency ref="${escape(dep.ref)}"/>`);
-            }
-        }
-
-        lines.push("  </dependencies>");
+        content.push({
+            _content: bom.dependencies.map(dependencyToXmlElement),
+            _name: "dependencies",
+        });
     }
 
-    lines.push("</bom>");
+    const xml = toXML(
+        {
+            _attrs: rootAttributes,
+            _content: content,
+            _name: "bom",
+        },
+        {
+            header: true,
+            indent: "  ",
+            selfCloseTags: true,
+        },
+    );
 
-    return `${lines.join("\n")}\n`;
+    return `${xml}\n`;
 };
 
-const renderComponentXml = (
-    component: Component,
-    indent: string,
-    escape: (value: string) => string,
-): string[] => {
-    const openAttributes: string[] = [`type="${escape(component.type)}"`];
+const metadataToXmlElement = (metadata: NonNullable<CycloneDxBom["metadata"]>): XmlElement => {
+    const children: XmlElement[] = [];
+
+    if (metadata.timestamp) {
+        children.push({ timestamp: metadata.timestamp });
+    }
+
+    if (metadata.lifecycles && metadata.lifecycles.length > 0) {
+        children.push({
+            _content: metadata.lifecycles.map((lifecycle) => {
+                const entries: XmlElement[] = [];
+
+                if (lifecycle.phase) {
+                    entries.push({ phase: lifecycle.phase });
+                }
+
+                if (lifecycle.name) {
+                    entries.push({ name: lifecycle.name });
+                }
+
+                if (lifecycle.description) {
+                    entries.push({ description: lifecycle.description });
+                }
+
+                return { _content: entries, _name: "lifecycle" };
+            }),
+            _name: "lifecycles",
+        });
+    }
+
+    if (metadata.tools?.components) {
+        children.push({
+            _content: [
+                {
+                    _content: metadata.tools.components.map(componentToXmlElement),
+                    _name: "components",
+                },
+            ],
+            _name: "tools",
+        });
+    }
+
+    if (metadata.component) {
+        children.push(componentToXmlElement(metadata.component));
+    }
+
+    return { _content: children, _name: "metadata" };
+};
+
+const componentToXmlElement = (component: Component): XmlElement => {
+    const attributes: Record<string, string> = { type: component.type };
 
     if (component["bom-ref"]) {
-        openAttributes.push(`bom-ref="${escape(component["bom-ref"])}"`);
+        attributes["bom-ref"] = component["bom-ref"];
     }
 
-    const lines: string[] = [`${indent}<component ${openAttributes.join(" ")}>`];
+    const children: XmlElement[] = [];
 
     if (component.group) {
-        lines.push(`${indent}  <group>${escape(component.group)}</group>`);
+        children.push({ group: component.group });
     }
 
-    lines.push(`${indent}  <name>${escape(component.name)}</name>`);
+    children.push({ name: component.name });
 
     if (component.version) {
-        lines.push(`${indent}  <version>${escape(component.version)}</version>`);
+        children.push({ version: component.version });
     }
 
     if (component.description) {
-        lines.push(`${indent}  <description>${escape(component.description)}</description>`);
+        children.push({ description: component.description });
     }
 
     if (component.author) {
-        lines.push(`${indent}  <author>${escape(component.author)}</author>`);
+        children.push({ author: component.author });
     }
 
     if (component.hashes && component.hashes.length > 0) {
-        lines.push(`${indent}  <hashes>`);
-
-        for (const hash of component.hashes) {
-            lines.push(`${indent}    <hash alg="${escape(hash.alg)}">${escape(hash.content)}</hash>`);
-        }
-
-        lines.push(`${indent}  </hashes>`);
+        children.push({
+            _content: component.hashes.map((hash) => ({
+                _attrs: { alg: hash.alg },
+                _content: hash.content,
+                _name: "hash",
+            })),
+            _name: "hashes",
+        });
     }
 
-    renderLicenseXml(component.licenses, `${indent}  `, escape, lines);
+    const licenses = licensesToXmlElement(component.licenses);
+
+    if (licenses) {
+        children.push(licenses);
+    }
 
     if (component.purl) {
-        lines.push(`${indent}  <purl>${escape(component.purl)}</purl>`);
+        children.push({ purl: component.purl });
     }
 
     if (component.scope) {
-        lines.push(`${indent}  <scope>${escape(component.scope)}</scope>`);
+        children.push({ scope: component.scope });
     }
 
     if (component.externalReferences && component.externalReferences.length > 0) {
-        lines.push(`${indent}  <externalReferences>`);
-
-        for (const reference of component.externalReferences) {
-            lines.push(`${indent}    <reference type="${escape(reference.type)}">`);
-            lines.push(`${indent}      <url>${escape(reference.url)}</url>`);
-            lines.push(`${indent}    </reference>`);
-        }
-
-        lines.push(`${indent}  </externalReferences>`);
+        children.push({
+            _content: component.externalReferences.map((reference) => ({
+                _attrs: { type: reference.type },
+                _content: [{ url: reference.url }],
+                _name: "reference",
+            })),
+            _name: "externalReferences",
+        });
     }
 
-    lines.push(`${indent}</component>`);
-
-    return lines;
+    return { _attrs: attributes, _content: children, _name: "component" };
 };
 
-const renderLicenseXml = (
-    licenses: LicenseChoice | undefined,
-    indent: string,
-    escape: (value: string) => string,
-    lines: string[],
-): void => {
+const licensesToXmlElement = (licenses: LicenseChoice | undefined): XmlElement | undefined => {
     if (!licenses || licenses.length === 0) {
-        return;
+        return undefined;
     }
 
-    lines.push(`${indent}<licenses>`);
+    const entries: XmlElement[] = [];
 
     for (const entry of licenses) {
         if ("expression" in entry) {
-            lines.push(`${indent}  <expression>${escape(entry.expression)}</expression>`);
+            entries.push({ expression: entry.expression });
 
             continue;
         }
 
-        lines.push(`${indent}  <license>`);
+        const licenseChildren: XmlElement[] = [];
 
         if ("id" in entry.license && entry.license.id) {
-            lines.push(`${indent}    <id>${escape(entry.license.id)}</id>`);
+            licenseChildren.push({ id: entry.license.id });
         } else if ("name" in entry.license && entry.license.name) {
-            lines.push(`${indent}    <name>${escape(entry.license.name)}</name>`);
+            licenseChildren.push({ name: entry.license.name });
         }
 
-        lines.push(`${indent}  </license>`);
+        entries.push({ _content: licenseChildren, _name: "license" });
     }
 
-    lines.push(`${indent}</licenses>`);
+    return { _content: entries, _name: "licenses" };
+};
+
+const dependencyToXmlElement = (dep: Dependency): XmlElement => {
+    if (dep.dependsOn && dep.dependsOn.length > 0) {
+        return {
+            _attrs: { ref: dep.ref },
+            _content: dep.dependsOn.map((child) => ({
+                _attrs: { ref: child },
+                _name: "dependency",
+            })),
+            _name: "dependency",
+        };
+    }
+
+    return { _attrs: { ref: dep.ref }, _name: "dependency" };
 };
