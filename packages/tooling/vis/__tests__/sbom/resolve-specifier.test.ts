@@ -53,4 +53,13 @@ describe(resolveSpecifier, () => {
         // so the edge still lands somewhere rather than being dropped.
         expect(resolveSpecifier("foo", "workspace:^", index)).toBe("1.0.0");
     });
+
+    it("should strip Yarn Berry's `npm:` protocol prefix before semver matching", () => {
+        expect.assertions(2);
+
+        const index = buildIndex([["foo", ["1.0.0", "2.0.0"]]]);
+
+        expect(resolveSpecifier("foo", "npm:^1.0.0", index)).toBe("1.0.0");
+        expect(resolveSpecifier("foo", "npm:2.0.0", index)).toBe("2.0.0");
+    });
 });

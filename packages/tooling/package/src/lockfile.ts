@@ -57,6 +57,14 @@ export interface LockFileEntry {
     optionalDependencies?: Record<string, string>;
     /** Declared peer dependencies, same shape as `dependencies`. */
     peerDependencies?: Record<string, string>;
+    /**
+     * Parser-specific auxiliary metadata that doesn't fit the common
+     * shape — e.g. Yarn Berry's XXH64 `checksum` value (which isn't a
+     * cryptographic hash CycloneDX can accept in `Component.hashes`,
+     * but is still useful to preserve as a Property). Keys are
+     * dot-namespaced (`yarn.berry.checksum`) so consumers can route.
+     */
+    properties?: Record<string, string>;
     /** Resolved exact version — e.g. `4.17.21`. */
     version: string;
 }
@@ -388,6 +396,17 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
+        // Yarn Berry records an XXH64 `checksum:` instead of an SRI
+        // `integrity:`. It isn't a cryptographic hash (so CycloneDX
+        // won't accept it in `Component.hashes`), but it's still useful
+        // to preserve as a CycloneDX Property for downstream consumers
+        // that know Yarn's cache layout.
+        const checksumMatch = /^\s+checksum:\s+(\S+)/m.exec(body);
+
+        if (checksumMatch?.[1] && !lockEntry.integrity) {
+            lockEntry.properties = { "yarn.berry.checksum": checksumMatch[1] };
+        }
+
         copyDepMap(lockEntry, "dependencies", extractYarnDependencyMap(body, "dependencies"));
         copyDepMap(lockEntry, "peerDependencies", extractYarnDependencyMap(body, "peerDependencies"));
         copyDepMap(lockEntry, "optionalDependencies", extractYarnDependencyMap(body, "optionalDependencies"));
@@ -400,18 +419,15 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
 
 /**
  * Extracts a yarn entry's `dependencies` / `peerDependencies` /
- * `optionalDependencies` sub-block. Yarn v1 lays them out as
+ * `optionalDependencies` sub-block. Supports both yarn layouts:
  *
- * ```
- *   dependencies:
- *     "foo" "^1.0.0"
- *     bar "^2.0.0"
- * ```
+ * - Yarn v1 (Classic): `    name "specifier"` (space-separated)
+ * - Yarn Berry (v2+):  `    name: "npm:specifier"` (colon-separated,
+ *   with an `npm:` protocol prefix on the range)
  *
- * Yarn Berry uses `- "foo@npm:^1.0.0"` arrays — those aren't the
- * classic shape, so we only cover the v1 form here. Berry lockfiles
- * still surface in the top-level `packages[]` list via the entry
- * regex; only the per-entry edge graph is partial.
+ * Berry's `npm:`, `workspace:`, `file:`, `patch:` protocol prefixes
+ * are retained verbatim in the captured specifier — callers (e.g.
+ * `resolveSpecifier`) strip them before attempting semver matching.
  */
 const extractYarnDependencyMap = (
     body: string,
@@ -425,9 +441,12 @@ const extractYarnDependencyMap = (
     }
 
     const map: Record<string, string> = {};
-    // `    "foo" "^1.0.0"` or `    foo "^1.0.0"`.
+    // Matches both `    name "value"` (v1) and `    "name": "value"` (Berry):
+    //   - optional quotes around the key
+    //   - optional colon + whitespace between key and value
+    //   - required quoted value
     // eslint-disable-next-line sonarjs/slow-regex
-    const entryRegex = /^ {4}(['"]?[^\s:'"]+['"]?)\s+['"]([^'"\n]+)['"]/gm;
+    const entryRegex = /^ {4}(['"]?[^\s:'"]+['"]?)\s*:?\s*['"]([^'"\n]+)['"]/gm;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign

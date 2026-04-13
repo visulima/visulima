@@ -254,6 +254,45 @@ describe(parseYarnLockFile, () => {
 
         expect(foo?.dependencies).toEqual({ "@scope/baz": "^1.0.0", bar: "^2.0.0" });
     });
+
+    it("should capture a yarn Berry entry's dependencies with colon-separated 'npm:' specifiers", () => {
+        expect.assertions(1);
+
+        const content = `
+"foo@npm:1.2.3":
+  version: 1.2.3
+  resolution: "foo@npm:1.2.3"
+  dependencies:
+    bar: "npm:^2.0.0"
+    "@scope/baz": "npm:^1.0.0"
+  languageName: node
+  linkType: hard
+`;
+
+        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toEqual({ "@scope/baz": "npm:^1.0.0", bar: "npm:^2.0.0" });
+    });
+
+    it("should preserve Yarn Berry's XXH64 checksum on the entry's properties", () => {
+        expect.assertions(2);
+
+        const content = `
+"foo@npm:1.2.3":
+  version: 1.2.3
+  resolution: "foo@npm:1.2.3"
+  checksum: 10c0/abc123def456
+  languageName: node
+  linkType: hard
+`;
+
+        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
+
+        // Berry checksums can't live in `integrity` (CycloneDX can't accept
+        // XXH64), so they surface through the extension `properties` slot.
+        expect(foo?.integrity).toBeUndefined();
+        expect(foo?.properties?.["yarn.berry.checksum"]).toBe("10c0/abc123def456");
+    });
 });
 
 describe(parseBunLockFile, () => {

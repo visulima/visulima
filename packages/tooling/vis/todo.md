@@ -65,10 +65,12 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 - `--include-dev` filters transitively (dev-only sub-trees aren't walked when the flag is unset).
 - pnpm peer-disambiguated `.pnpm/foo@1.0.0_react@18.0.0/` install dirs are now discovered by the licence lookup (slow-path scan when the un-suffixed dir is absent).
 
-**Known limitations** (deferred):
-- `scope: "excluded"` and `scope: "optional"` are not yet differentiated from `scope: "required"` on registry components — every registry component is emitted as `"required"`. (Distinguishing `optional` would require tracking which seed map a transitive dep arrived through.)
-- Yarn Berry's XXH64 `checksum:` field is dropped (CycloneDX 1.6 only allows the algorithms in `HashAlgorithm`); only Yarn Classic's SRI `integrity` field flows through.
-- Yarn Berry per-entry dep maps aren't extracted (only the v1 layout is — Berry uses an array-of-strings form). The closure walk still includes Berry packages via the seed-then-walk loop, but registry-to-registry edges from Berry entries are absent.
+**Scope + Berry fidelity** ✅:
+- `scope: "optional"` now differentiates from `scope: "required"` on registry components. The BFS walks the lockfile graph in two passes (required first, then optional); `optionalDependencies` from any in-scope seed or walked entry always propagate as `optional`, while `required` edges upgrade any prior `optional` marking.
+- Yarn Berry `dependencies:` / `peerDependencies:` / `optionalDependencies:` sub-maps are now parsed. The regex accepts both the v1 space-separated form (`bar "^1.0.0"`) and Berry's colon-separated form (`bar: "npm:^1.0.0"`); the `npm:` protocol prefix is stripped inside `resolveSpecifier` before semver matching.
+- Yarn Berry's XXH64 `checksum:` value is preserved as `Component.properties` (CycloneDX 1.6 `HashAlgorithm` still can't represent XXH64, but the auxiliary `properties` slot keeps the data available for downstream consumers). `LockFileEntry.properties` is the parser-side surface; the SBOM builder forwards it verbatim.
+
+**Remaining limitations** (none known — the SBOM now covers npm, pnpm, Yarn Classic, Yarn Berry, and Bun with transitive closure, per-version licences, and scope differentiation).
 
 ---
 

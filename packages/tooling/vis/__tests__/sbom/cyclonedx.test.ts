@@ -343,6 +343,106 @@ packages:
         expect(expressEdge?.dependsOn).toContain("pkg:npm/body-parser@1.20.1");
     });
 
+    it("should mark components reached only via optionalDependencies as scope='optional'", () => {
+        expect.assertions(3);
+
+        const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
+            lockfile: `lockfileVersion: '9.0'
+
+packages:
+
+  chalk@5.3.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+
+  fsevents@2.3.3:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+            projects: [
+                {
+                    dependencies: { chalk: "^5.0.0" },
+                    license: "MIT",
+                    name: "my-app",
+                    type: "application",
+                    version: "1.0.0",
+                },
+            ],
+        });
+
+        // Append optionalDependencies to my-app's package.json — the buildFixture
+        // helper only handles `dependencies`/`devDependencies`, so we overwrite.
+        writeFileSync(
+            join(workspaceRoot, "packages", "my-app", "package.json"),
+            JSON.stringify({
+                dependencies: { chalk: "^5.0.0" },
+                license: "MIT",
+                name: "my-app",
+                optionalDependencies: { fsevents: "^2.3.0" },
+                version: "1.0.0",
+            }),
+        );
+
+        const bom = buildCycloneDxBom({
+            now: new Date("2026-04-13T00:00:00Z"),
+            projectGraph,
+            serialNumber: "urn:uuid:00000000-0000-4000-8000-000000000007",
+            workspace,
+            workspaceRoot,
+        });
+
+        const chalk = bom.components!.find((c) => c.name === "chalk");
+        const fsevents = bom.components!.find((c) => c.name === "fsevents");
+
+        expect(chalk?.scope).toBe("required");
+        expect(fsevents?.scope).toBe("optional");
+
+        // Sanity-check that both landed; optional isn't the same as excluded.
+        expect(fsevents).toBeDefined();
+    });
+
+    it("should surface a Yarn Berry checksum as a CycloneDX Component property", () => {
+        expect.assertions(2);
+
+        // Use a fake lockfile directly — the yarn parser's Berry-checksum
+        // capture is covered in @visulima/package; here we just assert the
+        // SBOM builder forwards `properties` onto the emitted component.
+        const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
+            projects: [
+                {
+                    dependencies: { "some-pkg": "1.0.0" },
+                    license: "MIT",
+                    name: "my-app",
+                    type: "application",
+                    version: "1.0.0",
+                },
+            ],
+        });
+
+        writeFileSync(
+            join(workspaceRoot, "yarn.lock"),
+            `
+"some-pkg@npm:1.0.0":
+  version: 1.0.0
+  resolution: "some-pkg@npm:1.0.0"
+  checksum: 10c0/deadbeef
+  languageName: node
+  linkType: hard
+`,
+        );
+
+        const bom = buildCycloneDxBom({
+            now: new Date("2026-04-13T00:00:00Z"),
+            projectGraph,
+            serialNumber: "urn:uuid:00000000-0000-4000-8000-000000000008",
+            workspace,
+            workspaceRoot,
+        });
+
+        const somePkg = bom.components!.find((c) => c.name === "some-pkg");
+
+        expect(somePkg?.properties).toContainEqual({ name: "yarn.berry.checksum", value: "10c0/deadbeef" });
+        expect(somePkg?.hashes).toBeUndefined();
+    });
+
     it("should resolve registry-component licences against the installed copy's package.json", () => {
         expect.assertions(2);
 

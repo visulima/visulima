@@ -253,8 +253,16 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
     }
 
-    /** Seed the walk with each in-scope workspace project's direct deps. */
-    const seedQueue: string[] = [];
+    /**
+     * Seed each in-scope workspace project's direct deps, tracking which
+     * deps are `required` (from `dependencies` / `peerDependencies` /
+     * `devDependencies` when `--include-dev`) vs. `optional` (from
+     * `optionalDependencies`). The BFS then propagates: a package
+     * reachable only through optional edges stays optional; if it's
+     * also reachable via a required edge, required wins.
+     */
+    const requiredSeed: string[] = [];
+    const optionalSeed: string[] = [];
     const directDepEdges = new Map<string, Set<string>>();
 
     for (const name of projectNames) {
@@ -264,17 +272,16 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             continue;
         }
 
-        const depMaps = [pkg.dependencies, pkg.peerDependencies, pkg.optionalDependencies];
+        const requiredMaps = [pkg.dependencies, pkg.peerDependencies];
 
         if (includeDev) {
-            depMaps.push(pkg.devDependencies);
+            requiredMaps.push(pkg.devDependencies);
         }
 
         const edges = new Set<string>();
-
-        for (const depMap of depMaps) {
+        const seedRef = (target: string[], depMap: Record<string, string> | undefined): void => {
             if (!depMap) {
-                continue;
+                return;
             }
 
             for (const [depName, specifier] of Object.entries(depMap)) {
@@ -292,76 +299,99 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 
                 if (resolvedVersion) {
                     edges.add(toNpmPurl(depName, resolvedVersion));
-                    seedQueue.push(`${depName}@${resolvedVersion}`);
+                    target.push(`${depName}@${resolvedVersion}`);
                 }
             }
+        };
+
+        for (const depMap of requiredMaps) {
+            seedRef(requiredSeed, depMap);
         }
+
+        seedRef(optionalSeed, pkg.optionalDependencies);
 
         directDepEdges.set(name, edges);
     }
 
-    // BFS over the lockfile graph. We collect every `name@version` that
-    // is reachable from the workspace's (prod + optional + peer, plus
-    // dev when --include-dev is set) seed set. Dev-only *transitive*
-    // packages are correctly excluded because we never descend into
-    // their edges.
-    const reachableRegistryRefs = new Set<string>();
+    // Walk the lockfile graph. Two passes so scope propagation is simple
+    // and deterministic: required first (so it can upgrade any ref),
+    // then optional for anything not already marked.
+    const reachableRegistryRefs = new Map<string, "optional" | "required">();
     const registryDepEdges = new Map<string, Set<string>>();
 
-    while (seedQueue.length > 0) {
-        const ref = seedQueue.pop()!;
+    const walk = (seeds: string[], scope: "optional" | "required"): void => {
+        const queue = [...seeds];
 
-        if (reachableRegistryRefs.has(ref)) {
-            continue;
-        }
+        while (queue.length > 0) {
+            const ref = queue.pop()!;
+            const existing = reachableRegistryRefs.get(ref);
 
-        reachableRegistryRefs.add(ref);
-
-        const entry = lockfileByRef.get(ref);
-
-        if (!entry) {
-            // Ref was resolvable but the underlying lockfile entry isn't there
-            // (broken / partial lockfile). Keep the ref so dependencies[] can
-            // still point at it; nothing further to walk.
-            continue;
-        }
-
-        const outgoing = new Set<string>();
-        // Peer deps may be provided by a sibling; they still belong in the
-        // closure because the package expects them to be installed.
-        const outgoingMaps = [entry.dependencies, entry.peerDependencies, entry.optionalDependencies];
-
-        for (const depMap of outgoingMaps) {
-            if (!depMap) {
+            // Skip if we've already recorded this ref at this or a higher scope.
+            // Required outranks optional; optional never overwrites required.
+            if (existing === "required" || (existing === "optional" && scope === "optional")) {
                 continue;
             }
 
-            for (const [depName, specifier] of Object.entries(depMap)) {
-                const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
+            reachableRegistryRefs.set(ref, scope);
 
-                if (!resolvedVersion) {
+            const entry = lockfileByRef.get(ref);
+
+            if (!entry) {
+                continue;
+            }
+
+            const outgoing = registryDepEdges.get(ref) ?? new Set<string>();
+            // `dependencies` + `peerDependencies` inherit the parent's scope;
+            // `optionalDependencies` are always optional regardless of parent.
+            const inheritedMaps = [entry.dependencies, entry.peerDependencies];
+
+            for (const depMap of inheritedMaps) {
+                if (!depMap) {
                     continue;
                 }
 
-                outgoing.add(toNpmPurl(depName, resolvedVersion));
+                for (const [depName, specifier] of Object.entries(depMap)) {
+                    const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
 
-                const depRef = `${depName}@${resolvedVersion}`;
+                    if (!resolvedVersion) {
+                        continue;
+                    }
 
-                if (!reachableRegistryRefs.has(depRef)) {
-                    seedQueue.push(depRef);
+                    const depRef = `${depName}@${resolvedVersion}`;
+
+                    outgoing.add(toNpmPurl(depName, resolvedVersion));
+                    queue.push(depRef);
                 }
             }
-        }
 
-        if (outgoing.size > 0) {
-            registryDepEdges.set(ref, outgoing);
+            if (entry.optionalDependencies) {
+                for (const [depName, specifier] of Object.entries(entry.optionalDependencies)) {
+                    const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
+
+                    if (!resolvedVersion) {
+                        continue;
+                    }
+
+                    const depRef = `${depName}@${resolvedVersion}`;
+
+                    outgoing.add(toNpmPurl(depName, resolvedVersion));
+                    optionalSeed.push(depRef);
+                }
+            }
+
+            if (outgoing.size > 0) {
+                registryDepEdges.set(ref, outgoing);
+            }
         }
-    }
+    };
+
+    walk(requiredSeed, "required");
+    walk(optionalSeed, "optional");
 
     // Emit one Component per reachable `name@version`, sorted for
     // deterministic output.
     const registryComponents: Component[] = [];
-    const sortedRefs = [...reachableRegistryRefs].sort();
+    const sortedRefs = [...reachableRegistryRefs.keys()].sort();
 
     for (const ref of sortedRefs) {
         const pkg = lockfileByRef.get(ref);
@@ -375,13 +405,17 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             "bom-ref": purl,
             name: pkg.name,
             purl,
-            scope: "required",
+            scope: reachableRegistryRefs.get(ref) ?? "required",
             type: "library",
             version: pkg.version,
         };
 
         if (pkg.hash) {
             component.hashes = [pkg.hash satisfies Hash];
+        }
+
+        if (pkg.properties) {
+            component.properties = Object.entries(pkg.properties).map(([name_, value]) => ({ name: name_, value }));
         }
 
         // Resolve licence + author + references against the *installed
@@ -657,6 +691,17 @@ const componentToXmlElement = (component: Component): XmlElement => {
                 _name: "reference",
             })),
             _name: "externalReferences",
+        });
+    }
+
+    if (component.properties && component.properties.length > 0) {
+        children.push({
+            _content: component.properties.map((property) => ({
+                _attrs: { name: property.name },
+                _content: property.value ?? "",
+                _name: "property",
+            })),
+            _name: "properties",
         });
     }
 
