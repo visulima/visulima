@@ -39,8 +39,15 @@ const approveBuilds: Command = {
                 process.exitCode = result.status;
             }
 
-            // Fall through to sync-native if requested (don't return early)
+            // pnpm writes directly to pnpm-workspace.yaml (`allowBuilds:` map on v11,
+            // `onlyBuiltDependencies:` list on v10). If the user isn't about to run
+            // --sync-native below, remind them that vis.config.ts may now be stale
+            // relative to the native config.
             if (!options.syncNative) {
+                note("");
+                note("Tip: vis.config.ts security.allowBuilds may now be out of sync with pnpm-workspace.yaml.");
+                note("Run 'vis check --security-config' to compare, or copy the new entries into vis.config.ts.");
+
                 return;
             }
         } else {

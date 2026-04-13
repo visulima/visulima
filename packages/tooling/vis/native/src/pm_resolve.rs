@@ -19,6 +19,21 @@ fn validate_pm(pm: &str) -> napi::Result<()> {
     }
 }
 
+/// Parses the leading integer from a version string (e.g. "11.0.0-rc.0" -> Some(11)).
+/// Returns `None` when the version string does not start with a decimal digit
+/// (e.g. "latest", "workspace:*").
+fn parse_major(version: &str) -> Option<u32> {
+    let end = version.find(|c: char| !c.is_ascii_digit()).unwrap_or(version.len());
+    version[..end].parse::<u32>().ok()
+}
+
+/// Returns `Some(true)` when the pnpm major version is >= 11, `Some(false)`
+/// when it is < 11, and `None` when the version string cannot be parsed
+/// (e.g. "latest").
+fn is_pnpm_v11_plus(version: &str) -> Option<bool> {
+    parse_major(version).map(|major| major >= 11)
+}
+
 // ── Install ──────────────────────────────────────────────────────────
 
 #[napi(object)]
@@ -714,14 +729,82 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> n
 
 // ── Link / Unlink ────────────────────────────────────────────────────
 
+/// Returns `true` when the target looks like a filesystem path (absolute,
+/// relative, or Windows-style) rather than a bare package name.
+fn is_path_like(target: &str) -> bool {
+    target.starts_with('/')
+        || target.starts_with('\\')
+        || target.starts_with("./")
+        || target.starts_with(".\\")
+        || target.starts_with("../")
+        || target.starts_with("..\\")
+        || target == "."
+        || target == ".."
+        // Windows drive-letter (e.g. "C:/foo")
+        || (target.len() >= 3
+            && target.as_bytes()[1] == b':'
+            && (target.as_bytes()[2] == b'/' || target.as_bytes()[2] == b'\\'))
+}
+
 #[napi(catch_unwind)]
-pub fn resolve_link(pm: String, target: Option<String>) -> napi::Result<ResolvedCommand> {
+pub fn resolve_link(
+    pm: String,
+    version: String,
+    target: Option<String>,
+) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
     let mut args = vec!["link".to_string()];
+    let mut warnings = Vec::new();
+
+    // pnpm v11 removes arg-less `pnpm link` and global-store name resolution.
+    // Only `pnpm link <path>` continues to work.
+    if pm == "pnpm" {
+        match is_pnpm_v11_plus(&version) {
+            Some(true) => match &target {
+                None => {
+                    warnings.push(
+                        "pnpm v11 removed arg-less `pnpm link`. Pass an explicit path, e.g. `vis link ./packages/my-pkg`."
+                            .into(),
+                    );
+                }
+                Some(t) if !is_path_like(t) => {
+                    warnings.push(format!(
+                        "pnpm v11 removed global-store name resolution for `pnpm link {t}`. Use a relative or absolute path instead."
+                    ));
+                }
+                _ => {}
+            },
+            None => {
+                // Unknown version — we can't tell if v11 restrictions apply.
+                // Warn generically for non-path targets so users know it may fail.
+                match &target {
+                    None => {
+                        warnings.push(
+                            "pnpm version unknown. Arg-less `pnpm link` was removed in v11; pass an explicit path to be safe."
+                                .into(),
+                        );
+                    }
+                    Some(t) if !is_path_like(t) => {
+                        warnings.push(format!(
+                            "pnpm version unknown. Global-store name resolution for `pnpm link {t}` was removed in v11; use a path to be safe."
+                        ));
+                    }
+                    _ => {}
+                }
+            }
+            Some(false) => { /* v10 and below: all link forms are supported */ }
+        }
+    }
+
     if let Some(t) = target {
         args.push(t);
     }
-    Ok(ResolvedCommand { bin: pm, args, warnings: Vec::new() })
+
+    Ok(ResolvedCommand {
+        bin: pm,
+        args,
+        warnings,
+    })
 }
 
 #[napi(catch_unwind)]
@@ -829,7 +912,7 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Resul
                 .map(|(_, s)| s)
                 .collect::<Vec<_>>()
                 .join("@");
-            let bin_name = without_version.split('/').last().unwrap_or(&opts.package).to_string();
+            let bin_name = without_version.rsplit('/').next().unwrap_or(&opts.package).to_string();
             args.push("--".into());
             args.push(if bin_name.is_empty() { opts.package.clone() } else { bin_name });
             args.extend(opts.args);

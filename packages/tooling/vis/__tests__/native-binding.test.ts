@@ -50,6 +50,24 @@ describe("native addon integration", () => {
         native = loadNativeBindings();
     });
 
+    describe.skipIf(!native)("NATIVE_BINDING_VERSION", () => {
+        it("should export NATIVE_BINDING_VERSION as a number", () => {
+            expect.assertions(2);
+
+            expect(native!.NATIVE_BINDING_VERSION).toBeDefined();
+            expect(typeof native!.NATIVE_BINDING_VERSION).toBe("number");
+        });
+
+        it("should match the expected ABI version in native-binding.ts", () => {
+            expect.assertions(1);
+
+            // If this fails, bump EXPECTED_NATIVE_BINDING_VERSION in
+            // src/native-binding.ts and NATIVE_BINDING_VERSION in
+            // native/src/lib.rs together.
+            expect(native!.NATIVE_BINDING_VERSION).toBe(1);
+        });
+    });
+
     describe.skipIf(!native)("detectPackageManager", () => {
         it("should detect a package manager in the workspace root", () => {
             expect.assertions(3);
@@ -615,6 +633,76 @@ describe("native addon integration", () => {
             const result = native!.resolveLink("npm", "11.0.0", null);
 
             expect(result.args).toStrictEqual(["link"]);
+        });
+
+        it("should not warn on pnpm v10 link with bare name", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "10.0.0", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        it("should warn about arg-less link on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0-rc.0", null);
+
+            expect(result.args).toStrictEqual(["link"]);
+            expect(result.warnings.some((w) => w.includes("arg-less") && w.includes("v11"))).toBe(true);
+        });
+
+        it("should warn about bare package name on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings.some((w) => w.includes("global-store") || w.includes("path"))).toBe(true);
+        });
+
+        it("should not warn about path target on pnpm v11", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "./local-pkg");
+
+            expect(result.args).toStrictEqual(["link", "./local-pkg"]);
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        it("should not warn on pnpm v11 for absolute path", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("pnpm", "11.0.0", "/home/user/pkg");
+
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        it("should warn generically for unknown pnpm version with bare name", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "latest", "react");
+
+            expect(result.args).toStrictEqual(["link", "react"]);
+            expect(result.warnings.some((w) => w.includes("unknown") && w.includes("v11"))).toBe(true);
+        });
+
+        it("should warn generically for unknown pnpm version with no target", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveLink("pnpm", "latest", null);
+
+            expect(result.args).toStrictEqual(["link"]);
+            expect(result.warnings.some((w) => w.includes("unknown") && w.includes("Arg-less"))).toBe(true);
+        });
+
+        it("should not warn for unknown pnpm version with path target", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("pnpm", "latest", "./local-pkg");
+
+            expect(result.warnings).toHaveLength(0);
         });
 
         it("should resolve unlink with recursive", () => {

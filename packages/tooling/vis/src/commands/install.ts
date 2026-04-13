@@ -1,5 +1,9 @@
+import { rmSync } from "node:fs";
+import { join } from "node:path";
+
 import type { Command } from "@visulima/cerebro";
 
+import { error as errorOutput, info } from "../output";
 import { detectPm, runInstall } from "../pm-runner";
 import { scanDepsForTyposquats } from "../typosquats";
 import { toStringArray } from "../utils";
@@ -11,6 +15,7 @@ const install: Command = {
     examples: [
         ["vis install", "Install all dependencies"],
         ["vis i --frozen-lockfile", "Install with frozen lockfile (CI mode)"],
+        ["vis install --ci", "Clean install: wipe node_modules + frozen lockfile (mirrors npm ci / pnpm ci)"],
         ["vis install --prod", "Install production dependencies only"],
         ["vis install --filter app", "Install for specific workspace package"],
         ["vis install --ignore-scripts", "Install without running lifecycle scripts"],
@@ -32,6 +37,24 @@ const install: Command = {
 
         const pm = detectPm(cwd);
         const filters = toStringArray(options.filter);
+        const ciMode = (options.ci as boolean) || false;
+
+        // --ci mirrors `npm ci` / `pnpm ci` / `yarn install --immutable`:
+        // wipe node_modules so the install fully reproduces the lockfile.
+        // Works for every PM (including pnpm v10) because we do the wipe ourselves
+        // and then delegate to a standard frozen-lockfile install.
+        if (ciMode) {
+            info("Clean install: removing node_modules...");
+
+            try {
+                rmSync(join(cwd, "node_modules"), { force: true, recursive: true });
+            } catch (error: unknown) {
+                errorOutput(`Failed to remove node_modules: ${error instanceof Error ? error.message : String(error)}`);
+                process.exitCode = 1;
+
+                return;
+            }
+        }
 
         const code = runInstall(
             pm,
@@ -39,7 +62,7 @@ const install: Command = {
                 dev: (options.dev as boolean) || false,
                 filter: filters,
                 force: (options.force as boolean) || false,
-                frozenLockfile: (options.frozenLockfile as boolean) || false,
+                frozenLockfile: ciMode || (options.frozenLockfile as boolean) || false,
                 ignoreScripts: (options.ignoreScripts as boolean) || false,
                 lockfileOnly: (options.lockfileOnly as boolean) || false,
                 noOptional: (options.noOptional as boolean) || false,
@@ -62,6 +85,7 @@ const install: Command = {
         { alias: "P", defaultValue: false, description: "Skip devDependencies", name: "prod", type: Boolean },
         { alias: "D", defaultValue: false, description: "Install devDependencies only", name: "dev", type: Boolean },
         { defaultValue: false, description: "Use frozen lockfile (CI mode, maps to npm ci)", name: "frozen-lockfile", type: Boolean },
+        { defaultValue: false, description: "Clean install: wipe node_modules then install with frozen lockfile", name: "ci", type: Boolean },
         { alias: "f", defaultValue: false, description: "Force reinstall all dependencies", name: "force", type: Boolean },
         { defaultValue: false, description: "Skip lifecycle scripts", name: "ignore-scripts", type: Boolean },
         { defaultValue: false, description: "Update lockfile without installing", name: "lockfile-only", type: Boolean },

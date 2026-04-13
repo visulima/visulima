@@ -134,6 +134,13 @@ interface SortPackageJsonOptions {
 }
 
 interface NativeBindings {
+    /**
+     * ABI compatibility version exported from the Rust binding. The TypeScript
+     * loader compares this against {@link EXPECTED_NATIVE_BINDING_VERSION} and
+     * rejects mismatched addons so a stale `.node` file from before a
+     * signature change is not used silently.
+     */
+    NATIVE_BINDING_VERSION: number;
     cleanWorkspace: (root: string, removeLockfile: boolean) => CleanResult;
     detectPackageManager: (cwd: string) => DetectedPackageManager;
     execPmCommand: (bin: string, args: string[], cwd: string) => ExecResult;
@@ -143,7 +150,7 @@ interface NativeBindings {
     resolveDlx: (pm: string, version: string, options: DlxOptions) => ResolvedCommand;
     resolveExec: (pm: string, version: string, options: ExecOptions) => ResolvedCommand;
     resolveInstall: (pm: string, version: string, options: InstallOptions) => ResolvedCommand;
-    resolveLink: (pm: string, target: string | null) => ResolvedCommand;
+    resolveLink: (pm: string, version: string, target: string | null) => ResolvedCommand;
     resolveOutdated: (pm: string, version: string, options: OutdatedOptions) => ResolvedCommand;
     resolvePmCommand: (pm: string, version: string, subcommand: string, extraArgs: string[]) => ResolvedCommand;
     resolveRemove: (pm: string, version: string, options: RemoveOptions) => ResolvedCommand;
@@ -153,6 +160,13 @@ interface NativeBindings {
     sortPackageJsonStringWithOptions: (contents: string, options: SortPackageJsonOptions) => string;
     whichBin: (name: string) => string | null;
 }
+
+/**
+ * Expected ABI version. Must match `NATIVE_BINDING_VERSION` in
+ * `native/src/lib.rs`. Bumped whenever a `#[napi]` function signature
+ * changes so stale addons are rejected at load time.
+ */
+const EXPECTED_NATIVE_BINDING_VERSION = 1;
 
 let nativeBindings: NativeBindings | undefined;
 let loadAttempted = false;
@@ -175,8 +189,17 @@ const loadNativeBindings = (): NativeBindings | undefined => {
     try {
         const loaded = esmRequire("../index.js") as NativeBindings;
 
-        // Validate that the loaded binding has the expected API surface.
-        if (typeof loaded.detectPackageManager === "function" && typeof loaded.execPmCommand === "function") {
+        // Validate that the loaded binding has the expected API surface AND
+        // an ABI version matching what this TS code was built against.
+        // Presence-only checks cannot detect signature changes (e.g. a stale
+        // .node file with the pre-v11 2-arg resolveLink would pass a bare
+        // `typeof === "function"` check and then silently misinterpret args).
+        if (
+            typeof loaded.detectPackageManager === "function"
+            && typeof loaded.execPmCommand === "function"
+            && typeof loaded.resolveLink === "function"
+            && loaded.NATIVE_BINDING_VERSION === EXPECTED_NATIVE_BINDING_VERSION
+        ) {
             nativeBindings = loaded;
         }
     } catch {
