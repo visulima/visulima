@@ -107,6 +107,8 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "ajv": "catalog:dev",
+        "ajv-formats": "catalog:dev",
         "@eslint-react/eslint-plugin": "3.0.0",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",

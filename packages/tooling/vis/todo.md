@@ -60,14 +60,21 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 - `buildProjectGraph()` — dependency edges with type (static/dev/peer)
 - `lockfile-hasher.ts` in task-runner — parses pnpm/npm/yarn lockfiles and extracts resolved versions
 - `resolveFocusProjects()` in `docker.ts` — transitive closure computation
+- **Groundwork landed on `claude/review-todo-sbom-Jo1UL`** (commits `953d254`, `3be5462`):
+  - Hand-written TS types in `src/sbom/types.ts` covering the subset we emit (`CycloneDxBom`, `Component`, `Metadata`, `Dependency`, `Hash`, `License{Choice,Entry,ExpressionEntry}`, `ExternalReference`, `OrganizationalEntity`, `PostalAddress`, `Property`, `ToolsAggregate`, `Lifecycle`)
+  - Vendored CycloneDX 1.6 schemas under `__tests__/sbom/schemas/` (tag `1.6.1`, bom + spdx + jsf sub-schemas, Apache-2.0)
+  - Ajv-backed validator under `__tests__/sbom/validator.ts` exporting `validateBom` + `assertValidBom` — **test-only**, zero runtime footprint
+  - `ajv` + `ajv-formats` added as `devDependencies` (catalog:dev)
+  - `__tests__/sbom/schema-conformance.test.ts` — 6 cases covering valid fixtures, SPDX expression form, missing `bomFormat`, bad `component.type`, missing `dependency.ref`, empty BOMs
 
-**What's missing**:
-- CycloneDX JSON schema conformance (straightforward — it's well-documented)
-- PURL generation (`pkg:npm/${scope}/${name}@${version}`)
-- License SPDX identifier normalization (map common license strings to SPDX IDs)
-- Integrity hash extraction from lockfiles (sha512 from `integrity` field)
+**What's still missing**:
+- PURL generation — recommend [`packageurl-js`](https://www.npmjs.com/package/packageurl-js) (zero-dep, ~5 KB, official impl)
+- SPDX normalization — recommend [`spdx-expression-parse`](https://www.npmjs.com/package/spdx-expression-parse) + [`spdx-correct`](https://www.npmjs.com/package/spdx-correct) (npm CLI uses them)
+- Integrity hash extraction from lockfiles (extend `task-runner/src/lockfile-hasher.ts` parsers to capture `integrity: sha512-…` alongside name/version)
+- `src/sbom/cyclonedx.ts` — pure builder that consumes the workspace graph + lockfile data and produces a `CycloneDxBom`
+- `src/commands/sbom.ts` — Cerebro command wiring (`--focus`, `--format`, `--output`, `--include-dev`)
 
-**Estimated effort**: ~200-300 LOC for the core generator + ~50 LOC for the CLI command.
+**Estimated effort (remaining)**: ~150-200 LOC for the builder + ~100 LOC for the CLI + ~50 LOC lockfile integrity patch. Every BOM fixture in new tests should flow through `assertValidBom()` from the validator helper so schema drift is caught immediately.
 
 ---
 
