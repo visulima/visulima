@@ -17,17 +17,16 @@
  *    outside `[A-Za-z0-9._~-]`).
  */
 
-/** Percent-encode the subset of ASCII we need for PURL segments. */
+/**
+ * Percent-encode the subset of ASCII we need for PURL segments. npm
+ * package names and version strings are ASCII-only per the registry
+ * spec, so we never need the multi-byte UTF-8 path.
+ */
 const encodeSegment = (input: string): string =>
     input.replaceAll(/[^A-Za-z0-9._~-]/g, (char) => {
         const codePoint = char.codePointAt(0) ?? 0;
 
-        if (codePoint < 0x80) {
-            return `%${codePoint.toString(16).toUpperCase().padStart(2, "0")}`;
-        }
-
-        // Multi-byte → UTF-8 → percent-encoded bytes.
-        return encodeURIComponent(char);
+        return `%${codePoint.toString(16).toUpperCase().padStart(2, "0")}`;
     });
 
 /**

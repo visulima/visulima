@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 
+import { readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 import type { XmlElement } from "jstoxml";
@@ -14,32 +14,12 @@ import { toNpmPurl } from "./purl";
 import type { Component, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
 
 /**
- * CycloneDX 1.6 BOM builder.
- *
- * This module is the bridge between vis' workspace graph (projects +
- * their inter-dependencies) and the lockfile-level dependency closure
- * parsed in `./lockfile.ts`. The output is a fully-validated
- * `CycloneDxBom` document that round-trips through
- * `__tests__/sbom/validator.ts` without errors.
- *
- * Responsibilities:
- *
- * 1. Walk each workspace project, read its `package.json`, and emit
- *    one `Component { type: "library"|"application", scope, purl, … }`.
- * 2. Walk every lockfile entry (transitively from the root) and emit
- *    one library `Component` per `name@version` pair.
- * 3. Build a `dependencies[]` array that mirrors the workspace's
- *    project-to-project edges. (Registry-to-registry edges are not
- *    captured — the lockfile is the source of truth for those at scan
- *    time, and duplicating them here would bloat the BOM considerably.)
- * 4. Stamp a unique `serialNumber` and ISO-8601 `timestamp` onto
- *    `metadata`, plus identify vis itself as the generator tool.
+ * CycloneDX 1.6 BOM builder — bridges vis' workspace graph and the
+ * lockfile closure parsed in `./lockfile.ts`. Output is validated by
+ * `__tests__/sbom/validator.ts`.
  */
 
-/**
- * Subset of `package.json` the builder consumes. Intentionally narrow
- * so `readPackageJson` stays a simple filesystem read + JSON.parse.
- */
+/** Subset of `package.json` the builder consumes. */
 interface BuilderPackageJson extends RawLicenseInput {
     author?: string | { email?: string; name?: string; url?: string };
     bugs?: string | { url?: string };
@@ -83,7 +63,7 @@ const GENERATOR_NAME = "@visulima/vis";
 
 const readPackageJson = (path: string): BuilderPackageJson | undefined => {
     try {
-        return JSON.parse(readFileSync(path, "utf8")) as BuilderPackageJson;
+        return readJsonSync(path) as BuilderPackageJson;
     } catch {
         return undefined;
     }
@@ -182,9 +162,12 @@ const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson 
 };
 
 /**
- * Builds the BOM. Pure function: all I/O is performed through paths
- * derived from `workspaceRoot`, so tests point it at a temporary
- * directory and inspect the result.
+ * Builds the BOM from workspace + lockfile data. Pure function — all
+ * I/O is relative to `workspaceRoot` so tests point it at a temp dir.
+ *
+ * v1 limitation: registry components cover **direct** deps of in-scope
+ * projects only. Transitive lockfile-only deps require walking the
+ * lockfile-internal graph, deferred to a future revision.
  */
 export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const {
@@ -198,14 +181,23 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         workspaceRoot,
     } = options;
 
-    // ── 1. Determine the project set ────────────────────────────────
     const projectNames = focus && focus.length > 0
         ? [...resolveFocusProjects(focus, projectGraph)].sort()
         : Object.keys(workspace.projects).sort();
 
     const inScope = new Set(projectNames);
 
-    // ── 2. Emit a component per workspace project ───────────────────
+    // Read each project's package.json exactly once.
+    const projectPackages = new Map<string, BuilderPackageJson | undefined>();
+
+    for (const name of projectNames) {
+        const projectConfig = workspace.projects[name];
+
+        if (projectConfig) {
+            projectPackages.set(name, readPackageJson(join(workspaceRoot, projectConfig.root, "package.json")));
+        }
+    }
+
     const projectComponents: Component[] = [];
     const projectBomRefs = new Map<string, string>();
 
@@ -216,7 +208,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             continue;
         }
 
-        const pkg = readPackageJson(join(workspaceRoot, projectConfig.root, "package.json"));
+        const pkg = projectPackages.get(name);
         const version = pkg?.version ?? "0.0.0";
         const bomRef = toNpmPurl(name, version);
 
@@ -235,15 +227,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         projectComponents.push(component);
     }
 
-    // ── 3. Collect external (registry) dependencies from lockfile ───
     const lockfile = readLockfilePackages(workspaceRoot);
-
-    /**
-     * Lookup table of `name → resolved version` for every package in
-     * the lockfile. Used for two things: deciding which lockfile
-     * entries become components (step 4), and resolving project →
-     * registry edges (step 5).
-     */
     const registryVersionByName = new Map<string, string>();
 
     if (lockfile) {
@@ -254,23 +238,11 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
     }
 
-    /**
-     * Union of every registry package reachable from the in-scope
-     * projects. `includeDev` flag drives the `--include-dev` filter:
-     * only packages listed in `dependencies` / `peerDependencies` /
-     * `optionalDependencies` arrive in production mode.
-     */
     const reachableRegistryDeps = new Set<string>();
     const directDepEdges = new Map<string, Set<string>>();
 
     for (const name of projectNames) {
-        const projectConfig = workspace.projects[name];
-
-        if (!projectConfig) {
-            continue;
-        }
-
-        const pkg = readPackageJson(join(workspaceRoot, projectConfig.root, "package.json"));
+        const pkg = projectPackages.get(name);
 
         if (!pkg) {
             continue;
@@ -290,7 +262,6 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             }
 
             for (const depName of Object.keys(depMap)) {
-                // Workspace-internal dependency → link to the project component.
                 if (inScope.has(depName)) {
                     const ref = projectBomRefs.get(depName);
 
@@ -314,39 +285,18 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         directDepEdges.set(name, edges);
     }
 
-    // ── 4. Emit a component per resolved lockfile entry ────────────
-    //
-    // We emit one library `Component` per lockfile entry whose name
-    // appears in the in-scope projects' direct dependency lists.
-    // `--include-dev` controls whether `devDependencies` is one of
-    // those lists.
-    //
-    // **Caveat**: this is a v1 implementation that captures **direct**
-    // registry dependencies only — transitive deps that live in the
-    // lockfile but aren't named in any workspace `package.json` are
-    // not included. A future revision will walk the lockfile-internal
-    // dependency graph to capture the full closure; until then the
-    // SBOM is conservative (smaller than reality).
     const registryComponents: Component[] = [];
 
     if (lockfile) {
         const matched: ResolvedPackage[] = [];
 
         for (const pkg of lockfile.packages.values()) {
-            if (!reachableRegistryDeps.has(pkg.name)) {
-                continue;
+            if (reachableRegistryDeps.has(pkg.name)) {
+                matched.push(pkg);
             }
-
-            matched.push(pkg);
         }
 
-        matched.sort((a, b) => {
-            if (a.name !== b.name) {
-                return a.name.localeCompare(b.name);
-            }
-
-            return a.version.localeCompare(b.version);
-        });
+        matched.sort((a, b) => (a.name === b.name ? a.version.localeCompare(b.version) : a.name.localeCompare(b.name)));
 
         for (const pkg of matched) {
             const purl = toNpmPurl(pkg.name, pkg.version);
@@ -367,7 +317,6 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
     }
 
-    // ── 5. Build dependency graph edges ────────────────────────────
     const dependencies: Dependency[] = [];
 
     for (const [name, edges] of directDepEdges) {
@@ -384,14 +333,11 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 
     dependencies.sort((a, b) => a.ref.localeCompare(b.ref));
 
-    // ── 6. Metadata ────────────────────────────────────────────────
     const rootPkg = readPackageJson(join(workspaceRoot, "package.json"));
 
-    const metadataComponent: Component | undefined = (() => {
-        // If the user focused on exactly one project, use it as the metadata component.
+    const metadataComponent: Component = (() => {
         if (focus && focus.length === 1) {
-            const focusName = focus[0] as string;
-            const match = projectComponents.find((component) => component.name === focusName);
+            const match = projectComponents.find((component) => component.name === focus[0]);
 
             if (match) {
                 return {
@@ -421,16 +367,15 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         return component;
     })();
 
-    // Per CycloneDX 1.6: every `bom-ref` must be unique within the BOM.
-    // When `metadata.component` mirrors a workspace project (focus mode),
-    // strip that project from `components[]` so we don't emit two
-    // entries with the same `bom-ref`.
-    const metadataRef = metadataComponent?.["bom-ref"];
+    // CycloneDX 1.6 requires unique `bom-ref`s. If the metadata component
+    // mirrors a workspace project (focus mode), drop that project from
+    // components[] to avoid a duplicate.
+    const metadataRef = metadataComponent["bom-ref"];
     const filteredProjectComponents = metadataRef
         ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef)
         : projectComponents;
 
-    const bom: CycloneDxBom = {
+    return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
         components: [...filteredProjectComponents, ...registryComponents],
@@ -453,8 +398,6 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         specVersion: CYCLONEDX_SPEC_VERSION,
         version: 1,
     };
-
-    return bom;
 };
 
 /**

@@ -70,6 +70,21 @@ const SPDX_ALIASES: Record<string, string> = {
     "public domain": "Unlicense",
 };
 
+/** Pre-computed lowercase → canonical map so `normalizeSpdxId` is O(1). */
+const LOWERCASE_SPDX_LOOKUP: Map<string, string> = (() => {
+    const map = new Map<string, string>();
+
+    for (const id of KNOWN_SPDX_IDS) {
+        map.set(id.toLowerCase(), id);
+    }
+
+    for (const [alias, canonical] of Object.entries(SPDX_ALIASES)) {
+        map.set(alias, canonical);
+    }
+
+    return map;
+})();
+
 /**
  * Case-insensitively resolves a raw licence string to its canonical
  * SPDX ID, or `undefined` if the input doesn't match anything we know
@@ -86,15 +101,7 @@ export const normalizeSpdxId = (raw: string): string | undefined => {
         return trimmed;
     }
 
-    const lowered = trimmed.toLowerCase();
-
-    for (const id of KNOWN_SPDX_IDS) {
-        if (id.toLowerCase() === lowered) {
-            return id;
-        }
-    }
-
-    return SPDX_ALIASES[lowered];
+    return LOWERCASE_SPDX_LOOKUP.get(trimmed.toLowerCase());
 };
 
 /** Shape we accept from raw `package.json` metadata. */

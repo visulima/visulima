@@ -7,6 +7,12 @@ import { note, success } from "../output";
 import { buildCycloneDxBom, serializeBomToXml } from "../sbom/cyclonedx";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
+type SbomFormat = "json" | "xml";
+
+const SBOM_FORMATS: readonly SbomFormat[] = ["json", "xml"];
+
+const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as readonly string[]).includes(value);
+
 /**
  * `vis sbom` — CycloneDX 1.6 Software Bill of Materials generator.
  *
@@ -40,8 +46,8 @@ const sbom: Command = {
 
         const format = ((options.format as string | undefined) ?? "json").toLowerCase();
 
-        if (format !== "json" && format !== "xml") {
-            throw new Error(`Unknown --format: "${format}". Expected "json" or "xml".`);
+        if (!isSbomFormat(format)) {
+            throw new Error(`Unknown --format: "${format}". Expected one of: ${SBOM_FORMATS.join(", ")}.`);
         }
 
         const bom = buildCycloneDxBom({
