@@ -36,15 +36,57 @@ const SCHEMAS_DIR = resolve(__dirname, "../__tests__/sbom/schemas");
 /** Default CycloneDX spec tag when no argument is provided. */
 const DEFAULT_TAG = "1.6.1";
 
-/** Major-minor portion of the tag (e.g. `1.6.1` → `1.6`) used in the bom filename. */
-const majorMinor = (tag: string): string => {
-    const parts = tag.split(".");
+/** Accepts `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`, each component a non-empty run of digits. */
+const TAG_PATTERN = /^(\d+)\.(\d+)(?:\.(\d+))?$/;
 
-    if (parts.length < 2) {
-        throw new Error(`Unexpected tag format "${tag}" — expected MAJOR.MINOR or MAJOR.MINOR.PATCH`);
+/**
+ * Parses a tag string and returns the `MAJOR.MINOR` portion used in the bom
+ * schema filename. Throws a clear error if the tag doesn't match the
+ * expected numeric pattern — keeps user-supplied tags from flowing into
+ * filesystem paths or URL construction without validation.
+ */
+const majorMinor = (tag: string): string => {
+    const match = TAG_PATTERN.exec(tag);
+
+    if (!match) {
+        throw new Error(`Invalid tag "${tag}" — expected MAJOR.MINOR or MAJOR.MINOR.PATCH with numeric components (e.g. 1.6 or 1.6.1)`);
     }
 
-    return `${parts[0]}.${parts[1]}`;
+    return `${match[1]}.${match[2]}`;
+};
+
+/**
+ * Resolves the spec tag from `process.argv`, accepting either a bare
+ * positional argument or a `--tag <value>` / `--tag=<value>` flag. Unknown
+ * flags are rejected with a usage hint.
+ */
+const parseTagArg = (argv: readonly string[]): string => {
+    let tag: string | undefined;
+
+    for (let index = 0; index < argv.length; index += 1) {
+        const arg = argv[index]!;
+
+        if (arg === "--tag") {
+            tag = argv[index + 1];
+            index += 1;
+        } else if (arg.startsWith("--tag=")) {
+            tag = arg.slice("--tag=".length);
+        } else if (arg.startsWith("--")) {
+            throw new Error(`Unknown flag "${arg}". Usage: update-cyclonedx-schemas [--tag <value> | <tag>]`);
+        } else if (tag === undefined) {
+            tag = arg;
+        } else {
+            throw new Error(`Unexpected extra argument "${arg}". Usage: update-cyclonedx-schemas [--tag <value> | <tag>]`);
+        }
+    }
+
+    const resolved = tag ?? DEFAULT_TAG;
+
+    // Run the resolved tag through the numeric validator once so downstream
+    // string interpolation into URLs and filenames is safe.
+    majorMinor(resolved);
+
+    return resolved;
 };
 
 const baseUrl = (tag: string): string => `https://raw.githubusercontent.com/CycloneDX/specification/${tag}`;
@@ -90,7 +132,7 @@ const validateJson = (filename: string, body: string): void => {
 };
 
 const main = async (): Promise<void> => {
-    const tag = process.argv[2] ?? DEFAULT_TAG;
+    const tag = parseTagArg(process.argv.slice(2));
 
     process.stdout.write(`Fetching CycloneDX spec tag ${tag}…\n`);
 
