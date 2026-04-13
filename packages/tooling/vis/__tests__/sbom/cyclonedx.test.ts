@@ -1,5 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -34,7 +33,7 @@ const buildFixture = (
 ): { projectGraph: ProjectGraph; workspace: WorkspaceConfiguration; workspaceRoot: string } => {
     const workspaceRoot = join(tmpDir, "repo");
 
-    mkdirSync(workspaceRoot, { recursive: true });
+    ensureDirSync(workspaceRoot);
     writeFileSync(
         join(workspaceRoot, "package.json"),
         JSON.stringify({ name: input.rootName ?? "root", version: input.rootVersion ?? "1.0.0" }),
@@ -52,7 +51,7 @@ const buildFixture = (
         const projectRoot = join("packages", project.name);
         const absoluteRoot = join(workspaceRoot, projectRoot);
 
-        mkdirSync(absoluteRoot, { recursive: true });
+        ensureDirSync(absoluteRoot);
         writeFileSync(
             join(absoluteRoot, "package.json"),
             JSON.stringify({
@@ -467,7 +466,7 @@ packages:
         // distinctive licence so the test can prove the SBOM picks it up.
         const lodashDir = join(workspaceRoot, "node_modules", ".pnpm", "lodash@4.17.21", "node_modules", "lodash");
 
-        mkdirSync(lodashDir, { recursive: true });
+        ensureDirSync(lodashDir);
         writeFileSync(
             join(lodashDir, "package.json"),
             JSON.stringify({

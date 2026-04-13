@@ -1,5 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -29,7 +28,7 @@ describe(readLockfilePackages, () => {
 
         const workspaceRoot = join(tmpDir, "repo");
 
-        mkdirSync(workspaceRoot, { recursive: true });
+        ensureDirSync(workspaceRoot);
         writeFileSync(
             join(workspaceRoot, "pnpm-lock.yaml"),
             `packages:
@@ -54,7 +53,7 @@ describe(readLockfilePackages, () => {
 
         const workspaceRoot = join(tmpDir, "repo");
 
-        mkdirSync(workspaceRoot, { recursive: true });
+        ensureDirSync(workspaceRoot);
         writeFileSync(
             join(workspaceRoot, "pnpm-lock.yaml"),
             `packages:
@@ -73,7 +72,7 @@ describe(readLockfilePackages, () => {
 
         const workspaceRoot = join(tmpDir, "empty");
 
-        mkdirSync(workspaceRoot, { recursive: true });
+        ensureDirSync(workspaceRoot);
 
         expect(readLockfilePackages(workspaceRoot)).toBeUndefined();
     });
@@ -84,7 +83,7 @@ describe(readLockfilePackages, () => {
         const ancestor = join(tmpDir, "ancestor");
         const workspaceRoot = join(ancestor, "inner");
 
-        mkdirSync(workspaceRoot, { recursive: true });
+        ensureDirSync(workspaceRoot);
         writeFileSync(
             join(ancestor, "pnpm-lock.yaml"),
             `packages:

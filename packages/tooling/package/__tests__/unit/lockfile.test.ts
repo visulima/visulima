@@ -1,7 +1,8 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
+import { ensureDirSync, readFileSync, removeSync, writeFileSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -536,7 +537,7 @@ describe("parseLockFile / parseLockFileSync", () => {
     });
 
     afterEach(() => {
-        rmSync(temporaryDirectory, { force: true, recursive: true });
+        removeSync(temporaryDirectory);
     });
 
     it("should find and parse the nearest pnpm-lock.yaml", async () => {
@@ -598,7 +599,7 @@ describe("parseLockFile / parseLockFileSync", () => {
 
         const isolated = join(tmpdir(), `no-lockfile-${Date.now()}`);
 
-        mkdirSync(isolated, { recursive: true });
+        ensureDirSync(isolated);
 
         await expect(parseLockFile(isolated)).rejects.toThrow(/Could not find a supported lock file/);
     });

@@ -1,5 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -13,7 +12,7 @@ import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-hel
 const writePackageJson = (workspaceRoot: string, relativeDir: string, pkg: Record<string, unknown>): void => {
     const dir = join(workspaceRoot, relativeDir);
 
-    mkdirSync(dir, { recursive: true });
+    ensureDirSync(dir);
     writeFileSync(join(dir, "package.json"), JSON.stringify(pkg));
 };
 
