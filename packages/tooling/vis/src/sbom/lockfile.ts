@@ -47,6 +47,7 @@ const LOCKFILE_CANDIDATES: readonly { file: string; type: LockFileType }[] = [
     { file: "pnpm-lock.yaml", type: "pnpm" },
     { file: "package-lock.json", type: "npm" },
     { file: "yarn.lock", type: "yarn" },
+    { file: "bun.lock", type: "bun" },
 ];
 
 /**

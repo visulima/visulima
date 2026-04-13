@@ -27,8 +27,8 @@ import { readFile } from "node:fs/promises";
 
 import { findUp, findUpSync } from "@visulima/fs";
 
-/** Lockfiles the parser recognises. Binary `bun.lockb` is unsupported. */
-export type LockFileType = "npm" | "pnpm" | "yarn";
+/** Lockfiles the parser recognises. Legacy binary `bun.lockb` is unsupported. */
+export type LockFileType = "bun" | "npm" | "pnpm" | "yarn";
 
 /** SRI algorithms the parser can decode into hex. */
 export type LockFileIntegrityAlgorithm = "sha256" | "sha384" | "sha512";
@@ -94,6 +94,23 @@ export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined =
     }
 };
 
+/**
+ * Pushes an entry into `result` unless `seen` already contains its
+ * `name@version` key. Returns `true` if pushed.
+ */
+const pushUniqueEntry = (result: LockFileEntry[], seen: Set<string>, entry: LockFileEntry): boolean => {
+    const key = `${entry.name}@${entry.version}`;
+
+    if (seen.has(key)) {
+        return false;
+    }
+
+    seen.add(key);
+    result.push(entry);
+
+    return true;
+};
+
 /** Parses `package-lock.json` v2/v3. */
 export const parseNpmLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
@@ -127,11 +144,9 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
 
         const name = entry.name ?? match[1];
 
-        if (name.startsWith(".") || seen.has(name)) {
+        if (name.startsWith(".")) {
             continue;
         }
-
-        seen.add(name);
 
         const lockEntry: LockFileEntry = { name, version: entry.version };
 
@@ -143,7 +158,7 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        result.push(lockEntry);
+        pushUniqueEntry(result, seen, lockEntry);
     }
 
     return result;
@@ -211,11 +226,9 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
     while ((match = entryRegex.exec(packagesBody) ?? undefined) !== undefined) {
         const keyValue = splitPnpmPackageKey(match[1] as string);
 
-        if (!keyValue || seen.has(keyValue.name)) {
+        if (!keyValue) {
             continue;
         }
-
-        seen.add(keyValue.name);
 
         const body = match[2] as string;
         // eslint-disable-next-line sonarjs/slow-regex
@@ -231,7 +244,7 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        result.push(lockEntry);
+        pushUniqueEntry(result, seen, lockEntry);
     }
 
     return result;
@@ -252,7 +265,7 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
     while ((match = entryRegex.exec(content) ?? undefined) !== undefined) {
         const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
 
-        if (!name || seen.has(name)) {
+        if (!name) {
             continue;
         }
 
@@ -262,8 +275,6 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
         if (!versionMatch?.[1]) {
             continue;
         }
-
-        seen.add(name);
 
         const lockEntry: LockFileEntry = { name, version: versionMatch[1].trim() };
         const integrityMatch = /^\s+integrity[\s:]+"?([^"\s]+)"?/m.exec(body);
@@ -276,7 +287,84 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        result.push(lockEntry);
+        pushUniqueEntry(result, seen, lockEntry);
+    }
+
+    return result;
+};
+
+const TRAILING_COMMA_REGEX = /,(?=\s*[}\]])/g;
+
+interface BunLockPackageTuple extends Array<unknown> {
+    /** `name@version` string — always first. */
+    0: string;
+    /** Optional registry URL or metadata depending on the entry shape. */
+    1?: unknown;
+    /** Metadata object (dependencies, peer, etc.) for workspace-local refs. */
+    2?: unknown;
+    /** SRI integrity string — absent for workspace / link entries. */
+    3?: string;
+}
+
+/**
+ * Parses `bun.lock` (Bun v1.1+, JSON-ish with trailing commas). The
+ * binary `bun.lockb` format is not supported.
+ *
+ * Attribution: format + tuple layout verified against lockparse
+ * (https://github.com/43081j/lockparse, MIT).
+ */
+export const parseBunLockFile = (content: string): LockFileEntry[] => {
+    const result: LockFileEntry[] = [];
+    const seen = new Set<string>();
+
+    let parsed: {
+        packages?: Record<string, BunLockPackageTuple>;
+        workspaces?: Record<string, unknown>;
+    };
+
+    try {
+        parsed = JSON.parse(content.replaceAll(TRAILING_COMMA_REGEX, "")) as typeof parsed;
+    } catch {
+        return result;
+    }
+
+    if (!parsed.packages) {
+        return result;
+    }
+
+    for (const tuple of Object.values(parsed.packages)) {
+        const versionKey = tuple[0];
+
+        if (typeof versionKey !== "string") {
+            continue;
+        }
+
+        // `name@version` — skip the leading `@` of scoped names.
+        const atIndex = versionKey.indexOf("@", 1);
+
+        if (atIndex <= 0) {
+            continue;
+        }
+
+        const name = versionKey.slice(0, atIndex);
+        const version = versionKey.slice(atIndex + 1);
+
+        if (!name || !version || version.startsWith("workspace:") || version.startsWith("link:") || version.startsWith("file:")) {
+            continue;
+        }
+
+        const lockEntry: LockFileEntry = { name, version };
+        const rawIntegrity = tuple[3];
+
+        if (typeof rawIntegrity === "string" && rawIntegrity.length > 0) {
+            const integrity = decodeSriIntegrity(rawIntegrity);
+
+            if (integrity) {
+                lockEntry.integrity = integrity;
+            }
+        }
+
+        pushUniqueEntry(result, seen, lockEntry);
     }
 
     return result;
@@ -295,6 +383,10 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
         return "yarn";
     }
 
+    if (path.endsWith("bun.lock")) {
+        return "bun";
+    }
+
     return undefined;
 };
 
@@ -305,6 +397,9 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
  */
 export const parseLockFileContent = (content: string, type: LockFileType): LockFileEntry[] => {
     switch (type) {
+        case "bun": {
+            return parseBunLockFile(content);
+        }
         case "npm": {
             return parseNpmLockFile(content);
         }
@@ -320,7 +415,7 @@ export const parseLockFileContent = (content: string, type: LockFileType): LockF
     }
 };
 
-const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock"];
+const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "bun.lock"];
 
 /**
  * Walks up from `cwd`, locates the nearest supported lockfile, reads

@@ -7,6 +7,7 @@ import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../docker";
+import { readInstalledPackageMetadata } from "./installed-package";
 import { extractLicenseChoice, type RawLicenseInput } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
@@ -312,6 +313,12 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             if (pkg.hash) {
                 component.hashes = [pkg.hash satisfies Hash];
             }
+
+            // Resolve licence + author + references against the *installed
+            // copy* of this specific name@version, not against a single
+            // hoisted or top-level package.json. Different versions of the
+            // same package can ship different licences.
+            decoratePackageComponent(component, readInstalledPackageMetadata(workspaceRoot, pkg.name, pkg.version));
 
             registryComponents.push(component);
         }

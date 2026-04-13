@@ -95,7 +95,6 @@
         "giget": "^3.2.0",
         "jiti": "catalog:dev",
         "jstoxml": "catalog:prod",
-        "lockparse": "^0.5.0",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",

@@ -8,6 +8,7 @@ export type {
 } from "./lockfile";
 export {
     decodeSriIntegrity,
+    parseBunLockFile,
     parseLockFile,
     parseLockFileContent,
     parseLockFileSync,
