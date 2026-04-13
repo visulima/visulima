@@ -11,6 +11,7 @@ part of the published package (`dist/` nor the `files` list).
 | `bom-1.6.schema.json` | CycloneDX 1.6 JSON Schema (Draft-07). Main validation target. |
 | `spdx.schema.json` | SPDX licence-id enum referenced by `bom-1.6.schema.json` via `$ref`. |
 | `jsf-0.82.schema.json` | JSON Signature Format 0.82 referenced by `bom-1.6.schema.json` via `$ref`. Only needed if signed BOMs are validated. |
+| `LICENSE` | Verbatim copy of the upstream Apache-2.0 licence text (§4.1 of the Apache licence requires redistributors to carry the licence). |
 
 ## Source and version
 
@@ -20,14 +21,41 @@ part of the published package (`dist/` nor the `files` list).
   - <https://raw.githubusercontent.com/CycloneDX/specification/1.6.1/schema/bom-1.6.schema.json>
   - <https://raw.githubusercontent.com/CycloneDX/specification/1.6.1/schema/spdx.schema.json>
   - <https://raw.githubusercontent.com/CycloneDX/specification/1.6.1/schema/jsf-0.82.schema.json>
+  - <https://raw.githubusercontent.com/CycloneDX/specification/1.6.1/LICENSE>
 
-## Licence
+## Licence & attribution
 
-The CycloneDX specification is published by OWASP under the Apache-2.0 licence.
-The files above are redistributed unchanged under the same licence.
+The CycloneDX specification is published by OWASP under the **Apache-2.0**
+licence. The schema files themselves carry an upstream `$comment` field
+declaring this (e.g. `bom-1.6.schema.json`: *"CycloneDX JSON schema is
+published under the terms of the Apache License 2.0."*), which we preserve
+unchanged because we vendor the files verbatim.
+
+The full Apache-2.0 licence text is reproduced in `LICENSE` next to the
+schemas. There is no upstream `NOTICE` file as of tag `1.6.1`, so no
+separate attribution file is required.
+
+We do not modify the schemas; if that ever changes, Apache §4.2 requires
+adding prominent modification notices.
 
 ## Refreshing
 
-To pull newer copies, re-run the download commands above against a newer tag.
-Keep all three files in lock-step — the main schema uses `$ref` to resolve
-into `spdx.schema.json` and `jsf-0.82.schema.json` by relative filename.
+Run the bundled update script from the `vis` package root:
+
+```sh
+# refresh the currently vendored tag (1.6.1)
+pnpm tsx scripts/update-cyclonedx-schemas.ts
+
+# pin to a specific tag
+pnpm tsx scripts/update-cyclonedx-schemas.ts 1.6.1
+
+# bump to a newer spec version (filename changes with major.minor)
+pnpm tsx scripts/update-cyclonedx-schemas.ts 1.7
+```
+
+The script downloads the three schema files plus the LICENSE, validates
+each JSON file parses cleanly, and writes them into this directory.
+
+After running, update the **Tag** + **Direct URLs** section above to match
+and review `src/sbom/types.ts` for any new enum values or fields added by
+the spec.
