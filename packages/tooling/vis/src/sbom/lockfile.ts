@@ -19,8 +19,12 @@ export type { LockFileType };
 
 /** Resolved package in the shape the SBOM builder consumes. */
 export interface ResolvedPackage {
+    /** Declared runtime deps — `name → specifier` from the lockfile. */
+    dependencies?: Record<string, string>;
     hash?: Hash;
     name: string;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
     version: string;
 }
 
@@ -38,6 +42,18 @@ const toResolvedPackage = (entry: LockFileEntry): ResolvedPackage => {
             alg: SRI_TO_CYCLONEDX_ALG[entry.integrity.algorithm],
             content: entry.integrity.hex,
         };
+    }
+
+    if (entry.dependencies) {
+        resolved.dependencies = entry.dependencies;
+    }
+
+    if (entry.peerDependencies) {
+        resolved.peerDependencies = entry.peerDependencies;
+    }
+
+    if (entry.optionalDependencies) {
+        resolved.optionalDependencies = entry.optionalDependencies;
     }
 
     return resolved;

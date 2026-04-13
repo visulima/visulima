@@ -58,10 +58,17 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
   - `__tests__/sbom/purl.test.ts` — scoped/unscoped/lowercase/percent-encoding cases
   - `__tests__/sbom/license.test.ts` — SPDX normalization, expression detection, legacy object/array forms
 
-**Known v1 limitations** (deferred to v2):
-- Lockfile-internal dependency graph is not walked; the `components[]` list captures only registry packages that appear as **direct** dependencies of an in-scope workspace project. Transitive deps (a `lodash` pulled in by `express`) are not yet emitted as standalone components. Add lockfile graph walking when the registry coverage gap matters.
-- `scope: "excluded"` and `scope: "optional"` are not yet differentiated from `scope: "required"` on registry components.
+**Full-closure walk now lands** ✅:
+- Each parser in `@visulima/package` now also captures per-entry `dependencies` / `peerDependencies` / `optionalDependencies` (npm/pnpm/yarn/bun).
+- `src/sbom/resolve-specifier.ts` matches a `name + specifier` pair against the lockfile's `name → versions` index, preferring `semver.maxSatisfying` for ranges and exact-match for already-resolved specs (pnpm).
+- `buildCycloneDxBom` performs a BFS over the lockfile graph seeded from each in-scope project's direct deps. Transitive packages (e.g. a `body-parser` pulled in by `express`) now appear as standalone components, and registry-to-registry edges land in `dependencies[]`.
+- `--include-dev` filters transitively (dev-only sub-trees aren't walked when the flag is unset).
+- pnpm peer-disambiguated `.pnpm/foo@1.0.0_react@18.0.0/` install dirs are now discovered by the licence lookup (slow-path scan when the un-suffixed dir is absent).
+
+**Known limitations** (deferred):
+- `scope: "excluded"` and `scope: "optional"` are not yet differentiated from `scope: "required"` on registry components — every registry component is emitted as `"required"`. (Distinguishing `optional` would require tracking which seed map a transitive dep arrived through.)
 - Yarn Berry's XXH64 `checksum:` field is dropped (CycloneDX 1.6 only allows the algorithms in `HashAlgorithm`); only Yarn Classic's SRI `integrity` field flows through.
+- Yarn Berry per-entry dep maps aren't extracted (only the v1 layout is — Berry uses an array-of-strings form). The closure walk still includes Berry packages via the seed-then-walk loop, but registry-to-registry edges from Berry entries are absent.
 
 ---
 

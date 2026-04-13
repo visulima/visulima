@@ -41,10 +41,22 @@ export interface LockFileIntegrity {
 
 /** A single resolved package extracted from a lockfile. */
 export interface LockFileEntry {
+    /**
+     * Declared runtime dependencies — `name → specifier` map. Specifiers
+     * are whatever the lockfile recorded (often a range like `^1.0.0`
+     * for npm/yarn/bun, but pnpm stores already-resolved exact versions).
+     * Callers resolve the specifier against {@link LockFileEntry.version}
+     * values elsewhere in the lockfile when they need a concrete edge.
+     */
+    dependencies?: Record<string, string>;
     /** Decoded SRI digest, if the lockfile recorded one. */
     integrity?: LockFileIntegrity;
     /** Package name — `lodash` or `@scope/name`. */
     name: string;
+    /** Declared optional dependencies, same shape as `dependencies`. */
+    optionalDependencies?: Record<string, string>;
+    /** Declared peer dependencies, same shape as `dependencies`. */
+    peerDependencies?: Record<string, string>;
     /** Resolved exact version — e.g. `4.17.21`. */
     version: string;
 }
@@ -124,14 +136,32 @@ const pushUniqueEntry = (result: LockFileEntry[], seen: Set<string>, entry: Lock
     return true;
 };
 
+/** Shallow-copy `source` onto `target` under `field` iff `source` is non-empty. */
+const copyDepMap = (
+    target: LockFileEntry,
+    field: "dependencies" | "optionalDependencies" | "peerDependencies",
+    source: Record<string, string> | undefined,
+): void => {
+    if (source && Object.keys(source).length > 0) {
+        target[field] = { ...source };
+    }
+};
+
+interface NpmPackageManifest {
+    dependencies?: Record<string, string>;
+    integrity?: string;
+    name?: string;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    version?: string;
+}
+
 /** Parses `package-lock.json` v2/v3. */
 export const parseNpmLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
     const seen = new Set<string>();
 
-    let parsed: {
-        packages?: Record<string, { integrity?: string; name?: string; version?: string }>;
-    };
+    let parsed: { packages?: Record<string, NpmPackageManifest> };
 
     try {
         parsed = JSON.parse(content) as typeof parsed;
@@ -170,6 +200,10 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
                 lockEntry.integrity = integrity;
             }
         }
+
+        copyDepMap(lockEntry, "dependencies", entry.dependencies);
+        copyDepMap(lockEntry, "peerDependencies", entry.peerDependencies);
+        copyDepMap(lockEntry, "optionalDependencies", entry.optionalDependencies);
 
         pushUniqueEntry(result, seen, lockEntry);
     }
@@ -257,10 +291,64 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
+        copyDepMap(lockEntry, "dependencies", extractPnpmDependencyMap(body, "dependencies"));
+        copyDepMap(lockEntry, "peerDependencies", extractPnpmDependencyMap(body, "peerDependencies"));
+        copyDepMap(lockEntry, "optionalDependencies", extractPnpmDependencyMap(body, "optionalDependencies"));
+
         pushUniqueEntry(result, seen, lockEntry);
     }
 
     return result;
+};
+
+/**
+ * Extracts the `name → version` pairs from the named sub-section of
+ * a pnpm package body. Returns `undefined` if the body doesn't have
+ * the section.
+ */
+const extractPnpmDependencyMap = (
+    body: string,
+    section: "dependencies" | "optionalDependencies" | "peerDependencies",
+): Record<string, string> | undefined => {
+    // Package bodies are indented 4 spaces; each section header is at that
+    // depth, and its entries are indented 6 spaces. We match the header,
+    // capture the block that follows, and stop at the next section header
+    // or a line with less indentation.
+    const sectionRegex = new RegExp(`^ {4}${section}:\\s*\\n((?: {6,}[^\\n]*\\n?)+)`, "m");
+    const sectionMatch = sectionRegex.exec(body);
+
+    if (!sectionMatch?.[1]) {
+        return undefined;
+    }
+
+    const map: Record<string, string> = {};
+    // Entries: `      name: version` or `      '@scope/name': version`.
+    // Version can be a plain semver, a dist-tag reference, or carry a peer
+    // disambiguator like `1.2.3(peer@4.0.0)` — we keep the base version.
+    // eslint-disable-next-line sonarjs/slow-regex
+    const entryRegex = /^ {6}(['"]?[^\s:]+['"]?):\s*([^\n]+)/gm;
+    let match: RegExpExecArray | undefined;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((match = entryRegex.exec(sectionMatch[1]) ?? undefined) !== undefined) {
+        const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
+        let version = (match[2] as string).trim();
+
+        // Strip quoting and any peer disambiguator.
+        version = version.replace(/^['"]/, "").replace(/['"]$/, "");
+
+        const parenIndex = version.indexOf("(");
+
+        if (parenIndex > 0) {
+            version = version.slice(0, parenIndex).trim();
+        }
+
+        if (name && version) {
+            map[name] = version;
+        }
+    }
+
+    return Object.keys(map).length > 0 ? map : undefined;
 };
 
 /** Parses `yarn.lock` (Yarn Classic / v1 + Berry; Berry checksums are skipped). */
@@ -300,10 +388,59 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
+        copyDepMap(lockEntry, "dependencies", extractYarnDependencyMap(body, "dependencies"));
+        copyDepMap(lockEntry, "peerDependencies", extractYarnDependencyMap(body, "peerDependencies"));
+        copyDepMap(lockEntry, "optionalDependencies", extractYarnDependencyMap(body, "optionalDependencies"));
+
         pushUniqueEntry(result, seen, lockEntry);
     }
 
     return result;
+};
+
+/**
+ * Extracts a yarn entry's `dependencies` / `peerDependencies` /
+ * `optionalDependencies` sub-block. Yarn v1 lays them out as
+ *
+ * ```
+ *   dependencies:
+ *     "foo" "^1.0.0"
+ *     bar "^2.0.0"
+ * ```
+ *
+ * Yarn Berry uses `- "foo@npm:^1.0.0"` arrays — those aren't the
+ * classic shape, so we only cover the v1 form here. Berry lockfiles
+ * still surface in the top-level `packages[]` list via the entry
+ * regex; only the per-entry edge graph is partial.
+ */
+const extractYarnDependencyMap = (
+    body: string,
+    section: "dependencies" | "optionalDependencies" | "peerDependencies",
+): Record<string, string> | undefined => {
+    const sectionRegex = new RegExp(`^ {2}${section}:\\s*\\n((?: {4,}[^\\n]*\\n?)+)`, "m");
+    const sectionMatch = sectionRegex.exec(body);
+
+    if (!sectionMatch?.[1]) {
+        return undefined;
+    }
+
+    const map: Record<string, string> = {};
+    // `    "foo" "^1.0.0"` or `    foo "^1.0.0"`.
+    // eslint-disable-next-line sonarjs/slow-regex
+    const entryRegex = /^ {4}(['"]?[^\s:'"]+['"]?)\s+['"]([^'"\n]+)['"]/gm;
+    let match: RegExpExecArray | undefined;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((match = entryRegex.exec(sectionMatch[1]) ?? undefined) !== undefined) {
+        const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
+        const version = match[2] as string;
+
+        if (name && version) {
+            map[name] = version;
+        }
+    }
+
+    return Object.keys(map).length > 0 ? map : undefined;
 };
 
 const TRAILING_COMMA_REGEX = /,(?=\s*[}\]])/g;
@@ -375,6 +512,16 @@ export const parseBunLockFile = (content: string): LockFileEntry[] => {
             if (integrity) {
                 lockEntry.integrity = integrity;
             }
+        }
+
+        const metadata = tuple[2];
+
+        if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
+            const meta = metadata as Partial<Pick<LockFileEntry, "dependencies" | "optionalDependencies" | "peerDependencies">>;
+
+            copyDepMap(lockEntry, "dependencies", meta.dependencies);
+            copyDepMap(lockEntry, "peerDependencies", meta.peerDependencies);
+            copyDepMap(lockEntry, "optionalDependencies", meta.optionalDependencies);
         }
 
         pushUniqueEntry(result, seen, lockEntry);

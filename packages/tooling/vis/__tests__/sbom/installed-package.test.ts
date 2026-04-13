@@ -136,4 +136,21 @@ describe(readInstalledPackageMetadata, () => {
         expect(readInstalledPackageMetadata(tmpDir, "a/b/c", "1.0.0")).toBeUndefined();
         expect(readInstalledPackageMetadata(tmpDir, "foo\0bar", "1.0.0")).toBeUndefined();
     });
+
+    it("should find pnpm peer-disambiguated install dirs (foo@1.0.0_react@18.0.0)", () => {
+        expect.assertions(2);
+
+        // Only the peer-suffixed dir exists — the un-suffixed path is absent,
+        // forcing the slow-path `.pnpm` scan.
+        writePackageJson(
+            tmpDir,
+            "node_modules/.pnpm/some-plugin@1.0.0_react@18.0.0/node_modules/some-plugin",
+            { license: "BSD-3-Clause", name: "some-plugin", version: "1.0.0" },
+        );
+
+        const result = readInstalledPackageMetadata(tmpDir, "some-plugin", "1.0.0");
+
+        expect(result?.version).toBe("1.0.0");
+        expect(result?.license).toBe("BSD-3-Clause");
+    });
 });

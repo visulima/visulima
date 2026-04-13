@@ -12,6 +12,8 @@ import { extractLicenseChoice, type RawLicenseInput } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
 import { toNpmPurl } from "./purl";
+import type { VersionIndex } from "./resolve-specifier";
+import { resolveSpecifier } from "./resolve-specifier";
 import type { Component, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
 
 /**
@@ -229,17 +231,30 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     }
 
     const lockfile = readLockfilePackages(workspaceRoot);
-    const registryVersionByName = new Map<string, string>();
+
+    // Build a lockfile-wide index so the transitive walk can look up
+    // resolved `name@version` entries by their name and (for edge
+    // building) resolve specifiers against the set of known versions.
+    const lockfileByRef = new Map<string, ResolvedPackage>();
+    const versionIndex: VersionIndex = new Map();
 
     if (lockfile) {
         for (const pkg of lockfile.packages.values()) {
-            if (!registryVersionByName.has(pkg.name)) {
-                registryVersionByName.set(pkg.name, pkg.version);
+            lockfileByRef.set(`${pkg.name}@${pkg.version}`, pkg);
+
+            let versions = versionIndex.get(pkg.name);
+
+            if (!versions) {
+                versions = new Set();
+                versionIndex.set(pkg.name, versions);
             }
+
+            versions.add(pkg.version);
         }
     }
 
-    const reachableRegistryDeps = new Set<string>();
+    /** Seed the walk with each in-scope workspace project's direct deps. */
+    const seedQueue: string[] = [];
     const directDepEdges = new Map<string, Set<string>>();
 
     for (const name of projectNames) {
@@ -262,7 +277,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
                 continue;
             }
 
-            for (const depName of Object.keys(depMap)) {
+            for (const [depName, specifier] of Object.entries(depMap)) {
                 if (inScope.has(depName)) {
                     const ref = projectBomRefs.get(depName);
 
@@ -273,12 +288,11 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
                     continue;
                 }
 
-                reachableRegistryDeps.add(depName);
-
-                const resolvedVersion = registryVersionByName.get(depName);
+                const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
 
                 if (resolvedVersion) {
                     edges.add(toNpmPurl(depName, resolvedVersion));
+                    seedQueue.push(`${depName}@${resolvedVersion}`);
                 }
             }
         }
@@ -286,46 +300,102 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         directDepEdges.set(name, edges);
     }
 
+    // BFS over the lockfile graph. We collect every `name@version` that
+    // is reachable from the workspace's (prod + optional + peer, plus
+    // dev when --include-dev is set) seed set. Dev-only *transitive*
+    // packages are correctly excluded because we never descend into
+    // their edges.
+    const reachableRegistryRefs = new Set<string>();
+    const registryDepEdges = new Map<string, Set<string>>();
+
+    while (seedQueue.length > 0) {
+        const ref = seedQueue.pop()!;
+
+        if (reachableRegistryRefs.has(ref)) {
+            continue;
+        }
+
+        reachableRegistryRefs.add(ref);
+
+        const entry = lockfileByRef.get(ref);
+
+        if (!entry) {
+            // Ref was resolvable but the underlying lockfile entry isn't there
+            // (broken / partial lockfile). Keep the ref so dependencies[] can
+            // still point at it; nothing further to walk.
+            continue;
+        }
+
+        const outgoing = new Set<string>();
+        // Peer deps may be provided by a sibling; they still belong in the
+        // closure because the package expects them to be installed.
+        const outgoingMaps = [entry.dependencies, entry.peerDependencies, entry.optionalDependencies];
+
+        for (const depMap of outgoingMaps) {
+            if (!depMap) {
+                continue;
+            }
+
+            for (const [depName, specifier] of Object.entries(depMap)) {
+                const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
+
+                if (!resolvedVersion) {
+                    continue;
+                }
+
+                outgoing.add(toNpmPurl(depName, resolvedVersion));
+
+                const depRef = `${depName}@${resolvedVersion}`;
+
+                if (!reachableRegistryRefs.has(depRef)) {
+                    seedQueue.push(depRef);
+                }
+            }
+        }
+
+        if (outgoing.size > 0) {
+            registryDepEdges.set(ref, outgoing);
+        }
+    }
+
+    // Emit one Component per reachable `name@version`, sorted for
+    // deterministic output.
     const registryComponents: Component[] = [];
+    const sortedRefs = [...reachableRegistryRefs].sort();
 
-    if (lockfile) {
-        const matched: ResolvedPackage[] = [];
+    for (const ref of sortedRefs) {
+        const pkg = lockfileByRef.get(ref);
 
-        for (const pkg of lockfile.packages.values()) {
-            if (reachableRegistryDeps.has(pkg.name)) {
-                matched.push(pkg);
-            }
+        if (!pkg) {
+            continue;
         }
 
-        matched.sort((a, b) => (a.name === b.name ? a.version.localeCompare(b.version) : a.name.localeCompare(b.name)));
+        const purl = toNpmPurl(pkg.name, pkg.version);
+        const component: Component = {
+            "bom-ref": purl,
+            name: pkg.name,
+            purl,
+            scope: "required",
+            type: "library",
+            version: pkg.version,
+        };
 
-        for (const pkg of matched) {
-            const purl = toNpmPurl(pkg.name, pkg.version);
-            const component: Component = {
-                "bom-ref": purl,
-                name: pkg.name,
-                purl,
-                scope: "required",
-                type: "library",
-                version: pkg.version,
-            };
-
-            if (pkg.hash) {
-                component.hashes = [pkg.hash satisfies Hash];
-            }
-
-            // Resolve licence + author + references against the *installed
-            // copy* of this specific name@version, not against a single
-            // hoisted or top-level package.json. Different versions of the
-            // same package can ship different licences.
-            decoratePackageComponent(component, readInstalledPackageMetadata(workspaceRoot, pkg.name, pkg.version));
-
-            registryComponents.push(component);
+        if (pkg.hash) {
+            component.hashes = [pkg.hash satisfies Hash];
         }
+
+        // Resolve licence + author + references against the *installed
+        // copy* of this specific name@version, not against a single
+        // hoisted or top-level package.json. Different versions of the
+        // same package can ship different licences.
+        decoratePackageComponent(component, readInstalledPackageMetadata(workspaceRoot, pkg.name, pkg.version));
+
+        registryComponents.push(component);
     }
 
     const dependencies: Dependency[] = [];
 
+    // Workspace project → its direct deps (mix of project and registry).
     for (const [name, edges] of directDepEdges) {
         const ref = projectBomRefs.get(name);
 
@@ -336,6 +406,21 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         const dependsOn = [...edges].sort();
 
         dependencies.push(dependsOn.length > 0 ? { dependsOn, ref } : { ref });
+    }
+
+    // Registry → registry edges from the lockfile graph walk.
+    for (const ref of sortedRefs) {
+        const pkg = lockfileByRef.get(ref);
+
+        if (!pkg) {
+            continue;
+        }
+
+        const purl = toNpmPurl(pkg.name, pkg.version);
+        const outgoing = registryDepEdges.get(ref);
+        const dependsOn = outgoing ? [...outgoing].sort() : [];
+
+        dependencies.push(dependsOn.length > 0 ? { dependsOn, ref: purl } : { ref: purl });
     }
 
     dependencies.sort((a, b) => a.ref.localeCompare(b.ref));

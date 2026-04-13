@@ -286,6 +286,63 @@ packages:
         expect(xml).toContain("xmlns=\"http://cyclonedx.org/schema/bom/1.6\"");
     });
 
+    it("should walk the lockfile closure and emit transitive deps as components", () => {
+        expect.assertions(3);
+
+        // my-app declares `express`, but the lockfile also has body-parser
+        // (a transitive dep of express). With a full closure walk, both
+        // must appear as components — previously only express would.
+        const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
+            lockfile: `lockfileVersion: '9.0'
+
+packages:
+
+  express@4.18.2:
+    resolution: {integrity: sha512-aGVsbG8=}
+    dependencies:
+      body-parser: 1.20.1
+
+  body-parser@1.20.1:
+    resolution: {integrity: sha512-aGVsbG8=}
+    dependencies:
+      bytes: 3.1.2
+
+  bytes@3.1.2:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+            projects: [
+                {
+                    dependencies: { express: "^4.18.0" },
+                    license: "MIT",
+                    name: "my-app",
+                    type: "application",
+                    version: "1.0.0",
+                },
+            ],
+        });
+
+        const bom = buildCycloneDxBom({
+            now: new Date("2026-04-13T00:00:00Z"),
+            projectGraph,
+            serialNumber: "urn:uuid:00000000-0000-4000-8000-000000000006",
+            workspace,
+            workspaceRoot,
+        });
+
+        assertValidBom(bom);
+
+        const names = bom.components!.map((component) => component.name).sort();
+
+        expect(names).toContain("body-parser");
+        expect(names).toContain("bytes");
+
+        // The registry→registry edge from express to body-parser must land
+        // in `dependencies[]`.
+        const expressEdge = bom.dependencies!.find((dep) => dep.ref === "pkg:npm/express@4.18.2");
+
+        expect(expressEdge?.dependsOn).toContain("pkg:npm/body-parser@1.20.1");
+    });
+
     it("should resolve registry-component licences against the installed copy's package.json", () => {
         expect.assertions(2);
 

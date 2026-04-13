@@ -113,6 +113,29 @@ describe(parseNpmLockFile, () => {
         expect(entries.every((entry) => entry.integrity?.algorithm !== undefined)).toBe(true);
     });
 
+    it("should capture per-entry dependencies / peerDependencies / optionalDependencies", () => {
+        expect.assertions(3);
+
+        const content = JSON.stringify({
+            lockfileVersion: 3,
+            packages: {
+                "": { name: "root", version: "1.0.0" },
+                "node_modules/foo": {
+                    dependencies: { bar: "^1.0.0" },
+                    optionalDependencies: { fsevents: "^2" },
+                    peerDependencies: { react: "^18" },
+                    version: "1.2.3",
+                },
+            },
+        });
+
+        const foo = parseNpmLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toEqual({ bar: "^1.0.0" });
+        expect(foo?.peerDependencies).toEqual({ react: "^18" });
+        expect(foo?.optionalDependencies).toEqual({ fsevents: "^2" });
+    });
+
     it("should return an empty list for invalid JSON", () => {
         expect.assertions(1);
 
@@ -161,6 +184,27 @@ packages:
 
         expect(parsePnpmLockFile(readFixture("pnpm-lock.yaml")).length).toBeGreaterThan(0);
     });
+
+    it("should capture per-entry dependency sub-maps and strip peer disambiguators", () => {
+        expect.assertions(2);
+
+        const content = `packages:
+
+  foo@1.2.3:
+    resolution: {integrity: sha512-aGVsbG8=}
+    dependencies:
+      bar: 2.0.0
+      '@scope/baz': 1.0.0(react@18.0.0)
+    peerDependencies:
+      react: '>=17'
+`;
+
+        const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
+
+        // Peer disambiguator `(react@18.0.0)` stripped from the resolved version.
+        expect(foo?.dependencies).toEqual({ "@scope/baz": "1.0.0", bar: "2.0.0" });
+        expect(foo?.peerDependencies).toEqual({ react: ">=17" });
+    });
 });
 
 describe(parseYarnLockFile, () => {
@@ -191,6 +235,24 @@ describe(parseYarnLockFile, () => {
         expect.assertions(1);
 
         expect(parseYarnLockFile(readFixture("yarn-v1.lock")).length).toBeGreaterThan(0);
+    });
+
+    it("should capture a yarn v1 entry's dependencies sub-map", () => {
+        expect.assertions(1);
+
+        const content = `
+"foo@^1.0.0":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/foo/-/foo-1.2.3.tgz"
+  integrity "sha512-aGVsbG8="
+  dependencies:
+    bar "^2.0.0"
+    "@scope/baz" "^1.0.0"
+`;
+
+        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toEqual({ "@scope/baz": "^1.0.0", bar: "^2.0.0" });
     });
 });
 
@@ -265,6 +327,23 @@ describe(parseBunLockFile, () => {
         // `pkg-a` / `pkg-b` are workspace entries — they must not land in the
         // registry-dep list (they use `workspace:` version specifiers).
         expect(entries.some((entry) => entry.name === "pkg-a" || entry.name === "pkg-b")).toBe(false);
+    });
+
+    it("should capture dependencies / peerDependencies from the tuple's metadata slot", () => {
+        expect.assertions(2);
+
+        const content = `{
+  "lockfileVersion": 1,
+  "workspaces": { "": { "name": "root" } },
+  "packages": {
+    "foo": ["foo@1.2.3", "", { "dependencies": { "bar": "^2.0.0" }, "peerDependencies": { "react": "^18" } }, "sha512-aGVsbG8="],
+  },
+}`;
+
+        const foo = parseBunLockFile(content).find((entry) => entry.name === "foo");
+
+        expect(foo?.dependencies).toEqual({ bar: "^2.0.0" });
+        expect(foo?.peerDependencies).toEqual({ react: "^18" });
     });
 
     it("should return an empty list for invalid JSON", () => {

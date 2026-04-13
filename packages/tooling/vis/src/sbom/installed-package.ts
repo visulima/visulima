@@ -15,6 +15,8 @@
  * just emitted without licence/author/description decoration.
  */
 
+import { readdirSync } from "node:fs";
+
 import { readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
@@ -64,10 +66,11 @@ const isSafeVersion = (version: string): boolean =>
     version.length > 0 && !version.includes("/") && !version.includes("..") && !version.includes("\0");
 
 /**
- * pnpm's virtual store encodes `name@version` into the directory name,
- * so we can pinpoint the exact installed copy without walking anything.
- * Scoped names have their `/` replaced with `+` (e.g.
- * `@visulima+fs@5.0.0`).
+ * pnpm's virtual store encodes `name@version` into the directory
+ * name. For packages with resolved peer deps, a suffix is appended —
+ * e.g. `foo@1.0.0_react@18.0.0`. We try the exact dir first (cheap),
+ * then scan `.pnpm/` for a directory matching `foo@1.0.0` or
+ * `foo@1.0.0_*`.
  */
 const readPnpmVirtualStore = (
     workspaceRoot: string,
@@ -75,10 +78,40 @@ const readPnpmVirtualStore = (
     version: string,
 ): InstalledPackageMetadata | undefined => {
     const encodedName = name.replace("/", "+");
+    const exactDir = `${encodedName}@${version}`;
+    const pnpmRoot = join(workspaceRoot, "node_modules", ".pnpm");
 
-    return readJsonSafe(
-        join(workspaceRoot, "node_modules", ".pnpm", `${encodedName}@${version}`, "node_modules", name, "package.json"),
-    );
+    // Fast path: no peer disambiguation.
+    const exact = readJsonSafe(join(pnpmRoot, exactDir, "node_modules", name, "package.json"));
+
+    if (exact) {
+        return exact;
+    }
+
+    // Slow path: scan `.pnpm` for `foo@1.0.0_*` peer-disambiguated dirs.
+    let directories: string[];
+
+    try {
+        directories = readdirSync(pnpmRoot);
+    } catch {
+        return undefined;
+    }
+
+    const prefix = `${exactDir}_`;
+
+    for (const directory of directories) {
+        if (!directory.startsWith(prefix)) {
+            continue;
+        }
+
+        const metadata = readJsonSafe(join(pnpmRoot, directory, "node_modules", name, "package.json"));
+
+        if (metadata) {
+            return metadata;
+        }
+    }
+
+    return undefined;
 };
 
 const readHoistedCopy = (
