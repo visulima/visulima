@@ -399,12 +399,9 @@ packages:
         expect(fsevents).toBeDefined();
     });
 
-    it("should surface a Yarn Berry checksum as a CycloneDX Component property", () => {
+    it("should emit Yarn Berry components without a hash entry (XXH64 is not representable in CycloneDX)", () => {
         expect.assertions(2);
 
-        // Use a fake lockfile directly — the yarn parser's Berry-checksum
-        // capture is covered in @visulima/package; here we just assert the
-        // SBOM builder forwards `properties` onto the emitted component.
         const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
             projects: [
                 {
@@ -439,7 +436,8 @@ packages:
 
         const somePkg = bom.components!.find((c) => c.name === "some-pkg");
 
-        expect(somePkg?.properties).toContainEqual({ name: "yarn.berry.checksum", value: "10c0/deadbeef" });
+        expect(somePkg).toBeDefined();
+        // No `hashes` — Berry's XXH64 isn't in CycloneDX 1.6's HashAlgorithm enum.
         expect(somePkg?.hashes).toBeUndefined();
     });
 

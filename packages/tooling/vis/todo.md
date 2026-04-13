@@ -68,9 +68,11 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 **Scope + Berry fidelity** ✅:
 - `scope: "optional"` now differentiates from `scope: "required"` on registry components. The BFS walks the lockfile graph in two passes (required first, then optional); `optionalDependencies` from any in-scope seed or walked entry always propagate as `optional`, while `required` edges upgrade any prior `optional` marking.
 - Yarn Berry `dependencies:` / `peerDependencies:` / `optionalDependencies:` sub-maps are now parsed. The regex accepts both the v1 space-separated form (`bar "^1.0.0"`) and Berry's colon-separated form (`bar: "npm:^1.0.0"`); the `npm:` protocol prefix is stripped inside `resolveSpecifier` before semver matching.
-- Yarn Berry's XXH64 `checksum:` value is preserved as `Component.properties` (CycloneDX 1.6 `HashAlgorithm` still can't represent XXH64, but the auxiliary `properties` slot keeps the data available for downstream consumers). `LockFileEntry.properties` is the parser-side surface; the SBOM builder forwards it verbatim.
 
-**Remaining limitations** (none known — the SBOM now covers npm, pnpm, Yarn Classic, Yarn Berry, and Bun with transitive closure, per-version licences, and scope differentiation).
+**Remaining limitations** (documented in `docs/commands/sbom.mdx`):
+- **Yarn Berry integrity is not supported**. Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside CycloneDX 1.6's `HashAlgorithm` enum. Berry entries are parsed in full (name / version / dependencies / edges) but their components emit without a `hashes` entry. All other package managers (npm, pnpm, Yarn Classic, Bun) emit SRI integrity normally.
+- **Binary `bun.lockb` (Bun ≤ 1.0)** is not parsed. Only the text `bun.lock` (Bun 1.1+) is recognised.
+- **`npm-shrinkwrap.json`** is no longer detected as an npm lockfile candidate by this parser (was an alias of `package-lock.json`; dropping keeps the surface small). If you need it, rename it to `package-lock.json` before running `vis sbom`.
 
 ---
 

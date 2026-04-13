@@ -274,9 +274,14 @@ describe(parseYarnLockFile, () => {
         expect(foo?.dependencies).toEqual({ "@scope/baz": "npm:^1.0.0", bar: "npm:^2.0.0" });
     });
 
-    it("should preserve Yarn Berry's XXH64 checksum on the entry's properties", () => {
+    it("should leave Yarn Berry entries without integrity (XXH64 isn't supported)", () => {
         expect.assertions(2);
 
+        // Berry only records `checksum: 10c0/…` (XXH64), not an SRI. Since
+        // XXH64 isn't in CycloneDX's HashAlgorithm enum, the entry comes
+        // out of the parser with `integrity: undefined` — this is the
+        // documented behaviour; callers that need Berry integrity must
+        // read yarn.lock directly.
         const content = `
 "foo@npm:1.2.3":
   version: 1.2.3
@@ -288,10 +293,8 @@ describe(parseYarnLockFile, () => {
 
         const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
 
-        // Berry checksums can't live in `integrity` (CycloneDX can't accept
-        // XXH64), so they surface through the extension `properties` slot.
+        expect(foo?.version).toBe("1.2.3");
         expect(foo?.integrity).toBeUndefined();
-        expect(foo?.properties?.["yarn.berry.checksum"]).toBe("10c0/abc123def456");
     });
 });
 

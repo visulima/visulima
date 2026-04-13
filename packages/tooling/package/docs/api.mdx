@@ -116,13 +116,13 @@ interface LockFileEntry {
 
 ### Format support matrix
 
-| Lockfile          | Detected filename             | Name / version | SRI integrity | Per-entry edges |
-| ----------------- | ----------------------------- | -------------- | ------------- | --------------- |
-| npm               | `package-lock.json` (v2 / v3) | ✅             | ✅            | ✅              |
-| pnpm              | `pnpm-lock.yaml` (v6 – v9)    | ✅             | ✅            | ✅              |
-| Yarn Classic (v1) | `yarn.lock`                   | ✅             | ✅            | ✅              |
-| Yarn Berry (v2+)  | `yarn.lock`                   | ✅             | ❌ see below  | ✅              |
-| Bun               | `bun.lock`                    | ✅             | ✅            | ✅              |
+| Lockfile                | Detected filename                                   | Name / version | SRI integrity | Per-entry edges |
+| ----------------------- | --------------------------------------------------- | -------------- | ------------- | --------------- |
+| npm                     | `package-lock.json` (v2 / v3)                       | ✅             | ✅            | ✅              |
+| pnpm                    | `pnpm-lock.yaml` (v6 – v9)                          | ✅             | ✅            | ✅              |
+| Yarn Classic (v1)       | `yarn.lock`                                         | ✅             | ✅            | ✅              |
+| Yarn Berry (v2+)        | `yarn.lock`                                         | ✅             | ❌ see below  | ✅              |
+| Bun                     | `bun.lock`                                          | ✅             | ✅            | ✅              |
 
 **Yarn Berry integrity is not supported.** Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside the CycloneDX 1.6 `HashAlgorithm` enum. Berry entries come out of the parser with `integrity: undefined`. Callers that need Berry integrity must read `yarn.lock` directly.
 

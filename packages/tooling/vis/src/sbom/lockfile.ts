@@ -25,12 +25,6 @@ export interface ResolvedPackage {
     name: string;
     optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
-    /**
-     * Parser-specific auxiliary metadata — e.g. Yarn Berry's XXH64
-     * `checksum`. The builder forwards these verbatim as
-     * `Component.properties`.
-     */
-    properties?: Record<string, string>;
     version: string;
 }
 
@@ -60,10 +54,6 @@ const toResolvedPackage = (entry: LockFileEntry): ResolvedPackage => {
 
     if (entry.optionalDependencies) {
         resolved.optionalDependencies = entry.optionalDependencies;
-    }
-
-    if (entry.properties) {
-        resolved.properties = entry.properties;
     }
 
     return resolved;

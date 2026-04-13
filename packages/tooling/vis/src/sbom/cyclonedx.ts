@@ -408,13 +408,6 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             component.hashes = [pkg.hash satisfies Hash];
         }
 
-        if (pkg.properties) {
-            component.properties = Object.entries(pkg.properties).map(([propertyName, value]) => ({
-                name: propertyName,
-                value,
-            }));
-        }
-
         // Resolve licence + author + references against the *installed
         // copy* of this specific name@version, not against a single
         // hoisted or top-level package.json. Different versions of the
@@ -688,17 +681,6 @@ const componentToXmlElement = (component: Component): XmlElement => {
                 _name: "reference",
             })),
             _name: "externalReferences",
-        });
-    }
-
-    if (component.properties && component.properties.length > 0) {
-        children.push({
-            _content: component.properties.map((property) => ({
-                _attrs: { name: property.name },
-                _content: property.value ?? "",
-                _name: "property",
-            })),
-            _name: "properties",
         });
     }
 

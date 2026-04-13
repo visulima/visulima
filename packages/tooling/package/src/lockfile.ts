@@ -1,25 +1,26 @@
 /**
- * Lockfile parser covering the three mainstream JS package managers.
+ * Lockfile parser covering all four mainstream JS package managers.
  *
- * Returns `{ name, version, integrity? }` entries so callers can build
- * SBOMs, dedupe reports, or any other lockfile-derived artifact from a
- * single source of truth. The parser is regex-based (no YAML
- * dependency) and captures each entry's SRI integrity digest where the
- * lockfile records one.
+ * Returns `{ name, version, integrity?, dependencies?, … }` entries so
+ * callers can build SBOMs, dedupe reports, or any other lockfile-derived
+ * artifact from a single source of truth. The parser is regex-based
+ * (no YAML dependency) and captures each entry's SRI integrity digest
+ * where the lockfile records one.
  *
- * Integrity encoding across package managers:
+ * Integrity support:
  *
- * - **npm** (`package-lock.json` v2/v3) stores `integrity: "sha512-…"`
- *   as a top-level field on each `packages` entry.
- * - **pnpm** (`pnpm-lock.yaml`) stores
- *   `resolution: { integrity: "sha512-…" }` under each `packages` key.
- * - **yarn** (Yarn Classic / v1) stores `integrity "sha512-…"`. Yarn
- *   Berry's XXH64 `checksum:` field is skipped — it isn't a crypto
- *   digest and can't be translated into SRI form.
+ * - **npm** (`package-lock.json` v2/v3): `integrity: "sha512-…"` ✅
+ * - **pnpm** (`pnpm-lock.yaml`): `resolution: { integrity: "sha512-…" }` ✅
+ * - **yarn v1** (Classic): `integrity "sha512-…"` ✅
+ * - **yarn v2+** (Berry): emits `checksum: 10c0/…` (XXH64). **Not
+ *   supported** — XXH64 is not a cryptographic hash and is outside the
+ *   CycloneDX 1.6 `HashAlgorithm` enum. Berry entries are still parsed
+ *   (name / version / dependencies), but `integrity` will be `undefined`.
+ * - **bun** (`bun.lock`): `[versionKey, registryUrl, metadata, integrity]`
+ *   tuples, JSON with trailing commas. ✅
  *
- * The `sha{256,384,512}-<base64>` values npm and pnpm emit are
- * base64-encoded SRI strings. Callers receive a decoded
- * `{ algorithm, hex }` pair so the re-encoding is done once, here.
+ * The `sha{256,384,512}-<base64>` SRI values are decoded once here into
+ * `{ algorithm, hex }` pairs.
  */
 
 import { readFileSync } from "node:fs";
@@ -57,14 +58,6 @@ export interface LockFileEntry {
     optionalDependencies?: Record<string, string>;
     /** Declared peer dependencies, same shape as `dependencies`. */
     peerDependencies?: Record<string, string>;
-    /**
-     * Parser-specific auxiliary metadata that doesn't fit the common
-     * shape — e.g. Yarn Berry's XXH64 `checksum` value (which isn't a
-     * cryptographic hash CycloneDX can accept in `Component.hashes`,
-     * but is still useful to preserve as a Property). Keys are
-     * dot-namespaced (`yarn.berry.checksum`) so consumers can route.
-     */
-    properties?: Record<string, string>;
     /** Resolved exact version — e.g. `4.17.21`. */
     version: string;
 }
@@ -353,7 +346,12 @@ const extractPnpmDependencyMap = (
     return Object.keys(map).length > 0 ? map : undefined;
 };
 
-/** Parses `yarn.lock` (Yarn Classic / v1 + Berry; Berry checksums are skipped). */
+/**
+ * Parses `yarn.lock` for Yarn Classic (v1) and Berry (v2+). Berry's
+ * XXH64 `checksum:` is not a cryptographic hash and is intentionally
+ * dropped; only v1's SRI `integrity:` flows through to
+ * {@link LockFileEntry.integrity}.
+ */
 export const parseYarnLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
     const seen = new Set<string>();
@@ -390,16 +388,11 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        // Yarn Berry records an XXH64 `checksum:` instead of an SRI
-        // `integrity:`. It isn't a cryptographic hash (so CycloneDX
-        // won't accept it in `Component.hashes`), but it's still useful
-        // to preserve as a CycloneDX Property for downstream consumers
-        // that know Yarn's cache layout.
-        const checksumMatch = /^\s+checksum:\s+(\S+)/m.exec(body);
-
-        if (checksumMatch?.[1] && !lockEntry.integrity) {
-            lockEntry.properties = { "yarn.berry.checksum": checksumMatch[1] };
-        }
+        // Yarn Berry records an XXH64 `checksum:` instead of `integrity:`.
+        // XXH64 isn't a cryptographic hash (CycloneDX 1.6's HashAlgorithm
+        // enum doesn't include it), so Berry entries come out of the parser
+        // with `integrity: undefined`. Callers that need Berry integrity
+        // must read it from yarn.lock directly.
 
         copyDepMap(lockEntry, "dependencies", extractYarnDependencyMap(body, "dependencies"));
         copyDepMap(lockEntry, "peerDependencies", extractYarnDependencyMap(body, "peerDependencies"));
@@ -548,7 +541,7 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
         return "pnpm";
     }
 
-    if (path.endsWith("package-lock.json") || path.endsWith("npm-shrinkwrap.json")) {
+    if (path.endsWith("package-lock.json")) {
         return "npm";
     }
 
@@ -588,7 +581,7 @@ export const parseLockFileContent = (content: string, type: LockFileType): LockF
     }
 };
 
-const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "bun.lock"];
+const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock"];
 
 /**
  * Walks up from `cwd`, locates the nearest supported lockfile, reads
@@ -605,7 +598,7 @@ export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseRe
     });
 
     if (!path) {
-        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, npm-shrinkwrap.json, yarn.lock)");
+        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, yarn.lock, bun.lock)");
     }
 
     const type = inferLockFileType(path);
@@ -628,7 +621,7 @@ export const parseLockFileSync = (cwd?: URL | string): LockFileParseResult => {
     });
 
     if (!path) {
-        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, npm-shrinkwrap.json, yarn.lock)");
+        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, yarn.lock, bun.lock)");
     }
 
     const type = inferLockFileType(path);
