@@ -1,8 +1,10 @@
-# CycloneDX schemas (vendored)
+# CycloneDX schemas (vendored, test-only)
 
 These files are vendored verbatim from the official CycloneDX specification
-repository. They are used **only during tests** (to validate the SBOMs that
-`vis sbom` produces against the spec) — they are **never loaded at runtime**.
+repository. They live under `__tests__/` because they are loaded exclusively
+by `__tests__/sbom/validator.ts` to validate the SBOMs that `vis sbom`
+produces against the spec. They are **never loaded at runtime** and are not
+part of the published package (`dist/` nor the `files` list).
 
 | File | Purpose |
 |------|---------|

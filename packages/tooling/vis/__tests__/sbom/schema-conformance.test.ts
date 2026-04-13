@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { CycloneDxBom } from "../../src/sbom/types";
-import { validateBom } from "../../src/sbom/validator";
+
+import { validateBom } from "./validator";
 
 /**
  * Minimal BOM that exercises the fields `vis sbom` will actually emit:
@@ -61,7 +62,7 @@ const buildFixtureBom = (): CycloneDxBom => ({
     version: 1,
 });
 
-describe("cycloneDX 1.6 schema conformance", () => {
+describe("CycloneDX 1.6 schema conformance", () => {
     it("should accept a minimal BOM with a single component", () => {
         expect.assertions(1);
 

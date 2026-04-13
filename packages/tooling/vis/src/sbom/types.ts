@@ -2,11 +2,11 @@
  * TypeScript types for the subset of CycloneDX 1.6 that `vis sbom` emits.
  *
  * These types are hand-maintained against the vendored schema at
- * `./schemas/bom-1.6.schema.json` (upstream tag 1.6.1). They intentionally
- * cover only the shapes the SBOM generator produces — `services`,
- * `vulnerabilities`, `compositions`, `annotations`, `formulation`,
- * `declarations`, `signature`, `pedigree`, `evidence`, `modelCard`, and
- * crypto-asset fields are omitted.
+ * `__tests__/sbom/schemas/bom-1.6.schema.json` (upstream tag 1.6.1). They
+ * intentionally cover only the shapes the SBOM generator produces —
+ * `services`, `vulnerabilities`, `compositions`, `annotations`,
+ * `formulation`, `declarations`, `signature`, `pedigree`, `evidence`,
+ * `modelCard`, and crypto-asset fields are omitted.
  *
  * The schema is still the source of truth: see
  * `__tests__/sbom/schema-conformance.test.ts` for the ajv-backed validator
@@ -57,16 +57,35 @@ export type ComponentScope = "excluded" | "optional" | "required";
 /** License acknowledgement status. */
 export type LicenseAcknowledgement = "concluded" | "declared";
 
-/** A named or SPDX-identified licence. One of `id` or `name` must be present. */
-export interface License {
+/**
+ * A named or SPDX-identified licence.
+ *
+ * The schema requires exactly one of `id` or `name` to be present; this is
+ * modelled as a discriminated union so the constraint is enforced at the
+ * type level rather than just at ajv-validation time.
+ */
+export type License = NamedLicense | SpdxLicense;
+
+/** SPDX-identified licence (`id` is a valid SPDX licence identifier). */
+export interface SpdxLicense {
     "bom-ref"?: string;
-    /** SPDX licence identifier (e.g. `"MIT"`). Mutually exclusive with `name`. */
-    id?: string;
-    /** Free-form licence name when not an SPDX identifier. Mutually exclusive with `id`. */
-    name?: string;
     acknowledgement?: LicenseAcknowledgement;
-    url?: string;
+    /** SPDX licence identifier (e.g. `"MIT"`). */
+    id: string;
+    name?: never;
     text?: Attachment;
+    url?: string;
+}
+
+/** Free-form licence where no SPDX identifier matches. */
+export interface NamedLicense {
+    "bom-ref"?: string;
+    acknowledgement?: LicenseAcknowledgement;
+    id?: never;
+    /** Free-form licence name. */
+    name: string;
+    text?: Attachment;
+    url?: string;
 }
 
 /** A single licence entry in the `licenses` array. */
@@ -102,45 +121,79 @@ export interface OrganizationalContact {
     phone?: string;
 }
 
+/** Postal address attached to an organisation. */
+export interface PostalAddress {
+    "bom-ref"?: string;
+    country?: string;
+    locality?: string;
+    postalCode?: string;
+    region?: string;
+    streetAddress?: string;
+}
+
 /** Company / organisation metadata. */
 export interface OrganizationalEntity {
     "bom-ref"?: string;
-    address?: {
-        country?: string;
-        locality?: string;
-        postalCode?: string;
-        region?: string;
-        streetAddress?: string;
-    };
+    address?: PostalAddress;
     contact?: OrganizationalContact[];
     name?: string;
     url?: string[];
 }
 
+/**
+ * All 43 values from the CycloneDX 1.6 `externalReferenceType` enum. Kept
+ * exhaustive so any spec-legal reference type type-checks.
+ */
+export type ExternalReferenceType
+    = | "adversary-model"
+        | "advisories"
+        | "attestation"
+        | "bom"
+        | "build-meta"
+        | "build-system"
+        | "certification-report"
+        | "chat"
+        | "codified-infrastructure"
+        | "component-analysis-report"
+        | "configuration"
+        | "digital-signature"
+        | "distribution"
+        | "distribution-intake"
+        | "documentation"
+        | "dynamic-analysis-report"
+        | "electronic-signature"
+        | "evidence"
+        | "exploitability-statement"
+        | "formulation"
+        | "issue-tracker"
+        | "license"
+        | "log"
+        | "mailing-list"
+        | "maturity-report"
+        | "model-card"
+        | "other"
+        | "pentest-report"
+        | "poam"
+        | "quality-metrics"
+        | "release-notes"
+        | "rfc-9116"
+        | "risk-assessment"
+        | "runtime-analysis-report"
+        | "security-contact"
+        | "social"
+        | "source-distribution"
+        | "static-analysis-report"
+        | "support"
+        | "threat-model"
+        | "vcs"
+        | "vulnerability-assertion"
+        | "website";
+
 /** External reference (website, VCS, distribution, etc.). */
 export interface ExternalReference {
     comment?: string;
     hashes?: Hash[];
-    type:
-      | "advisories"
-      | "bom"
-      | "build-meta"
-      | "build-system"
-      | "chat"
-      | "distribution"
-      | "distribution-intake"
-      | "documentation"
-      | "issue-tracker"
-      | "license"
-      | "mailing-list"
-      | "other"
-      | "release-notes"
-      | "security-contact"
-      | "social"
-      | "source-distribution"
-      | "support"
-      | "vcs"
-      | "website";
+    type: ExternalReferenceType;
     url: string;
 }
 
@@ -160,6 +213,7 @@ export interface Component {
     group?: string;
     hashes?: Hash[];
     licenses?: LicenseChoice;
+    manufacturer?: OrganizationalEntity;
     name: string;
     properties?: Property[];
     publisher?: string;
@@ -206,6 +260,7 @@ export interface Lifecycle {
 export interface Metadata {
     authors?: OrganizationalContact[];
     component?: Component;
+    licenses?: LicenseChoice;
     lifecycles?: Lifecycle[];
     manufacturer?: OrganizationalEntity;
     properties?: Property[];
@@ -225,13 +280,7 @@ export interface Dependency {
     ref: string;
 }
 
-/**
- * The root CycloneDX 1.6 BOM document.
- *
- * Use {@link createEmptyBom} in `cyclonedx.ts` to produce a pre-populated
- * document — it fills in `bomFormat`, `specVersion`, `version`, and the
- * `$schema` pointer.
- */
+/** The root CycloneDX 1.6 BOM document. */
 export interface CycloneDxBom {
     $schema?: string;
     bomFormat: "CycloneDX";
