@@ -47,6 +47,17 @@ describe(decodeSriIntegrity, () => {
         expect(decodeSriIntegrity("sha512")).toBeUndefined();
         expect(decodeSriIntegrity("")).toBeUndefined();
     });
+
+    it("should reject oversized SRI strings without allocating a huge buffer", () => {
+        expect.assertions(1);
+
+        // A malicious lockfile might stash megabytes of base64 here hoping we
+        // call Buffer.from on it. We cap at 1 KiB; anything above that is
+        // refused before the decode step.
+        const hostile = `sha512-${"A".repeat(10 * 1024)}`;
+
+        expect(decodeSriIntegrity(hostile)).toBeUndefined();
+    });
 });
 
 describe(parseNpmLockFile, () => {
@@ -231,19 +242,29 @@ describe(parseBunLockFile, () => {
     });
 
     it("should parse the vendored lockparse bun.lock fixture", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const entries = parseBunLockFile(readFixture("bun.lock"));
 
-        expect(entries.length).toBeGreaterThan(0);
-        // The fixture ships eslint — sanity-check it made it through.
-        expect(entries.some((entry) => entry.name === "eslint")).toBe(true);
+        // Fixture has 92 distinct `name@version` tuples; any change warrants a
+        // deliberate test update rather than silent drift.
+        expect(entries).toHaveLength(92);
+
+        const eslint = entries.find((entry) => entry.name === "eslint");
+
+        expect(eslint?.version).toBe("9.37.0");
+        expect(eslint?.integrity?.algorithm).toBe("sha512");
     });
 
-    it("should parse the vendored bun monorepo fixture", () => {
-        expect.assertions(1);
+    it("should parse the vendored bun monorepo fixture and surface the workspace-external deps", () => {
+        expect.assertions(2);
 
-        expect(parseBunLockFile(readFixture("bun-monorepo.lock")).length).toBeGreaterThan(0);
+        const entries = parseBunLockFile(readFixture("bun-monorepo.lock"));
+
+        expect(entries.length).toBeGreaterThan(0);
+        // `pkg-a` / `pkg-b` are workspace entries — they must not land in the
+        // registry-dep list (they use `workspace:` version specifiers).
+        expect(entries.some((entry) => entry.name === "pkg-a" || entry.name === "pkg-b")).toBe(false);
     });
 
     it("should return an empty list for invalid JSON", () => {

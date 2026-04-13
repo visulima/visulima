@@ -273,10 +273,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     const socketOptions = buildSocketOptions(socketConfig);
 
-    const [vulnMap, socketReports, duplicates] = await Promise.all([
+    // findDuplicateDependencies is synchronous — hoist it outside Promise.all
+    // so the async fan-out only contains genuine async work.
+    const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
+
+    const [vulnMap, socketReports] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
         socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : Promise.resolve(new Map<string, PackageReportData>()),
-        findDuplicateDependencies(workspaceRoot, pm.name),
     ]);
 
     // 3. Build audit entries

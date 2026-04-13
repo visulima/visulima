@@ -285,4 +285,56 @@ packages:
         expect(xml).toContain("<name>my-app</name>");
         expect(xml).toContain("xmlns=\"http://cyclonedx.org/schema/bom/1.6\"");
     });
+
+    it("should resolve registry-component licences against the installed copy's package.json", () => {
+        expect.assertions(2);
+
+        const { projectGraph, workspace, workspaceRoot } = buildFixture(tmpDir, {
+            lockfile: `lockfileVersion: '9.0'
+
+packages:
+
+  lodash@4.17.21:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+            projects: [
+                {
+                    dependencies: { lodash: "^4.17.21" },
+                    license: "MIT",
+                    name: "my-app",
+                    type: "application",
+                    version: "1.0.0",
+                },
+            ],
+        });
+
+        // Lay down a pnpm virtual-store install tree for lodash@4.17.21 with a
+        // distinctive licence so the test can prove the SBOM picks it up.
+        const lodashDir = join(workspaceRoot, "node_modules", ".pnpm", "lodash@4.17.21", "node_modules", "lodash");
+
+        mkdirSync(lodashDir, { recursive: true });
+        writeFileSync(
+            join(lodashDir, "package.json"),
+            JSON.stringify({
+                description: "A JavaScript utility library",
+                license: "Apache-2.0",
+                name: "lodash",
+                version: "4.17.21",
+            }),
+        );
+
+        const bom = buildCycloneDxBom({
+            now: new Date("2026-04-13T00:00:00Z"),
+            projectGraph,
+            serialNumber: "urn:uuid:00000000-0000-4000-8000-000000000005",
+            workspace,
+            workspaceRoot,
+        });
+
+        const lodash = bom.components!.find((c) => c.name === "lodash");
+
+        // The licence came from the installed copy, not from the workspace root.
+        expect(lodash?.licenses).toEqual([{ license: { id: "Apache-2.0" } }]);
+        expect(lodash?.description).toBe("A JavaScript utility library");
+    });
 });

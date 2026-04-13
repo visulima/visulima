@@ -40,6 +40,30 @@ const readJsonSafe = (path: string): InstalledPackageMetadata | undefined => {
 };
 
 /**
+ * npm package names and versions can't legally contain `/` (except the
+ * scope-delimiter `/` in `@scope/name`) or `..`. A lockfile carrying
+ * such strings is either corrupt or hostile; in either case we refuse
+ * to interpolate it into a filesystem path lest we escape `workspaceRoot`.
+ */
+const isSafePackageName = (name: string): boolean => {
+    if (name.length === 0 || name.includes("..") || name.startsWith(".") || name.includes("\0")) {
+        return false;
+    }
+
+    if (name.startsWith("@")) {
+        // Scoped: exactly one `/` permitted, between the scope and the name.
+        const slashIndex = name.indexOf("/");
+
+        return slashIndex > 1 && name.indexOf("/", slashIndex + 1) === -1;
+    }
+
+    return !name.includes("/");
+};
+
+const isSafeVersion = (version: string): boolean =>
+    version.length > 0 && !version.includes("/") && !version.includes("..") && !version.includes("\0");
+
+/**
  * pnpm's virtual store encodes `name@version` into the directory name,
  * so we can pinpoint the exact installed copy without walking anything.
  * Scoped names have their `/` replaced with `+` (e.g.
@@ -75,11 +99,21 @@ const readHoistedCopy = (
  * falls back to the hoisted `node_modules/<name>/package.json` if its
  * version matches.
  *
- * Returns `undefined` if nothing on disk matches the requested version.
+ * Returns `undefined` if nothing on disk matches the requested version,
+ * **or if `name`/`version` contains characters that could be used for
+ * path traversal**. A malicious lockfile carrying e.g.
+ * `version: "../../../etc"` would otherwise escape `workspaceRoot`
+ * because `join` collapses `..` segments.
  */
 export const readInstalledPackageMetadata = (
     workspaceRoot: string,
     name: string,
     version: string,
-): InstalledPackageMetadata | undefined => readPnpmVirtualStore(workspaceRoot, name, version)
-    ?? readHoistedCopy(workspaceRoot, name, version);
+): InstalledPackageMetadata | undefined => {
+    if (!isSafePackageName(name) || !isSafeVersion(version)) {
+        return undefined;
+    }
+
+    return readPnpmVirtualStore(workspaceRoot, name, version)
+        ?? readHoistedCopy(workspaceRoot, name, version);
+};

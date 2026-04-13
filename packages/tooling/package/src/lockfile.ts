@@ -68,7 +68,20 @@ const INTEGRITY_ALGORITHMS: Record<string, LockFileIntegrityAlgorithm> = {
  * `{ algorithm, hex }` pair. Returns `undefined` if the string is
  * malformed or uses an unsupported algorithm.
  */
+/**
+ * Upper bound on the length of an SRI string we'll attempt to decode.
+ * SHA-512's base64 encoding is 88 characters; even with an
+ * algorithm-prefix, padding, or multi-hash form the real-world value
+ * stays under 200. A larger input is either corrupt or hostile — we
+ * reject it rather than hand `Buffer.from` a pathological allocation.
+ */
+const MAX_SRI_LENGTH = 1024;
+
 export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined => {
+    if (sri.length > MAX_SRI_LENGTH) {
+        return undefined;
+    }
+
     const dashIndex = sri.indexOf("-");
 
     if (dashIndex <= 0) {
