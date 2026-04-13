@@ -24,7 +24,7 @@ const sbom: Command = {
     group: "Security & Health",
     description: "Generate a CycloneDX 1.6 Software Bill of Materials for the workspace",
     examples: [
-        ["vis sbom", "Write the full-workspace SBOM to ./sbom.cdx.json"],
+        ["vis sbom", "Write the full-workspace SBOM to sbom.cdx.json"],
         ["vis sbom --focus=my-app", "Scope the SBOM to my-app's transitive closure"],
         ["vis sbom --focus=my-app,other", "Focus multiple projects"],
         ["vis sbom --format=xml --output=sbom.cdx.xml", "Emit XML instead of JSON"],
@@ -93,7 +93,7 @@ const sbom: Command = {
             type: String,
         },
         {
-            description: "Output path (use '-' for stdout; default: ./sbom.cdx.json)",
+            description: "Output path (use '-' for stdout; default: sbom.cdx.json)",
             name: "output",
             type: String,
         },

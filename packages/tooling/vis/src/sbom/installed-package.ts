@@ -84,7 +84,7 @@ const readPnpmVirtualStore = (
     name: string,
     version: string,
 ): InstalledPackageMetadata | undefined => {
-    const encodedName = name.replace("/", "+");
+    const encodedName = name.replaceAll("/", "+");
     const exactDir = `${encodedName}@${version}`;
     const pnpmRoot = join(workspaceRoot, "node_modules", ".pnpm");
 

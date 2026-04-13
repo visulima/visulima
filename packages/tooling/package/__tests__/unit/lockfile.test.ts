@@ -58,6 +58,19 @@ describe(decodeSriIntegrity, () => {
 
         expect(decodeSriIntegrity(hostile)).toBeUndefined();
     });
+
+    it("should reject payloads containing characters outside the base64 alphabet", () => {
+        expect.assertions(3);
+
+        // `Buffer.from("…", "base64")` silently drops characters outside
+        // [A-Za-z0-9+/=], so a garbage payload like `sha512-abc!def` would
+        // decode to the bytes of "abcdef". Validate strictly up front.
+        expect(decodeSriIntegrity("sha512-abc!def")).toBeUndefined();
+        expect(decodeSriIntegrity("sha512-aGVsb G8=")).toBeUndefined(); // embedded space
+        // URL-safe base64 is *not* the SRI alphabet — `-` and `_` would
+        // normally map to `+` and `/`, but SRI mandates the standard alphabet.
+        expect(decodeSriIntegrity("sha512-aGVsbG8_")).toBeUndefined();
+    });
 });
 
 describe(parseNpmLockFile, () => {
@@ -183,6 +196,78 @@ packages:
         expect.assertions(1);
 
         expect(parsePnpmLockFile(readFixture("pnpm-lock.yaml")).length).toBeGreaterThan(0);
+    });
+
+    it("should capture dependency edges from pnpm v9 snapshots: section (not packages:)", () => {
+        expect.assertions(2);
+
+        // v9 moves concrete deps out of `packages:` and into `snapshots:`.
+        // Our parser used to only read `packages:`, emitting every v9 entry
+        // with an empty deps map. Verify the snapshot edges now flow
+        // through, with peer suffixes stripped from both key and values.
+        const content = `lockfileVersion: '9.0'
+
+packages:
+
+  '@ai-sdk/anthropic@3.0.68':
+    resolution: {integrity: sha512-aGVsbG8=}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider-utils@4.0.23':
+    resolution: {integrity: sha512-aGVsbG8=}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+snapshots:
+
+  '@ai-sdk/anthropic@3.0.68(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
+      zod: 4.3.6
+
+  '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':
+    dependencies:
+      zod: 4.3.6
+`;
+
+        const anthropic = parsePnpmLockFile(content).find((entry) => entry.name === "@ai-sdk/anthropic");
+
+        expect(anthropic?.integrity?.algorithm).toBe("sha512");
+        // Peer suffixes dropped from both the snapshot key and the dep values.
+        expect(anthropic?.dependencies).toEqual({ "@ai-sdk/provider-utils": "4.0.23", zod: "4.3.6" });
+    });
+
+    it("should union peer-context variants when the same base appears in multiple snapshot entries", () => {
+        expect.assertions(1);
+
+        const content = `packages:
+
+  react-dom@18.2.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+
+snapshots:
+
+  react-dom@18.2.0(react@18.0.0):
+    dependencies:
+      loose-envify: 1.4.0
+      scheduler: 0.23.0
+
+  react-dom@18.2.0(react@17.0.2):
+    dependencies:
+      loose-envify: 1.4.0
+      react: 17.0.2
+`;
+
+        const reactDom = parsePnpmLockFile(content).find((entry) => entry.name === "react-dom");
+
+        // Union across peer contexts: both `scheduler` (react@18 variant) and
+        // `react` (react@17 variant) land on the single merged entry.
+        expect(reactDom?.dependencies).toEqual({
+            "loose-envify": "1.4.0",
+            react: "17.0.2",
+            scheduler: "0.23.0",
+        });
     });
 
     it("should capture per-entry dependency sub-maps and strip peer disambiguators", () => {

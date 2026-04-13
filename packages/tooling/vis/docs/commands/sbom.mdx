@@ -18,7 +18,7 @@ vis sbom [options]
 ## Examples
 
 ```bash
-# Full-workspace SBOM → ./sbom.cdx.json
+# Full-workspace SBOM → sbom.cdx.json
 vis sbom
 
 # Scope to a single project's closure
@@ -43,7 +43,7 @@ vis sbom --output=-
 | ---------------- | ------------------ | ------------------------------------------------------------------------------------------ |
 | `--focus`        |                    | Project name(s) to focus on — comma-separated. Scopes the BOM to the transitive closure.   |
 | `--format`       | `json`             | Output format: `json` (CycloneDX 1.6 JSON) or `xml`.                                       |
-| `--output`       | `./sbom.cdx.json`  | Output file path. Use `-` to write to stdout.                                              |
+| `--output`       | `sbom.cdx.json`    | Output file path (resolved against the workspace root). Use `-` to write to stdout.        |
 | `--include-dev`  | `false`            | Include `devDependencies` in the closure walk. Default is production-only, per industry practice. |
 
 ## What's in the BOM

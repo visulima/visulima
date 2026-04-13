@@ -81,10 +81,20 @@ const INTEGRITY_ALGORITHMS: Record<string, LockFileIntegrityAlgorithm> = {
 // multi-hash forms without opening a DoS surface.
 const MAX_SRI_LENGTH = 1024;
 
+// Strict RFC 4648 base64 alphabet (standard, not URL-safe), with
+// optional `=` padding. `Buffer.from("…", "base64")` silently discards
+// characters outside the alphabet, so a garbage payload like
+// `sha512-abc!def` would decode to the bytes of `abcdef` — we'd emit a
+// hash that doesn't match the lockfile content. Validate up front.
+const BASE64_PAYLOAD = /^[A-Za-z0-9+/]+={0,2}$/;
+
 /**
  * Decodes a Subresource Integrity string (`sha512-<base64>`) into a
  * `{ algorithm, hex }` pair. Returns `undefined` if the string is
  * malformed, oversized, or uses an unsupported algorithm.
+ * @param sri Full SRI string, e.g. `sha512-<base64>`.
+ * @returns Decoded algorithm + hex digest, or `undefined` when the
+ *          input can't be parsed.
  */
 export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined => {
     if (sri.length > MAX_SRI_LENGTH) {
@@ -103,8 +113,14 @@ export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined =
         return undefined;
     }
 
+    const payload = sri.slice(dashIndex + 1);
+
+    if (!BASE64_PAYLOAD.test(payload)) {
+        return undefined;
+    }
+
     try {
-        const buffer = Buffer.from(sri.slice(dashIndex + 1), "base64");
+        const buffer = Buffer.from(payload, "base64");
 
         if (buffer.length === 0) {
             return undefined;
@@ -151,7 +167,11 @@ interface NpmPackageManifest {
     version?: string;
 }
 
-/** Parses `package-lock.json` v2/v3. */
+/**
+ * Parses `package-lock.json` (npm v2 / v3 format).
+ * @param content Raw JSON text of the lockfile.
+ * @returns One {@link LockFileEntry} per distinct `name@version`.
+ */
 export const parseNpmLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
     const seen = new Set<string>();
@@ -211,6 +231,12 @@ interface PnpmPackageKey {
     version: string;
 }
 
+/**
+ * Parses a pnpm package key (e.g. `/foo@1.2.3`, `foo@1.2.3`,
+ * `'@scope/name@1.0.0(peer@4.0.0)'`) into its base `{ name, version }`.
+ * Returns `undefined` for workspace / link / file references that have
+ * no meaningful version, and strips any `(peer@…)` disambiguator.
+ */
 const splitPnpmPackageKey = (raw: string): PnpmPackageKey | undefined => {
     let key = raw.trim();
 
@@ -243,22 +269,104 @@ const splitPnpmPackageKey = (raw: string): PnpmPackageKey | undefined => {
     return { name, version };
 };
 
-/** Parses `pnpm-lock.yaml` (regex-based, works for lockfile v6-v9). */
-export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
-    const result: LockFileEntry[] = [];
-    const seen = new Set<string>();
+/**
+ * Extracts the body of a named top-level pnpm YAML section
+ * (e.g. `packages:` or `snapshots:`). Returns the indented sub-text or
+ * `undefined` if the section isn't present. Matches are anchored so a
+ * trailing `packagesExtra:` key won't false-match.
+ */
+const sliceTopLevelSection = (content: string, section: string): string | undefined => {
+    const header = new RegExp(`^${section}:\\s*$`, "m");
+    const start = header.exec(content);
 
-    const packagesSectionMatch = /^packages:\s*$/m.exec(content);
+    if (!start) {
+        return undefined;
+    }
 
-    if (!packagesSectionMatch) {
+    const after = start.index + start[0].length;
+    const next = /^[a-z][a-zA-Z0-9]*:\s*$/m.exec(content.slice(after));
+
+    return content.slice(after, next ? after + next.index : content.length);
+};
+
+/**
+ * Accumulated dep-maps scraped from the `snapshots:` section and keyed
+ * by base `name@version` (peer suffixes stripped). In pnpm v9+ the
+ * concrete resolved dependency edges live here, not in `packages:`.
+ */
+interface SnapshotDepEdges {
+    dependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+}
+
+/**
+ * Parses a pnpm `snapshots:` section (pnpm lockfile v9+). Each entry
+ * key may carry a peer-context disambiguator (`foo@1.0.0(react@18.0.0)`);
+ * we strip the disambiguator from the key AND from every dependency
+ * value, then union dep-maps across all peer variants of the same base
+ * `name@version`. The CycloneDX SBOM shape deliberately collapses
+ * peer-context variants into one component, so callers see a single
+ * merged edge set per base install rather than per-context slices.
+ */
+const parsePnpmSnapshotEdges = (content: string): Map<string, SnapshotDepEdges> => {
+    const result = new Map<string, SnapshotDepEdges>();
+    const body = sliceTopLevelSection(content, "snapshots");
+
+    if (!body) {
         return result;
     }
 
-    const packagesStart = packagesSectionMatch.index + packagesSectionMatch[0].length;
-    // The packages section runs to the next top-level key, or EOF.
-    const nextSectionMatch = /^[a-z][a-zA-Z0-9]*:\s*$/m.exec(content.slice(packagesStart));
-    const packagesEnd = nextSectionMatch ? packagesStart + nextSectionMatch.index : content.length;
-    const packagesBody = content.slice(packagesStart, packagesEnd);
+    // Snapshot entries can be empty (`foo@1.0.0: {}`) or indented. We only
+    // care about indented bodies — empty bodies have no deps to extract.
+    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
+    const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4,}[^\n]*\n?)+)/gm;
+    let match: RegExpExecArray | undefined;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((match = entryRegex.exec(body) ?? undefined) !== undefined) {
+        const keyValue = splitPnpmPackageKey(match[1] as string);
+
+        if (!keyValue) {
+            continue;
+        }
+
+        const baseKey = `${keyValue.name}@${keyValue.version}`;
+        const entryBody = match[2] as string;
+        const existing = result.get(baseKey) ?? {};
+
+        for (const field of ["dependencies", "peerDependencies", "optionalDependencies"] as const) {
+            const scraped = extractPnpmDependencyMap(entryBody, field);
+
+            if (scraped) {
+                existing[field] = { ...existing[field], ...scraped };
+            }
+        }
+
+        result.set(baseKey, existing);
+    }
+
+    return result;
+};
+
+/**
+ * Parses `pnpm-lock.yaml`. Regex-based; works for lockfile v6 through
+ * v9. v9 moves concrete resolved dependency versions out of `packages:`
+ * and into `snapshots:`; this parser reads both sections and unions
+ * their dep-maps onto the final entry.
+ * @param content Raw YAML text of the lockfile.
+ * @returns One {@link LockFileEntry} per distinct `name@version`.
+ */
+export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
+    const result: LockFileEntry[] = [];
+    const seen = new Set<string>();
+    const packagesBody = sliceTopLevelSection(content, "packages");
+
+    if (!packagesBody) {
+        return result;
+    }
+
+    const snapshotEdges = parsePnpmSnapshotEdges(content);
 
     // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
     const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4,}[^\n]*\n?)+)/gm;
@@ -286,9 +394,16 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        copyDepMap(lockEntry, "dependencies", extractPnpmDependencyMap(body, "dependencies"));
-        copyDepMap(lockEntry, "peerDependencies", extractPnpmDependencyMap(body, "peerDependencies"));
-        copyDepMap(lockEntry, "optionalDependencies", extractPnpmDependencyMap(body, "optionalDependencies"));
+        // v6-v8 inline the concrete deps under `packages:`; v9 moves them to
+        // `snapshots:`. Fall back to the snapshot edges for v9 lockfiles
+        // (the `packages:` parse is a no-op for those fields). When both
+        // sections list deps for the same base key, the snapshot wins —
+        // it carries the post-resolution edges.
+        const snapshot = snapshotEdges.get(`${keyValue.name}@${keyValue.version}`);
+
+        copyDepMap(lockEntry, "dependencies", snapshot?.dependencies ?? extractPnpmDependencyMap(body, "dependencies"));
+        copyDepMap(lockEntry, "peerDependencies", snapshot?.peerDependencies ?? extractPnpmDependencyMap(body, "peerDependencies"));
+        copyDepMap(lockEntry, "optionalDependencies", snapshot?.optionalDependencies ?? extractPnpmDependencyMap(body, "optionalDependencies"));
 
         pushUniqueEntry(result, seen, lockEntry);
     }
@@ -351,6 +466,8 @@ const extractPnpmDependencyMap = (
  * XXH64 `checksum:` is not a cryptographic hash and is intentionally
  * dropped; only v1's SRI `integrity:` flows through to
  * {@link LockFileEntry.integrity}.
+ * @param content Raw text of the lockfile.
+ * @returns One {@link LockFileEntry} per distinct `name@version`.
  */
 export const parseYarnLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
@@ -468,6 +585,8 @@ interface BunLockPackageTuple extends Array<unknown> {
  *
  * Attribution: format + tuple layout verified against lockparse
  * (https://github.com/43081j/lockparse, MIT).
+ * @param content Raw text of the lockfile.
+ * @returns One {@link LockFileEntry} per distinct `name@version`.
  */
 export const parseBunLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
@@ -536,6 +655,11 @@ export const parseBunLockFile = (content: string): LockFileEntry[] => {
     return result;
 };
 
+/**
+ * Maps a lockfile path (or filename) to its {@link LockFileType}.
+ * Returns `undefined` for unsupported shapes (`bun.lockb`,
+ * `npm-shrinkwrap.json`, etc.).
+ */
 const inferLockFileType = (path: string): LockFileType | undefined => {
     if (path.endsWith("pnpm-lock.yaml")) {
         return "pnpm";
@@ -560,6 +684,9 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
  * Parses raw lockfile content of the given type. Returns an empty
  * array if the content is malformed or doesn't contain any package
  * entries.
+ * @param content Raw text of the lockfile.
+ * @param type   Which parser to dispatch to.
+ * @returns One {@link LockFileEntry} per distinct `name@version`.
  */
 export const parseLockFileContent = (content: string, type: LockFileType): LockFileEntry[] => {
     switch (type) {
@@ -587,7 +714,9 @@ const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock",
  * Walks up from `cwd`, locates the nearest supported lockfile, reads
  * it, and returns the parsed entries alongside the lockfile type and
  * absolute path.
- *
+ * @param cwd Directory to start the search from. Defaults to
+ *            `process.cwd()` (delegated to `findUp`).
+ * @returns The parsed result, keyed by the discovered lockfile path.
  * @throws If no supported lockfile can be found above `cwd`.
  */
 export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseResult> => {
@@ -612,7 +741,12 @@ export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseRe
     return { entries: parseLockFileContent(content, type), path, type };
 };
 
-/** Synchronous counterpart to {@link parseLockFile}. */
+/**
+ * Synchronous counterpart to {@link parseLockFile}.
+ * @param cwd Directory to start the search from.
+ * @returns The parsed result, keyed by the discovered lockfile path.
+ * @throws If no supported lockfile can be found above `cwd`.
+ */
 export const parseLockFileSync = (cwd?: URL | string): LockFileParseResult => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const path: string | undefined = findUpSync(LOCKFILE_CANDIDATES, {
