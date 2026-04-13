@@ -107,6 +107,86 @@ Use `--security` to catch vulnerabilities:
   run: vis check --security --exit-code
 ```
 
+## Deployment Build Gating
+
+Use [`vis ignore`](../commands/ignore) to cancel deployment platform builds when the target app isn't affected by the latest commit. It exits with **inverted codes** (`0` = skip, `1` = build) so it drops directly into Vercel's "Ignored Build Step" and Netlify's `ignore` field.
+
+### Vercel
+
+Under **Project → Settings → Git → Ignored Build Step**:
+
+```bash
+npx @visulima/vis ignore my-app
+```
+
+Vercel exposes `VERCEL_GIT_PREVIOUS_SHA`, which `vis ignore` picks up automatically as the base ref. When the ref isn't reachable (Vercel's checkout is shallow by default), it silently falls back to `HEAD~1`.
+
+### Netlify
+
+`netlify.toml`:
+
+```toml
+[build]
+ignore = "npx @visulima/vis ignore my-app"
+```
+
+Netlify exposes `CACHED_COMMIT_REF`, which `vis ignore` picks up automatically.
+
+### GitHub Actions (preflight gate)
+
+GitHub Actions has no native "ignore" hook, but you can run `vis ignore --json` as a preflight step and gate downstream jobs on the decision:
+
+```yaml
+name: CI
+on: [pull_request]
+
+jobs:
+    gate:
+        runs-on: ubuntu-latest
+        outputs:
+            action: ${{ steps.decide.outputs.action }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: pnpm/action-setup@v4
+            - run: pnpm install --frozen-lockfile
+
+            - id: decide
+              run: |
+                  pnpm vis ignore my-app --json --exit-zero-on-build \
+                      | tee decision.json
+                  echo "action=$(jq -r .action decision.json)" >> "$GITHUB_OUTPUT"
+
+    deploy:
+        needs: gate
+        if: needs.gate.outputs.action == 'build'
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "Deploying…"
+```
+
+`--exit-zero-on-build` disables the inverted-exit-code contract so the preflight step itself always succeeds — the decision flows through the job output instead.
+
+### Commit-message overrides
+
+Commit-message keywords take precedence over git diff detection, for emergency bypasses:
+
+| Token                                                      | Effect                     |
+| ---------------------------------------------------------- | -------------------------- |
+| `[skip ci]` / `[ci skip]` / `[no ci]` / `[vis skip]`       | Skip build (all projects)  |
+| `[vis skip <project>]`                                     | Skip build for one project |
+| `[vis deploy]`                                             | Force build (all projects) |
+| `[vis deploy <project>]`                                   | Force build for one project |
+| `[nx skip]` / `[nx skip <project>]` _(legacy)_             | Skip, for nx-ignore migration |
+| `[nx deploy]` / `[nx deploy <project>]` _(legacy)_         | Force deploy, for nx-ignore migration |
+
+See the [`vis ignore` reference](../commands/ignore) for the full list of options and reason codes.
+
+### Unsupported platforms
+
+Cloudflare Pages, Cloudflare Workers Builds, Render, and AWS Amplify do **not** invoke custom ignore scripts — they only support path-based filters and fixed commit keywords. Use their native filtering features instead, or move CI gating into GitHub Actions / GitLab CI as shown above.
+
 ## Generating Reports
 
 Export JSON reports for monitoring dashboards or Slack notifications:

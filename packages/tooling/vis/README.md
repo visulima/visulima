@@ -94,6 +94,7 @@ vis hook install
 | `vis init`              |       | Initialize vis.config.ts with security defaults                   |
 | `vis run <target>`      |       | Run a target across workspace projects with caching               |
 | `vis affected <target>` |       | Run tasks only on projects affected by git changes                |
+| `vis ignore <project>`  |       | CI build gating for Vercel / Netlify "Ignored Build Step"         |
 | `vis graph`             |       | Visualize the project dependency graph                            |
 | `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs             |
 | `vis update [packages]` | `up`  | Update packages to their latest versions                          |
@@ -102,6 +103,8 @@ vis hook install
 | `vis audit`             |       | Audit dependencies for security vulnerabilities                   |
 | `vis clean`             |       | Remove build artifacts, caches, and node_modules                  |
 | `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                    |
+
+For `vis ignore`, see the [command reference](./docs/commands/ignore.mdx) and the [deployment build gating section](./docs/guides/ci-cd.mdx#deployment-build-gating) of the CI/CD guide.
 
 ## Documentation
 
