@@ -43,21 +43,28 @@ export interface LockFileIntegrity {
 /** A single resolved package extracted from a lockfile. */
 export interface LockFileEntry {
     /**
-     * Declared runtime dependencies — `name → specifier` map. Specifiers
-     * are whatever the lockfile recorded (often a range like `^1.0.0`
-     * for npm/yarn/bun, but pnpm stores already-resolved exact versions).
-     * Callers resolve the specifier against {@link LockFileEntry.version}
-     * values elsewhere in the lockfile when they need a concrete edge.
+     * Declared runtime dependencies — `name → specifier[]` map. Values
+     * are arrays so pnpm v9+ peer-context variants (the same dep name
+     * resolved to different versions under different peer contexts)
+     * can all be preserved. npm, yarn v1, bun, and pnpm v6-v8 always
+     * produce single-element arrays; pnpm v9+ may produce multi-element
+     * arrays for peer-context-sensitive deps.
+     *
+     * Specifiers are whatever the lockfile recorded — a range
+     * (`^1.0.0`) for npm / yarn / bun, or an already-resolved exact
+     * version for pnpm. Callers resolve each specifier against
+     * {@link LockFileEntry.version} values elsewhere in the lockfile
+     * when they need a concrete edge.
      */
-    dependencies?: Record<string, string>;
+    dependencies?: Record<string, string[]>;
     /** Decoded SRI digest, if the lockfile recorded one. */
     integrity?: LockFileIntegrity;
     /** Package name — `lodash` or `@scope/name`. */
     name: string;
     /** Declared optional dependencies, same shape as `dependencies`. */
-    optionalDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string[]>;
     /** Declared peer dependencies, same shape as `dependencies`. */
-    peerDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string[]>;
     /** Resolved exact version — e.g. `4.17.21`. */
     version: string;
 }
@@ -151,7 +158,7 @@ const pushUniqueEntry = (result: LockFileEntry[], seen: Set<string>, entry: Lock
 const copyDepMap = (
     target: LockFileEntry,
     field: "dependencies" | "optionalDependencies" | "peerDependencies",
-    source: Record<string, string> | undefined,
+    source: Record<string, string[]> | undefined,
 ): void => {
     if (source && Object.keys(source).length > 0) {
         target[field] = { ...source };
@@ -166,6 +173,26 @@ interface NpmPackageManifest {
     peerDependencies?: Record<string, string>;
     version?: string;
 }
+
+/**
+ * Lifts a single-resolution dep-map from a package.json-shaped source
+ * (`Record<string, string>`) into our array-valued shape. Used by npm,
+ * yarn v1, and bun — all of which record one resolution per name per
+ * parent.
+ */
+const liftDepMap = (source: Record<string, string> | undefined): Record<string, string[]> | undefined => {
+    if (!source) {
+        return undefined;
+    }
+
+    const result: Record<string, string[]> = {};
+
+    for (const [name, value] of Object.entries(source)) {
+        result[name] = [value];
+    }
+
+    return Object.keys(result).length > 0 ? result : undefined;
+};
 
 /**
  * Parses `package-lock.json` (npm v2 / v3 format).
@@ -216,9 +243,9 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
             }
         }
 
-        copyDepMap(lockEntry, "dependencies", entry.dependencies);
-        copyDepMap(lockEntry, "peerDependencies", entry.peerDependencies);
-        copyDepMap(lockEntry, "optionalDependencies", entry.optionalDependencies);
+        copyDepMap(lockEntry, "dependencies", liftDepMap(entry.dependencies));
+        copyDepMap(lockEntry, "peerDependencies", liftDepMap(entry.peerDependencies));
+        copyDepMap(lockEntry, "optionalDependencies", liftDepMap(entry.optionalDependencies));
 
         pushUniqueEntry(result, seen, lockEntry);
     }
@@ -291,13 +318,20 @@ const sliceTopLevelSection = (content: string, section: string): string | undefi
 
 /**
  * Accumulated dep-maps scraped from the `snapshots:` section and keyed
- * by base `name@version` (peer suffixes stripped). In pnpm v9+ the
- * concrete resolved dependency edges live here, not in `packages:`.
+ * by base `name@version` (peer suffixes stripped from the key). In
+ * pnpm v9+ the concrete resolved dependency edges live here, not in
+ * `packages:`.
+ *
+ * Each dep-name's value is an **array** of resolved specifiers so
+ * conflicting per-peer-context resolutions are preserved — e.g.
+ * `react-dom@18.2.0(react@17)` resolving `react: 17.0.2` and
+ * `react-dom@18.2.0(react@18)` resolving `react: 18.0.0` both survive
+ * the merge instead of one clobbering the other.
  */
 interface SnapshotDepEdges {
-    dependencies?: Record<string, string>;
-    optionalDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
+    dependencies?: Record<string, string[]>;
+    optionalDependencies?: Record<string, string[]>;
+    peerDependencies?: Record<string, string[]>;
 }
 
 /**
@@ -338,9 +372,29 @@ const parsePnpmSnapshotEdges = (content: string): Map<string, SnapshotDepEdges> 
         for (const field of ["dependencies", "peerDependencies", "optionalDependencies"] as const) {
             const scraped = extractPnpmDependencyMap(entryBody, field);
 
-            if (scraped) {
-                existing[field] = { ...existing[field], ...scraped };
+            if (!scraped) {
+                continue;
             }
+
+            const merged = existing[field] ?? {};
+
+            // Push unique versions: a spread-merge would overwrite conflicting
+            // peer-context resolutions (e.g. `react-dom(react@17)` emitting
+            // `react: 17.0.2` and `react-dom(react@18)` emitting `react: 18.0.0`
+            // would collapse to one). The array-valued shape keeps both.
+            for (const [depName, depVersions] of Object.entries(scraped)) {
+                const bucket = merged[depName] ?? [];
+
+                for (const depVersion of depVersions) {
+                    if (!bucket.includes(depVersion)) {
+                        bucket.push(depVersion);
+                    }
+                }
+
+                merged[depName] = bucket;
+            }
+
+            existing[field] = merged;
         }
 
         result.set(baseKey, existing);
@@ -419,7 +473,7 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
 const extractPnpmDependencyMap = (
     body: string,
     section: "dependencies" | "optionalDependencies" | "peerDependencies",
-): Record<string, string> | undefined => {
+): Record<string, string[]> | undefined => {
     // Package bodies are indented 4 spaces; each section header is at that
     // depth, and its entries are indented 6 spaces. We match the header,
     // capture the block that follows, and stop at the next section header
@@ -431,7 +485,7 @@ const extractPnpmDependencyMap = (
         return undefined;
     }
 
-    const map: Record<string, string> = {};
+    const map: Record<string, string[]> = {};
     // Entries: `      name: version` or `      '@scope/name': version`.
     // Version can be a plain semver, a dist-tag reference, or carry a peer
     // disambiguator like `1.2.3(peer@4.0.0)` — we keep the base version.
@@ -453,9 +507,17 @@ const extractPnpmDependencyMap = (
             version = version.slice(0, parenIndex).trim();
         }
 
-        if (name && version) {
-            map[name] = version;
+        if (!name || !version) {
+            continue;
         }
+
+        const bucket = map[name] ?? [];
+
+        if (!bucket.includes(version)) {
+            bucket.push(version);
+        }
+
+        map[name] = bucket;
     }
 
     return Object.keys(map).length > 0 ? map : undefined;
@@ -536,7 +598,7 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
 const extractYarnDependencyMap = (
     body: string,
     section: "dependencies" | "optionalDependencies" | "peerDependencies",
-): Record<string, string> | undefined => {
+): Record<string, string[]> | undefined => {
     const sectionRegex = new RegExp(`^ {2}${section}:\\s*\\n((?: {4,}[^\\n]*\\n?)+)`, "m");
     const sectionMatch = sectionRegex.exec(body);
 
@@ -544,7 +606,7 @@ const extractYarnDependencyMap = (
         return undefined;
     }
 
-    const map: Record<string, string> = {};
+    const map: Record<string, string[]> = {};
     // Matches both `    name "value"` (v1) and `    "name": "value"` (Berry):
     //   - optional quotes around the key
     //   - optional colon + whitespace between key and value
@@ -559,7 +621,13 @@ const extractYarnDependencyMap = (
         const version = match[2] as string;
 
         if (name && version) {
-            map[name] = version;
+            const bucket = map[name] ?? [];
+
+            if (!bucket.includes(version)) {
+                bucket.push(version);
+            }
+
+            map[name] = bucket;
         }
     }
 
@@ -642,11 +710,17 @@ export const parseBunLockFile = (content: string): LockFileEntry[] => {
         const metadata = tuple[2];
 
         if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
-            const meta = metadata as Partial<Pick<LockFileEntry, "dependencies" | "optionalDependencies" | "peerDependencies">>;
+            // bun stores the raw package.json-shaped dep maps (single-resolution
+            // per name per parent) — lift into our array-valued shape.
+            const meta = metadata as {
+                dependencies?: Record<string, string>;
+                optionalDependencies?: Record<string, string>;
+                peerDependencies?: Record<string, string>;
+            };
 
-            copyDepMap(lockEntry, "dependencies", meta.dependencies);
-            copyDepMap(lockEntry, "peerDependencies", meta.peerDependencies);
-            copyDepMap(lockEntry, "optionalDependencies", meta.optionalDependencies);
+            copyDepMap(lockEntry, "dependencies", liftDepMap(meta.dependencies));
+            copyDepMap(lockEntry, "peerDependencies", liftDepMap(meta.peerDependencies));
+            copyDepMap(lockEntry, "optionalDependencies", liftDepMap(meta.optionalDependencies));
         }
 
         pushUniqueEntry(result, seen, lockEntry);

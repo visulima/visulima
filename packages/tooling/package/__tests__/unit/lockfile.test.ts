@@ -145,9 +145,9 @@ describe(parseNpmLockFile, () => {
 
         const foo = parseNpmLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ bar: "^1.0.0" });
-        expect(foo?.peerDependencies).toEqual({ react: "^18" });
-        expect(foo?.optionalDependencies).toEqual({ fsevents: "^2" });
+        expect(foo?.dependencies).toEqual({ bar: ["^1.0.0"] });
+        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
+        expect(foo?.optionalDependencies).toEqual({ fsevents: ["^2"] });
     });
 
     it("should return an empty list for invalid JSON", () => {
@@ -235,13 +235,21 @@ snapshots:
         const anthropic = parsePnpmLockFile(content).find((entry) => entry.name === "@ai-sdk/anthropic");
 
         expect(anthropic?.integrity?.algorithm).toBe("sha512");
-        // Peer suffixes dropped from both the snapshot key and the dep values.
-        expect(anthropic?.dependencies).toEqual({ "@ai-sdk/provider-utils": "4.0.23", zod: "4.3.6" });
+        // Peer suffixes dropped from both the snapshot key and the dep values;
+        // each value is wrapped in an array so multi-variant resolutions can
+        // coexist (this entry has only one variant, so arrays are singletons).
+        expect(anthropic?.dependencies).toEqual({
+            "@ai-sdk/provider-utils": ["4.0.23"],
+            zod: ["4.3.6"],
+        });
     });
 
-    it("should union peer-context variants when the same base appears in multiple snapshot entries", () => {
+    it("should preserve conflicting resolutions across peer-context variants", () => {
         expect.assertions(1);
 
+        // Two snapshot variants resolve `react` to different versions. The
+        // array-valued dep map keeps BOTH so the SBOM graph can emit both
+        // edges — a spread-merge would have clobbered one.
         const content = `packages:
 
   react-dom@18.2.0:
@@ -252,6 +260,7 @@ snapshots:
   react-dom@18.2.0(react@18.0.0):
     dependencies:
       loose-envify: 1.4.0
+      react: 18.0.0
       scheduler: 0.23.0
 
   react-dom@18.2.0(react@17.0.2):
@@ -262,12 +271,11 @@ snapshots:
 
         const reactDom = parsePnpmLockFile(content).find((entry) => entry.name === "react-dom");
 
-        // Union across peer contexts: both `scheduler` (react@18 variant) and
-        // `react` (react@17 variant) land on the single merged entry.
         expect(reactDom?.dependencies).toEqual({
-            "loose-envify": "1.4.0",
-            react: "17.0.2",
-            scheduler: "0.23.0",
+            "loose-envify": ["1.4.0"],
+            // Both peer-variant `react` resolutions preserved, insertion order.
+            react: ["18.0.0", "17.0.2"],
+            scheduler: ["0.23.0"],
         });
     });
 
@@ -288,8 +296,8 @@ snapshots:
         const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
 
         // Peer disambiguator `(react@18.0.0)` stripped from the resolved version.
-        expect(foo?.dependencies).toEqual({ "@scope/baz": "1.0.0", bar: "2.0.0" });
-        expect(foo?.peerDependencies).toEqual({ react: ">=17" });
+        expect(foo?.dependencies).toEqual({ "@scope/baz": ["1.0.0"], bar: ["2.0.0"] });
+        expect(foo?.peerDependencies).toEqual({ react: [">=17"] });
     });
 });
 
@@ -338,7 +346,7 @@ describe(parseYarnLockFile, () => {
 
         const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ "@scope/baz": "^1.0.0", bar: "^2.0.0" });
+        expect(foo?.dependencies).toEqual({ "@scope/baz": ["^1.0.0"], bar: ["^2.0.0"] });
     });
 
     it("should capture a yarn Berry entry's dependencies with colon-separated 'npm:' specifiers", () => {
@@ -357,7 +365,7 @@ describe(parseYarnLockFile, () => {
 
         const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ "@scope/baz": "npm:^1.0.0", bar: "npm:^2.0.0" });
+        expect(foo?.dependencies).toEqual({ "@scope/baz": ["npm:^1.0.0"], bar: ["npm:^2.0.0"] });
     });
 
     it("should leave Yarn Berry entries without integrity (XXH64 isn't supported)", () => {
@@ -470,8 +478,8 @@ describe(parseBunLockFile, () => {
 
         const foo = parseBunLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ bar: "^2.0.0" });
-        expect(foo?.peerDependencies).toEqual({ react: "^18" });
+        expect(foo?.dependencies).toEqual({ bar: ["^2.0.0"] });
+        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
     });
 
     it("should return an empty list for invalid JSON", () => {

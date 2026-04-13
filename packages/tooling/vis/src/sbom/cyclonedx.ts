@@ -337,6 +337,9 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
             const outgoing = registryDepEdges.get(ref) ?? new Set<string>();
             // `dependencies` + `peerDependencies` inherit the parent's scope;
             // `optionalDependencies` are always optional regardless of parent.
+            // Each dep name may resolve to multiple versions when pnpm's
+            // peer-context variants disagree — iterate all of them so no
+            // edge is dropped.
             const inheritedMaps = [entry.dependencies, entry.peerDependencies];
 
             for (const depMap of inheritedMaps) {
@@ -344,32 +347,32 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
                     continue;
                 }
 
-                for (const [depName, specifier] of Object.entries(depMap)) {
-                    const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
+                for (const [depName, specifiers] of Object.entries(depMap)) {
+                    for (const specifier of specifiers) {
+                        const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
 
-                    if (!resolvedVersion) {
-                        continue;
+                        if (!resolvedVersion) {
+                            continue;
+                        }
+
+                        outgoing.add(toNpmPurl(depName, resolvedVersion));
+                        queue.push(`${depName}@${resolvedVersion}`);
                     }
-
-                    const depRef = `${depName}@${resolvedVersion}`;
-
-                    outgoing.add(toNpmPurl(depName, resolvedVersion));
-                    queue.push(depRef);
                 }
             }
 
             if (entry.optionalDependencies) {
-                for (const [depName, specifier] of Object.entries(entry.optionalDependencies)) {
-                    const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
+                for (const [depName, specifiers] of Object.entries(entry.optionalDependencies)) {
+                    for (const specifier of specifiers) {
+                        const resolvedVersion = resolveSpecifier(depName, specifier, versionIndex);
 
-                    if (!resolvedVersion) {
-                        continue;
+                        if (!resolvedVersion) {
+                            continue;
+                        }
+
+                        outgoing.add(toNpmPurl(depName, resolvedVersion));
+                        optionalSeed.push(`${depName}@${resolvedVersion}`);
                     }
-
-                    const depRef = `${depName}@${resolvedVersion}`;
-
-                    outgoing.add(toNpmPurl(depName, resolvedVersion));
-                    optionalSeed.push(depRef);
                 }
             }
 

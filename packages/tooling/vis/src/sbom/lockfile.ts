@@ -19,12 +19,16 @@ export type { LockFileType };
 
 /** Resolved package in the shape the SBOM builder consumes. */
 export interface ResolvedPackage {
-    /** Declared runtime deps — `name → specifier` from the lockfile. */
-    dependencies?: Record<string, string>;
+    /**
+     * Declared runtime deps — `name → specifier[]` from the lockfile.
+     * Arrays preserve pnpm v9+ peer-context variants that resolve the
+     * same dep name to different versions.
+     */
+    dependencies?: Record<string, string[]>;
     hash?: Hash;
     name: string;
-    optionalDependencies?: Record<string, string>;
-    peerDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string[]>;
+    peerDependencies?: Record<string, string[]>;
     version: string;
 }
 
