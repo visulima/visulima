@@ -160,8 +160,14 @@ const runWhy = (pm: PmInfo, options: WhyOptions, cwd: string, logger: Console): 
 const runOutdated = (pm: PmInfo, options: OutdatedOptions, cwd: string, logger: Console): number =>
     resolveAndRun((native) => native.resolveOutdated(pm.name, pm.version, options), cwd, logger);
 
+/**
+ * Resolves and runs a PM `link` operation. Passes `pm.version` to the native
+ * resolver so it can warn about pnpm v11 restrictions (arg-less link and
+ * global-store name resolution were removed). `target` is `null` for arg-less
+ * link, or a package name / path string.
+ */
 const runLink = (pm: PmInfo, target: string | null, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveLink(pm.name, target), cwd, logger);
+    resolveAndRun((native) => native.resolveLink(pm.name, pm.version, target), cwd, logger);
 
 const runUnlink = (pm: PmInfo, packages: string[], recursive: boolean, cwd: string, logger: Console): number =>
     resolveAndRun((native) => native.resolveUnlink(pm.name, pm.version, packages, recursive), cwd, logger);

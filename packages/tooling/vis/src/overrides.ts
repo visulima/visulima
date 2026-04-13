@@ -59,7 +59,15 @@ const DEP_FIELDS = ["dependencies", "devDependencies", "peerDependencies", "peer
 const OVERRIDE_FIELDS = ["overrides", "pnpm", "resolutions"];
 const AFTER_FIELDS = ["engines", "files"];
 
-/** Returns `true` when the pnpm major version is >= 10 (overrides moved to `pnpm-workspace.yaml`). */
+/**
+ * Returns `true` when the pnpm major version is >= 10 (overrides moved to `pnpm-workspace.yaml`).
+ *
+ * pnpm v10+ reads overrides exclusively from `pnpm-workspace.yaml`; v9 and
+ * earlier read them from `package.json#pnpm.overrides`. pnpm v11 removes the
+ * package.json fallback entirely — settings are no longer read from the `pnpm`
+ * field in `package.json` — so the v9- branch in {@link readPkgJsonOverrides}
+ * is strictly legacy support for projects still pinned to pnpm 9.
+ */
 const isPnpmV10Plus = (version: string): boolean => {
     const major = coerce(version)?.major;
 

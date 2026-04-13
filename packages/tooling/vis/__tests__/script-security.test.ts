@@ -291,15 +291,81 @@ describe(syncAllowBuildsToNativeConfig, () => {
     });
 
     describe("pnpm", () => {
-        it("should report native handling", () => {
-            expect.assertions(1);
+        it("should report error when pnpm-workspace.yaml is missing", () => {
+            expect.assertions(2);
+
+            const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
+
+            expect(actions).toHaveLength(1);
+            expect(actions[0]).toContain("pnpm-workspace.yaml not found");
+        });
+
+        it("should create allowBuilds block in pnpm-workspace.yaml", () => {
+            expect.assertions(5);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
 
             const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
                 esbuild: true,
                 sharp: true,
             });
 
-            expect(actions[0]).toContain("natively");
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(actions[0]).toContain("Updated pnpm-workspace.yaml allowBuilds");
+            expect(actions[0]).toContain("2 new");
+            expect(content).toContain("allowBuilds:");
+            expect(content).toContain("esbuild: true");
+            expect(content).toContain("sharp: true");
+        });
+
+        it("should merge with existing allowBuilds entries", () => {
+            expect.assertions(4);
+
+            writeFileSync(
+                join(tmpDir, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\n\nallowBuilds:\n  prisma: true\n  '@prisma/client': true\n",
+            );
+
+            const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
+                esbuild: true,
+                sharp: true,
+            });
+
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(actions[0]).toContain("2 new");
+            expect(actions[0]).toContain("4 total");
+            expect(content).toContain("prisma: true");
+            expect(content).toContain("esbuild: true");
+        });
+
+        it("should be a no-op when all entries already present", () => {
+            expect.assertions(1);
+
+            writeFileSync(
+                join(tmpDir, "pnpm-workspace.yaml"),
+                "packages:\n  - 'packages/*'\n\nallowBuilds:\n  esbuild: true\n",
+            );
+
+            const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
+
+            expect(actions[0]).toContain("already present");
+        });
+
+        it("should quote scoped package keys", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+            syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
+                "@parcel/watcher": true,
+                "@prisma/client": true,
+            });
+
+            const content = readFileSync(join(tmpDir, "pnpm-workspace.yaml"), "utf8");
+
+            expect(content).toMatch(/'@parcel\/watcher': true/);
         });
     });
 });

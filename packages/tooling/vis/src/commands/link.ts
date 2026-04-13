@@ -12,9 +12,9 @@ const link: Command = {
     },
     description: "Link a local package for development",
     examples: [
-        ["vis link", "Register current package globally"],
-        ["vis link react", "Link global package to current project"],
-        ["vis link ./packages/utils", "Link local directory package"],
+        ["vis link ./packages/utils", "Link local directory package (works on all PMs)"],
+        ["vis link", "Register current package globally (pnpm <=10, yarn, npm, bun)"],
+        ["vis link react", "Link global package into current project (pnpm <=10, yarn, npm, bun)"],
     ],
     execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
         const target = argument?.[0] ?? null;

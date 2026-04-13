@@ -16,6 +16,7 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { readYamlSync } from "@visulima/fs/yaml";
 import isInCi from "is-in-ci";
 
 import { error as errorOutput, info, note, warn } from "./output";
@@ -467,7 +468,57 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
         }
 
         case "pnpm": {
-            actions.push(`pnpm manages allowBuilds natively in pnpm-workspace.yaml (${approved.length} packages approved)`);
+            const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
+
+            if (!existsSync(filePath)) {
+                actions.push("pnpm-workspace.yaml not found. Cannot sync allowBuilds.");
+                break;
+            }
+
+            // Read existing allowBuilds to merge with vis config
+            let existing: Record<string, boolean> = {};
+
+            try {
+                const data = readYamlSync<{ allowBuilds?: Record<string, boolean> }>(filePath);
+
+                existing = data?.allowBuilds ?? {};
+            } catch {
+                /* fall through: treat as empty */
+            }
+
+            // Merge: vis config wins over existing entries (explicit intent)
+            const merged: Record<string, boolean> = { ...existing, ...allowBuilds };
+            const addedCount = Object.keys(allowBuilds).filter((key) => existing[key] !== allowBuilds[key]).length;
+
+            if (addedCount === 0) {
+                actions.push(`All ${String(Object.keys(allowBuilds).length)} allowBuilds entries already present in pnpm-workspace.yaml.`);
+                break;
+            }
+
+            // Render the map deterministically (sorted keys, quoted scoped names)
+            const sortedKeys = Object.keys(merged).sort();
+            const needsQuote = (key: string): boolean => key.startsWith("@") || key.includes("/") || /[:#\s]/.test(key);
+            const renderKey = (key: string): string => (needsQuote(key) ? `'${key.replace(/'/g, "''")}'` : key);
+            const block = sortedKeys.map((key) => `  ${renderKey(key)}: ${String(merged[key])}`).join("\n");
+            const allowBuildsBlock = `allowBuilds:\n${block}\n`;
+
+            // Normalize: ensure trailing newline so the regex can match the final body line.
+            let content = readFileSync(filePath, "utf8");
+
+            if (!content.endsWith("\n")) {
+                content += "\n";
+            }
+
+            // Replace existing block if present, otherwise append.
+            // Matches: "allowBuilds:" followed by zero or more indented (2+ space/tab) lines.
+            const existingBlockRegex = /^allowBuilds:[ \t]*\n(?:[ \t]{2,}[^\n]*\n)*/m;
+
+            content = existingBlockRegex.test(content) ? content.replace(existingBlockRegex, allowBuildsBlock) : `${content.trimEnd()}\n\n${allowBuildsBlock}`;
+
+            writeFileSync(filePath, content);
+            actions.push(
+                `Updated pnpm-workspace.yaml allowBuilds (${String(addedCount)} new, ${String(sortedKeys.length)} total)`,
+            );
             break;
         }
 
