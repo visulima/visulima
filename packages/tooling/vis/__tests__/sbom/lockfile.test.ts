@@ -1,113 +1,101 @@
-import { describe, expect, it } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
 
-import { parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile, sriToHexDigest } from "../../src/sbom/lockfile";
+import { join } from "@visulima/path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-describe(sriToHexDigest, () => {
-    it("should decode a valid sha512 SRI string to hex", () => {
-        expect.assertions(2);
+import { readLockfilePackages } from "../../src/sbom/lockfile";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
-        // "hello" base64 = aGVsbG8=
-        const result = sriToHexDigest("sha512-aGVsbG8=");
+/**
+ * The raw parsers (npm/pnpm/yarn) and SRI decoder live in
+ * `@visulima/package` and are covered by its own unit tests. These
+ * tests exercise the vis-specific adapter: translating the cross-package
+ * `{ algorithm, hex }` shape into CycloneDX's `{ alg, content }`, and
+ * anchoring the lookup at `workspaceRoot` (no walking up).
+ */
+describe(readLockfilePackages, () => {
+    let tmpDir: string;
 
-        expect(result?.alg).toBe("SHA-512");
-        expect(result?.content).toBe("68656c6c6f");
+    beforeEach(() => {
+        tmpDir = createTemporaryDirectory("vis-sbom-lockfile-");
     });
 
-    it("should return undefined for unsupported algorithms", () => {
-        expect.assertions(1);
-
-        expect(sriToHexDigest("md5-aGVsbG8=")).toBeUndefined();
+    afterEach(() => {
+        cleanupTemporaryDirectory(tmpDir);
     });
 
-    it("should return undefined for malformed SRI strings", () => {
-        expect.assertions(2);
-
-        expect(sriToHexDigest("sha512")).toBeUndefined();
-        expect(sriToHexDigest("")).toBeUndefined();
-    });
-});
-
-describe(parseNpmLockfile, () => {
-    it("should extract name/version/integrity from an npm v3 lockfile", () => {
+    it("should translate sha512 integrity to CycloneDX's SHA-512 + hex content", () => {
         expect.assertions(3);
 
-        const content = JSON.stringify({
-            lockfileVersion: 3,
-            packages: {
-                "": { name: "root", version: "1.0.0" },
-                "node_modules/lodash": {
-                    integrity: "sha512-aGVsbG8=",
-                    version: "4.17.21",
-                },
-            },
-        });
+        const workspaceRoot = join(tmpDir, "repo");
 
-        const result = parseNpmLockfile(content);
-
-        expect(result).toHaveLength(1);
-        expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.hash).toEqual({ alg: "SHA-512", content: "68656c6c6f" });
-    });
-
-    it("should return an empty list for invalid JSON", () => {
-        expect.assertions(1);
-
-        expect(parseNpmLockfile("not json")).toEqual([]);
-    });
-});
-
-describe(parsePnpmLockfile, () => {
-    it("should extract name/version/integrity from pnpm lockfile v9", () => {
-        expect.assertions(2);
-
-        const content = `lockfileVersion: '9.0'
-
-settings:
-  autoInstallPeers: true
-
-packages:
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(
+            join(workspaceRoot, "pnpm-lock.yaml"),
+            `packages:
 
   lodash@4.17.21:
     resolution: {integrity: sha512-aGVsbG8=}
+`,
+        );
 
-  '@visulima/path@1.0.0':
-    resolution: {integrity: sha512-aGVsbG8=}
-`;
+        const result = readLockfilePackages(workspaceRoot);
 
-        const result = parsePnpmLockfile(content);
+        expect(result?.type).toBe("pnpm");
 
-        expect(result).toHaveLength(2);
-        expect(result.map((p) => p.name).sort()).toEqual(["@visulima/path", "lodash"]);
+        const lodash = result?.packages.get("lodash@4.17.21");
+
+        expect(lodash?.name).toBe("lodash");
+        expect(lodash?.hash).toEqual({ alg: "SHA-512", content: "68656c6c6f" });
     });
 
-    it("should skip workspace and link references", () => {
+    it("should prefer pnpm-lock.yaml over package-lock.json when both exist", () => {
         expect.assertions(1);
 
-        const content = `packages:
+        const workspaceRoot = join(tmpDir, "repo");
 
-  lodash@link:../lodash:
-    resolution: {directory: ../lodash, type: directory}
-`;
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(
+            join(workspaceRoot, "pnpm-lock.yaml"),
+            `packages:
 
-        expect(parsePnpmLockfile(content)).toEqual([]);
+  a@1.0.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+        );
+        writeFileSync(join(workspaceRoot, "package-lock.json"), JSON.stringify({ packages: {} }));
+
+        expect(readLockfilePackages(workspaceRoot)?.type).toBe("pnpm");
     });
-});
 
-describe(parseYarnLockfile, () => {
-    it("should extract name/version/integrity from a yarn classic lockfile", () => {
-        expect.assertions(3);
+    it("should return undefined when no supported lockfile exists at workspaceRoot", () => {
+        expect.assertions(1);
 
-        const content = `
-"lodash@^4.17.21":
-  version "4.17.21"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz"
-  integrity "sha512-aGVsbG8="
-`;
+        const workspaceRoot = join(tmpDir, "empty");
 
-        const result = parseYarnLockfile(content);
+        mkdirSync(workspaceRoot, { recursive: true });
 
-        expect(result).toHaveLength(1);
-        expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.hash).toEqual({ alg: "SHA-512", content: "68656c6c6f" });
+        expect(readLockfilePackages(workspaceRoot)).toBeUndefined();
+    });
+
+    it("should not walk up to find an ancestor lockfile", () => {
+        expect.assertions(1);
+
+        const ancestor = join(tmpDir, "ancestor");
+        const workspaceRoot = join(ancestor, "inner");
+
+        mkdirSync(workspaceRoot, { recursive: true });
+        writeFileSync(
+            join(ancestor, "pnpm-lock.yaml"),
+            `packages:
+
+  a@1.0.0:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+        );
+
+        // The ancestor lockfile must be ignored — SBOM scope is bounded by
+        // workspaceRoot, not by nearest-lockfile.
+        expect(readLockfilePackages(workspaceRoot)).toBeUndefined();
     });
 });

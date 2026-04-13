@@ -1,8 +1,13 @@
 export { default as PackageNotFoundError } from "./error/package-not-found-error";
-export type { LockFileEntry, LockFileIntegrity, LockFileIntegrityAlgorithm, LockFileParseResult, LockFileType } from "./lockfile";
+export type {
+    LockFileEntry,
+    LockFileIntegrity,
+    LockFileIntegrityAlgorithm,
+    LockFileParseResult,
+    LockFileType,
+} from "./lockfile";
 export {
     decodeSriIntegrity,
-    parseBunLockFile,
     parseLockFile,
     parseLockFileContent,
     parseLockFileSync,

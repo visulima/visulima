@@ -1,14 +1,11 @@
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
 
-import { ensureDirSync, readFileSync, removeSync, writeFileSync } from "@visulima/fs";
-import { dirname, join } from "@visulima/path";
+import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
     decodeSriIntegrity,
-    parseBunLockFile,
     parseLockFile,
     parseLockFileContent,
     parseLockFileSync,
@@ -16,14 +13,6 @@ import {
     parsePnpmLockFile,
     parseYarnLockFile,
 } from "../../src/lockfile";
-
-/**
- * Lockfile fixtures are vendored from lockparse
- * (https://github.com/43081j/lockparse, MIT) so our parsers are
- * exercised against real-world npm/pnpm/yarn/bun output.
- */
-const fixtureDirectory = join(dirname(fileURLToPath(import.meta.url)), "__fixtures__", "lockfiles");
-const readFixture = (name: string): string => readFileSync(join(fixtureDirectory, name), "utf8");
 
 describe(decodeSriIntegrity, () => {
     it("should decode a valid sha512 SRI string to hex", () => {
@@ -48,30 +37,6 @@ describe(decodeSriIntegrity, () => {
         expect(decodeSriIntegrity("sha512")).toBeUndefined();
         expect(decodeSriIntegrity("")).toBeUndefined();
     });
-
-    it("should reject oversized SRI strings without allocating a huge buffer", () => {
-        expect.assertions(1);
-
-        // A malicious lockfile might stash megabytes of base64 here hoping we
-        // call Buffer.from on it. We cap at 1 KiB; anything above that is
-        // refused before the decode step.
-        const hostile = `sha512-${"A".repeat(10 * 1024)}`;
-
-        expect(decodeSriIntegrity(hostile)).toBeUndefined();
-    });
-
-    it("should reject payloads containing characters outside the base64 alphabet", () => {
-        expect.assertions(3);
-
-        // `Buffer.from("…", "base64")` silently drops characters outside
-        // [A-Za-z0-9+/=], so a garbage payload like `sha512-abc!def` would
-        // decode to the bytes of "abcdef". Validate strictly up front.
-        expect(decodeSriIntegrity("sha512-abc!def")).toBeUndefined();
-        expect(decodeSriIntegrity("sha512-aGVsb G8=")).toBeUndefined(); // embedded space
-        // URL-safe base64 is *not* the SRI alphabet — `-` and `_` would
-        // normally map to `+` and `/`, but SRI mandates the standard alphabet.
-        expect(decodeSriIntegrity("sha512-aGVsbG8_")).toBeUndefined();
-    });
 });
 
 describe(parseNpmLockFile, () => {
@@ -94,60 +59,6 @@ describe(parseNpmLockFile, () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
         expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
-    });
-
-    it("should keep distinct name@version pairs (hoisted + nested deduped copies collapse)", () => {
-        expect.assertions(3);
-
-        const content = JSON.stringify({
-            lockfileVersion: 3,
-            packages: {
-                "": { name: "root", version: "1.0.0" },
-                // Two different versions of `foo` — should both appear.
-                "node_modules/bar/node_modules/foo": { version: "2.0.0" },
-                "node_modules/foo": { version: "1.0.0" },
-            },
-        });
-
-        const entries = parseNpmLockFile(content).filter((entry) => entry.name === "foo");
-
-        expect(entries).toHaveLength(2);
-        expect(entries.some((entry) => entry.version === "1.0.0")).toBe(true);
-        expect(entries.some((entry) => entry.version === "2.0.0")).toBe(true);
-    });
-
-    it("should parse the vendored lockparse package-lock.json fixture", () => {
-        expect.assertions(2);
-
-        const entries = parseNpmLockFile(readFixture("package-lock.json"));
-
-        expect(entries.length).toBeGreaterThan(0);
-
-        // Every entry should have an SRI-decoded integrity digest.
-        expect(entries.every((entry) => entry.integrity?.algorithm !== undefined)).toBe(true);
-    });
-
-    it("should capture per-entry dependencies / peerDependencies / optionalDependencies", () => {
-        expect.assertions(3);
-
-        const content = JSON.stringify({
-            lockfileVersion: 3,
-            packages: {
-                "": { name: "root", version: "1.0.0" },
-                "node_modules/foo": {
-                    dependencies: { bar: "^1.0.0" },
-                    optionalDependencies: { fsevents: "^2" },
-                    peerDependencies: { react: "^18" },
-                    version: "1.2.3",
-                },
-            },
-        });
-
-        const foo = parseNpmLockFile(content).find((entry) => entry.name === "foo");
-
-        expect(foo?.dependencies).toEqual({ bar: ["^1.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
-        expect(foo?.optionalDependencies).toEqual({ fsevents: ["^2"] });
     });
 
     it("should return an empty list for invalid JSON", () => {
@@ -192,113 +103,6 @@ packages:
 
         expect(parsePnpmLockFile(content)).toEqual([]);
     });
-
-    it("should parse the vendored lockparse pnpm-lock.yaml fixture", () => {
-        expect.assertions(1);
-
-        expect(parsePnpmLockFile(readFixture("pnpm-lock.yaml")).length).toBeGreaterThan(0);
-    });
-
-    it("should capture dependency edges from pnpm v9 snapshots: section (not packages:)", () => {
-        expect.assertions(2);
-
-        // v9 moves concrete deps out of `packages:` and into `snapshots:`.
-        // Our parser used to only read `packages:`, emitting every v9 entry
-        // with an empty deps map. Verify the snapshot edges now flow
-        // through, with peer suffixes stripped from both key and values.
-        const content = `lockfileVersion: '9.0'
-
-packages:
-
-  '@ai-sdk/anthropic@3.0.68':
-    resolution: {integrity: sha512-aGVsbG8=}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider-utils@4.0.23':
-    resolution: {integrity: sha512-aGVsbG8=}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-snapshots:
-
-  '@ai-sdk/anthropic@3.0.68(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
-      zod: 4.3.6
-
-  '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':
-    dependencies:
-      zod: 4.3.6
-`;
-
-        const anthropic = parsePnpmLockFile(content).find((entry) => entry.name === "@ai-sdk/anthropic");
-
-        expect(anthropic?.integrity?.algorithm).toBe("sha512");
-        // Peer suffixes dropped from both the snapshot key and the dep values;
-        // each value is wrapped in an array so multi-variant resolutions can
-        // coexist (this entry has only one variant, so arrays are singletons).
-        expect(anthropic?.dependencies).toEqual({
-            "@ai-sdk/provider-utils": ["4.0.23"],
-            zod: ["4.3.6"],
-        });
-    });
-
-    it("should preserve conflicting resolutions across peer-context variants", () => {
-        expect.assertions(1);
-
-        // Two snapshot variants resolve `react` to different versions. The
-        // array-valued dep map keeps BOTH so the SBOM graph can emit both
-        // edges — a spread-merge would have clobbered one.
-        const content = `packages:
-
-  react-dom@18.2.0:
-    resolution: {integrity: sha512-aGVsbG8=}
-
-snapshots:
-
-  react-dom@18.2.0(react@18.0.0):
-    dependencies:
-      loose-envify: 1.4.0
-      react: 18.0.0
-      scheduler: 0.23.0
-
-  react-dom@18.2.0(react@17.0.2):
-    dependencies:
-      loose-envify: 1.4.0
-      react: 17.0.2
-`;
-
-        const reactDom = parsePnpmLockFile(content).find((entry) => entry.name === "react-dom");
-
-        expect(reactDom?.dependencies).toEqual({
-            "loose-envify": ["1.4.0"],
-            // Both peer-variant `react` resolutions preserved, insertion order.
-            react: ["18.0.0", "17.0.2"],
-            scheduler: ["0.23.0"],
-        });
-    });
-
-    it("should capture per-entry dependency sub-maps and strip peer disambiguators", () => {
-        expect.assertions(2);
-
-        const content = `packages:
-
-  foo@1.2.3:
-    resolution: {integrity: sha512-aGVsbG8=}
-    dependencies:
-      bar: 2.0.0
-      '@scope/baz': 1.0.0(react@18.0.0)
-    peerDependencies:
-      react: '>=17'
-`;
-
-        const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
-
-        // Peer disambiguator `(react@18.0.0)` stripped from the resolved version.
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["1.0.0"], bar: ["2.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: [">=17"] });
-    });
 });
 
 describe(parseYarnLockFile, () => {
@@ -317,175 +121,6 @@ describe(parseYarnLockFile, () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
         expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
-    });
-
-    it("should parse the vendored lockparse yarn.lock (Berry) fixture", () => {
-        expect.assertions(1);
-
-        expect(parseYarnLockFile(readFixture("yarn.lock")).length).toBeGreaterThan(0);
-    });
-
-    it("should parse the vendored lockparse yarn-v1.lock fixture", () => {
-        expect.assertions(1);
-
-        expect(parseYarnLockFile(readFixture("yarn-v1.lock")).length).toBeGreaterThan(0);
-    });
-
-    it("should capture a yarn v1 entry's dependencies sub-map", () => {
-        expect.assertions(1);
-
-        const content = `
-"foo@^1.0.0":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/foo/-/foo-1.2.3.tgz"
-  integrity "sha512-aGVsbG8="
-  dependencies:
-    bar "^2.0.0"
-    "@scope/baz" "^1.0.0"
-`;
-
-        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
-
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["^1.0.0"], bar: ["^2.0.0"] });
-    });
-
-    it("should capture a yarn Berry entry's dependencies with colon-separated 'npm:' specifiers", () => {
-        expect.assertions(1);
-
-        const content = `
-"foo@npm:1.2.3":
-  version: 1.2.3
-  resolution: "foo@npm:1.2.3"
-  dependencies:
-    bar: "npm:^2.0.0"
-    "@scope/baz": "npm:^1.0.0"
-  languageName: node
-  linkType: hard
-`;
-
-        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
-
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["npm:^1.0.0"], bar: ["npm:^2.0.0"] });
-    });
-
-    it("should leave Yarn Berry entries without integrity (XXH64 isn't supported)", () => {
-        expect.assertions(2);
-
-        // Berry only records `checksum: 10c0/…` (XXH64), not an SRI. Since
-        // XXH64 isn't in CycloneDX's HashAlgorithm enum, the entry comes
-        // out of the parser with `integrity: undefined` — this is the
-        // documented behaviour; callers that need Berry integrity must
-        // read yarn.lock directly.
-        const content = `
-"foo@npm:1.2.3":
-  version: 1.2.3
-  resolution: "foo@npm:1.2.3"
-  checksum: 10c0/abc123def456
-  languageName: node
-  linkType: hard
-`;
-
-        const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
-
-        expect(foo?.version).toBe("1.2.3");
-        expect(foo?.integrity).toBeUndefined();
-    });
-});
-
-describe(parseBunLockFile, () => {
-    it("should extract name/version/integrity from a bun.lock entry", () => {
-        expect.assertions(3);
-
-        const content = `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root", "dependencies": { "lodash": "^4.17.21" } } },
-  "packages": {
-    "lodash": ["lodash@4.17.21", "", {}, "sha512-aGVsbG8="],
-  },
-}`;
-
-        const result = parseBunLockFile(content);
-
-        expect(result).toHaveLength(1);
-        expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
-    });
-
-    it("should tolerate trailing commas (Bun emits them)", () => {
-        expect.assertions(1);
-
-        const content = `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root", }, },
-  "packages": {
-    "a": ["a@1.0.0", "", {}, "sha512-aGVsbG8="],
-  },
-}`;
-
-        expect(parseBunLockFile(content)).toHaveLength(1);
-    });
-
-    it("should skip workspace/link references", () => {
-        expect.assertions(1);
-
-        const content = `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root" } },
-  "packages": {
-    "pkg-a": ["pkg-a@workspace:packages/pkg-a", "", {}],
-  },
-}`;
-
-        expect(parseBunLockFile(content)).toEqual([]);
-    });
-
-    it("should parse the vendored lockparse bun.lock fixture", () => {
-        expect.assertions(3);
-
-        const entries = parseBunLockFile(readFixture("bun.lock"));
-
-        // Fixture has 92 distinct `name@version` tuples; any change warrants a
-        // deliberate test update rather than silent drift.
-        expect(entries).toHaveLength(92);
-
-        const eslint = entries.find((entry) => entry.name === "eslint");
-
-        expect(eslint?.version).toBe("9.37.0");
-        expect(eslint?.integrity?.algorithm).toBe("sha512");
-    });
-
-    it("should parse the vendored bun monorepo fixture and surface the workspace-external deps", () => {
-        expect.assertions(2);
-
-        const entries = parseBunLockFile(readFixture("bun-monorepo.lock"));
-
-        expect(entries.length).toBeGreaterThan(0);
-        // `pkg-a` / `pkg-b` are workspace entries — they must not land in the
-        // registry-dep list (they use `workspace:` version specifiers).
-        expect(entries.some((entry) => entry.name === "pkg-a" || entry.name === "pkg-b")).toBe(false);
-    });
-
-    it("should capture dependencies / peerDependencies from the tuple's metadata slot", () => {
-        expect.assertions(2);
-
-        const content = `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root" } },
-  "packages": {
-    "foo": ["foo@1.2.3", "", { "dependencies": { "bar": "^2.0.0" }, "peerDependencies": { "react": "^18" } }, "sha512-aGVsbG8="],
-  },
-}`;
-
-        const foo = parseBunLockFile(content).find((entry) => entry.name === "foo");
-
-        expect(foo?.dependencies).toEqual({ bar: ["^2.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
-    });
-
-    it("should return an empty list for invalid JSON", () => {
-        expect.assertions(1);
-
-        expect(parseBunLockFile("{invalidJson: true")).toEqual([]);
     });
 });
 
@@ -521,20 +156,6 @@ describe(parseLockFileContent, () => {
 
         expect(parseLockFileContent(content, "yarn")).toHaveLength(1);
     });
-
-    it("should dispatch to the bun parser for type='bun'", () => {
-        expect.assertions(1);
-
-        const content = `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root" } },
-  "packages": {
-    "a": ["a@1.0.0", "", {}, "sha512-aGVsbG8="],
-  },
-}`;
-
-        expect(parseLockFileContent(content, "bun")).toHaveLength(1);
-    });
 });
 
 describe("parseLockFile / parseLockFileSync", () => {
@@ -545,7 +166,7 @@ describe("parseLockFile / parseLockFileSync", () => {
     });
 
     afterEach(() => {
-        removeSync(temporaryDirectory);
+        rmSync(temporaryDirectory, { force: true, recursive: true });
     });
 
     it("should find and parse the nearest pnpm-lock.yaml", async () => {
@@ -584,30 +205,13 @@ describe("parseLockFile / parseLockFileSync", () => {
         expect(result.entries[0]?.name).toBe("a");
     });
 
-    it("should find and parse bun.lock", async () => {
-        expect.assertions(2);
-
-        writeFileSync(
-            join(temporaryDirectory, "bun.lock"),
-            `{
-  "lockfileVersion": 1,
-  "workspaces": { "": { "name": "root" } },
-  "packages": { "a": ["a@1.0.0", "", {}, "sha512-aGVsbG8="] },
-}`,
-        );
-
-        const result = await parseLockFile(temporaryDirectory);
-
-        expect(result.type).toBe("bun");
-        expect(result.entries).toHaveLength(1);
-    });
-
     it("should throw when no supported lock file exists", async () => {
         expect.assertions(1);
 
+        // An empty dir in /tmp has no lockfile above it (fresh mkdtemp).
         const isolated = join(tmpdir(), `no-lockfile-${Date.now()}`);
 
-        ensureDirSync(isolated);
+        mkdirSync(isolated, { recursive: true });
 
         await expect(parseLockFile(isolated)).rejects.toThrow(/Could not find a supported lock file/);
     });

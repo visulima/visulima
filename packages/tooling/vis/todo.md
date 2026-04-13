@@ -47,7 +47,7 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 - ✅ CycloneDX 1.6 JSON + XML output (ECMA-424 standard) — XML goes through `jstoxml` (already used by `packages/api/api-platform` and `packages/error-debugging/error-handler`)
 - ✅ Walks the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
 - ✅ Per project: reads `package.json` → name, version, license, author, description, homepage/vcs/issue-tracker references
-- ✅ `src/sbom/lockfile.ts` — zero-dep parsers for `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock` that extract name + version + SRI integrity hash (decoded from base64 SRI to hex per CycloneDX spec)
+- ✅ Lockfile parsing lives in `@visulima/package/lockfile` (`parseNpmLockFile`, `parsePnpmLockFile`, `parseYarnLockFile`, `parseLockFile(Sync)`, `decodeSriIntegrity`) — shared with any other consumer that needs name/version/SRI-integrity from pnpm/npm/yarn lockfiles. `src/sbom/lockfile.ts` is now a thin adapter that translates the package-agnostic `{ algorithm, hex }` shape into CycloneDX's `{ alg, content }`.
 - ✅ `src/sbom/purl.ts` — zero-dep `pkg:npm/…` Package URL builder with proper percent-encoding
 - ✅ `src/sbom/license.ts` — minimal SPDX normaliser covering the ~95 % of npm packages whose `license` field is a known SPDX ID; falls back to `NamedLicense` for everything else, preserves SPDX expressions verbatim
 - ✅ `src/sbom/cyclonedx.ts` — pure builder; output round-trips through `assertValidBom()` (vendored 1.6.1 schema)
