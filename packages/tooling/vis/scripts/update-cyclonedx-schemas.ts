@@ -67,10 +67,22 @@ const parseTagArg = (argv: readonly string[]): string => {
         const arg = argv[index]!;
 
         if (arg === "--tag") {
-            tag = argv[index + 1];
+            const next = argv[index + 1];
+
+            if (next === undefined || next.startsWith("--")) {
+                throw new Error("Flag \"--tag\" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]");
+            }
+
+            tag = next;
             index += 1;
         } else if (arg.startsWith("--tag=")) {
-            tag = arg.slice("--tag=".length);
+            const value = arg.slice("--tag=".length);
+
+            if (value === "") {
+                throw new Error("Flag \"--tag=\" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]");
+            }
+
+            tag = value;
         } else if (arg.startsWith("--")) {
             throw new Error(`Unknown flag "${arg}". Usage: update-cyclonedx-schemas [--tag <value> | <tag>]`);
         } else if (tag === undefined) {
