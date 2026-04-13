@@ -13,6 +13,7 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import { resolveCacheDirectory } from "../cache-directory";
 import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
 import { compareDuration, formatTimingSummary } from "../run-report";
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
@@ -25,8 +26,7 @@ import {
     type VisTargetConfiguration,
     type VisTargetOptions,
 } from "../target-options";
-import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
-import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
+import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
 import { startWatcher } from "../watch";
@@ -577,13 +577,29 @@ const run: Command = {
 
         const startTime = Date.now();
 
+        // Resolve the cache directory through the shared helper so precedence
+        // (CLI > vis.config.ts > default) stays consistent with `vis cache`
+        // and relative --cache-dir values are normalized against the
+        // workspace root. Other fields keep their existing spread semantics
+        // to avoid changing override precedence for parallel/dryRun/etc.
+        const configTaskRunnerOptions
+            = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
+        const resolvedCacheDirectory = resolveCacheDirectory(
+            workspaceRoot,
+            options.cacheDir as string | undefined,
+            configTaskRunnerOptions.cacheDirectory,
+        );
+
         const runnerOptions: TaskRunnerOptions = {
-            cacheDirectory: options.cacheDir as string | undefined,
             dryRun: options.dryRun as boolean,
             parallel: (options.parallel as number) ?? 3,
             skipNxCache: !options.cache,
             summarize: options.summarize as boolean,
-            ...config.taskRunnerOptions,
+            ...configTaskRunnerOptions,
+            // Applied after the config spread so the user's `--cache-dir` flag
+            // wins over a config value and relative paths are normalized
+            // against `workspaceRoot` via `resolveCacheDirectory()`.
+            cacheDirectory: resolvedCacheDirectory,
         };
 
         const isTTY = process.stdout.isTTY && !isInCi;
