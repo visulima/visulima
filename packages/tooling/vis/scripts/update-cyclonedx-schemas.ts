@@ -37,7 +37,7 @@ const SCHEMAS_DIR = resolve(__dirname, "../__tests__/sbom/schemas");
 const DEFAULT_TAG = "1.6.1";
 
 /** Accepts `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`, each component a non-empty run of digits. */
-const TAG_PATTERN = /^(\d+)\.(\d+)(?:\.(\d+))?$/;
+const TAG_PATTERN = /^(\d+)\.(\d+)(?:\.\d+)?$/;
 
 /**
  * Parses a tag string and returns the `MAJOR.MINOR` portion used in the bom
@@ -58,9 +58,10 @@ const majorMinor = (tag: string): string => {
 /**
  * Resolves the spec tag from `process.argv`, accepting either a bare
  * positional argument or a `--tag <value>` / `--tag=<value>` flag. Unknown
- * flags are rejected with a usage hint.
+ * flags are rejected with a usage hint. The returned `mm` (`MAJOR.MINOR`)
+ * is validated here so downstream URL/filename construction is safe.
  */
-const parseTagArg = (argv: readonly string[]): string => {
+const parseTagArg = (argv: readonly string[]): { mm: string; tag: string } => {
     let tag: string | undefined;
 
     for (let index = 0; index < argv.length; index += 1) {
@@ -94,14 +95,8 @@ const parseTagArg = (argv: readonly string[]): string => {
 
     const resolved = tag ?? DEFAULT_TAG;
 
-    // Run the resolved tag through the numeric validator once so downstream
-    // string interpolation into URLs and filenames is safe.
-    majorMinor(resolved);
-
-    return resolved;
+    return { mm: majorMinor(resolved), tag: resolved };
 };
-
-const baseUrl = (tag: string): string => `https://raw.githubusercontent.com/CycloneDX/specification/${tag}`;
 
 interface Asset {
     /** Relative filename under `__tests__/sbom/schemas/`. */
@@ -110,14 +105,14 @@ interface Asset {
     url: string;
 }
 
-const buildAssetList = (tag: string): Asset[] => {
-    const mm = majorMinor(tag);
+const buildAssetList = (tag: string, mm: string): Asset[] => {
+    const base = `https://raw.githubusercontent.com/CycloneDX/specification/${tag}`;
 
     return [
-        { filename: `bom-${mm}.schema.json`, url: `${baseUrl(tag)}/schema/bom-${mm}.schema.json` },
-        { filename: "spdx.schema.json", url: `${baseUrl(tag)}/schema/spdx.schema.json` },
-        { filename: "jsf-0.82.schema.json", url: `${baseUrl(tag)}/schema/jsf-0.82.schema.json` },
-        { filename: "LICENSE", url: `${baseUrl(tag)}/LICENSE` },
+        { filename: `bom-${mm}.schema.json`, url: `${base}/schema/bom-${mm}.schema.json` },
+        { filename: "spdx.schema.json", url: `${base}/schema/spdx.schema.json` },
+        { filename: "jsf-0.82.schema.json", url: `${base}/schema/jsf-0.82.schema.json` },
+        { filename: "LICENSE", url: `${base}/LICENSE` },
     ];
 };
 
@@ -144,13 +139,13 @@ const validateJson = (filename: string, body: string): void => {
 };
 
 const main = async (): Promise<void> => {
-    const tag = parseTagArg(process.argv.slice(2));
+    const { mm, tag } = parseTagArg(process.argv.slice(2));
 
     process.stdout.write(`Fetching CycloneDX spec tag ${tag}…\n`);
 
     mkdirSync(SCHEMAS_DIR, { recursive: true });
 
-    const assets = buildAssetList(tag);
+    const assets = buildAssetList(tag, mm);
 
     for (const { filename, url } of assets) {
         process.stdout.write(`  ${filename}  ← ${url}\n`);

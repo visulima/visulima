@@ -57,6 +57,14 @@ export type ComponentScope = "excluded" | "optional" | "required";
 /** License acknowledgement status. */
 export type LicenseAcknowledgement = "concluded" | "declared";
 
+/** Fields shared by every licence variant. */
+export interface LicenseBase {
+    "bom-ref"?: string;
+    acknowledgement?: LicenseAcknowledgement;
+    text?: Attachment;
+    url?: string;
+}
+
 /**
  * A named or SPDX-identified licence.
  *
@@ -67,25 +75,17 @@ export type LicenseAcknowledgement = "concluded" | "declared";
 export type License = NamedLicense | SpdxLicense;
 
 /** SPDX-identified licence (`id` is a valid SPDX licence identifier). */
-export interface SpdxLicense {
-    "bom-ref"?: string;
-    acknowledgement?: LicenseAcknowledgement;
+export interface SpdxLicense extends LicenseBase {
     /** SPDX licence identifier (e.g. `"MIT"`). */
     id: string;
     name?: never;
-    text?: Attachment;
-    url?: string;
 }
 
 /** Free-form licence where no SPDX identifier matches. */
-export interface NamedLicense {
-    "bom-ref"?: string;
-    acknowledgement?: LicenseAcknowledgement;
+export interface NamedLicense extends LicenseBase {
     id?: never;
     /** Free-form licence name. */
     name: string;
-    text?: Attachment;
-    url?: string;
 }
 
 /** A single licence entry in the `licenses` array. */

@@ -24,6 +24,10 @@ import bomSchema from "./schemas/bom-1.6.schema.json" with { type: "json" };
 import jsfSchema from "./schemas/jsf-0.82.schema.json" with { type: "json" };
 import spdxSchema from "./schemas/spdx.schema.json" with { type: "json" };
 
+/** Schema IDs must match the relative `$ref` filenames used inside `bom-1.6.schema.json`. */
+const SPDX_SCHEMA_ID = "spdx.schema.json";
+const JSF_SCHEMA_ID = "jsf-0.82.schema.json";
+
 /**
  * Result of validating a BOM document.
  */
@@ -38,9 +42,9 @@ export interface ValidationError {
     message: string;
 }
 
-/** Shape of a compiled ajv validator for the BOM schema. */
+/** Shape of a compiled ajv validator for the BOM schema. Matches ajv 8's `ErrorObject` surface for the fields we read. */
 type CompiledValidator = ((data: unknown) => boolean) & {
-    errors?: { instancePath?: string; message?: string }[] | null;
+    errors?: { instancePath: string; message?: string }[] | null;
 };
 
 /**
@@ -76,10 +80,8 @@ const compileBomValidator = (): CompiledValidator => {
 
     addFormats(ajv);
 
-    // Register the two $ref'd sub-schemas against the filenames the main
-    // schema uses (relative refs: "spdx.schema.json", "jsf-0.82.schema.json").
-    ajv.addSchema(spdxSchema, "spdx.schema.json");
-    ajv.addSchema(jsfSchema, "jsf-0.82.schema.json");
+    ajv.addSchema(spdxSchema, SPDX_SCHEMA_ID);
+    ajv.addSchema(jsfSchema, JSF_SCHEMA_ID);
 
     compiled = ajv.compile(bomSchema) as CompiledValidator;
 
@@ -100,7 +102,7 @@ export const validateBom = (bom: unknown): ValidationResult => {
 
     return {
         errors: (validator.errors ?? []).map((error) => ({
-            instancePath: error.instancePath ?? "",
+            instancePath: error.instancePath,
             message: error.message ?? "(no message)",
         })),
         valid,
