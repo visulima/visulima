@@ -42,13 +42,16 @@ const readJsonSafe = (path: string): InstalledPackageMetadata | undefined => {
 };
 
 /**
- * npm package names and versions can't legally contain `/` (except the
- * scope-delimiter `/` in `@scope/name`) or `..`. A lockfile carrying
- * such strings is either corrupt or hostile; in either case we refuse
- * to interpolate it into a filesystem path lest we escape `workspaceRoot`.
+ * npm package names and versions can't legally contain `/` / `\`
+ * (except the scope-delimiter `/` in `@scope/name`) or `..`. A
+ * lockfile carrying such strings is either corrupt or hostile; in
+ * either case we refuse to interpolate it into a filesystem path
+ * lest we escape `workspaceRoot`. Both forward and back slashes
+ * must be checked because `join` on Windows treats `\` as a
+ * separator too.
  */
 const isSafePackageName = (name: string): boolean => {
-    if (name.length === 0 || name.includes("..") || name.startsWith(".") || name.includes("\0")) {
+    if (name.length === 0 || name.includes("..") || name.startsWith(".") || name.includes("\0") || name.includes("\\")) {
         return false;
     }
 
@@ -63,7 +66,11 @@ const isSafePackageName = (name: string): boolean => {
 };
 
 const isSafeVersion = (version: string): boolean =>
-    version.length > 0 && !version.includes("/") && !version.includes("..") && !version.includes("\0");
+    version.length > 0
+    && !version.includes("/")
+    && !version.includes("\\")
+    && !version.includes("..")
+    && !version.includes("\0");
 
 /**
  * pnpm's virtual store encodes `name@version` into the directory

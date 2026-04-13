@@ -137,6 +137,17 @@ describe(readInstalledPackageMetadata, () => {
         expect(readInstalledPackageMetadata(tmpDir, "foo\0bar", "1.0.0")).toBeUndefined();
     });
 
+    it("should refuse names and versions containing Windows-style backslashes", () => {
+        expect.assertions(3);
+
+        // `join` on Windows treats `\` as a separator, so a value like
+        // `foo\..\..\etc` would escape workspaceRoot even though it has no
+        // forward slashes or literal `..` segments apart from the escaped ones.
+        expect(readInstalledPackageMetadata(tmpDir, "foo\\bar", "1.0.0")).toBeUndefined();
+        expect(readInstalledPackageMetadata(tmpDir, "lodash", "1.0.0\\..\\..\\etc")).toBeUndefined();
+        expect(readInstalledPackageMetadata(tmpDir, "foo\\..\\..\\etc", "1.0.0")).toBeUndefined();
+    });
+
     it("should find pnpm peer-disambiguated install dirs (foo@1.0.0_react@18.0.0)", () => {
         expect.assertions(2);
 

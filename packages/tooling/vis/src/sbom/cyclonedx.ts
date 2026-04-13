@@ -14,7 +14,7 @@ import { readLockfilePackages } from "./lockfile";
 import { toNpmPurl } from "./purl";
 import type { VersionIndex } from "./resolve-specifier";
 import { resolveSpecifier } from "./resolve-specifier";
-import type { Component, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
+import type { Component, ComponentScope, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
 
 /**
  * CycloneDX 1.6 BOM builder — bridges vis' workspace graph and the
@@ -71,6 +71,13 @@ const readPackageJson = (path: string): BuilderPackageJson | undefined => {
         return undefined;
     }
 };
+
+/**
+ * Narrow view of {@link ComponentScope} used by the dependency-closure
+ * walker — `"excluded"` doesn't apply because anything we walk to is,
+ * by definition, reachable.
+ */
+type ReachableScope = Exclude<ComponentScope, "excluded">;
 
 const toAuthorString = (author: BuilderPackageJson["author"]): string | undefined => {
     if (!author) {
@@ -167,10 +174,6 @@ const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson 
 /**
  * Builds the BOM from workspace + lockfile data. Pure function — all
  * I/O is relative to `workspaceRoot` so tests point it at a temp dir.
- *
- * v1 limitation: registry components cover **direct** deps of in-scope
- * projects only. Transitive lockfile-only deps require walking the
- * lockfile-internal graph, deferred to a future revision.
  */
 export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const {
@@ -253,14 +256,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
     }
 
-    /**
-     * Seed each in-scope workspace project's direct deps, tracking which
-     * deps are `required` (from `dependencies` / `peerDependencies` /
-     * `devDependencies` when `--include-dev`) vs. `optional` (from
-     * `optionalDependencies`). The BFS then propagates: a package
-     * reachable only through optional edges stays optional; if it's
-     * also reachable via a required edge, required wins.
-     */
+    // Seed required/optional separately; BFS: required edges upgrade
+    // optional, optional edges never downgrade required.
     const requiredSeed: string[] = [];
     const optionalSeed: string[] = [];
     const directDepEdges = new Map<string, Set<string>>();
@@ -313,13 +310,10 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         directDepEdges.set(name, edges);
     }
 
-    // Walk the lockfile graph. Two passes so scope propagation is simple
-    // and deterministic: required first (so it can upgrade any ref),
-    // then optional for anything not already marked.
-    const reachableRegistryRefs = new Map<string, "optional" | "required">();
+    const reachableRegistryRefs = new Map<string, ReachableScope>();
     const registryDepEdges = new Map<string, Set<string>>();
 
-    const walk = (seeds: string[], scope: "optional" | "required"): void => {
+    const walk = (seeds: string[], scope: ReachableScope): void => {
         const queue = [...seeds];
 
         while (queue.length > 0) {
@@ -415,7 +409,10 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
 
         if (pkg.properties) {
-            component.properties = Object.entries(pkg.properties).map(([name_, value]) => ({ name: name_, value }));
+            component.properties = Object.entries(pkg.properties).map(([propertyName, value]) => ({
+                name: propertyName,
+                value,
+            }));
         }
 
         // Resolve licence + author + references against the *installed
@@ -430,8 +427,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const dependencies: Dependency[] = [];
 
     // Workspace project → its direct deps (mix of project and registry).
-    for (const [name, edges] of directDepEdges) {
-        const ref = projectBomRefs.get(name);
+    for (const [projectName, edges] of directDepEdges) {
+        const ref = projectBomRefs.get(projectName);
 
         if (!ref) {
             continue;

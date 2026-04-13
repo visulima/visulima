@@ -83,20 +83,16 @@ const INTEGRITY_ALGORITHMS: Record<string, LockFileIntegrityAlgorithm> = {
     sha512: "sha512",
 };
 
+// Reject oversized inputs rather than hand Buffer.from a pathological
+// allocation. SHA-512 SRI is 95 bytes; 1 KiB leaves headroom for
+// multi-hash forms without opening a DoS surface.
+const MAX_SRI_LENGTH = 1024;
+
 /**
  * Decodes a Subresource Integrity string (`sha512-<base64>`) into a
  * `{ algorithm, hex }` pair. Returns `undefined` if the string is
- * malformed or uses an unsupported algorithm.
+ * malformed, oversized, or uses an unsupported algorithm.
  */
-/**
- * Upper bound on the length of an SRI string we'll attempt to decode.
- * SHA-512's base64 encoding is 88 characters; even with an
- * algorithm-prefix, padding, or multi-hash form the real-world value
- * stays under 200. A larger input is either corrupt or hostile — we
- * reject it rather than hand `Buffer.from` a pathological allocation.
- */
-const MAX_SRI_LENGTH = 1024;
-
 export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined => {
     if (sri.length > MAX_SRI_LENGTH) {
         return undefined;
@@ -129,19 +125,17 @@ export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined =
 
 /**
  * Pushes an entry into `result` unless `seen` already contains its
- * `name@version` key. Returns `true` if pushed.
+ * `name@version` key. `seen` is mutated in place.
  */
-const pushUniqueEntry = (result: LockFileEntry[], seen: Set<string>, entry: LockFileEntry): boolean => {
+const pushUniqueEntry = (result: LockFileEntry[], seen: Set<string>, entry: LockFileEntry): void => {
     const key = `${entry.name}@${entry.version}`;
 
     if (seen.has(key)) {
-        return false;
+        return;
     }
 
     seen.add(key);
     result.push(entry);
-
-    return true;
 };
 
 /** Shallow-copy `source` onto `target` under `field` iff `source` is non-empty. */
