@@ -28,6 +28,7 @@ commit or PR that landed the feature.
 - [x] JSON Schema for project.json + vis-config.schema.json
 - [x] Full docs (7 new pages, 3 rewritten)
 - [x] Unit tests (11 test files)
+- [x] SBOM generation (`vis sbom`) — see [SBOM generation](#sbom-generation-vis-sbom) below
 
 ---
 
@@ -35,49 +36,32 @@ commit or PR that landed the feature.
 
 ### SBOM generation (`vis sbom`)
 
-Build a lightweight CycloneDX SBOM generator — first monorepo tool to ship
+CycloneDX 1.6 SBOM generator — first monorepo tool to ship
 this (moon, Nx, Turborepo all lack SBOM support).
 
 **Why**: Executive Order 14028, EU Cyber Resilience Act, and PCI DSS 4.0
 all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 (200+ deps, slow on large repos) and not monorepo-aware.
 
-**Scope**:
+**Delivered**:
+- ✅ CycloneDX 1.6 JSON + XML output (ECMA-424 standard)
+- ✅ Walks the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
+- ✅ Per project: reads `package.json` → name, version, license, author, description, homepage/vcs/issue-tracker references
+- ✅ `src/sbom/lockfile.ts` — zero-dep parsers for `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock` that extract name + version + SRI integrity hash (decoded from base64 SRI to hex per CycloneDX spec)
+- ✅ `src/sbom/purl.ts` — zero-dep `pkg:npm/…` Package URL builder with proper percent-encoding
+- ✅ `src/sbom/license.ts` — minimal SPDX normaliser covering the ~95 % of npm packages whose `license` field is a known SPDX ID; falls back to `NamedLicense` for everything else, preserves SPDX expressions verbatim
+- ✅ `src/sbom/cyclonedx.ts` — pure builder; output round-trips through `assertValidBom()` (vendored 1.6.1 schema)
+- ✅ `src/commands/sbom.ts` — `vis sbom` Cerebro command with `--focus`, `--format=json|xml`, `--output=<path>|-`, `--include-dev`
+- ✅ Tests:
+  - `__tests__/sbom/cyclonedx.test.ts` — schema-validates emitted BOMs end-to-end (single project + registry dep, dev/prod filtering, project-to-project edges, focus closure, XML serialisation)
+  - `__tests__/sbom/lockfile.test.ts` — npm/pnpm/yarn parser cases + SRI decoding
+  - `__tests__/sbom/purl.test.ts` — scoped/unscoped/lowercase/percent-encoding cases
+  - `__tests__/sbom/license.test.ts` — SPDX normalization, expression detection, legacy object/array forms
 
-- CycloneDX 1.6 JSON output (the ECMA-424 standard)
-- Walk the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
-- For each project: read `package.json` → name, version, license, author, description
-- For each resolved dependency: read from lockfile (task-runner already parses pnpm-lock.yaml, package-lock.json, yarn.lock) → name, resolved version, integrity hash
-- Emit `components[]` with `type: "library"`, `bom-ref`, `purl` (Package URL scheme: `pkg:npm/name@version`)
-- Emit `dependencies[]` mirroring the project graph edges
-- Top-level `metadata.component` = the workspace root or a focused project
-- `--focus=<project>` flag to scope the SBOM to a single project's transitive closure (reuse `resolveFocusProjects` from `docker.ts`)
-- `--format=json|xml` (JSON default, XML via simple template — CycloneDX XML is well-defined)
-- `--output=<path>` or stdout
-- `--include-dev` flag (default: production only, matching industry practice)
-
-**Building blocks already in vis**:
-
-- `discoverWorkspace()` — project list + roots
-- `buildProjectGraph()` — dependency edges with type (static/dev/peer)
-- `lockfile-hasher.ts` in task-runner — parses pnpm/npm/yarn lockfiles and extracts resolved versions
-- `resolveFocusProjects()` in `docker.ts` — transitive closure computation
-- **Groundwork landed on `claude/review-todo-sbom-Jo1UL`** (commits `953d254`, `3be5462`):
-    - Hand-written TS types in `src/sbom/types.ts` covering the subset we emit (`CycloneDxBom`, `Component`, `Metadata`, `Dependency`, `Hash`, `License{Choice,Entry,ExpressionEntry}`, `ExternalReference`, `OrganizationalEntity`, `PostalAddress`, `Property`, `ToolsAggregate`, `Lifecycle`)
-    - Vendored CycloneDX 1.6 schemas under `__tests__/sbom/schemas/` (tag `1.6.1`, bom + spdx + jsf sub-schemas, Apache-2.0)
-    - Ajv-backed validator under `__tests__/sbom/validator.ts` exporting `validateBom` + `assertValidBom` — **test-only**, zero runtime footprint
-    - `ajv` + `ajv-formats` added as `devDependencies` (catalog:dev)
-    - `__tests__/sbom/schema-conformance.test.ts` — 6 cases covering valid fixtures, SPDX expression form, missing `bomFormat`, bad `component.type`, missing `dependency.ref`, empty BOMs
-
-**What's still missing**:
-
-- PURL generation — recommend [`packageurl-js`](https://www.npmjs.com/package/packageurl-js) (zero-dep, ~5 KB, official impl)
-- SPDX normalization — recommend [`spdx-expression-parse`](https://www.npmjs.com/package/spdx-expression-parse) + [`spdx-correct`](https://www.npmjs.com/package/spdx-correct) (npm CLI uses them)
-- Integrity hash extraction from lockfiles (extend `task-runner/src/lockfile-hasher.ts` parsers to capture `integrity: sha512-…` alongside name/version)
-- `src/sbom/cyclonedx.ts` — pure builder that consumes the workspace graph + lockfile data and produces a `CycloneDxBom`
-- `src/commands/sbom.ts` — Cerebro command wiring (`--focus`, `--format`, `--output`, `--include-dev`)
-
-**Estimated effort (remaining)**: ~150-200 LOC for the builder + ~100 LOC for the CLI + ~50 LOC lockfile integrity patch. Every BOM fixture in new tests should flow through `assertValidBom()` from the validator helper so schema drift is caught immediately.
+**Known v1 limitations** (deferred to v2):
+- Lockfile-internal dependency graph is not walked; the `components[]` list captures only registry packages that appear as **direct** dependencies of an in-scope workspace project. Transitive deps (a `lodash` pulled in by `express`) are not yet emitted as standalone components. Add lockfile graph walking when the registry coverage gap matters.
+- `scope: "excluded"` and `scope: "optional"` are not yet differentiated from `scope: "required"` on registry components.
+- Yarn Berry's XXH64 `checksum:` field is dropped (CycloneDX 1.6 only allows the algorithms in `HashAlgorithm`); only Yarn Classic's SRI `integrity` field flows through.
 
 ---
 
