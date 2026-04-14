@@ -685,15 +685,13 @@ const SocialPreview = ({ meta, platform }: { meta: MetaTags; platform: PlatformC
             </div>
             <div class="p-3">
                 <div class="w-full aspect-[1200/630] bg-foreground/6 border border-border/50 mb-2.5 overflow-hidden relative">
-                    {image
-                        ? (
+                    {image ? (
                         <img alt="OG image preview" class="w-full h-full object-cover" loading="lazy" src={image} />
-                        )
-                        : (
+                    ) : (
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span class="text-[0.65rem] text-muted-foreground/40 uppercase tracking-wider">No image</span>
                         </div>
-                        )}
+                    )}
                 </div>
                 {url && <div class="text-[0.6rem] text-muted-foreground/60 uppercase tracking-wider truncate mb-1">{url}</div>}
                 <div class="text-[0.8rem] font-semibold text-foreground line-clamp-1">{title}</div>
@@ -711,13 +709,11 @@ const MetaRow = ({ label, required = false, value }: { label: string; required?:
             <span class="text-[0.7rem] font-mono text-muted-foreground">{label}</span>
         </div>
         <div class="flex-1 min-w-0">
-            {value
-                ? (
+            {value ? (
                 <span class="text-[0.75rem] text-foreground break-all">{value}</span>
-                )
-                : (
+            ) : (
                 <span class={clsx("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>{required ? "⚠ Missing" : "—"}</span>
-                )}
+            )}
         </div>
     </div>
 );
@@ -814,7 +810,9 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
         <div class="border border-border bg-card overflow-hidden">
             <button
                 class="w-full flex items-center justify-between gap-3 px-4 py-3 bg-transparent border-0 cursor-pointer text-left hover:bg-foreground/3 transition-colors"
-                onClick={() => { setOpen((v) => !v); }}
+                onClick={() => {
+                    setOpen((v) => !v);
+                }}
                 type="button"
             >
                 <div class="flex items-center gap-2 min-w-0">
@@ -831,8 +829,7 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
             {open && (
                 <div class="border-t border-border">
                     {/* Validation messages */}
-                    {schema.messages.length > 0
-                        ? (
+                    {schema.messages.length > 0 ? (
                         <div class="px-4 py-3 space-y-1.5">
                             {schema.messages.map((message, i) => {
                                 const messageCfg = SEVERITY_CONFIG[message.severity];
@@ -848,19 +845,20 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
                                 );
                             })}
                         </div>
-                        )
-                        : (
+                    ) : (
                         <div class="px-4 py-3 flex items-center gap-2 text-[0.72rem] text-success">
                             <span>✔</span>
                             <span>No issues found</span>
                         </div>
-                        )}
+                    )}
 
                     {/* Raw JSON toggle */}
                     <div class="border-t border-border/50 px-4 py-2 flex items-center justify-between">
                         <button
                             class="text-[0.65rem] text-muted-foreground hover:text-foreground transition-colors bg-transparent border-0 cursor-pointer p-0"
-                            onClick={() => { setShowRaw((v) => !v); }}
+                            onClick={() => {
+                                setShowRaw((v) => !v);
+                            }}
                             type="button"
                         >
                             {showRaw ? "Hide" : "Show"} raw JSON
@@ -1018,13 +1016,11 @@ const SerpSnippetPreview = ({
         <div class={clsx("border border-border/50 bg-background p-4 font-sans", isMobile ? "max-w-[380px]" : "max-w-[600px]")}>
             {/* Top row: favicon + site info */}
             <div class="flex items-center gap-3 mb-2">
-                {data.favicon
-                    ? (
+                {data.favicon ? (
                     <img alt="favicon" class="size-7 rounded-full shrink-0 object-contain" src={data.favicon} />
-                    )
-                    : (
+                ) : (
                     <div class="size-7 rounded-full shrink-0 bg-foreground/10 flex items-center justify-center" />
-                    )}
+                )}
                 <div class="flex flex-col min-w-0">
                     <span class="text-[0.875rem] text-foreground leading-snug">{data.siteName || data.url}</span>
                     <span class="text-[0.75rem] text-muted-foreground leading-snug truncate">{data.url}</span>
@@ -1180,7 +1176,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                         : "text-muted-foreground bg-transparent hover:text-foreground",
                                 )}
                                 key={tab}
-                                onClick={() => { setActiveTab(tab); }}
+                                onClick={() => {
+                                    setActiveTab(tab);
+                                }}
                                 type="button"
                             >
                                 {label}
@@ -1287,7 +1285,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 </div>
                                 <p class="text-[0.8rem] font-medium text-foreground/70">No structured data found</p>
                                 <p class="text-[0.7rem] text-muted-foreground text-center max-w-xs leading-relaxed">
-                                    { }
+                                    {}
                                     Add a <code class="font-mono bg-foreground/6 px-1">{"<script type=\"application/ld+json\">"}</code> block to help search
                                     engines understand your content.
                                 </p>
@@ -1315,8 +1313,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                 {/* ── Missing Tags ──────────────────────────────────────────── */}
                 {activeTab === "missing" && (
                     <div class="p-5 space-y-5">
-                        {missingTotal === 0
-                            ? (
+                        {missingTotal === 0 ? (
                             <div class="flex flex-col items-center justify-center py-12 gap-3">
                                 <div class="size-10 border border-success/30 bg-success/8 flex items-center justify-center text-success text-lg select-none">
                                     ✓
@@ -1324,8 +1321,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 <p class="text-[0.8rem] font-medium text-foreground/70">All recommended tags are present</p>
                                 <p class="text-[0.7rem] text-muted-foreground">Your page has all required and recommended meta tags.</p>
                             </div>
-                            )
-                            : (
+                        ) : (
                             <>
                                 {missingRequired.length > 0 && (
                                     <div>
@@ -1357,7 +1353,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                     </div>
                                 )}
                             </>
-                            )}
+                        )}
                     </div>
                 )}
             </div>

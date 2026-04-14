@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 
@@ -39,7 +38,8 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         return normalizedStack;
     }
 
-    const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error) as unknown as { column?: number; file?: string; line?: number; methodName?: string }[];
 
     const mapped = await Promise.all(
         // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -109,7 +109,8 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         }),
     );
 
-    return formatStacktrace(mapped, { header });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
+    return formatStacktrace(mapped as unknown, { header });
 };
 
 /**

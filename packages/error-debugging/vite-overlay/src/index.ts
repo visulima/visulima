@@ -61,7 +61,9 @@ const createDevelopmentLogger = (server: ViteDevServer): DevelopmentLogger => {
                 timestamp: true,
             });
         },
-        log: (message: unknown) => { server.config.logger.info(String(message ?? "")); },
+        log: (message: unknown) => {
+            server.config.logger.info(String(message ?? ""));
+        },
     };
 };
 

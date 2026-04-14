@@ -119,13 +119,7 @@ const processResponse = async (
  * @param maxRetries Maximum number of retries
  * @returns Delay in milliseconds if should retry, undefined otherwise
  */
-const handleRateLimit = (
-    response: FetchResponse,
-    respectRateLimit: boolean,
-    retryDelay: number,
-    attempt: number,
-    maxRetries: number,
-): number | undefined => {
+const handleRateLimit = (response: FetchResponse, respectRateLimit: boolean, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
     if (response.status === 429 && respectRateLimit && attempt < maxRetries) {
         const retryAfter = response.headers.get("retry-after");
 

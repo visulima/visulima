@@ -166,8 +166,7 @@ describe("svelteKit middleware", () => {
                     message: "test",
                     status: 500,
                 });
-            },
-            ).not.toThrow();
+            }).not.toThrow();
         });
     });
 

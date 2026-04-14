@@ -45,7 +45,9 @@ const ViteOverlayButton = (): ComponentChildren => {
 
         sync();
 
-        return () => { clearInterval(id); };
+        return () => {
+            clearInterval(id);
+        };
     }, []);
 
     if (errorCount === 0) {

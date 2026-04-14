@@ -172,7 +172,9 @@ describe("simpleReporter", () => {
         };
         const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
 
-        expect(() => { simpleReporter.log(meta as unknown as Meta<string>); }).not.toThrow();
+        expect(() => {
+            simpleReporter.log(meta as unknown as Meta<string>);
+        }).not.toThrow();
 
         stdoutSpy.mockRestore();
     });

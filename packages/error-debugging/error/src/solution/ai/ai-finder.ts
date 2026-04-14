@@ -1,9 +1,8 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { join } from "@visulima/path";
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
 

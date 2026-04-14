@@ -110,9 +110,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         if (repeated) {
             const cRepeated = white(`[${repeated}x]`);
 
-            repeatedMessage = isNotBrowser
-                ? format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[])
-                : [cRepeated[0], ...cRepeated.slice(1)];
+            repeatedMessage = isNotBrowser ? format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) : [cRepeated[0], ...cRepeated.slice(1)];
         }
 
         if (label) {
@@ -166,9 +164,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         }
 
         if (prefix) {
-            const cPrefix = grey(
-                `${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}] `,
-            );
+            const cPrefix = grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}] `);
 
             if (isNotBrowser) {
                 items.push(format(cPrefix[0] as string, cPrefix.slice(1) as unknown as string[]));

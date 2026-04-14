@@ -202,9 +202,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         }
 
         if (prefix) {
-            items.push(
-                `${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}]`)} `,
-            );
+            items.push(`${grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}]`)} `);
         }
 
         const titleSize = getStringWidth(items.join(" "));
@@ -232,12 +230,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces
-                + wordWrap(formattedMessage, {
-                    trim: false,
-                    width: size - 3,
-                    wrapMode: WrapMode.STRICT_WIDTH,
-                }),
+                groupSpaces +
+                    wordWrap(formattedMessage, {
+                        trim: false,
+                        width: size - 3,
+                        wrapMode: WrapMode.STRICT_WIDTH,
+                    }),
             );
         }
 

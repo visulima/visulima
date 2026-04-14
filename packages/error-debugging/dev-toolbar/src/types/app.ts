@@ -200,6 +200,5 @@ export interface DevToolbarAppState extends DevToolbarApp {
  * Placeholder for ServerFunctions (defined in rpc.ts)
  */
 export interface ServerFunctions {
-
     [key: string]: (...args: any[]) => Promise<any>;
 }

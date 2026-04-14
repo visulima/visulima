@@ -1055,7 +1055,7 @@ export const showAnnotationForm = (
         }
 
         submitButton.textContent = editAnnotation ? "Saving..." : "Creating...";
-        (submitButton).disabled = true;
+        submitButton.disabled = true;
 
         try {
             if (editAnnotation) {
@@ -1127,7 +1127,7 @@ export const showAnnotationForm = (
             showToast(editAnnotation ? "Annotation saved" : "Annotation created");
         } catch {
             submitButton.textContent = "Error \u2014 retry";
-            (submitButton).disabled = false;
+            submitButton.disabled = false;
         }
     });
 
@@ -1468,7 +1468,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
             }
 
             submitButton.textContent = "Adding...";
-            (submitButton).disabled = true;
+            submitButton.disabled = true;
 
             try {
                 const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
@@ -1498,7 +1498,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
                 showToast("Annotation created");
             } catch {
                 submitButton.textContent = "Error — retry";
-                (submitButton).disabled = false;
+                submitButton.disabled = false;
             }
         },
         "#22c55e",

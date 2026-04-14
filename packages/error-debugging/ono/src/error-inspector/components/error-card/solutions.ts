@@ -23,11 +23,13 @@ const solutions = async (
 }> => {
     let hint: Solution | undefined;
 
-    solutionFinders.push(ruleBasedFinder as SolutionFinder, errorHintFinder as SolutionFinder);
+    const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder as SolutionFinder, errorHintFinder as SolutionFinder];
 
-    const firstTrace: Trace | undefined = parseStacktrace(error, { frameLimit: 1 })[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const traces: Trace[] = parseStacktrace(error as Error, { frameLimit: 1 }) as unknown as Trace[];
+    const firstTrace: Trace | undefined = traces[0];
 
-    for (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
+    for (const handler of allFinders.toSorted((a, b) => b.priority - a.priority)) {
         if (hint) {
             break;
         }

@@ -154,7 +154,9 @@ const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn =>
 
         check();
 
-        return () => { clearInterval(id); };
+        return () => {
+            clearInterval(id);
+        };
     }, []);
 
     /**

@@ -1,10 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-export type ErrorHandler = (
-    error: Error,
-    request: IncomingMessage,
-    response: ServerResponse,
-) => Promise<void> | void;
+export type ErrorHandler = (error: Error, request: IncomingMessage, response: ServerResponse) => Promise<void> | void;
 
 export type FetchErrorHandler = (error: unknown, request: Request) => Promise<Response>;
 

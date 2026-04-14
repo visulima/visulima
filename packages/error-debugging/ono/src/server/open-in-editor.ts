@@ -18,9 +18,7 @@ type RequestBody = Record<string, unknown>;
 
 type UniversalHandler = (request: IncomingMessage & { body?: RequestBody }, response: ServerResponse, next?: (error?: unknown) => void) => Promise<void>;
 
-const respond400 = (
-    response: ServerResponse & { status?: (code: number) => ServerResponse & { send: (body: string) => void } },
-) => {
+const respond400 = (response: ServerResponse & { status?: (code: number) => ServerResponse & { send: (body: string) => void } }) => {
     if (typeof response.status === "function") {
         response.status(400).send("Failed to open editor");
 
@@ -104,35 +102,40 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
             return undefined;
         }
 
-        const absPath = isAbsolute(filePath) ? filePath : resolvePath(projectRoot, filePath);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const absPath: string = isAbsolute(filePath) ? filePath : (resolvePath(projectRoot, filePath) as unknown as string);
 
         if (!allowOutsideProject) {
             try {
                 // Resolve symlinks for both project root and target path
-                const projectRootResolved = realpathSync(projectRoot);
-                const targetResolved = realpathSync(absPath);
+                const projectRootResolved: string = realpathSync(projectRoot) as unknown as string;
+                const targetResolved: string = realpathSync(absPath) as unknown as string;
 
                 // Normalize both paths
-                const normalizedProjectRoot = normalize(projectRootResolved);
-                const normalizedTarget = normalize(targetResolved);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                const normalizedProjectRoot: string = normalize(projectRootResolved) as unknown as string;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                const normalizedTarget: string = normalize(targetResolved) as unknown as string;
 
                 // On case-insensitive platforms, compare lowercased versions
-                const isCaseInsensitive = getProcessPlatform() === "win32" || getProcessPlatform() === "darwin";
-                const projectRootCompare = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
-                const targetCompare = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
+                const isCaseInsensitive: boolean = getProcessPlatform() === "win32" || getProcessPlatform() === "darwin";
+                const projectRootCompare: string = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
+                const targetCompare: string = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
 
-                const relativePath = relative(normalizedProjectRoot, normalizedTarget);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                const relativePath: string = relative(normalizedProjectRoot, normalizedTarget) as unknown as string;
 
                 // Check if target is outside project root:
                 // - If relative path starts with '..' it's outside
                 // - If relative path is absolute, it's outside
                 // - If paths don't match on case-insensitive platforms, it's outside
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 if (relativePath.startsWith("..") || isAbsolute(relativePath) || (isCaseInsensitive && !targetCompare.startsWith(projectRootCompare))) {
                     return undefined;
                 }
             } catch {
                 // If realpathSync fails (e.g., file doesn't exist), fall back to basic check
-                const rootWithSeparator = projectRoot.endsWith(sep) ? projectRoot : projectRoot + sep;
+                const rootWithSeparator: string = projectRoot.endsWith(sep as unknown as string) ? projectRoot : projectRoot + (sep as unknown as string);
 
                 if (!absPath.startsWith(rootWithSeparator)) {
                     return undefined;

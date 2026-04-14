@@ -71,14 +71,11 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
 
         if (file) {
             // This is a hack to make the file property a string
-            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file = `${file.name ?? ""}:${String(file.line)}${file.column ? `:${String(file.column)}` : ""}`;
+            (rest as unknown as Omit<ReadonlyMeta<L>, "file"> & { file: string }).file =
+                `${file.name ?? ""}:${String(file.line)}${file.column ? `:${String(file.column)}` : ""}`;
         }
 
-        if (message === EMPTY_SYMBOL) {
-            (rest as unknown as Omit<ReadonlyMeta<L>, "message"> & { message: string | undefined }).message = undefined;
-        } else {
-            (rest as unknown as Omit<ReadonlyMeta<L>, "message"> & { message: ReadonlyMeta<L>["message"] }).message = message;
-        }
+        (rest as unknown as Omit<ReadonlyMeta<L>, "message"> & { message: string | undefined }).message = message === EMPTY_SYMBOL ? undefined : message;
 
         if (error) {
             (rest as unknown as Omit<ReadonlyMeta<L>, "error"> & { error: ReadonlyMeta<L>["error"] }).error = serializeError(error, this.errorOptions);

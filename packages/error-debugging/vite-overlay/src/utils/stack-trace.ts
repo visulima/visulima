@@ -57,8 +57,10 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
 
     path = path.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const absolutePath = resolve(rootPath, path.startsWith(PATH_SEPARATOR) ? path.slice(1) : path);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return absolutePath;
 };
 

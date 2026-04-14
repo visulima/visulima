@@ -99,7 +99,6 @@ const walkDirectory = async (
     }
 
     await Promise.all(
-
         entries.map(async (entry) => {
             if (collected.length >= MAX_ASSETS) {
                 return;

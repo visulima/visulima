@@ -564,7 +564,7 @@ export const isRulerElement = (element: Element): boolean => {
         return false;
     }
 
-    const { id } = (element as HTMLElement);
+    const { id } = element as HTMLElement;
 
     if (id === CORNER_ID || id === H_RULER_ID || id === V_RULER_ID) {
         return true;

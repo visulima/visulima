@@ -13,7 +13,7 @@ const nodeHandler = (
         onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
         showTrace?: boolean;
     } = {},
-): (request: IncomingMessage, response: ServerResponse) => Promise<void> => {
+): ((request: IncomingMessage, response: ServerResponse) => Promise<void>) => {
     const defaultHtml = htmlErrorHandler(options);
 
     const negotiated = createNegotiatedErrorHandler(options.extraHandlers ?? [], options.showTrace ?? true, defaultHtml);

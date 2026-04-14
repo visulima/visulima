@@ -120,8 +120,12 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ stderr: null as unknown as NodeJS.WriteStream, stdout: null as unknown as NodeJS.WriteStream });
 
-        expect(() => { pailServer.wrapStd(); }).not.toThrow();
-        expect(() => { pailServer.restoreStd(); }).not.toThrow();
+        expect(() => {
+            pailServer.wrapStd();
+        }).not.toThrow();
+        expect(() => {
+            pailServer.restoreStd();
+        }).not.toThrow();
     });
 
     it("should handle empty or invalid scope names", () => {
@@ -142,7 +146,9 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ stderr, stdout });
 
-        expect(() => { pailServer.log(circularObject); }).not.toThrow();
+        expect(() => {
+            pailServer.log(circularObject);
+        }).not.toThrow();
     });
 
     it("should group messages correctly", () => {

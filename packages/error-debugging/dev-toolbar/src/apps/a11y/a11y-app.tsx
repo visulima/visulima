@@ -231,7 +231,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         onChange={(event) => {
                             const { value } = event.target as HTMLSelectElement;
 
-                            setMinSeverity(value ? (value as Severity) : undefined);
+                            setMinSeverity((value || undefined) as Severity | undefined);
                         }}
                         style="color-scheme: dark"
                         value={minSeverity ?? ""}

@@ -166,6 +166,7 @@
         "cssnano": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "eslint-plugin-zod": "3.5.4",
         "jsdom": "catalog:dev",
         "lucide-static": "catalog:icons",
         "prettier": "catalog:lint",
@@ -196,7 +197,6 @@
             "optional": true
         }
     },
-    "optionalDependencies": {},
     "engines": {
         "node": ">=22.21"
     },

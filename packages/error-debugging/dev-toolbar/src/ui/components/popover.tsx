@@ -176,7 +176,14 @@ const PopoverClose = ({ children, class: className, ...rest }: PopoverCloseProps
     const { setOpen } = usePopoverContext();
 
     return (
-        <button class={clsx("", className)} onClick={() => { setOpen(false); }} type="button" {...rest}>
+        <button
+            class={clsx("", className)}
+            onClick={() => {
+                setOpen(false);
+            }}
+            type="button"
+            {...rest}
+        >
             {children}
         </button>
     );

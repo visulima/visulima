@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import Editors from "../../../shared/utils/editors";
+import Editors from "../../../../shared/utils/editors";
 import template from "../src/error-inspector";
 
 describe("error inspector template", () => {

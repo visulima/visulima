@@ -237,7 +237,9 @@ describe("timelineStore", () => {
         it("does not throw for a non-existent group", () => {
             expect.hasAssertions();
 
-            expect(() => { store.clearGroup("non-existent"); }).not.toThrow();
+            expect(() => {
+                store.clearGroup("non-existent");
+            }).not.toThrow();
         });
     });
 

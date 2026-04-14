@@ -349,7 +349,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                         }
                     }, 2000);
 
-                    request.on("close", () => { clearInterval(interval); });
+                    request.on("close", () => {
+                        clearInterval(interval);
+                    });
 
                     return;
                 }

@@ -25,6 +25,7 @@ const stackTraceViewer = async (
 }> => {
     const uniqueKey = revisionHash(error.name + error.message + (error.stack ?? ""));
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const traces = parseStacktrace(error);
 
     // Escape HTML for plain text rendering
@@ -43,6 +44,8 @@ const stackTraceViewer = async (
 
     const tabs: { html: string; type: GroupType }[] = [];
     const sourceCode: string[] = [];
+
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions */
 
     for (const [index, trace] of traces.entries()) {
         const defaultSource = `// Unable to load source code for ${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
@@ -131,6 +134,7 @@ const stackTraceViewer = async (
 <div class="p-6">${safeCode}</div>
 </div>`);
     }
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions */
 
     const grouped = groupSimilarTypes(tabs);
 

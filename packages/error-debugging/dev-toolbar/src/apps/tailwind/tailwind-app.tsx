@@ -241,7 +241,9 @@ const ColorItem = ({ token }: { token: ColorToken }): ComponentChildren => {
     return (
         <button
             class="group flex items-center gap-2.5 w-full text-left hover:bg-foreground/4 px-3 py-1.5 transition-colors cursor-pointer bg-transparent border-0"
-            onClick={() => { copy(token.cssVar); }}
+            onClick={() => {
+                copy(token.cssVar);
+            }}
             title={`Click to copy ${token.cssVar}`}
             type="button"
         >
@@ -276,7 +278,9 @@ const ColorScaleRow = ({ name, tokens }: { name: string; tokens: ColorToken[] })
                         <button
                             class="flex-1 h-5 border-0 cursor-pointer transition-transform hover:scale-110 hover:z-10"
                             key={t.cssVar}
-                            onClick={() => { copy(t.cssVar); }}
+                            onClick={() => {
+                                copy(t.cssVar);
+                            }}
                             style={{ background: `var(${t.cssVar})`, minWidth: 0 }}
                             title={`${t.name}\n${t.value}\nClick to copy ${t.cssVar}`}
                             type="button"
@@ -503,7 +507,9 @@ const ConfigColorScaleRow = ({ name, tokens }: { name: string; tokens: [string, 
                         <button
                             class="flex-1 h-5 border-0 cursor-pointer transition-transform hover:scale-110 hover:z-10"
                             key={variableName}
-                            onClick={() => { copy(variableName); }}
+                            onClick={() => {
+                                copy(variableName);
+                            }}
                             style={{ background: value }}
                             title={`${variableName}\n${value}\nClick to copy`}
                             type="button"
@@ -523,7 +529,9 @@ const ConfigSemanticColorItem = ({ cssVar, isCustom, value }: { cssVar: string; 
     return (
         <button
             class="group flex items-center gap-2.5 w-full text-left hover:bg-foreground/4 px-3 py-1.5 transition-colors cursor-pointer bg-transparent border-0"
-            onClick={() => { copy(cssVar); }}
+            onClick={() => {
+                copy(cssVar);
+            }}
             title={`Click to copy ${cssVar}`}
             type="button"
         >
@@ -566,7 +574,9 @@ const ConfigSection = ({
         <div class="border-b border-border/40">
             <button
                 class="w-full flex items-center gap-2 px-3 py-1.5 bg-foreground/3 hover:bg-foreground/5 transition-colors cursor-pointer border-0 text-left"
-                onClick={() => { setOpen((o) => !o); }}
+                onClick={() => {
+                    setOpen((o) => !o);
+                }}
                 type="button"
             >
                 <span class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-muted-foreground/70 flex-1">
@@ -590,7 +600,9 @@ const ConfigTokenRow = ({ cssVar, isCustom, value }: { cssVar: string; isCustom:
     return (
         <button
             class="group flex items-center gap-2.5 w-full text-left hover:bg-foreground/4 px-3 py-1.5 transition-colors cursor-pointer bg-transparent border-0"
-            onClick={() => { copy(cssVar); }}
+            onClick={() => {
+                copy(cssVar);
+            }}
             type="button"
         >
             <span class="flex-1 min-w-0">
@@ -793,7 +805,9 @@ const ConfigTab = ({
                     <div class="px-3 pt-2 pb-1 border-b border-border/20">
                         <input
                             class="w-full bg-foreground/4 border border-border/40 px-2 py-1 text-[0.68rem] font-mono text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/40"
-                            onInput={(event_) => { setColorSearch((event_.target as HTMLInputElement).value); }}
+                            onInput={(event_) => {
+                                setColorSearch((event_.target as HTMLInputElement).value);
+                            }}
                             placeholder="Filter scales…"
                             type="text"
                             value={colorSearch}
@@ -1051,7 +1065,9 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                         : "text-muted-foreground hover:text-foreground border-transparent bg-transparent",
                                 )}
                                 key={id}
-                                onClick={() => { setTab(id); }}
+                                onClick={() => {
+                                    setTab(id);
+                                }}
                                 type="button"
                             >
                                 {label}

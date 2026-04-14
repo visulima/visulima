@@ -832,7 +832,7 @@ const querySelectorAllWithIframes = (selector: string): Element[] => {
         for (const iframe of document_.querySelectorAll("iframe")) {
             if (isSameOriginIframe(iframe)) {
                 try {
-                    searchDocument((iframe).contentDocument!);
+                    searchDocument(iframe.contentDocument!);
                 } catch {
                     /* ignore */
                 }
