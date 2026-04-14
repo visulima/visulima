@@ -10,15 +10,13 @@ const App = () => {
             <Text bold color="cyan">
                 FilePicker demo
             </Text>
-            <FilePicker
-                limit={15}
-                onCancel={() => exit()}
-                onSelect={(entry) => setSelectedPath(entry.path)}
-                showSize
-            />
+            <FilePicker limit={15} onCancel={() => exit()} onSelect={(entry) => setSelectedPath(entry.path)} showSize />
             {selectedPath && (
                 <Text>
-                    Selected: <Text bold color="green">{selectedPath}</Text>
+                    Selected:{" "}
+                    <Text bold color="green">
+                        {selectedPath}
+                    </Text>
                 </Text>
             )}
             <Text dimColor>↑/↓ = navigate · enter = open/select · backspace = back · esc = quit</Text>

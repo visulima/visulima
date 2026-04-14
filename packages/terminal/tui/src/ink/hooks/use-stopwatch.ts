@@ -5,14 +5,12 @@ import useAnimation from "./use-animation";
 export type UseStopwatchOptions = {
     /**
      * Whether to start counting immediately.
-     *
      * @default false
      */
     readonly autoStart?: boolean;
 
     /**
      * Tick interval in milliseconds.
-     *
      * @default 1000
      */
     readonly interval?: number;
@@ -29,7 +27,7 @@ export type UseStopwatchResult = {
     readonly lap: () => number;
 
     /** Accumulated lap times. */
-    readonly laps: readonly number[];
+    readonly laps: ReadonlyArray<number>;
 
     /** Reset elapsed to 0, clear laps, and stop the stopwatch. */
     readonly reset: () => void;
@@ -55,7 +53,7 @@ export default function useStopwatch(options?: UseStopwatchOptions): UseStopwatc
     const { autoStart = false, interval = 1000 } = options ?? {};
 
     const [running, setRunning] = useState(autoStart);
-    const [laps, setLaps] = useState<readonly number[]>([]);
+    const [laps, setLaps] = useState<ReadonlyArray<number>>([]);
 
     const { reset: resetAnimation, time: elapsed } = useAnimation({ interval, isActive: running });
 
@@ -78,10 +76,12 @@ export default function useStopwatch(options?: UseStopwatchOptions): UseStopwatc
     }, [resetAnimation]);
 
     const elapsedRef = useRef(elapsed);
+
     elapsedRef.current = elapsed;
 
     const lap = useCallback((): number => {
-        const current = elapsedRef.current;
+        const { current } = elapsedRef;
+
         setLaps((previous) => [...previous, current]);
 
         return current;

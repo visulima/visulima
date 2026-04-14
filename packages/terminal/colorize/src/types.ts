@@ -195,7 +195,7 @@ export type AnsiStyles = "bold" | "dim" | "hidden" | "inverse" | "italic" | "ove
  * Base ANSI Colors
  */
 export type AnsiColors
-    = "bgBlack"
+    = | "bgBlack"
         | "bgBlackBright"
         | "bgBlue"
         | "bgBlueBright"
@@ -233,7 +233,7 @@ export type AnsiColors
         | "yellowBright";
 
 export type CssColorName
-    = "aliceblue"
+    = | "aliceblue"
         | "antiquewhite"
         | "aqua"
         | "aquamarine"

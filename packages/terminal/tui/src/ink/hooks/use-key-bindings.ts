@@ -12,7 +12,6 @@ export type KeyBinding = {
 
     /**
      * Whether this binding is active.
-     *
      * @default true
      */
     readonly enabled?: boolean;
@@ -30,7 +29,7 @@ export type KeyBinding = {
      *
      * Provide an array to match multiple keys for the same action.
      */
-    readonly key: string | readonly string[];
+    readonly key: string | ReadonlyArray<string>;
 };
 
 /**
@@ -44,7 +43,6 @@ export type KeyBindingHandler = {
 type UseKeyBindingsOptions = {
     /**
      * Whether keyboard input is captured.
-     *
      * @default true
      */
     readonly isActive?: boolean;
@@ -52,7 +50,7 @@ type UseKeyBindingsOptions = {
 
 type UseKeyBindingsResult = {
     /** The enabled bindings, suitable for passing to the Help component. */
-    readonly bindings: readonly KeyBinding[];
+    readonly bindings: ReadonlyArray<KeyBinding>;
 };
 
 // Key fields on the Key type that represent boolean special keys
@@ -73,7 +71,7 @@ const specialKeyFields = new Set<string>([
 ]);
 
 // Modifier fields on the Key type
-const modifierFields = new Set<string>(["ctrl", "meta", "shift", "super", "hyper"]);
+const modifierFields = new Set<string>(["ctrl", "hyper", "meta", "shift", "super"]);
 
 /**
  * Check whether a single key spec matches the current input event.
@@ -123,13 +121,14 @@ function matchesKey(spec: string, input: string, key: Key): boolean {
  *   { binding: { key: "ctrl+s", description: "Save" }, handler: () => save() },
  * ]);
  *
- * <Help bindings={bindings} />
+ * &lt;Help bindings={bindings} />
  * ```
  */
-export default function useKeyBindings(handlers: readonly KeyBindingHandler[], options?: UseKeyBindingsOptions): UseKeyBindingsResult {
+export default function useKeyBindings(handlers: ReadonlyArray<KeyBindingHandler>, options?: UseKeyBindingsOptions): UseKeyBindingsResult {
     const { isActive = true } = options ?? {};
 
     const handlersRef = useRef(handlers);
+
     handlersRef.current = handlers;
 
     useInput(
@@ -144,6 +143,7 @@ export default function useKeyBindings(handlers: readonly KeyBindingHandler[], o
                 for (const k of keys) {
                     if (matchesKey(k, input, key)) {
                         handler();
+
                         return;
                     }
                 }

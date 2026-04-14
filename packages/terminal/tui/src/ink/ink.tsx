@@ -275,17 +275,18 @@ export type Options = {
     patchConsole: boolean;
     standardReactLayoutTiming?: boolean;
 
+    stderr: NodeJS.WriteStream;
+
+    stdin: NodeJS.ReadStream;
+
+    stdout: NodeJS.WriteStream;
+
     /**
      * Whether to track text selection state during rendering.
      *
      * @default false
      */
     trackSelection?: boolean;
-
-    stderr: NodeJS.WriteStream;
-
-    stdin: NodeJS.ReadStream;
-    stdout: NodeJS.WriteStream;
 
     /**
      * Use the native Rust cell-diff renderer instead of ANSI string-based log-update.
@@ -391,6 +392,7 @@ export default class Ink {
         const unthrottled = options.debug || this.isScreenReaderEnabled;
         const maxFps = options.maxFps ?? 30;
         const renderThrottleMs = maxFps > 0 ? Math.max(1, Math.ceil(1000 / maxFps)) : 0;
+
         this.renderThrottleMs = unthrottled ? 0 : renderThrottleMs;
 
         const baseOnRender = unthrottled
@@ -709,7 +711,7 @@ export default class Ink {
             applyStyles(node.yogaNode, node.style);
 
             while (node.yogaNode.getChildCount() > 0) {
-                node.yogaNode.removeChild(node.yogaNode.getChild(0));
+                node.yogaNode.getChild(0).remove();
             }
 
             let yogaIndex = 0;
@@ -730,7 +732,7 @@ export default class Ink {
         // Recurse into children
         for (const child of node.childNodes) {
             if (child.nodeName !== "#text") {
-                this.prepareYogaTree(child as dom.DOMElement, flushLayoutObservers);
+                this.prepareYogaTree(child, flushLayoutObservers);
             }
         }
 

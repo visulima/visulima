@@ -17,7 +17,7 @@ import {
     enableX10Mouse,
 } from "@visulima/ansi";
 
-const ANSI_CODES = {
+const ANSI_CODES: Record<string, { off: string; on: string }> = {
     // SET_ALTERNATE_SCROLL — no dedicated helper in @visulima/ansi
     alternateScroll: { off: "\u001B[?1007l", on: "\u001B[?1007h" },
 

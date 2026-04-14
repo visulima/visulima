@@ -11,21 +11,18 @@ import useFileSystem from "./use-file-system";
 export type Props = {
     /**
      * Color for the focused item highlight.
-     *
      * @default "cyan"
      */
     readonly accentColor?: string;
 
     /**
      * Color for directory entries.
-     *
      * @default "blue"
      */
     readonly directoryColor?: string;
 
     /**
      * Color for file entries.
-     *
      * @default "white"
      */
     readonly fileColor?: string;
@@ -37,21 +34,18 @@ export type Props = {
 
     /**
      * Starting directory path.
-     *
      * @default process.cwd()
      */
     readonly initialPath?: string;
 
     /**
      * Whether keyboard navigation is active.
-     *
      * @default true
      */
     readonly isFocused?: boolean;
 
     /**
      * Maximum number of visible items (viewport height).
-     *
      * @default 10
      */
     readonly limit?: number;
@@ -68,14 +62,12 @@ export type Props = {
 
     /**
      * Show file permissions column.
-     *
      * @default false
      */
     readonly showPermissions?: boolean;
 
     /**
      * Show file size column.
-     *
      * @default false
      */
     readonly showSize?: boolean;
@@ -101,7 +93,7 @@ function formatSize(bytes: number): string {
  * A file system browser component for picking files from the terminal.
  *
  * ```tsx
- * <FilePicker
+ * &lt;FilePicker
  *   onSelect={(entry) => console.log("Selected:", entry.path)}
  *   filter={{ extensions: [".ts", ".tsx"] }}
  * />
@@ -171,6 +163,7 @@ export default function FilePicker({
     const halfLimit = Math.floor(limit / 2);
     let windowStart = Math.max(0, safeIndex - halfLimit);
     const windowEnd = Math.min(fs.entries.length, windowStart + limit);
+
     windowStart = Math.max(0, windowEnd - limit);
 
     const visibleEntries = fs.entries.slice(windowStart, windowEnd);
@@ -188,19 +181,24 @@ export default function FilePicker({
                 </Box>
             )}
 
-            {fs.error && <Text color="red">Error: {fs.error}</Text>}
+            {fs.error && (
+                <Text color="red">
+                    Error:
+                    {fs.error}
+                </Text>
+            )}
 
             {!fs.isLoading && !fs.error && fs.entries.length === 0 && <Text dimColor>(empty directory)</Text>}
 
             {visibleEntries.map((entry, viewIndex) => {
                 const absoluteIndex = windowStart + viewIndex;
                 const isFocusedEntry = absoluteIndex === safeIndex;
-                const icon = entry.isDirectory ? "\ud83d\udcc1 " : "\ud83d\udcc4 ";
+                const icon = entry.isDirectory ? "\uD83D\uDCC1 " : "\uD83D\uDCC4 ";
                 const nameColor = entry.isDirectory ? directoryColor : fileColor;
 
                 return (
                     <Box key={entry.name}>
-                        <Text color={isFocusedEntry ? accentColor : undefined}>{isFocusedEntry ? "\u25b8 " : "  "}</Text>
+                        <Text color={isFocusedEntry ? accentColor : undefined}>{isFocusedEntry ? "\u25B8 " : "  "}</Text>
                         <Text>{icon}</Text>
                         <Text bold={entry.isDirectory} color={isFocusedEntry ? accentColor : nameColor}>
                             {entry.name}
@@ -224,7 +222,9 @@ export default function FilePicker({
 
             {fs.entries.length > limit && (
                 <Text dimColor>
-                    {safeIndex + 1}/{fs.entries.length}
+                    {safeIndex + 1}
+                    /
+                    {fs.entries.length}
                 </Text>
             )}
         </Box>

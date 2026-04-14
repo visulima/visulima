@@ -9,7 +9,24 @@ description: "Reference for all React components in @visulima/tui: Alert, Badge,
 
 ```tsx
 import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui";
-import { BigText, ConfirmInput, FilePicker, Gradient, Help, MultiSelect, Paginator, ProgressBar, SelectInput, Spinner, Stopwatch, Tab, Table, Tabs, TextInput, Timer } from "@visulima/tui";
+import {
+    BigText,
+    ConfirmInput,
+    FilePicker,
+    Gradient,
+    Help,
+    MultiSelect,
+    Paginator,
+    ProgressBar,
+    SelectInput,
+    Spinner,
+    Stopwatch,
+    Tab,
+    Table,
+    Tabs,
+    TextInput,
+    Timer,
+} from "@visulima/tui";
 ```
 
 ## `Box`
@@ -249,28 +266,28 @@ import { FilePicker } from "@visulima/tui";
 />
 ```
 
-| Prop              | Type                          | Default          | Description                              |
-| ----------------- | ----------------------------- | ---------------- | ---------------------------------------- |
-| `initialPath`     | `string`                      | `process.cwd()`  | Starting directory                       |
-| `filter`          | `FilePickerFilter`            | `{}`             | File filtering options (see below)       |
-| `onSelect`        | `(entry: FileEntry) => void`  | —                | Called when a file is selected (Enter)   |
-| `onCancel`        | `() => void`                  | —                | Called when Escape is pressed            |
-| `showPermissions` | `boolean`                     | `false`          | Show file permissions column             |
-| `showSize`        | `boolean`                     | `false`          | Show file size column                    |
-| `isFocused`       | `boolean`                     | `true`           | Whether keyboard navigation is active    |
-| `limit`           | `number`                      | `10`             | Visible items (viewport height)          |
-| `accentColor`     | `string`                      | `"cyan"`         | Focused item highlight color             |
-| `directoryColor`  | `string`                      | `"blue"`         | Directory name color                     |
-| `fileColor`       | `string`                      | `"white"`        | File name color                          |
+| Prop              | Type                         | Default         | Description                            |
+| ----------------- | ---------------------------- | --------------- | -------------------------------------- |
+| `initialPath`     | `string`                     | `process.cwd()` | Starting directory                     |
+| `filter`          | `FilePickerFilter`           | `{}`            | File filtering options (see below)     |
+| `onSelect`        | `(entry: FileEntry) => void` | —               | Called when a file is selected (Enter) |
+| `onCancel`        | `() => void`                 | —               | Called when Escape is pressed          |
+| `showPermissions` | `boolean`                    | `false`         | Show file permissions column           |
+| `showSize`        | `boolean`                    | `false`         | Show file size column                  |
+| `isFocused`       | `boolean`                    | `true`          | Whether keyboard navigation is active  |
+| `limit`           | `number`                     | `10`            | Visible items (viewport height)        |
+| `accentColor`     | `string`                     | `"cyan"`        | Focused item highlight color           |
+| `directoryColor`  | `string`                     | `"blue"`        | Directory name color                   |
+| `fileColor`       | `string`                     | `"white"`       | File name color                        |
 
 ### Filter options
 
-| Field              | Type        | Default | Description                                  |
-| ------------------ | ----------- | ------- | -------------------------------------------- |
-| `extensions`       | `string[]`  | —       | Allowed extensions (e.g. `[".ts", ".json"]`) |
-| `showHidden`       | `boolean`   | `false` | Include hidden files (dotfiles)              |
-| `showDirectories`  | `boolean`   | `true`  | Include directories                          |
-| `showFiles`        | `boolean`   | `true`  | Include regular files                        |
+| Field             | Type       | Default | Description                                  |
+| ----------------- | ---------- | ------- | -------------------------------------------- |
+| `extensions`      | `string[]` | —       | Allowed extensions (e.g. `[".ts", ".json"]`) |
+| `showHidden`      | `boolean`  | `false` | Include hidden files (dotfiles)              |
+| `showDirectories` | `boolean`  | `true`  | Include directories                          |
+| `showFiles`       | `boolean`  | `true`  | Include regular files                        |
 
 ### FileEntry shape
 
@@ -287,15 +304,15 @@ type FileEntry = {
 
 ### Keyboard
 
-| Key              | Action                            |
-| ---------------- | --------------------------------- |
-| `↑` / `↓`       | Move focus                        |
-| `Enter`          | Open directory or select file     |
-| `Backspace` / `←` | Go to parent directory          |
-| `Escape`         | Cancel (`onCancel`)               |
-| `Page Up/Down`   | Jump by viewport height           |
-| `Home` / `End`   | Jump to first/last entry          |
-| `.`              | Refresh directory listing         |
+| Key               | Action                        |
+| ----------------- | ----------------------------- |
+| `↑` / `↓`         | Move focus                    |
+| `Enter`           | Open directory or select file |
+| `Backspace` / `←` | Go to parent directory        |
+| `Escape`          | Cancel (`onCancel`)           |
+| `Page Up/Down`    | Jump by viewport height       |
+| `Home` / `End`    | Jump to first/last entry      |
+| `.`               | Refresh directory listing     |
 
 ## `BigText`
 
@@ -363,14 +380,14 @@ const { bindings } = useKeyBindings([
 <Help bindings={bindings} mode="full" />
 ```
 
-| Prop               | Type            | Default     | Description                                      |
-| ------------------ | --------------- | ----------- | ------------------------------------------------ |
-| `bindings`         | `KeyBinding[]`  | _(required)_ | Key bindings to display                         |
-| `mode`             | `"short"` \| `"full"` | `"short"` | Short = single line; full = multi-column grid  |
-| `separator`        | `string`        | `" · "`     | Separator between pairs in short mode            |
-| `keyColor`         | `string`        | `"cyan"`    | Color for key labels                             |
-| `descriptionColor` | `string`       | —           | Color for descriptions (defaults to dim)         |
-| `maxColumns`       | `number`        | `3`         | Max columns in full mode                         |
+| Prop               | Type                  | Default      | Description                                   |
+| ------------------ | --------------------- | ------------ | --------------------------------------------- |
+| `bindings`         | `KeyBinding[]`        | _(required)_ | Key bindings to display                       |
+| `mode`             | `"short"` \| `"full"` | `"short"`    | Short = single line; full = multi-column grid |
+| `separator`        | `string`              | `" · "`      | Separator between pairs in short mode         |
+| `keyColor`         | `string`              | `"cyan"`     | Color for key labels                          |
+| `descriptionColor` | `string`              | —            | Color for descriptions (defaults to dim)      |
+| `maxColumns`       | `number`              | `3`          | Max columns in full mode                      |
 
 ### Short mode
 
@@ -534,22 +551,22 @@ const ref = useRef(null);
 <Stopwatch format={(ms) => `${(ms / 1000).toFixed(1)}s`} />
 ```
 
-| Prop        | Type                         | Default           | Description                            |
-| ----------- | ---------------------------- | ----------------- | -------------------------------------- |
-| `autoStart` | `boolean`                    | `false`           | Start counting immediately             |
-| `interval`  | `number`                     | `1000`            | Tick interval in milliseconds          |
-| `format`    | `(elapsed: number) => string` | `MM:SS`/`HH:MM:SS` | Custom time formatter              |
-| `color`     | `string`                     | —                 | Text color                             |
-| `bold`      | `boolean`                    | —                 | Bold text                              |
+| Prop        | Type                          | Default            | Description                   |
+| ----------- | ----------------------------- | ------------------ | ----------------------------- |
+| `autoStart` | `boolean`                     | `false`            | Start counting immediately    |
+| `interval`  | `number`                      | `1000`             | Tick interval in milliseconds |
+| `format`    | `(elapsed: number) => string` | `MM:SS`/`HH:MM:SS` | Custom time formatter         |
+| `color`     | `string`                      | —                  | Text color                    |
+| `bold`      | `boolean`                     | —                  | Bold text                     |
 
 ### Ref methods
 
 ```tsx
-ref.current.start();    // Start counting
-ref.current.stop();     // Pause
-ref.current.toggle();   // Toggle start/stop
-ref.current.reset();    // Reset to 00:00 and stop
-ref.current.lap();      // Capture current elapsed time
+ref.current.start(); // Start counting
+ref.current.stop(); // Pause
+ref.current.toggle(); // Toggle start/stop
+ref.current.reset(); // Reset to 00:00 and stop
+ref.current.lap(); // Capture current elapsed time
 ```
 
 For headless usage, use the [`useStopwatch`](./hooks#usestopwatch) hook directly.
@@ -568,23 +585,23 @@ const ref = useRef(null);
 <Timer duration={300_000} autoStart color="red" onTimeout={() => alert("Done!")} />
 ```
 
-| Prop        | Type                            | Default           | Description                            |
-| ----------- | ------------------------------- | ----------------- | -------------------------------------- |
-| `duration`  | `number`                        | _(required)_      | Countdown duration in milliseconds     |
-| `autoStart` | `boolean`                       | `false`           | Start counting immediately             |
-| `interval`  | `number`                        | `1000`            | Tick interval in milliseconds          |
-| `onTimeout` | `() => void`                    | —                 | Called when the timer reaches zero     |
+| Prop        | Type                            | Default            | Description                        |
+| ----------- | ------------------------------- | ------------------ | ---------------------------------- |
+| `duration`  | `number`                        | _(required)_       | Countdown duration in milliseconds |
+| `autoStart` | `boolean`                       | `false`            | Start counting immediately         |
+| `interval`  | `number`                        | `1000`             | Tick interval in milliseconds      |
+| `onTimeout` | `() => void`                    | —                  | Called when the timer reaches zero |
 | `format`    | `(remaining: number) => string` | `MM:SS`/`HH:MM:SS` | Custom time formatter              |
-| `color`     | `string`                        | —                 | Text color                             |
-| `bold`      | `boolean`                       | —                 | Bold text                              |
+| `color`     | `string`                        | —                  | Text color                         |
+| `bold`      | `boolean`                       | —                  | Bold text                          |
 
 ### Ref methods
 
 ```tsx
-ref.current.start();    // Start countdown
-ref.current.stop();     // Pause
-ref.current.toggle();   // Toggle start/stop
-ref.current.reset();    // Reset to original duration and stop
+ref.current.start(); // Start countdown
+ref.current.stop(); // Pause
+ref.current.toggle(); // Toggle start/stop
+ref.current.reset(); // Reset to original duration and stop
 ```
 
 For headless usage, use the [`useTimer`](./hooks#usetimer) hook directly.
@@ -1279,20 +1296,20 @@ import { Paginator, Text, Box } from "@visulima/tui";
             ))}
         </Box>
     )}
-</Paginator>
+</Paginator>;
 ```
 
-| Prop             | Type                                               | Default    | Description                                      |
-| ---------------- | -------------------------------------------------- | ---------- | ------------------------------------------------ |
-| `items`          | `T[]`                                              | _(required)_ | Full item list to paginate                     |
-| `pageSize`       | `number`                                           | _(required)_ | Items per page                                 |
-| `children`       | `(pageItems: T[], meta: PageMeta) => ReactNode`    | _(required)_ | Render prop for page content                   |
-| `page`           | `number`                                           | —          | Controlled current page (0-indexed)              |
-| `defaultPage`    | `number`                                           | `0`        | Initial page for uncontrolled mode               |
-| `onChange`        | `(page: number) => void`                          | —          | Called when page changes                         |
-| `isFocused`      | `boolean`                                          | `true`     | Whether keyboard navigation is active            |
-| `style`          | `"dots"` \| `"numeric"` \| `"fraction"`            | `"dots"`   | Indicator style                                  |
-| `indicatorColor` | `string`                                           | `"cyan"`   | Color for the active indicator                   |
+| Prop             | Type                                            | Default      | Description                           |
+| ---------------- | ----------------------------------------------- | ------------ | ------------------------------------- |
+| `items`          | `T[]`                                           | _(required)_ | Full item list to paginate            |
+| `pageSize`       | `number`                                        | _(required)_ | Items per page                        |
+| `children`       | `(pageItems: T[], meta: PageMeta) => ReactNode` | _(required)_ | Render prop for page content          |
+| `page`           | `number`                                        | —            | Controlled current page (0-indexed)   |
+| `defaultPage`    | `number`                                        | `0`          | Initial page for uncontrolled mode    |
+| `onChange`       | `(page: number) => void`                        | —            | Called when page changes              |
+| `isFocused`      | `boolean`                                       | `true`       | Whether keyboard navigation is active |
+| `style`          | `"dots"` \| `"numeric"` \| `"fraction"`         | `"dots"`     | Indicator style                       |
+| `indicatorColor` | `string`                                        | `"cyan"`     | Color for the active indicator        |
 
 ### PageMeta
 
@@ -1317,12 +1334,12 @@ type PageMeta = {
 
 ### Keyboard
 
-| Key               | Action             |
-| ----------------- | ------------------ |
-| `←` / `Page Up`   | Previous page      |
-| `→` / `Page Down`  | Next page         |
-| `Home`            | First page         |
-| `End`             | Last page          |
+| Key               | Action        |
+| ----------------- | ------------- |
+| `←` / `Page Up`   | Previous page |
+| `→` / `Page Down` | Next page     |
+| `Home`            | First page    |
+| `End`             | Last page     |
 
 ### Controlled mode
 
@@ -1330,7 +1347,7 @@ type PageMeta = {
 const [page, setPage] = useState(0);
 <Paginator items={data} pageSize={10} page={page} onChange={setPage}>
     {(items) => <MyList items={items} />}
-</Paginator>
+</Paginator>;
 ```
 
 ## `TreeView`

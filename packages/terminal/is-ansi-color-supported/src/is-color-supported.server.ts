@@ -83,8 +83,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return forceColor;
     }
 
-    const isForceDisabled
-        = "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(NO_COLOR_FLAGS_RE);
+    const isForceDisabled = "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(NO_COLOR_FLAGS_RE);
 
     if (isForceDisabled) {
         return SPACE_MONO;

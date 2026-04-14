@@ -319,13 +319,7 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function MaybeActiveAnimations({
-                    isFirstActive,
-                    isSecondActive,
-                }: {
-                    readonly isFirstActive: boolean;
-                    readonly isSecondActive: boolean;
-                }) {
+                function MaybeActiveAnimations({ isFirstActive, isSecondActive }: { readonly isFirstActive: boolean; readonly isSecondActive: boolean }) {
                     const { frame: firstFrame } = useAnimation({
                         interval: 50,
                         isActive: isFirstActive,
@@ -358,10 +352,7 @@ describe("useAnimation", () => {
                 expect(mocks.setTimeoutCallCount).toBe(1);
 
                 await vi.advanceTimersByTimeAsync(120);
-                const [firstFrame, secondFrame] = stdout
-                    .get()
-                    .split(",")
-                    .map(Number);
+                const [firstFrame, secondFrame] = stdout.get().split(",").map(Number);
 
                 expect(firstFrame!).toBeGreaterThanOrEqual(1);
                 expect(secondFrame).toBe(0);
@@ -1054,7 +1045,6 @@ describe("useAnimation", () => {
 
             unmount();
         });
-
     });
 
     it("concurrent aborted renders do not suppress interval reset", async () => {
@@ -1389,18 +1379,14 @@ describe("useAnimation", () => {
         it.skipIf(!ptyAvailable)("useAnimation can drive non-interactive process exit", async () => {
             const { spawn: spawnProcess } = await import("node:child_process");
 
-            const fixtureProcess = spawnProcess(
-                "node",
-                ["--import=tsx", join(__dirname, "./fixtures/use-animation-non-interactive-exit.tsx")],
-                {
-                    env: {
-                        ...(process.env as Record<string, string>),
-                        CI: "false",
-                        NODE_NO_WARNINGS: "1",
-                    },
-                    stdio: ["ignore", "pipe", "pipe"],
+            const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/use-animation-non-interactive-exit.tsx")], {
+                env: {
+                    ...(process.env as Record<string, string>),
+                    CI: "false",
+                    NODE_NO_WARNINGS: "1",
                 },
-            );
+                stdio: ["ignore", "pipe", "pipe"],
+            });
 
             let output = "";
 
@@ -1422,18 +1408,14 @@ describe("useAnimation", () => {
         it.skipIf(!ptyAvailable)("useAnimation can drive explicitly non-interactive process exit", async () => {
             const { spawn: spawnProcess } = await import("node:child_process");
 
-            const fixtureProcess = spawnProcess(
-                "node",
-                ["--import=tsx", join(__dirname, "./fixtures/use-animation-interactive-false-exit.tsx")],
-                {
-                    env: {
-                        ...(process.env as Record<string, string>),
-                        CI: "false",
-                        NODE_NO_WARNINGS: "1",
-                    },
-                    stdio: ["ignore", "pipe", "pipe"],
+            const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/use-animation-interactive-false-exit.tsx")], {
+                env: {
+                    ...(process.env as Record<string, string>),
+                    CI: "false",
+                    NODE_NO_WARNINGS: "1",
                 },
-            );
+                stdio: ["ignore", "pipe", "pipe"],
+            });
 
             let output = "";
 

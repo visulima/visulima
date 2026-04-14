@@ -91,6 +91,7 @@ class ContentSection extends BaseSection {
                     throw new TypeError("Invalid raw content, must be a string or array of strings.");
                 }
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.add(this.getContentLines(section.content));
             }
 
@@ -100,6 +101,7 @@ class ContentSection extends BaseSection {
 
     // eslint-disable-next-line class-methods-use-this
     private getContentLines(content: IContent["content"]) {
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
         if (typeof content === "string") {
             const table = createTable({
                 showHeader: false,
@@ -177,6 +179,7 @@ class ContentSection extends BaseSection {
         }
 
         throw new Error(`invalid input - 'content' must be a string, array of strings or a object:\n\n${JSON.stringify(content)}`);
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
     }
 }
 

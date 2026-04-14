@@ -38,7 +38,6 @@ const ScrollBarBox = ({
     const scrollBarDimColor = isLeft ? borderLeftDimColor ?? borderDimColor : borderRightDimColor ?? borderDimColor;
 
     return (
-
         <Box flexDirection="row" height={height} {...boxProps}>
             {isLeft && (
                 <ScrollBar

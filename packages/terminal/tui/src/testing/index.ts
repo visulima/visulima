@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
 import type { Instance, RenderOptions } from "../ink/render";
 import render from "../ink/render";
 import type { KeySender } from "./keys";
-import { createKeySender, KEY } from "./keys";
+import { createKeySender } from "./keys";
 import type { Screen } from "./screen";
 import { createScreen } from "./screen";
 import type { WaitForOptions } from "./wait-for";
@@ -335,7 +335,10 @@ const cleanup = (): void => {
     instances.length = 0;
 };
 
-export { cleanup, createKeySender, createScreen, KEY, testRender as render, waitFor };
+export { cleanup, testRender as render };
 export type { KeyName, KeySender } from "./keys";
+export { createKeySender, KEY } from "./keys";
 export type { Screen } from "./screen";
+export { createScreen } from "./screen";
 export type { WaitForOptions } from "./wait-for";
+export { waitFor } from "./wait-for";

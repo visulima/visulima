@@ -558,19 +558,19 @@ const Spinner = () => {
 
 ### Options
 
-| Option     | Type      | Default | Description                                                                                                                |
-| ---------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                        |
+| Option     | Type      | Default | Description                                                                                                                 |
+| ---------- | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                         |
 | `isActive` | `boolean` | `true`  | Whether the animation is running. When set to `false`, the animation stops. When toggled back to `true`, values reset to 0. |
 
 ### Return Value
 
-| Field   | Type         | Description                                                                                          |
-| ------- | ------------ | ---------------------------------------------------------------------------------------------------- |
-| `frame` | `number`     | Discrete counter that increments by 1 each interval. Useful for indexed sequences like spinner frames. |
+| Field   | Type         | Description                                                                                                                            |
+| ------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `frame` | `number`     | Discrete counter that increments by 1 each interval. Useful for indexed sequences like spinner frames.                                 |
 | `time`  | `number`     | Total elapsed milliseconds since the animation started or was last reset. Useful for continuous math-based animations like sine waves. |
-| `delta` | `number`     | Milliseconds since the previous rendered tick. Accounts for throttled renders. Useful for physics-based or velocity-driven motion. |
-| `reset` | `() => void` | Resets `frame`, `time`, and `delta` to 0 and restarts timing from the current moment.                 |
+| `delta` | `number`     | Milliseconds since the previous rendered tick. Accounts for throttled renders. Useful for physics-based or velocity-driven motion.     |
+| `reset` | `() => void` | Resets `frame`, `time`, and `delta` to 0 and restarts timing from the current moment.                                                  |
 
 ### Examples
 
@@ -689,24 +689,24 @@ const { remaining, isRunning, isFinished, start, stop, toggle, reset } = useTime
 
 ### Options
 
-| Option      | Type         | Default | Description                         |
-| ----------- | ------------ | ------- | ----------------------------------- |
+| Option      | Type         | Default      | Description                        |
+| ----------- | ------------ | ------------ | ---------------------------------- |
 | `duration`  | `number`     | _(required)_ | Countdown duration in milliseconds |
-| `interval`  | `number`     | `1000`  | Tick frequency in milliseconds      |
-| `autoStart` | `boolean`    | `false` | Start counting immediately          |
-| `onTimeout` | `() => void` | —       | Called once when time reaches zero   |
+| `interval`  | `number`     | `1000`       | Tick frequency in milliseconds     |
+| `autoStart` | `boolean`    | `false`      | Start counting immediately         |
+| `onTimeout` | `() => void` | —            | Called once when time reaches zero |
 
 ### Return Value
 
-| Field        | Type         | Description                                |
-| ------------ | ------------ | ------------------------------------------ |
-| `remaining`  | `number`     | Milliseconds remaining (clamped to >= 0)   |
-| `isRunning`  | `boolean`    | Whether the timer is counting down         |
-| `isFinished` | `boolean`    | Whether the countdown has reached zero     |
-| `start`      | `() => void` | Start the countdown                        |
-| `stop`       | `() => void` | Pause the countdown                        |
-| `toggle`     | `() => void` | Toggle between running and stopped         |
-| `reset`      | `() => void` | Reset to original duration and stop        |
+| Field        | Type         | Description                              |
+| ------------ | ------------ | ---------------------------------------- |
+| `remaining`  | `number`     | Milliseconds remaining (clamped to >= 0) |
+| `isRunning`  | `boolean`    | Whether the timer is counting down       |
+| `isFinished` | `boolean`    | Whether the countdown has reached zero   |
+| `start`      | `() => void` | Start the countdown                      |
+| `stop`       | `() => void` | Pause the countdown                      |
+| `toggle`     | `() => void` | Toggle between running and stopped       |
+| `reset`      | `() => void` | Reset to original duration and stop      |
 
 For a visual component, see [`<Timer>`](./components#timer).
 
@@ -732,16 +732,16 @@ const { elapsed, isRunning, start, stop, toggle, reset, lap, laps } = useStopwat
 
 ### Return Value
 
-| Field       | Type         | Description                                |
-| ----------- | ------------ | ------------------------------------------ |
-| `elapsed`   | `number`     | Milliseconds elapsed since start/reset     |
-| `isRunning` | `boolean`    | Whether the stopwatch is running           |
-| `start`     | `() => void` | Start counting                             |
-| `stop`      | `() => void` | Pause counting                             |
-| `toggle`    | `() => void` | Toggle between running and stopped         |
-| `reset`     | `() => void` | Reset to zero, clear laps, and stop        |
+| Field       | Type           | Description                              |
+| ----------- | -------------- | ---------------------------------------- |
+| `elapsed`   | `number`       | Milliseconds elapsed since start/reset   |
+| `isRunning` | `boolean`      | Whether the stopwatch is running         |
+| `start`     | `() => void`   | Start counting                           |
+| `stop`      | `() => void`   | Pause counting                           |
+| `toggle`    | `() => void`   | Toggle between running and stopped       |
+| `reset`     | `() => void`   | Reset to zero, clear laps, and stop      |
 | `lap`       | `() => number` | Capture current elapsed time; returns it |
-| `laps`      | `number[]`   | Accumulated lap times                      |
+| `laps`      | `number[]`     | Accumulated lap times                    |
 
 For a visual component, see [`<Stopwatch>`](./components#stopwatch).
 
@@ -759,12 +759,13 @@ const { bindings } = useKeyBindings([
     { binding: { key: "escape", description: "Cancel", enabled: false }, handler: () => cancel() },
 ]);
 
-<Help bindings={bindings} />
+<Help bindings={bindings} />;
 ```
 
 ### Key Binding Format
 
 The `key` field supports:
+
 - **Single character**: `"q"`, `"a"`, `" "` (space)
 - **Special key name**: `"return"`, `"escape"`, `"upArrow"`, `"leftArrow"`, `"backspace"`, `"tab"`, `"pageUp"`, `"pageDown"`, `"home"`, `"end"`, `"delete"`
 - **Modifier combo**: `"ctrl+c"`, `"meta+s"`, `"shift+tab"` (modifier + key)
@@ -776,21 +777,21 @@ The `key` field supports:
 type KeyBinding = {
     key: string | readonly string[];
     description: string;
-    enabled?: boolean;   // default: true
-    group?: string;      // for Help grouping
+    enabled?: boolean; // default: true
+    group?: string; // for Help grouping
 };
 ```
 
 ### Options
 
-| Option     | Type      | Default | Description                    |
-| ---------- | --------- | ------- | ------------------------------ |
-| `isActive` | `boolean` | `true`  | Whether input is captured      |
+| Option     | Type      | Default | Description               |
+| ---------- | --------- | ------- | ------------------------- |
+| `isActive` | `boolean` | `true`  | Whether input is captured |
 
 ### Return Value
 
-| Field      | Type           | Description                              |
-| ---------- | -------------- | ---------------------------------------- |
+| Field      | Type           | Description                               |
+| ---------- | -------------- | ----------------------------------------- |
 | `bindings` | `KeyBinding[]` | Enabled bindings, for passing to `<Help>` |
 
 Disabled bindings (`enabled: false`) are excluded from both the returned array and keyboard matching.

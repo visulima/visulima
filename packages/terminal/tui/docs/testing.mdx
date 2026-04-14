@@ -59,20 +59,20 @@ const instance = render(<MyComponent />);
 
 **Returns:** `TestInstance`
 
-| Property    | Type                           | Description                                         |
-| ----------- | ------------------------------ | --------------------------------------------------- |
-| `lastFrame` | `() => string \| undefined`    | Most recently rendered stdout frame                 |
-| `frames`    | `readonly string[]`            | All captured stdout frames                          |
-| `screen`    | `Screen`                       | Query helpers with built-in ANSI stripping          |
-| `keys`      | `KeySender`                    | Named key methods for simulating keyboard input     |
-| `flush`     | `() => Promise<void>`          | Wait for pending React renders to commit            |
-| `waitFor`   | `(condition, options?) => Promise<void>` | Async polling assertion                  |
-| `rerender`  | `(node: ReactElement) => void` | Replace the rendered component                      |
-| `unmount`   | `() => void`                   | Unmount the component                               |
-| `cleanup`   | `() => void`                   | Unmount and clean up resources                      |
-| `stdout`    | `TestInstanceStdout`           | Mock stdout with `lastFrame()`, `frames`, `write()` |
-| `stderr`    | `TestInstanceStderr`           | Mock stderr with `lastFrame()`, `frames`, `write()` |
-| `stdin`     | `TestInstanceStdin`            | Mock stdin with `write()` for simulating input      |
+| Property    | Type                                     | Description                                         |
+| ----------- | ---------------------------------------- | --------------------------------------------------- |
+| `lastFrame` | `() => string \| undefined`              | Most recently rendered stdout frame                 |
+| `frames`    | `readonly string[]`                      | All captured stdout frames                          |
+| `screen`    | `Screen`                                 | Query helpers with built-in ANSI stripping          |
+| `keys`      | `KeySender`                              | Named key methods for simulating keyboard input     |
+| `flush`     | `() => Promise<void>`                    | Wait for pending React renders to commit            |
+| `waitFor`   | `(condition, options?) => Promise<void>` | Async polling assertion                             |
+| `rerender`  | `(node: ReactElement) => void`           | Replace the rendered component                      |
+| `unmount`   | `() => void`                             | Unmount the component                               |
+| `cleanup`   | `() => void`                             | Unmount and clean up resources                      |
+| `stdout`    | `TestInstanceStdout`                     | Mock stdout with `lastFrame()`, `frames`, `write()` |
+| `stderr`    | `TestInstanceStderr`                     | Mock stderr with `lastFrame()`, `frames`, `write()` |
+| `stdin`     | `TestInstanceStdin`                      | Mock stdin with `write()` for simulating input      |
 
 ### `cleanup()`
 
@@ -90,15 +90,15 @@ afterEach(() => {
 
 The `screen` property on a test instance provides query helpers that automatically strip ANSI escape codes. No need to manually import a strip utility for assertions.
 
-| Method          | Return     | Description                                       |
-| --------------- | ---------- | ------------------------------------------------- |
+| Method          | Return     | Description                                        |
+| --------------- | ---------- | -------------------------------------------------- |
 | `text()`        | `string`   | Last frame with ANSI codes stripped                |
 | `rawText()`     | `string`   | Last frame with ANSI codes preserved               |
 | `contains(str)` | `boolean`  | Whether the current screen contains the given text |
 | `matches(re)`   | `boolean`  | Whether the current screen matches a regex         |
 | `line(n)`       | `string`   | Get a specific line by zero-based index            |
 | `lines()`       | `string[]` | All non-empty lines                                |
-| `frames()`      | `string[]` | All captured frames (ANSI-stripped)                 |
+| `frames()`      | `string[]` | All captured frames (ANSI-stripped)                |
 | `rawFrames()`   | `string[]` | All captured frames (raw)                          |
 
 ```tsx
@@ -139,25 +139,25 @@ const screen = createScreen(() => someLastFrame(), allFrames);
 
 The `keys` property provides named methods for simulating keyboard input — no need to memorize ANSI escape sequences.
 
-| Method            | Description                                |
-| ----------------- | ------------------------------------------ |
-| `enter()`         | Press Enter / Return                       |
-| `escape()`        | Press Escape                               |
-| `tab()`           | Press Tab                                  |
-| `backspace()`     | Press Backspace                            |
-| `delete()`        | Press Delete                               |
-| `up()`            | Press Up arrow                             |
-| `down()`          | Press Down arrow                           |
-| `left()`          | Press Left arrow                           |
-| `right()`         | Press Right arrow                          |
-| `space()`         | Press Space                                |
-| `pageUp()`        | Press Page Up                              |
-| `pageDown()`      | Press Page Down                            |
-| `home()`          | Press Home                                 |
-| `end()`           | Press End                                  |
-| `type(text)`      | Type a string character by character       |
-| `press(char)`     | Send a single character                    |
-| `raw(data)`       | Send arbitrary raw data to stdin           |
+| Method        | Description                          |
+| ------------- | ------------------------------------ |
+| `enter()`     | Press Enter / Return                 |
+| `escape()`    | Press Escape                         |
+| `tab()`       | Press Tab                            |
+| `backspace()` | Press Backspace                      |
+| `delete()`    | Press Delete                         |
+| `up()`        | Press Up arrow                       |
+| `down()`      | Press Down arrow                     |
+| `left()`      | Press Left arrow                     |
+| `right()`     | Press Right arrow                    |
+| `space()`     | Press Space                          |
+| `pageUp()`    | Press Page Up                        |
+| `pageDown()`  | Press Page Down                      |
+| `home()`      | Press Home                           |
+| `end()`       | Press End                            |
+| `type(text)`  | Type a string character by character |
+| `press(char)` | Send a single character              |
+| `raw(data)`   | Send arbitrary raw data to stdin     |
 
 ```tsx
 import React, { useState } from "react";
@@ -231,11 +231,11 @@ Async polling assertion inspired by [React Testing Library](https://testing-libr
 
 **Parameters:**
 
-| Parameter          | Type                     | Description                                           |
-| ------------------ | ------------------------ | ----------------------------------------------------- |
-| `condition`        | `string \| () => void`   | Text to wait for, or callback that throws until ready |
-| `options.timeout`  | `number`                 | Max wait time in ms (default: 3000)                   |
-| `options.interval` | `number`                 | Polling interval in ms (default: 50)                  |
+| Parameter          | Type                   | Description                                           |
+| ------------------ | ---------------------- | ----------------------------------------------------- |
+| `condition`        | `string \| () => void` | Text to wait for, or callback that throws until ready |
+| `options.timeout`  | `number`               | Max wait time in ms (default: 3000)                   |
+| `options.interval` | `number`               | Polling interval in ms (default: 50)                  |
 
 If `condition` is a **string**, waits until the screen contains it. If `condition` is a **function**, waits until it stops throwing (like React Testing Library's `waitFor`).
 
@@ -474,7 +474,7 @@ You can also use raw escape sequences via `stdin.write()` or `keys.raw()` if nee
 
 ```tsx
 stdin.write("\u001B[B"); // Down arrow: ESC [ B
-keys.raw("\u001B[A");    // Up arrow: ESC [ A
+keys.raw("\u001B[A"); // Up arrow: ESC [ A
 ```
 
 ### Testing components that exit

@@ -9,7 +9,6 @@ const zeroAnimState = { delta: 0, frame: 0, time: 0 };
 type Options = {
     /**
      * Time between ticks in milliseconds.
-     *
      * @default 100
      */
     readonly interval?: number;
@@ -17,7 +16,6 @@ type Options = {
     /**
      * Whether the animation is running. When set to `false`, the animation stops.
      * When toggled back to `true`, all values reset to `0`.
-     *
      * @default true
      */
     readonly isActive?: boolean;
@@ -67,8 +65,7 @@ export default function useAnimation(options?: Options): AnimationResult {
     const previousOptionsRef = useRef({ isActive, resetKey, safeInterval });
 
     const previousOptions = previousOptionsRef.current;
-    const shouldReset =
-        isActive && (safeInterval !== previousOptions.safeInterval || !previousOptions.isActive || resetKey !== previousOptions.resetKey);
+    const shouldReset = isActive && (safeInterval !== previousOptions.safeInterval || !previousOptions.isActive || resetKey !== previousOptions.resetKey);
 
     const reset = useCallback(() => {
         setResetKey((k) => k + 1);

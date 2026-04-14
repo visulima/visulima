@@ -141,6 +141,13 @@ export type DOMElement = InkNode & {
     internal_maxScrollTop?: number;
 
     /**
+     * Callback invoked after prepareYogaTree() caches the render output for
+     * an ink-static-render node. StaticRender uses this to set `isRendered`
+     * state, which prevents React from re-reconciling children once cached.
+     */
+    internal_onRendered?: () => void;
+
+    /**
      * Whether this element is opaque (prevents rendering of covered content beneath it).
      */
     internal_opaque?: boolean;
@@ -192,13 +199,6 @@ export type DOMElement = InkNode & {
 
     // Internal properties
     isStaticDirty?: boolean;
-
-    /**
-     * Callback invoked after prepareYogaTree() caches the render output for
-     * an ink-static-render node. StaticRender uses this to set `isRendered`
-     * state, which prevents React from re-reconciling children once cached.
-     */
-    internal_onRendered?: () => void;
 
     /**
      * Whether the Yoga subtree has been detached (children removed from Yoga layout)
@@ -397,11 +397,11 @@ export const markNodeAsDirty = (node?: DOMNode): void => {
 
     while (current) {
         if (current.nodeName === "ink-text" || current.nodeName === "ink-virtual-text") {
-            (current as DOMElement).internal_textCache = undefined;
+            current.internal_textCache = undefined;
         }
 
         if ("cachedRender" in current) {
-            (current as DOMElement).cachedRender = undefined;
+            current.cachedRender = undefined;
         }
 
         current = current.parentNode;

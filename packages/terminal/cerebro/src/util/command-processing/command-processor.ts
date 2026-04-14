@@ -62,7 +62,9 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     const { _all, positionals } = parsedArgs;
 
     const hasBooleanValues = Object.keys(booleanValues).length > 0;
-    const mergedAll: Record<string, unknown> = hasBooleanValues ? { ...(_all as Record<string, unknown>), ...booleanValues } : (_all as Record<string, unknown>);
+    const mergedAll: Record<string, unknown> = hasBooleanValues
+        ? { ...(_all as Record<string, unknown>), ...booleanValues }
+        : (_all as Record<string, unknown>);
 
     if (POSITIONALS_KEY in mergedAll) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete

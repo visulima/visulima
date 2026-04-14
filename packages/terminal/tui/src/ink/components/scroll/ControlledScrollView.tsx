@@ -378,7 +378,6 @@ export const ControlledScrollView = ({
     }
 
     return (
-
         <Box {...boxProps}>
             <Box ref={viewportRef} width="100%">
                 <Box overflow={debug ? undefined : "hidden"} width="100%">

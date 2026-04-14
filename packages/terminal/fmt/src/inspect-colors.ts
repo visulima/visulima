@@ -331,7 +331,6 @@ export const parseCss = (cssString: string): CssObject => {
         currentPart = ""; // eslint-disable-line no-useless-assignment,sonarjs/no-dead-store
     }
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const { 0: key, 1: value } of rawEntries) {
         switch (key) {
             case "background-color": {
@@ -371,7 +370,6 @@ export const parseCss = (cssString: string): CssObject => {
                 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
                 const arguments_ = (value as string).split(SPACE_PATTERN);
 
-                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const argument of arguments_) {
                     const maybeColor = parseCssColor(argument);
 
@@ -399,7 +397,6 @@ export const parseCss = (cssString: string): CssObject => {
                 css.textDecorationLine = [];
                 const lineTypes = (value as string).split(SPACE_PATTERN);
 
-                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const lineType of lineTypes) {
                     if (["line-through", "overline", "underline"].includes(lineType)) {
                         css.textDecorationLine.push(lineType);
@@ -420,7 +417,7 @@ export const parseCss = (cssString: string): CssObject => {
 // eslint-disable-next-line no-secrets/no-secrets
 // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L2933
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null): string => { // eslint-disable-line unicorn/no-null
+export const cssToAnsi = (css: CssObject, previousCss?: CssObject): string => {
     // eslint-disable-next-line no-param-reassign
     previousCss = previousCss ?? getDefaultCss();
 

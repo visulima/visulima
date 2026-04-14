@@ -97,9 +97,9 @@ const Spinner = () => {
 };
 ```
 
-| Option     | Type      | Default | Description                                                                                                                |
-| ---------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                        |
+| Option     | Type      | Default | Description                                                                                                                 |
+| ---------- | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                         |
 | `isActive` | `boolean` | `true`  | Whether the animation is running. When set to `false`, the animation stops. When toggled back to `true`, values reset to 0. |
 
 Returns `{ frame, time, delta, reset }`. See the [full hooks reference](https://visulima.com/packages/tui/hooks#useanimation) for detailed return values, more examples (sine waves, physics, pausable, reset), and `maxFps` interaction.
