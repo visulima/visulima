@@ -1,0 +1,165 @@
+---
+title: Styles Reference
+description: All available progress bar styles
+sidebar_position: 4
+---
+
+## Built-in Styles
+
+All styles can be used via the `style` option:
+
+```typescript
+import { ProgressBar } from "@visulima/progress-bar";
+
+const bar = new ProgressBar({
+    total: 100,
+    style: "shades_classic", // Any style name below
+    format: "[{bar}]",
+    width: 20,
+});
+```
+
+### shades_classic (default)
+
+Classic block/shade characters.
+
+```
+[██████████░░░░░░░░░░] 50%
+[████████████████████] 100%
+```
+
+Complete: `█` | Incomplete: `░`
+
+### shades_grey
+
+Grey gradient shading.
+
+```
+[▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░] 50%
+```
+
+Complete: `▓` | Incomplete: `░`
+
+### rect
+
+Rectangle block characters.
+
+```
+[▬▬▬▬▬▬▬▬▬▬▭▭▭▭▭▭▭▭▭▭] 50%
+```
+
+Complete: `▬` | Incomplete: `▭`
+
+### filled
+
+Filled blocks with space background.
+
+```
+[██████████          ] 50%
+```
+
+Complete: `█` | Incomplete: ` ` (space)
+
+### solid
+
+Same as filled — solid blocks with space.
+
+```
+[██████████          ] 50%
+```
+
+Complete: `█` | Incomplete: ` ` (space)
+
+### ascii
+
+Plain ASCII characters, works everywhere.
+
+```
+[##########----------] 50%
+```
+
+Complete: `#` | Incomplete: `-`
+
+### braille
+
+Unicode braille dots with automatic pill-shaped caps.
+
+```
+[⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠤⠤⠤⠤⠤⠤⠤⠤⠤⡷] 50%
+```
+
+Complete: `⣿` | Incomplete: `⠤` | Left cap: `⢾` | Right cap: `⡷`
+
+The braille style automatically applies rounded caps unless `roundedCaps: false` is set.
+
+## Custom Characters
+
+Override any style's characters:
+
+```typescript
+// Custom complete/incomplete chars
+const bar = new ProgressBar({
+    total: 100,
+    barCompleteChar: "=",
+    barIncompleteChar: " ",
+    format: "[{bar}]",
+});
+
+bar.update(50);
+// [==========          ]
+```
+
+## Gradient Arrays
+
+Pass arrays for smooth sub-character transitions:
+
+```typescript
+const bar = new ProgressBar({
+    total: 100,
+    barCompleteChar: ["░", "▒", "▓", "█"], // Light to heavy
+    barIncompleteChar: " ",
+    format: "[{bar}]",
+    width: 20,
+});
+```
+
+The gradient boundary shows intermediate characters at the fill edge, creating smoother progress visualization.
+
+## Peak Markers
+
+Show a peak value on the bar:
+
+```typescript
+const bar = new ProgressBar({
+    total: 100,
+    format: "[{bar}]",
+    width: 20,
+});
+
+bar.setPeak(80);
+bar.update(50);
+// The peak marker appears at the 80% position
+```
+
+## Rounded Caps
+
+Pill-shaped bars using braille cap characters:
+
+```typescript
+// Automatic with braille style
+const bar = new ProgressBar({ total: 100, style: "braille" });
+
+// Manual with any style
+const bar2 = new ProgressBar({
+    total: 100,
+    roundedCaps: true,
+    style: "shades_classic",
+});
+
+// Disable for braille
+const bar3 = new ProgressBar({
+    total: 100,
+    style: "braille",
+    roundedCaps: false,
+});
+```

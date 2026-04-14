@@ -1,0 +1,111 @@
+---
+title: Getting Started
+description: Install and start using progress bars
+sidebar_position: 2
+---
+
+## Installation
+
+Install the package using your preferred package manager:
+
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+
+<Tabs items={["pnpm", "npm", "yarn", "bun"]}>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/progress-bar
+```
+</Tab>
+
+<Tab value="npm">```bash npm install @visulima/progress-bar ```</Tab>
+
+<Tab value="yarn">```bash yarn add @visulima/progress-bar ```</Tab>
+
+<Tab value="bun">
+```bash
+bun add @visulima/progress-bar
+```
+</Tab>
+</Tabs>
+
+## Basic Usage
+
+### Simple Progress Bar
+
+```typescript
+import { ProgressBar } from "@visulima/progress-bar";
+
+const bar = new ProgressBar({ total: 100 });
+
+bar.update(25);
+console.log(bar.render());
+// progress [██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 25% | ETA: 3s | 25/100
+
+bar.update(100);
+console.log(bar.render());
+// progress [████████████████████████████████████████] 100% | ETA: 0s | 100/100
+```
+
+### Custom Format
+
+```typescript
+const bar = new ProgressBar(
+    {
+        total: 200,
+        format: "{task} [{bar}] {percentage}% | {value}/{total}",
+    },
+    undefined,
+    { task: "Downloading" },
+);
+
+bar.update(100);
+console.log(bar.render());
+// Downloading [████████████████████░░░░░░░░░░░░░░░░░░░░] 50% | 100/200
+```
+
+### Different Styles
+
+```typescript
+// ASCII style
+const ascii = new ProgressBar({ total: 100, style: "ascii", format: "[{bar}]", width: 20 });
+ascii.update(50);
+console.log(ascii.render()); // [##########----------]
+
+// Braille style with pill caps
+const braille = new ProgressBar({ total: 100, style: "braille", format: "[{bar}]", width: 20 });
+braille.update(50);
+console.log(braille.render()); // [⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠤⠤⠤⠤⠤⠤⠤⠤⠤⡷]
+```
+
+### With Interactive Manager
+
+For real-time terminal updates, use with `@visulima/interactive-manager`:
+
+```bash
+pnpm add @visulima/interactive-manager
+```
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+import { ProgressBar } from "@visulima/progress-bar";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+const bar = new ProgressBar({ total: 100 }, manager);
+bar.start();
+
+// Progress updates render automatically
+for (let i = 0; i <= 100; i++) {
+    bar.update(i);
+    await new Promise((r) => setTimeout(r, 50));
+}
+
+bar.stop();
+```
+
+## See Also
+
+- [Usage Guide](/docs/progress-bar/usage) - Complete API reference
+- [Styles Reference](/docs/progress-bar/styles) - All available bar styles
