@@ -44,7 +44,7 @@ const categoryColors: Record<string, AccentColor> = {
 
 export const packages: PackageInfo[] = [
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description: "Visulima API platform is a set of tools to build and consume web APIs",
         docsPath: "/docs/packages/api-platform",
@@ -54,7 +54,7 @@ export const packages: PackageInfo[] = [
         slug: "api-platform",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description: "The minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
         docsPath: "/docs/packages/connect",
@@ -64,7 +64,7 @@ export const packages: PackageInfo[] = [
         slug: "connect",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description:
             "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
@@ -75,7 +75,7 @@ export const packages: PackageInfo[] = [
         slug: "crud",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description:
             "A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.",
@@ -86,7 +86,7 @@ export const packages: PackageInfo[] = [
         slug: "health-check",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description: "Functions for HTML, such as escaping or unescaping HTML entities",
         docsPath: "/docs/packages/html",
@@ -96,7 +96,7 @@ export const packages: PackageInfo[] = [
         slug: "html",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description: "Generates swagger doc based on JSDoc.",
         docsPath: "/docs/packages/jsdoc-open-api",
@@ -106,7 +106,7 @@ export const packages: PackageInfo[] = [
         slug: "jsdoc-open-api",
     },
     {
-        accentColor: categoryColors["API & Web"]!,
+        accentColor: categoryColors["API & Web"],
         category: "API & Web",
         description: "Simple Pagination for Node.",
         docsPath: "/docs/packages/pagination",
@@ -116,7 +116,7 @@ export const packages: PackageInfo[] = [
         slug: "pagination",
     },
     {
-        accentColor: categoryColors["Bundling"]!,
+        accentColor: categoryColors["Bundling"],
         category: "Bundling",
         description:
             "A fast and modern bundler for Node.js and TypeScript. Supports multiple runtimes, shared modules, server components, dynamic import, wasm, css, and more.",
@@ -132,7 +132,7 @@ export const packages: PackageInfo[] = [
         slug: "packem",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "ANSI escape codes for some terminal swag.",
         docsPath: "/docs/packages/ansi",
@@ -142,7 +142,7 @@ export const packages: PackageInfo[] = [
         slug: "ansi",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "Create beautiful boxes in the terminal with customizable borders, padding, and alignment.",
         docsPath: "/docs/packages/boxen",
@@ -152,7 +152,7 @@ export const packages: PackageInfo[] = [
         slug: "boxen",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
         docsPath: "/docs/packages/cerebro",
@@ -162,7 +162,7 @@ export const packages: PackageInfo[] = [
         slug: "cerebro",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "Terminal and Console string styling done right.",
         docsPath: "/docs/packages/colorize",
@@ -172,7 +172,7 @@ export const packages: PackageInfo[] = [
         slug: "colorize",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "A mature, feature-complete library to parse command-line options.",
         docsPath: "/docs/packages/command-line-args",
@@ -182,7 +182,7 @@ export const packages: PackageInfo[] = [
         slug: "command-line-args",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "Util.format-like string formatting utility.",
         docsPath: "/docs/packages/fmt",
@@ -192,7 +192,7 @@ export const packages: PackageInfo[] = [
         slug: "fmt",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "Detect whether a terminal or browser supports ansi colors.",
         docsPath: "/docs/packages/is-ansi-color-supported",
@@ -202,7 +202,7 @@ export const packages: PackageInfo[] = [
         slug: "is-ansi-color-supported",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description: "Highly configurable Logger for Node.js, Edge and Browser.",
         docsPath: "/docs/packages/pail",
@@ -212,7 +212,7 @@ export const packages: PackageInfo[] = [
         slug: "pail",
     },
     {
-        accentColor: categoryColors["CLI & Terminal"]!,
+        accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
         description:
             "Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes.",
@@ -223,7 +223,7 @@ export const packages: PackageInfo[] = [
         slug: "tabular",
     },
     {
-        accentColor: categoryColors["Communication"]!,
+        accentColor: categoryColors["Communication"],
         category: "Communication",
         description: "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
         docsPath: "/docs/packages/email",
@@ -233,7 +233,7 @@ export const packages: PackageInfo[] = [
         slug: "email",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description: "Utility functions to make dealing with Uint8Arrays easier",
         docsPath: "/docs/packages/bytes",
@@ -243,7 +243,7 @@ export const packages: PackageInfo[] = [
         slug: "bytes",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description:
             "Content safety filtering with multi-language banned word detection. Supports 17 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.",
@@ -254,7 +254,7 @@ export const packages: PackageInfo[] = [
         slug: "content-safety",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description: "Fastest deep clone implementation.",
         docsPath: "/docs/packages/deep-clone",
@@ -264,7 +264,7 @@ export const packages: PackageInfo[] = [
         slug: "deep-clone",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description: "Humanizer is a library for humanizing data in a human-readable form.",
         docsPath: "/docs/packages/humanizer",
@@ -274,7 +274,7 @@ export const packages: PackageInfo[] = [
         slug: "humanizer",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description: "Helper functions for working with objects and arrays.",
         docsPath: "/docs/packages/object",
@@ -284,7 +284,7 @@ export const packages: PackageInfo[] = [
         slug: "object",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description:
             "A library for redacting and masking sensitive data from objects and strings, with support for GDPR compliance, custom rules, and deep object traversal.",
@@ -295,7 +295,7 @@ export const packages: PackageInfo[] = [
         slug: "redact",
     },
     {
-        accentColor: categoryColors["Data"]!,
+        accentColor: categoryColors["Data"],
         category: "Data",
         description: "Functions for manipulating strings.",
         docsPath: "/docs/packages/string",
@@ -305,7 +305,7 @@ export const packages: PackageInfo[] = [
         slug: "string",
     },
     {
-        accentColor: categoryColors["Dev Tools"]!,
+        accentColor: categoryColors["Dev Tools"],
         category: "Dev Tools",
         description: "Devtools is a set of tools for building advanced devtools for your application",
         docsPath: "/docs/packages/dev-toolbar",
@@ -315,7 +315,7 @@ export const packages: PackageInfo[] = [
         slug: "dev-toolbar",
     },
     {
-        accentColor: categoryColors["Dev Tools"]!,
+        accentColor: categoryColors["Dev Tools"],
         category: "Dev Tools",
         description: "Detect and invoke AI CLI tools (Claude, Gemini, Codex, Copilot, Cursor, Crush, Amp, Kimi, Qwen, OpenCode, Droid) installed on the system",
         docsPath: "/docs/packages/find-ai-runner",
@@ -325,7 +325,7 @@ export const packages: PackageInfo[] = [
         slug: "find-ai-runner",
     },
     {
-        accentColor: categoryColors["Dev Tools"]!,
+        accentColor: categoryColors["Dev Tools"],
         category: "Dev Tools",
         description: "A generator for Prisma to generate a valid JSON Schema v7.",
         docsPath: "/docs/packages/prisma-dmmf-transformer",
@@ -335,7 +335,7 @@ export const packages: PackageInfo[] = [
         slug: "prisma-dmmf-transformer",
     },
     {
-        accentColor: categoryColors["Dev Tools"]!,
+        accentColor: categoryColors["Dev Tools"],
         category: "Dev Tools",
         description: "A task runner with caching support for monorepo workspaces",
         docsPath: "/docs/packages/task-runner",
@@ -345,7 +345,7 @@ export const packages: PackageInfo[] = [
         slug: "task-runner",
     },
     {
-        accentColor: categoryColors["Dev Tools"]!,
+        accentColor: categoryColors["Dev Tools"],
         category: "Dev Tools",
         description: "A CLI task runner for monorepo workspaces, powered by @visulima/task-runner",
         docsPath: "/docs/packages/vis",
@@ -355,7 +355,7 @@ export const packages: PackageInfo[] = [
         slug: "vis",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Error with more than just a message, stacktrace parsing.",
         docsPath: "/docs/packages/error",
@@ -365,7 +365,7 @@ export const packages: PackageInfo[] = [
         slug: "error",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Error handlers for use in development and production environments.",
         docsPath: "/docs/packages/error-handler",
@@ -375,7 +375,7 @@ export const packages: PackageInfo[] = [
         slug: "error-handler",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Inspect utility for Node.js and Browsers.",
         docsPath: "/docs/packages/inspector",
@@ -385,7 +385,7 @@ export const packages: PackageInfo[] = [
         slug: "inspector",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Ono is an error-parsing library that pretty prints JavaScript errors on a web page or the terminal.",
         docsPath: "/docs/packages/ono",
@@ -395,7 +395,7 @@ export const packages: PackageInfo[] = [
         slug: "ono",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Provides functionality related to source maps.",
         docsPath: "/docs/packages/source-map",
@@ -405,7 +405,7 @@ export const packages: PackageInfo[] = [
         slug: "source-map",
     },
     {
-        accentColor: categoryColors["Error Handling"]!,
+        accentColor: categoryColors["Error Handling"],
         category: "Error Handling",
         description: "Improved vite overlay",
         docsPath: "/docs/packages/vite-overlay",
@@ -415,7 +415,7 @@ export const packages: PackageInfo[] = [
         slug: "vite-overlay",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description: "Finds the common standard cache directory",
         docsPath: "/docs/packages/find-cache-dir",
@@ -425,7 +425,7 @@ export const packages: PackageInfo[] = [
         slug: "find-cache-dir",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description: "Human friendly file system utilities for Node.js",
         docsPath: "/docs/packages/fs",
@@ -435,7 +435,7 @@ export const packages: PackageInfo[] = [
         slug: "fs",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description:
             "A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.",
@@ -446,7 +446,7 @@ export const packages: PackageInfo[] = [
         slug: "package",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description: "Drop-in replacement of the Node.js path module.",
         docsPath: "/docs/packages/path",
@@ -456,7 +456,7 @@ export const packages: PackageInfo[] = [
         slug: "path",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description:
             "Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.",
@@ -467,7 +467,7 @@ export const packages: PackageInfo[] = [
         slug: "storage",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description: "The upload client library. Simple and easy file uploads for React | Vue | Solid | Svelte.",
         docsPath: "/docs/packages/storage-client",
@@ -477,7 +477,7 @@ export const packages: PackageInfo[] = [
         slug: "storage-client",
     },
     {
-        accentColor: categoryColors["File System"]!,
+        accentColor: categoryColors["File System"],
         category: "File System",
         description: "Find and/or parse the tsconfig.json file from a directory path.",
         docsPath: "/docs/packages/tsconfig",
@@ -487,7 +487,7 @@ export const packages: PackageInfo[] = [
         slug: "tsconfig",
     },
     {
-        accentColor: categoryColors["Internationalization"]!,
+        accentColor: categoryColors["Internationalization"],
         category: "Internationalization",
         description: "A regularly updated list of disposable and temporary email domains.",
         docsPath: "/docs/packages/disposable-email-domains",
@@ -497,7 +497,7 @@ export const packages: PackageInfo[] = [
         slug: "disposable-email-domains",
     },
     {
-        accentColor: categoryColors["Internationalization"]!,
+        accentColor: categoryColors["Internationalization"],
         category: "Internationalization",
         description: "ISO data for countries, currencies, regions, timezones, and BCP 47 locale support.",
         docsPath: "/docs/packages/iso-locale",

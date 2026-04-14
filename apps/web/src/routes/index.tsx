@@ -5,12 +5,14 @@ import Home from "@/pages/home";
 
 export const Route = createFileRoute("/")({
     component: () => <Home />,
-    head: () => ({
-        ...createSeoHead({
-            description:
-                "A collection of high-quality, modular TypeScript packages for Node.js, browsers, and edge runtimes. Build faster with Packem, Pail, Cerebro, and 40+ open-source tools.",
-            path: "/",
-            title: "Visulima",
-        }),
-    }),
+    head: () => {
+        return {
+            ...createSeoHead({
+                description:
+                    "A collection of high-quality, modular TypeScript packages for Node.js, browsers, and edge runtimes. Build faster with Packem, Pail, Cerebro, and 40+ open-source tools.",
+                path: "/",
+                title: "Visulima",
+            }),
+        };
+    },
 });

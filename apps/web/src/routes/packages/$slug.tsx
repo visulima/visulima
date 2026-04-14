@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
-import { createSeoHead } from "@/lib/seo";
 import { getPackageBySlug } from "@/data/packages";
+import { createSeoHead } from "@/lib/seo";
 import PackageDetail from "@/pages/packages/detail";
 
 export const Route = createFileRoute("/packages/$slug")({

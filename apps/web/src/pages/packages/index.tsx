@@ -46,15 +46,16 @@ const PackageCard: FC<{ pkg: PackageInfo; weeklyDownloads: number }> = ({ pkg, w
                 styles.border,
                 styles.hover,
             )}
-            to="/packages/$slug"
             params={{ slug: pkg.slug }}
+            to="/packages/$slug"
         >
             <div className="flex items-center justify-between">
                 <span className={cn("inline-block px-2.5 py-0.5 font-mono text-[11px] font-medium", styles.badge)}>{pkg.category}</span>
                 {weeklyDownloads > 0 && (
                     <span className="flex items-center gap-1.5 font-mono text-xs text-white/30">
                         <Download className="h-3 w-3" />
-                        {formatNumber(weeklyDownloads)}/wk
+                        {formatNumber(weeklyDownloads)}
+                        /wk
                     </span>
                 )}
             </div>
@@ -76,7 +77,6 @@ const CategoryFilter: FC<{
     <div className="flex flex-wrap gap-2">
         {categories.map((cat) => (
             <button
-                key={cat}
                 className={cn(
                     "border px-4 py-1.5 font-mono text-xs font-medium transition-all duration-200",
                     mode === "light"
@@ -84,10 +84,13 @@ const CategoryFilter: FC<{
                             ? "border-gray-900 bg-gray-900 text-white"
                             : "border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600"
                         : active === cat
-                          ? "border-white/20 bg-white/10 text-white"
-                          : "border-white/6 text-white/40 hover:border-white/10 hover:text-white/60",
+                            ? "border-white/20 bg-white/10 text-white"
+                            : "border-white/6 text-white/40 hover:border-white/10 hover:text-white/60",
                 )}
-                onClick={() => onChange(cat)}
+                key={cat}
+                onClick={() => {
+                    onChange(cat);
+                }}
                 type="button"
             >
                 {cat}
@@ -111,6 +114,7 @@ const PackagesListing: FC = () => {
     const fetchStats = useCallback(async () => {
         try {
             const data = await getStats();
+
             setStats(data);
         } catch {
             // ignore
@@ -125,6 +129,7 @@ const PackagesListing: FC = () => {
         if (!stats?.weeklyDownloads) {
             return 0;
         }
+
         return Object.values(stats.weeklyDownloads).reduce((sum, v) => sum + v, 0);
     }, [stats]);
 
@@ -139,12 +144,13 @@ const PackagesListing: FC = () => {
 
         if (search.trim()) {
             const query = search.toLowerCase();
+
             result = result.filter(
                 (p) =>
-                    p.name.toLowerCase().includes(query) ||
-                    p.description.toLowerCase().includes(query) ||
-                    p.npmName.toLowerCase().includes(query) ||
-                    p.category.toLowerCase().includes(query),
+                    p.name.toLowerCase().includes(query)
+                    || p.description.toLowerCase().includes(query)
+                    || p.npmName.toLowerCase().includes(query)
+                    || p.category.toLowerCase().includes(query),
             );
         }
 
@@ -178,7 +184,9 @@ const PackagesListing: FC = () => {
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-300" />
                         <input
                             className="w-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 font-mono text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-gray-400 sm:w-64"
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                            }}
                             placeholder="Search packages..."
                             type="text"
                             value={search}

@@ -1,21 +1,8 @@
 import "@vidstack/react/player/styles/base.css";
 
 import { Controls, Gesture, MediaPlayer, MediaProvider, PlayButton, Poster, Tooltip, useMediaState } from "@vidstack/react";
-import {
-    ClosedCaptionsIcon,
-    ClosedCaptionsOnIcon,
-    FullscreenExitIcon,
-    FullscreenIcon,
-    MuteIcon,
-    PauseIcon,
-    PictureInPictureExitIcon,
-    PictureInPictureIcon,
-    PlayIcon,
-    VolumeHighIcon,
-    VolumeLowIcon,
-} from "@vidstack/react/icons";
+import { PauseIcon, PlayIcon } from "@vidstack/react/icons";
 import type { FC } from "react";
-import { useEffect, useRef } from "react";
 
 const Play = ({ tooltipPlacement }: { tooltipPlacement?: string }) => {
     const isPaused = useMediaState("paused");

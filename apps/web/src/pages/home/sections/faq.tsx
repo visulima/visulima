@@ -1,8 +1,8 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import type { FC } from "react";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
 
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
@@ -63,11 +63,13 @@ const FAQ: FC = () => {
 
     const faqPageJsonLd = {
         "@type": "FAQPage",
-        mainEntity: faqs.map((faq) => ({
-            "@type": "Question",
-            acceptedAnswer: { "@type": "Answer", text: faq.answer },
-            name: faq.question,
-        })),
+        mainEntity: faqs.map((faq) => {
+            return {
+                "@type": "Question",
+                acceptedAnswer: { "@type": "Answer", text: faq.answer },
+                name: faq.question,
+            };
+        }),
     };
 
     return (
@@ -87,7 +89,9 @@ const FAQ: FC = () => {
                             answer={faq.answer}
                             isOpen={openIndex === index}
                             key={faq.question}
-                            onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+                            onToggle={() => {
+                                setOpenIndex(openIndex === index ? null : index);
+                            }}
                             question={faq.question}
                         />
                     ))}

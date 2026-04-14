@@ -22,22 +22,24 @@ export const DefaultCatchBoundary = ({ error }: ErrorComponentProps) => {
                 >
                     Try Again
                 </button>
-                {isRoot ? (
-                    <Link className="rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700" to="/">
-                        Home
-                    </Link>
-                ) : (
-                    <Link
-                        className="rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            globalThis.history.back();
-                        }}
-                        to="/"
-                    >
-                        Go Back
-                    </Link>
-                )}
+                {isRoot
+                    ? (
+                        <Link className="rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700" to="/">
+                            Home
+                        </Link>
+                    )
+                    : (
+                        <Link
+                            className="rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                globalThis.history.back();
+                            }}
+                            to="/"
+                        >
+                            Go Back
+                        </Link>
+                    )}
             </div>
         </div>
     );

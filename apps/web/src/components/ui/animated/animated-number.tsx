@@ -7,11 +7,11 @@ const AnimatedNumber: FC<{ className?: string; suffix?: string; value: number }>
     const [current, setCurrent] = useState(0);
     const ref = useRef<HTMLSpanElement>(null);
     const hasAnimated = useRef(false);
-    const prevValue = useRef(value);
+    const previousValue = useRef(value);
 
     useEffect(() => {
-        if (prevValue.current !== value) {
-            prevValue.current = value;
+        if (previousValue.current !== value) {
+            previousValue.current = value;
             hasAnimated.current = false;
             setCurrent(0);
         }
@@ -50,7 +50,9 @@ const AnimatedNumber: FC<{ className?: string; suffix?: string; value: number }>
             observer.observe(ref.current);
         }
 
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+        };
     }, [value]);
 
     return (

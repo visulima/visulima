@@ -10,7 +10,6 @@ import {
     AlertTriangle,
     Book,
     Bug,
-    FileCode,
     FolderOpen,
     Handshake,
     Home,
@@ -19,7 +18,6 @@ import {
     Menu,
     Moon,
     Package,
-    Palette,
     ScrollText,
     Search,
     Shield,
@@ -30,7 +28,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { ComponentPropsWithoutRef, ElementRef, MouseEvent as ReactMouseEvent, ReactNode } from "react";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import visulimaLogoRaw from "@/assets/visulima_logo.svg?raw";
 import VisulimaLogo from "@/assets/visulima_logo.svg?react";
@@ -265,7 +263,10 @@ const Logo = ({ pathname }: { pathname: string }) => {
         };
 
         document.addEventListener("click", handleOutsideClick);
-        return () => document.removeEventListener("click", handleOutsideClick);
+
+        return () => {
+            document.removeEventListener("click", handleOutsideClick);
+        };
     }, [isOpen]);
 
     const handleContextMenu = (e: ReactMouseEvent) => {
@@ -273,8 +274,8 @@ const Logo = ({ pathname }: { pathname: string }) => {
         setIsOpen(true);
     };
 
-    const itemClass =
-        "block select-none space-y-1 p-3 leading-none no-underline outline-hidden transition-colors hover:white/10 hover:text-accent-foreground focus:white/10 text-sm flex items-center gap-2";
+    const itemClass
+        = "block select-none space-y-1 p-3 leading-none no-underline outline-hidden transition-colors hover:white/10 hover:text-accent-foreground focus:white/10 text-sm flex items-center gap-2";
 
     return (
         <div className="relative">
@@ -293,7 +294,9 @@ const Logo = ({ pathname }: { pathname: string }) => {
             >
                 <li>
                     <span className={itemClass} onClick={() => navigator.clipboard.writeText(visulimaLogoRaw)}>
-                        <VisulimaLogo className="h-4 w-4" title="Visulima" /> Copy Logo as SVG
+                        <VisulimaLogo className="h-4 w-4" title="Visulima" />
+                        {" "}
+                        Copy Logo as SVG
                     </span>
                 </li>
                 <li className="py-2">
@@ -301,12 +304,16 @@ const Logo = ({ pathname }: { pathname: string }) => {
                 </li>
                 <li>
                     <Link className={itemClass} target="_blank" to="/brand">
-                        <Signature className="h-4 w-4" /> Brand Guidelines
+                        <Signature className="h-4 w-4" />
+                        {" "}
+                        Brand Guidelines
                     </Link>
                 </li>
                 <li>
                     <Link className={itemClass} target="_blank" to="/">
-                        <Home className="h-4 w-4" /> Home Page
+                        <Home className="h-4 w-4" />
+                        {" "}
+                        Home Page
                     </Link>
                 </li>
             </ul>

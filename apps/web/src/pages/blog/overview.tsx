@@ -1,6 +1,5 @@
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { compareAsc, format } from "date-fns";
-import { useState } from "react";
 
 import Section from "@/components/sections/section";
 import {
@@ -272,11 +271,13 @@ const Overview = () => {
 
                         <Pagination>
                             <PaginationContent>
-                                {pageIndex > 1 ? (
-                                    <PaginationItem>
-                                        <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 }} to="/blog/" />
-                                    </PaginationItem>
-                                ) : null}
+                                {pageIndex > 1
+                                    ? (
+                                        <PaginationItem>
+                                            <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 }} to="/blog/" />
+                                        </PaginationItem>
+                                    )
+                                    : null}
 
                                 {pageNumbersForLinks.map((pageNumber) => (
                                     <PaginationItem key={`pagination-item-${pageNumber}`}>
@@ -286,17 +287,21 @@ const Overview = () => {
                                     </PaginationItem>
                                 ))}
 
-                                {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages ? (
-                                    <PaginationItem>
-                                        <PaginationEllipsis />
-                                    </PaginationItem>
-                                ) : null}
+                                {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages
+                                    ? (
+                                        <PaginationItem>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    )
+                                    : null}
 
-                                {pageIndex < totalPages ? (
-                                    <PaginationItem>
-                                        <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 }} to="/blog/" />
-                                    </PaginationItem>
-                                ) : null}
+                                {pageIndex < totalPages
+                                    ? (
+                                        <PaginationItem>
+                                            <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 }} to="/blog/" />
+                                        </PaginationItem>
+                                    )
+                                    : null}
                             </PaginationContent>
                         </Pagination>
                     </>

@@ -1,6 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
-import { CheckIcon, ChevronDown, WandSparkles, XCircle, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDown, XCircle, XIcon } from "lucide-react";
 import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +94,7 @@ export const MultiSelect = ({
     variant,
     ...properties
 }: MultiSelectProperties & { ref?: React.RefObject<HTMLButtonElement | null> }) => {
-    const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
+    const [selectedValues, setSelectedValues] = React.useState(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
     const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -165,74 +165,76 @@ export const MultiSelect = ({
                     onClick={handleTogglePopover}
                     type="button"
                 >
-                    {selectedValues.length > 0 ? (
-                        <div className="flex justify-between items-center w-full">
-                            <div className="flex flex-wrap items-center">
-                                {selectedValues.slice(0, maxCount).map((value) => {
-                                    const option = options.find((o) => o.value === value);
-                                    const IconComponent = option?.icon;
+                    {selectedValues.length > 0
+                        ? (
+                            <div className="flex justify-between items-center w-full">
+                                <div className="flex flex-wrap items-center">
+                                    {selectedValues.slice(0, maxCount).map((value) => {
+                                        const option = options.find((o) => o.value === value);
+                                        const IconComponent = option?.icon;
 
-                                    return (
-                                        <Badge className={cn(multiSelectVariants({ variant }))} key={value}>
-                                            {IconComponent && <IconComponent className="size-4 mr-2" />}
-                                            {option?.label}
-                                            <span
-                                                className="ml-2 cursor-pointer hover:bg-white"
-                                                onClick={(event) => {
-                                                    toggleOption(value);
-                                                }}
-                                                onKeyDown={(event) => {
-                                                    if (event.key === "Enter") {
+                                        return (
+                                            <Badge className={cn(multiSelectVariants({ variant }))} key={value}>
+                                                {IconComponent && <IconComponent className="size-4 mr-2" />}
+                                                {option?.label}
+                                                <span
+                                                    className="ml-2 cursor-pointer hover:bg-white"
+                                                    onClick={(event) => {
                                                         toggleOption(value);
-                                                    }
-                                                }}
-                                                onMouseDown={(event) => {
-                                                    event.preventDefault();
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        if (event.key === "Enter") {
+                                                            toggleOption(value);
+                                                        }
+                                                    }}
+                                                    onMouseDown={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                    }}
+                                                    role="button"
+                                                >
+                                                    <XCircle className="size-4" />
+                                                </span>
+                                            </Badge>
+                                        );
+                                    })}
+                                    {selectedValues.length > maxCount && (
+                                        <Badge
+                                            className={cn(
+                                                "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
+                                                multiSelectVariants({ variant }),
+                                            )}
+                                        >
+                                            {`+ ${selectedValues.length - maxCount} more`}
+                                            <XCircle
+                                                className="ml-2 size-4 cursor-pointer"
+                                                onClick={(event) => {
                                                     event.stopPropagation();
+                                                    clearExtraOptions();
                                                 }}
-                                                role="button"
-                                            >
-                                                <XCircle className="size-4" />
-                                            </span>
+                                            />
                                         </Badge>
-                                    );
-                                })}
-                                {selectedValues.length > maxCount && (
-                                    <Badge
-                                        className={cn(
-                                            "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
-                                            multiSelectVariants({ variant }),
-                                        )}
-                                    >
-                                        {`+ ${selectedValues.length - maxCount} more`}
-                                        <XCircle
-                                            className="ml-2 size-4 cursor-pointer"
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                clearExtraOptions();
-                                            }}
-                                        />
-                                    </Badge>
-                                )}
+                                    )}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <XIcon
+                                        className="h-4 mx-2 cursor-pointer text-muted-foreground"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            handleClear();
+                                        }}
+                                    />
+                                    <Separator className="flex min-h-6 h-full" orientation="vertical" />
+                                    <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
+                                </div>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <XIcon
-                                    className="h-4 mx-2 cursor-pointer text-muted-foreground"
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleClear();
-                                    }}
-                                />
-                                <Separator className="flex min-h-6 h-full" orientation="vertical" />
-                                <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
+                        )
+                        : (
+                            <div className="flex items-center justify-between w-full mx-auto">
+                                <span className="text-sm text-muted-foreground mx-3">{placeholder}</span>
+                                <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
                             </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between w-full mx-auto">
-                            <span className="text-sm text-muted-foreground mx-3">{placeholder}</span>
-                            <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
-                        </div>
-                    )}
+                        )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent

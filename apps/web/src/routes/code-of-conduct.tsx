@@ -1,15 +1,17 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { createCompiler } from "@fumadocs/mdx-remote";
 import { executeMdxSync } from "@fumadocs/mdx-remote/client";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { DocsBody } from "fumadocs-ui/page";
-import SectionSeparator from "@/components/sections/section-separator";
 
-import { createSeoHead } from "@/lib/seo";
 import Section from "@/components/sections/section";
+import SectionSeparator from "@/components/sections/section-separator";
+import { createSeoHead } from "@/lib/seo";
+
 import SupportSection from "../pages/home/sections/support";
 
 const compiler = createCompiler({
@@ -36,7 +38,7 @@ const RouteComponent = () => {
     return (
         <>
             <DocsBody className="bg-coal">
-                <Section mode="dark" gridLength={1} classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }}>
+                <Section classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }} gridLength={1} mode="dark">
                     <MdxContent components={defaultMdxComponents} />
                 </Section>
             </DocsBody>
@@ -50,13 +52,15 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute("/code-of-conduct")({
     component: RouteComponent,
-    head: () => ({
-        ...createSeoHead({
-            description:
-                "Visulima community code of conduct based on the Contributor Covenant, outlining our standards for an inclusive and welcoming environment.",
-            path: "/code-of-conduct",
-            title: "Code of Conduct",
-        }),
-    }),
     loader: () => loader(),
+    head: () => {
+        return {
+            ...createSeoHead({
+                description:
+                    "Visulima community code of conduct based on the Contributor Covenant, outlining our standards for an inclusive and welcoming environment.",
+                path: "/code-of-conduct",
+                title: "Code of Conduct",
+            }),
+        };
+    },
 });

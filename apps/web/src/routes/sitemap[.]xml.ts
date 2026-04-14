@@ -6,7 +6,7 @@ import { source } from "@/lib/docs-source";
 const SITE_URL = "https://visulima.com";
 
 const staticRoutes = [
-    { changefreq: "weekly", path: "/", priority: 1.0 },
+    { changefreq: "weekly", path: "/", priority: 1 },
     { changefreq: "weekly", path: "/packages", priority: 0.9 },
     { changefreq: "weekly", path: "/docs", priority: 0.9 },
     { changefreq: "monthly", path: "/changelog", priority: 0.6 },
@@ -36,8 +36,10 @@ function generateSitemap(): string {
     }
 
     const pages = source.getPages();
+
     for (const page of pages) {
         const slugPath = page.slugs.join("/");
+
         urls.push(`  <url>
     <loc>${SITE_URL}/docs/${slugPath}</loc>
     <changefreq>weekly</changefreq>
