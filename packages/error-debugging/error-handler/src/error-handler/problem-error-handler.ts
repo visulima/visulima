@@ -48,7 +48,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
                 status: statusCode,
                 // eslint-disable-next-line perfectionist/sort-objects
                 detail: message,
-                ...expose ? { trace: stack } : {},
+                ...(expose ? { trace: stack } : {}),
             },
             "application/problem+json",
         );
@@ -65,7 +65,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
                 status: response.statusCode,
                 // eslint-disable-next-line perfectionist/sort-objects
                 detail: message,
-                ...(error as Error & { expose: boolean }).expose ? { trace: stack } : {},
+                ...((error as Error & { expose: boolean }).expose ? { trace: stack } : {}),
             },
             "application/problem+json",
         );
