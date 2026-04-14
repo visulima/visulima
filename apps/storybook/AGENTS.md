@@ -19,13 +19,13 @@ pnpm build  # Build static storybook
 
 Stories are **not** in this directory. They live co-located with their packages:
 
-```
+```text
 packages/<category>/<name>/__stories__/*.stories.tsx
 ```
 
 Storybook discovers them via the glob pattern in `.storybook/main.ts`:
 
-```
+```text
 ../../packages/**/**/__stories__/**/*.stories.@(js|jsx|ts|tsx|mdx)
 ```
 
