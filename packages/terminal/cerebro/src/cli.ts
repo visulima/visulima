@@ -227,11 +227,12 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         const hasBooleanValues = Object.keys(booleanValues).length > 0;
 
-        const commandArgs
-            = hasBooleanValues
-                // eslint-disable-next-line no-underscore-dangle
-                ? ({ ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs)
-                : parsedArgs;
+        let commandArgs = parsedArgs;
+
+        if (hasBooleanValues) {
+            // eslint-disable-next-line no-underscore-dangle
+            commandArgs = { ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs;
+        }
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
