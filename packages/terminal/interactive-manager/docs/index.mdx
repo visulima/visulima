@@ -1,0 +1,41 @@
+---
+title: Interactive Manager
+description: Interactive terminal output manager for spinners, progress bars, and dynamic updates
+icon: Monitor
+sidebar_position: 1
+---
+
+A utility for managing interactive terminal output by coordinating stdout and stderr streams. Enables features like progress bars, spinners, and dynamic updates by temporarily capturing and controlling terminal output.
+
+## Features
+
+- **Stream Hooking** - Intercept stdout/stderr for dynamic output control
+- **Cursor Management** - Hide/show cursor with ANSI escape sequences
+- **Line Erasing** - Clear and rewrite terminal lines for smooth updates
+- **Suspend/Resume** - Temporarily pause interactive mode for external output
+- **History Replay** - Captured output is replayed when interactive mode ends
+- **TypeScript** - Full type support out of the box
+
+## Quick Example
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+// Start interactive mode
+manager.hook();
+
+// Update output dynamically
+manager.update("stdout", ["Processing...", "50% complete"]);
+
+// End interactive mode
+manager.unhook();
+```
+
+## Next Steps
+
+- [Getting Started](/docs/interactive-manager/getting-started) - Install and set up
+- [Usage Guide](/docs/interactive-manager/usage) - Complete API reference

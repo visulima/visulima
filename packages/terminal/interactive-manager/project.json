@@ -1,0 +1,7 @@
+{
+    "name": "interactive-manager",
+    "sourceRoot": "packages/terminal/interactive-manager/src",
+    "prefix": "",
+    "tags": ["type:package", "category:cli-terminal"],
+    "projectType": "library"
+}
