@@ -36,7 +36,7 @@ const infobipProvider: ProviderFactory<InfobipConfig> = defineProvider((config: 
         endpoint,
         retries: config.retries ?? DEFAULT_RETRIES,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...config.logger && { logger: config.logger },
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
@@ -121,7 +121,7 @@ const infobipProvider: ProviderFactory<InfobipConfig> = defineProvider((config: 
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Infobip API not available or invalid API key");
                 }
 

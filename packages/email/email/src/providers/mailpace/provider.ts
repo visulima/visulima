@@ -34,7 +34,7 @@ const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPaceEmailOp
         endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         retries: config.retries ?? DEFAULT_RETRIES,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...config.logger && { logger: config.logger },
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
@@ -122,7 +122,7 @@ const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPaceEmailOp
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "MailPace API not available or invalid API token");
                 }
 
@@ -157,13 +157,13 @@ const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPaceEmailOp
                 });
 
                 return Boolean(
-                    result.success
-                    && result.data
-                    && typeof result.data === "object"
-                    && "statusCode" in result.data
-                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
-                    && (result.data as { statusCode: number }).statusCode >= 200
-                    && (result.data as { statusCode: number }).statusCode < 300,
+                    result.success &&
+                    result.data &&
+                    typeof result.data === "object" &&
+                    "statusCode" in result.data &&
+                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
+                    (result.data as { statusCode: number }).statusCode >= 200 &&
+                    (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);

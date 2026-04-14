@@ -65,7 +65,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
         endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         retries: config.retries ?? DEFAULT_RETRIES,
         timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...config.logger && { logger: config.logger },
+        ...(config.logger && { logger: config.logger }),
     };
 
     const providerState = new ProviderState();
@@ -159,7 +159,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Mailgun API not available or invalid API key/domain");
                 }
 
@@ -290,8 +290,8 @@ const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: 
 
                 // Add delivery time
                 if (emailOptions.deliveryTime) {
-                    formData["o:deliverytime"]
-                        = typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
+                    formData["o:deliverytime"] =
+                        typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
                 }
 
                 // Add tracking options

@@ -162,7 +162,7 @@ describe(buildMimeMessage, () => {
 
             expect(message).toContain("multipart/mixed");
             expect(message).toContain("Content-Disposition: attachment");
-            expect(message).toContain("filename=\"test.txt\"");
+            expect(message).toContain('filename="test.txt"');
         });
 
         it("should handle multiple attachments", async () => {
@@ -207,7 +207,7 @@ describe(buildMimeMessage, () => {
                     },
                 ],
                 from: { email: "sender@example.com" },
-                html: "<img src=\"cid:image1\">",
+                html: '<img src="cid:image1">',
                 subject: "Test",
                 to: { email: "recipient@example.com" },
             };
