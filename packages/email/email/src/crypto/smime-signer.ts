@@ -79,7 +79,7 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
             const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
 
             // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data, not fromCodePoint
-            binaryString += String.fromCharCode(...chunk as unknown as number[]);
+            binaryString += String.fromCharCode(...(chunk as unknown as number[]));
         }
 
         base64 = btoa(binaryString);

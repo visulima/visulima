@@ -138,7 +138,6 @@ export const isDisposableEmail = (email: string, customDomains?: Set<string>): b
 export const areDisposableEmails = (emails: string[], customDomains?: Set<string>): Map<string, boolean> => {
     const results = new Map<string, boolean>();
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array -- unicorn/no-for-loop conflicts with index-based loop
     for (const email of emails) {
         results.set(email, isDisposableEmail(email, customDomains));
     }

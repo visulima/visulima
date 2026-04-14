@@ -14,7 +14,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 
 vi.mock(import("../../src/utils/retry"), () => {
     return {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -29,7 +29,6 @@ describe(sendGridProvider, () => {
             expect.assertions(1);
 
             expect(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 sendGridProvider({} as any);
             }).toThrow(RequiredOptionError);
         });
@@ -206,18 +205,17 @@ describe(sendGridProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.from.email).toBe("sender@example.com");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.from.name).toBe("Sender");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].to).toHaveLength(2);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].to[0].email).toBe("user1@example.com");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].to[0].name).toBe("User 1");
         });
 
@@ -245,12 +243,11 @@ describe(sendGridProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.personalizations[0].cc).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].bcc).toBeDefined();
         });
 
@@ -294,12 +291,10 @@ describe(sendGridProvider, () => {
             expect(callWithPayload).toBeDefined();
             expect(callWithPayload?.[2]).toBeDefined();
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callWithPayload[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.template_id).toBe("template_123");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].dynamicTemplateData).toStrictEqual({ name: "John" });
         });
 
@@ -332,14 +327,13 @@ describe(sendGridProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.attachments).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.attachments).toHaveLength(1);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.attachments[0].filename).toBe("test.pdf");
         });
 
@@ -366,12 +360,11 @@ describe(sendGridProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.headers).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.headers["X-Custom"]).toBe("value");
         });
 
@@ -398,14 +391,13 @@ describe(sendGridProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.personalizations[0].customArgs).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].customArgs.tag_0).toBe("tag1");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.personalizations[0].customArgs.tag_1).toBe("tag2");
         });
 

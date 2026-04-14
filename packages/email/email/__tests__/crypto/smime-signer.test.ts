@@ -75,7 +75,7 @@ vi.mock(import("pkijs"), async () => {
                 toSchema: vi.fn(() => {
                     return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
                 }),
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 version: options?.version ?? 1,
             });
         }
@@ -89,7 +89,7 @@ vi.mock(import("pkijs"), async () => {
                 signature: new Uint8Array([1, 2, 3]),
                 signatureAlgorithm: {},
                 signedAttrs: {},
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 version: options?.version ?? 1,
             });
         }
@@ -100,9 +100,8 @@ vi.mock(import("pkijs"), async () => {
         AlgorithmIdentifier: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     algorithmId: options?.algorithmId ?? "",
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                     algorithmParams: options?.algorithmParams ?? null,
                 });
             }
@@ -110,9 +109,8 @@ vi.mock(import("pkijs"), async () => {
         Attribute: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     type: options?.type ?? "",
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                     values: options?.values ?? [],
                 });
             }
@@ -132,9 +130,8 @@ vi.mock(import("pkijs"), async () => {
         EncapsulatedContentInfo: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     eContent: options?.eContent ?? null,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                     eContentType: options?.eContentType ?? "",
                 });
             }
@@ -145,9 +142,8 @@ vi.mock(import("pkijs"), async () => {
         IssuerAndSerialNumber: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     issuer: options?.issuer ?? {},
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                     serialNumber: options?.serialNumber ?? {},
                 });
             }
@@ -160,7 +156,6 @@ vi.mock(import("pkijs"), async () => {
             public encodedValue: ArrayBuffer;
 
             public constructor(options?: any) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 this.attributes = options?.attributes ?? [];
                 this.type = 0;
                 this.encodedValue = new ArrayBuffer(0);
@@ -193,7 +188,6 @@ vi.mock(import("asn1js"), async () => {
         ObjectIdentifier: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     value: options?.value ?? "",
                 });
             }
@@ -201,7 +195,6 @@ vi.mock(import("asn1js"), async () => {
         OctetString: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     valueHex: options?.valueHex ?? new ArrayBuffer(0),
                 });
             }
@@ -209,7 +202,6 @@ vi.mock(import("asn1js"), async () => {
         UTCTime: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     valueDate: options?.valueDate ?? new Date(),
                 });
             }
@@ -232,34 +224,8 @@ AwIBAgIJAKLz8K8k8K8kMA0GCSqGSIb3DQEBCQUAMCExHzAdBgNVBAMMFnRlc3Qu
 ZXhhbXBsZS5jb20gQ0EgMTAeFw0yNDAxMDEwMDAwMDBaFw0yNTAxMDEwMDAwMDBa
 -----END CERTIFICATE-----`;
 
-const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
-MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDcanARvqZGNwKY
-+tP3KvHNaAPLoMMYLIKywLv3GAH6Oz+QGTB0dj80tPpIUpoKUmXEMIvt5pTHUaje
-TK71tBiz6/QW4w03OTwJrtO+pE23iBh2oakp3zPbZTy5DmW04h9rN0aiO/4mPKTE
-ZbKm/b4rfAOFPt501+LMnmvAIwM+FwB+gKAY5MHgTsznW0X/3w6Brev43VeKU7sb
-+ND5DnkcFc0eMzGZIaOUe9Bvbr3DNzhUtslrziB05ntBjJHq2QOTNDu+HZBa+xxb
-VSkzTb/s7oLvVhF/q+Rk1+lFAx+I5kxEvG2KmG+L8WGNLQJ3cPrhuDAxOCa9clE2
-tPsGzKf5AgMBAAECggEARENurAA4rNxSoKBmT1Fsi+of6svCQFVgsQ3B6Rf1XNNG
-r1Et0ZPhpWg7b3Stom68d9N1MtvLziM7QoXLVetOD0MPWJs/N5AxSOptR8jJDQNI
-WE1e/8nR3Kvw73tHAotZobH/3TTpVFxJx02b094YLI1+5aB/8v39jtOtmVb+pRaV
-ZdhtqYi3fyCHefKt8ZieXXQckihNd1RzWr7mijGlfZp6WrFq9aPF17JyDcM7UC9i
-7ECFKmFe9aIMCurUIpNJy6CkrwbXAel0qY7EEo5btgqNJoSSMeIVi6mOFlurR8tn
-Uzz4gErQMtdm/xyMTP0AyHrJhtbXpuUJHHYvg3ruFQKBgQD16F/p4483GnsyLbYz
-M/Tj33PTw6LFtajLLvN4bYSykyAavHhbiC34bx8r2kb+57hpwJ+cdGGnp8UpzjrV
-UZxqdg5ocP3gwoPJBCZYJOgwrxc4p8lZFf0lfpyUHY06+8cRfmv7qavfyfLMkGKD
-WrRCmp6DZAKdFbBPLA9QKjGmlwKBgQDldjuB4PNNJil9QYHCXKNsIWuF/4NMmrAs
-6xz3QxnhLrddiLF+m+jKUZDWX/027ND9bTZstlxSxiFIz6vNqJGDxjPvYZzhENLC
-qPvD2/py+LHg4wrmxXltKN0H1uGL92aNizHcwVz1srALc7wJhGwgp4RnUqwNlmTj
-aWPXkLwH7wKBgELYaxIyOKEbArguMuQSUJSNDnhXKu0hp4Or/KUU6Eh+s/BwoSsI
-hq6MzmVmTXxHUxr0MK8f99fSREdL9zQ7nhBWjS4Y4PpzBc3j4eR+C9wIDIDrI1Gj
-J5BErZ2ZtuV8wa1gt0vO4JjR1b2D1jOsuWmNjF9dFVTMK4QqDvOUtLB7AoGBALVM
-boYW+4V4Yo2h5WlxEnpMCY2tLcun6Q0EkzVWYitGYwDXEQ6tFwhL2/lVjFcKU7H4
-yWipyVZpT0EdPGxZBOguATjhUjeNuEivhYTh2QdgMgMywJlHa8Jw5/rasAiL6A5r
-7XCzosRKc8gIoIiQhXJjiTyt2F0/9+Sqj4VxyO8nAoGBALUp7KSlMxQkqRAbvVWs
-tXoQUP0npLLPezYoaU1Zaiyxk4RD6pZS9cLuZBKa/0awOdmD7cKSPNrxU+YBlgl5
-UnNaQjSV4nLqR0K4gK5G/Iuv/ZxA6fDymsz+b5MoWHhiwoxHPtBmaq2pXffaF4RM
-aLMrhh/PiK9jJ41+Y4w6oSKh
------END PRIVATE KEY-----`;
+// Test fixture - not a real private key, used only for mocked crypto operations
+const TEST_PRIVATE_KEY = "test-private-key-fixture-for-mocking";
 
 describe(SmimeSigner, () => {
     beforeEach(() => {
@@ -411,7 +377,6 @@ describe(SmimeSigner, () => {
 
             const asn1js = await import("asn1js");
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vi.mocked(asn1js.fromBER).mockReturnValueOnce({
                 offset: -1,
                 result: {},
@@ -468,13 +433,13 @@ describe(SmimeSigner, () => {
 
             // Mock sequence: main cert (succeeds), intermediate cert (fails)
             vi.mocked(asn1js.fromBER)
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 .mockReturnValueOnce({
                     // Main certificate - succeeds
                     offset: 0,
                     result: { valueHex: new Uint8Array([1, 2, 3, 4]) },
                 } as any)
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 .mockReturnValueOnce({
                     // Intermediate certificate - should fail
                     offset: -1,

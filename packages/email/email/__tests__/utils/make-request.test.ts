@@ -98,7 +98,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", options);
 
             const callArgs = mockFetch.mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             const headers = callArgs[1].headers as Headers;
 
             expect(headers.get("Authorization")).toBe("Bearer token");
@@ -126,7 +126,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", { method: "POST" }, buffer);
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(mockFetch.mock.calls[0][1].body).toBeInstanceOf(Uint8Array);
         });
 
@@ -151,7 +151,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", { method: "POST" }, uint8Array);
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(mockFetch.mock.calls[0][1].body).toBeInstanceOf(Uint8Array);
         });
 
@@ -243,7 +243,6 @@ describe(makeRequest, () => {
             let rejectOnAbort: ((error: Error) => void) | undefined;
 
             mockFetch.mockImplementationOnce((url, options) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 abortSignal = options?.signal as AbortSignal;
 
                 // Listen for abort signal
@@ -287,7 +286,6 @@ describe(makeRequest, () => {
             let abortSignal: AbortSignal | undefined;
 
             mockFetch.mockImplementationOnce((url, options) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 abortSignal = options?.signal as AbortSignal;
 
                 return new Promise(() => {
@@ -430,7 +428,6 @@ describe(makeRequest, () => {
 
             await makeRequest("https://api.example.com/test");
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("GET");
         });
 
@@ -452,7 +449,6 @@ describe(makeRequest, () => {
 
             await makeRequest("https://api.example.com/test", {}, "body");
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("POST");
         });
 
@@ -474,7 +470,6 @@ describe(makeRequest, () => {
 
             await makeRequest("https://api.example.com/test", { method: "PUT" });
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
         });
     });

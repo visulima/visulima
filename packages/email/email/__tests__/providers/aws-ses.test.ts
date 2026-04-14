@@ -33,7 +33,6 @@ describe(awsSesProvider, () => {
         it("should throw error if accessKeyId is missing when sending email", async () => {
             expect.assertions(3);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const provider = awsSesProvider({ region: "us-east-1", secretAccessKey: "test123" } as any);
 
             const emailOptions: AwsSesEmailOptions = {
@@ -53,7 +52,6 @@ describe(awsSesProvider, () => {
         it("should throw error if secretAccessKey is missing when sending email", async () => {
             expect.assertions(3);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const provider = awsSesProvider({ accessKeyId: "test123", region: "us-east-1" } as any);
 
             const emailOptions: AwsSesEmailOptions = {

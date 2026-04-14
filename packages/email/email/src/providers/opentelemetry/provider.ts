@@ -106,10 +106,7 @@ const createSpanAttributes = (emailOptions: EmailOptions, recordContent: boolean
 /**
  * OpenTelemetry Provider for instrumenting email sending with OpenTelemetry traces and metrics
  */
-const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider> = defineProvider<
-    OpenTelemetryConfig,
-    Provider
->((config?: OpenTelemetryConfig) => {
+const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider> = defineProvider<OpenTelemetryConfig, Provider>((config?: OpenTelemetryConfig) => {
     if (!config?.provider) {
         throw new RequiredOptionError(PROVIDER_NAME, "provider");
     }

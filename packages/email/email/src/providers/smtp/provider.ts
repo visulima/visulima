@@ -404,8 +404,10 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 // Send QUIT command
                 socket.write("QUIT\r\n");
                 socket.end();
-                // eslint-disable-next-line @stylistic/max-statements-per-line
-                socket.once("close", () => { resolve(); });
+
+                socket.once("close", () => {
+                    resolve();
+                });
             } catch {
                 // Just resolve even if there's an error during close
                 resolve();

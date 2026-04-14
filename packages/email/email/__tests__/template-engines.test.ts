@@ -64,12 +64,10 @@ describe("template-engines", () => {
 
                 const compiledTemplate = vi.fn().mockReturnValue("<h1>Hello World</h1>");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
 
                 const result = renderHandlebars("<h1>{{title}}</h1>", { title: "Hello World" });
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHandlebars.default.compile).toHaveBeenCalledWith("<h1>{{title}}</h1>", undefined);
                 expect(compiledTemplate).toHaveBeenCalledWith({ title: "Hello World" });
                 expect(result).toBe("<h1>Hello World</h1>");
@@ -80,13 +78,11 @@ describe("template-engines", () => {
 
                 const compiledTemplate = vi.fn().mockReturnValue("<div>Result</div>");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
                 const options = { strict: true };
 
                 const result = renderHandlebars("{{value}}", { value: "test" }, options);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHandlebars.default.compile).toHaveBeenCalledWith("{{value}}", options);
                 expect(result).toBe("<div>Result</div>");
             });
@@ -96,7 +92,6 @@ describe("template-engines", () => {
 
                 const compiledTemplate = vi.fn().mockReturnValue("<p>No data</p>");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.compile.mockReturnValue(compiledTemplate);
 
                 const result = renderHandlebars("<p>No data</p>");
@@ -116,7 +111,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Invalid template syntax");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.compile.mockImplementation(() => {
                     throw error;
                 });
@@ -130,7 +124,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module 'handlebars'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.compile.mockImplementation(() => {
                     throw error;
                 });
@@ -148,7 +141,6 @@ describe("template-engines", () => {
 
                 registerHandlebarsHelper("uppercase", helper);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHandlebars.default.registerHelper).toHaveBeenCalledWith("uppercase", helper);
             });
 
@@ -157,15 +149,17 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module 'handlebars'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.registerHelper.mockImplementation(() => {
                     throw error;
                 });
 
-                // eslint-disable-next-line @stylistic/max-statements-per-line
-                expect(() => { registerHandlebarsHelper("test", () => {}); }).toThrow(EmailError);
-                // eslint-disable-next-line @stylistic/max-statements-per-line
-                expect(() => { registerHandlebarsHelper("test", () => {}); }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
+                expect(() => {
+                    registerHandlebarsHelper("test", () => {});
+                }).toThrow(EmailError);
+
+                expect(() => {
+                    registerHandlebarsHelper("test", () => {});
+                }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
             });
         });
 
@@ -177,7 +171,6 @@ describe("template-engines", () => {
 
                 registerHandlebarsPartial("header", partial);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHandlebars.default.registerPartial).toHaveBeenCalledWith("header", partial);
             });
 
@@ -186,15 +179,17 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module 'handlebars'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHandlebars.default.registerPartial.mockImplementation(() => {
                     throw error;
                 });
 
-                // eslint-disable-next-line @stylistic/max-statements-per-line
-                expect(() => { registerHandlebarsPartial("test", "content"); }).toThrow(EmailError);
-                // eslint-disable-next-line @stylistic/max-statements-per-line
-                expect(() => { registerHandlebarsPartial("test", "content"); }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
+                expect(() => {
+                    registerHandlebarsPartial("test", "content");
+                }).toThrow(EmailError);
+
+                expect(() => {
+                    registerHandlebarsPartial("test", "content");
+                }).toThrow("Handlebars is not installed. Please install it: pnpm add handlebars");
             });
         });
     });
@@ -216,7 +211,6 @@ describe("template-engines", () => {
                     html: "<div>Rendered HTML</div>",
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockMjml.default.mockReturnValue(mjmlResult);
 
                 const result = renderMjml("<mjml><mj-body><mj-text>Hello</mj-text></mj-body></mjml>");
@@ -239,7 +233,6 @@ describe("template-engines", () => {
                     html: "<div>Custom HTML</div>",
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockMjml.default.mockReturnValue(mjmlResult);
                 const options = {
                     beautify: true,
@@ -274,7 +267,6 @@ describe("template-engines", () => {
                     html: "<div>Error HTML</div>",
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockMjml.default.mockReturnValue(mjmlResult);
 
                 expect(() => renderMjml("<invalid>")).toThrow(EmailError);
@@ -286,7 +278,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module 'mjml'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockMjml.default.mockImplementation(() => {
                     throw error;
                 });
@@ -300,7 +291,6 @@ describe("template-engines", () => {
 
                 const emailError = new EmailError("mjml", "Custom error");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockMjml.default.mockImplementation(() => {
                     throw emailError;
                 });
@@ -314,7 +304,6 @@ describe("template-engines", () => {
         let mockHtmlToText: Awaited<ReturnType<typeof import("html-to-text")>>;
 
         beforeEach(async () => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             mockHtmlToText = await import("html-to-text");
             vi.clearAllMocks();
         });
@@ -323,12 +312,10 @@ describe("template-engines", () => {
             it("should convert HTML to plain text", () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHtmlToText.convert.mockReturnValue("Plain text content");
 
                 const result = htmlToText("<h1>Title</h1><p>Content</p>");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHtmlToText.convert).toHaveBeenCalledWith("<h1>Title</h1><p>Content</p>", {
                     longWordSplit: undefined,
                     preserveNewlines: false,
@@ -341,7 +328,6 @@ describe("template-engines", () => {
             it("should convert with custom options", () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHtmlToText.convert.mockReturnValue("Wrapped text");
                 const options = {
                     longWordSplit: {
@@ -361,7 +347,6 @@ describe("template-engines", () => {
 
                 const result = htmlToText("<h1>Title</h1><p>Content</p>", options);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockHtmlToText.convert).toHaveBeenCalledWith("<h1>Title</h1><p>Content</p>", {
                     longWordSplit: {
                         forceWrapOnLimit: true,
@@ -385,7 +370,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module 'html-to-text'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHtmlToText.convert.mockImplementation(() => {
                     throw error;
                 });
@@ -399,7 +383,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Conversion failed");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockHtmlToText.convert.mockImplementation(() => {
                     throw error;
                 });
@@ -422,12 +405,10 @@ describe("template-engines", () => {
             it("should render Vue template", async () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockVueRender.render.mockResolvedValue("<div>Rendered Vue</div>");
 
                 const result = await renderVueEmail("<template><div>{{message}}</div></template>", { message: "Hello" });
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockVueRender.render).toHaveBeenCalledWith("<template><div>{{message}}</div></template>", { message: "Hello" }, {});
                 expect(result).toBe("<div>Rendered Vue</div>");
             });
@@ -435,13 +416,11 @@ describe("template-engines", () => {
             it("should render with options", async () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockVueRender.render.mockResolvedValue("<div>With options</div>");
                 const options = { minify: true };
 
                 const result = await renderVueEmail("<template></template>", {}, options);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockVueRender.render).toHaveBeenCalledWith(
                     "<template></template>",
                     {},
@@ -459,7 +438,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Vue compilation failed");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockVueRender.render.mockRejectedValue(error);
 
                 await expect(renderVueEmail("<invalid>", {})).rejects.toThrow(EmailError);
@@ -471,7 +449,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Cannot find module '@vue-email/render'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockVueRender.render.mockRejectedValue(error);
 
                 await expect(renderVueEmail("<template></template>", {})).rejects.toThrow(EmailError);
@@ -488,7 +465,7 @@ describe("template-engines", () => {
 
         beforeEach(async () => {
             mockReactRender = await import("@react-email/render");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             mockReact = await import("react");
             vi.clearAllMocks();
         });
@@ -497,13 +474,11 @@ describe("template-engines", () => {
             it("should render React component", async () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReactRender.render.mockResolvedValue("<div>Rendered React</div>");
 
                 const component = { props: {}, type: "div" };
                 const result = await renderReactEmail(component, { message: "Hello" });
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(mockReactRender.render).toHaveBeenCalledWith(component, {
                     plainText: undefined,
                     pretty: undefined,
@@ -516,7 +491,6 @@ describe("template-engines", () => {
 
                 const error = new Error("Invalid React element");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReactRender.render.mockRejectedValue(error);
 
                 await expect(renderReactEmail("not a component", {})).rejects.toThrow(EmailError);
@@ -526,11 +500,9 @@ describe("template-engines", () => {
             it("should throw EmailError for rendering errors", async () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("React rendering failed");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReactRender.render.mockRejectedValue(error);
 
                 const component = { props: {}, type: "div" };
@@ -542,11 +514,9 @@ describe("template-engines", () => {
             it("should throw EmailError when React Email is not installed", async () => {
                 expect.assertions(2);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReact.isValidElement.mockReturnValue(true);
                 const error = new Error("Cannot find module '@react-email/render'");
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 mockReactRender.render.mockRejectedValue(error);
 
                 const component = { props: {}, type: "div" };

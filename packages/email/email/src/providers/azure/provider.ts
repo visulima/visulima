@@ -312,7 +312,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                             if (attachment.content) {
                                 if (typeof attachment.content === "string") {
                                     content = Buffer.from(attachment.content, "utf8").toString("base64");
-                                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                                 } else if (attachment.content && typeof (attachment.content as PromiseLike<unknown>).then === "function") {
                                     const buffer = await attachment.content;
 

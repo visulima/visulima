@@ -22,7 +22,6 @@ describe(validateEmailOptions, () => {
     it("should return errors for missing required fields", () => {
         expect.assertions(4);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const options = {} as EmailOptions;
 
         const errors = validateEmailOptions(options);
