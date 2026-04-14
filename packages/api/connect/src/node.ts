@@ -45,7 +45,10 @@ export class NodeRouter<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ZodObject requires `any` for generic parameter compatibility
     Schema extends z.ZodObject<any> = z.ZodObject<any>,
 > {
-    private static prepareRequest<Request extends IncomingMessage, Response extends ServerResponse>(request: Request & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<Request, Response>>): void {
+    private static prepareRequest<Request extends IncomingMessage, Response extends ServerResponse>(
+        request: Request & { params?: Record<string, unknown> },
+        findResult: FindResult<RequestHandler<Request, Response>>,
+    ): void {
         request.params = {
             ...findResult.params,
             ...request.params, // original params will take precedence
@@ -143,13 +146,16 @@ export class NodeRouter<
             resolvedBase = base;
         }
 
-        this.router.use(resolvedBase, ...fns.map((function_) => {
-            if (function_ instanceof NodeRouter) {
-                return function_.router;
-            }
+        this.router.use(
+            resolvedBase,
+            ...fns.map((function_) => {
+                if (function_ instanceof NodeRouter) {
+                    return function_.router;
+                }
 
-            return function_;
-        }));
+                return function_;
+            }),
+        );
 
         return this;
     }
@@ -165,9 +171,10 @@ export class NodeRouter<
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else if (typeof zodOrRouteOrFunction === "object") {
-            resolvedFns = typeof routeOrFunction === "function"
-                ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
-                : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
+            resolvedFns
+                = typeof routeOrFunction === "function"
+                    ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
+                    : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else {

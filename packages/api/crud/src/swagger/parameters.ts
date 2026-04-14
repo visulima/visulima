@@ -25,7 +25,7 @@ const queryParameters: Record<string, SwaggerParameter> = {
         },
     },
     orderBy: {
-        description: 'Field on which to order by a direction. See <a href="https://next-crud.js.org/query-params#orderBy">the docs</a>',
+        description: "Field on which to order by a direction. See <a href=\"https://next-crud.js.org/query-params#orderBy\">the docs</a>",
         name: "orderBy",
         schema: {
             type: "string",
@@ -55,7 +55,7 @@ const queryParameters: Record<string, SwaggerParameter> = {
         },
     },
     where: {
-        description: 'Fields to filter. See <a href="https://next-crud.js.org/query-params#where">the docs</a>',
+        description: "Fields to filter. See <a href=\"https://next-crud.js.org/query-params#where\">the docs</a>",
         name: "where",
         schema: {
             type: "string",
@@ -63,7 +63,7 @@ const queryParameters: Record<string, SwaggerParameter> = {
     },
 };
 
-export const commonQueryParameters: SwaggerParameter[] = [queryParameters.select, queryParameters.include];
+export const commonQueryParameters: SwaggerParameter[] = [queryParameters.select, queryParameters.include].filter(Boolean) as SwaggerParameter[];
 export const listQueryParameters: SwaggerParameter[] = [
     ...commonQueryParameters,
     queryParameters.limit,
@@ -72,12 +72,12 @@ export const listQueryParameters: SwaggerParameter[] = [
     queryParameters.orderBy,
     queryParameters.page,
     queryParameters.distinct,
-];
+].filter(Boolean) as SwaggerParameter[];
 
 export const getQueryParameters = (routeType: RouteType, additionalQueryParameters: SwaggerParameter[] = []): SwaggerParameter[] => {
     if (routeType === RouteType.READ_ALL) {
-        return [...listQueryParameters, ...additionalQueryParameters].filter(Boolean) as SwaggerParameter[];
+        return [...listQueryParameters, ...additionalQueryParameters].filter(Boolean);
     }
 
-    return [...commonQueryParameters, ...additionalQueryParameters].filter(Boolean) as SwaggerParameter[];
+    return [...commonQueryParameters, ...additionalQueryParameters].filter(Boolean);
 };

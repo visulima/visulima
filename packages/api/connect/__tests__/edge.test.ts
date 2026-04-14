@@ -18,20 +18,16 @@ const badFunction = () => {
     // intentionally empty - represents a no-op handler for testing
 };
 
-const createErrorResponseTester = (
-    consoleSpy: ReturnType<typeof vi.spyOn>,
-    error: Error,
-    getIndex: () => number,
-    incrementIndex: () => void,
-) => async (response: Response) => {
-    expect(response.status, "set 500 status code").toBe(500);
+const createErrorResponseTester
+    = (consoleSpy: ReturnType<typeof vi.spyOn>, error: Error, getIndex: () => number, incrementIndex: () => void) => async (response: Response) => {
+        expect(response.status, "set 500 status code").toBe(500);
 
-    await expect(response.text()).resolves.toBe("Internal Server Error");
+        await expect(response.text()).resolves.toBe("Internal Server Error");
 
-    expect(consoleSpy.mock.calls[getIndex()], `called console.error ${getIndex()}`).toStrictEqual([error]);
+        expect(consoleSpy.mock.calls[getIndex()], `called console.error ${getIndex()}`).toStrictEqual([error]);
 
-    incrementIndex();
-};
+        incrementIndex();
+    };
 
 describe("edge", () => {
     it("internals", () => {
@@ -308,9 +304,14 @@ describe("edge", () => {
         const baseFunction = (_request: Request, _event: unknown, next: any) => next();
 
         let index = 0;
-        const testResponse = createErrorResponseTester(consoleSpy, error, () => index, () => {
-            index += 1;
-        });
+        const testResponse = createErrorResponseTester(
+            consoleSpy,
+            error,
+            () => index,
+            () => {
+                index += 1;
+            },
+        );
 
         const request = { method: "GET", url: "http://localhost/" } as Request;
 
@@ -360,9 +361,14 @@ describe("edge", () => {
 
         let index = 0;
 
-        const testResponse = createErrorResponseTester(consoleSpy, error, () => index, () => {
-            index += 1;
-        });
+        const testResponse = createErrorResponseTester(
+            consoleSpy,
+            error,
+            () => index,
+            () => {
+                index += 1;
+            },
+        );
 
         const request = { method: "GET", url: "http://localhost/" } as Request;
 

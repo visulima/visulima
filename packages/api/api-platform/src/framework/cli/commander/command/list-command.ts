@@ -32,7 +32,7 @@ const listCommand = (
                         excludePaths: options.excludePaths ?? [],
                         group: options.group,
                         includePaths: options.includePath ?? [],
-                        verbose: options.verbose as boolean | undefined,
+                        verbose: options.verbose,
                     });
                 } catch (error: any) {
                     // eslint-disable-next-line no-console

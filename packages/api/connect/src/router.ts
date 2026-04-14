@@ -62,9 +62,7 @@ export class Router<H extends FunctionLike> {
     }
 
     private static isMethodMatch(routeMethod: HttpMethod | "", method: HttpMethod, isHead: boolean): boolean {
-        return routeMethod === method
-            || routeMethod === ""
-            || (isHead && routeMethod === "GET");
+        return routeMethod === method || routeMethod === "" || (isHead && routeMethod === "GET");
     }
 
     private static matchRoute<H>(route: Route<H>, pathname: string): { matched: false } | { matched: true; params: Record<string, string> } {

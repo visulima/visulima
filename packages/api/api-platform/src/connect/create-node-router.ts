@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { NodeRouter } from "@visulima/connect";
-import type { AnyZodObject, ZodObject } from "zod";
+import type * as z from "zod";
 
 import type { ErrorHandlers } from "../error-handler/types";
 import type { Serializers } from "../serializers";
@@ -12,7 +12,7 @@ import serializersMiddleware from "./middleware/serializers-middleware";
 const createNodeRouter = <
     Request extends IncomingMessage,
     Response extends ServerResponse,
-    Schema extends AnyZodObject = ZodObject<{ body?: AnyZodObject; headers?: AnyZodObject; query?: AnyZodObject }>,
+    Schema extends z.AnyZodObject = z.ZodObject<{ body?: z.AnyZodObject; headers?: z.AnyZodObject; query?: z.AnyZodObject }>,
 >(
     options: {
         errorHandlers?: ErrorHandlers;

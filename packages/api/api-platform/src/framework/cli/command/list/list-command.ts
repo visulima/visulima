@@ -2,8 +2,12 @@ import { execSync } from "node:child_process";
 import { existsSync, rmSync, statSync } from "node:fs";
 import process from "node:process";
 
+import type { Server } from "@hapi/hapi";
 import { extname, join } from "@visulima/path";
 import chalk from "chalk";
+import type { Express } from "express";
+import type { FastifyInstance } from "fastify";
+import type Koa from "koa";
 
 import { getRoutes } from "./get-routes";
 import routesGroupBy from "./routes/routes-group-by";
@@ -66,8 +70,11 @@ const listCommand = async (
         if (existsSync(environmentFilePath)) {
             // Loads environment vars in the current process so application
             // that depends on them can be loaded properly below
+            // @ts-expect-error - dotenv module exists but lacks type declarations
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const dotenv = await import("dotenv");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             dotenv.config({ path: environmentFilePath });
         }
 
@@ -98,15 +105,19 @@ const listCommand = async (
                 ? join(appWorkingDirectoryPath, "framework-list", frameworkPath.replace(appWorkingDirectoryPath, "").replace(".ts", ".js"))
                 : frameworkPath;
 
-            // eslint-disable-next-line no-new-func
             const dynamicImport = new Function("path", "return import(path)") as (path: string) => Promise<{ default: unknown }>;
+
             const { default: defaultExport } = await dynamicImport(appJsFilePath);
 
-            routes = await getRoutes(
-                ["AsyncFunction", "Function"].includes(defaultExport.constructor.name as string) ? await defaultExport() : getApp(defaultExport, framework),
-                framework,
-                options.verbose ?? false,
-            );
+            const app = ["AsyncFunction", "Function"].includes((defaultExport as Record<string, unknown>).constructor.name)
+                ? await (defaultExport as () => Promise<unknown>)()
+                : defaultExport;
+
+            const appOrPath = getApp(app as Record<string, unknown>, framework);
+
+            if (appOrPath !== null) {
+                routes = await getRoutes(appOrPath as Express | FastifyInstance | Koa | Server | string, framework, options.verbose ?? false);
+            }
         } finally {
             if (isTypeScriptApp) {
                 rmSync(join(appWorkingDirectoryPath, "framework-list"), { recursive: true });

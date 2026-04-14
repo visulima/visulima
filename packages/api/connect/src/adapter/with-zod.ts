@@ -16,9 +16,10 @@ const withZod
             try {
                 transformedRequest = await schema.parseAsync(request);
             } catch (error: unknown) {
-                const message = error instanceof z.ZodError && typeof error.format === "function"
-                    ? error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("/n")
-                    : (error as Error).message;
+                const message
+                    = error instanceof z.ZodError && typeof error.format === "function"
+                        ? error.issues.map((issue) => `${issue.path.join("/")} - ${issue.message}`).join("/n")
+                        : (error as Error).message;
 
                 throw createHttpError(422, message);
             }

@@ -40,21 +40,16 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
 
                     newError.annotation = yamlContent;
 
-                    return newError as ExtendedYAMLError;
+                    return newError;
                 });
 
                 let errorString = "Error parsing YAML in @openapi spec:";
 
-                errorString += (
-                    verbose
-                        ? (parsed.errors as ExtendedYAMLError[])
-                              .map(
-                                  (error) =>
-                                      `${(error as ExtendedYAMLError).toString() as string}\nImbedded within:\n\`\`\`\n  ${(error as ExtendedYAMLError).annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``,
-                              )
-                              .join("\n")
-                        : parsed.errors.map((error) => error.toString()).join("\n")
-                ) as string;
+                errorString += verbose
+                    ? (parsed.errors as ExtendedYAMLError[])
+                        .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``)
+                        .join("\n")
+                    : parsed.errors.map((error) => error.toString()).join("\n");
 
                 throw new Error(errorString);
             }
@@ -85,7 +80,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
         // Line count, number of tags + 1 for description.
         // - Don't count line-breaking due to long descriptions
         // - Don't count empty lines
-        const loc = (comment.tags.length as number) + 1;
+        const loc = comment.tags.length + 1;
         const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
 
         ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {

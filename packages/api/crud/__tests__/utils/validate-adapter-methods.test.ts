@@ -17,9 +17,13 @@ vi.mock(import("@prisma/client"), () => {
                 // eslint-disable-next-line no-constructor-return
                 return {
                     // eslint-disable-next-line compat/compat
-                    $connect: async () => await Promise.resolve(),
+                    $connect: async () => {
+                        await Promise.resolve();
+                    },
                     // eslint-disable-next-line compat/compat
-                    $disconnect: async () => await Promise.resolve(),
+                    $disconnect: async () => {
+                        await Promise.resolve();
+                    },
                 };
             }
         },
@@ -30,19 +34,21 @@ describe(validateAdapterMethods, () => {
     it("should not throw a error for a valid adapter", () => {
         expect.assertions(1);
 
-        expect(() =>
+        expect(() => {
             validateAdapterMethods(
                 new PrismaAdapter({
                     prismaClient: PrismaClient,
                 }),
-            ),
-        ).not.toThrow();
+            );
+        }).not.toThrow();
     });
 
     // @TODO: Add test for every method
     it("should throw a error for a invalid adapter", () => {
         expect.assertions(1);
         // @ts-expect-error
-        expect(() => validateAdapterMethods(new InvalidAdapter())).toThrow('Adapter must implement the "create" method.');
+        expect(() => {
+            validateAdapterMethods(new InvalidAdapter());
+        }).toThrow("Adapter must implement the \"create\" method.");
     });
 });

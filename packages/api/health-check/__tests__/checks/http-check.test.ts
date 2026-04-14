@@ -6,9 +6,15 @@ import { server } from "../../__fixtures__/mock-server";
 import httpCheck from "../../src/checks/http-check";
 
 describe(httpCheck, () => {
-    beforeAll(() => server.listen());
-    afterEach(() => server.resetHandlers());
-    afterAll(() => server.close());
+    beforeAll(() => {
+        server.listen();
+    });
+    afterEach(() => {
+        server.resetHandlers();
+    });
+    afterAll(() => {
+        server.close();
+    });
 
     it("should return healthy when the host is reachable", async () => {
         expect.assertions(1);

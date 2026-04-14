@@ -1,5 +1,4 @@
-import type { ParseInput, ParseReturnType, ZodTypeDef } from "zod";
-import { addIssueToContext, INVALID, ZodIssueCode, ZodParsedType, ZodType } from "zod";
+import * as z from "zod";
 
 const zodDateInKind = "ZodDateIn";
 
@@ -12,34 +11,34 @@ const zodDateInKind = "ZodDateIn";
 export const isoDateRegex: RegExp = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)?Z?$/;
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export interface ZodDateInDef extends ZodTypeDef {
+export interface ZodDateInDef extends z.ZodTypeDef {
     typeName: typeof zodDateInKind;
 }
 
-export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
+export class ZodDateIn extends z.ZodType<Date, ZodDateInDef, string> {
     public static create = (): ZodDateIn =>
         new ZodDateIn({
             typeName: zodDateInKind,
         });
 
     // eslint-disable-next-line no-underscore-dangle
-    public _parse(input: ParseInput): ParseReturnType<Date> {
+    public _parse(input: z.ParseInput): z.ParseReturnType<Date> {
         // eslint-disable-next-line no-underscore-dangle
         const { ctx, status } = this._processInputParams(input);
 
-        if (ctx.parsedType !== ZodParsedType.string) {
-            addIssueToContext(ctx, {
-                code: ZodIssueCode.invalid_type,
-                expected: ZodParsedType.string,
+        if (ctx.parsedType !== z.ZodParsedType.string) {
+            z.addIssueToContext(ctx, {
+                code: z.ZodIssueCode.invalid_type,
+                expected: z.ZodParsedType.string,
                 received: ctx.parsedType,
             });
 
-            return INVALID;
+            return z.INVALID;
         }
 
         if (!isoDateRegex.test(ctx.data as string)) {
-            addIssueToContext(ctx, {
-                code: ZodIssueCode.invalid_string,
+            z.addIssueToContext(ctx, {
+                code: z.ZodIssueCode.invalid_string,
                 validation: "regex",
             });
             status.dirty();
@@ -48,11 +47,11 @@ export class ZodDateIn extends ZodType<Date, ZodDateInDef, string> {
         const date = new Date(ctx.data as string);
 
         if (Number.isNaN(date.getTime())) {
-            addIssueToContext(ctx, {
-                code: ZodIssueCode.invalid_date,
+            z.addIssueToContext(ctx, {
+                code: z.ZodIssueCode.invalid_date,
             });
 
-            return INVALID;
+            return z.INVALID;
         }
 
         return { status: status.value, value: date };

@@ -75,19 +75,19 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
             type: formatMap[parsedType],
         };
     } else {
-        rootType = { $ref: `#/components/schemas/${parsedType as string}` };
+        rootType = { $ref: `#/components/schemas/${parsedType}` };
     }
 
     let schema: object | undefined = isArray
         ? {
-              items: {
-                  ...rootType,
-              },
-              type: "array",
-          }
+            items: {
+                ...rootType,
+            },
+            type: "array",
+        }
         : {
-              ...rootType,
-          };
+            ...rootType,
+        };
 
     if (parsedType === "") {
         schema = undefined;
@@ -378,7 +378,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
             // Line count, number of tags + 1 for description.
             // - Don't count line-breaking due to long descriptions
             // - Don't count empty lines
-            const loc = (comment.tags.length as number) + 1;
+            const loc = comment.tags.length + 1;
 
             const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
 

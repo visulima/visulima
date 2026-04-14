@@ -1,4 +1,4 @@
-import type { ModelOption, ModelsOptions } from "../../types";
+import type { ModelsOptions } from "../../types";
 import getAccessibleRoutes from "../../utils/get-accessible-routes";
 import type { Routes } from "../types";
 
@@ -8,7 +8,7 @@ const getModelsAccessibleRoutes = <M extends string>(modelNames: M[], models?: M
         if (models?.[modelName]) {
             return {
                 ...accumulator,
-                [modelName]: getAccessibleRoutes((models[modelName] as ModelOption).only, (models[modelName] as ModelOption).exclude, defaultExposeStrategy),
+                [modelName]: getAccessibleRoutes(models[modelName].only, models[modelName].exclude, defaultExposeStrategy),
             };
         }
 

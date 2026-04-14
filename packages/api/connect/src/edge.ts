@@ -25,14 +25,21 @@ const onError = (error: unknown) => {
     return new Response("Internal Server Error", { status: 500 });
 };
 
-export const getPathname = (request: Request & { nextUrl?: URL }): string =>
-    (request.nextUrl ?? new URL(request.url)).pathname;
+export const getPathname = (request: Request & { nextUrl?: URL }): string => (request.nextUrl ?? new URL(request.url)).pathname;
 
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | undefined>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ZodObject requires `any` for generic parameter compatibility
-export class EdgeRouter<R extends Request = Request, Context = unknown, RResponse extends Response = Response, Schema extends z.ZodObject<any> = z.ZodObject<any>> {
-    private static prepareRequest<R extends Request, Context>(request: R & { params?: Record<string, unknown> }, findResult: FindResult<RequestHandler<R, Context>>): void {
+export class EdgeRouter<
+    R extends Request = Request,
+    Context = unknown,
+    RResponse extends Response = Response,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Schema extends z.ZodObject<any> = z.ZodObject<any>,
+> {
+    private static prepareRequest<R extends Request, Context>(
+        request: R & { params?: Record<string, unknown> },
+        findResult: FindResult<RequestHandler<R, Context>>,
+    ): void {
         request.params = {
             ...findResult.params,
             ...request.params, // original params will take precedence
@@ -99,9 +106,9 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             EdgeRouter.prepareRequest<R, Context>(request, result);
 
             try {
-                return await (result.fns.length === 0 || result.middleOnly
+                return (await (result.fns.length === 0 || result.middleOnly
                     ? this.onNoMatch(request, context_, routes)
-                    : Router.exec(result.fns, request, context_)) as RResponse | undefined;
+                    : Router.exec(result.fns, request, context_))) as RResponse | undefined;
             } catch (error) {
                 return await this.onError(error, request, context_, routes);
             }
@@ -137,13 +144,16 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
             resolvedBase = base;
         }
 
-        this.router.use(resolvedBase, ...fns.map((function_) => {
-            if (function_ instanceof EdgeRouter) {
-                return function_.router;
-            }
+        this.router.use(
+            resolvedBase,
+            ...fns.map((function_) => {
+                if (function_ instanceof EdgeRouter) {
+                    return function_.router;
+                }
 
-            return function_;
-        }));
+                return function_;
+            }),
+        );
 
         return this;
     }
@@ -159,9 +169,10 @@ export class EdgeRouter<R extends Request = Request, Context = unknown, RRespons
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else if (typeof zodOrRouteOrFunction === "object") {
-            resolvedFns = typeof routeOrFunction === "function"
-                ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
-                : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
+            resolvedFns
+                = typeof routeOrFunction === "function"
+                    ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
+                    : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {
             resolvedFns = [zodOrRouteOrFunction];
         } else {

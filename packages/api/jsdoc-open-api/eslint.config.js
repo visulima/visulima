@@ -17,9 +17,9 @@ export default createConfig(
             "package.json",
             "README.md",
         ],
-    typescript: {
-        tsconfigPath: "./tsconfig.eslint.json",
-    },
+        typescript: {
+            tsconfigPath: "./tsconfig.eslint.json",
+        },
     },
     {
         files: ["**/*.test.ts"],
