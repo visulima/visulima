@@ -99,26 +99,19 @@ const applyStyle = (text: string, style?: SpinnerStyle): string => {
     let styled = colorize;
 
     // Apply styles
-    if (style.bold)
-        styled = styled.bold;
+    if (style.bold) styled = styled.bold;
 
-    if (style.dim)
-        styled = styled.dim;
+    if (style.dim) styled = styled.dim;
 
-    if (style.italic)
-        styled = styled.italic;
+    if (style.italic) styled = styled.italic;
 
-    if (style.underline)
-        styled = styled.underline;
+    if (style.underline) styled = styled.underline;
 
-    if (style.strikethrough)
-        styled = styled.strikethrough;
+    if (style.strikethrough) styled = styled.strikethrough;
 
-    if (style.inverse)
-        styled = styled.inverse;
+    if (style.inverse) styled = styled.inverse;
 
-    if (style.overline)
-        styled = styled.overline;
+    if (style.overline) styled = styled.overline;
 
     // Apply foreground color
     if (style.color) {

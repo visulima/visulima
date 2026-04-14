@@ -31,7 +31,7 @@ describe("freeze-animations", () => {
 
             const style = document.querySelector("#__vdt_freeze_styles");
 
-            expect(style).toBeTruthy();
+            expect(style).toBe(true);
             expect(style?.textContent).toContain("animation-play-state: paused");
             expect(style?.textContent).toContain("transition: none");
 

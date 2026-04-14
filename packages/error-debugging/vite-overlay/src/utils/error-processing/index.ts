@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, @typescript-eslint/restrict-template-expressions, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, @typescript-eslint/restrict-template-expressions, @typescript-eslint/await-thenable */
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
 import type { ViteDevServer } from "vite";
@@ -64,14 +64,18 @@ const extractIndividualErrors = (error: Error): Error[] => {
  * @returns Object containing compiled file path, line, and column information
  */
 const extractLocationFromStack = (error: Error) => {
-    const traces = parseStacktrace(error, { frameLimit: 10 });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const traces = parseStacktrace(error, { frameLimit: 10 }) as unknown as { column?: number; file?: string; line?: number }[];
 
     const httpTrace = traces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
+
     const trace = httpTrace || traces?.[0];
 
     return {
         compiledColumn: trace?.column ?? 0,
+
         compiledFilePath: trace?.file ?? "",
+
         compiledLine: trace?.line ?? 0,
     };
 };
@@ -302,7 +306,10 @@ const buildExtendedErrorData = async (
     if (allErrors && allErrors.length > 1) {
         for (const allError of allErrors.slice(1)) {
             const causeStack = allError.stack || "";
-            const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 });
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 }) as unknown as { file?: string }[];
+
             const causeHttpTrace = causeTraces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
 
             if (causeHttpTrace?.file) {
@@ -425,7 +432,8 @@ const buildExtendedErrorData = async (
     let sourceFilePath = viteErrorData?.file || compiledFilePath;
 
     if (!viteErrorData?.file && primaryError.stack) {
-        const traces = parseStacktrace(primaryError, { frameLimit: 10 });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const traces = parseStacktrace(primaryError, { frameLimit: 10 }) as unknown as { file?: string }[];
 
         const sourceTrace = traces?.find(
             (trace: { file?: string }) =>
@@ -647,7 +655,9 @@ const buildExtendedErrorData = async (
         compiledColumn,
         compiledFilePath,
         compiledLine,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
         compiledStack: formatStacktrace(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             parseStacktrace({
                 message: cleanMessage,
                 name: primaryError.name,

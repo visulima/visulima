@@ -134,7 +134,9 @@ describe(createMessageChannel, () => {
 
             const channel = makeChannel();
 
-            expect(() => { channel.off("user:login"); }).not.toThrow();
+            expect(() => {
+                channel.off("user:login");
+            }).not.toThrow();
         });
 
         it("does not remove the entry when the handler set is still non-empty", () => {
@@ -240,7 +242,9 @@ describe(handleMessage, () => {
 
         const envelope: MessageEnvelope = { event: "unknown" };
 
-        expect(() => { handleMessage(handlers, envelope); }).not.toThrow();
+        expect(() => {
+            handleMessage(handlers, envelope);
+        }).not.toThrow();
     });
 
     it("is a no-op when handler set is empty", () => {
@@ -250,7 +254,9 @@ describe(handleMessage, () => {
 
         const envelope: MessageEnvelope = { event: "empty" };
 
-        expect(() => { handleMessage(handlers, envelope); }).not.toThrow();
+        expect(() => {
+            handleMessage(handlers, envelope);
+        }).not.toThrow();
     });
 
     it("continues calling remaining handlers when one throws", () => {

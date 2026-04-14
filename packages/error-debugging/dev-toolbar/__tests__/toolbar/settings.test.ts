@@ -197,7 +197,9 @@ describe("settings (no browser / SSR environment)", () => {
     it("saveSettings is a no-op and does not throw", () => {
         expect.hasAssertions();
 
-        expect(() => { saveSettings(DEFAULT_TOOLBAR_SETTINGS); }).not.toThrow();
+        expect(() => {
+            saveSettings(DEFAULT_TOOLBAR_SETTINGS);
+        }).not.toThrow();
     });
 
     it("updateSettings returns defaults without persisting", () => {

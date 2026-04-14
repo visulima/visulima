@@ -60,7 +60,17 @@ const TooltipTrigger = ({ children, class: className, ...rest }: TooltipTriggerP
     };
 
     return (
-        <span class={className} onMouseEnter={() => { setOpen(true); }} onMouseLeave={() => { setOpen(false); }} ref={handleRef} {...rest}>
+        <span
+            class={className}
+            onMouseEnter={() => {
+                setOpen(true);
+            }}
+            onMouseLeave={() => {
+                setOpen(false);
+            }}
+            ref={handleRef}
+            {...rest}
+        >
             {children}
         </span>
     );

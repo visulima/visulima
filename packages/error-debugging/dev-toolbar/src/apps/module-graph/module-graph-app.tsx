@@ -138,7 +138,9 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border shrink-0">
                 <Input
                     class="flex-1 bg-foreground/4 font-mono text-[0.8rem] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 border-border"
-                    onInput={(event) => { setSearch((event.target as HTMLInputElement).value); }}
+                    onInput={(event) => {
+                        setSearch((event.target as HTMLInputElement).value);
+                    }}
                     placeholder="Filter modules…"
                     ref={searchRef}
                     type="text"
@@ -155,11 +157,10 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             {/* Module list */}
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 <div class="flex-1 overflow-auto divide-y divide-border/30">
-                    {filtered.length === 0
-                        ? (
+                    {filtered.length === 0 ? (
                         <div class="flex items-center justify-center p-8 text-[0.8rem] text-muted-foreground">No modules match "{search}"</div>
-                        )
-                        : filtered.map((module_) => (
+                    ) : (
+                        filtered.map((module_) => (
                             <button
                                 class={clsx(
                                     "w-full flex items-center gap-3 px-4 py-2.5 text-left border-0 bg-transparent cursor-pointer",
@@ -167,7 +168,9 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                     selectedId === module_.id && "bg-primary/6",
                                 )}
                                 key={module_.id}
-                                onClick={() => { showImporters(module_); }}
+                                onClick={() => {
+                                    showImporters(module_);
+                                }}
                                 type="button"
                             >
                                 <ExtensionBadge ext={module_.ext} />
@@ -179,7 +182,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 )}
                             </button>
                         ))
-                    }
+                    )}
                 </div>
 
                 {/* Detail panel */}

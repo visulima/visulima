@@ -103,11 +103,7 @@ class MockServerResponse {
 
     public writeHead(statusCode: number, headers?: Record<string, HeaderValue>): this;
     public writeHead(statusCode: number, statusMessage?: string, headers?: Record<string, HeaderValue>): this;
-    public writeHead(
-        statusCode: number,
-        statusMessage?: string | Record<string, HeaderValue>,
-        headersArgument?: Record<string, HeaderValue>,
-    ): this {
+    public writeHead(statusCode: number, statusMessage?: string | Record<string, HeaderValue>, headersArgument?: Record<string, HeaderValue>): this {
         this.statusCode = statusCode;
 
         let resolvedHeaders = headersArgument;
@@ -225,7 +221,7 @@ class MockServerResponse {
 }
 /* eslint-enable class-methods-use-this */
 
-export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): (error: Error, request: Request) => Promise<Response> => {
+export const fetchHtmlErrorHandler = (options: HtmlErrorHandlerOptions = {}): ((error: Error, request: Request) => Promise<Response>) => {
     const nodeHandler = htmlErrorHandler(options);
 
     return async (error: Error, request: Request): Promise<Response> => {

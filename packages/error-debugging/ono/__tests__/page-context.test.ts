@@ -236,7 +236,7 @@ describe("context page", () => {
                 },
                 method: "GET",
                 url: "http://example.com/test",
-            } as RequestLike;
+            } as any as RequestLike;
 
             const page = await createRequestContextPage(mockRequest, {});
 

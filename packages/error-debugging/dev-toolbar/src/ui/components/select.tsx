@@ -106,10 +106,9 @@ const Select = ({ children, onValueChange, value = "" }: SelectProps): JSX.Eleme
         }
     }, [open]);
 
-    const contextValue = useMemo(
-        () => { return { highlightedValue, instanceId, onSelect, open, search, setHighlightedValue, setOpen, setSearch, triggerRef, value }; },
-        [highlightedValue, instanceId, onSelect, open, search, value],
-    );
+    const contextValue = useMemo(() => {
+        return { highlightedValue, instanceId, onSelect, open, search, setHighlightedValue, setOpen, setSearch, triggerRef, value };
+    }, [highlightedValue, instanceId, onSelect, open, search, value]);
 
     return (
         <SelectContext.Provider value={contextValue}>
@@ -136,7 +135,9 @@ const SelectTrigger = ({ children, class: className, ...rest }: SelectTriggerPro
                 "transition-colors duration-150",
                 className,
             )}
-            onClick={() => { setOpen(!open); }}
+            onClick={() => {
+                setOpen(!open);
+            }}
             ref={(element) => {
                 triggerRef.current = element;
             }}
@@ -445,8 +446,12 @@ const SelectItem = ({ children, class: className, value: itemValue }: SelectItem
             )}
             data-value={itemValue}
             id={itemId}
-            onClick={() => { onSelect(itemValue); }}
-            onMouseEnter={() => { setHighlightedValue(itemValue); }}
+            onClick={() => {
+                onSelect(itemValue);
+            }}
+            onMouseEnter={() => {
+                setHighlightedValue(itemValue);
+            }}
             role="option"
         >
             <span class="flex-1 truncate">{children}</span>

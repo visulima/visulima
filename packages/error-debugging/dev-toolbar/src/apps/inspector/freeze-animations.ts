@@ -86,7 +86,7 @@ if (globalThis.window !== undefined && !_s.installed) {
             (...a: any[]) => {
                 if (_s.frozen) {
                     if (_s.frozenTimeoutQueue.length < MAX_FROZEN_QUEUE) {
-                        _s.frozenTimeoutQueue.push(() => (handler)(...a));
+                        _s.frozenTimeoutQueue.push(() => handler(...a));
                     } else if (_s.frozenTimeoutQueue.length === MAX_FROZEN_QUEUE) {
                         // Push a sentinel so the warning fires only once
                         _s.frozenTimeoutQueue.push(() => {});
@@ -94,7 +94,7 @@ if (globalThis.window !== undefined && !_s.installed) {
                         console.warn(`[dev-toolbar] frozenTimeoutQueue exceeded ${MAX_FROZEN_QUEUE} entries — further callbacks are being dropped.`);
                     }
                 } else {
-                    (handler)(...a);
+                    handler(...a);
                 }
             },
             timeout,
@@ -112,7 +112,7 @@ if (globalThis.window !== undefined && !_s.installed) {
         return _s.origSetInterval(
             (...a: any[]) => {
                 if (!_s.frozen) {
-                    (handler)(...a);
+                    handler(...a);
                 }
             },
             timeout,

@@ -105,8 +105,9 @@ const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], o
     }
 
     // Get all error causes - optimize by avoiding full array creation if no causes
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- getErrorCauses type not resolved across package boundary
-    const allCauses: ErrorType[] = getErrorCauses<ErrorType>(error);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const allCauses: ErrorType[] = getErrorCauses(error);
 
     // Extract and validate the main error
     const mainError = extractMainError(allCauses as unknown[]);

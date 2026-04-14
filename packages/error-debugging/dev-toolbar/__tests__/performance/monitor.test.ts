@@ -315,7 +315,9 @@ describe("performanceMonitor", () => {
         it("does not throw even when there are no long tasks", () => {
             expect.hasAssertions();
 
-            expect(() => { monitor.clearLongTasks(); }).not.toThrow();
+            expect(() => {
+                monitor.clearLongTasks();
+            }).not.toThrow();
         });
 
         it("results in an empty longTasks array in the snapshot", () => {
@@ -342,13 +344,17 @@ describe("performanceMonitor", () => {
         it("start() is safe to call when window is undefined (no-op in node)", () => {
             expect.hasAssertions();
 
-            expect(() => { monitor.start(); }).not.toThrow();
+            expect(() => {
+                monitor.start();
+            }).not.toThrow();
         });
 
         it("stop() is safe to call before start()", () => {
             expect.hasAssertions();
 
-            expect(() => { monitor.stop(); }).not.toThrow();
+            expect(() => {
+                monitor.stop();
+            }).not.toThrow();
         });
 
         it("start() can be called multiple times without error", () => {
@@ -365,7 +371,9 @@ describe("performanceMonitor", () => {
 
             monitor.start();
 
-            expect(() => { monitor.stop(); }).not.toThrow();
+            expect(() => {
+                monitor.stop();
+            }).not.toThrow();
         });
     });
 });

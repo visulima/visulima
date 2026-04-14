@@ -379,7 +379,9 @@ const ToolbarContainer = ({
         setPlacement: () => {
             /* managed internally by usePosition */
         },
-        setVisible: (visible) => { updateState({ open: visible }); },
+        setVisible: (visible) => {
+            updateState({ open: visible });
+        },
         toggleApp,
         unpinTooltip,
         unregisterApp: onUnregisterApp,
@@ -481,7 +483,14 @@ const ToolbarContainer = ({
                     </div>
 
                     {/* First-visit onboarding hint — sibling of pill so it escapes overflow:hidden */}
-                    {state.isFirstVisit && <FirstVisitHint onDismiss={() => { updateState({ isFirstVisit: false }); }} position={state.position} />}
+                    {state.isFirstVisit && (
+                        <FirstVisitHint
+                            onDismiss={() => {
+                                updateState({ isFirstVisit: false });
+                            }}
+                            position={state.position}
+                        />
+                    )}
                 </div>
 
                 {/* DevPanel is outside the anchor div to avoid the CSS transform

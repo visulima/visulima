@@ -30,7 +30,7 @@ const safeGetProperty = (object: unknown, property: string): unknown => {
 const safeGetMethod = (object: unknown, property: string): ((...arguments_: unknown[]) => unknown) | undefined => {
     const method = safeGetProperty(object, property);
 
-    return typeof method === "function" ? method as (...arguments_: unknown[]) => unknown : undefined;
+    return typeof method === "function" ? (method as (...arguments_: unknown[]) => unknown) : undefined;
 };
 
 const safeGetString = (object: unknown, property: string): string | undefined => {

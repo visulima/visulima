@@ -78,18 +78,16 @@ type ViteConfigSnapshot = {
 // Convert them to their string representation "/pattern/flags".
 const normalizeAlias = (rawAlias: unknown): AliasEntry[] | Record<string, string> | undefined => {
     if (Array.isArray(rawAlias)) {
-        return (
-            (rawAlias as any[])
+        return (rawAlias as any[])
 
-                .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
+            .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
 
-                .map((entry: any) => {
-                    return {
-                        find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
-                        replacement: String(entry.replacement ?? ""),
-                    };
-                })
-        );
+            .map((entry: any) => {
+                return {
+                    find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
+                    replacement: String(entry.replacement ?? ""),
+                };
+            });
     }
 
     if (rawAlias !== undefined && rawAlias !== null && typeof rawAlias === "object") {

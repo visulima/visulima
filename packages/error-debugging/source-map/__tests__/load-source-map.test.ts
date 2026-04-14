@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access */
+import { dirname, join, toNamespacedPath } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor } from "@jridgewell/trace-mapping";
-import { dirname, join, toNamespacedPath } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
 import loadSourceMap from "../src/load-source-map";
@@ -46,35 +45,40 @@ describe("load-source-map", () => {
         expect.assertions(1);
 
         const path = join(FIXTURES_DIR, "missingSourcemap.js");
+        const namespacedPath = toNamespacedPath(path);
+        const namespacedMapPath = toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"));
+        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${namespacedMapPath}'`;
 
-        expect(() => loadSourceMap(path)).toThrow(
-            `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path.replace("missingSourcemap.js", "missing.js.map"))}'`,
-        );
+        expect(() => loadSourceMap(path)).toThrow(expectedError);
     });
 
     it("should call back with error on external, invalid sourcemap", () => {
         expect.assertions(1);
 
         const path = join(FIXTURES_DIR, "invalidSourcemap.js");
+        const namespacedPath = toNamespacedPath(path);
+        const expectedError = `Error parsing sourcemap for file "${namespacedPath}":\n`;
 
-        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
+        expect(() => loadSourceMap(path)).toThrow(expectedError);
     });
 
     it("should call back with error on inline, invalid sourcemap", () => {
         expect.assertions(1);
 
         const path = join(FIXTURES_DIR, "invalidInlineSourcemap.js");
+        const namespacedPath = toNamespacedPath(path);
+        const expectedError = `Error parsing sourcemap for file "${namespacedPath}":\n`;
 
-        expect(() => loadSourceMap(path)).toThrow(`Error parsing sourcemap for file "${toNamespacedPath(path)}":\n`);
+        expect(() => loadSourceMap(path)).toThrow(expectedError);
     });
 
     it("should call back with error if source file does not exist", () => {
         expect.assertions(1);
 
         const path = join(FIXTURES_DIR, "nonExistant.js");
+        const namespacedPath = toNamespacedPath(path);
+        const expectedError = `Error reading sourcemap for file "${namespacedPath}":\nENOENT: no such file or directory, open '${namespacedPath}'`;
 
-        expect(() => loadSourceMap(path)).toThrow(
-            `Error reading sourcemap for file "${toNamespacedPath(path)}":\nENOENT: no such file or directory, open '${toNamespacedPath(path)}'`,
-        );
+        expect(() => loadSourceMap(path)).toThrow(expectedError);
     });
 });

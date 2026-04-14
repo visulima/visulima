@@ -111,8 +111,12 @@ export class DevToolbar extends HTMLElement {
                 },
             },
             {
-                hide: () => { this.setToolbarVisible(false); },
-                show: () => { this.setToolbarVisible(true); },
+                hide: () => {
+                    this.setToolbarVisible(false);
+                },
+                show: () => {
+                    this.setToolbarVisible(true);
+                },
                 toggle: () => {
                     const isHidden = this.isHidden();
 

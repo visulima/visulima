@@ -277,7 +277,7 @@ describe("select", () => {
             const options = screen.getAllByRole("option");
 
             for (const option of options) {
-                expect(option.id).toBeTruthy();
+                expect(option.id).toBe(true);
             }
         });
     });
@@ -820,7 +820,7 @@ describe("select", () => {
             const listbox = screen.getByRole("listbox");
 
             // No highlight initially
-            expect(listbox.getAttribute("aria-activedescendant")).toBeFalsy();
+            expect(listbox.getAttribute("aria-activedescendant")).toBeNull();
 
             // Highlight first
             await act(async () => {
@@ -829,7 +829,7 @@ describe("select", () => {
 
             const activedescendant = listbox.getAttribute("aria-activedescendant");
 
-            expect(activedescendant).toBeTruthy();
+            expect(activedescendant).toBe(true);
 
             // The id should match the first option's id
             const options = screen.getAllByRole("option");
@@ -868,7 +868,7 @@ describe("select", () => {
                 await Promise.resolve();
             });
 
-            expect(computePosition).toHaveBeenCalled();
+            expect(computePosition).toHaveBeenCalledWith();
         });
 
         it("passes correct placement for align=end side=top", async () => {
