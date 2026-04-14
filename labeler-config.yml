@@ -70,6 +70,9 @@
 "package: inspector":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/inspector/**/*"
+"package: interactive-manager":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/interactive-manager/**/*"
 "package: is-ansi-color-supported":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/is-ansi-color-supported/**/*"
@@ -103,6 +106,9 @@
 "package: prisma-dmmf-transformer":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/prisma-dmmf-transformer/**/*"
+"package: progress-bar":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/progress-bar/**/*"
 "package: redact":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/redact/**/*"
