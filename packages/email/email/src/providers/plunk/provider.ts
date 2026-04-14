@@ -118,7 +118,7 @@ const plunkProvider: ProviderFactory<PlunkConfig> = defineProvider((config: Plun
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!await this.isAvailable()) {
+                if (!(await this.isAvailable())) {
                     throw new EmailError(PROVIDER_NAME, "Plunk API not available or invalid API key");
                 }
 
@@ -323,10 +323,10 @@ const plunkProvider: ProviderFactory<PlunkConfig> = defineProvider((config: Plun
                 }
 
                 const responseData = result.data as { body?: { id?: string; messageId?: string } };
-                const messageId
+                const messageId =
                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    = responseData?.body && typeof responseData.body === "object"
-                        ? responseData.body.id ?? responseData.body.messageId ?? generateMessageId()
+                    responseData?.body && typeof responseData.body === "object"
+                        ? (responseData.body.id ?? responseData.body.messageId ?? generateMessageId())
                         : generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
