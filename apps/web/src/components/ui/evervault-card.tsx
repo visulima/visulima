@@ -3,7 +3,7 @@
 import type { ClassValue } from "clsx";
 import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 import type { FC, PropsWithChildren } from "react";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 

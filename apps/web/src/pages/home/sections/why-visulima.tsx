@@ -74,43 +74,39 @@ const features = [
     },
 ];
 
-const WhyVisulima = () => {
-    return (
-        <div className="bg-background relative">
-            <Section
-                classes={{
-                    lineGrid: "border-dotted border-white/[0.06]",
-                    pattern: "inset-y-10",
-                }}
-                mode="dark"
-                patternColor="sky-sapphire"
-            >
-                <div className="col-span-2 mb-16">
-                    <SectionTitle
-                        description={
-                            <span className="flex flex-col gap-4">
-                                <span className="text-white/55">
-                                    Visulima provides robust, developer-focused tools and libraries to streamline your workflow.
-                                </span>
-                                <span className="text-white/35">Let us handle the complexities so you can focus on building what truly matters.</span>
-                            </span>
-                        }
-                        mode="dark"
-                        prefix="Why Visulima?"
-                        title="Empower Your Development. Deliver Faster."
-                    />
-                </div>
-                <div className="col-span-4">
-                    <BentoGrid className="border-y border-white/[0.06]">
-                        {features.map((feature) => (
-                            <BentoSpotlightCard key={feature.name} {...feature} className={feature.className} />
-                        ))}
-                    </BentoGrid>
-                </div>
-            </Section>
-            <SectionSeparator bgColor="bg-background" fillColor="fill-background" position="bottom" />
-        </div>
-    );
-};
+const WhyVisulima = () => (
+    <div className="bg-background relative">
+        <Section
+            classes={{
+                lineGrid: "border-dotted border-white/[0.06]",
+                pattern: "inset-y-10",
+            }}
+            mode="dark"
+            patternColor="sky-sapphire"
+        >
+            <div className="col-span-2 mb-16">
+                <SectionTitle
+                    description={(
+                        <span className="flex flex-col gap-4">
+                            <span className="text-white/55">Visulima provides robust, developer-focused tools and libraries to streamline your workflow.</span>
+                            <span className="text-white/35">Let us handle the complexities so you can focus on building what truly matters.</span>
+                        </span>
+                    )}
+                    mode="dark"
+                    prefix="Why Visulima?"
+                    title="Empower Your Development. Deliver Faster."
+                />
+            </div>
+            <div className="col-span-4">
+                <BentoGrid className="border-y border-white/[0.06]">
+                    {features.map((feature) => (
+                        <BentoSpotlightCard key={feature.name} {...feature} className={feature.className} />
+                    ))}
+                </BentoGrid>
+            </div>
+        </Section>
+        <SectionSeparator bgColor="bg-background" fillColor="fill-background" position="bottom" />
+    </div>
+);
 
 export default WhyVisulima;

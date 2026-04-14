@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import type { HTMLProps, ReactNode, RefObject } from "react";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -141,6 +141,7 @@ const CollisionMechanism = ({
                         detected: true,
                     });
                     setCycleCollisionDetected(true);
+
                     return;
                 }
             }

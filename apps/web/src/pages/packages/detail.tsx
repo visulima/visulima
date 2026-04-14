@@ -6,8 +6,8 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
-import AnimatedNumber from "@/components/ui/animated/animated-number";
 import JsonLd from "@/components/seo/json-ld";
+import AnimatedNumber from "@/components/ui/animated/animated-number";
 import HighlightLink from "@/components/ui/highlight-link";
 import type { AccentColor } from "@/data/packages";
 import { cn, formatNumber } from "@/lib/utils";
@@ -75,7 +75,7 @@ const CopyButton: FC<{ text: string }> = ({ text }) => {
     const handleCopy = useCallback(() => {
         navigator.clipboard.writeText(text);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setTimeout(setCopied, 2000, false);
     }, [text]);
 
     return (
@@ -99,6 +99,7 @@ const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 const formatMonth = (m: string) => {
     const [year, month] = m.split("-");
+
     return `${MONTH_NAMES[Number(month) - 1]} ${year}`;
 };
 
@@ -115,6 +116,7 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
         const points = data.map((d, i) => {
             const x = (i / (data.length - 1)) * CHART_VIEW_WIDTH;
             const y = CHART_PAD_TOP + CHART_HEIGHT - (d.downloads / maxDownloads) * CHART_HEIGHT;
+
             return { x, y };
         });
 
@@ -131,7 +133,7 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
 
     return (
         <div className="relative h-full w-full">
-            <motion.div className="absolute inset-0 h-full w-full" animate={{ opacity: 1 }} initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
+            <motion.div animate={{ opacity: 1 }} className="absolute inset-0 h-full w-full" initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
                 <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}>
                     <defs>
                         <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
@@ -142,6 +144,7 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
 
                     {GRID_FRACTIONS.map((fraction) => {
                         const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
+
                         return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
                     })}
 
@@ -167,6 +170,7 @@ const PackageDetail: FC = () => {
     const fetchStats = useCallback(async () => {
         try {
             const data = await getStats();
+
             setStats(data);
         } catch {
             // ignore
@@ -191,7 +195,7 @@ const PackageDetail: FC = () => {
                     applicationCategory: "DeveloperApplication",
                     author: { "@type": "Organization", name: "Visulima", url: "https://visulima.com" },
                     description: pkg.description,
-                    ...(totalDownloads > 0 ? { downloadCount: totalDownloads } : {}),
+                    ...totalDownloads > 0 ? { downloadCount: totalDownloads } : {},
                     license: "https://opensource.org/licenses/MIT",
                     name: pkg.name,
                     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -251,7 +255,7 @@ const PackageDetail: FC = () => {
                             </div>
                             <CopyButton text={installCommand} />
                         </div>
-                        <div className="grow"></div>
+                        <div className="grow" />
                         <HighlightLink className="w-3/12" icon={<ChevronRight />} mode="light" to={pkg.docsPath}>
                             Get Started
                         </HighlightLink>
@@ -297,12 +301,12 @@ const PackageDetail: FC = () => {
                 <div className="col-span-full grid grid-cols-1 border-y border-gray-200 sm:grid-cols-2">
                     {pkg.features.map((feature, index) => (
                         <div
-                            key={feature}
                             className={cn(
                                 "group/feature relative flex items-center gap-4 px-0 py-6 transition-all duration-300 bg-ivory sm:pl-8",
                                 index % 2 !== 1 && "sm:border-r sm:border-gray-200",
                                 index >= 2 && "border-t border-gray-200",
                             )}
+                            key={feature}
                         >
                             <div
                                 className={cn(

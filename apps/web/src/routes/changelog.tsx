@@ -5,11 +5,13 @@ import Changelog from "@/pages/changelog";
 
 export const Route = createFileRoute("/changelog")({
     component: () => <Changelog data={[]} />,
-    head: () => ({
-        ...createSeoHead({
-            description: "View the latest changes, updates, and release notes for Visulima packages.",
-            path: "/changelog",
-            title: "Changelog",
-        }),
-    }),
+    head: () => {
+        return {
+            ...createSeoHead({
+                description: "View the latest changes, updates, and release notes for Visulima packages.",
+                path: "/changelog",
+                title: "Changelog",
+            }),
+        };
+    },
 });

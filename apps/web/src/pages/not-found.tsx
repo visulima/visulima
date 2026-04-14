@@ -2,8 +2,8 @@
 
 import type { NotFoundRouteProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
 import { ArrowLeft, BookOpen, Home, Package } from "lucide-react";
+import { motion } from "motion/react";
 import type { FC, PropsWithChildren } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -13,14 +13,13 @@ import SectionSeparator from "@/components/sections/section-separator";
 import SupportSection from "./home/sections/support";
 
 const ScatteredDigit: FC<{ char: string; delay: number; index: number }> = ({ char, delay, index }) => {
-    const drift = useMemo(
-        () => ({
+    const drift = useMemo(() => {
+        return {
             rotate: (index - 1) * 8 + (index === 1 ? -3 : index === 2 ? 5 : -2),
             x: (index - 1) * 4,
             y: index === 1 ? -6 : index === 2 ? 8 : -4,
-        }),
-        [index],
-    );
+        };
+    }, [index]);
 
     return (
         <motion.span
@@ -76,7 +75,7 @@ export const NotFound: FC<PropsWithChildren<NotFoundRouteProps>> = ({ children }
     const [pathname, setPathname] = useState("/...");
 
     useEffect(() => {
-        setPathname(window.location.pathname);
+        setPathname(globalThis.location.pathname);
     }, []);
 
     const handleGoBack = useCallback(() => {

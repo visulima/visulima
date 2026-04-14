@@ -4,12 +4,13 @@ import { DocsBody } from "fumadocs-ui/page";
 import Section from "@/components/sections/section";
 import SectionSeparator from "@/components/sections/section-separator";
 import { createSeoHead } from "@/lib/seo";
+
 import SupportSection from "../pages/home/sections/support";
 
 const RouteComponent = () => (
     <>
         <DocsBody className="bg-coal">
-            <Section mode="dark" gridLength={1} classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }}>
+            <Section classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }} gridLength={1} mode="dark">
                 <h1>Impressum</h1>
 
                 <h2>Angaben gemäß § 5 TMG</h2>
@@ -32,11 +33,13 @@ const RouteComponent = () => (
 
                 <h2>Streitschlichtung</h2>
                 <p>
-                    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{" "}
+                    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
+                    {" "}
                     <a href="https://ec.europa.eu/consumers/odr" rel="noopener noreferrer" target="_blank">
                         https://ec.europa.eu/consumers/odr
                     </a>
-                    .<br />
+                    .
+                    <br />
                     Unsere E-Mail-Adresse finden Sie oben im Impressum.
                 </p>
                 <p>Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
@@ -87,11 +90,13 @@ const RouteComponent = () => (
 
 export const Route = createFileRoute("/imprint")({
     component: RouteComponent,
-    head: () => ({
-        ...createSeoHead({
-            description: "Impressum und Angaben gemäß § 5 TMG für Visulima / Daniel Bannert.",
-            path: "/imprint",
-            title: "Impressum",
-        }),
-    }),
+    head: () => {
+        return {
+            ...createSeoHead({
+                description: "Impressum und Angaben gemäß § 5 TMG für Visulima / Daniel Bannert.",
+                path: "/imprint",
+                title: "Impressum",
+            }),
+        };
+    },
 });

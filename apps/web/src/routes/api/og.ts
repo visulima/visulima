@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { getPackageBySlug, packages } from "@/data/packages";
+import { getPackageBySlug } from "@/data/packages";
 
 const ACCENT_COLORS: Record<string, string> = {
     "crimson-energy": "#DC2626",
@@ -10,7 +10,7 @@ const ACCENT_COLORS: Record<string, string> = {
 
 function generateOgSvg(title: string, description: string, accentColor: string): string {
     const accent = ACCENT_COLORS[accentColor] ?? "#4F46E5";
-    const truncatedDesc = description.length > 120 ? description.slice(0, 117) + "..." : description;
+    const truncatedDesc = description.length > 120 ? `${description.slice(0, 117)}...` : description;
 
     return `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="630" fill="#0a0a0a"/>
@@ -23,7 +23,7 @@ function generateOgSvg(title: string, description: string, accentColor: string):
 }
 
 function escapeXml(text: string): string {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 }
 
 export const Route = createFileRoute("/api/og")({
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/api/og")({
 
                 if (slug) {
                     const pkg = getPackageBySlug(slug);
+
                     if (pkg) {
                         title = pkg.name;
                         description = pkg.description;

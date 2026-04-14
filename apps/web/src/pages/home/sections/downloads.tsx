@@ -20,6 +20,7 @@ const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 const formatMonth = (m: string) => {
     const [year, month] = m.split("-");
+
     return `${MONTH_NAMES[Number(month) - 1]} ${year}`;
 };
 
@@ -33,6 +34,7 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
     const points = data.map((d, i) => {
         const x = (i / (data.length - 1)) * CHART_VIEW_WIDTH;
         const y = CHART_PAD_TOP + CHART_HEIGHT - (d.downloads / maxDownloads) * CHART_HEIGHT;
+
         return { x, y };
     });
 
@@ -44,7 +46,7 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
 
     return (
         <div className="relative h-full w-full">
-            <motion.div className="absolute inset-0 h-full w-full" animate={{ opacity: 1 }} initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
+            <motion.div animate={{ opacity: 1 }} className="absolute inset-0 h-full w-full" initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
                 <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}>
                     <defs>
                         <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
@@ -55,6 +57,7 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
 
                     {GRID_FRACTIONS.map((fraction) => {
                         const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
+
                         return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
                     })}
 
@@ -89,7 +92,10 @@ const PackageDropdown: FC<{
         };
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
     const displayName = value === ALL_PACKAGES ? "All Packages" : `@visulima/${value}`;
@@ -98,7 +104,9 @@ const PackageDropdown: FC<{
         <div className="relative inline-block" ref={ref}>
             <button
                 className="inline-flex items-center gap-2 border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
-                onClick={() => setOpen(!open)}
+                onClick={() => {
+                    setOpen(!open);
+                }}
                 type="button"
             >
                 {displayName}
@@ -119,15 +127,16 @@ const PackageDropdown: FC<{
                     </button>
                     {packages.map((pkg) => (
                         <button
-                            key={pkg}
                             className={`block w-full px-4 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${value === pkg ? "font-medium text-gray-900" : "text-gray-600"}`}
+                            key={pkg}
                             onClick={() => {
                                 onChange(pkg);
                                 setOpen(false);
                             }}
                             type="button"
                         >
-                            @visulima/{pkg}
+                            @visulima/
+                            {pkg}
                         </button>
                     ))}
                 </div>
@@ -145,11 +154,12 @@ const INITIAL_STATS: DownloadStats = {
 };
 
 const useDownloadStats = (): DownloadStats => {
-    const [stats, setStats] = useState<DownloadStats>(INITIAL_STATS);
+    const [stats, setStats] = useState(INITIAL_STATS);
 
     const fetchStats = useCallback(async () => {
         try {
             const data = await getStats();
+
             setStats(data);
         } catch {
             // Keep zeros on failure
@@ -188,7 +198,9 @@ const aggregateMonthlyChart = (chart: Record<string, MonthlyDataPoint[]>): Month
 
     return Object.keys(byMonth)
         .toSorted()
-        .map((month) => ({ downloads: byMonth[month], month }));
+        .map((month) => {
+            return { downloads: byMonth[month], month };
+        });
 };
 
 const Downloads: FC = () => {

@@ -11,16 +11,16 @@ import JsonLd from "@/components/seo/json-ld";
 import { NotFound } from "@/pages/not-found";
 import appCss from "@/styles/app.css?url";
 
-const TanStackRouterDevtools =
-    process.env.NODE_ENV === "production"
+const TanStackRouterDevtools
+    = process.env.NODE_ENV === "production"
         ? () => null
         : lazy(() =>
-              import("@tanstack/react-router-devtools").then((res) => {
-                  return {
-                      default: res.TanStackRouterDevtools,
-                  };
-              }),
-          );
+            import("@tanstack/react-router-devtools").then((res) => {
+                return {
+                    default: res.TanStackRouterDevtools,
+                };
+            }),
+        );
 
 const RootDocument: FC<PropsWithChildren> = ({ children }) => (
     <html lang="en" suppressHydrationWarning>

@@ -1,15 +1,15 @@
 "use client";
 
 import { Link } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, ChevronRight, Package, Play } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import type { FC } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import background from "@/assets/images/background_hero.jpg";
 import Section from "@/components/sections/section";
 import WordRotate from "@/components/ui/word-rotate";
-import background from "@/assets/images/background_hero.jpg";
+import { cn } from "@/lib/utils";
 
 interface PackageDemo {
     code: string[];
@@ -21,32 +21,32 @@ interface PackageDemo {
 const packageDemos: PackageDemo[] = [
     {
         code: [
-            'import { createPail } from "@visulima/pail";',
+            "import { createPail } from \"@visulima/pail\";",
             "",
             "const logger = createPail({",
-            '  scope: "api",',
+            "  scope: \"api\",",
             "  throttle: 200,",
             "});",
             "",
-            'logger.info("Server started on :3000");',
+            "logger.info(\"Server started on :3000\");",
         ],
         label: "pail",
         output: [
             { delay: 80, text: "" },
-            { color: "text-emerald-400/80", delay: 200, text: "  \u25cf info  Server started on :3000" },
-            { color: "text-emerald-400/80", delay: 300, text: "  \u25cf info  Database connected" },
-            { color: "text-yellow-400/70", delay: 400, text: "  \u25cf warn  Rate limiter active (200ms)" },
-            { color: "text-emerald-400/80", delay: 200, text: "  \u25cf info  Ready for connections" },
+            { color: "text-emerald-400/80", delay: 200, text: "  \u25CF info  Server started on :3000" },
+            { color: "text-emerald-400/80", delay: 300, text: "  \u25CF info  Database connected" },
+            { color: "text-yellow-400/70", delay: 400, text: "  \u25CF warn  Rate limiter active (200ms)" },
+            { color: "text-emerald-400/80", delay: 200, text: "  \u25CF info  Ready for connections" },
         ],
         pkg: "@visulima/pail",
     },
     {
         code: [
-            'import { readJsonSync } from "@visulima/fs";',
-            'import { join } from "@visulima/path";',
+            "import { readJsonSync } from \"@visulima/fs\";",
+            "import { join } from \"@visulima/path\";",
             "",
             "const config = readJsonSync(",
-            '  join(root, "config.json"),',
+            "  join(root, \"config.json\"),",
             ");",
             "",
             "console.log(config);",
@@ -55,8 +55,8 @@ const packageDemos: PackageDemo[] = [
         output: [
             { delay: 80, text: "" },
             { color: "text-white/45", delay: 200, text: "  {" },
-            { color: "text-white/45", delay: 100, text: '    name: "my-app",' },
-            { color: "text-white/45", delay: 100, text: '    version: "1.0.0",' },
+            { color: "text-white/45", delay: 100, text: "    name: \"my-app\"," },
+            { color: "text-white/45", delay: 100, text: "    version: \"1.0.0\"," },
             { color: "text-white/45", delay: 100, text: "    port: 3000," },
             { color: "text-white/45", delay: 100, text: "  }" },
         ],
@@ -64,12 +64,12 @@ const packageDemos: PackageDemo[] = [
     },
     {
         code: [
-            'import { redact } from "@visulima/redact";',
+            "import { redact } from \"@visulima/redact\";",
             "",
             "const safe = redact(userData, [",
-            '  "password",',
-            '  "ssn",',
-            '  "token",',
+            "  \"password\",",
+            "  \"ssn\",",
+            "  \"token\",",
             "]);",
             "console.log(safe);",
         ],
@@ -77,10 +77,10 @@ const packageDemos: PackageDemo[] = [
         output: [
             { delay: 80, text: "" },
             { color: "text-white/45", delay: 150, text: "  {" },
-            { color: "text-white/45", delay: 100, text: '    name: "Alice",' },
-            { color: "text-emerald-400/80", delay: 100, text: '    password: "[REDACTED]",' },
-            { color: "text-emerald-400/80", delay: 100, text: '    ssn: "[REDACTED]",' },
-            { color: "text-white/45", delay: 100, text: '    email: "alice@example.com"' },
+            { color: "text-white/45", delay: 100, text: "    name: \"Alice\"," },
+            { color: "text-emerald-400/80", delay: 100, text: "    password: \"[REDACTED]\"," },
+            { color: "text-emerald-400/80", delay: 100, text: "    ssn: \"[REDACTED]\"," },
+            { color: "text-white/45", delay: 100, text: "    email: \"alice@example.com\"" },
             { color: "text-white/45", delay: 100, text: "  }" },
         ],
         pkg: "@visulima/redact",
@@ -88,10 +88,10 @@ const packageDemos: PackageDemo[] = [
     {
         code: [
             "import { isDisposableEmail }",
-            '  from "@visulima/disposable-email-domains";',
+            "  from \"@visulima/disposable-email-domains\";",
             "",
-            'const a = isDisposableEmail("hi@mailinator.com");',
-            'const b = isDisposableEmail("hi@gmail.com");',
+            "const a = isDisposableEmail(\"hi@mailinator.com\");",
+            "const b = isDisposableEmail(\"hi@gmail.com\");",
             "",
             "console.log(a, b);",
         ],
@@ -116,21 +116,27 @@ const CodeLine: FC<{ content: string }> = ({ content }) => {
                 if (/^\s+$/.test(segment)) {
                     return <span key={index}>{segment}</span>;
                 }
+
                 if (!segment) {
                     return null;
                 }
 
                 const isKeyword = /^(import|from|const|await|export|async|function|type)$/.test(segment);
                 const isString = /^["'`]/.test(segment);
-                const isPunctuation = /^[{}()\[\];,=>:]+$/.test(segment);
+                const isPunctuation = /^[{}()[\];,=>:]+$/.test(segment);
                 const isNumber = /^\d+$/.test(segment);
                 const isBoolean = /^(true|false|null|undefined)$/.test(segment);
 
                 let colorClass = "text-white/55";
-                if (isKeyword) colorClass = "text-crimson-energy/70";
-                else if (isString) colorClass = "text-sky-sapphire/75";
-                else if (isPunctuation) colorClass = "text-white/20";
-                else if (isNumber || isBoolean) colorClass = "text-sky-sapphire/60";
+
+                if (isKeyword)
+                    colorClass = "text-crimson-energy/70";
+                else if (isString)
+                    colorClass = "text-sky-sapphire/75";
+                else if (isPunctuation)
+                    colorClass = "text-white/20";
+                else if (isNumber || isBoolean)
+                    colorClass = "text-sky-sapphire/60";
 
                 return (
                     <span className={colorClass} key={index}>
@@ -159,18 +165,21 @@ const PackageShowcase: FC = () => {
             setVisibleLines(0);
 
             const d = packageDemos[index];
+
             if (!d) {
                 return;
             }
 
-            const reveal = (lineIdx: number) => {
-                if (lineIdx <= d.output.length) {
-                    setVisibleLines(lineIdx);
-                    if (lineIdx < d.output.length) {
-                        const delay = d.output[lineIdx].delay ?? 100;
+            const reveal = (lineIndex: number) => {
+                if (lineIndex <= d.output.length) {
+                    setVisibleLines(lineIndex);
+
+                    if (lineIndex < d.output.length) {
+                        const delay = d.output[lineIndex].delay ?? 100;
                         const id = setTimeout(() => {
-                            reveal(lineIdx + 1);
+                            reveal(lineIndex + 1);
                         }, delay);
+
                         timeoutsRef.current.push(id);
                     }
                 }
@@ -179,6 +188,7 @@ const PackageShowcase: FC = () => {
             const id = setTimeout(() => {
                 reveal(0);
             }, 400);
+
             timeoutsRef.current.push(id);
         },
         [clearTimeouts],
@@ -186,6 +196,7 @@ const PackageShowcase: FC = () => {
 
     useEffect(() => {
         revealOutput(activeIndex);
+
         return clearTimeouts;
     }, [activeIndex, revealOutput, clearTimeouts]);
 
@@ -194,8 +205,8 @@ const PackageShowcase: FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="relative w-full py-5 pl-10"
             initial={{ opacity: 0, y: 30 }}
-            transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
             style={{ backgroundImage: `url(${background})` }}
+            transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
         >
             <div className="relative overflow-hidden h-120 bg-[hsl(220_12%_5%)]">
                 <div className="relative">
@@ -253,6 +264,7 @@ const PackageShowcase: FC = () => {
                                         if (index >= visibleLines) {
                                             return null;
                                         }
+
                                         return (
                                             <div key={`${activeIndex}-${index}`}>
                                                 <span className={line.color ?? "text-white/30"}>{line.text || "\u00A0"}</span>
@@ -323,7 +335,8 @@ const PackageTicker: FC = () => {
                         key={`${pkg.name}-${index}`}
                     >
                         <Package className="h-3 w-3" />
-                        @visulima/{pkg.name}
+                        @visulima/
+                        {pkg.name}
                     </span>
                 ))}
             </div>
@@ -335,8 +348,8 @@ const MainHero: FC = () => (
     <div className="relative bg-background">
         <Section
             classes={{
-                root: "h-screen",
                 childrenWrapper: "!grid-cols-1 lg:!grid-cols-2 items-center gap-12 md:gap-0",
+                root: "h-screen",
             }}
             gridLength={2}
             mode="dark"
