@@ -70,7 +70,10 @@ const ci: Command = {
             throw new Error("Missing targets. Usage: vis ci <target>[,<target>…]");
         }
 
-        const targets = rawTargets.split(",").map((t) => t.trim()).filter(Boolean);
+        const targets = rawTargets
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean);
 
         if (targets.length === 0) {
             throw new Error("Missing targets. Usage: vis ci <target>[,<target>…]");
@@ -159,7 +162,7 @@ const ci: Command = {
             type: Number,
         },
         {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\")",
+            description: 'Partition tasks for distributed CI (e.g., "1/4")',
             name: "partition",
             type: String,
         },

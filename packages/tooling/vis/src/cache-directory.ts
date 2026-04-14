@@ -28,11 +28,7 @@ import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
  * @param configCacheDir - `taskRunnerOptions.cacheDirectory` from vis.config.ts (may be relative or absolute).
  * @returns The resolved absolute path to the cache directory.
  */
-const resolveCacheDirectory = (
-    workspaceRoot: string,
-    optionsCacheDir: string | undefined,
-    configCacheDir: string | undefined,
-): string => {
+const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | undefined, configCacheDir: string | undefined): string => {
     const normalize = (value: string): string => (isAbsolute(value) ? value : resolve(workspaceRoot, value));
 
     if (optionsCacheDir && optionsCacheDir.length > 0) {

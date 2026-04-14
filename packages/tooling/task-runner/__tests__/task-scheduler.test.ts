@@ -244,11 +244,11 @@ describe("taskScheduler.partitionTasks", () => {
 });
 
 describe(parsePartition, () => {
-    it("should parse \"1/4\" correctly", () => {
+    it('should parse "1/4" correctly', () => {
         expect(parsePartition("1/4")).toEqual({ index: 1, total: 4 });
     });
 
-    it("should parse \"3/3\" correctly", () => {
+    it('should parse "3/3" correctly', () => {
         expect(parsePartition("3/3")).toEqual({ index: 3, total: 3 });
     });
 

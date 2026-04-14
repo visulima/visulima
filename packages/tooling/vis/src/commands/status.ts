@@ -26,9 +26,7 @@ const status: Command = {
         const { config, workspace } = discoverWorkspace(wsRoot, visConfig);
         const projectGraph = buildProjectGraph(wsRoot, workspace);
         const projectCount = Object.keys(workspace.projects).length;
-        const targetCount = new Set(
-            Object.values(workspace.projects).flatMap((p) => Object.keys(p.targets ?? {})),
-        ).size;
+        const targetCount = new Set(Object.values(workspace.projects).flatMap((p) => Object.keys(p.targets ?? {}))).size;
 
         const runtimeFindings = checkRuntimeVersions(wsRoot);
 
@@ -44,7 +42,9 @@ const status: Command = {
         const runsDir = join(wsRoot, ".task-runner", "runs");
 
         if (existsSync(runsDir)) {
-            const files = readdirSync(runsDir).filter((f) => f.endsWith(".json")).sort();
+            const files = readdirSync(runsDir)
+                .filter((f) => f.endsWith(".json"))
+                .sort();
             let totalTasks = 0;
             let cachedTasks = 0;
 
@@ -69,14 +69,20 @@ const status: Command = {
         }
 
         if (options.json) {
-            logger.info(JSON.stringify({
-                cacheHitRate: cacheHitRate ?? null,
-                constraintViolations,
-                flakyTasks: flakyStats.length,
-                projects: projectCount,
-                runtimeIssues: runtimeFindings.length,
-                targets: targetCount,
-            }, null, 2));
+            logger.info(
+                JSON.stringify(
+                    {
+                        cacheHitRate: cacheHitRate ?? null,
+                        constraintViolations,
+                        flakyTasks: flakyStats.length,
+                        projects: projectCount,
+                        runtimeIssues: runtimeFindings.length,
+                        targets: targetCount,
+                    },
+                    null,
+                    2,
+                ),
+            );
 
             return;
         }
@@ -85,8 +91,12 @@ const status: Command = {
         logger.info(`  ${dim("VIS STATUS")}`);
         logger.info("");
         logger.info(`  ${icon(true)} ${String(projectCount)} projects · ${String(targetCount)} unique targets`);
-        logger.info(`  ${icon(runtimeFindings.length === 0)} Runtime: ${runtimeFindings.length === 0 ? green("OK") : yellow(`${String(runtimeFindings.length)} issue(s)`)}`);
-        logger.info(`  ${icon(constraintViolations === 0)} Constraints: ${constraintViolations === 0 ? green("OK") : red(`${String(constraintViolations)} violation(s)`)}`);
+        logger.info(
+            `  ${icon(runtimeFindings.length === 0)} Runtime: ${runtimeFindings.length === 0 ? green("OK") : yellow(`${String(runtimeFindings.length)} issue(s)`)}`,
+        );
+        logger.info(
+            `  ${icon(constraintViolations === 0)} Constraints: ${constraintViolations === 0 ? green("OK") : red(`${String(constraintViolations)} violation(s)`)}`,
+        );
         logger.info(`  ${icon(flakyStats.length === 0)} Flaky tasks: ${flakyStats.length === 0 ? green("none") : yellow(String(flakyStats.length))}`);
 
         if (cacheHitRate) {

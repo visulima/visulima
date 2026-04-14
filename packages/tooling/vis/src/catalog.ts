@@ -620,7 +620,15 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
     try {
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
 
-        return !!(pkg.dependencies || pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies || pkg.overrides || pkg.resolutions || getNestedField(pkg, "pnpm.overrides"));
+        return !!(
+            pkg.dependencies ||
+            pkg.devDependencies ||
+            pkg.peerDependencies ||
+            pkg.optionalDependencies ||
+            pkg.overrides ||
+            pkg.resolutions ||
+            getNestedField(pkg, "pnpm.overrides")
+        );
     } catch {
         return false;
     }
@@ -830,9 +838,7 @@ const fetchPackageVersions = async (
     const url = `${baseUrl}/${packageName}`;
 
     // Use abbreviated metadata by default; full metadata when publish times are needed
-    const headers: Record<string, string> = fetchPublishTimes
-        ? { Accept: "application/json" }
-        : { Accept: "application/vnd.npm.install-v1+json" };
+    const headers: Record<string, string> = fetchPublishTimes ? { Accept: "application/json" } : { Accept: "application/vnd.npm.install-v1+json" };
 
     if (registryConfig?.authToken) {
         headers["Authorization"] = `Bearer ${registryConfig.authToken}`;
@@ -1014,11 +1020,7 @@ const fetchVulnerabilities = async (
 
 const packageModeRegexCache = new Map<string, RegExp>();
 
-const resolvePackageTarget = (
-    packageName: string,
-    globalTarget: UpdateTarget,
-    packageMode?: Record<string, UpdateTarget>,
-): UpdateTarget => {
+const resolvePackageTarget = (packageName: string, globalTarget: UpdateTarget, packageMode?: Record<string, UpdateTarget>): UpdateTarget => {
     if (!packageMode) {
         return globalTarget;
     }
@@ -1149,9 +1151,10 @@ const findTargetVersion = (
     }
 
     // For minor/patch, find highest constrained version
-    const constraint = target === "patch"
-        ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
-        : (p: ParsedVersion): boolean => p.major === current.major;
+    const constraint =
+        target === "patch"
+            ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
+            : (p: ParsedVersion): boolean => p.major === current.major;
 
     return filterCandidates(versions, current, includePrerelease, minAgeMs, maturity?.publishTimes, constraint);
 };
@@ -1225,7 +1228,12 @@ const fetchVersionsBatched = async (
         const results = await Promise.allSettled(
             batch.map(async (name) => {
                 const registry = npmrcConfig ? getRegistryForPackage(name, npmrcConfig) : undefined;
-                const info = await fetchPackageVersions(name, registry ? { authToken: registry.token, url: registry.url } : undefined, DEFAULT_FETCH_TIMEOUT, fetchPublishTimes);
+                const info = await fetchPackageVersions(
+                    name,
+                    registry ? { authToken: registry.token, url: registry.url } : undefined,
+                    DEFAULT_FETCH_TIMEOUT,
+                    fetchPublishTimes,
+                );
 
                 versionCache.set(name, info);
 
@@ -1308,7 +1316,7 @@ const buildOutdatedEntries = (
 };
 
 /** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: ParsedVersion | undefined): string => parsed ? versionToString(parsed) : "";
+const formatVersionString = (parsed: ParsedVersion | undefined): string => (parsed ? versionToString(parsed) : "");
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1397,7 +1405,10 @@ const computeCacheHash = (
     parts.push(`mra=${String(options.minimumReleaseAge ?? 0)}`);
 
     if (options.packageMode) {
-        const modeEntries = Object.entries(options.packageMode).map(([k, v]) => `${k}=${v}`).toSorted().join(",");
+        const modeEntries = Object.entries(options.packageMode)
+            .map(([k, v]) => `${k}=${v}`)
+            .toSorted()
+            .join(",");
 
         parts.push(`pkgMode=${modeEntries}`);
     }
@@ -2113,7 +2124,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...await Promise.all(fetches));
+        results.push(...(await Promise.all(fetches)));
     } finally {
         clearTimeout(timeout);
     }

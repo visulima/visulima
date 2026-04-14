@@ -170,10 +170,7 @@ describe(pruneDockerContext, () => {
 
         mkdirSync(contextRoot, { recursive: true });
 
-        writeFileSync(
-            join(contextRoot, DOCKER_MANIFEST_FILENAME),
-            JSON.stringify({ focus: ["a"], projects: ["a", "b"] }),
-        );
+        writeFileSync(join(contextRoot, DOCKER_MANIFEST_FILENAME), JSON.stringify({ focus: ["a"], projects: ["a", "b"] }));
 
         const projADir = join(workspaceRoot, "packages", "a");
         const projBDir = join(workspaceRoot, "packages", "b");

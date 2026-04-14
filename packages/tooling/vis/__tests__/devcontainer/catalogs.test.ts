@@ -83,20 +83,22 @@ describe("templates", () => {
 
         const ids = TEMPLATES.map((t) => t.id);
 
-        expect(ids).toEqual(expect.arrayContaining([
-            "node",
-            "node-pnpm",
-            "node-postgres",
-            "node-dind",
-            "fullstack",
-            "python",
-            "go",
-            "rust",
-            "java",
-            "devops",
-            "minimal",
-            "custom",
-        ]));
+        expect(ids).toEqual(
+            expect.arrayContaining([
+                "node",
+                "node-pnpm",
+                "node-postgres",
+                "node-dind",
+                "fullstack",
+                "python",
+                "go",
+                "rust",
+                "java",
+                "devops",
+                "minimal",
+                "custom",
+            ]),
+        );
     });
 
     it("should have image or dockerComposeFile for every template", () => {
@@ -125,7 +127,9 @@ describe("filterFeatures", () => {
         const results = filterFeatures("Node");
 
         expect(results.length).toBeGreaterThan(0);
-        expect(results.every((f) => f.name.toLowerCase().includes("node") || f.id.toLowerCase().includes("node") || f.description.toLowerCase().includes("node"))).toBe(true);
+        expect(
+            results.every((f) => f.name.toLowerCase().includes("node") || f.id.toLowerCase().includes("node") || f.description.toLowerCase().includes("node")),
+        ).toBe(true);
     });
 
     it("should filter by ID substring", () => {

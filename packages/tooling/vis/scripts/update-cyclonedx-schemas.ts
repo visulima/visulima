@@ -71,7 +71,7 @@ const parseTagArg = (argv: readonly string[]): { mm: string; tag: string } => {
             const next = argv[index + 1];
 
             if (next === undefined || next.startsWith("--")) {
-                throw new Error("Flag \"--tag\" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]");
+                throw new Error('Flag "--tag" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]');
             }
 
             tag = next;
@@ -80,7 +80,7 @@ const parseTagArg = (argv: readonly string[]): { mm: string; tag: string } => {
             const value = arg.slice("--tag=".length);
 
             if (value === "") {
-                throw new Error("Flag \"--tag=\" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]");
+                throw new Error('Flag "--tag=" requires a value. Usage: update-cyclonedx-schemas [--tag <value> | <tag>]');
             }
 
             tag = value;
@@ -160,7 +160,7 @@ const main = async (): Promise<void> => {
     process.stdout.write(`\nDone. ${assets.length} files written to ${SCHEMAS_DIR}\n`);
     process.stdout.write("\nNext steps:\n");
     process.stdout.write("  1. Update the tag + Direct URLs in __tests__/sbom/schemas/README.md\n");
-    process.stdout.write("  2. Re-run the sbom test suite: pnpm --filter \"@visulima/vis\" run test\n");
+    process.stdout.write('  2. Re-run the sbom test suite: pnpm --filter "@visulima/vis" run test\n');
     process.stdout.write("  3. Adjust src/sbom/types.ts if the spec changed enums or added fields\n");
 };
 

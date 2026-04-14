@@ -19,7 +19,9 @@ const PortsSection = ({ addingPort, addPortValue, config, fieldIndex }: PortsSec
     return (
         <Box flexDirection="column" paddingX={1}>
             <Box marginBottom={1}>
-                <Text bold color="cyan">Forwarded Ports</Text>
+                <Text bold color="cyan">
+                    Forwarded Ports
+                </Text>
                 <Text dimColor> ({ports.length} ports)</Text>
             </Box>
             {ports.map((port, index) => {
@@ -38,7 +40,9 @@ const PortsSection = ({ addingPort, addPortValue, config, fieldIndex }: PortsSec
                 <Text color={isAddRowSelected ? "cyan" : "gray"} inverse={isAddRowSelected}>
                     {"  "}
                     {isAddRowSelected && addingPort ? (
-                        <Text>Enter port: <Text color="yellow">{addPortValue || "_"}</Text></Text>
+                        <Text>
+                            Enter port: <Text color="yellow">{addPortValue || "_"}</Text>
+                        </Text>
                     ) : (
                         "+ Add port..."
                     )}
@@ -46,11 +50,20 @@ const PortsSection = ({ addingPort, addPortValue, config, fieldIndex }: PortsSec
             </Box>
             <Box marginTop={1}>
                 <Text dimColor>
-                    <Text bold color="white">Enter</Text> {isAddRowSelected ? "type port number, Enter to confirm" : "select"}
+                    <Text bold color="white">
+                        Enter
+                    </Text>{" "}
+                    {isAddRowSelected ? "type port number, Enter to confirm" : "select"}
                     {"  "}
-                    <Text bold color="white">d</Text> remove selected
+                    <Text bold color="white">
+                        d
+                    </Text>{" "}
+                    remove selected
                     {"  "}
-                    <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>{" "}
+                    navigate
                 </Text>
             </Box>
         </Box>

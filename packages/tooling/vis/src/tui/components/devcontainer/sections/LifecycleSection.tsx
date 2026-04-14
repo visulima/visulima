@@ -31,7 +31,9 @@ interface LifecycleSectionProps {
 const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: LifecycleSectionProps): React.JSX.Element => (
     <Box flexDirection="column" paddingX={1}>
         <Box marginBottom={1}>
-            <Text bold color="cyan">Lifecycle Commands</Text>
+            <Text bold color="cyan">
+                Lifecycle Commands
+            </Text>
         </Box>
         {HOOKS.map((hook, index) => {
             const isSelected = index === fieldIndex;
@@ -59,9 +61,7 @@ const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: Li
                                 placeholder="e.g. npm install"
                             />
                         ) : (
-                            <Text color={displayValue ? "green" : "gray"}>
-                                {displayValue || "(not set)"}
-                            </Text>
+                            <Text color={displayValue ? "green" : "gray"}>{displayValue || "(not set)"}</Text>
                         )}
                     </Box>
                 </Box>
@@ -69,11 +69,20 @@ const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: Li
         })}
         <Box marginTop={1}>
             <Text dimColor>
-                <Text bold color="white">Enter</Text> edit command
+                <Text bold color="white">
+                    Enter
+                </Text>{" "}
+                edit command
                 {"  "}
-                <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>{" "}
+                navigate
                 {"  "}
-                <Text bold color="white">Esc</Text> stop editing
+                <Text bold color="white">
+                    Esc
+                </Text>{" "}
+                stop editing
             </Text>
         </Box>
     </Box>

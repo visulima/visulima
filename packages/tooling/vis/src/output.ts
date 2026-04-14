@@ -40,10 +40,10 @@ const colorEnabled = supportsColor();
 
 // ── ANSI helpers (zero-dep, respects NO_COLOR) ───────────────────────
 
-const ansi
-    = (open: string, close: string) =>
-        (s: string): string =>
-            colorEnabled ? `\u001B[${open}m${s}\u001B[${close}m` : s;
+const ansi =
+    (open: string, close: string) =>
+    (s: string): string =>
+        colorEnabled ? `\u001B[${open}m${s}\u001B[${close}m` : s;
 
 const bold: (s: string) => string = ansi("1", "22");
 const dim: (s: string) => string = ansi("2", "22");

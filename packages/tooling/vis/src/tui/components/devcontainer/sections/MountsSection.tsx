@@ -54,8 +54,17 @@ const MountsSection = ({
             {suggestedMounts.length > 0 && !addingMount && (
                 <Box borderColor="yellow" borderStyle="single" flexDirection="column" marginBottom={1} marginTop={1} paddingX={1}>
                     <Box flexShrink={0}>
-                        <Text bold color="yellow">Suggested mounts</Text>
-                        <Text dimColor> — press <Text bold color="white">A</Text> to add all</Text>
+                        <Text bold color="yellow">
+                            Suggested mounts
+                        </Text>
+                        <Text dimColor>
+                            {" "}
+                            — press{" "}
+                            <Text bold color="white">
+                                A
+                            </Text>{" "}
+                            to add all
+                        </Text>
                     </Box>
                     {suggestedMounts.map((mount, index) => (
                         <Box flexShrink={0} key={`suggestion-${String(index)}`}>
@@ -92,10 +101,7 @@ const MountsSection = ({
             {/* Add row */}
             {!addingMount && (
                 <Box flexShrink={0}>
-                    <Text
-                        color={fieldIndex === mounts.length ? "cyan" : "gray"}
-                        inverse={fieldIndex === mounts.length}
-                    >
+                    <Text color={fieldIndex === mounts.length ? "cyan" : "gray"} inverse={fieldIndex === mounts.length}>
                         {"   "}+ Add mount...
                     </Text>
                 </Box>
@@ -105,7 +111,9 @@ const MountsSection = ({
             {addingMount && (
                 <Box borderColor="cyan" borderStyle="single" flexDirection="column" marginTop={1} paddingX={1}>
                     <Box flexShrink={0} marginBottom={1}>
-                        <Text bold color="cyan">New Mount</Text>
+                        <Text bold color="cyan">
+                            New Mount
+                        </Text>
                     </Box>
                     <Box flexShrink={0}>
                         <Box width={12}>
@@ -123,9 +131,7 @@ const MountsSection = ({
                                 {mountPhase === "target" ? "\u276f " : "  "}Target:
                             </Text>
                         </Box>
-                        <Text color={mountTarget ? "yellow" : "gray"}>
-                            {mountTarget || (mountPhase === "target" ? "_" : "/container/path")}
-                        </Text>
+                        <Text color={mountTarget ? "yellow" : "gray"}>{mountTarget || (mountPhase === "target" ? "_" : "/container/path")}</Text>
                     </Box>
                     <Box flexShrink={0}>
                         <Box width={12}>
@@ -135,11 +141,17 @@ const MountsSection = ({
                         </Box>
                         {mountPhase === "type" ? (
                             <Text>
-                                <Text bold={mountType === "volume"} color={mountType === "volume" ? "cyan" : "gray"}>[1] volume</Text>
+                                <Text bold={mountType === "volume"} color={mountType === "volume" ? "cyan" : "gray"}>
+                                    [1] volume
+                                </Text>
                                 {"  "}
-                                <Text bold={mountType === "bind"} color={mountType === "bind" ? "cyan" : "gray"}>[2] bind</Text>
+                                <Text bold={mountType === "bind"} color={mountType === "bind" ? "cyan" : "gray"}>
+                                    [2] bind
+                                </Text>
                                 {"  "}
-                                <Text bold={mountType === "tmpfs"} color={mountType === "tmpfs" ? "cyan" : "gray"}>[3] tmpfs</Text>
+                                <Text bold={mountType === "tmpfs"} color={mountType === "tmpfs" ? "cyan" : "gray"}>
+                                    [3] tmpfs
+                                </Text>
                             </Text>
                         ) : (
                             <Text color="gray">{mountType}</Text>
@@ -147,9 +159,7 @@ const MountsSection = ({
                     </Box>
                     <Box flexShrink={0} marginTop={1}>
                         <Text dimColor wrap="truncate">
-                            {mountPhase === "type"
-                                ? "1/2/3 select type, Enter confirm, Esc cancel"
-                                : "Type text, Enter next step, Esc cancel"}
+                            {mountPhase === "type" ? "1/2/3 select type, Enter confirm, Esc cancel" : "Type text, Enter next step, Esc cancel"}
                         </Text>
                     </Box>
                 </Box>
@@ -157,9 +167,7 @@ const MountsSection = ({
 
             {mounts.length === 0 && !addingMount && suggestedMounts.length === 0 && (
                 <Box marginTop={1}>
-                    <Text dimColor>
-                        Tip: Use volume mounts for node_modules and caches to improve performance.
-                    </Text>
+                    <Text dimColor>Tip: Use volume mounts for node_modules and caches to improve performance.</Text>
                 </Box>
             )}
         </Box>

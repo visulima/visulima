@@ -58,14 +58,14 @@ describe("computeTaskHash - 50 file nodes", () => {
         if (details.implicitDeps) {
             for (const key of Object.keys(details.implicitDeps).sort()) {
                 hash.update(key);
-                hash.update((details.implicitDeps)[key] as string);
+                hash.update(details.implicitDeps[key] as string);
             }
         }
 
         if (details.runtime) {
             for (const key of Object.keys(details.runtime).sort()) {
                 hash.update(key);
-                hash.update((details.runtime)[key] as string);
+                hash.update(details.runtime[key] as string);
             }
         }
 
@@ -93,7 +93,7 @@ describe("computeTaskHash - 500 file nodes", () => {
         if (details.implicitDeps) {
             for (const key of Object.keys(details.implicitDeps).sort()) {
                 hash.update(key);
-                hash.update((details.implicitDeps)[key] as string);
+                hash.update(details.implicitDeps[key] as string);
             }
         }
 

@@ -131,7 +131,7 @@ const collectFiles = async (directory: string, ignoredDirectories: Set<string>, 
  * Resolves the working directory for a task.
  */
 
-const resolveTaskCwd = (workspaceRoot: string, task: Task): string => task.projectRoot ? join(workspaceRoot, task.projectRoot) : workspaceRoot;
+const resolveTaskCwd = (workspaceRoot: string, task: Task): string => (task.projectRoot ? join(workspaceRoot, task.projectRoot) : workspaceRoot);
 
 /**
  * Creates a failure TaskResult from an error.

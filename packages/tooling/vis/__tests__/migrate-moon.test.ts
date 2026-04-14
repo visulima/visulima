@@ -68,16 +68,7 @@ describe(migrateMoon, () => {
         mkdirSync(join(tmpDir, ".moon"), { recursive: true });
         writeFileSync(
             join(tmpDir, ".moon", "tasks.yml"),
-            [
-                "tasks:",
-                "  test:",
-                "    command: vitest",
-                "    platform: node",
-                "    toolchain: node",
-                "    env:",
-                "      NODE_ENV: test",
-                "",
-            ].join("\n"),
+            ["tasks:", "  test:", "    command: vitest", "    platform: node", "    toolchain: node", "    env:", "      NODE_ENV: test", ""].join("\n"),
         );
 
         const report = createMigrationReport();
@@ -95,16 +86,7 @@ describe(migrateMoon, () => {
         mkdirSync(join(tmpDir, ".moon"), { recursive: true });
         writeFileSync(
             join(tmpDir, ".moon", "tasks.yml"),
-            [
-                "implicitDeps:",
-                "  - '~:build'",
-                "taskOptions:",
-                "  cache: true",
-                "tasks:",
-                "  lint:",
-                "    command: eslint",
-                "",
-            ].join("\n"),
+            ["implicitDeps:", "  - '~:build'", "taskOptions:", "  cache: true", "tasks:", "  lint:", "    command: eslint", ""].join("\n"),
         );
 
         const report = createMigrationReport();
@@ -119,10 +101,7 @@ describe(migrateMoon, () => {
         expect.assertions(1);
 
         mkdirSync(join(tmpDir, ".moon"), { recursive: true });
-        writeFileSync(
-            join(tmpDir, ".moon", "tasks.yml"),
-            "tasks:\n  build:\n    command: tsc\n",
-        );
+        writeFileSync(join(tmpDir, ".moon", "tasks.yml"), "tasks:\n  build:\n    command: tsc\n");
 
         const report = createMigrationReport();
 

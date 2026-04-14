@@ -715,11 +715,13 @@ describe(findTargetVersion, () => {
         ]);
 
         // minimumReleaseAge = 20160 minutes (14 days), 2.0.0 is too new
-        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
-            minimumReleaseAge: 20_160,
-            packageName: "react",
-            publishTimes,
-        })).toBe("1.2.0");
+        expect(
+            findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
+                minimumReleaseAge: 20_160,
+                packageName: "react",
+                publishTimes,
+            }),
+        ).toBe("1.2.0");
     });
 
     it("should skip maturity check for excluded packages", () => {
@@ -732,12 +734,14 @@ describe(findTargetVersion, () => {
             ["2.0.0", new Date(now - 1000).toISOString()],
         ]);
 
-        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
-            minimumReleaseAge: 20_160,
-            minimumReleaseAgeExclude: ["react"],
-            packageName: "react",
-            publishTimes,
-        })).toBe("2.0.0");
+        expect(
+            findTargetVersion(v, "2.0.0", "^1.0.0", "latest", false, {
+                minimumReleaseAge: 20_160,
+                minimumReleaseAgeExclude: ["react"],
+                packageName: "react",
+                publishTimes,
+            }),
+        ).toBe("2.0.0");
     });
 
     it("should filter immature versions in minor mode", () => {
@@ -752,11 +756,13 @@ describe(findTargetVersion, () => {
             ["2.0.0", new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString()],
         ]);
 
-        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false, {
-            minimumReleaseAge: 20_160,
-            packageName: "lodash",
-            publishTimes,
-        })).toBe("1.1.0");
+        expect(
+            findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false, {
+                minimumReleaseAge: 20_160,
+                packageName: "lodash",
+                publishTimes,
+            }),
+        ).toBe("1.1.0");
     });
 
     it("should return latest when no maturity options are provided", () => {
@@ -808,10 +814,12 @@ describe(resolvePackageTarget, () => {
     it("should return the first matching pattern", () => {
         expect.assertions(1);
 
-        expect(resolvePackageTarget("typescript", "latest", {
-            "typescript": "minor",
-            "/^type/": "patch",
-        })).toBe("minor");
+        expect(
+            resolvePackageTarget("typescript", "latest", {
+                typescript: "minor",
+                "/^type/": "patch",
+            }),
+        ).toBe("minor");
     });
 });
 
@@ -929,7 +937,15 @@ describe("packageMode option", () => {
             typescript: { latest: "5.5.0", versions: ["5.3.0", "5.4.0", "5.5.0"] },
         });
 
-        const catalogs = new Map([["default", new Map([["react", "^18.2.0"], ["typescript", "^5.3.0"]])]]);
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["react", "^18.2.0"],
+                    ["typescript", "^5.3.0"],
+                ]),
+            ],
+        ]);
         const options: CatalogCheckOptions = {
             exclude: [],
             ignore: [],
@@ -1079,10 +1095,7 @@ describe("applyPackageJsonUpdates with nested dep types", () => {
 
         const root = mkdtempSync(join(tmpdir(), "vis-apply-nested-"));
 
-        writeFileSync(
-            join(root, "package.json"),
-            JSON.stringify({ name: "app", pnpm: { overrides: { lodash: "^4.17.0" } } }, undefined, 2),
-        );
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "app", pnpm: { overrides: { lodash: "^4.17.0" } } }, undefined, 2));
 
         applyPackageJsonUpdates(root, [
             {
@@ -1106,10 +1119,7 @@ describe("applyPackageJsonUpdates with nested dep types", () => {
 
         const root = mkdtempSync(join(tmpdir(), "vis-apply-nested-"));
 
-        writeFileSync(
-            join(root, "package.json"),
-            JSON.stringify({ name: "app", overrides: { lodash: "^4.17.0" } }, undefined, 2),
-        );
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "app", overrides: { lodash: "^4.17.0" } }, undefined, 2));
 
         applyPackageJsonUpdates(root, [
             {
@@ -1493,7 +1503,14 @@ describe(checkOutdated, () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], ignore: ["@types/*"], include: [], includeLocked: false, includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = {
+            exclude: [],
+            ignore: ["@types/*"],
+            include: [],
+            includeLocked: false,
+            includePrerelease: false,
+            target: "latest",
+        };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1683,7 +1700,15 @@ describe("checkOutdated target behavior", () => {
             react: { latest: "19.0.0", versions: ["18.2.0", "18.3.0", "19.0.0"] },
         });
 
-        const catalogs = new Map([["default", new Map([["prisma", "^6.19.2"], ["react", "^18.2.0"]])]]);
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["prisma", "^6.19.2"],
+                    ["react", "^18.2.0"],
+                ]),
+            ],
+        ]);
         const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includeLocked: false, includePrerelease: false, target: "minor" };
         const result = await checkOutdated(catalogs, options);
 
@@ -1886,7 +1911,7 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain("\"@types/node\": ^22.0.0");
+        expect(result).toContain('"@types/node": ^22.0.0');
     });
 
     it("should update exact version without prefix", () => {
@@ -2048,8 +2073,8 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain("- \"packages/*\"");
-        expect(result).toContain("- \"apps/*\"");
+        expect(result).toContain('- "packages/*"');
+        expect(result).toContain('- "apps/*"');
         expect(result).toContain("react: ^19.0.0");
     });
 
@@ -2080,7 +2105,7 @@ catalog:
         const result = readFileSync(filePath, "utf8");
 
         // Quotes around version should be preserved (replace happens inside)
-        expect(result).toContain("^19.0.0\"");
+        expect(result).toContain('^19.0.0"');
     });
 });
 
@@ -2255,19 +2280,19 @@ describe(detectJsonIndent, () => {
     it("should detect 2-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
+        expect(detectJsonIndent('{\n  "name": "test"\n}')).toBe(2);
     });
 
     it("should detect 4-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
+        expect(detectJsonIndent('{\n    "name": "test"\n}')).toBe(4);
     });
 
     it("should default to 2 when no indentation found", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
+        expect(detectJsonIndent('{"name":"test"}')).toBe(2);
     });
 });
 
@@ -2391,7 +2416,7 @@ describe("applyCatalogUpdates with bun", () => {
         const content = readFileSync(filePath, "utf8");
 
         // Should use 4-space indent
-        expect(content).toContain("    \"workspaces\"");
+        expect(content).toContain('    "workspaces"');
     });
 
     it("should handle multiple updates in bun catalog", () => {
@@ -2779,7 +2804,7 @@ describe(createBackup, () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const filePath = join(temporaryDirectory, "package.json");
 
-        writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
+        writeFileSync(filePath, '{"workspaces":{"catalog":{"react":"^18.0.0"}}}');
 
         const backupPath = createBackup(temporaryDirectory, "bun");
 
@@ -2820,13 +2845,13 @@ describe(restoreFromBackup, () => {
         const filePath = join(temporaryDirectory, "package.json");
         const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, "{\"old\":true}");
-        writeFileSync(filePath, "{\"new\":true}");
+        writeFileSync(backupPath, '{"old":true}');
+        writeFileSync(filePath, '{"new":true}');
 
         const restored = restoreFromBackup(temporaryDirectory, "bun");
 
         expect(restored).toBe(true);
-        expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
+        expect(readFileSync(filePath, "utf8")).toContain('"old"');
     });
 
     it("should return false when no backup exists", () => {

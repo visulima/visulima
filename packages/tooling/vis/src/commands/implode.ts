@@ -74,7 +74,7 @@ const implode: Command = {
 
             const rl = createInterface({ input: process.stdin, output: process.stdout });
             const answer = await new Promise<string>((resolve) => {
-                rl.question("\nType \"uninstall\" to confirm: ", resolve);
+                rl.question('\nType "uninstall" to confirm: ', resolve);
             });
 
             rl.close();

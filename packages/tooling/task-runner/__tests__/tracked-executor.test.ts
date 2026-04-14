@@ -127,7 +127,7 @@ describe(TrackedTaskExecutor, () => {
                 env: { CUSTOM_VAR: "custom_value" },
             };
 
-            const result = await executor.execute(task, options, "echo \"$CUSTOM_VAR\"");
+            const result = await executor.execute(task, options, 'echo "$CUSTOM_VAR"');
 
             expect(result.terminalOutput).toContain("custom_value");
         });

@@ -49,17 +49,17 @@ export default defineConfig({
 });
 ```
 
-| Property        | Type                   | Description                                                  |
-| --------------- | ---------------------- | ------------------------------------------------------------ |
-| `command`       | `string`               | Shell command (overrides package.json script)                 |
-| `dependsOn`     | `(string \| object)[]` | Dependencies. `^build` = run on dep projects first           |
-| `outputs`       | `string[]`             | Output patterns (`{projectRoot}` placeholder supported)      |
-| `inputs`        | `(string \| object)[]` | Input patterns for cache invalidation                        |
-| `cache`         | `boolean`              | Whether cacheable (default depends on `type`)                |
-| `parallelism`   | `boolean`              | Whether supports parallel execution                          |
-| `type`          | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                 |
-| `preset`        | `"server" \| "utility"` | Preset bundle of options                                    |
-| `options`       | `object`               | See [target options](/commands/run#target-options)            |
+| Property      | Type                         | Description                                             |
+| ------------- | ---------------------------- | ------------------------------------------------------- |
+| `command`     | `string`                     | Shell command (overrides package.json script)           |
+| `dependsOn`   | `(string \| object)[]`       | Dependencies. `^build` = run on dep projects first      |
+| `outputs`     | `string[]`                   | Output patterns (`{projectRoot}` placeholder supported) |
+| `inputs`      | `(string \| object)[]`       | Input patterns for cache invalidation                   |
+| `cache`       | `boolean`                    | Whether cacheable (default depends on `type`)           |
+| `parallelism` | `boolean`                    | Whether supports parallel execution                     |
+| `type`        | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                   |
+| `preset`      | `"server" \| "utility"`      | Preset bundle of options                                |
+| `options`     | `object`                     | See [target options](/commands/run#target-options)      |
 
 ### File Groups
 
@@ -114,13 +114,13 @@ export default defineConfig({
 
 Scope fields (all optional, must all match):
 
-| Field         | Type                     | Description                         |
-| ------------- | ------------------------ | ----------------------------------- |
-| `tags`        | `string[]`               | Project must have any of these tags |
-| `projectType` | `"library" \| "application"` | Project type match             |
-| `layer`       | `string \| string[]`     | Layer match                         |
-| `stack`       | `string \| string[]`     | Stack match                         |
-| `language`    | `string \| string[]`     | Language match                      |
+| Field         | Type                         | Description                         |
+| ------------- | ---------------------------- | ----------------------------------- |
+| `tags`        | `string[]`                   | Project must have any of these tags |
+| `projectType` | `"library" \| "application"` | Project type match                  |
+| `layer`       | `string \| string[]`         | Layer match                         |
+| `stack`       | `string \| string[]`         | Stack match                         |
+| `language`    | `string \| string[]`         | Language match                      |
 
 ### Constraints
 
@@ -175,7 +175,7 @@ Configure `vis sync codeowners` output:
 ```typescript
 export default defineConfig({
     codeowners: {
-        orderBy: "project-id",  // or "file-source" (default)
+        orderBy: "project-id", // or "file-source" (default)
         provider: "github",
         globalPaths: {
             "/.github/**": ["@myorg/platform"],
@@ -246,9 +246,7 @@ Place a `project.json` in each workspace package for per-project configuration. 
     "tags": ["frontend", "shared"],
     "sourceRoot": "src",
     "implicitDependencies": ["@myorg/config"],
-    "owners": [
-        { "path": "src/**", "owners": ["@myorg/core-team"] }
-    ],
+    "owners": [{ "path": "src/**", "owners": ["@myorg/core-team"] }],
     "project": {
         "title": "My Library",
         "description": "Shared utilities",
@@ -270,19 +268,19 @@ Place a `project.json` in each workspace package for per-project configuration. 
 
 ### Fields
 
-| Field                  | Type           | Description                                          |
-| ---------------------- | -------------- | ---------------------------------------------------- |
-| `$schema`              | `string`       | JSON Schema for editor autocomplete                  |
-| `projectType`          | `string`       | `"library"` or `"application"`                       |
-| `layer`                | `string`       | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application` |
-| `stack`                | `string`       | `backend`, `frontend`, `data`, `infrastructure`, `systems` |
-| `language`             | `string`       | Primary language (e.g. `typescript`, `rust`)          |
-| `tags`                 | `string[]`     | Filterable tags for queries and constraints           |
-| `sourceRoot`           | `string`       | Source root directory (default: `src`)                |
-| `implicitDependencies` | `string[]`     | Projects this project implicitly depends on           |
-| `owners`               | `object[]`     | Code ownership declarations (see [vis sync](/commands/sync)) |
-| `project`              | `object`       | Human-readable metadata (title, description, owner)  |
-| `targets`              | `object`       | Target definitions (see [vis run](/commands/run#target-options)) |
+| Field                  | Type       | Description                                                                    |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `$schema`              | `string`   | JSON Schema for editor autocomplete                                            |
+| `projectType`          | `string`   | `"library"` or `"application"`                                                 |
+| `layer`                | `string`   | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application` |
+| `stack`                | `string`   | `backend`, `frontend`, `data`, `infrastructure`, `systems`                     |
+| `language`             | `string`   | Primary language (e.g. `typescript`, `rust`)                                   |
+| `tags`                 | `string[]` | Filterable tags for queries and constraints                                    |
+| `sourceRoot`           | `string`   | Source root directory (default: `src`)                                         |
+| `implicitDependencies` | `string[]` | Projects this project implicitly depends on                                    |
+| `owners`               | `object[]` | Code ownership declarations (see [vis sync](/commands/sync))                   |
+| `project`              | `object`   | Human-readable metadata (title, description, owner)                            |
+| `targets`              | `object`   | Target definitions (see [vis run](/commands/run#target-options))               |
 
 ### Targets in project.json
 

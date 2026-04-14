@@ -51,10 +51,7 @@ const toWorkspacePath = (projectRoot: string, entryPath: string): string => {
  * workspace-level `codeowners` block. Returns lines in the requested
  * order (default: `file-source`).
  */
-export const buildCodeownersLines = (
-    workspace: WorkspaceConfiguration,
-    config: CodeownersConfig | undefined,
-): CodeownersLine[] => {
+export const buildCodeownersLines = (workspace: WorkspaceConfiguration, config: CodeownersConfig | undefined): CodeownersLine[] => {
     const lines: CodeownersLine[] = [];
 
     for (const [globalPath, owners] of Object.entries(config?.globalPaths ?? {})) {

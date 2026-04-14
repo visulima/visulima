@@ -82,7 +82,7 @@ const actionGraph: Command = {
         ["vis action-graph build", "Print the task plan for `build` on every project"],
         ["vis action-graph :test", "Moon-style selector"],
         ["vis action-graph build --json", "Emit a JSON description of the plan"],
-        ["vis action-graph lint --query \"tag=frontend\"", "Filter projects by query"],
+        ['vis action-graph lint --query "tag=frontend"', "Filter projects by query"],
     ],
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const rawSelector = argument[0];

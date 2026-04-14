@@ -44,8 +44,8 @@ Each project declares its code owners:
 ```typescript
 export default defineConfig({
     codeowners: {
-        orderBy: "project-id",          // or "file-source" (default)
-        provider: "github",             // "github" | "gitlab" | "bitbucket" | "other"
+        orderBy: "project-id", // or "file-source" (default)
+        provider: "github", // "github" | "gitlab" | "bitbucket" | "other"
         globalPaths: {
             "/.github/**": ["@myorg/platform"],
             "/pnpm-workspace.yaml": ["@myorg/infra"],
@@ -56,7 +56,7 @@ export default defineConfig({
 
 ## Options
 
-| Option    | Default               | Description                                          |
-| --------- | --------------------- | ---------------------------------------------------- |
-| `--out`   | `<workspace>/CODEOWNERS` | Output file path                                  |
-| `--check` | `false`               | Exit non-zero if the existing file is stale          |
+| Option    | Default                  | Description                                 |
+| --------- | ------------------------ | ------------------------------------------- |
+| `--out`   | `<workspace>/CODEOWNERS` | Output file path                            |
+| `--check` | `false`                  | Exit non-zero if the existing file is stale |

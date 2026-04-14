@@ -12,10 +12,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "dbaeumer.vscode-eslint",
-                        "esbenp.prettier-vscode",
-                    ],
+                    extensions: ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
                 },
             },
             features: {
@@ -35,10 +32,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "dbaeumer.vscode-eslint",
-                        "esbenp.prettier-vscode",
-                    ],
+                    extensions: ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
                 },
             },
             features: {
@@ -72,11 +66,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "dbaeumer.vscode-eslint",
-                        "esbenp.prettier-vscode",
-                        "ms-azuretools.vscode-docker",
-                    ],
+                    extensions: ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-azuretools.vscode-docker"],
                 },
             },
             dockerComposeFile: "docker-compose.yml",
@@ -94,11 +84,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "dbaeumer.vscode-eslint",
-                        "esbenp.prettier-vscode",
-                        "ms-azuretools.vscode-docker",
-                    ],
+                    extensions: ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-azuretools.vscode-docker"],
                 },
             },
             features: {
@@ -119,11 +105,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "dbaeumer.vscode-eslint",
-                        "esbenp.prettier-vscode",
-                        "ms-azuretools.vscode-docker",
-                    ],
+                    extensions: ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-azuretools.vscode-docker"],
                 },
             },
             dockerComposeFile: "docker-compose.yml",
@@ -144,10 +126,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "ms-python.python",
-                        "ms-python.vscode-pylance",
-                    ],
+                    extensions: ["ms-python.python", "ms-python.vscode-pylance"],
                     settings: {
                         "editor.formatOnSave": true,
                         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -172,9 +151,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "golang.go",
-                    ],
+                    extensions: ["golang.go"],
                     settings: {
                         "editor.formatOnSave": true,
                         "go.toolsManagement.autoUpdate": true,
@@ -198,10 +175,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "rust-lang.rust-analyzer",
-                        "tamasfe.even-better-toml",
-                    ],
+                    extensions: ["rust-lang.rust-analyzer", "tamasfe.even-better-toml"],
                     settings: {
                         "editor.formatOnSave": true,
                     },
@@ -223,10 +197,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "vscjava.vscode-java-pack",
-                        "vscjava.vscode-maven",
-                    ],
+                    extensions: ["vscjava.vscode-java-pack", "vscjava.vscode-maven"],
                 },
             },
             features: {
@@ -246,11 +217,7 @@ export const TEMPLATES: DevcontainerTemplate[] = [
         config: {
             customizations: {
                 vscode: {
-                    extensions: [
-                        "ms-azuretools.vscode-docker",
-                        "ms-kubernetes-tools.vscode-kubernetes-tools",
-                        "hashicorp.terraform",
-                    ],
+                    extensions: ["ms-azuretools.vscode-docker", "ms-kubernetes-tools.vscode-kubernetes-tools", "hashicorp.terraform"],
                 },
             },
             features: {

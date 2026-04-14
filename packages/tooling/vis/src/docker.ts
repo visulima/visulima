@@ -202,10 +202,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         }
 
         for (const manifest of MANIFEST_FILES) {
-            copyFileIfExists(
-                join(workspaceRoot, project.root, manifest),
-                join(workspaceDir, project.root, manifest),
-            );
+            copyFileIfExists(join(workspaceRoot, project.root, manifest), join(workspaceDir, project.root, manifest));
         }
     }
 
@@ -219,17 +216,11 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
                 continue;
             }
 
-            copyTreeExcludingNodeModules(
-                join(workspaceRoot, project.root),
-                join(sourcesDir, project.root),
-            );
+            copyTreeExcludingNodeModules(join(workspaceRoot, project.root), join(sourcesDir, project.root));
         }
     }
 
-    writeFileSync(
-        join(outDir, DOCKER_MANIFEST_FILENAME),
-        `${JSON.stringify({ focus, projects: [...projects].sort() }, null, 2)}\n`,
-    );
+    writeFileSync(join(outDir, DOCKER_MANIFEST_FILENAME), `${JSON.stringify({ focus, projects: [...projects].sort() }, null, 2)}\n`);
 
     return { projects: [...projects] };
 };

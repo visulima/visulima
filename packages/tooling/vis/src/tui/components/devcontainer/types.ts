@@ -55,23 +55,6 @@ export interface DevcontainerConfig {
 
 // ── TUI Types ──────────────────────────────────────────────────────────
 
-export type SectionId =
-    | "compose"
-    | "environment"
-    | "extensions"
-    | "features"
-    | "general"
-    | "lifecycle"
-    | "mounts"
-    | "ports";
+export type SectionId = "compose" | "environment" | "extensions" | "features" | "general" | "lifecycle" | "mounts" | "ports";
 
-export const SECTION_ORDER: readonly SectionId[] = [
-    "general",
-    "features",
-    "ports",
-    "lifecycle",
-    "extensions",
-    "environment",
-    "mounts",
-    "compose",
-] as const;
+export const SECTION_ORDER: readonly SectionId[] = ["general", "features", "ports", "lifecycle", "extensions", "environment", "mounts", "compose"] as const;

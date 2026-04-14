@@ -21,28 +21,15 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
         <Box flexDirection="column" marginTop={1} paddingX={1}>
             <Box>
                 <Spinner type="dots" />
-                <Text>
-                    {" "}
-                    Checking
-                    {" "}
-                    {String(total)}
-                    {" "}
-                    catalog dependencies
-                    {" "}
-                </Text>
+                <Text> Checking {String(total)} catalog dependencies </Text>
                 <Text dimColor>
-                    {String(current)}
-                    /
-                    {String(total)}
+                    {String(current)}/{String(total)}
                 </Text>
             </Box>
             <Box>
                 <Text color="cyan">{"\u2501".repeat(filled)}</Text>
                 <Text dimColor>{"\u2500".repeat(empty)}</Text>
-                <Text>
-                    {" "}
-                    {pctText}
-                </Text>
+                <Text> {pctText}</Text>
             </Box>
         </Box>
     );

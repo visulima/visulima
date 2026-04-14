@@ -154,7 +154,11 @@ const spawnCommand = (
     // Emit "started" event with write/kill functions for stdin access
     onEvent({
         index,
-        kill: child.pid ? (signal?: string) => killTree(child.pid!, signal ?? "SIGTERM") : undefined,
+        kill: child.pid
+            ? (signal?: string) => {
+                killTree(child.pid!, signal ?? "SIGTERM");
+            }
+            : undefined,
         kind: "started",
         write: child.stdin ? (data: string) => child.stdin!.write(data) : undefined,
     });
@@ -317,8 +321,9 @@ const spawnCommandPty = (
         cols: config.ptySize?.cols ?? 80,
         cwd: config.cwd ?? process.cwd(),
         env: Object.fromEntries(
-            Object.entries({ ...process.env, ...config.env, FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1", TERM: "xterm-256color" })
-                .filter((entry): entry is [string, string] => entry[1] !== undefined),
+            Object.entries({ ...process.env, ...config.env, FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1", TERM: "xterm-256color" }).filter(
+                (entry): entry is [string, string] => entry[1] !== undefined,
+            ),
         ),
         name: "xterm-256color",
         rows: config.ptySize?.rows ?? 24,
@@ -326,10 +331,16 @@ const spawnCommandPty = (
 
     onEvent({
         index,
-        kill: (signal?: string) => ptyInstance.kill(signal),
+        kill: (signal?: string) => {
+            ptyInstance.kill(signal);
+        },
         kind: "started",
-        resize: (cols: number, rows: number) => ptyInstance.resize(cols, rows),
-        write: (data: string) => ptyInstance.write(data),
+        resize: (cols: number, rows: number) => {
+            ptyInstance.resize(cols, rows);
+        },
+        write: (data: string) => {
+            ptyInstance.write(data);
+        },
     });
 
     // PTY merges stdout/stderr into one stream. Emit raw data chunks
@@ -339,7 +350,6 @@ const spawnCommandPty = (
     });
 
     ptyInstance.onExit(({ exitCode, signal }: { exitCode: number; signal?: number }) => {
-
         const elapsed = process.hrtime(startTime);
         const durationMs = elapsed[0] * 1000 + elapsed[1] / 1_000_000;
         const code = exitCode ?? (signal ? 1 : -1);
@@ -372,122 +382,128 @@ const spawnCommandPty = (
  * Run commands concurrently using pure JavaScript (child_process.spawn).
  * This is the fallback when the native Rust addon is unavailable.
  */
-export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => new Promise((resolve) => {
-    if (commands.length === 0) {
-        resolve({ closeEvents: [], success: true });
+export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> =>
+    new Promise((resolve) => {
+        if (commands.length === 0) {
+            resolve({ closeEvents: [], success: true });
 
-        return;
-    }
+            return;
+        }
 
-    const maxProcesses = options.maxProcesses && options.maxProcesses > 0 ? options.maxProcesses : commands.length;
-    const killSignal = options.killSignal ?? "SIGTERM";
-    const killOthers = options.killOthers ?? [];
-    const successCondition = options.successCondition ?? "all";
-    const onEvent = options.onEvent ?? (() => {});
+        const maxProcesses = options.maxProcesses && options.maxProcesses > 0 ? options.maxProcesses : commands.length;
+        const killSignal = options.killSignal ?? "SIGTERM";
+        const killOthers = options.killOthers ?? [];
+        const successCondition = options.successCondition ?? "all";
+        const onEvent = options.onEvent ?? (() => {});
 
-    const active: ActiveProcess[] = [];
-    const closeEvents: ConcurrentCloseEvent[] = [];
-    const pending = commands.map((_, i) => i);
-    let aborting = false;
-    let sigintAbort = false;
+        const active: ActiveProcess[] = [];
+        const closeEvents: ConcurrentCloseEvent[] = [];
+        const pending = commands.map((_, i) => i);
+        let aborting = false;
+        let sigintAbort = false;
 
-    const killAll = (): void => {
-        for (const proc of active) {
-            if (proc.pty) {
-                proc.pty.kill(killSignal);
-            } else if (proc.child?.pid) {
-                killTree(proc.child.pid, killSignal);
+        const killAll = (): void => {
+            for (const proc of active) {
+                if (proc.pty) {
+                    proc.pty.kill(killSignal);
+                } else if (proc.child?.pid) {
+                    killTree(proc.child.pid, killSignal);
+                }
             }
-        }
-    };
+        };
 
-    const shouldKillOthers = (event: ConcurrentCloseEvent): boolean => {
-        for (const condition of killOthers) {
-            if (condition === "failure" && event.exitCode !== 0) {
-                return true;
+        const shouldKillOthers = (event: ConcurrentCloseEvent): boolean => {
+            for (const condition of killOthers) {
+                if (condition === "failure" && event.exitCode !== 0) {
+                    return true;
+                }
+
+                if (condition === "success" && event.exitCode === 0) {
+                    return true;
+                }
             }
 
-            if (condition === "success" && event.exitCode === 0) {
-                return true;
+            return false;
+        };
+
+        const handleClose = (cmdIndex: number, closeEvent: ConcurrentCloseEvent): void => {
+            const activeIndex = active.findIndex((p) => p.index === cmdIndex);
+
+            if (activeIndex !== -1) {
+                active.splice(activeIndex, 1);
             }
-        }
 
-        return false;
-    };
+            if (aborting) {
+                closeEvent.killed = true;
 
-    const handleClose = (cmdIndex: number, closeEvent: ConcurrentCloseEvent): void => {
-        const activeIndex = active.findIndex((p) => p.index === cmdIndex);
-
-        if (activeIndex !== -1) {
-            active.splice(activeIndex, 1);
-        }
-
-        if (aborting) {
-            closeEvent.killed = true;
-
-            if (sigintAbort) {
-                closeEvent.exitCode = 0;
+                if (sigintAbort) {
+                    closeEvent.exitCode = 0;
+                }
             }
-        }
 
-        closeEvents.push(closeEvent);
+            closeEvents.push(closeEvent);
 
-        if (!aborting && shouldKillOthers(closeEvent)) {
-            aborting = true;
-            killAll();
-        }
+            if (!aborting && shouldKillOthers(closeEvent)) {
+                aborting = true;
+                killAll();
+            }
 
-        if (!aborting) {
-            maybeSpawnMore();
-        }
+            if (!aborting) {
+                maybeSpawnMore();
+            }
 
-        if (active.length === 0 && pending.length === 0) {
-            const success = evaluateSuccess(closeEvents, successCondition);
+            if (active.length === 0 && pending.length === 0) {
+                const success = evaluateSuccess(closeEvents, successCondition);
 
-            resolve({ closeEvents, success });
-        }
-    };
+                resolve({ closeEvents, success });
+            }
+        };
 
-    const maybeSpawnMore = (): void => {
-        while (active.length < maxProcesses && pending.length > 0) {
-            const cmdIndex = pending.shift()!;
-            const config = commands[cmdIndex]!;
+        const maybeSpawnMore = (): void => {
+            while (active.length < maxProcesses && pending.length > 0) {
+                const cmdIndex = pending.shift()!;
+                const config = commands[cmdIndex]!;
 
-            const proc = config.stdin === "pty"
-                ? spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => handleClose(cmdIndex, ce))
-                : spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => handleClose(cmdIndex, ce));
+                const proc
+                    = config.stdin === "pty"
+                        ? spawnCommandPty(cmdIndex, config, options.shellPath, onEvent, (ce) => {
+                            handleClose(cmdIndex, ce);
+                        })
+                        : spawnCommand(cmdIndex, config, options.shellPath, onEvent, (ce) => {
+                            handleClose(cmdIndex, ce);
+                        });
 
-            active.push(proc);
-        }
-    };
+                active.push(proc);
+            }
+        };
 
-    // Handle signals -- clean up listeners when done
-    const handleSigint = (): void => {
-        if (!aborting) {
-            aborting = true;
-            sigintAbort = true;
-            killAll();
-        }
-    };
+        // Handle signals -- clean up listeners when done
+        const handleSigint = (): void => {
+            if (!aborting) {
+                aborting = true;
+                sigintAbort = true;
+                killAll();
+            }
+        };
 
-    const handleSigterm = (): void => {
-        if (!aborting) {
-            aborting = true;
-            killAll();
-        }
-    };
+        const handleSigterm = (): void => {
+            if (!aborting) {
+                aborting = true;
+                killAll();
+            }
+        };
 
-    process.on("SIGINT", handleSigint);
-    process.on("SIGTERM", handleSigterm);
+        process.on("SIGINT", handleSigint);
+        process.on("SIGTERM", handleSigterm);
 
-    const originalResolve = resolve;
+        const originalResolve = resolve;
 
-    resolve = ((result: ConcurrentRunResult) => {
-        process.removeListener("SIGINT", handleSigint);
-        process.removeListener("SIGTERM", handleSigterm);
-        originalResolve(result);
-    }) as typeof resolve;
+        resolve = ((result: ConcurrentRunResult) => {
+            process.removeListener("SIGINT", handleSigint);
+            process.removeListener("SIGTERM", handleSigterm);
+            originalResolve(result);
+        }) as typeof resolve;
 
-    // Start spawning
-    maybeSpawnMore();
-});
+        // Start spawning
+        maybeSpawnMore();
+    });

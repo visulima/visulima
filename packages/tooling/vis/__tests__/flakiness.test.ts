@@ -96,9 +96,7 @@ describe(analyzeFlakiness, () => {
         const run1 = {
             id: "run-1",
             startTime: "2026-01-01T00:00:00Z",
-            tasks: [
-                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-01T00:00:01Z", target: { project: "x", target: "lint" }, taskId: "x:lint" },
-            ],
+            tasks: [{ cacheStatus: "MISS", exitCode: 1, startTime: "2026-01-01T00:00:01Z", target: { project: "x", target: "lint" }, taskId: "x:lint" }],
         };
 
         writeFileSync(join(runsDir, "run-1.json"), JSON.stringify(run1));
@@ -118,25 +116,19 @@ describe(analyzeFlakiness, () => {
         const oldRun = {
             id: "run-old",
             startTime: "2025-01-01T00:00:00Z",
-            tasks: [
-                { cacheStatus: "MISS", exitCode: 1, startTime: "2025-01-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
-            ],
+            tasks: [{ cacheStatus: "MISS", exitCode: 1, startTime: "2025-01-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" }],
         };
 
         const newRun1 = {
             id: "run-new-1",
             startTime: "2026-06-01T00:00:00Z",
-            tasks: [
-                { cacheStatus: "MISS", exitCode: 1, startTime: "2026-06-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
-            ],
+            tasks: [{ cacheStatus: "MISS", exitCode: 1, startTime: "2026-06-01T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" }],
         };
 
         const newRun2 = {
             id: "run-new-2",
             startTime: "2026-06-02T00:00:00Z",
-            tasks: [
-                { cacheStatus: "MISS", exitCode: 0, startTime: "2026-06-02T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" },
-            ],
+            tasks: [{ cacheStatus: "MISS", exitCode: 0, startTime: "2026-06-02T00:00:01Z", target: { project: "a", target: "build" }, taskId: "a:build" }],
         };
 
         writeFileSync(join(runsDir, "run-old.json"), JSON.stringify(oldRun));

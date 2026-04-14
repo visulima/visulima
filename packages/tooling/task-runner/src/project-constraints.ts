@@ -4,14 +4,7 @@ import type { ConstraintsConfig, ConstraintViolation, ProjectConfiguration, Proj
  * Layer hierarchy from lowest to highest. A project at a given layer
  * may only depend on projects at the same index or lower.
  */
-const LAYER_ORDER: NonNullable<ProjectConfiguration["layer"]>[] = [
-    "configuration",
-    "library",
-    "scaffolding",
-    "tool",
-    "automation",
-    "application",
-];
+const LAYER_ORDER: NonNullable<ProjectConfiguration["layer"]>[] = ["configuration", "library", "scaffolding", "tool", "automation", "application"];
 
 const layerIndex = (layer: ProjectConfiguration["layer"]): number | undefined => {
     if (!layer) {
@@ -25,9 +18,8 @@ const layerIndex = (layer: ProjectConfiguration["layer"]): number | undefined =>
 
 /**
  * Enforces project dependency constraints on a project graph.
- *
- * @param projectGraph - The workspace project graph to validate.
- * @param constraints - The constraint rules to enforce.
+ * @param projectGraph The workspace project graph to validate.
+ * @param constraints The constraint rules to enforce.
  * @returns Array of violations found. Empty means all constraints pass.
  */
 const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: ConstraintsConfig): ConstraintViolation[] => {

@@ -34,7 +34,9 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
             {/* Container Environment */}
             <Box borderColor={isInContainerSection ? "cyan" : "gray"} borderStyle="single" flexDirection="column" paddingX={1} paddingY={0}>
                 <Box flexShrink={0} marginBottom={containerKeys.length > 0 ? 1 : 0}>
-                    <Text bold color={isInContainerSection ? "cyan" : "white"}>containerEnv</Text>
+                    <Text bold color={isInContainerSection ? "cyan" : "white"}>
+                        containerEnv
+                    </Text>
                     <Text dimColor> — baked into the container image</Text>
                 </Box>
                 {containerKeys.map((key, index) => {
@@ -52,10 +54,7 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
                     );
                 })}
                 <Box flexShrink={0} marginTop={containerKeys.length > 0 ? 1 : 0}>
-                    <Text
-                        color={fieldIndex === containerAddIndex ? "cyan" : "gray"}
-                        inverse={fieldIndex === containerAddIndex}
-                    >
+                    <Text color={fieldIndex === containerAddIndex ? "cyan" : "gray"} inverse={fieldIndex === containerAddIndex}>
                         {"   "}+ Add variable...
                     </Text>
                 </Box>
@@ -64,7 +63,9 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
             {/* Remote Environment */}
             <Box borderColor={isInRemoteSection ? "cyan" : "gray"} borderStyle="single" flexDirection="column" marginTop={1} paddingX={1} paddingY={0}>
                 <Box flexShrink={0} marginBottom={remoteKeys.length > 0 ? 1 : 0}>
-                    <Text bold color={isInRemoteSection ? "cyan" : "white"}>remoteEnv</Text>
+                    <Text bold color={isInRemoteSection ? "cyan" : "white"}>
+                        remoteEnv
+                    </Text>
                     <Text dimColor> — set at runtime by the IDE</Text>
                 </Box>
                 {remoteKeys.map((key, remoteIdx) => {
@@ -83,10 +84,7 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
                     );
                 })}
                 <Box flexShrink={0} marginTop={remoteKeys.length > 0 ? 1 : 0}>
-                    <Text
-                        color={fieldIndex === remoteAddIndex ? "cyan" : "gray"}
-                        inverse={fieldIndex === remoteAddIndex}
-                    >
+                    <Text color={fieldIndex === remoteAddIndex ? "cyan" : "gray"} inverse={fieldIndex === remoteAddIndex}>
                         {"   "}+ Add variable...
                     </Text>
                 </Box>
@@ -94,7 +92,22 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
 
             <Box flexShrink={0} marginTop={1}>
                 <Text dimColor wrap="truncate">
-                    <Text bold color="white">a</Text>/<Text bold color="white">Enter</Text> add on + row  <Text bold color="white">d</Text> remove  <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                    <Text bold color="white">
+                        a
+                    </Text>
+                    /
+                    <Text bold color="white">
+                        Enter
+                    </Text>{" "}
+                    add on + row{" "}
+                    <Text bold color="white">
+                        d
+                    </Text>{" "}
+                    remove{" "}
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>{" "}
+                    navigate
                 </Text>
             </Box>
         </Box>

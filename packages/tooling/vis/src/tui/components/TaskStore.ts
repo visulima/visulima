@@ -89,7 +89,7 @@ export class TaskStore {
 
     public getSnapshot = (): TaskState => this.#state;
 
-    public subscribe = (listener: Listener): () => void => {
+    public subscribe = (listener: Listener): (() => void) => {
         this.#listeners.add(listener);
 
         return () => {

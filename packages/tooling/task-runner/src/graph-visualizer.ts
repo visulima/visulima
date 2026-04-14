@@ -149,7 +149,7 @@ const toGraphvizDot = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {
     const { focusedTasks, groupByProject = true, taskStatuses } = options;
     const focused = focusedTasks ? new Set(focusedTasks) : undefined;
 
-    const lines: string[] = ["digraph TaskGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fontname=\"monospace\"];"];
+    const lines: string[] = ["digraph TaskGraph {", "  rankdir=LR;", '  node [shape=box, style=filled, fontname="monospace"];'];
 
     // Group nodes by project
     if (groupByProject) {
@@ -164,7 +164,7 @@ const toGraphvizDot = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {
         }
 
         for (const [project, tasks] of projectTasks) {
-            lines.push(`  subgraph "cluster_${project}" {`, `    label="${project}";`, "    style=dashed;", "    color=\"#888888\";");
+            lines.push(`  subgraph "cluster_${project}" {`, `    label="${project}";`, "    style=dashed;", '    color="#888888";');
 
             for (const task of tasks) {
                 const color = getNodeColor(task.id, focused, taskStatuses);
@@ -442,7 +442,7 @@ const toGraphAscii = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}
  * Exports a project graph in DOT format.
  */
 const projectGraphToDot = (projectGraph: ProjectGraph): string => {
-    const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fillcolor=\"#87CEEB\", fontname=\"monospace\"];"];
+    const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", '  node [shape=box, style=filled, fillcolor="#87CEEB", fontname="monospace"];'];
 
     for (const node of Object.values(projectGraph.nodes)) {
         const color = node.type === "application" ? "#FFD700" : "#87CEEB";
@@ -456,7 +456,7 @@ const projectGraphToDot = (projectGraph: ProjectGraph): string => {
 
             switch (dep.type) {
                 case "devDependency": {
-                    attributes.push("style=dotted", "color=\"#888888\"");
+                    attributes.push("style=dotted", 'color="#888888"');
 
                     break;
                 }
@@ -466,7 +466,7 @@ const projectGraphToDot = (projectGraph: ProjectGraph): string => {
                     break;
                 }
                 case "peerDependency": {
-                    attributes.push("style=dashed", "color=\"#CC8800\"");
+                    attributes.push("style=dashed", 'color="#CC8800"');
 
                     break;
                 }

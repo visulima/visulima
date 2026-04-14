@@ -59,10 +59,7 @@ describe(migrateTurborepo, () => {
     it("should convert ^build dependsOn to dependencies form", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(tmpDir, "turbo.json"),
-            JSON.stringify({ tasks: { build: { dependsOn: ["^build"] } } }),
-        );
+        writeFileSync(join(tmpDir, "turbo.json"), JSON.stringify({ tasks: { build: { dependsOn: ["^build"] } } }));
 
         const report = createMigrationReport();
 
@@ -76,10 +73,7 @@ describe(migrateTurborepo, () => {
     it("should warn about outputLogs", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(tmpDir, "turbo.json"),
-            JSON.stringify({ tasks: { build: { outputLogs: "hash-only" } } }),
-        );
+        writeFileSync(join(tmpDir, "turbo.json"), JSON.stringify({ tasks: { build: { outputLogs: "hash-only" } } }));
 
         const report = createMigrationReport();
 
@@ -91,10 +85,7 @@ describe(migrateTurborepo, () => {
     it("should not write in dry-run mode", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(tmpDir, "turbo.json"),
-            JSON.stringify({ tasks: { build: {} } }),
-        );
+        writeFileSync(join(tmpDir, "turbo.json"), JSON.stringify({ tasks: { build: {} } }));
 
         const report = createMigrationReport();
 

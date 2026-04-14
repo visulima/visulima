@@ -97,9 +97,7 @@ export const getSuggestedMounts = (
     currentMounts: Array<MountEntry | string>,
 ): MountEntry[] => {
     const suggestions: MountEntry[] = [];
-    const existingTargets = new Set(
-        currentMounts.map((m) => (typeof m === "string" ? m : m.target)),
-    );
+    const existingTargets = new Set(currentMounts.map((m) => (typeof m === "string" ? m : m.target)));
 
     // PM-based mounts
     if (pm) {

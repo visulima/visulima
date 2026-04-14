@@ -20,7 +20,7 @@ const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => 
 
 describe(stripQuotes, () => {
     it("should remove surrounding double quotes", () => {
-        expect(stripQuotes(makeConfig("\"echo hello\"")).command).toBe("echo hello");
+        expect(stripQuotes(makeConfig('"echo hello"')).command).toBe("echo hello");
     });
 
     it("should remove surrounding single quotes", () => {
@@ -36,11 +36,11 @@ describe(stripQuotes, () => {
     });
 
     it("should not modify commands with internal quotes", () => {
-        expect(stripQuotes(makeConfig("echo \"hello world\"")).command).toBe("echo \"hello world\"");
+        expect(stripQuotes(makeConfig('echo "hello world"')).command).toBe('echo "hello world"');
     });
 
     it("should preserve other config fields", () => {
-        const result = stripQuotes({ command: "\"echo\"", cwd: "/tmp", name: "test" });
+        const result = stripQuotes({ command: '"echo"', cwd: "/tmp", name: "test" });
 
         expect(result.name).toBe("test");
         expect(result.cwd).toBe("/tmp");
@@ -382,7 +382,7 @@ describe(parseCommands, () => {
     });
 
     it("should strip quotes and expand shortcuts in pipeline", () => {
-        const result = parseCommands(["\"npm:build\""]);
+        const result = parseCommands(['"npm:build"']);
 
         expect(result).toHaveLength(1);
         expect(result[0]!.command).toBe("npm run build");

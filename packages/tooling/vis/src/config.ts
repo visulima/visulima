@@ -174,7 +174,7 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
     try {
         const jiti = createJiti(workspaceRoot, { fsCache: false, moduleCache: false });
 
-        loaded = await jiti.import(temporaryConfigPath, { default: true, try: true }) ?? {};
+        loaded = (await jiti.import(temporaryConfigPath, { default: true, try: true })) ?? {};
     } finally {
         try {
             unlinkSync(temporaryConfigPath);
@@ -185,7 +185,7 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
 
     let config: VisConfig;
 
-    config = typeof loaded === "function" ? applyDefaults(await loaded() ?? {}) : applyDefaults(loaded as VisConfig);
+    config = typeof loaded === "function" ? applyDefaults((await loaded()) ?? {}) : applyDefaults(loaded as VisConfig);
 
     if (cachePath) {
         writeConfigCache(cachePath, hash, config);

@@ -58,7 +58,10 @@ const docker: Command = {
                 throw new Error("Missing --focus. Pass one or more project names, comma-separated.");
             }
 
-            const focus = focusRaw.split(",").map((name) => name.trim()).filter(Boolean);
+            const focus = focusRaw
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean);
 
             if (focus.length === 0) {
                 throw new Error("--focus resolved to an empty list. Provide at least one project name.");

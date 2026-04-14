@@ -40,7 +40,7 @@ const ignore: Command = {
         name: "project",
         type: String,
     },
-    description: "Exit with inverted codes for CI \"Ignored Build Step\" gating (Vercel/Netlify)",
+    description: 'Exit with inverted codes for CI "Ignored Build Step" gating (Vercel/Netlify)',
     examples: [
         ["vis ignore my-app", "Check if my-app is affected and decide whether to build"],
         ["vis ignore my-app --base $VERCEL_GIT_PREVIOUS_SHA", "Explicit base ref"],
@@ -121,7 +121,7 @@ const ignore: Command = {
             const explicitBase = (options.base as string | undefined)?.trim();
             const ciBase = resolveCiBaseSha();
             let baseRef = explicitBase || ciBase || "HEAD~1";
-            const headRef = ((options.head as string | undefined)?.trim()) || "HEAD";
+            const headRef = (options.head as string | undefined)?.trim() || "HEAD";
 
             validateGitRef(baseRef);
             validateGitRef(headRef);
@@ -175,20 +175,20 @@ const ignore: Command = {
             }
 
             if (result.affectedProjects.includes(project)) {
-                return emit(decideBuild(
-                    project,
-                    "project-affected",
-                    `Build ${project}: affected by ${result.changedFiles.length} changed file(s)`,
-                    { ...refs, affectedProjects: result.affectedProjects },
-                ));
+                return emit(
+                    decideBuild(project, "project-affected", `Build ${project}: affected by ${result.changedFiles.length} changed file(s)`, {
+                        ...refs,
+                        affectedProjects: result.affectedProjects,
+                    }),
+                );
             }
 
-            return emit(decideSkip(
-                project,
-                "project-not-affected",
-                `Skip ${project}: not affected by changes between ${baseRef}...${headRef}`,
-                { ...refs, affectedProjects: result.affectedProjects },
-            ));
+            return emit(
+                decideSkip(project, "project-not-affected", `Skip ${project}: not affected by changes between ${baseRef}...${headRef}`, {
+                    ...refs,
+                    affectedProjects: result.affectedProjects,
+                }),
+            );
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -213,13 +213,13 @@ const ignore: Command = {
         },
         {
             defaultValue: "deep",
-            description: "Downstream scope: \"none\", \"direct\", or \"deep\"",
+            description: 'Downstream scope: "none", "direct", or "deep"',
             name: "downstream",
             type: String,
         },
         {
             defaultValue: "none",
-            description: "Upstream scope: \"none\", \"direct\", or \"deep\"",
+            description: 'Upstream scope: "none", "direct", or "deep"',
             name: "upstream",
             type: String,
         },

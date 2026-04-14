@@ -104,7 +104,6 @@ describe("cLI", () => {
             expect(Array.isArray(parsed)).toBe(true);
             expect(parsed).toHaveLength(11);
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const provider of parsed) {
                 expect(provider).toHaveProperty("name");
                 expect(provider).toHaveProperty("available");

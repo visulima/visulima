@@ -16,7 +16,7 @@ import type { PackageJson } from "type-fest";
 
 import type { Cache } from "../types";
 
-const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }) as string);
+const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }));
 
 interface PnpApiResult {
     resolveRequest: (request: string, issuer: string, options?: { extensions?: string[] }) => string | null;

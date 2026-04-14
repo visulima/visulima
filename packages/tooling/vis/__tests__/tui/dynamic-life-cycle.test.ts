@@ -29,7 +29,9 @@ vi.mock(import("@visulima/tui"), async (importOriginal) => {
                 clear: vi.fn(),
                 rerender: vi.fn(),
                 rootNode: {},
-                unmount: vi.fn(() => { mockUnmount(); }),
+                unmount: vi.fn(() => {
+                    mockUnmount();
+                }),
                 waitUntilExit: vi.fn(() => mockWaitUntilExit()),
                 waitUntilRenderFlush: vi.fn(() => Promise.resolve()),
             };

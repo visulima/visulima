@@ -57,12 +57,12 @@ const staged: Command = {
 
         if (!stagedConfig) {
             throw new Error(
-                "No \"staged\" config found in vis.config.ts. Please add a staged config:\n\n"
-                + "  // vis.config.ts\n"
-                + "  import { defineConfig } from \"@visulima/vis/config\";\n\n"
-                + "  export default defineConfig({\n"
-                + "    staged: { '*': 'vis check --fix' },\n"
-                + "  });",
+                'No "staged" config found in vis.config.ts. Please add a staged config:\n\n' +
+                    "  // vis.config.ts\n" +
+                    '  import { defineConfig } from "@visulima/vis/config";\n\n' +
+                    "  export default defineConfig({\n" +
+                    "    staged: { '*': 'vis check --fix' },\n" +
+                    "  });",
             );
         }
 

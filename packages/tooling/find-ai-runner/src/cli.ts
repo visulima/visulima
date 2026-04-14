@@ -96,7 +96,6 @@ const handleList = (cliValues: CliValues): void => {
         return;
     }
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const provider of all) {
         const status = provider.available ? "\u2713" : "\u2717";
         const version = provider.version ? ` (v${provider.version})` : "";

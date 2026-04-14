@@ -294,11 +294,7 @@ const matchClause = (clause: QueryClause, name: string, project: VisProjectConfi
  * @param query - A query string, or `undefined` / empty to skip filtering.
  * @returns The subset of `projectNames` that match the query.
  */
-export const filterProjectsByQuery = (
-    projectNames: string[],
-    workspace: WorkspaceConfiguration,
-    query: string | undefined,
-): string[] => {
+export const filterProjectsByQuery = (projectNames: string[], workspace: WorkspaceConfiguration, query: string | undefined): string[] => {
     if (!query || query.trim() === "") {
         return projectNames;
     }

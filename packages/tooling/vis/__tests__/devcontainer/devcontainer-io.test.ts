@@ -31,10 +31,13 @@ describe("devcontainer-io", () => {
             const dcDir = join(tempDir, ".devcontainer");
 
             mkdirSync(dcDir, { recursive: true });
-            writeFileSync(join(dcDir, "devcontainer.json"), JSON.stringify({
-                image: "ubuntu",
-                name: "Test",
-            }));
+            writeFileSync(
+                join(dcDir, "devcontainer.json"),
+                JSON.stringify({
+                    image: "ubuntu",
+                    name: "Test",
+                }),
+            );
 
             const result = readDevcontainerJson(tempDir);
 
@@ -49,11 +52,14 @@ describe("devcontainer-io", () => {
             const dcDir = join(tempDir, ".devcontainer");
 
             mkdirSync(dcDir, { recursive: true });
-            writeFileSync(join(dcDir, "devcontainer.json"), `{
+            writeFileSync(
+                join(dcDir, "devcontainer.json"),
+                `{
     // This is a comment
     "name": "Test",
     "image": "ubuntu"
-}`);
+}`,
+            );
 
             const result = readDevcontainerJson(tempDir);
 

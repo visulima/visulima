@@ -20,8 +20,11 @@
 
 export class TerminalBuffer {
     #lines: string[] = [""];
+
     #row = 0;
+
     #col = 0;
+
     readonly #maxBytes: number;
 
     constructor(maxBytes: number = 256 * 1024) {
@@ -38,7 +41,7 @@ export class TerminalBuffer {
             const ch = data[i]!;
 
             // ESC sequence
-            if (ch === "\x1b") {
+            if (ch === "\u001B") {
                 if (i + 1 >= data.length) {
                     // Lone ESC at end of data — skip
                     i++;
@@ -58,11 +61,7 @@ export class TerminalBuffer {
                 // Non-CSI escape sequences:
                 // ESC( and ESC) are 3-byte (ESC, paren, charset letter)
                 // Others like ESC>, ESC= are 2-byte
-                if (data[i + 1] === "(" || data[i + 1] === ")") {
-                    i += 3;
-                } else {
-                    i += 2;
-                }
+                i += data[i + 1] === "(" || data[i + 1] === ")" ? 3 : 2;
 
                 continue;
             }
@@ -123,23 +122,29 @@ export class TerminalBuffer {
         const n = Number.parseInt(params, 10) || 1;
 
         switch (cmd) {
-            case "A": // cursor up
+            case "A": {
+                // cursor up
                 this.#row = Math.max(0, this.#row - n);
                 break;
-            case "B": // cursor down
+            }
+            case "B": {
+                // cursor down
                 this.#row = Math.min(this.#lines.length - 1, this.#row + n);
                 break;
-            case "C": // cursor forward
+            }
+            case "C": {
+                // cursor forward
                 this.#col += n;
                 break;
-            case "D": // cursor back
+            }
+            case "D": {
+                // cursor back
                 this.#col = Math.max(0, this.#col - n);
                 break;
-            case "G": // cursor to column (1-based)
-                this.#col = Math.max(0, n - 1);
-                break;
-            case "H": // cursor position (row;col, 1-based)
-            case "f": {
+            }
+            case "f":
+            case "H": {
+                // cursor position (row;col, 1-based)
                 const parts = params.split(";");
 
                 this.#row = Math.max(0, (Number.parseInt(parts[0] ?? "1", 10) || 1) - 1);
@@ -147,24 +152,32 @@ export class TerminalBuffer {
                 this.#ensureRow(this.#row);
                 break;
             }
-            case "J":
+            case "G": {
+                // cursor to column (1-based)
+                this.#col = Math.max(0, n - 1);
+                break;
+            }
+            case "J": {
                 this.#eraseDisplay(Number.parseInt(params, 10) || 0);
                 break;
-            case "K":
+            }
+            case "K": {
                 this.#eraseLine(Number.parseInt(params, 10) || 0);
                 break;
+            }
             case "m": {
                 // SGR (styling) — append the full sequence into the current line.
                 // SGR codes are zero-width; we insert them at the current write position.
-                const seq = `\x1b[${params}m`;
+                const seq = `\u001B[${params}m`;
 
                 this.#ensureRow(this.#row);
                 this.#appendAtCursor(seq);
                 break;
             }
-            default:
+            default: {
                 // Unknown CSI command — skip
                 break;
+            }
         }
 
         return j + 1;
@@ -180,7 +193,7 @@ export class TerminalBuffer {
         let vis = 0;
 
         while (strIndex < line.length && vis < visCol) {
-            if (line[strIndex] === "\x1b" && line[strIndex + 1] === "[") {
+            if (line[strIndex] === "\u001B" && line[strIndex + 1] === "[") {
                 // Skip past CSI sequence
                 strIndex += 2;
 
@@ -204,7 +217,7 @@ export class TerminalBuffer {
             // Find the end of the character to overwrite (skip its ANSI sequences too)
             let endIndex = strIndex;
 
-            if (endIndex < line.length && line[endIndex] !== "\x1b") {
+            if (endIndex < line.length && line[endIndex] !== "\u001B") {
                 endIndex++; // skip one visible character
             }
 
@@ -220,7 +233,7 @@ export class TerminalBuffer {
         let vis = 0;
 
         while (strIndex < line.length && vis < this.#col) {
-            if (line[strIndex] === "\x1b" && line[strIndex + 1] === "[") {
+            if (line[strIndex] === "\u001B" && line[strIndex + 1] === "[") {
                 strIndex += 2;
 
                 while (strIndex < line.length && !((line[strIndex]! >= "A" && line[strIndex]! <= "Z") || (line[strIndex]! >= "a" && line[strIndex]! <= "z"))) {
@@ -240,35 +253,57 @@ export class TerminalBuffer {
     }
 
     #eraseDisplay(mode: number): void {
-        if (mode === 2) {
-            this.#lines = [""];
-            this.#row = 0;
-            this.#col = 0;
-        } else if (mode === 0) {
-            // Erase from cursor to end — truncate current line at visual col, remove lines below
-            this.#ensureRow(this.#row);
-            this.#truncateLineAtCol(this.#row, this.#col);
-            this.#lines.length = this.#row + 1;
-        } else if (mode === 1) {
-            // Erase from start to cursor
-            for (let r = 0; r < this.#row; r++) {
-                this.#lines[r] = "";
-            }
+        switch (mode) {
+            case 0: {
+                // Erase from cursor to end — truncate current line at visual col, remove lines below
+                this.#ensureRow(this.#row);
+                this.#truncateLineAtCol(this.#row, this.#col);
+                this.#lines.length = this.#row + 1;
 
-            this.#ensureRow(this.#row);
-            this.#fillLineToCol(this.#row, this.#col);
+                break;
+            }
+            case 1: {
+                // Erase from start to cursor
+                for (let r = 0; r < this.#row; r++) {
+                    this.#lines[r] = "";
+                }
+
+                this.#ensureRow(this.#row);
+                this.#fillLineToCol(this.#row, this.#col);
+
+                break;
+            }
+            case 2: {
+                this.#lines = [""];
+                this.#row = 0;
+                this.#col = 0;
+
+                break;
+            }
+            // No default
         }
     }
 
     #eraseLine(mode: number): void {
         this.#ensureRow(this.#row);
 
-        if (mode === 2) {
-            this.#lines[this.#row] = "";
-        } else if (mode === 0) {
-            this.#truncateLineAtCol(this.#row, this.#col);
-        } else if (mode === 1) {
-            this.#fillLineToCol(this.#row, this.#col);
+        switch (mode) {
+            case 0: {
+                this.#truncateLineAtCol(this.#row, this.#col);
+
+                break;
+            }
+            case 1: {
+                this.#fillLineToCol(this.#row, this.#col);
+
+                break;
+            }
+            case 2: {
+                this.#lines[this.#row] = "";
+
+                break;
+            }
+            // No default
         }
     }
 
@@ -279,7 +314,7 @@ export class TerminalBuffer {
         let vis = 0;
 
         while (strIndex < line.length && vis < col) {
-            if (line[strIndex] === "\x1b" && line[strIndex + 1] === "[") {
+            if (line[strIndex] === "\u001B" && line[strIndex + 1] === "[") {
                 strIndex += 2;
 
                 while (strIndex < line.length && !((line[strIndex]! >= "A" && line[strIndex]! <= "Z") || (line[strIndex]! >= "a" && line[strIndex]! <= "z"))) {
@@ -305,7 +340,7 @@ export class TerminalBuffer {
         let vis = 0;
 
         while (strIndex < line.length && vis < col) {
-            if (line[strIndex] === "\x1b" && line[strIndex + 1] === "[") {
+            if (line[strIndex] === "\u001B" && line[strIndex + 1] === "[") {
                 strIndex += 2;
 
                 while (strIndex < line.length && !((line[strIndex]! >= "A" && line[strIndex]! <= "Z") || (line[strIndex]! >= "a" && line[strIndex]! <= "z"))) {

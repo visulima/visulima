@@ -44,7 +44,9 @@ interface GeneralSectionProps {
 const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralSectionProps): React.JSX.Element => (
     <Box flexDirection="column" paddingX={1}>
         <Box marginBottom={1}>
-            <Text bold color="cyan">General Configuration</Text>
+            <Text bold color="cyan">
+                General Configuration
+            </Text>
         </Box>
         {FIELDS.map((field, index) => {
             const isSelected = index === fieldIndex;
@@ -68,9 +70,7 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
                                 placeholder={FIELD_PLACEHOLDERS[field]}
                             />
                         ) : (
-                            <Text color={value ? "white" : "gray"}>
-                                {value || FIELD_PLACEHOLDERS[field]}
-                            </Text>
+                            <Text color={value ? "white" : "gray"}>{value || FIELD_PLACEHOLDERS[field]}</Text>
                         )}
                     </Box>
                 </Box>
@@ -100,13 +100,25 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
         })}
         <Box marginTop={1}>
             <Text dimColor>
-                <Text bold color="white">Enter</Text> edit field
+                <Text bold color="white">
+                    Enter
+                </Text>{" "}
+                edit field
                 {"  "}
-                <Text bold color="white">Space</Text> toggle
+                <Text bold color="white">
+                    Space
+                </Text>{" "}
+                toggle
                 {"  "}
-                <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>{" "}
+                navigate
                 {"  "}
-                <Text bold color="white">Esc</Text> stop editing
+                <Text bold color="white">
+                    Esc
+                </Text>{" "}
+                stop editing
             </Text>
         </Box>
     </Box>

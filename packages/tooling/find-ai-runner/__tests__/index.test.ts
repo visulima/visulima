@@ -55,7 +55,6 @@ describe("pROVIDERS", () => {
     });
 
     it("should have buildArgs function for every provider", () => {
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const config of Object.values(PROVIDERS)) {
             expectTypeOf(config.buildArgs).toBeFunction();
         }

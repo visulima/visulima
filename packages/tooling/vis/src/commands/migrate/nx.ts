@@ -3,13 +3,16 @@ import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared"
 
 interface NxJson {
     namedInputs?: Record<string, (string | Record<string, unknown>)[]>;
-    targetDefaults?: Record<string, {
-        cache?: boolean;
-        dependsOn?: string[];
-        inputs?: (string | Record<string, unknown>)[];
-        outputs?: string[];
-        options?: Record<string, unknown>;
-    }>;
+    targetDefaults?: Record<
+        string,
+        {
+            cache?: boolean;
+            dependsOn?: string[];
+            inputs?: (string | Record<string, unknown>)[];
+            outputs?: string[];
+            options?: Record<string, unknown>;
+        }
+    >;
     defaultBase?: string;
     affected?: {
         defaultBase?: string;
@@ -34,7 +37,7 @@ const renderVisConfig = (nx: NxJson): string => {
         "// Per-project project.json files are compatible with vis and do not need to be rewritten —",
         "// vis already reads targets, tags, implicitDependencies, and sourceRoot.",
         "",
-        "import { defineConfig } from \"@visulima/vis/config\";",
+        'import { defineConfig } from "@visulima/vis/config";',
         "",
         `export default defineConfig(${serialised});`,
         "",
@@ -50,12 +53,7 @@ const renderVisConfig = (nx: NxJson): string => {
  * @param logger - Logger for user feedback.
  * @param report - Migration report to append manual steps and warnings.
  */
-export const migrateNx = (
-    workspaceRoot: string,
-    options: { dryRun?: boolean },
-    logger: MigrateLogger,
-    report: MigrationReport,
-): void => {
+export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");
 
     if (!nx) {
