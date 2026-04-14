@@ -99,12 +99,10 @@ const buildRegexGroups = (): {
         western: [],
     };
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [lang, words] of Object.entries(BANNED_WORDS)) {
         // Determine which group this language belongs to
         let groupName = "";
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [group, langs] of Object.entries(LANGUAGE_GROUPS)) {
             if (langs.has(lang)) {
                 groupName = group;
@@ -118,7 +116,6 @@ const buildRegexGroups = (): {
 
         const isCjk = LANGUAGE_GROUPS.cjk.has(lang);
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const word of words) {
             const normalized = word.normalize("NFC").toLowerCase();
 
@@ -138,7 +135,6 @@ const buildRegexGroups = (): {
 
     const regexGroups: { name: string; regex: RegExp }[] = [];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [groupName, patterns] of Object.entries(groupPatterns)) {
         if (patterns.length > 0) {
             patterns.sort((a, b) => b.length - a.length);
@@ -218,7 +214,6 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     const normalized = text.normalize("NFC");
     const matches: BannedWordMatch[] = [];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const { regex } of regexGroups) {
         regex.lastIndex = 0;
         let match: RegExpExecArray | null;

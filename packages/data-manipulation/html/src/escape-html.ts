@@ -44,9 +44,8 @@ const CONTENT_REGEX = /[&<]/g;
  * // => 'value=&quot;test&quot;'
  */
 const escapeHtml = (value: unknown, isAttribute: boolean = false): string => {
-    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    const string_ = String(value ?? "");
+    const htmlString = String(value ?? "");
 
     const pattern = isAttribute ? ATTR_REGEX : CONTENT_REGEX;
 
@@ -55,16 +54,16 @@ const escapeHtml = (value: unknown, isAttribute: boolean = false): string => {
     let escaped = "";
     let last = 0;
 
-    while (pattern.test(string_)) {
+    while (pattern.test(htmlString)) {
         const i = pattern.lastIndex - 1;
-        const ch = string_[i];
+        const ch = htmlString[i];
 
         // eslint-disable-next-line sonarjs/no-nested-conditional
-        escaped += string_.slice(last, i) + (ch === "&" ? "&amp;" : ch === "\"" ? "&quot;" : "&lt;");
+        escaped += htmlString.slice(last, i) + (ch === "&" ? "&amp;" : ch === "\"" ? "&quot;" : "&lt;");
         last = i + 1;
     }
 
-    return escaped + string_.slice(Math.max(0, last));
+    return escaped + htmlString.slice(Math.max(0, last));
 };
 
 export default escapeHtml;

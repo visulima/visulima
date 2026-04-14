@@ -103,7 +103,6 @@ describe(checkBannedWords, () => {
             const text = "shit and fuck";
             const result = checkBannedWords(text);
 
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const match of result.matches) {
                 const extracted = text.slice(match.startIndex, match.endIndex);
 
@@ -340,7 +339,6 @@ describe("bANNED_WORDS", () => {
     it("contains all expected language codes", () => {
         const expectedLangs = ["ar", "az", "de", "en", "es", "fa", "fr", "ga", "hi", "it", "ja", "ko", "nl", "pl", "pt", "ru", "sv", "tr", "zh"];
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const lang of expectedLangs) {
             expect(BANNED_WORDS[lang]).toBeDefined();
             expect(Array.isArray(BANNED_WORDS[lang])).toBe(true);
@@ -352,16 +350,13 @@ describe("bANNED_WORDS", () => {
     });
 
     it("all word lists are non-empty", () => {
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
             expect(words.length, `${lang} should have words`).toBeGreaterThan(0);
         }
     });
 
     it("all words are lowercase trimmed strings", () => {
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
-            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const word of words) {
                 expectTypeOf(word).toBeString();
 
@@ -372,7 +367,6 @@ describe("bANNED_WORDS", () => {
     });
 
     it("has no duplicate words within a language", () => {
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
             const lowered = words.map((w) => w.toLowerCase());
             const unique = new Set(lowered);

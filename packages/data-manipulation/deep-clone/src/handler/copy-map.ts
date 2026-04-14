@@ -17,5 +17,4 @@ export const copyMapLoose = <Value extends Map<unknown, unknown>>(map: Value, st
 /**
  * Deeply copy the keys and values of the original, as well as any custom properties.
  */
-export const copyMapStrict = <Value extends Map<unknown, unknown>>(map: Value, state: State): Value =>
-    copyOwnProperties(map, copyMapLoose(map, state), state);
+export const copyMapStrict = <Value extends Map<unknown, unknown>>(map: Value, state: State): Value => copyOwnProperties(map, copyMapLoose(map, state), state);

@@ -1,7 +1,7 @@
 import type { FormateByteOptions, ParseByteOptions } from "./types";
 
-// eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group,sonarjs/slow-regex,sonarjs/regex-complexity,sonarjs/unused-named-groups
-const PARSE_BYTES_REGEX = /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i;
+// eslint-disable-next-line sonarjs/unused-named-groups -- named groups are used at line 228 via match.groups
+const PARSE_BYTES_REGEX = /^(?<value>-?\d+(?:[.,]\d+)*) *(?<type>[a-z]+)?$/i;
 const KIBI_REGEX = /^KIBI/;
 const MIBI_REGEX = /^MIBI/;
 const GIBI_REGEX = /^GIBI/;
@@ -192,16 +192,20 @@ const parseLocalizedNumber = (stringNumber: string, locale: string): number => {
     return Number.parseFloat(stringNumber.replaceAll(new RegExp(`\\${thousandSeparator}`, "g"), "").replace(new RegExp(`\\${decimalSeparator}`), "."));
 };
 
-const fromBase = (base: 2 | 10) => {
-    if (base === 2) {
-        return 1024;
-    }
+const fromBase = (base: 2 | 10): number => {
+    switch (base) {
+        case 2: {
+            return 1024;
+        }
 
-    if (base === 10) {
-        return 1000;
-    }
+        case 10: {
+            return 1000;
+        }
 
-    throw new Error("Unsupported base.");
+        default: {
+            throw new Error("Unsupported base.");
+        }
+    }
 };
 
 /**

@@ -12,7 +12,6 @@ const getStrictProperties = (object: unknown): (string | symbol)[] => [
 const copyOwnProperties = <Value>(value: Value, clone: Value, state: State): Value => {
     const properties = getStrictProperties(value);
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const property of properties) {
         if (property === "callee" || property === "caller") {
             continue;
