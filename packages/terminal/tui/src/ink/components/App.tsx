@@ -29,8 +29,8 @@ const disableBracketedPaste = resetMode(BracketedPasteMode);
 type AnimationSubscriber = {
     readonly callback: (currentTime: number) => void;
     readonly interval: number;
-    readonly startTime: number;
     nextDueTime: number;
+    readonly startTime: number;
 };
 
 type Props = {
@@ -171,10 +171,7 @@ const App = ({
     }, [clearAnimationTimer]);
 
     const animationSubscribe = useCallback(
-        (
-            callback: (currentTime: number) => void,
-            interval: number,
-        ): { readonly startTime: number; readonly unsubscribe: () => void } => {
+        (callback: (currentTime: number) => void, interval: number): { readonly startTime: number; readonly unsubscribe: () => void } => {
             const startTime = performance.now();
 
             // The scheduler owns the start timestamp so hooks can derive frames from
@@ -206,11 +203,12 @@ const App = ({
         [clearAnimationTimer, scheduleAnimationTick],
     );
 
-    useEffect(() => {
-        return () => {
+    useEffect(
+        () => () => {
             clearAnimationTimer();
-        };
-    }, [clearAnimationTimer]);
+        },
+        [clearAnimationTimer],
+    );
 
     // Determines if TTY is supported on the provided stdin
     const isRawModeSupported = stdin.isTTY;
@@ -615,34 +613,25 @@ const App = ({
         };
     }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC, internal_eventEmitter]);
 
-    const stdoutContextValue = useMemo(
-        () => {
-            return {
-                stdout,
-                write: writeToStdout,
-            };
-        },
-        [stdout, writeToStdout],
-    );
+    const stdoutContextValue = useMemo(() => {
+        return {
+            stdout,
+            write: writeToStdout,
+        };
+    }, [stdout, writeToStdout]);
 
-    const stderrContextValue = useMemo(
-        () => {
-            return {
-                stderr,
-                write: writeToStderr,
-            };
-        },
-        [stderr, writeToStderr],
-    );
+    const stderrContextValue = useMemo(() => {
+        return {
+            stderr,
+            write: writeToStderr,
+        };
+    }, [stderr, writeToStderr]);
 
-    const cursorContextValue = useMemo(
-        () => {
-            return {
-                setCursorPosition,
-            };
-        },
-        [setCursorPosition],
-    );
+    const cursorContextValue = useMemo(() => {
+        return {
+            setCursorPosition,
+        };
+    }, [setCursorPosition]);
 
     const focusContextValue = useMemo(() => {
         return {
@@ -659,13 +648,12 @@ const App = ({
         };
     }, [activeFocusId, addFocusable, removeFocusable, activateFocusable, deactivateFocusable, enableFocus, disableFocus, focusNext, focusPrevious, focus]);
 
-    const animationContextValue = useMemo(
-        () => ({
+    const animationContextValue = useMemo(() => {
+        return {
             renderThrottleMs,
             subscribe: animationSubscribe,
-        }),
-        [animationSubscribe, renderThrottleMs],
-    );
+        };
+    }, [animationSubscribe, renderThrottleMs]);
 
     return (
         <AppContext.Provider value={appContextValue}>

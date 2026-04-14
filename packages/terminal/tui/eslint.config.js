@@ -182,11 +182,11 @@ export default createConfig(
         if (config.rules) {
             for (const key of Object.keys(config.rules)) {
                 if (
-                    key === "react-x/jsx-key-before-spread"
-                    || key === "react-x/jsx-shorthand-boolean"
-                    || key === "react-x/jsx-shorthand-fragment"
-                    || key === "react-x/no-children-prop"
-                    || key === "react-x/no-useless-fragment"
+                    key === "react-x/jsx-key-before-spread" ||
+                    key === "react-x/jsx-shorthand-boolean" ||
+                    key === "react-x/jsx-shorthand-fragment" ||
+                    key === "react-x/no-children-prop" ||
+                    key === "react-x/no-useless-fragment"
                 ) {
                     delete config.rules[key];
                 }

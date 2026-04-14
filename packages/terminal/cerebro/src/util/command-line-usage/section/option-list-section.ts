@@ -36,6 +36,7 @@ class OptionListSection extends BaseSection {
             });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const table = createTable({
             showHeader: false,
             style: {
@@ -48,12 +49,15 @@ class OptionListSection extends BaseSection {
             truncateOverflow: false,
             wordWrap: data.tableOptions?.wordWrap ?? true,
             ...data.tableOptions,
-        });
+        }) as unknown as { addRow: (row: string[]) => void; toString: () => string };
 
         definitions.forEach((definition) => {
             const typedDefinition = definition as ArgumentDefinition | IOptionDefinition<unknown>;
 
-            table.addRow([this.getOptionNames(typedDefinition, data.reverseNameOrder ?? false, data.isArgument ?? false), templateFormat(typedDefinition.description)]);
+            table.addRow([
+                this.getOptionNames(typedDefinition, data.reverseNameOrder ?? false, data.isArgument ?? false),
+                templateFormat(typedDefinition.description),
+            ]);
         });
 
         this.add(table.toString());

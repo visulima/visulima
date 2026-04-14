@@ -12,7 +12,7 @@ type UseFileSystemOptions = {
 
 type UseFileSystemResult = {
     readonly currentPath: string;
-    readonly entries: readonly FileEntry[];
+    readonly entries: ReadonlyArray<FileEntry>;
     readonly error: string | undefined;
     readonly goUp: () => void;
     readonly isLoading: boolean;
@@ -21,10 +21,9 @@ type UseFileSystemResult = {
 };
 
 function formatPermissions(mode: number): string {
-    const rwx = (m: number): string => {
+    const rwx = (m: number): string =>
         // eslint-disable-next-line no-bitwise
-        return `${m & 4 ? "r" : "-"}${m & 2 ? "w" : "-"}${m & 1 ? "x" : "-"}`;
-    };
+        `${m & 4 ? "r" : "-"}${m & 2 ? "w" : "-"}${m & 1 ? "x" : "-"}`;
 
     // eslint-disable-next-line no-bitwise
     return `${rwx((mode >> 6) & 7)}${rwx((mode >> 3) & 7)}${rwx(mode & 7)}`;
@@ -44,9 +43,9 @@ function matchesFilter(entry: FileEntry, filter: FilePickerFilter): boolean {
     }
 
     if (filter.extensions && filter.extensions.length > 0 && !entry.isDirectory) {
-        const ext = extname(entry.name);
+        const extension = extname(entry.name);
 
-        if (!filter.extensions.includes(ext)) {
+        if (!filter.extensions.includes(extension)) {
             return false;
         }
     }
@@ -58,12 +57,13 @@ export default function useFileSystem(options: UseFileSystemOptions): UseFileSys
     const { filter, initialPath } = options;
 
     const [currentPath, setCurrentPath] = useState(() => resolve(initialPath));
-    const [entries, setEntries] = useState<readonly FileEntry[]>([]);
+    const [entries, setEntries] = useState<ReadonlyArray<FileEntry>>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | undefined>();
     const [refreshKey, setRefreshKey] = useState(0);
 
     const filterRef = useRef(filter);
+
     filterRef.current = filter;
 
     useEffect(() => {
@@ -87,6 +87,7 @@ export default function useFileSystem(options: UseFileSystemOptions): UseFileSys
 
                     try {
                         const stats = await stat(entryPath);
+
                         size = stats.size;
                         permissions = formatPermissions(stats.mode);
                     } catch {

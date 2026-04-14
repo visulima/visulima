@@ -20,8 +20,8 @@ import {
     setStyle,
     setTextNodeValue,
 } from "./dom";
-import type { OutputTransformer } from "./render-node-to-output";
 import type { Region } from "./region";
+import type { OutputTransformer } from "./render-node-to-output";
 import type { Styles } from "./styles";
 import applyStyles from "./styles";
 

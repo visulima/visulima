@@ -50,16 +50,17 @@ const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
         }
     });
 
-    useEffect(() => {
-        return () => {
+    useEffect(
+        () => () => {
             const node = ref.current;
 
             if (node) {
                 node.cachedRender = undefined;
                 node.internal_onRendered = undefined;
             }
-        };
-    }, []);
+        },
+        [],
+    );
 
     const mergedStyle = useMemo(() => {
         return {

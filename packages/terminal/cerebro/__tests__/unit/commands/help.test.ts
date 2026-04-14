@@ -119,11 +119,13 @@ describe("command/help", () => {
         // Ensure hidden commands are not included in the output
         const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
 
-        expect(usageCalls.some((section) => {
-            const { content } = section as Content;
+        expect(
+            usageCalls.some((section) => {
+                const { content } = section as Content;
 
-            return typeof content === "string" && content.includes("secret");
-        })).toBe(false);
+                return typeof content === "string" && content.includes("secret");
+            }),
+        ).toBe(false);
     });
 
     it("should display aliases if present", () => {

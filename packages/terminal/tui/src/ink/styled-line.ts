@@ -350,7 +350,8 @@ export class StyledLine {
 
         // Rebuild text in the destination range
         const destinationTextStart = this.charData![destinationStart]! & OFFSET_MASK;
-        const destinationTextEnd = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & OFFSET_MASK : this.text!.length;
+        const destinationTextEnd
+            = destinationStart + actualCount < this.length ? this.charData![destinationStart + actualCount]! & OFFSET_MASK : this.text!.length;
 
         // Build new text segment from source
         let newSegment = "";
@@ -599,11 +600,13 @@ export class StyledLine {
             currentOffset += lineText.length;
         }
 
-        result.spans = allLines.flatMap((l) => l.getSpans().map((s) => {
-            return {
-                ...s,
-            };
-        }));
+        result.spans = allLines.flatMap((l) =>
+            l.getSpans().map((s) => {
+                return {
+                    ...s,
+                };
+            }),
+        );
         result.mergeSpans();
 
         return result;
@@ -616,11 +619,13 @@ export class StyledLine {
 
         if (this.length === 0) {
             this._cachedTrimmedLength = 0;
+
             return 0;
         }
 
         if (this.text === undefined || this.charData === undefined) {
             this._cachedTrimmedLength = 0;
+
             return 0;
         }
 
@@ -634,6 +639,7 @@ export class StyledLine {
 
                 if (hasStylesOnSpan) {
                     this._cachedTrimmedLength = currentIndex + 1;
+
                     return this._cachedTrimmedLength;
                 }
 
@@ -643,6 +649,7 @@ export class StyledLine {
 
                     if (charEnd - charStart !== 1 || this.text[charStart] !== " ") {
                         this._cachedTrimmedLength = currentIndex + 1;
+
                         return this._cachedTrimmedLength;
                     }
 
@@ -652,6 +659,7 @@ export class StyledLine {
         }
 
         this._cachedTrimmedLength = 0;
+
         return 0;
     }
 

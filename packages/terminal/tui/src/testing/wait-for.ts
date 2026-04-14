@@ -17,14 +17,9 @@ export interface WaitForOptions {
  *
  * If `condition` is a string, waits until `screenText()` contains it.
  * If `condition` is a function, waits until it stops throwing.
- *
  * @throws The last error encountered if the timeout is reached.
  */
-export const waitFor = async (
-    condition: (() => void) | string,
-    screenText: () => string,
-    options: WaitForOptions = {},
-): Promise<void> => {
+export const waitFor = async (condition: (() => void) | string, screenText: () => string, options: WaitForOptions = {}): Promise<void> => {
     const timeout = options.timeout ?? 3000;
     const interval = options.interval ?? 50;
     const start = Date.now();

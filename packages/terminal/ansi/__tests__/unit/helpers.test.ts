@@ -20,11 +20,7 @@ describe("helper Constants", () => {
         environmentSpy.mockRestore();
 
         // Restore original window object if it existed
-        if (originalWindow === undefined) {
-            (globalThis as Record<string, unknown>).window = undefined;
-        } else {
-            (globalThis as Record<string, unknown>).window = originalWindow;
-        }
+        (globalThis as Record<string, unknown>).window = originalWindow === undefined ? undefined : originalWindow;
 
         vi.resetModules();
     });

@@ -227,8 +227,11 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         const hasBooleanValues = Object.keys(booleanValues).length > 0;
 
-        // eslint-disable-next-line no-underscore-dangle
-        const commandArgs = hasBooleanValues ? ({ ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs) : parsedArgs;
+        const commandArgs
+            = hasBooleanValues
+                // eslint-disable-next-line no-underscore-dangle
+                ? ({ ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs)
+                : parsedArgs;
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
@@ -581,7 +584,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         const existingNames = new Set(this.#customGlobalOptions.map((o) => o.name));
 
         if (existingNames.has(optionDefinition.name)) {
-            throw new CerebroError(`Global option "--${optionDefinition.name}" has already been added`, "DUPLICATE_OPTION", { optionName: optionDefinition.name });
+            throw new CerebroError(`Global option "--${optionDefinition.name}" has already been added`, "DUPLICATE_OPTION", {
+                optionName: optionDefinition.name,
+            });
         }
 
         optionDefinition.group = "global";

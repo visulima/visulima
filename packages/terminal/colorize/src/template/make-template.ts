@@ -35,8 +35,15 @@ const parseArguments = (name: string, value: string): (number | string)[] => {
             results.push(number);
             // eslint-disable-next-line no-cond-assign,sonarjs/no-nested-assignment
         } else if (matches = STRING_REGEX.exec(chunk)) {
-            // eslint-disable-next-line unicorn/prefer-string-replace-all,no-confusing-arrow
-            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => escape ? unescape(escape as string) : (character as string)));
+            results.push(
+                (matches[2] as string).replaceAll(ESCAPE_REGEX, (_, escape, character) => {
+                    if (escape) {
+                        return unescape(escape as string);
+                    }
+
+                    return character as string;
+                }),
+            );
         } else {
             throw new Error(`Invalid template style argument: ${chunk} (in style '${name}')`);
         }

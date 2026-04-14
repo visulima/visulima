@@ -45,7 +45,7 @@ function formatKeyLabel(spec: string): string {
  * Format all keys of a binding into a single display string.
  * `["upArrow", "k"]` -> `"\u2191/k"`
  */
-function formatKeys(key: string | readonly string[]): string {
+function formatKeys(key: string | ReadonlyArray<string>): string {
     const keys = typeof key === "string" ? [key] : key;
 
     return keys.map((k) => formatKeyLabel(k)).join("/");
@@ -55,25 +55,22 @@ export type Props = {
     /**
      * Key bindings to display. Typically the `bindings` array returned by `useKeyBindings`.
      */
-    readonly bindings: readonly KeyBinding[];
+    readonly bindings: ReadonlyArray<KeyBinding>;
 
     /**
      * Color for description text.
-     *
      * @default undefined (uses dimColor)
      */
     readonly descriptionColor?: string;
 
     /**
      * Color for key labels.
-     *
      * @default "cyan"
      */
     readonly keyColor?: string;
 
     /**
      * Maximum number of columns in full mode.
-     *
      * @default 3
      */
     readonly maxColumns?: number;
@@ -82,14 +79,12 @@ export type Props = {
      * Display mode.
      * - `"short"`: Single-line horizontal bar, truncated to terminal width.
      * - `"full"`: Multi-column layout grouped by `group` field.
-     *
      * @default "short"
      */
     readonly mode?: "full" | "short";
 
     /**
      * Separator between key-description pairs in short mode.
-     *
      * @default " \u00b7 "
      */
     readonly separator?: string;
@@ -99,18 +94,11 @@ export type Props = {
  * Renders a keybinding help bar from an array of `KeyBinding` definitions.
  *
  * ```tsx
- * <Help bindings={bindings} />
- * <Help bindings={bindings} mode="full" />
+ * &lt;Help bindings={bindings} />
+ * &lt;Help bindings={bindings} mode="full" />
  * ```
  */
-export default function Help({
-    bindings,
-    descriptionColor,
-    keyColor = "cyan",
-    maxColumns = 3,
-    mode = "short",
-    separator = " \u00b7 ",
-}: Props): ReactElement {
+export default function Help({ bindings, descriptionColor, keyColor = "cyan", maxColumns = 3, mode = "short", separator = " \u00B7 " }: Props): ReactElement {
     const { columns } = useWindowSize();
 
     if (mode === "full") {
@@ -121,7 +109,7 @@ export default function Help({
 }
 
 function renderShort(
-    bindings: readonly KeyBinding[],
+    bindings: ReadonlyArray<KeyBinding>,
     options: { columns: number; descriptionColor: string | undefined; keyColor: string; separator: string },
 ): ReactElement {
     const items: ReactNode[] = [];
@@ -161,7 +149,7 @@ function renderShort(
 }
 
 function renderFull(
-    bindings: readonly KeyBinding[],
+    bindings: ReadonlyArray<KeyBinding>,
     options: { columns: number; descriptionColor: string | undefined; keyColor: string; maxColumns: number },
 ): ReactElement {
     // Group bindings
@@ -196,15 +184,18 @@ function renderFull(
 
         for (const [bIndex, binding] of groupBindings.entries()) {
             const keys = formatKeys(binding.key);
+
             rows.push(
                 <Box key={`b-${bIndex}`}>
                     <Text color={options.keyColor}>{keys}</Text>
                     <Text> </Text>
-                    {options.descriptionColor ? (
-                        <Text color={options.descriptionColor}>{binding.description}</Text>
-                    ) : (
-                        <Text dimColor>{binding.description}</Text>
-                    )}
+                    {options.descriptionColor
+                        ? (
+                            <Text color={options.descriptionColor}>{binding.description}</Text>
+                        )
+                        : (
+                            <Text dimColor>{binding.description}</Text>
+                        )}
                 </Box>,
             );
         }

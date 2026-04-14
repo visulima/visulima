@@ -21,25 +21,22 @@ export type Props<T> = {
     /**
      * Render-prop that receives the current page items and page metadata.
      */
-    readonly children: (pageItems: readonly T[], meta: PageMeta) => ReactNode;
+    readonly children: (pageItems: ReadonlyArray<T>, meta: PageMeta) => ReactNode;
 
     /**
      * Uncontrolled initial page (0-indexed).
-     *
      * @default 0
      */
     readonly defaultPage?: number;
 
     /**
      * Color for the active page indicator.
-     *
      * @default "cyan"
      */
     readonly indicatorColor?: string;
 
     /**
      * Whether keyboard navigation is active.
-     *
      * @default true
      */
     readonly isFocused?: boolean;
@@ -47,7 +44,7 @@ export type Props<T> = {
     /**
      * The full list of items to paginate.
      */
-    readonly items: readonly T[];
+    readonly items: ReadonlyArray<T>;
 
     /**
      * Called when the page changes.
@@ -69,7 +66,6 @@ export type Props<T> = {
      * - `"dots"`: `● ○ ○ ○`
      * - `"numeric"`: `‹ 1 / 4 ›`
      * - `"fraction"`: `1/4`
-     *
      * @default "dots"
      */
     readonly style?: "dots" | "fraction" | "numeric";
@@ -79,13 +75,13 @@ export type Props<T> = {
  * Paginator component with render-prop children and a page indicator.
  *
  * ```tsx
- * <Paginator items={allItems} pageSize={5}>
+ * &lt;Paginator items={allItems} pageSize={5}>
  *   {(pageItems, meta) => (
- *     <Box flexDirection="column">
- *       {pageItems.map((item, i) => <Text key={i}>{item}</Text>)}
- *     </Box>
+ *     &lt;Box flexDirection="column">
+ *       {pageItems.map((item, i) => &lt;Text key={i}>{item}&lt;/Text>)}
+ *     &lt;/Box>
  *   )}
- * </Paginator>
+ * &lt;/Paginator>
  * ```
  */
 export default function Paginator<T>({
@@ -165,7 +161,7 @@ export default function Paginator<T>({
     );
 }
 
-function Indicator({
+const Indicator = ({
     color,
     currentPage,
     style,
@@ -175,12 +171,15 @@ function Indicator({
     currentPage: number;
     style: "dots" | "fraction" | "numeric";
     totalPages: number;
-}): ReactElement {
+}): ReactElement => {
     if (style === "fraction") {
         return (
             <Text>
                 <Text color={color}>{currentPage + 1}</Text>
-                <Text dimColor>/{totalPages}</Text>
+                <Text dimColor>
+                    /
+                    {totalPages}
+                </Text>
             </Text>
         );
     }
@@ -190,8 +189,12 @@ function Indicator({
             <Box>
                 {currentPage > 0 ? <Text color={color}>{"\u2039 "}</Text> : <Text dimColor>{"\u2039 "}</Text>}
                 <Text color={color}>{currentPage + 1}</Text>
-                <Text dimColor> / {totalPages}</Text>
-                {currentPage < totalPages - 1 ? <Text color={color}>{" \u203a"}</Text> : <Text dimColor>{" \u203a"}</Text>}
+                <Text dimColor>
+                    {" "}
+                    /
+                    {totalPages}
+                </Text>
+                {currentPage < totalPages - 1 ? <Text color={color}>{" \u203A"}</Text> : <Text dimColor>{" \u203A"}</Text>}
             </Box>
         );
     }
@@ -210,4 +213,4 @@ function Indicator({
     );
 
     return <Box gap={1}>{dots}</Box>;
-}
+};

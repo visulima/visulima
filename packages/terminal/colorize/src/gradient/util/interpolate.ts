@@ -43,12 +43,12 @@ export const interpolateRgb = (stop1: StopOutput, stop2: StopOutput, steps: numb
     const start: RGB = { b: (stop1.color as number[])[2] as number, g: (stop1.color as number[])[1] as number, r: (stop1.color as number[])[0] as number };
     const end: RGB = { b: (stop2.color as number[])[2] as number, g: (stop2.color as number[])[1] as number, r: (stop2.color as number[])[0] as number };
 
-    const step = calculateStepSize<RGB>(start, end, steps);
+    const step = calculateStepSize(start, end, steps);
 
     const gradient: RGB[] = [{ ...start }];
 
     for (let index = 1; index < steps; index += 1) {
-        const color = interpolate<RGB>(step, start, index, RGBA_MAX);
+        const color = interpolate(step, start, index, RGBA_MAX);
 
         gradient.push({
             b: Math.floor(color.b),
@@ -100,7 +100,7 @@ export const interpolateHsv = (stop1: StopOutput, stop2: StopOutput, steps: numb
     step.h = ((-1) ** (trigonometric ? 1 : 0) * Math.abs(diff)) / steps;
 
     for (let index = 1; index < steps; index += 1) {
-        const color = interpolate<HSVA>(step, start, index, HSV_MAX);
+        const color = interpolate(step, start, index, HSV_MAX);
 
         gradient.push(hsvToRgb(color.h, color.s, color.v));
     }

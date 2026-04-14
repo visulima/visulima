@@ -11,7 +11,6 @@ export type StopwatchRef = Omit<UseStopwatchResult, "elapsed" | "isRunning" | "l
 export type Props = {
     /**
      * Whether to start counting immediately.
-     *
      * @default false
      */
     readonly autoStart?: boolean;
@@ -29,14 +28,12 @@ export type Props = {
     /**
      * Custom formatter for the elapsed time.
      * Receives elapsed milliseconds, returns a display string.
-     *
      * @default formatDuration (MM:SS or HH:MM:SS)
      */
     readonly format?: (elapsed: number) => string;
 
     /**
      * Tick interval in milliseconds.
-     *
      * @default 1000
      */
     readonly interval?: number;
@@ -48,33 +45,30 @@ export type Props = {
  * Exposes `start`, `stop`, `toggle`, `reset`, and `lap` methods via ref.
  *
  * ```tsx
- * const ref = useRef<StopwatchRef>(null);
- * <Stopwatch ref={ref} autoStart />
+ * const ref = useRef&lt;StopwatchRef>(null);
+ * &lt;Stopwatch ref={ref} autoStart />
  * ```
  */
-const Stopwatch: ForwardRefExoticComponent<Props & RefAttributes<StopwatchRef>> = forwardRef<StopwatchRef, Props>(function Stopwatch(
-    { autoStart, bold, color, format = formatDuration, interval },
-    ref,
-): ReactElement {
-    const sw = useStopwatch({ autoStart, interval });
+const Stopwatch: ForwardRefExoticComponent<Props & RefAttributes<StopwatchRef>> = forwardRef<StopwatchRef, Props>(
+    ({ autoStart, bold, color, format = formatDuration, interval }, ref): ReactElement => {
+        const sw = useStopwatch({ autoStart, interval });
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            lap: sw.lap,
-            reset: sw.reset,
-            start: sw.start,
-            stop: sw.stop,
-            toggle: sw.toggle,
-        }),
-        [sw.lap, sw.reset, sw.start, sw.stop, sw.toggle],
-    );
+        useImperativeHandle(ref, () => {
+            return {
+                lap: sw.lap,
+                reset: sw.reset,
+                start: sw.start,
+                stop: sw.stop,
+                toggle: sw.toggle,
+            };
+        }, [sw.lap, sw.reset, sw.start, sw.stop, sw.toggle]);
 
-    return (
-        <Text bold={bold} color={color}>
-            {format(sw.elapsed)}
-        </Text>
-    );
-});
+        return (
+            <Text bold={bold} color={color}>
+                {format(sw.elapsed)}
+            </Text>
+        );
+    },
+);
 
 export default Stopwatch;

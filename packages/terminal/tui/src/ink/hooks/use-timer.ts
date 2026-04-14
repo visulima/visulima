@@ -5,7 +5,6 @@ import useAnimation from "./use-animation";
 export type UseTimerOptions = {
     /**
      * Whether to start the timer immediately.
-     *
      * @default false
      */
     readonly autoStart?: boolean;
@@ -17,7 +16,6 @@ export type UseTimerOptions = {
 
     /**
      * Tick interval in milliseconds.
-     *
      * @default 1000
      */
     readonly interval?: number;
@@ -66,6 +64,7 @@ export default function useTimer(options: UseTimerOptions): UseTimerResult {
 
     const [running, setRunning] = useState(autoStart);
     const onTimeoutRef = useRef(onTimeout);
+
     onTimeoutRef.current = onTimeout;
 
     const firedRef = useRef(false);

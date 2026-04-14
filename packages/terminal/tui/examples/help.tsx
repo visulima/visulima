@@ -21,7 +21,10 @@ const App = () => {
             </Text>
             <Box borderColor="cyan" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Text>
-                    Count: <Text bold color="yellow">{count}</Text>
+                    Count:{" "}
+                    <Text bold color="yellow">
+                        {count}
+                    </Text>
                 </Text>
             </Box>
             <Help bindings={bindings} mode={showFullHelp ? "full" : "short"} />

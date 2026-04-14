@@ -74,9 +74,7 @@ const toCamelCase = (name: string): string =>
  * @param envDefinitions Array of environment variable definitions
  * @returns Object with camelCase keys and transformed values
  */
-const processEnvVariables = (
-    envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition)[] | undefined,
-): Record<string, unknown> => {
+const processEnvVariables = (envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition)[] | undefined): Record<string, unknown> => {
     if (!envDefinitions || envDefinitions.length === 0) {
         return {};
     }

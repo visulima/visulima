@@ -105,9 +105,7 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
     if (Array.isArray(command.options) && command.options.length > 0) {
         usageGroups.push({
             header: " Command Options ",
-            optionList: command.options.filter(
-                (option): option is OptionDefinition<unknown> => !option.hidden,
-            ),
+            optionList: command.options.filter((option): option is OptionDefinition<unknown> => !option.hidden),
         });
     }
 
@@ -225,14 +223,7 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
             const filePath = join(".", outputDirectory, `${groupPath}.md`);
             const bin = `\`${cliName} ${group}\``;
 
-            const document = `${[
-                bin,
-                "=".repeat(bin.length),
-                "",
-                `Commands in the ${group} group.`,
-                "",
-                generateCommands(groupCommands, cliName, options),
-            ]
+            const document = `${[bin, "=".repeat(bin.length), "", `Commands in the ${group} group.`, "", generateCommands(groupCommands, cliName, options)]
                 .join("\n")
                 .trim()}\n`;
 

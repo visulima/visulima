@@ -200,7 +200,10 @@ export default function Tabs({
 
     // In controlled mode, derive activeTab from value prop
     const activeTab = isControlled
-        ? Math.max(0, tabs.findIndex((tab) => tab.props.name === value))
+        ? Math.max(
+            0,
+            tabs.findIndex((tab) => tab.props.name === value),
+        )
         : internalTab;
 
     const setActiveTab = isControlled
@@ -236,15 +239,18 @@ export default function Tabs({
 
     activeTabRef.current = activeTab;
 
-    const handleTabChange = useCallback((index: number) => {
-        setActiveTab(index);
+    const handleTabChange = useCallback(
+        (index: number) => {
+            setActiveTab(index);
 
-        const tab = tabsRef.current[index];
+            const tab = tabsRef.current[index];
 
-        if (tab) {
-            onChangeRef.current(tab.props.name, tab);
-        }
-    }, [setActiveTab]);
+            if (tab) {
+                onChangeRef.current(tab.props.name, tab);
+            }
+        },
+        [setActiveTab],
+    );
 
     const moveToNext = useCallback(() => {
         const next = (activeTabRef.current + 1) % tabCount;
@@ -328,14 +334,12 @@ export default function Tabs({
                     <Box flexDirection={flexDirection} key={name}>
                         {index !== 0 && <Text color="dim">{separator}</Text>}
                         <Box>
-                            {showIndex
-                                ? (
-                                    <Text color="grey">
-                                        {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
-                                        {index + 1}.{" "}
-                                    </Text>
-                                )
-                                : null}
+                            {showIndex ? (
+                                <Text color="grey">
+                                    {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
+                                    {index + 1}.{" "}
+                                </Text>
+                            ) : null}
                             <Text backgroundColor={textColors.backgroundColor} color={textColors.color}>
                                 {child}
                             </Text>

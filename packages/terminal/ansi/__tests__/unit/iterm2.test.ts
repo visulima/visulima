@@ -62,7 +62,9 @@ describe("iTerm2 Integration", () => {
                 expect.assertions(1);
 
                 // @ts-expect-error -- testing runtime error for invalid input
-                expect(() => indexTerm2({} as unknown as IITerm2Payload)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
+                expect(() => indexTerm2({} as unknown as IITerm2Payload)).toThrow(
+                    "Invalid payload: must implement IITerm2Payload with a custom toString method",
+                );
             });
 
             it("should return an empty string for a payload with Object.prototype.toString", () => {
@@ -71,7 +73,9 @@ describe("iTerm2 Integration", () => {
                 const payload = { foo: "bar" }; // Uses Object.prototype.toString
 
                 // @ts-expect-error -- testing runtime error for invalid input
-                expect(() => indexTerm2(payload as unknown as IITerm2Payload)).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
+                expect(() => indexTerm2(payload as unknown as IITerm2Payload)).toThrow(
+                    "Invalid payload: must implement IITerm2Payload with a custom toString method",
+                );
             });
         });
 
@@ -100,8 +104,8 @@ describe("iTerm2 Integration", () => {
                     width: it2Pixels(100),
                 };
                 const file = new ITerm2File(properties);
-                const expectedPayload
-                    = "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
+                const expectedPayload =
+                    "File=name=my file.txt;size=12345;width=100px;height=50%;preserveAspectRatio=0;inline=1;doNotMoveCursor=1:SGVsbG8gd29ybGQ=";
 
                 expect(file.toString()).toBe(expectedPayload);
                 expect(indexTerm2(file)).toBe(`${OSC}1337;${expectedPayload}${BEL}`);

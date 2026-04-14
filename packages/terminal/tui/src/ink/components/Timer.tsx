@@ -11,7 +11,6 @@ export type TimerRef = Omit<UseTimerResult, "isFinished" | "isRunning" | "remain
 export type Props = {
     /**
      * Whether to start the timer immediately.
-     *
      * @default false
      */
     readonly autoStart?: boolean;
@@ -34,14 +33,12 @@ export type Props = {
     /**
      * Custom formatter for the remaining time.
      * Receives remaining milliseconds, returns a display string.
-     *
      * @default formatDuration (MM:SS or HH:MM:SS)
      */
     readonly format?: (remaining: number) => string;
 
     /**
      * Tick interval in milliseconds.
-     *
      * @default 1000
      */
     readonly interval?: number;
@@ -58,32 +55,29 @@ export type Props = {
  * Exposes `start`, `stop`, `toggle`, and `reset` methods via ref.
  *
  * ```tsx
- * const ref = useRef<TimerRef>(null);
- * <Timer ref={ref} duration={60_000} autoStart />
+ * const ref = useRef&lt;TimerRef>(null);
+ * &lt;Timer ref={ref} duration={60_000} autoStart />
  * ```
  */
-const Timer: ForwardRefExoticComponent<Props & RefAttributes<TimerRef>> = forwardRef<TimerRef, Props>(function Timer(
-    { autoStart, bold, color, duration, format = formatDuration, interval, onTimeout },
-    ref,
-): ReactElement {
-    const timer = useTimer({ autoStart, duration, interval, onTimeout });
+const Timer: ForwardRefExoticComponent<Props & RefAttributes<TimerRef>> = forwardRef<TimerRef, Props>(
+    ({ autoStart, bold, color, duration, format = formatDuration, interval, onTimeout }, ref): ReactElement => {
+        const timer = useTimer({ autoStart, duration, interval, onTimeout });
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            reset: timer.reset,
-            start: timer.start,
-            stop: timer.stop,
-            toggle: timer.toggle,
-        }),
-        [timer.reset, timer.start, timer.stop, timer.toggle],
-    );
+        useImperativeHandle(ref, () => {
+            return {
+                reset: timer.reset,
+                start: timer.start,
+                stop: timer.stop,
+                toggle: timer.toggle,
+            };
+        }, [timer.reset, timer.start, timer.stop, timer.toggle]);
 
-    return (
-        <Text bold={bold} color={color}>
-            {format(timer.remaining)}
-        </Text>
-    );
-});
+        return (
+            <Text bold={bold} color={color}>
+                {format(timer.remaining)}
+            </Text>
+        );
+    },
+);
 
 export default Timer;
