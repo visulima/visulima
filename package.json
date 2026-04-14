@@ -326,7 +326,7 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "packageManager": "pnpm@11.0.0-rc.0",
+    "packageManager": "pnpm@10.32.1",
     "engines": {
         "node": ">=22.13 <=25.x"
     }
