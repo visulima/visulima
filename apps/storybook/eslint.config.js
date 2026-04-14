@@ -16,6 +16,8 @@ export default createConfig(
             "prettier.config.js",
             "package.json",
             "README.md",
+            ".storybook/main.ts",
+            ".storybook/preview.ts",
         ],
     },
     {

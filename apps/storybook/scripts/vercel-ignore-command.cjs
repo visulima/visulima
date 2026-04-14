@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, import/no-commonjs, sonarjs/os-command */
 const { execSync } = require("node:child_process");
 const { env, exit } = require("node:process");
 
