@@ -9,7 +9,8 @@ describe("usage `@visulima/boxen` npm package", () => {
     it(`should work as CommonJS package`, () => {
         expect.assertions(1);
 
-        const filename: string = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/cjs/test.cjs");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const filename: string = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/cjs/test.cjs") as unknown as string;
 
         const received = execScriptSync(filename);
 
@@ -19,7 +20,8 @@ describe("usage `@visulima/boxen` npm package", () => {
     it(`should work as ESM package`, () => {
         expect.assertions(1);
 
-        const filename: string = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/mjs/test.mjs");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const filename: string = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/mjs/test.mjs") as unknown as string;
 
         const received = execScriptSync(filename);
 

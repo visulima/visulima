@@ -7,14 +7,13 @@ import { renderError } from "@visulima/error/error";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { inspect } from "@visulima/inspector";
+import type { InteractiveManager } from "@visulima/interactive-manager";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 
 import { EMPTY_SYMBOL } from "../../constants";
-import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
@@ -65,6 +64,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     #stderr: NodeJS.WriteStream;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #interactiveManager: InteractiveManager | undefined;
 
     #interactive = false;
@@ -127,6 +127,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
      * @param manager The interactive manager instance, or undefined to disable
      */
     public setInteractiveManager(manager?: InteractiveManager): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = manager;
     }
 
@@ -145,8 +146,10 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     // eslint-disable-next-line sonarjs/cognitive-complexity, no-underscore-dangle
     protected _formatMessage(data: ReadonlyMeta<L>): string {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
         const { columns } = terminalSize();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let size = columns;
 
         if (typeof this.styles.messageLength === "number") {
@@ -230,12 +233,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wordWrap(formattedMessage, {
-                        trim: false,
-                        width: size - 3,
-                        wrapMode: WrapMode.STRICT_WIDTH,
-                    }),
+                groupSpaces
+                + wordWrap(formattedMessage, {
+                    trim: false,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
+                }),
             );
         }
 
@@ -304,6 +307,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.update(streamType, message.split("\n"), 0);
         } else {
             writeStream(`${message}\n`, stream);
