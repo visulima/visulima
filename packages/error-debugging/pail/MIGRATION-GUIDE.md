@@ -142,10 +142,10 @@ import type { ProgressBarOptions, MultiBarOptions } from "@visulima/progress-bar
 
 The new `@visulima/spinner` package has a few API differences from pail's old spinner:
 
-| Old (pail) | New (@visulima/spinner) | Notes |
-|---|---|---|
-| `logger.createSpinner(opts)` | `new Spinner(opts, manager)` | Pass manager as 2nd arg |
-| `spinner.fail(text)` | `spinner.failed(text)` | Method renamed |
+| Old (pail)                          | New (@visulima/spinner)                            | Notes                                                    |
+| ----------------------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `logger.createSpinner(opts)`        | `new Spinner(opts, manager)`                       | Pass manager as 2nd arg                                  |
+| `spinner.fail(text)`                | `spinner.failed(text)`                             | Method renamed                                           |
 | `SpinnerStyle` object with colorize | `style: (text) => string` or `SpinnerStyle` object | Style is now a function or uses Node.js `util.styleText` |
 
 ### What Stays the Same
