@@ -1,427 +1,451 @@
-/* eslint-disable vitest/prefer-expect-assertions */
+/* eslint-disable vitest/prefer-called-with */
+import type { InteractiveManager } from "@visulima/interactive-manager";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Spinner } from "../src/spinner";
-import { getSpinner } from "../src/spinners";
+import { MultiSpinner, Spinner } from "../src/spinner";
 
 describe("spinner", () => {
-    let mockStream: {
-        isTTY: boolean;
-        write: (string_: string) => void;
-    };
-    let writeOutput: string[];
-
-    beforeEach(() => {
-        writeOutput = [];
-        mockStream = {
-            isTTY: true,
-            write: (string_: string) => {
-                writeOutput.push(string_);
-            },
-        };
-    });
-
-    afterEach(() => {
-        writeOutput = [];
-        vi.clearAllTimers();
-    });
-
     describe("constructor", () => {
         it("should create a spinner with default options", () => {
+            expect.assertions(4);
+
             const spinner = new Spinner();
 
             expect(spinner).toBeDefined();
-            expect(spinner.getStatus()).toBe("stopped");
-            expect(spinner.getText()).toBe("");
+            expect(spinner.isRunning).toBe(false);
+            expect(spinner.getText).toBe("");
+            expect(spinner.getPrefixText).toBe("");
         });
 
-        it("should create a spinner with custom text", () => {
-            const spinner = new Spinner({ text: "Loading..." });
+        it("should create a spinner with custom name", () => {
+            expect.assertions(1);
 
-            expect(spinner.getText()).toBe("Loading...");
-        });
-
-        it("should create a spinner with a named animation", () => {
-            const spinner = new Spinner({ spinner: "dots", stream: mockStream });
+            const spinner = new Spinner({ name: "line" });
 
             expect(spinner).toBeDefined();
         });
 
-        it("should create a spinner with custom symbols", () => {
+        it("should create a spinner with custom icons", () => {
+            expect.assertions(1);
+
             const spinner = new Spinner({
-                failureSymbol: "✘",
-                stream: mockStream,
-                successSymbol: "✔",
-                warningSymbol: "⚠",
+                icons: { error: "FAIL", info: "INFO", success: "OK", warning: "WARN" },
             });
 
             expect(spinner).toBeDefined();
         });
 
-        it("should disable spinner when isEnabled is false", () => {
-            const spinner = new Spinner({ isEnabled: false, stream: mockStream });
+        it("should accept a style function", () => {
+            expect.assertions(1);
 
-            spinner.start();
+            const spinner = new Spinner({
+                style: (text) => `[${text}]`,
+            });
 
-            expect(writeOutput).toHaveLength(0);
+            expect(spinner).toBeDefined();
+        });
+
+        it("should accept prefix text", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner({ prefixText: "[TASK]" });
+
+            expect(spinner.getPrefixText).toBe("[TASK]");
         });
     });
 
     describe("start", () => {
-        it("should start the spinner animation", () => {
+        beforeEach(() => {
             vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
+        });
 
-            spinner.start();
-
-            expect(spinner.getStatus()).toBe("spinning");
-            expect(writeOutput.length).toBeGreaterThan(0);
-
-            vi.advanceTimersByTime(80);
-            const outputCount = writeOutput.length;
-
-            expect(outputCount).toBeGreaterThan(0);
-
+        afterEach(() => {
             vi.useRealTimers();
         });
 
-        it("should update spinner with new text", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
+        it("should start the spinner", () => {
+            expect.assertions(2);
 
-            spinner.start("Starting task");
+            const spinner = new Spinner();
 
-            expect(spinner.getText()).toBe("Starting task");
+            spinner.start("Loading...");
 
-            vi.useRealTimers();
+            expect(spinner.isRunning).toBe(true);
+            expect(spinner.getText).toBe("Loading...");
+
+            spinner.succeed();
         });
 
-        it("should hide cursor when starting", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
+        it("should not start if verbose is false", () => {
+            expect.assertions(1);
 
-            spinner.start();
+            const spinner = new Spinner({ verbose: false });
 
-            // Check for hide cursor ANSI code
-            expect(writeOutput.some((output) => output.includes("\u001B[?25l"))).toBe(true);
+            spinner.start("Loading...");
 
-            vi.useRealTimers();
+            expect(spinner.isRunning).toBe(false);
         });
 
-        it("should not start if already spinning", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
+        it("should not start twice", () => {
+            expect.assertions(2);
 
-            spinner.start("First");
+            const spinner = new Spinner();
 
-            const countAfterFirstStart = writeOutput.length;
+            const result1 = spinner.start("First");
+            const result2 = spinner.start("Second");
 
-            spinner.start("Second");
+            expect(result1).toBe(result2);
+            expect(spinner.getText).toBe("First");
 
-            // Should not add significant new output
-            expect(writeOutput.length - countAfterFirstStart).toBeLessThan(3);
-
-            vi.useRealTimers();
-        });
-    });
-
-    describe("stop", () => {
-        it("should stop the spinner", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
-
-            spinner.start();
-
-            const statusBefore = spinner.getStatus();
-
-            spinner.stop();
-            const statusAfter = spinner.getStatus();
-
-            expect(statusBefore).toBe("spinning");
-            expect(statusAfter).toBe("stopped");
-
-            vi.useRealTimers();
+            spinner.succeed();
         });
 
-        it("should show cursor when stopping", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
+        it("should accept start options with prefixText", () => {
+            expect.assertions(1);
 
-            spinner.start();
-            spinner.stop();
+            const spinner = new Spinner();
 
-            // Check for show cursor ANSI code
-            expect(writeOutput.some((output) => output.includes("\u001B[?25h"))).toBe(true);
+            spinner.start("Loading...", { prefixText: "[INFO]" });
 
-            vi.useRealTimers();
-        });
+            expect(spinner.getPrefixText).toBe("[INFO]");
 
-        it("should clear animation interval", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
-
-            spinner.start();
-            spinner.stop();
-
-            const initialCount = writeOutput.length;
-
-            vi.advanceTimersByTime(1000);
-
-            // Should not render additional frames after stop
-            expect(writeOutput.length).toBeLessThan(initialCount + 5);
-
-            vi.useRealTimers();
+            spinner.succeed();
         });
     });
 
-    describe("succeed", () => {
-        it("should display success message", () => {
+    describe("stop methods", () => {
+        beforeEach(() => {
             vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
+        });
 
-            spinner.start();
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("succeed should stop the spinner", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.start("Loading...");
             spinner.succeed("Done!");
 
-            expect(spinner.getStatus()).toBe("succeeded");
-
-            const output = writeOutput.join("");
-
-            expect(output).toContain("✓");
-            expect(output).toContain("Done!");
-
-            vi.useRealTimers();
+            expect(spinner.isRunning).toBe(false);
         });
 
-        it("should update text if provided", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
+        it("failed should stop the spinner", () => {
+            expect.assertions(1);
 
-            spinner.start();
-            spinner.succeed("Completed");
+            const spinner = new Spinner();
 
-            expect(spinner.getText()).toBe("Completed");
+            spinner.start("Loading...");
+            spinner.failed("Error!");
 
-            vi.useRealTimers();
+            expect(spinner.isRunning).toBe(false);
         });
 
-        it("should use custom success symbol", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({
-                stream: mockStream,
-                successSymbol: "✔",
-            });
+        it("warn should stop the spinner", () => {
+            expect.assertions(1);
 
-            spinner.start();
-            spinner.succeed("Done");
+            const spinner = new Spinner();
 
-            const output = writeOutput.join("");
-
-            expect(output).toContain("✔");
-
-            vi.useRealTimers();
-        });
-    });
-
-    describe("fail", () => {
-        it("should display failure message", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
-
-            spinner.start();
-            spinner.fail("Error!");
-
-            expect(spinner.getStatus()).toBe("failed");
-
-            const output = writeOutput.join("");
-
-            expect(output).toContain("✖");
-            expect(output).toContain("Error!");
-
-            vi.useRealTimers();
-        });
-
-        it("should use custom failure symbol", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({
-                failureSymbol: "✘",
-                stream: mockStream,
-            });
-
-            spinner.start();
-            spinner.fail("Failed");
-
-            const output = writeOutput.join("");
-
-            expect(output).toContain("✘");
-
-            vi.useRealTimers();
-        });
-    });
-
-    describe("warn", () => {
-        it("should display warning message", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
-
-            spinner.start();
+            spinner.start("Loading...");
             spinner.warn("Warning!");
 
-            expect(spinner.getStatus()).toBe("warned");
+            expect(spinner.isRunning).toBe(false);
+        });
 
-            const output = writeOutput.join("");
+        it("info should stop the spinner", () => {
+            expect.assertions(1);
 
-            expect(output).toContain("⚠");
-            expect(output).toContain("Warning!");
+            const spinner = new Spinner();
 
+            spinner.start("Loading...");
+            spinner.info("Information");
+
+            expect(spinner.isRunning).toBe(false);
+        });
+
+        it("should not stop if not active", () => {
+            expect.assertions(4);
+
+            const spinner = new Spinner();
+
+            expect(() => {
+                spinner.succeed("Done!");
+            }).not.toThrow();
+            expect(() => {
+                spinner.failed("Error!");
+            }).not.toThrow();
+            expect(() => {
+                spinner.warn("Warning!");
+            }).not.toThrow();
+            expect(() => {
+                spinner.info("Info!");
+            }).not.toThrow();
+        });
+    });
+
+    describe("text and prefixText", () => {
+        it("should set text via setter", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.text = "New text";
+
+            expect(spinner.getText).toBe("New text");
+        });
+
+        it("should set prefixText via setter", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.prefixText = "[PREFIX]";
+
+            expect(spinner.getPrefixText).toBe("[PREFIX]");
+        });
+    });
+
+    describe("pause and resume", () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
             vi.useRealTimers();
         });
 
-        it("should use custom warning symbol", () => {
+        it("should pause the spinner", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.start("Loading...");
+            spinner.pause();
+
+            expect(spinner.isRunning).toBe(true);
+
+            spinner.succeed();
+        });
+
+        it("should resume after pause", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.start("Loading...");
+            spinner.pause();
+            spinner.resume();
+
+            expect(spinner.isRunning).toBe(true);
+
+            spinner.succeed();
+        });
+
+        it("should not resume if not active", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            spinner.resume();
+
+            expect(spinner.isRunning).toBe(false);
+        });
+    });
+
+    describe("elapsedTime", () => {
+        it("should track elapsed time", () => {
+            expect.assertions(1);
+
             vi.useFakeTimers();
-            const spinner = new Spinner({
-                stream: mockStream,
-                warningSymbol: "⚡",
-            });
 
-            spinner.start();
-            spinner.warn("Warned");
+            const spinner = new Spinner();
 
-            const output = writeOutput.join("");
+            spinner.start("Loading...");
+            vi.advanceTimersByTime(1000);
 
-            expect(output).toContain("⚡");
+            expect(spinner.elapsedTime).toBeGreaterThanOrEqual(1000);
 
+            spinner.succeed();
             vi.useRealTimers();
         });
     });
 
-    describe("setText", () => {
-        it("should update the spinner text", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Initial" });
+    describe("getFrameOutput", () => {
+        it("should return frame output with text", () => {
+            expect.assertions(1);
 
-            spinner.setText("Updated");
+            const spinner = new Spinner({ name: "dots" });
 
-            expect(spinner.getText()).toBe("Updated");
+            spinner.text = "Loading";
 
-            vi.useRealTimers();
+            const output = spinner.getFrameOutput();
+
+            expect(output).toContain("Loading");
         });
 
-        it("should re-render when updating text while spinning", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Initial" });
+        it("should include prefix text", () => {
+            expect.assertions(2);
 
-            spinner.start();
+            const spinner = new Spinner({ name: "dots", prefixText: "[INFO]" });
 
-            const countBefore = writeOutput.length;
+            spinner.text = "Loading";
 
-            spinner.setText("Updated");
-            const countAfter = writeOutput.length;
-
-            expect(countAfter).toBeGreaterThan(countBefore);
-
-            vi.useRealTimers();
-        });
-    });
-
-    describe("setPrefixText", () => {
-        it("should update the prefix text", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
-
-            spinner.setPrefixText("PREFIX");
-
-            expect(spinner.getStatus()).toBe("stopped");
-
-            vi.useRealTimers();
-        });
-
-        it("should include prefix in output", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream, text: "Loading" });
-
-            spinner.setPrefixText("[INFO]");
-            spinner.start();
-
-            const output = writeOutput.join("");
+            const output = spinner.getFrameOutput();
 
             expect(output).toContain("[INFO]");
+            expect(output).toContain("Loading");
+        });
 
-            vi.useRealTimers();
+        it("should apply style function", () => {
+            expect.assertions(2);
+
+            const spinner = new Spinner({
+                name: "dots",
+                style: (text) => `<${text}>`,
+            });
+
+            const output = spinner.getFrameOutput();
+
+            expect(output).toContain("<");
+            expect(output).toContain(">");
         });
     });
 
-    describe("method chaining", () => {
-        it("should support method chaining", () => {
+    describe("interactive manager integration", () => {
+        beforeEach(() => {
             vi.useFakeTimers();
-            const result = new Spinner({ stream: mockStream }).setPrefixText("[TASK]").setText("Loading");
+        });
 
-            expect(result instanceof Spinner).toBe(true);
-
+        afterEach(() => {
             vi.useRealTimers();
         });
-    });
 
-    describe("frame animation", () => {
-        it("should cycle through frames", () => {
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: mockStream });
+        it("should work with an interactive manager", () => {
+            expect.assertions(4);
 
-            spinner.start();
-
-            const frames: string[] = [];
-            const originalWrite = mockStream.write;
-
-            mockStream.write = (string_: string) => {
-                if (!string_.includes("\u001B")) {
-                    frames.push(string_);
-                }
-
-                originalWrite(string_);
+            const updates: string[][] = [];
+            const mockManager = {
+                hook: vi.fn().mockReturnValue(true),
+                unhook: vi.fn().mockReturnValue(true),
+                update: vi.fn((_, rows: string[]) => {
+                    updates.push(rows);
+                }),
             };
 
-            // Advance through multiple frames
-            // eslint-disable-next-line no-plusplus
-            for (let i = 0; i < 5; i++) {
-                vi.advanceTimersByTime(80);
-            }
+            const spinner = new Spinner({ name: "dots" }, mockManager as unknown as InteractiveManager);
 
-            // Should have rendered different frames
-            expect(frames.length).toBeGreaterThan(0);
+            spinner.start("Loading...");
 
-            vi.useRealTimers();
+            expect(mockManager.hook).toHaveBeenCalled();
+            expect(mockManager.update).toHaveBeenCalled();
+            expect(updates.length).toBeGreaterThan(0);
+
+            spinner.succeed("Done!");
+
+            expect(mockManager.unhook).toHaveBeenCalled();
         });
 
-        it("should use correct frame interval", () => {
-            vi.useFakeTimers();
+        it("should setInteractiveManager after construction", () => {
+            expect.assertions(1);
 
-            const dotsSpinner = getSpinner("dots");
-
-            expect(dotsSpinner?.interval).toBe(80);
-
-            vi.useRealTimers();
-        });
-    });
-
-    describe("tTY handling", () => {
-        it("should handle non-TTY streams gracefully", () => {
-            const nonTTYStream = {
-                isTTY: false,
-                write: (string_: string) => {
-                    writeOutput.push(string_);
-                },
+            const mockManager = {
+                hook: vi.fn().mockReturnValue(true),
+                unhook: vi.fn().mockReturnValue(true),
+                update: vi.fn(),
             };
 
-            vi.useFakeTimers();
-            const spinner = new Spinner({ stream: nonTTYStream, text: "Loading" });
+            const spinner = new Spinner({ name: "dots" });
 
-            spinner.start();
+            spinner.setInteractiveManager(mockManager as unknown as InteractiveManager);
+            spinner.start("Loading...");
 
-            // Should not write cursor control codes
-            const cursorCodes = writeOutput.filter((output) => output.includes("\u001B[?25"));
+            expect(mockManager.hook).toHaveBeenCalled();
 
-            expect(cursorCodes).toHaveLength(0);
-
-            vi.useRealTimers();
+            spinner.succeed();
         });
+    });
+});
+
+describe("multiSpinner", () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it("should create spinners", () => {
+        expect.assertions(2);
+
+        const multi = new MultiSpinner({ name: "dots" });
+        const spinner = multi.create("Task 1");
+
+        expect(spinner).toBeInstanceOf(Spinner);
+        expect(spinner.getText).toBe("Task 1");
+    });
+
+    it("should remove spinners", () => {
+        expect.assertions(1);
+
+        const multi = new MultiSpinner({ name: "dots" });
+        const spinner = multi.create("Task 1");
+
+        const removed = multi.remove(spinner);
+
+        expect(removed).toBe(true);
+    });
+
+    it("should return false when removing unknown spinner", () => {
+        expect.assertions(1);
+
+        const multi = new MultiSpinner({ name: "dots" });
+        const foreignSpinner = new Spinner({ name: "dots" });
+
+        const removed = multi.remove(foreignSpinner);
+
+        expect(removed).toBe(false);
+    });
+
+    it("should work with interactive manager", () => {
+        expect.assertions(3);
+
+        const mockManager = {
+            hook: vi.fn().mockReturnValue(true),
+            unhook: vi.fn().mockReturnValue(true),
+            update: vi.fn(),
+        };
+
+        const multi = new MultiSpinner({ name: "dots" }, mockManager as unknown as InteractiveManager);
+        const spinner1 = multi.create("Task 1");
+        const spinner2 = multi.create("Task 2");
+
+        spinner1.start();
+        spinner2.start();
+
+        expect(mockManager.hook).toHaveBeenCalled();
+        expect(mockManager.update).toHaveBeenCalled();
+
+        multi.stop();
+
+        expect(mockManager.unhook).toHaveBeenCalled();
+    });
+
+    it("should clear all spinners", () => {
+        expect.assertions(1);
+
+        const multi = new MultiSpinner({ name: "dots" });
+
+        multi.create("Task 1");
+        multi.create("Task 2");
+
+        multi.clear();
+
+        const spinner3 = multi.create("Task 3");
+
+        expect(spinner3).toBeInstanceOf(Spinner);
     });
 });

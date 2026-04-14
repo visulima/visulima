@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Minimal terminal spinners</h3>
+<h3 align="center">Terminal spinners with 109 animations</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -53,121 +53,120 @@ pnpm add @visulima/spinner
 ### Basic Example
 
 ```ts
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
 import { Spinner } from "@visulima/spinner";
 
-const spinner = new Spinner({
-    spinner: "dots",
-    text: "Loading...",
-});
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
 
-spinner.start();
+const spinner = new Spinner({ name: "dots" }, manager);
 
-// Simulate work
+spinner.start("Loading...");
+
+// Do work...
 await new Promise((resolve) => setTimeout(resolve, 3000));
 
 spinner.succeed("Done!");
 ```
 
-### Using Different Animations
+### Styling
 
 ```ts
-import { Spinner, getSpinner } from "@visulima/spinner";
+// Declarative style — uses Node.js util.styleText
+const spinner = new Spinner(
+    {
+        name: "dots",
+        style: { bold: true, color: "blue" },
+    },
+    manager,
+);
 
-// Using a named spinner
-const spinner = new Spinner({
-    spinner: "line",
-    text: "Processing",
-});
-
-spinner.start();
-
-// Later...
-spinner.succeed("Completed");
-
-// Or use a random spinner
-import { getRandomSpinner } from "@visulima/spinner";
-
-const randomSpinner = getRandomSpinner();
+// Function style — full control (e.g., with @visulima/colorize)
+const spinner = new Spinner(
+    {
+        name: "dots",
+        style: (text) => colorize.bold.blue(text),
+    },
+    manager,
+);
 ```
 
 ### Status Methods
 
 ```ts
-const spinner = new Spinner({ text: "Loading..." });
+const spinner = new Spinner({ name: "dots" }, manager);
 
-spinner.start();
+spinner.start("Loading...");
 
 // Update text
-spinner.setText("Still loading...");
+spinner.text = "Still loading...";
 
-// Update prefix (e.g., for logging context)
-spinner.setPrefixText("[INFO]");
+// Update prefix
+spinner.prefixText = "[INFO]";
 
-// Finish with success
+// Finish with status
 spinner.succeed("Task completed!");
-
-// Or fail
-spinner.fail("Task failed!");
-
-// Or warn
+spinner.failed("Task failed!");
 spinner.warn("Task completed with warnings");
+spinner.info("Information");
 ```
 
-### Method Chaining
-
-The API supports fluent chaining:
+### Pause and Resume
 
 ```ts
-new Spinner().setPrefixText("[TASK]").setText("Loading...").start();
+spinner.start("Working...");
+spinner.pause(); // Stops animation, keeps state
+spinner.resume(); // Continues animation
+spinner.succeed("Done!");
+```
+
+### MultiSpinner
+
+```ts
+import { MultiSpinner } from "@visulima/spinner";
+
+const multi = new MultiSpinner({ name: "dots" }, manager);
+
+const spinner1 = multi.create("Task 1");
+const spinner2 = multi.create("Task 2");
+
+spinner1.start();
+spinner2.start();
 
 // Later...
-spinner.succeed("Done!");
+spinner1.succeed("Task 1 done");
+spinner2.succeed("Task 2 done");
+multi.stop();
+```
+
+### Custom Icons
+
+```ts
+const spinner = new Spinner(
+    {
+        name: "dots",
+        icons: {
+            success: "OK",
+            error: "FAIL",
+            warning: "WARN",
+            info: "NOTE",
+        },
+    },
+    manager,
+);
 ```
 
 ### Available Spinners
 
-Some popular spinners include:
+109 spinners from cli-spinners, Rattles, and unicode-animations:
 
 - `dots`, `dots2`, `dots3` — Braille dots
 - `line`, `line2` — Simple line spinners
-- `pipe` — Box drawing spinners
-- `star`, `star2` — Star animations
-- `hamburger` — Hamburger menu
-- `growVertical`, `growHorizontal` — Growing bars
+- `breathe`, `helix`, `cascade` — Unicode braille animations
 - `bouncingBar`, `bouncingBall` — Bouncing animations
-- `smiley`, `monkey`, `hearts` — Emoji spinners
 - `clock`, `earth`, `moon` — Themed spinners
-- And 60+ more!
-
-### Get All Available Spinners
-
-```ts
-import { getSpinnerNames, getSpinner } from "@visulima/spinner";
-
-// Get list of all spinner names
-const names = getSpinnerNames();
-console.log(names); // ['dots', 'dots2', 'line', ...]
-
-// Get a specific spinner by name
-const dotSpinner = getSpinner("dots");
-console.log(dotSpinner); // { interval: 80, frames: [...] }
-
-// Get a random spinner
-import { getRandomSpinner } from "@visulima/spinner";
-const random = getRandomSpinner();
-```
-
-### Custom Symbols
-
-```ts
-new Spinner({
-    text: "Processing",
-    successSymbol: "✔",
-    failureSymbol: "✘",
-    warningSymbol: "⚠",
-    stream: process.stdout, // optional, defaults to stdout
-}).start();
-```
+- And 90+ more!
 
 ## Related
 
@@ -175,8 +174,6 @@ For detailed documentation on all spinners, API reference, and usage patterns:
 
 - **Online Docs:** [visulima.com/packages/spinner](https://visulima.com/packages/spinner)
 - **Local Docs:** [./docs](./docs)
-
-Check out the full documentation for 101+ spinner animations, usage examples, and advanced patterns.
 
 ## Supported Node.js Versions
 

@@ -1,22 +1,25 @@
-/* eslint-disable vitest/prefer-expect-assertions */
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { getRandomSpinner, getSpinner, getSpinnerNames, spinners } from "../src/spinners";
-import type { SpinnerFrame } from "../src/types";
+import type { SpinnerName } from "../src/types";
 
 describe("spinners", () => {
     describe("spinners registry", () => {
         it("should have a spinners object", () => {
-            expect(spinners).toBeDefined();
+            expect.assertions(1);
 
-            expectTypeOf(spinners).toBeObject();
+            expect(spinners).toBeDefined();
         });
 
         it("should contain at least 85 spinners", () => {
+            expect.assertions(1);
+
             expect(Object.keys(spinners).length).toBeGreaterThanOrEqual(85);
         });
 
         it("should have all spinners with required properties", () => {
+            expect.hasAssertions();
+
             Object.entries(spinners).forEach(([, spinner]) => {
                 expect(spinner).toHaveProperty("interval");
                 expect(spinner).toHaveProperty("frames");
@@ -31,23 +34,31 @@ describe("spinners", () => {
 
     describe("common spinners", () => {
         it("should have dots spinner", () => {
+            expect.assertions(3);
+
             expect(spinners.dots).toBeDefined();
             expect(spinners.dots.interval).toBe(80);
             expect(spinners.dots.frames).toHaveLength(10);
         });
 
         it("should have line spinner", () => {
+            expect.assertions(3);
+
             expect(spinners.line).toBeDefined();
             expect(spinners.line.interval).toBe(130);
             expect(spinners.line.frames).toStrictEqual(["-", "\\", "|", "/"]);
         });
 
         it("should have simpleDots spinner", () => {
+            expect.assertions(2);
+
             expect(spinners.simpleDots).toBeDefined();
             expect(spinners.simpleDots.interval).toBe(400);
         });
 
         it("should have braille spinners", () => {
+            expect.assertions(4);
+
             expect(spinners.breathe).toBeDefined();
             expect(spinners.cascade).toBeDefined();
             expect(spinners.helix).toBeDefined();
@@ -57,41 +68,43 @@ describe("spinners", () => {
 
     describe("getSpinner", () => {
         it("should return a spinner by name", () => {
+            expect.assertions(3);
+
             const spinner = getSpinner("dots");
 
             expect(spinner).toBeDefined();
-            expect(spinner?.frames).toBeDefined();
-            expect(spinner?.interval).toBe(80);
-        });
-
-        it("should return undefined for non-existent spinner", () => {
-            const spinner = getSpinner("non-existent-spinner");
-
-            expect(spinner).toBeUndefined();
+            expect(spinner.frames).toBeDefined();
+            expect(spinner.interval).toBe(80);
         });
 
         it("should return valid spinner object", () => {
-            const spinner = getSpinner("line") as SpinnerFrame;
+            expect.assertions(2);
+
+            const spinner = getSpinner("line");
 
             expect(spinner.frames).toStrictEqual(["-", "\\", "|", "/"]);
             expect(spinner.interval).toBe(130);
         });
 
         it("should work with various spinner names", () => {
-            const testSpinners = ["dots", "line", "pipe", "star", "breathe", "helix"];
+            expect.hasAssertions();
+
+            const testSpinners: SpinnerName[] = ["dots", "line", "pipe", "star", "breathe", "helix"];
 
             testSpinners.forEach((name) => {
                 const spinner = getSpinner(name);
 
                 expect(spinner).toBeDefined();
-                expect(spinner?.interval).toBeGreaterThan(0);
-                expect(spinner?.frames.length).toBeGreaterThan(0);
+                expect(spinner.interval).toBeGreaterThan(0);
+                expect(spinner.frames.length).toBeGreaterThan(0);
             });
         });
     });
 
     describe("getRandomSpinner", () => {
         it("should return a spinner object", () => {
+            expect.assertions(3);
+
             const spinner = getRandomSpinner();
 
             expect(spinner).toBeDefined();
@@ -100,19 +113,20 @@ describe("spinners", () => {
         });
 
         it("should return valid spinner frames", () => {
+            expect.assertions(2);
+
             const spinner = getRandomSpinner();
 
             expect(Array.isArray(spinner.frames)).toBe(true);
             expect(spinner.frames.length).toBeGreaterThan(0);
-
-            expectTypeOf(spinner.interval).toBeNumber();
         });
 
         it("should return different spinners on multiple calls", () => {
+            expect.assertions(1);
+
             const randomSpinners = Array.from({ length: 10 }, () => getRandomSpinner());
             const spinnerFrames = randomSpinners.map((s) => s.frames[0]);
 
-            // With 70+ spinners, it's extremely unlikely to get all the same
             const uniqueFrames = new Set(spinnerFrames);
 
             expect(uniqueFrames.size).toBeGreaterThan(1);
@@ -121,18 +135,24 @@ describe("spinners", () => {
 
     describe("getSpinnerNames", () => {
         it("should return an array of spinner names", () => {
+            expect.assertions(1);
+
             const names = getSpinnerNames();
 
             expect(Array.isArray(names)).toBe(true);
         });
 
         it("should contain all spinners", () => {
+            expect.assertions(1);
+
             const names = getSpinnerNames();
 
             expect(names.length).toBeGreaterThanOrEqual(85);
         });
 
         it("should contain expected spinners", () => {
+            expect.assertions(3);
+
             const names = getSpinnerNames();
 
             expect(names).toContain("dots");
@@ -141,6 +161,8 @@ describe("spinners", () => {
         });
 
         it("should not contain duplicates", () => {
+            expect.assertions(1);
+
             const names = getSpinnerNames();
             const uniqueNames = new Set(names);
 
@@ -148,6 +170,8 @@ describe("spinners", () => {
         });
 
         it("should match spinner registry keys", () => {
+            expect.assertions(1);
+
             const names = getSpinnerNames();
             const registryKeys = Object.keys(spinners);
 
@@ -160,6 +184,8 @@ describe("spinners", () => {
 
     describe("spinner intervals", () => {
         it("should have reasonable interval values", () => {
+            expect.hasAssertions();
+
             Object.values(spinners).forEach((spinner) => {
                 expect(spinner.interval).toBeGreaterThan(0);
                 expect(spinner.interval).toBeLessThan(500);
@@ -167,6 +193,8 @@ describe("spinners", () => {
         });
 
         it("should have valid intervals for different speeds", () => {
+            expect.assertions(1);
+
             const slowSpinner = spinners.simpleDots;
             const fastSpinner = spinners.triangle;
 
@@ -184,18 +212,16 @@ describe("spinners", () => {
         });
 
         it("should have string frames", () => {
+            expect.assertions(1);
+
             const spinnersList = Object.values(spinners);
 
             expect(spinnersList.length).toBeGreaterThan(0);
-
-            spinnersList.forEach((spinner) => {
-                spinner.frames.forEach((frame) => {
-                    expectTypeOf(frame).toBeString();
-                });
-            });
         });
 
         it("should handle unicode characters in frames", () => {
+            expect.assertions(2);
+
             const dotsSpinner = spinners.dots;
 
             expect(dotsSpinner.frames[0]).toBe("⠋");

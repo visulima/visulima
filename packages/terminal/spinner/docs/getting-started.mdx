@@ -8,7 +8,7 @@ sidebar_position: 2
 
 Install the package using your preferred package manager:
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 <Tabs items={["pnpm", "npm", "yarn", "bun"]}>
 <Tab value="pnpm">
@@ -17,17 +17,9 @@ pnpm add @visulima/spinner
 ```
 </Tab>
 
-<Tab value="npm">
-```bash
-npm install @visulima/spinner
-```
-</Tab>
+<Tab value="npm">```bash npm install @visulima/spinner ```</Tab>
 
-<Tab value="yarn">
-```bash
-yarn add @visulima/spinner
-```
-</Tab>
+<Tab value="yarn">```bash yarn add @visulima/spinner ```</Tab>
 
 <Tab value="bun">
 ```bash
@@ -36,58 +28,84 @@ bun add @visulima/spinner
 </Tab>
 </Tabs>
 
+`@visulima/interactive-manager` is included as a dependency and provides terminal output coordination.
+
 ## Basic Usage
 
 ### Simple Spinner
 
 ```typescript
-import { Spinner } from '@visulima/spinner';
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+import { Spinner } from "@visulima/spinner";
 
-const spinner = new Spinner({
-  spinner: 'dots',
-  text: 'Processing...'
-});
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
 
-spinner.start();
+const spinner = new Spinner({ name: "dots" }, manager);
 
-// Do async work
+spinner.start("Processing...");
+
 await processData();
 
-spinner.succeed('Completed!');
+spinner.succeed("Completed!");
 ```
 
 ### With Error Handling
 
 ```typescript
-const spinner = new Spinner({
-  spinner: 'line',
-  text: 'Connecting to database...'
-});
+const spinner = new Spinner({ name: "line" }, manager);
 
-spinner.start();
+spinner.start("Connecting to database...");
 
 try {
-  await connectDB();
-  spinner.succeed('Connected!');
+    await connectDB();
+    spinner.succeed("Connected!");
 } catch (error) {
-  spinner.fail(`Failed: ${error.message}`);
+    spinner.failed(`Failed: ${error.message}`);
 }
 ```
 
-### Custom Symbols
+### With Styling
 
 ```typescript
-const spinner = new Spinner({
-  spinner: 'breathe',
-  text: 'Loading',
-  successSymbol: '✓',
-  failureSymbol: '✗',
-  warningSymbol: '⚠'
-});
+// Declarative style — uses Node.js util.styleText
+const spinner = new Spinner(
+    {
+        name: "breathe",
+        style: { bold: true, color: "cyan" },
+    },
+    manager,
+);
 
-spinner.start();
-await load();
-spinner.succeed();
+// Function style — full control
+const spinner = new Spinner(
+    {
+        name: "breathe",
+        style: (text) => `\x1b[1m\x1b[36m${text}\x1b[0m`,
+    },
+    manager,
+);
+```
+
+### Custom Icons
+
+```typescript
+const spinner = new Spinner(
+    {
+        name: "dots",
+        icons: {
+            success: "DONE",
+            error: "FAIL",
+            warning: "WARN",
+            info: "NOTE",
+        },
+    },
+    manager,
+);
+
+spinner.start("Loading...");
+spinner.succeed(); // Shows "DONE" icon
 ```
 
 ## Available Spinners
@@ -95,47 +113,22 @@ spinner.succeed();
 Get all available spinner names:
 
 ```typescript
-import { getSpinnerNames } from '@visulima/spinner';
+import { getSpinnerNames } from "@visulima/spinner";
 
 const names = getSpinnerNames();
 console.log(names); // ['aesthetic', 'arc', 'arrow', ...]
 ```
 
-Check out the [Spinner Reference](/docs/spinner/spinners) to see all 101 spinners with previews and details.
+Check out the [Spinner Reference](/docs/spinner/spinners) to see all 109 spinners with previews and details.
 
-## Environment Detection
-
-The spinner automatically detects whether it's running in a TTY (terminal) environment:
+## Disabling Output
 
 ```typescript
-// Spinner only animates in TTY environments
-const spinner = new Spinner({
-  spinner: 'dots',
-  text: 'Loading...',
-  isEnabled: true // Set to false to disable in CI/non-TTY
-});
-```
-
-## Common Patterns
-
-**Disable in CI/testing:**
-```typescript
-const spinner = new Spinner({
-  spinner: 'dots',
-  text: 'Loading...',
-  isEnabled: process.stdout.isTTY // Only in terminals
-});
-```
-
-**Check current status:**
-```typescript
-const status = spinner.getStatus();
-if (status === 'spinning') {
-  spinner.setText('Still working...');
-}
+// Disable spinner output (useful in CI/testing)
+const spinner = new Spinner({ name: "dots", verbose: false }, manager);
 ```
 
 ## See Also
 
 - [Usage Guide](/docs/spinner/usage) - Complete API reference with patterns
-- [Spinner Reference](/docs/spinner/spinners) - Browse all 101 available spinners
+- [Spinner Reference](/docs/spinner/spinners) - Browse all 109 available spinners
