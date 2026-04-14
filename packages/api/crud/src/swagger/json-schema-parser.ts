@@ -111,8 +111,8 @@ class PrismaJsonSchemaParser {
             const values: Record<string, object[] | object | string> = {};
 
             Object.entries(objectProperties).forEach(([key, value]) => {
-                values[key] =
-                    (value as { $ref?: string }).$ref === undefined
+                values[key]
+                    = (value as { $ref?: string }).$ref === undefined
                         ? ((value as OpenAPIV3.SchemaObject).type as string)
                         : referenceToSchema((value as OpenAPIV3.ReferenceObject).$ref);
             });
@@ -241,8 +241,8 @@ class PrismaJsonSchemaParser {
                         });
 
                         // @TODO: added the correct type
-                        // @ts-expect-error
-                        const { type: schemaType } = schema[1];
+
+                        const { type: schemaType } = schema[1] as Record<string, unknown>;
 
                         if (schemaType && Array.isArray(schemaType)) {
                             if (schemaType.includes("null")) {

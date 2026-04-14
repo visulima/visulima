@@ -200,7 +200,9 @@ describe("express-path-parser", () => {
         expect.assertions(3);
 
         app.route("/test")
-            .all((_request, _response, next) => next())
+            .all((_request, _response, next) => {
+                next();
+            })
             .get(successResponse);
 
         const parsed = expressPathParser(app);
@@ -214,8 +216,16 @@ describe("express-path-parser", () => {
     it("path with middleware", () => {
         expect.assertions(3);
 
-        app.use((_request, _response, next) => next());
-        app.get("/test", (_request, _response, next) => next(), successResponse);
+        app.use((_request, _response, next) => {
+            next();
+        });
+        app.get(
+            "/test",
+            (_request, _response, next) => {
+                next();
+            },
+            successResponse,
+        );
 
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;

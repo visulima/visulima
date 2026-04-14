@@ -70,8 +70,8 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
         .forEach((item) => {
             const ancestorSegments = segments
                 .filter((seg) => seg.index < item.index && seg.depth < item.depth)
-                // eslint-disable-next-line unicorn/prefer-array-some
-                .filter((seg, _index, previousArray) => !previousArray.find((segment) => segment.depth === seg.depth && segment.index > seg.index));
+
+                .filter((seg, _index, previousArray) => !previousArray.some((segment) => segment.depth === seg.depth && segment.index > seg.index));
 
             const route = [...ancestorSegments.map((r) => r.segment), item.segment].join("");
 

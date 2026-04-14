@@ -31,7 +31,7 @@ describe("init command", () => {
         vi.spyOn(console, "log");
 
         // Expect the function to throw an error
-        expect(() => initCommand("config.js")).toThrowError("Config file already exists");
+        expect(() => { initCommand("config.js"); }).toThrow("Config file already exists");
     });
 
     it("should create a new config file with the correct module.exports content", async () => {

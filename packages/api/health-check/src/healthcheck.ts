@@ -7,7 +7,6 @@ class Healthcheck implements HealthcheckInterface {
     private healthCheckers: Record<string, Checker> = {};
 
     public addChecker(service: string, checker: Checker): void {
-        // eslint-disable-next-line security/detect-object-injection
         this.healthCheckers[service] = checker;
     }
 
@@ -18,13 +17,11 @@ class Healthcheck implements HealthcheckInterface {
     public async getReport(): Promise<{ healthy: boolean; report: HealthReport }> {
         const report: HealthReport = {};
 
-        // eslint-disable-next-line compat/compat
         await Promise.all(Object.keys(this.healthCheckers).map(async (service) => await this.invokeChecker(service, report)));
 
         /**
          * Finding unhealthy service to know if system is healthy or not
          */
-        // eslint-disable-next-line security/detect-object-injection
         const unhealthyService = Object.keys(report).find((service) => !(report[service] as HealthReportEntry).health.healthy);
 
         return { healthy: !unhealthyService, report };
@@ -47,7 +44,6 @@ class Healthcheck implements HealthcheckInterface {
      * Invokes a given checker to collect the report metrics.
      */
     private async invokeChecker(service: string, reportSheet: HealthReport): Promise<boolean> {
-        // eslint-disable-next-line security/detect-object-injection
         const checker = this.healthCheckers[service] as Checker;
 
         let report: HealthReportEntry;
@@ -64,7 +60,6 @@ class Healthcheck implements HealthcheckInterface {
             };
         }
 
-        // eslint-disable-next-line no-param-reassign,security/detect-object-injection
         reportSheet[service] = report;
 
         return report.health.healthy;
