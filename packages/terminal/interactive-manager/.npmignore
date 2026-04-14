@@ -1,0 +1,10 @@
+__tests__
+__fixtures__
+src
+*.config.*
+.eslintignore
+.eslintrc*
+.prettierignore
+.prettierrc*
+*.spec.ts
+*.test.ts

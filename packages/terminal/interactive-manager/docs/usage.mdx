@@ -1,0 +1,222 @@
+---
+title: Usage Guide
+description: Complete API reference for InteractiveManager and InteractiveStreamHook
+sidebar_position: 3
+---
+
+## InteractiveStreamHook
+
+Hooks into a Node.js WriteStream to capture output for interactive terminal applications.
+
+### Constructor
+
+```typescript
+import { InteractiveStreamHook } from "@visulima/interactive-manager";
+
+const hook = new InteractiveStreamHook(process.stdout);
+```
+
+### Methods
+
+#### active()
+
+Activates the stream hook. All writes to the stream are captured in history.
+
+```typescript
+hook.active();
+```
+
+#### inactive(separateHistory?)
+
+Deactivates the hook and replays captured output.
+
+```typescript
+hook.inactive(); // Replay without separator
+hook.inactive(true); // Add newline before replay
+```
+
+#### erase(count)
+
+Erases the specified number of lines from the terminal.
+
+```typescript
+hook.erase(3); // Erase 3 lines
+```
+
+#### renew()
+
+Restores the original stream write method and shows the cursor.
+
+```typescript
+hook.renew();
+```
+
+#### write(message)
+
+Writes directly to the underlying stream, bypassing the hook.
+
+```typescript
+hook.write("Direct output\n");
+```
+
+## InteractiveManager
+
+Coordinates stdout and stderr stream hooks for interactive terminal output.
+
+### Constructor
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+```
+
+### Properties
+
+#### isHooked
+
+Whether the interactive hooks are currently active.
+
+```typescript
+if (manager.isHooked) {
+    // Interactive mode is active
+}
+```
+
+#### isSuspended
+
+Whether interactive mode is temporarily suspended.
+
+```typescript
+if (manager.isSuspended) {
+    // Hooks are paused
+}
+```
+
+#### lastLength
+
+Number of rows last written to the terminal.
+
+```typescript
+console.log(manager.lastLength);
+```
+
+#### outside
+
+Number of rows beyond the terminal height.
+
+```typescript
+console.log(manager.outside);
+```
+
+### Methods
+
+#### hook()
+
+Activates both stdout and stderr hooks.
+
+```typescript
+manager.hook();
+```
+
+#### unhook(separateHistory?)
+
+Deactivates hooks and replays captured output.
+
+```typescript
+manager.unhook(); // With history separator
+manager.unhook(false); // Without separator
+```
+
+#### update(stream, rows, from?)
+
+Updates the terminal output with new content.
+
+```typescript
+manager.update("stdout", ["Line 1", "Line 2"]);
+manager.update("stderr", ["Error output"]);
+
+// Update starting from a specific line
+manager.update("stdout", ["Updated"], 2);
+```
+
+#### suspend(stream, erase?)
+
+Temporarily suspends interactive mode.
+
+```typescript
+manager.suspend("stdout"); // Suspend and erase
+manager.suspend("stdout", false); // Suspend without erasing
+```
+
+#### resume(stream, eraseRowCount?)
+
+Resumes interactive mode after suspension.
+
+```typescript
+manager.resume("stdout");
+manager.resume("stdout", 3); // Erase 3 rows on resume
+```
+
+#### erase(stream, count?)
+
+Erases lines from the terminal output.
+
+```typescript
+manager.erase("stdout"); // Erase lastLength lines
+manager.erase("stdout", 5); // Erase 5 lines
+```
+
+## StreamType
+
+```typescript
+type StreamType = "stderr" | "stdout";
+```
+
+## Integration with Spinners
+
+The interactive manager works with `@visulima/spinner` for animated spinner output:
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+manager.hook();
+
+// Render spinner frames
+const frames = ["⠋", "⠙", "⠹", "⠸"];
+let i = 0;
+
+const interval = setInterval(() => {
+    manager.update("stdout", [`${frames[i % frames.length]} Loading...`]);
+    i++;
+}, 80);
+
+// Later...
+clearInterval(interval);
+manager.update("stdout", ["✓ Done!"]);
+manager.unhook(false);
+```
+
+## Integration with Progress Bars
+
+Works with `@visulima/progress-bar` for progress tracking:
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+import { ProgressBar } from "@visulima/progress-bar";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+const bar = new ProgressBar({ total: 100 }, manager);
+bar.start();
+bar.update(50);
+bar.stop();
+```
