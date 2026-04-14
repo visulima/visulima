@@ -1,8 +1,8 @@
 import { stderr, stdout } from "node:process";
 
+import { InteractiveManager } from "@visulima/interactive-manager";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { InteractiveManager } from "@visulima/interactive-manager";
 import { PailServer } from "../../src/pail.server";
 import RawReporter from "../../src/reporter/raw/raw-reporter.server";
 

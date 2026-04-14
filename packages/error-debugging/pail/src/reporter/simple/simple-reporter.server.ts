@@ -10,6 +10,7 @@ import { inspect } from "@visulima/inspector";
 import type { InteractiveManager } from "@visulima/interactive-manager";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, wordWrap, WrapMode } from "@visulima/string";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 
@@ -108,10 +109,8 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
     protected formatMessage(data: ReadonlyMeta<L>): string {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
         const { columns } = terminalSize();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let size = columns;
 
         if (typeof this.styles.messageLength === "number") {
