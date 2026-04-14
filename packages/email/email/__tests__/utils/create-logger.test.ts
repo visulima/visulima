@@ -24,14 +24,21 @@ describe(createLogger, () => {
 
             const logger = createLogger("test");
 
-            // eslint-disable-next-line @stylistic/max-statements-per-line
-            expect(() => { logger.debug("test"); }).not.toThrow();
-            // eslint-disable-next-line @stylistic/max-statements-per-line
-            expect(() => { logger.error("test"); }).not.toThrow();
-            // eslint-disable-next-line @stylistic/max-statements-per-line
-            expect(() => { logger.info("test"); }).not.toThrow();
-            // eslint-disable-next-line @stylistic/max-statements-per-line
-            expect(() => { logger.warn("test"); }).not.toThrow();
+            expect(() => {
+                logger.debug("test");
+            }).not.toThrow();
+
+            expect(() => {
+                logger.error("test");
+            }).not.toThrow();
+
+            expect(() => {
+                logger.info("test");
+            }).not.toThrow();
+
+            expect(() => {
+                logger.warn("test");
+            }).not.toThrow();
         });
     });
 

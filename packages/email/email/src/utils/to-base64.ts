@@ -24,7 +24,7 @@ const toBase64 = (content: string | Buffer | Uint8Array | ArrayLike<number>): st
             const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
 
             // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
-            binaryString += String.fromCharCode(...chunk as unknown as number[]);
+            binaryString += String.fromCharCode(...(chunk as unknown as number[]));
         }
 
         return btoa(binaryString);
@@ -48,7 +48,7 @@ const toBase64 = (content: string | Buffer | Uint8Array | ArrayLike<number>): st
         const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
 
         // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
-        binaryString += String.fromCharCode(...chunk as unknown as number[]);
+        binaryString += String.fromCharCode(...(chunk as unknown as number[]));
     }
 
     return btoa(binaryString);

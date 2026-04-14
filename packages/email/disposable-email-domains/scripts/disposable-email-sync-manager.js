@@ -85,7 +85,9 @@ class DisposableEmailSyncManager {
 
 ## Repository Details
 
-${Array.from(stats.repositoryStats.values(), (repo) => `
+${Array.from(
+    stats.repositoryStats.values(),
+    (repo) => `
 ### ${repo.url}
 
 - **Status**: ${repo.success ? "✅ Success" : "❌ Failed"}
@@ -94,8 +96,8 @@ ${Array.from(stats.repositoryStats.values(), (repo) => `
 - **File Size**: ${repo.fileSize.toLocaleString()} bytes
 
 ${repo.error ? `- **Error**: ${repo.error}` : ""}
-`)
-    .join("\n")}
+`,
+).join("\n")}
 
 ---
 

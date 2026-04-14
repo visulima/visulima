@@ -14,7 +14,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 
 vi.mock(import("../../src/utils/retry"), () => {
     return {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -29,7 +29,6 @@ describe(resendProvider, () => {
             expect.assertions(1);
 
             expect(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 resendProvider({} as any);
             }).toThrow(RequiredOptionError);
         });
@@ -198,12 +197,11 @@ describe(resendProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.from).toBe("Sender <sender@example.com>");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.to).toStrictEqual(["User 1 <user1@example.com>", "user2@example.com"]);
         });
 
@@ -234,10 +232,9 @@ describe(resendProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = (makeRequest as ReturnType<typeof vi.fn>).mock.calls[0];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const payload = JSON.parse(callArgs[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.tags).toStrictEqual([
                 { name: "category", value: "newsletter" },
                 { name: "campaign", value: "summer2024" },
@@ -311,12 +308,10 @@ describe(resendProvider, () => {
             expect(callWithPayload).toBeDefined();
             expect(callWithPayload?.[2]).toBeDefined();
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callWithPayload[2] as string);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.template).toBe("template_123");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             expect(payload.data).toStrictEqual({ name: "John" });
         });
 

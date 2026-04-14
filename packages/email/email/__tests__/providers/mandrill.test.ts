@@ -13,7 +13,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 
 vi.mock(import("../../src/utils/retry"), () => {
     return {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -28,7 +28,6 @@ describe(mandrillProvider, () => {
             expect.assertions(1);
 
             expect(() => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mandrillProvider({} as any);
             }).toThrow(RequiredOptionError);
         });

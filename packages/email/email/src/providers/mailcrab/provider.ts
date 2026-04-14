@@ -14,6 +14,7 @@ const DEFAULT_PORT = 1025;
  * MailCrab is a local SMTP server for testing emails during development
  * This is a convenience wrapper around the SMTP provider with MailCrab defaults
  */
+// @ts-expect-error - type inference complexity with generic provider factory
 const mailCrabProvider: ProviderFactory<MailCrabConfig> = defineProvider((config: MailCrabConfig = {} as MailCrabConfig) => {
     const options: Pick<MailCrabConfig, "timeout" | "retries" | "logger"> & Required<Omit<MailCrabConfig, "timeout" | "retries" | "logger">> = {
         debug: config.debug ?? false,

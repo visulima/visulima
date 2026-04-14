@@ -23,10 +23,24 @@ export default createConfig(
         },
     },
     {
+        files: ["src/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+        },
+    },
+    {
         files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/no-extraneous-class": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-useless-constructor": "off",
             "class-methods-use-this": "off",
             "max-classes-per-file": "off",

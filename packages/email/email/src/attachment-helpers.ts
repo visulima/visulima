@@ -35,7 +35,7 @@ export const generateContentId = (filename: string): string => {
  * @param filePath Path to the file.
  * @returns Buffer containing file content.
  */
-export const readFileAsBuffer = async (filePath: string): Promise<Buffer> => readFile(filePath, { buffer: true });
+export const readFileAsBuffer = (filePath: string): Promise<Buffer> => readFile(filePath, { buffer: true });
 
 /**
  * Attachment options for helper methods
