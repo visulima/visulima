@@ -1,59 +1,41 @@
 ---
 title: Spinner
-description: 101 terminal spinner animations for Node.js and browsers
+description: 109 terminal spinner animations for Node.js
 icon: Zap
 sidebar_position: 1
 ---
 
-A lightweight, zero-dependency terminal spinner library with 101 animations. Perfect for CLI tools, build processes, and long-running operations.
+A terminal spinner library with 109 animations, styling support, multi-spinner management, and interactive terminal integration via `@visulima/interactive-manager`.
 
 ## Features
 
-- **101 Spinners** - Carefully curated animations from multiple sources
-- **Lightweight** - Minimal dependencies, optimized bundle size
-- **Easy to Use** - Simple API with method chaining
+- **109 Spinners** - Curated animations from cli-spinners, Rattles, and unicode-animations
+- **Styling** - Declarative `SpinnerStyle` objects or custom `(text) => string` functions
+- **MultiSpinner** - Display and manage multiple spinners concurrently
+- **Interactive Terminal** - Coordinates with `@visulima/interactive-manager` for dynamic output
+- **Pause/Resume** - Pause and resume spinner animation
+- **Custom Icons** - Configure success, failure, warning, and info icons
 - **TypeScript** - Full type support out of the box
-- **Customizable** - Control symbols, text, and output stream
-- **Cross-platform** - Works in Node.js and modern browsers
 
 ## Quick Example
 
 ```typescript
-import { Spinner } from '@visulima/spinner';
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+import { Spinner } from "@visulima/spinner";
 
-const spinner = new Spinner({
-  spinner: 'dots',
-  text: 'Loading...'
-});
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
 
-spinner.start();
+const spinner = new Spinner({ name: "dots" }, manager);
 
-// Do async work
+spinner.start("Loading...");
 await doSomething();
-
-spinner.succeed('Done!');
+spinner.succeed("Done!");
 ```
-
-## Why Use This Library?
-
-- **Unique Collection** - Spinners sourced from cli-spinners, Rattles, and unicode-animations
-- **No Dependencies** - Pure JavaScript, no external dependencies
-- **Production Ready** - Used in real-world CLI tools
-- **Well Tested** - Comprehensive test coverage
-- **Accessible** - Works with TTY detection and can be disabled
-
-## What's Included
-
-The package includes spinners in several categories:
-
-- **Classic** - Traditional dots, lines, and boxes
-- **Braille** - Unicode braille-based animations (breathe, cascade, helix, etc.)
-- **Shapes** - Geometric animations (circles, arcs, bouncing)
-- **Symbols** - Various Unicode and ASCII characters
-- **Effects** - Special animation effects
 
 ## Next Steps
 
 - [Getting Started](/docs/spinner/getting-started) - Install and use in 30 seconds
 - [Usage Guide](/docs/spinner/usage) - Learn the Spinner API
-- [Spinner Reference](/docs/spinner/spinners) - Explore all 101 spinners
+- [Spinner Reference](/docs/spinner/spinners) - Explore all 109 spinners
