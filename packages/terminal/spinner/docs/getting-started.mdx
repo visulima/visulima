@@ -1,0 +1,141 @@
+---
+title: Getting Started
+description: Install and start using spinners in seconds
+sidebar_position: 2
+---
+
+## Installation
+
+Install the package using your preferred package manager:
+
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+<Tabs items={["pnpm", "npm", "yarn", "bun"]}>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/spinner
+```
+</Tab>
+
+<Tab value="npm">
+```bash
+npm install @visulima/spinner
+```
+</Tab>
+
+<Tab value="yarn">
+```bash
+yarn add @visulima/spinner
+```
+</Tab>
+
+<Tab value="bun">
+```bash
+bun add @visulima/spinner
+```
+</Tab>
+</Tabs>
+
+## Basic Usage
+
+### Simple Spinner
+
+```typescript
+import { Spinner } from '@visulima/spinner';
+
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Processing...'
+});
+
+spinner.start();
+
+// Do async work
+await processData();
+
+spinner.succeed('Completed!');
+```
+
+### With Error Handling
+
+```typescript
+const spinner = new Spinner({
+  spinner: 'line',
+  text: 'Connecting to database...'
+});
+
+spinner.start();
+
+try {
+  await connectDB();
+  spinner.succeed('Connected!');
+} catch (error) {
+  spinner.fail(`Failed: ${error.message}`);
+}
+```
+
+### Custom Symbols
+
+```typescript
+const spinner = new Spinner({
+  spinner: 'breathe',
+  text: 'Loading',
+  successSymbol: '✓',
+  failureSymbol: '✗',
+  warningSymbol: '⚠'
+});
+
+spinner.start();
+await load();
+spinner.succeed();
+```
+
+## Available Spinners
+
+Get all available spinner names:
+
+```typescript
+import { getSpinnerNames } from '@visulima/spinner';
+
+const names = getSpinnerNames();
+console.log(names); // ['aesthetic', 'arc', 'arrow', ...]
+```
+
+Check out the [Spinner Reference](/docs/spinner/spinners) to see all 101 spinners with previews and details.
+
+## Environment Detection
+
+The spinner automatically detects whether it's running in a TTY (terminal) environment:
+
+```typescript
+// Spinner only animates in TTY environments
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Loading...',
+  isEnabled: true // Set to false to disable in CI/non-TTY
+});
+```
+
+## Common Patterns
+
+**Disable in CI/testing:**
+```typescript
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Loading...',
+  isEnabled: process.stdout.isTTY // Only in terminals
+});
+```
+
+**Check current status:**
+```typescript
+const status = spinner.getStatus();
+if (status === 'spinning') {
+  spinner.setText('Still working...');
+}
+```
+
+## See Also
+
+- [Usage Guide](/docs/spinner/usage) - Complete API reference with patterns
+- [Spinner Reference](/docs/spinner/spinners) - Browse all 101 available spinners
