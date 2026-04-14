@@ -39,7 +39,12 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error) as unknown as { column?: number; file?: string; line?: number; methodName?: string }[];
+    const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error) as unknown as {
+        column?: number;
+        file?: string;
+        line?: number;
+        methodName?: string;
+    }[];
 
     const mapped = await Promise.all(
         // eslint-disable-next-line sonarjs/cognitive-complexity
