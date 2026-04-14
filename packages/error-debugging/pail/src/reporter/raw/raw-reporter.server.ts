@@ -3,9 +3,9 @@ import { stderr, stdout } from "node:process";
 import type { Options as InspectorOptions } from "@visulima/inspector";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { inspect } from "@visulima/inspector";
+import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import { EMPTY_SYMBOL } from "../../constants";
-import type InteractiveManager from "../../interactive/interactive-manager";
 import type { ReadonlyMeta, StreamAwareReporter } from "../../types";
 import writeStream from "../../utils/write-stream";
 
@@ -14,6 +14,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
 
     #stderr: NodeJS.WriteStream;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #interactiveManager: InteractiveManager | undefined;
 
     #interactive = false;
@@ -36,6 +37,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
     }
 
     public setInteractiveManager(manager?: InteractiveManager): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = manager;
     }
 
@@ -71,6 +73,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
         const groupSpaces: string = groups.map(() => "    ").join("");
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.update(streamType, (groupSpaces + items.join("")).split("\n"), 0);
         } else {
             writeStream(groupSpaces + items.join(""), stream);

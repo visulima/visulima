@@ -1,13 +1,10 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { resetTerminal } from "@visulima/ansi/clear";
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
 import type { LiteralUnion } from "type-fest";
 
-import InteractiveManager from "./interactive/interactive-manager";
-import InteractiveStreamHook from "./interactive/interactive-stream-hook";
 import { PailBrowserImpl } from "./pail.browser";
-import type { MultiBarOptions, SingleBarOptions } from "./progress-bar";
-import { applyStyleToOptions, MultiProgressBar, ProgressBar } from "./progress-bar";
 import RawReporter from "./reporter/raw/raw-reporter.server";
-import type { SpinnerOptions } from "./spinner";
-import { MultiSpinner, Spinner } from "./spinner";
 import type {
     ConstructorOptions,
     DefaultLoggerTypes,
@@ -24,7 +21,6 @@ import type {
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
-import { clearTerminal } from "./utils/ansi-escapes";
 import arrayify from "./utils/arrayify";
 import getLongestLabel from "./utils/get-longest-label";
 import mergeTypes from "./utils/merge-types";
@@ -45,6 +41,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
     protected readonly stderr: NodeJS.WriteStream;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected interactiveManager: InteractiveManager | undefined;
 
     protected readonly interactive: boolean;
@@ -123,6 +120,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         this.stderr = stderr;
 
         if (this.interactive) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
@@ -192,15 +190,15 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
         // Combine parent and child reporters - pass Sets directly to avoid array conversion
         const childReporters = options?.reporters ?? [];
-        const allReporters =
-            childReporters.length > 0
+        const allReporters
+            = childReporters.length > 0
                 ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
                 : ([...this.reporters] as unknown as Reporter<LC>[]);
 
         // Combine parent and child processors - pass Sets directly to avoid array conversion
         const childProcessors = options?.processors ?? [];
-        const allProcessors =
-            childProcessors.length > 0
+        const allProcessors
+            = childProcessors.length > 0
                 ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
                 : ([...this.processors] as unknown as Processor<LC>[]);
 
@@ -224,14 +222,14 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         // Merge messages (child overrides parent)
         const mergedMessages = options?.messages
             ? {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-                  ...options.messages,
-              }
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+                ...options.messages,
+            }
             : {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-              };
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
 
         // Create child logger options
         // Pass parent types, longestLabel, stringify, logLevels, and messages for optimization when unchanged
@@ -323,6 +321,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * }
      * ```
      */
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public getInteractiveManager(): InteractiveManager | undefined {
         return this.interactiveManager;
     }
@@ -410,109 +409,6 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 
     /**
-     * Creates a single progress bar.
-     * @param options Configuration options for the progress bar
-     * @returns A new ProgressBar instance
-     * @example
-     * ```typescript
-     * const logger = createPail({ interactive: true });
-     * const bar = logger.createProgressBar({
-     *   total: 100,
-     *   format: 'Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'
-     * });
-     *
-     * bar.start();
-     * // ... do work and update progress
-     * bar.update(50);
-     * bar.stop();
-     * ```
-     */
-    public createProgressBar(options: SingleBarOptions): ProgressBar {
-        if (!this.interactiveManager) {
-            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use progress bars.");
-        }
-
-        const styledOptions = applyStyleToOptions(options);
-
-        return new ProgressBar(styledOptions, this.interactiveManager);
-    }
-
-    /**
-     * Creates a multi-bar progress manager for displaying multiple progress bars.
-     * @param options Configuration options for the multi-bar manager
-     * @returns A new MultiProgressBar instance
-     * @example
-     * ```typescript
-     * const logger = createPail({ interactive: true });
-     * const multiBar = logger.createMultiProgressBar();
-     *
-     * const bar1 = multiBar.create(100);
-     * const bar2 = multiBar.create(200);
-     *
-     * bar1.start();
-     * bar2.start();
-     * // ... update bars as needed
-     * multiBar.stop();
-     * ```
-     */
-    public createMultiProgressBar(options: MultiBarOptions = {}): MultiProgressBar {
-        if (!this.interactiveManager) {
-            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use progress bars.");
-        }
-
-        const styledOptions = applyStyleToOptions(options);
-
-        return new MultiProgressBar(styledOptions, this.interactiveManager);
-    }
-
-    /**
-     * Creates a single spinner.
-     * @param options Configuration options for the spinner
-     * @returns A new Spinner instance
-     * @example
-     * ```typescript
-     * const logger = createPail({ interactive: true });
-     * const spinner = logger.createSpinner({ name: 'dots' });
-     * spinner.start('Loading...');
-     * // ... do work
-     * spinner.succeed('Done');
-     * ```
-     */
-    public createSpinner(options: SpinnerOptions = {}): Spinner {
-        if (!this.interactiveManager) {
-            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use spinners.");
-        }
-
-        return new Spinner(options, this.interactiveManager);
-    }
-
-    /**
-     * Creates a multi-spinner manager for displaying multiple spinners.
-     * @param options Configuration options for the multi-spinner manager
-     * @returns A new MultiSpinner instance
-     * @example
-     * ```typescript
-     * const logger = createPail({ interactive: true });
-     * const multiSpinner = logger.createMultiSpinner();
-     *
-     * const spinner1 = multiSpinner.create('Loading 1');
-     * const spinner2 = multiSpinner.create('Loading 2');
-     *
-     * spinner1.start();
-     * spinner2.start();
-     * // ... update spinners as needed
-     * multiSpinner.stop();
-     * ```
-     */
-    public createMultiSpinner(options: SpinnerOptions = {}): MultiSpinner {
-        if (!this.interactiveManager) {
-            throw new Error("Interactive mode is not enabled. Create Pail with { interactive: true } to use spinners.");
-        }
-
-        return new MultiSpinner(options, this.interactiveManager);
-    }
-
-    /**
      * Clears the terminal screen.
      *
      * Sends ANSI escape sequences to clear the terminal screen and move
@@ -526,8 +422,8 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * ```
      */
     public override clear(): void {
-        this.stdout.write(clearTerminal);
-        this.stderr.write(clearTerminal);
+        this.stdout.write(resetTerminal);
+        this.stderr.write(resetTerminal);
     }
 
     protected override extendReporter(reporter: Reporter<L>): Reporter<L> {
@@ -600,11 +496,11 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 }
 
-export type PailServerType<T extends string = string, L extends string = string> = Console &
-    (new <TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>) &
-    PailServerImpl<T, L> &
-    Record<DefaultLogTypes, LoggerFunction> &
-    Record<T, LoggerFunction> & {
+export type PailServerType<T extends string = string, L extends string = string> = Console
+    & (new <TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>)
+    & PailServerImpl<T, L>
+    & Record<DefaultLogTypes, LoggerFunction>
+    & Record<T, LoggerFunction> & {
         force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
     };
 
