@@ -992,9 +992,6 @@ catalogs:
     '@visulima/pail':
       specifier: 3.2.2
       version: 3.2.2
-    '@visulima/tabular':
-      specifier: 4.0.0-alpha.6
-      version: 4.0.0-alpha.6
     accepts:
       specifier: ^1.3.8
       version: 1.3.8
@@ -5154,6 +5151,9 @@ importers:
       '@visulima/colorize':
         specifier: 2.0.0-alpha.8
         version: link:../../terminal/colorize
+      '@visulima/interactive-manager':
+        specifier: 0.0.0
+        version: link:../../terminal/interactive-manager
       elysia:
         specifier: '>=1.0'
         version: 1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.0)(openapi-types@12.1.3)(typescript@6.0.2)
@@ -5200,6 +5200,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 25.5.2
+      '@visulima/ansi':
+        specifier: 4.0.0-alpha.8
+        version: link:../../terminal/ansi
       '@visulima/error':
         specifier: 6.0.0-alpha.8
         version: link:../error
@@ -5224,9 +5227,6 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.4(vitest@4.1.4)
-      cli-spinners:
-        specifier: catalog:dev
-        version: 3.4.0
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
@@ -8114,6 +8114,78 @@ importers:
         specifier: catalog:test
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(happy-dom@20.8.9)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.2(@types/node@25.5.2)(typescript@6.0.2))(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
+  packages/terminal/interactive-manager:
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: catalog:lint
+        version: 27.0.1(299d3d254475fb38d918e49d0640022a)
+      '@anolilab/semantic-release-pnpm':
+        specifier: catalog:dev
+        version: 8.1.0(@types/node@25.5.2)(yaml@2.8.3)
+      '@anolilab/semantic-release-preset':
+        specifier: catalog:dev
+        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.5.2)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+      '@arethetypeswrong/cli':
+        specifier: catalog:dev
+        version: 0.18.2
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: catalog:lint
+        version: 11.6.0
+      '@total-typescript/ts-reset':
+        specifier: catalog:dev
+        version: 0.6.1
+      '@types/node':
+        specifier: catalog:types
+        version: 25.5.2
+      '@visulima/ansi':
+        specifier: 4.0.0-alpha.8
+        version: link:../ansi
+      '@visulima/packem':
+        specifier: catalog:dev
+        version: 2.0.0-alpha.61(4701fd2aa9251c3e3bfc4805fded1241)
+      '@visulima/string':
+        specifier: 3.0.0-alpha.9
+        version: link:../../data-manipulation/string
+      '@vitest/coverage-v8':
+        specifier: catalog:test
+        version: 4.1.4(@vitest/browser@4.1.4)(vitest@4.1.4)
+      '@vitest/ui':
+        specifier: catalog:test
+        version: 4.1.4(vitest@4.1.4)
+      conventional-changelog-conventionalcommits:
+        specifier: catalog:dev
+        version: 9.3.1
+      esbuild:
+        specifier: catalog:build
+        version: 0.28.0
+      eslint:
+        specifier: catalog:lint
+        version: 10.2.0(jiti@2.6.1)
+      prettier:
+        specifier: catalog:lint
+        version: 3.8.1
+      publint:
+        specifier: catalog:dev
+        version: 0.3.18
+      rimraf:
+        specifier: catalog:node
+        version: 6.1.3
+      secretlint:
+        specifier: catalog:lint
+        version: 11.6.0
+      semantic-release:
+        specifier: catalog:cli
+        version: 25.0.3(typescript@6.0.2)
+      terminal-size:
+        specifier: catalog:dev
+        version: 4.0.1
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.2
+      vitest:
+        specifier: catalog:test
+        version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(happy-dom@20.8.9)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.2(@types/node@25.5.2)(typescript@6.0.2))(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+
   packages/terminal/is-ansi-color-supported:
     devDependencies:
       '@anolilab/eslint-config':
@@ -8177,7 +8249,11 @@ importers:
         specifier: catalog:test
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(happy-dom@20.8.9)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.2(@types/node@25.5.2)(typescript@6.0.2))(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
-  packages/terminal/spinner:
+  packages/terminal/progress-bar:
+    dependencies:
+      '@visulima/interactive-manager':
+        specifier: 0.0.0
+        version: link:../interactive-manager
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -8203,15 +8279,82 @@ importers:
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.61(4701fd2aa9251c3e3bfc4805fded1241)
-      '@visulima/tabular':
-        specifier: catalog:prod
-        version: 4.0.0-alpha.6
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.4(@vitest/browser@4.1.4)(vitest@4.1.4)
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.4(vitest@4.1.4)
+      conventional-changelog-conventionalcommits:
+        specifier: catalog:dev
+        version: 9.3.1
+      esbuild:
+        specifier: catalog:build
+        version: 0.28.0
+      eslint:
+        specifier: catalog:lint
+        version: 10.2.0(jiti@2.6.1)
+      prettier:
+        specifier: catalog:lint
+        version: 3.8.1
+      publint:
+        specifier: catalog:dev
+        version: 0.3.18
+      rimraf:
+        specifier: catalog:node
+        version: 6.1.3
+      secretlint:
+        specifier: catalog:lint
+        version: 11.6.0
+      semantic-release:
+        specifier: catalog:cli
+        version: 25.0.3(typescript@6.0.2)
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.2
+      vitest:
+        specifier: catalog:test
+        version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(happy-dom@20.8.9)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.2(@types/node@25.5.2)(typescript@6.0.2))(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+
+  packages/terminal/spinner:
+    dependencies:
+      '@visulima/interactive-manager':
+        specifier: 0.0.0
+        version: link:../interactive-manager
+    devDependencies:
+      '@anolilab/eslint-config':
+        specifier: catalog:lint
+        version: 27.0.1(299d3d254475fb38d918e49d0640022a)
+      '@anolilab/semantic-release-pnpm':
+        specifier: catalog:dev
+        version: 8.1.0(@types/node@25.5.2)(yaml@2.8.3)
+      '@anolilab/semantic-release-preset':
+        specifier: catalog:dev
+        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.5.2)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+      '@arethetypeswrong/cli':
+        specifier: catalog:dev
+        version: 0.18.2
+      '@secretlint/secretlint-rule-preset-recommend':
+        specifier: catalog:lint
+        version: 11.6.0
+      '@total-typescript/ts-reset':
+        specifier: catalog:dev
+        version: 0.6.1
+      '@types/node':
+        specifier: catalog:types
+        version: 25.5.2
+      '@visulima/packem':
+        specifier: catalog:dev
+        version: 2.0.0-alpha.61(4701fd2aa9251c3e3bfc4805fded1241)
+      '@vitest/coverage-v8':
+        specifier: catalog:test
+        version: 4.1.4(@vitest/browser@4.1.4)(vitest@4.1.4)
+      '@vitest/ui':
+        specifier: catalog:test
+        version: 4.1.4(vitest@4.1.4)
+      cli-spinners:
+        specifier: catalog:dev
+        version: 3.4.0
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
@@ -19088,10 +19231,6 @@ packages:
   '@visulima/tabular@3.1.3':
     resolution: {integrity: sha512-egA4Zh+iP94W8Aj9HCVvtyXAwgZATVvnNEPZj3zgx2WqM7HCmKfMhRFwlGIeuBYFT0pR/5D8xQChc0j4gQL2/Q==}
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/tabular@4.0.0-alpha.6':
-    resolution: {integrity: sha512-2hQTwR4NcaLprVzpKbkykiQEclz1tAsyw653+uydNAtA17Iqtb5P05PFT3tiq6jy0v/JbQy+xOQVMgukE7Ving==}
-    engines: {node: '>=22.13 <=25.x'}
 
   '@visulima/tsconfig@2.1.3':
     resolution: {integrity: sha512-q53VQIgT67MxxUciKn/3faiYUw4yC8jseA0xaVu00yuQIb6a15SHx/sgEathNropsyaUdDgzwlOH+L3de8Fs8g==}
@@ -44748,8 +44887,6 @@ snapshots:
 
   '@visulima/tabular@3.1.3': {}
 
-  '@visulima/tabular@4.0.0-alpha.6': {}
-
   '@visulima/tsconfig@2.1.3(yaml@2.8.3)':
     dependencies:
       '@visulima/fs': 4.1.0(yaml@2.8.3)
@@ -48143,7 +48280,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.2.0(jiti@2.6.1)))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint-import-resolver-typescript@3.10.1)(eslint@10.2.0(jiti@2.6.1))
@@ -58902,7 +59039,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.2.0(jiti@2.6.1)))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.2.0(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint-import-resolver-typescript@3.10.1)(eslint@10.2.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
