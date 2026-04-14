@@ -201,7 +201,6 @@ export const normalize: typeof path.normalize = function (path: string) {
 export const join: typeof path.join = (...segments): string => {
     let path = "";
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const seg of segments) {
         if (!seg) {
             continue;
@@ -303,7 +302,6 @@ export const relative: typeof path.relative = function (from: string, to: string
 
     const fromCopy = [...splitFrom];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const segment of fromCopy) {
         if (splitTo[0] !== segment) {
             break;

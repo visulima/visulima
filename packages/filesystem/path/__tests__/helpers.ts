@@ -45,7 +45,7 @@ export const runTest = (
     describe(name, () => {
         let cwd;
 
-        // eslint-disable-next-line vitest/prefer-each, no-for-of-array/no-for-of-array
+        // eslint-disable-next-line vitest/prefer-each
         for (const item of items) {
             const expected = item.pop();
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle

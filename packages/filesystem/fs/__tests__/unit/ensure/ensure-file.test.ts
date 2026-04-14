@@ -81,7 +81,9 @@ describe.each([
             await expect(() => function_(path)).rejects.toThrow("Ensure path exists, expected 'file', got 'dir'");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => { function_(path); }).toThrow("Ensure path exists, expected 'file', got 'dir'");
+            expect(() => {
+                function_(path);
+            }).toThrow("Ensure path exists, expected 'file', got 'dir'");
         }
     });
 });
