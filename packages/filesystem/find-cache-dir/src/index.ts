@@ -55,17 +55,17 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<stri
     // Otherwise, if node_modules/.cache exists: If it is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // Otherwise: If node_modules is writeable, return node_modules/.cache/${name}, otherwise return undefined
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
-    if (existsSync(cacheNameDirectory) && !await isAccessible(cacheNameDirectory, W_OK)) {
+    if (existsSync(cacheNameDirectory) && !(await isAccessible(cacheNameDirectory, W_OK))) {
         return undefined;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
-    if (existsSync(cacheDirectory) && !await isAccessible(cacheDirectory, W_OK)) {
+    if (existsSync(cacheDirectory) && !(await isAccessible(cacheDirectory, W_OK))) {
         return undefined;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
-    if (existsSync(nodeModulesDirectory) && !await isAccessible(nodeModulesDirectory, W_OK)) {
+    if (existsSync(nodeModulesDirectory) && !(await isAccessible(nodeModulesDirectory, W_OK))) {
         return undefined;
     }
 
