@@ -79,6 +79,10 @@
             "types": "./dist/package-manager.d.ts",
             "default": "./dist/package-manager.js"
         },
+        "./lockfile": {
+            "types": "./dist/lockfile.d.ts",
+            "default": "./dist/lockfile.js"
+        },
         "./pnpm": {
             "types": "./dist/pnpm.d.ts",
             "default": "./dist/pnpm.js"

@@ -55,7 +55,7 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
 /** Reads, parses, and resolves catalogs from a pnpm-workspace file found by walking up the directory tree. */
 export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalogs | undefined> => {
     // Find pnpm-workspace.yaml by walking up the directory tree
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
+
     const workspacePath: string | undefined = await findUp("pnpm-workspace.yaml", {
         cwd: dirname(packagePath),
         type: "file",
@@ -65,8 +65,7 @@ export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalog
         return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYaml types unresolvable from bundled workspace package
-    const workspaceData = (await readYaml(workspacePath)) as Record<string, unknown>;
+    const workspaceData = await readYaml(workspacePath);
 
     // Check if this package is actually part of the workspace
     const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
@@ -91,7 +90,7 @@ export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalog
 /** Reads, parses, and resolves catalogs from a pnpm-workspace file found by walking up the directory tree (synchronous). */
 export const readPnpmCatalogsSync = (packagePath: string): PnpmCatalogs | undefined => {
     // Find pnpm-workspace.yaml by walking up the directory tree
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
+
     const workspacePath: string | undefined = findUpSync("pnpm-workspace.yaml", {
         cwd: dirname(packagePath),
         type: "file",
@@ -101,8 +100,7 @@ export const readPnpmCatalogsSync = (packagePath: string): PnpmCatalogs | undefi
         return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYamlSync types unresolvable from bundled workspace package
-    const workspaceData = readYamlSync(workspacePath) as Record<string, unknown>;
+    const workspaceData = readYamlSync(workspacePath);
 
     // Check if this package is actually part of the workspace
     const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];

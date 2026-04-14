@@ -24,15 +24,13 @@ export interface RootMonorepo<T extends Strategy = Strategy> {
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const workspaceFilePath: string | undefined = await findUp(["lerna.json", "turbo.json"], {
         type: "file",
         ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readJson types unresolvable from bundled workspace package
-        const lerna: { packages?: string[]; useWorkspaces?: boolean } = await readJson<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
+        const lerna = await readJson(workspaceFilePath);
 
         if (lerna.useWorkspaces || lerna.packages) {
             return {
@@ -91,15 +89,13 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const workspaceFilePath: string | undefined = findUpSync(["lerna.json", "turbo.json"], {
         type: "file",
         ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readJsonSync types unresolvable from bundled workspace package
-        const lerna: { packages?: string[]; useWorkspaces?: boolean } = readJsonSync<{ packages?: string[]; useWorkspaces?: boolean }>(workspaceFilePath);
+        const lerna = readJsonSync(workspaceFilePath) as { packages?: string[]; useWorkspaces?: boolean };
 
         if (lerna.useWorkspaces || lerna.packages) {
             return {

@@ -8,8 +8,7 @@ import type { PackageJson } from "./types";
 
 const packageJsonMatcher = (directory: string): string | undefined => {
     if (existsSync(join(directory, "package.json"))) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readJsonSync types unresolvable from bundled workspace package
-        const packageJson: PackageJson = readJsonSync<PackageJson>(join(directory, "package.json"));
+        const packageJson = readJsonSync(join(directory, "package.json")) as PackageJson;
 
         if (packageJson.name && packageJson.private !== true) {
             return "package.json";
@@ -37,7 +36,6 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
         /* empty */
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const gitConfig: string | undefined = await findUp(".git/config", {
         ...cwd && { cwd },
         type: "file",
@@ -47,7 +45,6 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
         return dirname(dirname(gitConfig));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const filePath: string | undefined = await findUp(packageJsonMatcher, {
         ...cwd && { cwd },
         type: "file",
@@ -69,7 +66,6 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
         /* empty */
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const gitConfig: string | undefined = findUpSync(".git/config", {
         ...cwd && { cwd },
         type: "file",
@@ -79,7 +75,6 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
         return dirname(dirname(gitConfig));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const filePath: string | undefined = findUpSync(packageJsonMatcher, {
         ...cwd && { cwd },
         type: "file",

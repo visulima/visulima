@@ -37,7 +37,6 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
 
 const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageManagerResult => {
     if (!foundFile) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
         throw new NotFoundError("Could not find a package manager");
     }
 
@@ -85,7 +84,6 @@ const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageMa
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
     throw new NotFoundError("Could not find a package manager");
 };
 
@@ -98,7 +96,6 @@ const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageMa
  * @throws An `Error` if no lock file is found.
  */
 export const findLockFile = async (cwd?: URL | string): Promise<string> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const filePath: string | undefined = await findUp(lockFileNames, {
         type: "file",
         ...cwd && { cwd },
@@ -112,7 +109,6 @@ export const findLockFile = async (cwd?: URL | string): Promise<string> => {
 };
 
 export const findLockFileSync = (cwd?: URL | string): string => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const filePath: string | undefined = findUpSync(lockFileNames, {
         type: "file",
         ...cwd && { cwd },
@@ -143,7 +139,6 @@ export type PackageManagerResult = {
  * @throws An `Error` if no lock file or package.json is found.
  */
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const foundFile: string | undefined = await findUp(packageMangerFindUpMatcher, {
         ...cwd && { cwd },
     });
@@ -163,7 +158,6 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
  */
 
 export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const foundFile: string | undefined = findUpSync(packageMangerFindUpMatcher, {
         ...cwd && { cwd },
     });
