@@ -11,9 +11,7 @@ describe("validateConfig", () => {
             const result = validateConfig({ name: "test" });
 
             expect(result.valid).toBe(false);
-            expect(result.errors).toContainEqual(
-                expect.objectContaining({ field: "image" }),
-            );
+            expect(result.errors).toContainEqual(expect.objectContaining({ field: "image" }));
         });
 
         it("should pass when image is set", () => {
@@ -53,9 +51,7 @@ describe("validateConfig", () => {
             const result = validateConfig({ build: {}, name: "test" });
 
             expect(result.valid).toBe(false);
-            expect(result.errors).toContainEqual(
-                expect.objectContaining({ field: "build.dockerfile" }),
-            );
+            expect(result.errors).toContainEqual(expect.objectContaining({ field: "build.dockerfile" }));
         });
 
         it("should error when dockerComposeFile is set without service", () => {
@@ -67,9 +63,7 @@ describe("validateConfig", () => {
             });
 
             expect(result.valid).toBe(false);
-            expect(result.errors).toContainEqual(
-                expect.objectContaining({ field: "service" }),
-            );
+            expect(result.errors).toContainEqual(expect.objectContaining({ field: "service" }));
         });
 
         it("should error on invalid port range", () => {
@@ -108,9 +102,7 @@ describe("validateConfig", () => {
                 name: "test",
             });
 
-            expect(result.warnings).toContainEqual(
-                expect.objectContaining({ field: "image" }),
-            );
+            expect(result.warnings).toContainEqual(expect.objectContaining({ field: "image" }));
         });
 
         it("should warn about privileged mode", () => {
@@ -122,9 +114,7 @@ describe("validateConfig", () => {
                 privileged: true,
             });
 
-            expect(result.warnings).toContainEqual(
-                expect.objectContaining({ field: "privileged" }),
-            );
+            expect(result.warnings).toContainEqual(expect.objectContaining({ field: "privileged" }));
         });
 
         it("should not warn about privileged when false", () => {
@@ -146,9 +136,7 @@ describe("validateConfig", () => {
 
             const result = validateConfig({ image: "ubuntu" });
 
-            expect(result.suggestions).toContainEqual(
-                expect.objectContaining({ field: "name" }),
-            );
+            expect(result.suggestions).toContainEqual(expect.objectContaining({ field: "name" }));
         });
 
         it("should suggest adding features when empty", () => {
@@ -156,9 +144,7 @@ describe("validateConfig", () => {
 
             const result = validateConfig({ image: "ubuntu", name: "test" });
 
-            expect(result.suggestions).toContainEqual(
-                expect.objectContaining({ field: "features" }),
-            );
+            expect(result.suggestions).toContainEqual(expect.objectContaining({ field: "features" }));
         });
 
         it("should suggest adding extensions when empty", () => {
@@ -166,9 +152,7 @@ describe("validateConfig", () => {
 
             const result = validateConfig({ image: "ubuntu", name: "test" });
 
-            expect(result.suggestions).toContainEqual(
-                expect.objectContaining({ field: "extensions" }),
-            );
+            expect(result.suggestions).toContainEqual(expect.objectContaining({ field: "extensions" }));
         });
 
         it("should not suggest features when features are present", () => {

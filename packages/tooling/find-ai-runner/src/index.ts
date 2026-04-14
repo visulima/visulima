@@ -130,7 +130,6 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
 
     const allCommands = [config.command, ...config.alternateCommands];
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const cmd of allCommands) {
         const found = whichCommand(cmd);
 
@@ -139,9 +138,7 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
         }
     }
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const cmd of allCommands) {
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const knownPath of getKnownPaths(cmd)) {
             if (existsSync(knownPath)) {
                 return { ...base, available: true, detectionMethod: "known-path", path: knownPath, version: detectVersion(knownPath) };

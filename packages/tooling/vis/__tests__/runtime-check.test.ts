@@ -30,10 +30,7 @@ describe(checkRuntimeVersions, () => {
 
         const actualMajor = Number.parseInt(process.versions.node.split(".")[0]!, 10);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({ engines: { node: `>=${actualMajor}` } }),
-        );
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ engines: { node: `>=${actualMajor}` } }));
 
         const findings = checkRuntimeVersions(tmpDir);
 
@@ -43,10 +40,7 @@ describe(checkRuntimeVersions, () => {
     it("should report an error when engines.node is not satisfied", () => {
         expect.assertions(4);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({ engines: { node: ">=999" } }),
-        );
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ engines: { node: ">=999" } }));
 
         const findings = checkRuntimeVersions(tmpDir);
 
@@ -91,10 +85,7 @@ describe(checkRuntimeVersions, () => {
     it("should detect packageManager name mismatch from npm_config_user_agent", () => {
         expect.assertions(4);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({ packageManager: "pnpm@10.0.0" }),
-        );
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ packageManager: "pnpm@10.0.0" }));
 
         const originalAgent = process.env["npm_config_user_agent"];
 
@@ -122,10 +113,7 @@ describe(checkRuntimeVersions, () => {
     it("should detect packageManager version mismatch from npm_config_user_agent", () => {
         expect.assertions(4);
 
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({ packageManager: "pnpm@10.0.0" }),
-        );
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ packageManager: "pnpm@10.0.0" }));
 
         const originalAgent = process.env["npm_config_user_agent"];
 

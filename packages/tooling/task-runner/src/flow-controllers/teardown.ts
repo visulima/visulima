@@ -41,21 +41,22 @@ export const runTeardown = async (options: TeardownOptions): Promise<number[]> =
  * Run a single teardown command with inherited stdio.
  * Commands originate from vis.config teardown (trusted).
  */
-const runTeardownCommand = (command: string, cwd?: string): Promise<number> => new Promise((resolve) => {
-    const shellProgram = process.platform === "win32" ? "cmd.exe" : "/bin/sh";
-    const shellArgs = process.platform === "win32" ? ["/s", "/c", `"${command}"`] : ["-c", command];
+const runTeardownCommand = (command: string, cwd?: string): Promise<number> =>
+    new Promise((resolve) => {
+        const shellProgram = process.platform === "win32" ? "cmd.exe" : "/bin/sh";
+        const shellArgs = process.platform === "win32" ? ["/s", "/c", `"${command}"`] : ["-c", command];
 
-    const child = spawn(shellProgram, shellArgs, {
-        cwd,
-        stdio: "inherit",
-        windowsVerbatimArguments: process.platform === "win32",
-    });
+        const child = spawn(shellProgram, shellArgs, {
+            cwd,
+            stdio: "inherit",
+            windowsVerbatimArguments: process.platform === "win32",
+        });
 
-    child.on("close", (code) => {
-        resolve(code ?? 1);
-    });
+        child.on("close", (code) => {
+            resolve(code ?? 1);
+        });
 
-    child.on("error", () => {
-        resolve(1);
+        child.on("error", () => {
+            resolve(1);
+        });
     });
-});

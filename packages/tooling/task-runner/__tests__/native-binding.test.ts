@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 // Detect whether the compiled .node binary is loadable for the current platform.
 // In the build-native.yml workflow the binary is always downloaded before these
@@ -34,10 +34,11 @@ describe("native-binding", () => {
             const result = loadNativeBindings();
 
             expect(result).toBeDefined();
-            expect(typeof result).toBe("object");
-            expect(typeof result!.hashCommand).toBe("function");
-            expect(typeof result!.hashFile).toBe("function");
-            expect(typeof result!.runConcurrent).toBe("function");
+
+            expectTypeOf(result).toBeObject();
+            expectTypeOf(result!.hashCommand).toBeFunction();
+            expectTypeOf(result!.hashFile).toBeFunction();
+            expectTypeOf(result!.runConcurrent).toBeFunction();
         });
 
         it("should return undefined when native addon is not available", async () => {

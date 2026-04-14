@@ -44,11 +44,7 @@ const FeaturesSection = ({ config, fieldIndex, scrollOffset, searchText, viewpor
                             return (
                                 <Box flexShrink={0} height={1} key={feature.id}>
                                     <Text>{isSelected ? ">" : " "}</Text>
-                                    <Text color={isEnabled ? "white" : "gray"}>
-                                        {" "}
-                                        {isEnabled ? "\u2611" : "\u2610"}
-                                        {" "}
-                                    </Text>
+                                    <Text color={isEnabled ? "white" : "gray"}> {isEnabled ? "\u2611" : "\u2610"} </Text>
                                     <Box flexGrow={1}>
                                         <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                                             {feature.name}

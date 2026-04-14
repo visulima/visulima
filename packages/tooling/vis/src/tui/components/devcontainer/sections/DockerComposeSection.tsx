@@ -36,21 +36,19 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
     return (
         <Box flexDirection="column" paddingX={1}>
             <Box marginBottom={1}>
-                <Text bold color="cyan">Docker Compose Integration</Text>
+                <Text bold color="cyan">
+                    Docker Compose Integration
+                </Text>
             </Box>
             {hasImage && hasCompose && (
                 <Box marginBottom={1}>
-                    <Text color="yellow">
-                        Note: When using Docker Compose, the image/build settings in General are ignored.
-                    </Text>
+                    <Text color="yellow">Note: When using Docker Compose, the image/build settings in General are ignored.</Text>
                 </Box>
             )}
             {FIELDS.map((field, index) => {
                 const isSelected = index === fieldIndex;
                 const value = (config[field] as string) ?? "";
-                const displayValue = Array.isArray(config[field])
-                    ? (config[field] as string[]).join(", ")
-                    : value;
+                const displayValue = Array.isArray(config[field]) ? (config[field] as string[]).join(", ") : value;
 
                 return (
                     <Box flexDirection="column" key={field} marginBottom={1}>
@@ -71,9 +69,7 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
                                         placeholder={FIELD_PLACEHOLDERS[field]}
                                     />
                                 ) : (
-                                    <Text color={displayValue ? "white" : "gray"}>
-                                        {displayValue || FIELD_PLACEHOLDERS[field]}
-                                    </Text>
+                                    <Text color={displayValue ? "white" : "gray"}>{displayValue || FIELD_PLACEHOLDERS[field]}</Text>
                                 )}
                             </Box>
                         </Box>
@@ -85,11 +81,20 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
             })}
             <Box marginTop={1}>
                 <Text dimColor>
-                    <Text bold color="white">Enter</Text> edit field
+                    <Text bold color="white">
+                        Enter
+                    </Text>{" "}
+                    edit field
                     {"  "}
-                    <Text bold color="white">{"\u2191\u2193"}</Text> navigate
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>{" "}
+                    navigate
                     {"  "}
-                    <Text bold color="white">Esc</Text> stop editing
+                    <Text bold color="white">
+                        Esc
+                    </Text>{" "}
+                    stop editing
                 </Text>
             </Box>
         </Box>

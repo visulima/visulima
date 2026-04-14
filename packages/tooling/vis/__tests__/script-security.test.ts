@@ -322,10 +322,7 @@ describe(syncAllowBuildsToNativeConfig, () => {
         it("should merge with existing allowBuilds entries", () => {
             expect.assertions(4);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "packages:\n  - 'packages/*'\n\nallowBuilds:\n  prisma: true\n  '@prisma/client': true\n",
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\nallowBuilds:\n  prisma: true\n  '@prisma/client': true\n");
 
             const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, {
                 esbuild: true,
@@ -343,10 +340,7 @@ describe(syncAllowBuildsToNativeConfig, () => {
         it("should be a no-op when all entries already present", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "packages:\n  - 'packages/*'\n\nallowBuilds:\n  esbuild: true\n",
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n\nallowBuilds:\n  esbuild: true\n");
 
             const actions = syncAllowBuildsToNativeConfig("pnpm", tmpDir, { esbuild: true });
 

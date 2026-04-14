@@ -11,10 +11,7 @@ export const filterFeatures = (searchText: string): FeatureCatalogEntry[] => {
     const lower = searchText.toLowerCase();
 
     return FEATURE_CATALOG.filter(
-        (f) =>
-            f.name.toLowerCase().includes(lower) ||
-            f.id.toLowerCase().includes(lower) ||
-            f.description.toLowerCase().includes(lower),
+        (f) => f.name.toLowerCase().includes(lower) || f.id.toLowerCase().includes(lower) || f.description.toLowerCase().includes(lower),
     );
 };
 
@@ -26,9 +23,6 @@ export const filterExtensions = (searchText: string): ExtensionCatalogEntry[] =>
     const lower = searchText.toLowerCase();
 
     return EXTENSION_CATALOG.filter(
-        (e) =>
-            e.name.toLowerCase().includes(lower) ||
-            e.id.toLowerCase().includes(lower) ||
-            e.description.toLowerCase().includes(lower),
+        (e) => e.name.toLowerCase().includes(lower) || e.id.toLowerCase().includes(lower) || e.description.toLowerCase().includes(lower),
     );
 };

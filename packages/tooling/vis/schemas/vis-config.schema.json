@@ -105,10 +105,7 @@
                 "install": { "type": "boolean", "default": true },
                 "preferOffline": { "type": "boolean", "default": false },
                 "registry": {
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "boolean", "const": false }
-                    ]
+                    "oneOf": [{ "type": "string" }, { "type": "boolean", "const": false }]
                 },
                 "templates": {
                     "type": "object",
@@ -176,10 +173,7 @@
             "description": "Staged file patterns and commands (replaces lint-staged). Accepts all lint-staged config forms.",
             "type": "object",
             "additionalProperties": {
-                "oneOf": [
-                    { "type": "string" },
-                    { "type": "array", "items": { "type": "string" } }
-                ]
+                "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
             }
         },
         "targetDefaults": {
@@ -229,7 +223,10 @@
                             "layer": {
                                 "oneOf": [
                                     { "type": "string", "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"] },
-                                    { "type": "array", "items": { "type": "string", "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"] } }
+                                    {
+                                        "type": "array",
+                                        "items": { "type": "string", "enum": ["configuration", "library", "scaffolding", "tool", "automation", "application"] }
+                                    }
                                 ]
                             },
                             "stack": {
@@ -239,10 +236,7 @@
                                 ]
                             },
                             "language": {
-                                "oneOf": [
-                                    { "type": "string" },
-                                    { "type": "array", "items": { "type": "string" } }
-                                ]
+                                "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                             }
                         }
                     },
@@ -290,10 +284,7 @@
             "additionalProperties": false,
             "properties": {
                 "autoExit": {
-                    "oneOf": [
-                        { "type": "boolean" },
-                        { "type": "number" }
-                    ],
+                    "oneOf": [{ "type": "boolean" }, { "type": "number" }],
                     "description": "Auto-exit TUI after completion. false=stay open, true=3s countdown, number=custom seconds.",
                     "default": false
                 }

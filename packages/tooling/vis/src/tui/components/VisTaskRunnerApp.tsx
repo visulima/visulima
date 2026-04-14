@@ -144,12 +144,12 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
     // Output shows selected task content
     const outputTaskId = state.pinnedTaskIds[0] ?? selectedTaskId;
     const outputTask = outputTaskId ? state.rows.find((r) => r.taskId === outputTaskId) : null;
-    const outputContent = outputTaskId ? state.outputs.get(outputTaskId) ?? "" : "";
+    const outputContent = outputTaskId ? (state.outputs.get(outputTaskId) ?? "") : "";
 
     // Header title and status
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
     const headerTitle = state.done ? `Completed ${description} (${formatMs((state.endTime ?? Date.now()) - state.startTime)})` : `Running ${description}...`;
-    const headerStatus: "error" | "running" | "success" = state.done ? state.failed > 0 ? "error" : "success" : "running";
+    const headerStatus: "error" | "running" | "success" = state.done ? (state.failed > 0 ? "error" : "success") : "running";
 
     // Scroll selected item into view
     const scrollToSelected = useCallback((index: number) => {
@@ -587,15 +587,8 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-                    {columns}
-                    x
-                    {rows}
-                    ). Minimum:
-                    {" "}
-                    {MIN_VIEWPORT_WIDTH}
-                    x
-                    {MIN_VIEWPORT_HEIGHT}
+                    Terminal too small ({columns}x{rows}
+                    ). Minimum: {MIN_VIEWPORT_WIDTH}x{MIN_VIEWPORT_HEIGHT}
                 </Text>
             </Box>
         );
@@ -607,37 +600,21 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         <Box gap={1}>
             {state.succeeded > 0 && (
                 <Text bold color="green">
-                    {"\u2713"}
-                    {" "}
-                    {state.succeeded}
+                    {"\u2713"} {state.succeeded}
                 </Text>
             )}
             {state.failed > 0 && (
                 <Text bold color="red">
-                    {"\u2717"}
-                    {" "}
-                    {state.failed}
+                    {"\u2717"} {state.failed}
                 </Text>
             )}
             {runningCount > 0 && (
                 <Text color="cyan">
-                    {"\u25F7"}
-                    {" "}
-                    {runningCount}
+                    {"\u25F7"} {runningCount}
                 </Text>
             )}
-            <Text dimColor>
-                {state.rows.length}
-                {" "}
-                total
-            </Text>
-            {state.statusFilter !== "all" && (
-                <Text color="yellow">
-                    [
-                    {state.statusFilter}
-                    ]
-                </Text>
-            )}
+            <Text dimColor>{state.rows.length} total</Text>
+            {state.statusFilter !== "all" && <Text color="yellow">[{state.statusFilter}]</Text>}
         </Box>
     );
 
@@ -667,11 +644,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(outputTask?.status === "running"
                 ? [
-                    <Box gap={1} key="i">
-                        <Text bold color="white">i</Text>
-                        <Text dimColor>INPUT</Text>
-                    </Box>,
-                ]
+                      <Box gap={1} key="i">
+                          <Text bold color="white">
+                              i
+                          </Text>
+                          <Text dimColor>INPUT</Text>
+                      </Box>,
+                  ]
                 : []),
             <Box gap={1} key="q">
                 <Text bold color="white">
@@ -696,16 +675,16 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                 </Text>
                 <Text dimColor>RERUN</Text>
             </Box>,
-            ...canRetry
+            ...(canRetry
                 ? [
-                    <Box gap={1} key="R">
-                        <Text bold color="white">
-                            R
-                        </Text>
-                        <Text dimColor>RETRY</Text>
-                    </Box>,
-                ]
-                : [],
+                      <Box gap={1} key="R">
+                          <Text bold color="white">
+                              R
+                          </Text>
+                          <Text dimColor>RETRY</Text>
+                      </Box>,
+                  ]
+                : []),
             <Box gap={1} key="?">
                 <Text bold color="white">
                     ?
@@ -753,11 +732,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(outputTask?.status === "running"
                 ? [
-                    <Box gap={1} key="i">
-                        <Text bold color="white">i</Text>
-                        <Text dimColor>INPUT</Text>
-                    </Box>,
-                ]
+                      <Box gap={1} key="i">
+                          <Text bold color="white">
+                              i
+                          </Text>
+                          <Text dimColor>INPUT</Text>
+                      </Box>,
+                  ]
                 : []),
             <Box gap={1} key="enter">
                 <Text bold color="white">
@@ -816,16 +797,16 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                 </Text>
                 <Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text>
             </Box>,
-            ...state.viewMode === "split"
+            ...(state.viewMode === "split"
                 ? [
-                    <Box gap={1} key="tab">
-                        <Text bold color="white">
-                            Tab
-                        </Text>
-                        <Text dimColor>PANEL</Text>
-                    </Box>,
-                ]
-                : [],
+                      <Box gap={1} key="tab">
+                          <Text bold color="white">
+                              Tab
+                          </Text>
+                          <Text dimColor>PANEL</Text>
+                      </Box>,
+                  ]
+                : []),
         ];
     }
 
@@ -845,25 +826,22 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
     const helpPopup = (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-                    {" "}
-                    scroll
-                    {" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-                    {" "}
+                    </Text>{" "}
                     close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -933,15 +911,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                     </Text>
                     <Text dimColor>
                         {" "}
-                        List
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        Split
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        Fullscreen
+                        List {"\u2192"} Split {"\u2192"} Fullscreen
                     </Text>
                 </Text>
                 <Text>
@@ -951,15 +921,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                     </Text>
                     <Text dimColor>
                         {" "}
-                        Fullscreen
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        Split
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        List
+                        Fullscreen {"\u2192"} Split {"\u2192"} List
                     </Text>
                 </Text>
             </Box>
@@ -1155,7 +1117,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                         duration={outputTask?.duration ?? outputTask?.elapsed}
                         focused
                         interactiveMode={state.interactiveMode}
-
                         output={outputContent}
                         scrollRef={outputScrollRef}
                         status={outputTask?.status}

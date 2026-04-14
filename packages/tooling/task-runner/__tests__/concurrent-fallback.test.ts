@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { runConcurrentFallback } from "../src/concurrent-fallback";
 import type { ConcurrentCommandConfig, ProcessEvent } from "../src/types";
@@ -158,7 +158,7 @@ describe(runConcurrentFallback, () => {
         });
 
         const closeIndex = events.findIndex((e) => e.kind === "close");
-        const stdoutIndices = events.map((e, i) => e.kind === "stdout" ? i : -1).filter((i) => i >= 0);
+        const stdoutIndices = events.map((e, i) => (e.kind === "stdout" ? i : -1)).filter((i) => i >= 0);
 
         // All stdout events should come before the close event
         for (const index of stdoutIndices) {
@@ -176,7 +176,9 @@ describe(runConcurrentFallback, () => {
         const startedEvents = events.filter((e) => e.kind === "started");
 
         expect(startedEvents).toHaveLength(1);
-        expect(typeof startedEvents[0]!.write).toBe("function");
+
+        expectTypeOf(startedEvents[0]!.write).toBeFunction();
+
         expect(startedEvents[0]!.resize).toBeUndefined();
     });
 
@@ -190,8 +192,9 @@ describe(runConcurrentFallback, () => {
         const startedEvents = events.filter((e) => e.kind === "started");
 
         expect(startedEvents).toHaveLength(1);
-        expect(typeof startedEvents[0]!.write).toBe("function");
-        expect(typeof startedEvents[0]!.resize).toBe("function");
+
+        expectTypeOf(startedEvents[0]!.write).toBeFunction();
+        expectTypeOf(startedEvents[0]!.resize).toBeFunction();
     });
 
     it("should run PTY commands and capture output", async () => {
@@ -224,19 +227,16 @@ describe(runConcurrentFallback, () => {
     it("should handle PTY with interactive read prompt", async () => {
         const events: ProcessEvent[] = [];
 
-        const result = await runConcurrentFallback(
-            [{ command: "read -p \"Name: \" name && echo \"Got: $name\"", stdin: "pty" }],
-            {
-                onEvent: (event) => {
-                    events.push(event);
+        const result = await runConcurrentFallback([{ command: 'read -p "Name: " name && echo "Got: $name"', stdin: "pty" }], {
+            onEvent: (event) => {
+                events.push(event);
 
-                    if (event.kind === "started" && event.write) {
-                        // Wait for prompt to appear, then send input
-                        setTimeout(() => event.write!("Alice\r"), 500);
-                    }
-                },
+                if (event.kind === "started" && event.write) {
+                    // Wait for prompt to appear, then send input
+                    setTimeout(event.write, 500, "Alice\r");
+                }
             },
-        );
+        });
 
         expect(result.success).toBe(true);
 

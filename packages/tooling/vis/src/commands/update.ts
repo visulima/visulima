@@ -81,7 +81,7 @@ const buildCatalogCheckOptions = (
     configDefaults: NonNullable<VisConfig["update"]>,
     argument: string[],
 ): CatalogCheckOptions => {
-    const target = (options.latest as boolean) ? "latest" : (options.target as string) ?? configDefaults.target ?? "latest";
+    const target = (options.latest as boolean) ? "latest" : ((options.target as string) ?? configDefaults.target ?? "latest");
 
     if (!["latest", "minor", "patch"].includes(target)) {
         throw new Error(`Invalid target "${target}". Use: latest, minor, or patch.`);
@@ -212,8 +212,8 @@ const executeCatalogUpdate = async (
         const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
 
         logger.warn(
-            `${yellow("\u26A0")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, `
-            + `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
+            `${yellow("\u26A0")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, ` +
+                `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
         );
     }
 
@@ -244,18 +244,18 @@ const executeCatalogUpdate = async (
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-            if (progressInstance) {
-                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-            } else {
-                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                    interactive: true,
-                    patchConsole: false,
-                });
-            }
-        }
+              if (progressInstance) {
+                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+              } else {
+                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                      interactive: true,
+                      patchConsole: false,
+                  });
+              }
+          }
         : (current: number, total: number): void => {
-            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-        };
+              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+          };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
@@ -290,21 +290,24 @@ const executeCatalogUpdate = async (
 
     if (!isTTY && checkedCount > outdated.length) {
         const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-        const dedupeNote = totalCatalogEntries > checkedCount ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)` : "";
+        const dedupeNote =
+            totalCatalogEntries > checkedCount
+                ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
+                : "";
 
         logger.info(
-            `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(outdated.length)} outdated, ${String(upToDate)} up-to-date`
-            + (failed.length > 0 ? `, ${String(failed.length)} failed` : "")
-            + (filteredByTarget.length > 0 ? `, ${String(filteredByTarget.length)} skipped by target` : ""),
+            `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(outdated.length)} outdated, ${String(upToDate)} up-to-date` +
+                (failed.length > 0 ? `, ${String(failed.length)} failed` : "") +
+                (filteredByTarget.length > 0 ? `, ${String(filteredByTarget.length)} skipped by target` : ""),
         );
     }
 
     if (outdated.length === 0) {
         if (filteredByTarget.length > 0) {
             logger.info(
-                `All catalog dependencies are up to date within the current target.`
-                + `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:`
-                + `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} \u2192 ${e.newRange}  (${e.updateType})`).join("\n")}`,
+                `All catalog dependencies are up to date within the current target.` +
+                    `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:` +
+                    `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} \u2192 ${e.newRange}  (${e.updateType})`).join("\n")}`,
             );
         } else {
             logger.info("All catalog dependencies are up to date.");
@@ -380,7 +383,7 @@ const executeCatalogUpdate = async (
         for (const entry of outdated) {
             const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
             const isAck = Boolean(entry.acceptedRisk);
-            const icon = hasSecurityIssue ? isAck ? "\u2713" : "\u26A0" : "\u2713";
+            const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
             const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
             const socketOverall = entry.socketReport?.score.overall;
             const scoreSuffix = socketOverall === undefined ? "" : ` [${String(Math.round(socketOverall * 100))}%]`;
@@ -407,11 +410,14 @@ const executeCatalogUpdate = async (
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-            const dedupeNote = totalCatalogEntries > checkedCount ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)` : "";
+            const dedupeNote =
+                totalCatalogEntries > checkedCount
+                    ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
+                    : "";
 
             logger.info(
-                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date`
-                + (failed.length > 0 ? `, ${String(failed.length)} failed` : ""),
+                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date` +
+                    (failed.length > 0 ? `, ${String(failed.length)} failed` : ""),
             );
         }
 
@@ -420,12 +426,7 @@ const executeCatalogUpdate = async (
 
             const skippedLabel = `${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? "" : "s"} skipped by target constraint (use --target latest to include):`;
 
-            process.stdout.write(
-                `${renderToString(
-                    React.createElement(Text, { color: "yellow" }, `  ${skippedLabel}`),
-                    { columns },
-                )}\n`,
-            );
+            process.stdout.write(`${renderToString(React.createElement(Text, { color: "yellow" }, `  ${skippedLabel}`), { columns })}\n`);
 
             for (const entry of filteredByTarget) {
                 process.stdout.write(

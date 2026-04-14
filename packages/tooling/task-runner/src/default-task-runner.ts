@@ -63,12 +63,7 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * }, context);
  * ```
  */
-const defaultTaskRunner = async (
-
-    _tasks: Task[],
-    options: TaskRunnerOptions,
-    context: TaskRunnerContext,
-): Promise<TaskResults> => {
+const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
     const { lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
 
     // Create the cache

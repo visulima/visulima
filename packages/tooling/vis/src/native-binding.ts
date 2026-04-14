@@ -195,10 +195,10 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         // .node file with the pre-v11 2-arg resolveLink would pass a bare
         // `typeof === "function"` check and then silently misinterpret args).
         if (
-            typeof loaded.detectPackageManager === "function"
-            && typeof loaded.execPmCommand === "function"
-            && typeof loaded.resolveLink === "function"
-            && loaded.NATIVE_BINDING_VERSION === EXPECTED_NATIVE_BINDING_VERSION
+            typeof loaded.detectPackageManager === "function" &&
+            typeof loaded.execPmCommand === "function" &&
+            typeof loaded.resolveLink === "function" &&
+            loaded.NATIVE_BINDING_VERSION === EXPECTED_NATIVE_BINDING_VERSION
         ) {
             nativeBindings = loaded;
         }

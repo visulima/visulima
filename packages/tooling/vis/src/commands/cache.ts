@@ -251,11 +251,7 @@ const runList = async (cacheDirectory: string, format: string, logger: Console):
  * @param options - `dryRun` previews without deleting; `force` skips the out-of-workspace confirmation prompt.
  * @returns Resolves when the operation completes (or is skipped / aborted).
  */
-const runClean = async (
-    cacheDirectory: string,
-    workspaceRoot: string,
-    options: { dryRun: boolean; force: boolean },
-): Promise<void> => {
+const runClean = async (cacheDirectory: string, workspaceRoot: string, options: { dryRun: boolean; force: boolean }): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
         info(`No cache directory to clean at ${cacheDirectory}`);
 
@@ -267,8 +263,8 @@ const runClean = async (
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         info(
-            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
-            + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
+            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} ` +
+                `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
 
         return;
@@ -344,11 +340,7 @@ const runClean = async (
  *                  evicts oldest entries until the total size is under the limit.
  * @returns Resolves when pruning completes or is skipped.
  */
-const runPrune = async (
-    cacheDirectory: string,
-    workspaceRoot: string,
-    options: { maxCacheAgeDays?: number; maxCacheSize?: string },
-): Promise<void> => {
+const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: { maxCacheAgeDays?: number; maxCacheSize?: string }): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
         info(`No cache directory to prune at ${cacheDirectory}`);
 
@@ -384,9 +376,7 @@ const runPrune = async (
         }
     }
 
-    const maxCacheAge = options.maxCacheAgeDays !== undefined
-        ? options.maxCacheAgeDays * 24 * 60 * 60 * 1000
-        : undefined;
+    const maxCacheAge = options.maxCacheAgeDays !== undefined ? options.maxCacheAgeDays * 24 * 60 * 60 * 1000 : undefined;
 
     const before = await collectCacheEntries(cacheDirectory);
     const beforeBytes = before.reduce((sum, entry) => sum + entry.sizeBytes, 0);
@@ -412,10 +402,7 @@ const runPrune = async (
         return;
     }
 
-    success(
-        `Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, `
-        + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`,
-    );
+    success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
 };
 
 /**
@@ -485,11 +472,7 @@ const cache: Command = {
             cacheDirectory?: string;
         };
 
-        const cacheDirectory = resolveCacheDirectory(
-            workspaceRoot,
-            options.cacheDir as string | undefined,
-            taskRunnerOptions.cacheDirectory,
-        );
+        const cacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, taskRunnerOptions.cacheDirectory);
 
         switch (action) {
             case "clean": {

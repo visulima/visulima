@@ -92,6 +92,7 @@ export type TaskResults = Map<string, TaskResult>;
 export interface ProjectConfiguration {
     /** Implicit dependencies on other projects */
     implicitDependencies?: string[];
+
     /**
      * Project layer in the dependency hierarchy. Used by
      * `enforceLayerRelationships` to ensure projects only depend on
@@ -241,6 +242,7 @@ export interface DependencyKindRules {
 export interface ConstraintsConfig {
     /** Rules based on the dependency kind (static vs devDependency vs peerDependency) */
     dependencyKindRules?: DependencyKindRules;
+
     /**
      * When true, projects can only depend on projects at the same or
      * lower layer in the hierarchy:
@@ -528,9 +530,9 @@ export type ConcurrentCommandInput
             cwd?: string;
             env?: Record<string, string>;
             name?: string;
-            stdin?: "inherit" | "null" | "pipe" | "pty";
             /** Initial PTY dimensions (only used when stdin is "pty"). */
             ptySize?: { cols: number; rows: number };
+            stdin?: "inherit" | "null" | "pipe" | "pty";
         };
 
 /**
@@ -545,6 +547,13 @@ export interface ConcurrentCommandConfig {
     env?: Record<string, string>;
     /** Human-readable name for this command (used in prefixes/logs). */
     name?: string;
+
+    /**
+     * Initial PTY dimensions. Only used when stdin is "pty".
+     * Defaults to 80x24 if not specified.
+     */
+    ptySize?: { cols: number; rows: number };
+
     /** Whether to use shell execution (default: true). */
     shell?: boolean;
 
@@ -556,12 +565,6 @@ export interface ConcurrentCommandConfig {
      * - "pty": child runs inside a pseudo-terminal (isatty() returns true, enables interactive prompts)
      */
     stdin?: "inherit" | "null" | "pipe" | "pty";
-
-    /**
-     * Initial PTY dimensions. Only used when stdin is "pty".
-     * Defaults to 80x24 if not specified.
-     */
-    ptySize?: { cols: number; rows: number };
 }
 
 /**
@@ -615,10 +618,10 @@ export interface ProcessEvent {
     exitCode?: number;
     /** Index of the command that produced this event. */
     index: number;
-    /** Whether the process was killed (for close events). */
-    killed?: boolean;
     /** Kill the child process/PTY. Only present on "started" events. */
     kill?: (signal?: string) => void;
+    /** Whether the process was killed (for close events). */
+    killed?: boolean;
     /** Event type: "stdout", "stderr", "close", "error", "started". */
     kind: "close" | "error" | "started" | "stderr" | "stdout";
     /** Error message (for error events). */

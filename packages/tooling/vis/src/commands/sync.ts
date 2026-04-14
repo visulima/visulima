@@ -57,9 +57,7 @@ const sync: Command = {
         }
 
         const rendered = renderCodeowners(lines, visConfig?.codeowners?.provider ?? "github");
-        const outPath = options.out
-            ? join(wsRoot, String(options.out))
-            : join(wsRoot, "CODEOWNERS");
+        const outPath = options.out ? join(wsRoot, String(options.out)) : join(wsRoot, "CODEOWNERS");
 
         if (options.check) {
             let existing = "";

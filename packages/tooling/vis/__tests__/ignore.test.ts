@@ -53,7 +53,9 @@ const createTemporaryGitRepo = (): { cleanup: () => void; commit: (message: stri
     };
 
     return {
-        cleanup: () => { removeSync(root); },
+        cleanup: () => {
+            removeSync(root);
+        },
         commit,
         root,
     };
@@ -181,37 +183,71 @@ describe(resolveCiBaseSha, () => {
 describe(validateGitRef, () => {
     it("accepts common git ref shapes", () => {
         expect.assertions(6);
-        expect(() => { validateGitRef("HEAD"); }).not.toThrow();
-        expect(() => { validateGitRef("HEAD~1"); }).not.toThrow();
-        expect(() => { validateGitRef("HEAD^"); }).not.toThrow();
-        expect(() => { validateGitRef("main"); }).not.toThrow();
-        expect(() => { validateGitRef("origin/main"); }).not.toThrow();
-        expect(() => { validateGitRef("abc123def456"); }).not.toThrow();
+        expect(() => {
+            validateGitRef("HEAD");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("HEAD~1");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("HEAD^");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("main");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("origin/main");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("abc123def456");
+        }).not.toThrow();
     });
 
     it("rejects refs containing shell metacharacters", () => {
         expect.assertions(5);
-        expect(() => { validateGitRef("main; rm -rf /"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("main && evil"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("main | cat"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("$(whoami)"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("`whoami`"); }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("main; rm -rf /");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("main && evil");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("main | cat");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("$(whoami)");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("`whoami`");
+        }).toThrow(/Invalid git ref/);
     });
 
     it("rejects refs starting with a dash (prevents git flag injection)", () => {
         expect.assertions(4);
         // A leading dash makes `${ref}^{commit}` look like a `git` option
         // to `git rev-parse --verify`, bypassing the positional argument path.
-        expect(() => { validateGitRef("--help"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("-rf"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("--base=main"); }).toThrow(/Invalid git ref/);
-        expect(() => { validateGitRef("-"); }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("--help");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("-rf");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("--base=main");
+        }).toThrow(/Invalid git ref/);
+        expect(() => {
+            validateGitRef("-");
+        }).toThrow(/Invalid git ref/);
     });
 
     it("still accepts dashes in the middle of refs", () => {
         expect.assertions(2);
-        expect(() => { validateGitRef("feature-branch"); }).not.toThrow();
-        expect(() => { validateGitRef("release-v1.2.3"); }).not.toThrow();
+        expect(() => {
+            validateGitRef("feature-branch");
+        }).not.toThrow();
+        expect(() => {
+            validateGitRef("release-v1.2.3");
+        }).not.toThrow();
     });
 });
 

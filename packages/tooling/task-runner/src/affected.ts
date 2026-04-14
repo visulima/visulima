@@ -18,7 +18,9 @@ import type { AffectedScope, ProjectConfiguration, ProjectGraph } from "./types"
  */
 const validateGitRef = (ref: string): void => {
     if (!/^[\w./~^@{}][\w.\-/~^@{}]*$/.test(ref)) {
-        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character or one of _ . / ~ ^ @ { } and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, @, and braces.`);
+        throw new Error(
+            `Invalid git ref: "${ref}". Refs must start with an alphanumeric character or one of _ . / ~ ^ @ { } and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, @, and braces.`,
+        );
     }
 };
 

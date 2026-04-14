@@ -251,11 +251,7 @@ export const matchesOs = (options: VisTargetOptions | undefined, currentOs: Targ
  * on its `runInCI` option. `affectedInCi` should indicate whether the
  * project is in the current affected set (only relevant for `"affected"`).
  */
-export const shouldRunInCI = (
-    options: VisTargetOptions | undefined,
-    isCi: boolean,
-    affectedInCi = true,
-): boolean => {
+export const shouldRunInCI = (options: VisTargetOptions | undefined, isCi: boolean, affectedInCi = true): boolean => {
     const mode = options?.runInCI ?? true;
 
     if (mode === true || mode === "always") {
@@ -316,7 +312,7 @@ export const loadEnvFile = (projectRoot: string, envFile: string): Record<string
 
         let value = line.slice(equalsIndex + 1).trim();
 
-        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
             value = value.slice(1, -1);
         }
 
@@ -330,10 +326,7 @@ export const loadEnvFile = (projectRoot: string, envFile: string): Record<string
  * Pick the effective shell for a target on the current platform.
  * Returns `undefined` if no per-target shell is configured.
  */
-export const resolveTargetShell = (
-    options: VisTargetOptions | undefined,
-    currentOs: TargetOsType = detectCurrentOs(),
-): string | undefined => {
+export const resolveTargetShell = (options: VisTargetOptions | undefined, currentOs: TargetOsType = detectCurrentOs()): string | undefined => {
     if (!options) {
         return undefined;
     }

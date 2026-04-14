@@ -135,7 +135,7 @@ describe(FileAccessTracker, () => {
 
         it("should pass environment variables to the command", async () => {
             const tracker = new FileAccessTracker(workspaceRoot);
-            const result = await tracker.track("echo \"$MY_TEST_VAR\"", {
+            const result = await tracker.track('echo "$MY_TEST_VAR"', {
                 cwd: workspaceRoot,
                 env: { MY_TEST_VAR: "test_value_123" },
             });
@@ -171,23 +171,23 @@ describe(generatePreloadScript, () => {
     it("should patch fs sync and async methods", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain("\"readFileSync\"");
-        expect(script).toContain("\"statSync\"");
-        expect(script).toContain("\"readdirSync\"");
+        expect(script).toContain('"readFileSync"');
+        expect(script).toContain('"statSync"');
+        expect(script).toContain('"readdirSync"');
     });
 
     it("should patch fs/promises", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain("require(\"node:fs/promises\")");
-        expect(script).toContain("\"readFile\"");
-        expect(script).toContain("\"stat\"");
-        expect(script).toContain("\"readdir\"");
+        expect(script).toContain('require("node:fs/promises")');
+        expect(script).toContain('"readFile"');
+        expect(script).toContain('"stat"');
+        expect(script).toContain('"readdir"');
     });
 
     it("should flush on process exit", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain("process.on(\"beforeExit\"");
+        expect(script).toContain('process.on("beforeExit"');
     });
 });

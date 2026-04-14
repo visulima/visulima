@@ -103,7 +103,7 @@ class RemoteCache {
 
         try {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+
             const response = await fetch(artifactUrl, {
                 headers: this.#buildHeaders(),
                 method: "GET",
@@ -163,7 +163,6 @@ class RemoteCache {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
             const archiveContent = await readFile(archivePath);
 
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch(artifactUrl, {
                 body: archiveContent,
                 headers: {
@@ -196,7 +195,7 @@ class RemoteCache {
 
         try {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+
             const response = await fetch(artifactUrl, {
                 headers: this.#buildHeaders(),
                 method: "HEAD",

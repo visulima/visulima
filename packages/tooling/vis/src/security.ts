@@ -77,8 +77,8 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     // Error: strictDepBuilds is on but no allowBuilds
     if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. "
-            + "Run 'vis approve-builds' to review and add packages.",
+            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. " +
+                "Run 'vis approve-builds' to review and add packages.",
         );
     }
 
@@ -116,8 +116,8 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
 
     if (result.warnings.length > 0) {
         warn(
-            `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. `
-            + "Run 'vis check --security-config' for details.",
+            `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. ` +
+                "Run 'vis check --security-config' for details.",
         );
     }
 };
@@ -409,8 +409,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                     result.extraArgs.push("--ignore-scripts");
 
                     for (const [pattern, allowed] of Object.entries(allowBuilds)) {
-                        if (allowed)
-                            result.postInstallPackages.push(pattern);
+                        if (allowed) result.postInstallPackages.push(pattern);
                     }
                 }
             }
@@ -516,9 +515,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             content = existingBlockRegex.test(content) ? content.replace(existingBlockRegex, allowBuildsBlock) : `${content.trimEnd()}\n\n${allowBuildsBlock}`;
 
             writeFileSync(filePath, content);
-            actions.push(
-                `Updated pnpm-workspace.yaml allowBuilds (${String(addedCount)} new, ${String(sortedKeys.length)} total)`,
-            );
+            actions.push(`Updated pnpm-workspace.yaml allowBuilds (${String(addedCount)} new, ${String(sortedKeys.length)} total)`);
             break;
         }
 
@@ -633,8 +630,7 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
         const pkgDir = join(nodeModulesPath, pkg);
         const pkgJsonPath = join(pkgDir, "package.json");
 
-        if (!existsSync(pkgJsonPath))
-            continue;
+        if (!existsSync(pkgJsonPath)) continue;
 
         try {
             const scripts = JSON.parse(readFileSync(pkgJsonPath, "utf8")).scripts ?? {};

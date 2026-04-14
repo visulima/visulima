@@ -43,6 +43,7 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 (200+ deps, slow on large repos) and not monorepo-aware.
 
 **Scope**:
+
 - CycloneDX 1.6 JSON output (the ECMA-424 standard)
 - Walk the workspace project graph (`discoverWorkspace` + `buildProjectGraph`)
 - For each project: read `package.json` → name, version, license, author, description
@@ -56,18 +57,20 @@ all mandate SBOMs for software supply chains. cdxgen exists but is heavy
 - `--include-dev` flag (default: production only, matching industry practice)
 
 **Building blocks already in vis**:
+
 - `discoverWorkspace()` — project list + roots
 - `buildProjectGraph()` — dependency edges with type (static/dev/peer)
 - `lockfile-hasher.ts` in task-runner — parses pnpm/npm/yarn lockfiles and extracts resolved versions
 - `resolveFocusProjects()` in `docker.ts` — transitive closure computation
 - **Groundwork landed on `claude/review-todo-sbom-Jo1UL`** (commits `953d254`, `3be5462`):
-  - Hand-written TS types in `src/sbom/types.ts` covering the subset we emit (`CycloneDxBom`, `Component`, `Metadata`, `Dependency`, `Hash`, `License{Choice,Entry,ExpressionEntry}`, `ExternalReference`, `OrganizationalEntity`, `PostalAddress`, `Property`, `ToolsAggregate`, `Lifecycle`)
-  - Vendored CycloneDX 1.6 schemas under `__tests__/sbom/schemas/` (tag `1.6.1`, bom + spdx + jsf sub-schemas, Apache-2.0)
-  - Ajv-backed validator under `__tests__/sbom/validator.ts` exporting `validateBom` + `assertValidBom` — **test-only**, zero runtime footprint
-  - `ajv` + `ajv-formats` added as `devDependencies` (catalog:dev)
-  - `__tests__/sbom/schema-conformance.test.ts` — 6 cases covering valid fixtures, SPDX expression form, missing `bomFormat`, bad `component.type`, missing `dependency.ref`, empty BOMs
+    - Hand-written TS types in `src/sbom/types.ts` covering the subset we emit (`CycloneDxBom`, `Component`, `Metadata`, `Dependency`, `Hash`, `License{Choice,Entry,ExpressionEntry}`, `ExternalReference`, `OrganizationalEntity`, `PostalAddress`, `Property`, `ToolsAggregate`, `Lifecycle`)
+    - Vendored CycloneDX 1.6 schemas under `__tests__/sbom/schemas/` (tag `1.6.1`, bom + spdx + jsf sub-schemas, Apache-2.0)
+    - Ajv-backed validator under `__tests__/sbom/validator.ts` exporting `validateBom` + `assertValidBom` — **test-only**, zero runtime footprint
+    - `ajv` + `ajv-formats` added as `devDependencies` (catalog:dev)
+    - `__tests__/sbom/schema-conformance.test.ts` — 6 cases covering valid fixtures, SPDX expression form, missing `bomFormat`, bad `component.type`, missing `dependency.ref`, empty BOMs
 
 **What's still missing**:
+
 - PURL generation — recommend [`packageurl-js`](https://www.npmjs.com/package/packageurl-js) (zero-dep, ~5 KB, official impl)
 - SPDX normalization — recommend [`spdx-expression-parse`](https://www.npmjs.com/package/spdx-expression-parse) + [`spdx-correct`](https://www.npmjs.com/package/spdx-correct) (npm CLI uses them)
 - Integrity hash extraction from lockfiles (extend `task-runner/src/lockfile-hasher.ts` parsers to capture `integrity: sha512-…` alongside name/version)
@@ -84,6 +87,7 @@ Lifecycle hooks exist in task-runner (`LifeCycleInterface`). Need a built-in
 HTTP POST plugin that fires on task start/complete/fail.
 
 **Config shape**:
+
 ```typescript
 notifier: {
     webhookUrl: "https://hooks.example.com/vis",
@@ -101,6 +105,7 @@ implementation and register it in the task runner context.
 
 Internal plugin system exists (`config-loader`, `security-enforcement`,
 `post-command`). Need:
+
 - Documented `VisPlugin` interface with typed hooks
 - Plugin registration in vis.config.ts: `plugins: [myPlugin()]`
 - Hook points: `beforeRun`, `afterRun`, `beforeTask`, `afterTask`, `onCacheMiss`
@@ -117,31 +122,33 @@ and documenting it.
 service, or package from a local template directory.
 
 **Prior art — moon generate (researched)**:
+
 - Templates live in directories listed under `generator.templates` in workspace config
 - Each template has a `template.yml` with: `title`, `description`, `variables` (typed: string/number/boolean/enum; each with `type`/`default`/`required`/`prompt`)
 - Uses [Tera](https://keats.github.io/tera/) (Rust-based, Twig/Django-like) for interpolation:
-  - File contents: `{{ varName }}`, `{% if %}`, `{% for %}`
-  - Filenames: `src/[varName].ts` or `src/[varName | kebab_case].ts`
-  - Built-in filters: `camel_case`, `pascal_case`, `snake_case`, `kebab_case`, `upper_case`, `lower_case`
+    - File contents: `{{ varName }}`, `{% if %}`, `{% for %}`
+    - Filenames: `src/[varName].ts` or `src/[varName | kebab_case].ts`
+    - Built-in filters: `camel_case`, `pascal_case`, `snake_case`, `kebab_case`, `upper_case`, `lower_case`
 - `.tera` / `.twig` file extensions auto-stripped at generation
 - `.raw` extension bypasses Tera (for files with `{{` in real content)
 - Frontmatter block at top of file (`--- to: path, force: true ---`) for per-file control
 - Partials (any file with `partial` in path) used for composition, not emitted
 - Template sources (moon supports many):
-  - Local: `./templates` or `file://...`
-  - Git: `git://github.com/org/repo#branch`
-  - npm: `npm://@scope/package#1.2.3`
-  - Archive URLs (zip/tar)
-  - Glob patterns: `./templates/*`
+    - Local: `./templates` or `file://...`
+    - Git: `git://github.com/org/repo#branch`
+    - npm: `npm://@scope/package#1.2.3`
+    - Archive URLs (zip/tar)
+    - Glob patterns: `./templates/*`
 - Built-in vars: `dest_dir`, `dest_rel_dir`, `working_dir`, `workspace_root`
 - `variables()` function returns the full variable map
 
 **vis-native design**:
+
 - Templates directory: default `.vis/templates/<name>/` (configurable via `generator.templates` in vis.config.ts)
 - Use a minimal JS templating engine — no Rust/WASM needed. Options:
-  - **[Eta](https://github.com/eta-dev/eta)** (~15kb, fast, EJS-like) — recommended
-  - **[Squirrelly](https://squirrelly.js.org/)** (~4kb) — even smaller
-  - Or ship a tiny home-grown renderer (~100 LOC) supporting `{{ var }}`, `{{ var | filter }}`, `{% if %} / {% endif %}`, `{% for %}`, matching the Tera subset vis users will actually use
+    - **[Eta](https://github.com/eta-dev/eta)** (~15kb, fast, EJS-like) — recommended
+    - **[Squirrelly](https://squirrelly.js.org/)** (~4kb) — even smaller
+    - Or ship a tiny home-grown renderer (~100 LOC) supporting `{{ var }}`, `{{ var | filter }}`, `{% if %} / {% endif %}`, `{% for %}`, matching the Tera subset vis users will actually use
 - Variable types: string, number, boolean, enum, multiselect (from [prompts](https://github.com/terkelg/prompts) which vis already uses in `vis create`)
 - Filename interpolation with same `[varName | filter]` syntax for moon compatibility (so moon templates can be reused)
 - `.raw` extension to bypass templating
@@ -153,15 +160,18 @@ service, or package from a local template directory.
 - Pre-fill variables: `vis generate component -- --name=Button --style=primary`
 
 **Template sources** (Phase 1 = local only, Phase 2 = remote):
+
 - Phase 1: local directories + globs (covers 90% of use cases in a monorepo)
 - Phase 2: git/npm via giget (already a dep — reuse the `vis create` infrastructure)
 
 **Building blocks already in vis**:
+
 - `@visulima/cerebro` has `prompts` integration (vis create uses it)
 - `giget` is already a dependency (for Phase 2 remote templates)
 - `@visulima/fs` has file walk + write helpers
 
 **What's new**:
+
 - `src/generate.ts` — template discovery + rendering engine (~200 LOC if using Eta, ~400 LOC with home-grown)
 - `src/commands/generate.ts` — CLI command (~100 LOC)
 - `src/frontmatter.ts` — parse `to: path` / `force: true` / `if: condition` (~50 LOC)
@@ -175,6 +185,7 @@ service, or package from a local template directory.
 ### gRPC Bazel Remote Execution API v2 remote cache
 
 task-runner has Turborepo-compatible HTTP REST. Adding gRPC REAPIv2 unlocks:
+
 - `bazel-remote` (self-hosted)
 - BuildBuddy
 - Buildbarn
@@ -189,15 +200,15 @@ from the Bazel Remote Execution proto).
 
 **Research summary — how competitors handle this**:
 
-| Tool | Approach | Strengths | Weaknesses |
-|------|----------|-----------|------------|
-| **moon** | Integrates with [proto](https://github.com/moonrepo/proto) via `.prototools` TOML config; manages Node/Bun/Deno/Rust/Go/Python/Ruby natively + WASM plugins for custom tools | Single source of truth across languages; deterministic CI | Requires learning proto; WASM plugin ecosystem small |
-| **Nx** | Delegates to `package.json` `engines` + `packageManager`; no auto-install | Zero config | User must install runtimes manually |
-| **Turborepo** | Same as Nx — reads `packageManager`, no auto-install | Zero config | Same limitation |
-| **proto** | Pluggable, Rust-based, WASM plugin system (Extism). Built-in: Node/npm/pnpm/yarn, Bun, Deno, Python (+ uv), Rust, Go, Ruby | Multi-language; per-project pinning via `.prototools`; WASM plugins in any language | Requires separate binary install |
-| **fnm** | Node-only, Rust, ~15ms shell startup (vs nvm's 75ms). Reads `.nvmrc` | Fast, simple | Node only |
-| **volta** | Node/npm/yarn, shim-based (<1ms switch). Pins versions in `package.json` `volta` field | Fastest switching; package.json-driven | Node ecosystem only |
-| **mise** | Rust, asdf-compatible, `.mise.toml` config. Supports 700+ tools via plugins | Very broad | Bigger surface area |
+| Tool          | Approach                                                                                                                                                                     | Strengths                                                                           | Weaknesses                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **moon**      | Integrates with [proto](https://github.com/moonrepo/proto) via `.prototools` TOML config; manages Node/Bun/Deno/Rust/Go/Python/Ruby natively + WASM plugins for custom tools | Single source of truth across languages; deterministic CI                           | Requires learning proto; WASM plugin ecosystem small |
+| **Nx**        | Delegates to `package.json` `engines` + `packageManager`; no auto-install                                                                                                    | Zero config                                                                         | User must install runtimes manually                  |
+| **Turborepo** | Same as Nx — reads `packageManager`, no auto-install                                                                                                                         | Zero config                                                                         | Same limitation                                      |
+| **proto**     | Pluggable, Rust-based, WASM plugin system (Extism). Built-in: Node/npm/pnpm/yarn, Bun, Deno, Python (+ uv), Rust, Go, Ruby                                                   | Multi-language; per-project pinning via `.prototools`; WASM plugins in any language | Requires separate binary install                     |
+| **fnm**       | Node-only, Rust, ~15ms shell startup (vs nvm's 75ms). Reads `.nvmrc`                                                                                                         | Fast, simple                                                                        | Node only                                            |
+| **volta**     | Node/npm/yarn, shim-based (<1ms switch). Pins versions in `package.json` `volta` field                                                                                       | Fastest switching; package.json-driven                                              | Node ecosystem only                                  |
+| **mise**      | Rust, asdf-compatible, `.mise.toml` config. Supports 700+ tools via plugins                                                                                                  | Very broad                                                                          | Bigger surface area                                  |
 
 **Design**: don't try to be a version manager. Delegate.
 
@@ -208,40 +219,43 @@ warning (which is what `vis doctor` already does today).
 **Three-tier delegation strategy**:
 
 1. **Detect an installed version manager**:
-   - Check `$PATH` for `proto`, `mise`, `fnm`, `volta`, `asdf`, `nvm` in that order
-   - Check if the workspace has `.prototools` (proto), `.mise.toml` (mise), `.nvmrc` (fnm/nvm), or `package.json` `volta` (volta)
-   - Store the detected tool name in the toolbox
+    - Check `$PATH` for `proto`, `mise`, `fnm`, `volta`, `asdf`, `nvm` in that order
+    - Check if the workspace has `.prototools` (proto), `.mise.toml` (mise), `.nvmrc` (fnm/nvm), or `package.json` `volta` (volta)
+    - Store the detected tool name in the toolbox
 
 2. **Auto-install flow**:
-   - When `vis run` / `vis ci` starts, call `checkRuntimeVersions()` (already exists in runtime-check.ts)
-   - If a finding has `severity: "error"` (engines.node mismatch):
-     - If a version manager is detected AND `config.toolchain?.autoInstall !== false`: run the appropriate command (`proto install node`, `fnm install`, `volta install node@X`, etc.) and re-exec
-     - Otherwise: print the existing doctor-style error and exit
-   - If severity is `"warning"` (.nvmrc mismatch): print a one-line hint (`run 'fnm use' to switch`), don't block
+    - When `vis run` / `vis ci` starts, call `checkRuntimeVersions()` (already exists in runtime-check.ts)
+    - If a finding has `severity: "error"` (engines.node mismatch):
+        - If a version manager is detected AND `config.toolchain?.autoInstall !== false`: run the appropriate command (`proto install node`, `fnm install`, `volta install node@X`, etc.) and re-exec
+        - Otherwise: print the existing doctor-style error and exit
+    - If severity is `"warning"` (.nvmrc mismatch): print a one-line hint (`run 'fnm use' to switch`), don't block
 
 3. **Config shape** (vis.config.ts):
-   ```typescript
-   toolchain: {
-       autoInstall: true,              // default: true when a PM is detected, false otherwise
-       preferredManager: "proto",       // explicit override: "proto" | "mise" | "fnm" | "volta" | "asdf" | "nvm" | "none"
-       tools: {
-           node: ">=22.13",             // override engines.node
-           pnpm: "10.32.1",             // override packageManager
-       },
-   }
-   ```
+    ```typescript
+    toolchain: {
+        autoInstall: true,              // default: true when a PM is detected, false otherwise
+        preferredManager: "proto",       // explicit override: "proto" | "mise" | "fnm" | "volta" | "asdf" | "nvm" | "none"
+        tools: {
+            node: ">=22.13",             // override engines.node
+            pnpm: "10.32.1",             // override packageManager
+        },
+    }
+    ```
 
 **Commands**:
+
 - `vis toolchain status` — lists detected version manager + each tool's expected-vs-actual version (similar to `vis doctor` but focused on runtimes)
 - `vis toolchain install` — auto-install all pinned versions via the detected manager
 - `vis toolchain use <tool>@<version>` — wrapper that updates the appropriate config file
 
 **Building blocks already in vis**:
+
 - `runtime-check.ts` — already parses `engines.node`, `.nvmrc`, `.node-version`, `packageManager`
 - `pm-runner.ts` — has spawn/exec helpers for package managers
 - `native-binding.ts` + Rust NAPI — could host a version-manager-detector on the Rust side for zero-cost detection on startup
 
 **What's new**:
+
 - `src/toolchain.ts` — detector + adapter layer (~200 LOC). One adapter per supported manager (~30 LOC each × 5 managers = 150 LOC)
 - `src/commands/toolchain.ts` — CLI (~100 LOC)
 - Extend `runtime-check.ts` to suggest the detected manager's install command in error messages
@@ -249,6 +263,7 @@ warning (which is what `vis doctor` already does today).
 **Estimated effort**: ~500-700 LOC. Medium complexity.
 
 **Why not just embed proto?**
+
 - proto is excellent but requires users to opt into the moonrepo ecosystem
 - Most users already have `fnm`/`volta`/`mise` installed — vis should adapt to them, not replace them
 - Shipping proto as a hidden dep would bloat the install (the proto binary is ~20MB) and violate principle of least surprise

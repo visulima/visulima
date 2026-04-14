@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 
 import { formatBytes, parseBytes } from "@visulima/humanizer";

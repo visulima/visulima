@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { TerminalBuffer } from "../src/terminal-buffer";
 
-describe("TerminalBuffer", () => {
+describe(TerminalBuffer, () => {
     it("should handle plain text", () => {
         const buf = new TerminalBuffer();
 
@@ -27,7 +27,7 @@ describe("TerminalBuffer", () => {
         expect(buf.toString()).toBe("new text");
     });
 
-    it("should handle \\r\\n as CRLF (newline, not overwrite)", () => {
+    it(String.raw`should handle \r\n as CRLF (newline, not overwrite)`, () => {
         const buf = new TerminalBuffer();
 
         buf.write("line1\r\nline2\r\n");
@@ -39,7 +39,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
-        buf.write("\x1b[2A"); // cursor up 2
+        buf.write("\u001B[2A"); // cursor up 2
         buf.write("X");
 
         // Cursor was at line3 col 5, moved up 2 to line1 col 5, wrote X
@@ -50,8 +50,8 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
-        buf.write("\x1b[3A"); // up to line1
-        buf.write("\x1b[1B"); // down to line2
+        buf.write("\u001B[3A"); // up to line1
+        buf.write("\u001B[1B"); // down to line2
         buf.write("\r"); // col 0
         buf.write("REPLACED");
 
@@ -62,7 +62,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
-        buf.write("\x1b[2K"); // erase entire line
+        buf.write("\u001B[2K"); // erase entire line
 
         expect(buf.toString()).toBe("");
     });
@@ -72,8 +72,8 @@ describe("TerminalBuffer", () => {
 
         buf.write("hello world");
         buf.write("\r"); // back to col 0
-        buf.write("\x1b[5C"); // forward 5
-        buf.write("\x1b[0K"); // erase from cursor to end
+        buf.write("\u001B[5C"); // forward 5
+        buf.write("\u001B[0K"); // erase from cursor to end
 
         expect(buf.toString()).toBe("hello");
     });
@@ -82,7 +82,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
-        buf.write("\x1b[2J"); // erase entire screen
+        buf.write("\u001B[2J"); // erase entire screen
 
         expect(buf.toString()).toBe("");
     });
@@ -91,7 +91,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("aaaa\nbbbb\ncccc");
-        buf.write("\x1b[2;3H"); // row 2, col 3
+        buf.write("\u001B[2;3H"); // row 2, col 3
         buf.write("X");
 
         expect(buf.toString()).toBe("aaaa\nbbXb\ncccc");
@@ -101,7 +101,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
-        buf.write("\x1b[7G"); // column 7 (1-based)
+        buf.write("\u001B[7G"); // column 7 (1-based)
         buf.write("X");
 
         expect(buf.toString()).toBe("hello Xorld");
@@ -110,27 +110,27 @@ describe("TerminalBuffer", () => {
     it("should preserve SGR color sequences", () => {
         const buf = new TerminalBuffer();
 
-        buf.write("\x1b[31mred text\x1b[0m");
+        buf.write("\u001B[31mred text\u001B[0m");
 
         const result = buf.toString();
 
-        expect(result).toContain("\x1b[31m");
+        expect(result).toContain("\u001B[31m");
         expect(result).toContain("red text");
-        expect(result).toContain("\x1b[0m");
+        expect(result).toContain("\u001B[0m");
     });
 
     it("should preserve SGR sequences when overwriting lines", () => {
         const buf = new TerminalBuffer();
 
-        buf.write("\x1b[32mgreen\x1b[0m\n");
-        buf.write("\x1b[1A"); // cursor up
+        buf.write("\u001B[32mgreen\u001B[0m\n");
+        buf.write("\u001B[1A"); // cursor up
         buf.write("\r"); // beginning of line
-        buf.write("\x1b[2K"); // erase line
-        buf.write("\x1b[31mred\x1b[0m");
+        buf.write("\u001B[2K"); // erase line
+        buf.write("\u001B[31mred\u001B[0m");
 
         const result = buf.toString();
 
-        expect(result).toContain("\x1b[31m");
+        expect(result).toContain("\u001B[31m");
         expect(result).toContain("red");
         expect(result).not.toContain("green");
     });
@@ -138,7 +138,7 @@ describe("TerminalBuffer", () => {
     it("should skip non-CSI escape sequences", () => {
         const buf = new TerminalBuffer();
 
-        buf.write("\x1b(Bhello"); // ESC(B is "select character set"
+        buf.write("\u001B(Bhello"); // ESC(B is "select character set"
 
         expect(buf.toString()).toBe("hello");
     });
@@ -154,12 +154,12 @@ describe("TerminalBuffer", () => {
 
         // After writing "  Option C", cursor is on row 3 (0-indexed).
         // inquirer redraws: cursor up 2 to row 1 ("  Option A")
-        buf.write("\x1b[2A");
-        buf.write("\r\x1b[2K"); // erase line
+        buf.write("\u001B[2A");
+        buf.write("\r\u001B[2K"); // erase line
         buf.write("  Option A");
-        buf.write("\n\x1b[2K"); // next line, erase
+        buf.write("\n\u001B[2K"); // next line, erase
         buf.write("  Option B");
-        buf.write("\n\x1b[2K"); // next line, erase
+        buf.write("\n\u001B[2K"); // next line, erase
         buf.write("> Option C");
 
         const result = buf.toString();
@@ -197,7 +197,7 @@ describe("TerminalBuffer", () => {
         const buf = new TerminalBuffer();
 
         buf.write("abcdef");
-        buf.write("\x1b[3D"); // back 3
+        buf.write("\u001B[3D"); // back 3
         buf.write("XY");
 
         expect(buf.toString()).toBe("abcXYf");
@@ -209,8 +209,8 @@ describe("TerminalBuffer", () => {
         buf.write("line1\nline2\nline3");
         // After writing, cursor is at row 2, col 5.
         // Move up 2 → row 0, col stays 5 (but \n resets col, so cursor is at row 2 col 5)
-        buf.write("\x1b[2A"); // up to row 0
-        buf.write("\x1b[0J"); // erase from cursor to end
+        buf.write("\u001B[2A"); // up to row 0
+        buf.write("\u001B[0J"); // erase from cursor to end
 
         // line1 truncated at col 5, line2 and line3 removed
         expect(buf.toString()).toBe("line1");

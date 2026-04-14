@@ -9,7 +9,7 @@ const list: Command = {
     examples: [
         ["vis list", "Show all projects"],
         ["vis list --json", "Machine-readable output"],
-        ["vis list --query \"tag=frontend\"", "Filter by query"],
+        ['vis list --query "tag=frontend"', "Filter by query"],
     ],
     execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {

@@ -78,7 +78,7 @@ export class DevcontainerStore {
 
     public getSnapshot = (): DevcontainerState => this.#state;
 
-    public subscribe = (listener: Listener): () => void => {
+    public subscribe = (listener: Listener): (() => void) => {
         this.#listeners.add(listener);
 
         return () => {
@@ -141,12 +141,14 @@ export class DevcontainerStore {
         const template = TEMPLATES.find((t: DevcontainerTemplate) => t.id === templateId);
 
         if (template) {
-            this.#emit(this.#withSuggestions({
-                ...this.#state,
-                config: deepClone(template.config),
-                isDirty: true,
-                showTemplateSelector: false,
-            }));
+            this.#emit(
+                this.#withSuggestions({
+                    ...this.#state,
+                    config: deepClone(template.config),
+                    isDirty: true,
+                    showTemplateSelector: false,
+                }),
+            );
         }
     }
 
@@ -176,11 +178,13 @@ export class DevcontainerStore {
             features[featureId] = {};
         }
 
-        this.#emit(this.#withSuggestions({
-            ...this.#state,
-            config: { ...this.#state.config, features },
-            isDirty: true,
-        }));
+        this.#emit(
+            this.#withSuggestions({
+                ...this.#state,
+                config: { ...this.#state.config, features },
+                isDirty: true,
+            }),
+        );
     }
 
     public setFeatureSearch(search: string): void {
@@ -281,11 +285,13 @@ export class DevcontainerStore {
     public addMount(mount: MountEntry): void {
         const mounts = [...(this.#state.config.mounts ?? []), mount];
 
-        this.#emit(this.#withSuggestions({
-            ...this.#state,
-            config: { ...this.#state.config, mounts },
-            isDirty: true,
-        }));
+        this.#emit(
+            this.#withSuggestions({
+                ...this.#state,
+                config: { ...this.#state.config, mounts },
+                isDirty: true,
+            }),
+        );
     }
 
     public removeMount(index: number): void {
@@ -293,11 +299,13 @@ export class DevcontainerStore {
 
         mounts.splice(index, 1);
 
-        this.#emit(this.#withSuggestions({
-            ...this.#state,
-            config: { ...this.#state.config, mounts: mounts.length > 0 ? mounts : undefined },
-            isDirty: true,
-        }));
+        this.#emit(
+            this.#withSuggestions({
+                ...this.#state,
+                config: { ...this.#state.config, mounts: mounts.length > 0 ? mounts : undefined },
+                isDirty: true,
+            }),
+        );
     }
 
     /** Add all currently suggested mounts to the config. */
@@ -308,11 +316,13 @@ export class DevcontainerStore {
 
         const mounts = [...(this.#state.config.mounts ?? []), ...this.#state.suggestedMounts];
 
-        this.#emit(this.#withSuggestions({
-            ...this.#state,
-            config: { ...this.#state.config, mounts },
-            isDirty: true,
-        }));
+        this.#emit(
+            this.#withSuggestions({
+                ...this.#state,
+                config: { ...this.#state.config, mounts },
+                isDirty: true,
+            }),
+        );
     }
 
     // ── Lifecycle commands ───────────────────────────────────────────
@@ -434,11 +444,7 @@ export class DevcontainerStore {
     #withSuggestions(state: DevcontainerState): DevcontainerState {
         return {
             ...state,
-            suggestedMounts: getSuggestedMounts(
-                state.detectedPm,
-                state.config.features ?? {},
-                state.config.mounts ?? [],
-            ),
+            suggestedMounts: getSuggestedMounts(state.detectedPm, state.config.features ?? {}, state.config.mounts ?? []),
         };
     }
 

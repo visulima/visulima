@@ -25,6 +25,7 @@ vis migrate turborepo --dry-run    # Preview without writing
 ```
 
 Translates:
+
 - `tasks` / `pipeline` entries → `targetDefaults`
 - `^build` dependsOn → `{ dependencies: true, target: "build" }`
 - `project#task` → `{ projects: "project", target: "task" }`
@@ -44,6 +45,7 @@ vis migrate nx --dry-run
 ```
 
 Translates:
+
 - `namedInputs` → `namedInputs`
 - `targetDefaults` → `targetDefaults`
 
@@ -59,6 +61,7 @@ vis migrate moon --dry-run
 ```
 
 Translates:
+
 - `tasks` → `targetDefaults` (command + args merged, deps, inputs, outputs, type, preset, options)
 - `fileGroups` → `fileGroups`
 - `implicitInputs` → `namedInputs.default`
@@ -92,6 +95,6 @@ vis migrate all
 
 ## Options
 
-| Option      | Default | Description                              |
-| ----------- | ------- | ---------------------------------------- |
-| `--dry-run` | `false` | Preview changes without writing to disk  |
+| Option      | Default | Description                             |
+| ----------- | ------- | --------------------------------------- |
+| `--dry-run` | `false` | Preview changes without writing to disk |

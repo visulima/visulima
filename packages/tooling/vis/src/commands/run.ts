@@ -26,7 +26,8 @@ import {
     type VisTargetConfiguration,
     type VisTargetOptions,
 } from "../target-options";
-import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
+import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
+import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
 import { startWatcher } from "../watch";
@@ -57,11 +58,7 @@ const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runF
  * Persistent tasks never cache and never return a "result" — they run
  * until interrupted or until all of them exit.
  */
-const runPersistentTasks = async (
-    tasks: Task[],
-    workspaceRoot: string,
-    affectedFiles: string[] | undefined,
-): Promise<void> => {
+const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affectedFiles: string[] | undefined): Promise<void> => {
     const commands = tasks
         .map((task) => {
             const command = task.overrides["command"] as string | undefined;
@@ -74,9 +71,10 @@ const runPersistentTasks = async (
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
-                ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
-                : {};
+            const affectedEnv =
+                affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+                    ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
+                    : {};
 
             return {
                 command,
@@ -230,19 +228,13 @@ interface ExecutorDependencies {
  * `envFile`, `runFromWorkspaceRoot`, `retryCount`/`retryDelay`, `mutex`,
  * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
-const createConcurrentExecutor = (
-    deps: ExecutorDependencies,
-) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
+const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
     const { affectedFiles, mutexPool, onOutput, onOutputReplace, stdinRegistry, workspaceRoot } = deps;
 
     const visOptions = getTaskOptions(task);
     const currentOs = detectCurrentOs();
 
-    const resolvedCwd = resolveCwd(
-        workspaceRoot,
-        execOptions.cwd ?? task.projectRoot,
-        visOptions?.runFromWorkspaceRoot === true,
-    );
+    const resolvedCwd = resolveCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
 
     const rawCommand = task.overrides["command"] as string | undefined;
 
@@ -255,9 +247,7 @@ const createConcurrentExecutor = (
     const customShell = resolveTargetShell(visOptions, currentOs);
     const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
 
-    const envFileVars = visOptions?.envFile
-        ? loadEnvFile(resolvedCwd, visOptions.envFile)
-        : undefined;
+    const envFileVars = visOptions?.envFile ? loadEnvFile(resolvedCwd, visOptions.envFile) : undefined;
 
     const affectedFilesEnv: Record<string, string> = {};
 
@@ -307,19 +297,19 @@ const createConcurrentExecutor = (
         const retryDelay = visOptions?.retryDelay;
 
         const result = await runConcurrently(
-            [{
-                command,
-                cwd: resolvedCwd,
-                env: mergedEnv,
-                name: task.id,
-                ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
-            }],
+            [
+                {
+                    command,
+                    cwd: resolvedCwd,
+                    env: mergedEnv,
+                    name: task.id,
+                    ...(stdinRegistry ? { ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 }, stdin: "pty" as const } : {}),
+                },
+            ],
             {
                 killOthers: ["failure"],
                 onEvent,
-                ...(retryCount > 0
-                    ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } }
-                    : {}),
+                ...(retryCount > 0 ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } } : {}),
             },
         );
 
@@ -347,8 +337,8 @@ const run: Command = {
         ["vis run build", "Run build on all projects"],
         ["vis run :build", "Run build on all projects (moon-style)"],
         ["vis run ~:test", "Run test on the project closest to the current directory"],
-        ["vis run \"#frontend:build\"", "Run build on projects tagged 'frontend'"],
-        ["vis run :build --query \"language=typescript\"", "Filter by project metadata"],
+        ['vis run "#frontend:build"', "Run build on projects tagged 'frontend'"],
+        ['vis run :build --query "language=typescript"', "Filter by project metadata"],
         ["vis run test --affected", "Run test only on git-changed projects"],
         ["vis run build --fail-fast", "Stop on first failure"],
         ["vis run build --dry-run", "Show execution plan without running"],
@@ -582,13 +572,8 @@ const run: Command = {
         // and relative --cache-dir values are normalized against the
         // workspace root. Other fields keep their existing spread semantics
         // to avoid changing override precedence for parallel/dryRun/etc.
-        const configTaskRunnerOptions
-            = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
-        const resolvedCacheDirectory = resolveCacheDirectory(
-            workspaceRoot,
-            options.cacheDir as string | undefined,
-            configTaskRunnerOptions.cacheDirectory,
-        );
+        const configTaskRunnerOptions = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
+        const resolvedCacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, configTaskRunnerOptions.cacheDirectory);
 
         const runnerOptions: TaskRunnerOptions = {
             dryRun: options.dryRun as boolean,
@@ -649,28 +634,33 @@ const run: Command = {
 
                         const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
 
-                        const retryResult = await runConcurrently([{
-                            command,
-                            cwd: resolvedCwd,
-                            name: task.id,
-                            ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                            stdin: "pty",
-                        }], {
-                            onEvent: (event: ProcessEvent) => {
-                                if (event.kind === "started" && event.write) {
-                                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
-                                }
+                        const retryResult = await runConcurrently(
+                            [
+                                {
+                                    command,
+                                    cwd: resolvedCwd,
+                                    name: task.id,
+                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                    stdin: "pty",
+                                },
+                            ],
+                            {
+                                onEvent: (event: ProcessEvent) => {
+                                    if (event.kind === "started" && event.write) {
+                                        stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                                    }
 
-                                if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
-                                    retryTermBuf.write(event.text);
-                                    store.setOutput(task.id, retryTermBuf.toString());
-                                }
+                                    if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
+                                        retryTermBuf.write(event.text);
+                                        store.setOutput(task.id, retryTermBuf.toString());
+                                    }
 
-                                if (event.kind === "close") {
-                                    stdinRegistry.delete(task.id);
-                                }
+                                    if (event.kind === "close") {
+                                        stdinRegistry.delete(task.id);
+                                    }
+                                },
                             },
-                        });
+                        );
 
                         const closeEvent = retryResult.closeEvents[0];
 
@@ -893,7 +883,7 @@ const run: Command = {
             type: Boolean,
         },
         {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
+            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
             name: "partition",
             type: String,
         },

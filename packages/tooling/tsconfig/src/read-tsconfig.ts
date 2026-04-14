@@ -132,7 +132,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     try {
         const parsed = readJsonc(tsconfigPath);
 
-        config = parsed ? (parsed as TsConfigJson) : {};
+        config = (parsed ?? {}) as TsConfigJson;
     } catch {
         throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
     }

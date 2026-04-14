@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { TipContext } from "../src/tips";
 
-vi.mock(import("is-in-ci"), () => { return { default: false }; });
+vi.mock(import("is-in-ci"), () => {
+    return { default: false };
+});
 
 const { showTip, tips } = await import("../src/tips");
 
@@ -32,7 +34,9 @@ describe("showTip", () => {
 
         // is-in-ci evaluates at import time, so we reset modules, re-mock, and re-import
         vi.resetModules();
-        vi.doMock(import("is-in-ci"), () => { return { default: true }; });
+        vi.doMock(import("is-in-ci"), () => {
+            return { default: true };
+        });
         const { showTip: showTipCi } = await import("../src/tips");
 
         showTipCi({ args: ["install"], command: "install", success: true });
@@ -40,7 +44,9 @@ describe("showTip", () => {
         expect(stderrSpy).not.toHaveBeenCalled();
 
         vi.resetModules();
-        vi.doMock(import("is-in-ci"), () => { return { default: false }; });
+        vi.doMock(import("is-in-ci"), () => {
+            return { default: false };
+        });
     });
 });
 

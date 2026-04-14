@@ -264,6 +264,7 @@ describe("parses tsconfig", () => {
             });
 
             // @ts-expect-error - We're testing a private property
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete tsconfig.compilerOptions[implicitBaseUrlSymbol];
 
             expect(tsconfig).toStrictEqual(expectedTsconfig);

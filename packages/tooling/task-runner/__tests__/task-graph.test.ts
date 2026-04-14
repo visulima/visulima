@@ -75,7 +75,6 @@ describe(createTaskGraph, () => {
             "lib-b": [{ source: "lib-b", target: "lib-a", type: "static" }],
         },
         nodes: {
-
             app: { data: workspace.projects["app"]!, name: "app", type: "application" },
 
             "lib-a": { data: workspace.projects["lib-a"]!, name: "lib-a", type: "library" },
@@ -134,7 +133,6 @@ describe(createTaskGraph, () => {
         const graph: ProjectGraph = {
             dependencies: { app: [] },
             nodes: {
-
                 app: { data: workspaceWithSelf.projects["app"]!, name: "app", type: "application" },
             },
         };

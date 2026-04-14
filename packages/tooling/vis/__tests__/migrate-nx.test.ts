@@ -54,12 +54,9 @@ describe(migrateNx, () => {
     });
 
     it("should note default base branch when present", () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
-        writeFileSync(
-            join(tmpDir, "nx.json"),
-            JSON.stringify({ defaultBase: "develop" }),
-        );
+        writeFileSync(join(tmpDir, "nx.json"), JSON.stringify({ defaultBase: "develop" }));
 
         const report = createMigrationReport();
 

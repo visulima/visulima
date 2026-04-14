@@ -56,7 +56,9 @@ type CompiledValidator = ((data: unknown) => boolean) & {
 const ajvLogger = {
     error: console.error.bind(console),
     log: console.log.bind(console),
-    warn: () => { /* silenced: ajv-formats does not implement iri-reference / idn-email */ },
+    warn: () => {
+        /* silenced: ajv-formats does not implement iri-reference / idn-email */
+    },
 };
 
 /** Cached compiled validator — the schema is large, compilation is not cheap. */

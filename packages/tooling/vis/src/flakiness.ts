@@ -41,17 +41,16 @@ interface RunSummaryFile {
  * @param options - Filtering options.
  * @returns Flakiness stats sorted by rate (most flaky first).
  */
-export const analyzeFlakiness = (
-    workspaceRoot: string,
-    options: { minRuns?: number; since?: string } = {},
-): TaskFlakiness[] => {
+export const analyzeFlakiness = (workspaceRoot: string, options: { minRuns?: number; since?: string } = {}): TaskFlakiness[] => {
     const runsDir = join(workspaceRoot, ".task-runner", "runs");
 
     if (!existsSync(runsDir)) {
         return [];
     }
 
-    const files = readdirSync(runsDir).filter((f) => f.endsWith(".json")).sort();
+    const files = readdirSync(runsDir)
+        .filter((f) => f.endsWith(".json"))
+        .sort();
 
     if (files.length === 0) {
         return [];
@@ -146,13 +145,7 @@ export const formatFlakinessTable = (stats: TaskFlakiness[]): string[] => {
 
     const header = ["Task", "Runs", "Failures", "Rate", "Last Failure"];
 
-    const rows = stats.map((s) => [
-        s.taskId,
-        String(s.totalRuns),
-        String(s.failures),
-        `${(s.flakinessRate * 100).toFixed(1)}%`,
-        s.lastFailure ?? "—",
-    ]);
+    const rows = stats.map((s) => [s.taskId, String(s.totalRuns), String(s.failures), `${(s.flakinessRate * 100).toFixed(1)}%`, s.lastFailure ?? "—"]);
 
     const widths = header.map((h, i) => {
         const maxDataWidth = rows.reduce((max, row) => Math.max(max, (row[i] ?? "").length), 0);

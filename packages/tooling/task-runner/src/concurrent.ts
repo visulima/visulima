@@ -12,18 +12,19 @@ import { logTimings } from "./flow-controllers/log-timings";
 import { withRestart } from "./flow-controllers/restart-process";
 import { runTeardown } from "./flow-controllers/teardown";
 import { loadNativeBindings } from "./native-binding";
-import type { ConcurrentCommandConfig, ConcurrentCommandInput, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "./types";
+import type { ConcurrentCommandConfig, ConcurrentCommandInput, ConcurrentRunnerOptions, ConcurrentRunResult } from "./types";
 
 /**
  * Normalize command inputs to ConcurrentCommandConfig objects.
  */
-const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandConfig[] => inputs.map((input) => {
-    if (typeof input === "string") {
-        return { command: input };
-    }
+const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandConfig[] =>
+    inputs.map((input) => {
+        if (typeof input === "string") {
+            return { command: input };
+        }
 
-    return input;
-});
+        return input;
+    });
 
 /**
  * Core runner function that dispatches to native or JS fallback.

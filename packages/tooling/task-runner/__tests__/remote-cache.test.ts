@@ -35,7 +35,9 @@ const startMockServer = (handler: (request: IncomingMessage, response: ServerRes
 
 const closeServer = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => { resolve(); });
+        server.close(() => {
+            resolve();
+        });
     });
 
 const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {

@@ -59,15 +59,15 @@ const GIT_REF_RE = /^[\w./~^@{}][\w.\-/~^@{}]*$/;
 // ─── Types ───────────────────────────────────────────────────────────
 
 /** Machine-readable reason codes for the ignore decision. */
-type IgnoreReason
-    = | "commit-force-deploy"
-        | "commit-skip"
-        | "missing-project-argument"
-        | "no-changes"
-        | "project-affected"
-        | "project-not-affected"
-        | "project-unknown"
-        | "workspace-error";
+type IgnoreReason =
+    | "commit-force-deploy"
+    | "commit-skip"
+    | "missing-project-argument"
+    | "no-changes"
+    | "project-affected"
+    | "project-not-affected"
+    | "project-unknown"
+    | "workspace-error";
 
 /**
  * Structured decision record emitted on stdout in `--json` mode and
@@ -125,7 +125,9 @@ const resolveCiBaseSha = (env: NodeJS.ProcessEnv = process.env): string | undefi
  */
 const validateGitRef = (ref: string): void => {
     if (!GIT_REF_RE.test(ref)) {
-        throw new Error(`Invalid git ref: "${ref}". Refs must start with an alphanumeric character or one of _ . / ~ ^ @ { } and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, @, and braces.`);
+        throw new Error(
+            `Invalid git ref: "${ref}". Refs must start with an alphanumeric character or one of _ . / ~ ^ @ { } and may only contain letters, digits, dots, dashes, underscores, slashes, tildes, carets, @, and braces.`,
+        );
     }
 };
 
@@ -186,8 +188,7 @@ const matchesPerProjectToken = (message: string, verb: "deploy" | "skip", projec
  * @returns `true` if any skip token is present, `false` otherwise.
  */
 const commitHasSkipMessage = (message: string, project: string): boolean =>
-    SKIP_TOKENS.some((token) => message.includes(token))
-    || matchesPerProjectToken(message, "skip", project);
+    SKIP_TOKENS.some((token) => message.includes(token)) || matchesPerProjectToken(message, "skip", project);
 
 /**
  * Returns `true` if the commit message contains any force-deploy token,
@@ -197,8 +198,7 @@ const commitHasSkipMessage = (message: string, project: string): boolean =>
  * @returns `true` if any force-deploy token is present, `false` otherwise.
  */
 const commitHasForceDeployMessage = (message: string, project: string): boolean =>
-    FORCE_TOKENS.some((token) => message.includes(token))
-    || matchesPerProjectToken(message, "deploy", project);
+    FORCE_TOKENS.some((token) => message.includes(token)) || matchesPerProjectToken(message, "deploy", project);
 
 /**
  * Builds a `"build"` decision record. Factory helper that collapses the

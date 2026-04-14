@@ -145,10 +145,7 @@
                     "type": "array",
                     "description": "Other targets this target depends on. Can be plain target names (same project) or dependency config objects.",
                     "items": {
-                        "oneOf": [
-                            { "type": "string" },
-                            { "$ref": "#/$defs/targetDependencyConfig" }
-                        ]
+                        "oneOf": [{ "type": "string" }, { "$ref": "#/$defs/targetDependencyConfig" }]
                     }
                 },
                 "configurations": {
@@ -201,10 +198,7 @@
                     "default": false
                 },
                 "runInCI": {
-                    "oneOf": [
-                        { "type": "boolean" },
-                        { "type": "string", "enum": ["affected", "always"] }
-                    ],
+                    "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["affected", "always"] }],
                     "description": "Controls whether this task runs in CI. true=always, false=never, 'affected'=only when project is affected, 'always'=even if unaffected.",
                     "default": true
                 },
@@ -291,10 +285,7 @@
                     "description": "When true, run this target on all dependency projects first (equivalent to turbo's ^target)."
                 },
                 "projects": {
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ],
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }],
                     "description": "Specific project name(s) to run this target on."
                 },
                 "params": {

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 
-import { readYamlSync } from "@visulima/fs";
+import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
 import type { MigrateLogger, MigrationReport } from "./types";
@@ -37,11 +37,7 @@ const taskToVisTarget = (task: MoonTaskYaml): Record<string, unknown> => {
     const target: Record<string, unknown> = {};
 
     if (task.command) {
-        target.command = Array.isArray(task.args)
-            ? `${task.command} ${task.args.join(" ")}`
-            : task.args
-                ? `${task.command} ${task.args}`
-                : task.command;
+        target.command = Array.isArray(task.args) ? `${task.command} ${task.args.join(" ")}` : task.args ? `${task.command} ${task.args}` : task.command;
     }
 
     if (task.deps && task.deps.length > 0) {
@@ -99,7 +95,7 @@ const renderVisConfig = (tasks: MoonTasksYaml): string => {
         "// Per-project moon.yml files can be converted to project.json —",
         "// review the generated file and move project-specific tasks there.",
         "",
-        "import { defineConfig } from \"@visulima/vis/config\";",
+        'import { defineConfig } from "@visulima/vis/config";',
         "",
         `export default defineConfig(${serialised});`,
         "",
@@ -126,7 +122,9 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const tasksDir = join(moonDir, "tasks");
 
     if (existsSync(tasksDir)) {
-        const entries = readdirSync(tasksDir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml")).sort();
+        const entries = readdirSync(tasksDir)
+            .filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"))
+            .sort();
 
         if (entries.length > 0) {
             return join(tasksDir, entries[0]!);
@@ -146,12 +144,7 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
  * @param logger - Logger for user feedback.
  * @param report - Migration report to append manual steps and warnings.
  */
-export const migrateMoon = (
-    workspaceRoot: string,
-    options: { dryRun?: boolean },
-    logger: MigrateLogger,
-    report: MigrationReport,
-): void => {
+export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const tasksFile = findMoonTasksFile(workspaceRoot);
 
     if (!tasksFile) {
@@ -172,7 +165,9 @@ export const migrateMoon = (
     // Warn about fields that vis does not support directly.
     for (const [name, task] of Object.entries(parsed.tasks ?? {})) {
         if (task.env && Object.keys(task.env).length > 0) {
-            report.warnings.push(`Task "${name}" has an \`env\` block which vis does not support — set environment variables in the command or a wrapper script.`);
+            report.warnings.push(
+                `Task "${name}" has an \`env\` block which vis does not support — set environment variables in the command or a wrapper script.`,
+            );
         }
 
         if (task.platform) {
@@ -186,20 +181,28 @@ export const migrateMoon = (
         const hasArgsWithSpaces = Array.isArray(task.args) && task.args.some((a) => a.includes(" "));
 
         if (hasArgsWithSpaces) {
-            report.warnings.push(`Task "${name}" has \`args\` entries containing spaces — vis flattens args into the command string so quoting may need manual adjustment.`);
+            report.warnings.push(
+                `Task "${name}" has \`args\` entries containing spaces — vis flattens args into the command string so quoting may need manual adjustment.`,
+            );
         }
     }
 
     if (parsed.extends && parsed.extends.length > 0) {
-        report.warnings.push("`extends` was found in the moon config but has no direct vis equivalent — inline the referenced files or use vis's `taskDefaults` blocks.");
+        report.warnings.push(
+            "`extends` was found in the moon config but has no direct vis equivalent — inline the referenced files or use vis's `taskDefaults` blocks.",
+        );
     }
 
     if (parsed.implicitDeps && parsed.implicitDeps.length > 0) {
-        report.warnings.push("`implicitDeps` was found in the moon config but has no direct vis equivalent — add explicit `dependsOn` entries in project.json instead.");
+        report.warnings.push(
+            "`implicitDeps` was found in the moon config but has no direct vis equivalent — add explicit `dependsOn` entries in project.json instead.",
+        );
     }
 
     if (parsed.taskOptions && Object.keys(parsed.taskOptions).length > 0) {
-        report.warnings.push("`taskOptions` was found in the moon config but has no direct vis equivalent — review and apply settings per-target in vis.config.ts.");
+        report.warnings.push(
+            "`taskOptions` was found in the moon config but has no direct vis equivalent — review and apply settings per-target in vis.config.ts.",
+        );
     }
 
     const rendered = renderVisConfig(parsed);

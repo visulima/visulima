@@ -28,7 +28,7 @@ describe(FingerprintManager, () => {
         await mkdir(join(workspaceRoot, "src"), { recursive: true });
         await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 1;");
         await writeFile(join(workspaceRoot, "src/utils.ts"), "export const y = 2;");
-        await writeFile(join(workspaceRoot, "package.json"), "{\"name\":\"test\"}");
+        await writeFile(join(workspaceRoot, "package.json"), '{"name":"test"}');
     });
 
     afterEach(async () => {

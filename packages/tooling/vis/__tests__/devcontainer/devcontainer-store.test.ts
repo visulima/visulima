@@ -175,10 +175,13 @@ describe("DevcontainerStore", () => {
         it("should toggle a feature off", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                features: { "ghcr.io/devcontainers/features/node:1": {} },
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    features: { "ghcr.io/devcontainers/features/node:1": {} },
+                },
+                false,
+            );
 
             store.toggleFeature("ghcr.io/devcontainers/features/node:1");
 
@@ -254,10 +257,13 @@ describe("DevcontainerStore", () => {
         it("should toggle an extension off", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                customizations: { vscode: { extensions: ["dbaeumer.vscode-eslint"] } },
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    customizations: { vscode: { extensions: ["dbaeumer.vscode-eslint"] } },
+                },
+                false,
+            );
 
             store.toggleExtension("dbaeumer.vscode-eslint");
 
@@ -289,10 +295,13 @@ describe("DevcontainerStore", () => {
         it("should remove a container env var", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                containerEnv: { FOO: "bar", NODE_ENV: "dev" },
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    containerEnv: { FOO: "bar", NODE_ENV: "dev" },
+                },
+                false,
+            );
 
             store.removeEnvVar("container", "FOO");
 
@@ -302,10 +311,13 @@ describe("DevcontainerStore", () => {
         it("should set containerEnv to undefined when removing the last var", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                containerEnv: { FOO: "bar" },
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    containerEnv: { FOO: "bar" },
+                },
+                false,
+            );
 
             store.removeEnvVar("container", "FOO");
 
@@ -327,13 +339,16 @@ describe("DevcontainerStore", () => {
         it("should remove a mount", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                mounts: [
-                    { source: "a", target: "/a", type: "volume" },
-                    { source: "b", target: "/b", type: "volume" },
-                ],
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    mounts: [
+                        { source: "a", target: "/a", type: "volume" },
+                        { source: "b", target: "/b", type: "volume" },
+                    ],
+                },
+                false,
+            );
 
             store.removeMount(0);
 
@@ -355,10 +370,13 @@ describe("DevcontainerStore", () => {
         it("should clear a lifecycle command when empty string", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                ...baseConfig,
-                postCreateCommand: "npm install",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    ...baseConfig,
+                    postCreateCommand: "npm install",
+                },
+                false,
+            );
 
             store.setLifecycleCommand("postCreateCommand", "");
 
@@ -395,11 +413,14 @@ describe("DevcontainerStore", () => {
         it("should strip empty strings", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                image: "ubuntu",
-                name: "",
-                workspaceFolder: "",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    image: "ubuntu",
+                    name: "",
+                    workspaceFolder: "",
+                },
+                false,
+            );
 
             const cleaned = store.cleanConfig();
 
@@ -409,13 +430,16 @@ describe("DevcontainerStore", () => {
         it("should strip empty arrays", () => {
             expect.assertions(3);
 
-            const store = new DevcontainerStore({
-                capAdd: [],
-                forwardPorts: [],
-                image: "ubuntu",
-                mounts: [],
-                name: "test",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    capAdd: [],
+                    forwardPorts: [],
+                    image: "ubuntu",
+                    mounts: [],
+                    name: "test",
+                },
+                false,
+            );
 
             const cleaned = store.cleanConfig();
 
@@ -427,11 +451,14 @@ describe("DevcontainerStore", () => {
         it("should strip empty features object", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                features: {},
-                image: "ubuntu",
-                name: "test",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    features: {},
+                    image: "ubuntu",
+                    name: "test",
+                },
+                false,
+            );
 
             expect(store.cleanConfig().features).toBeUndefined();
         });
@@ -439,11 +466,14 @@ describe("DevcontainerStore", () => {
         it("should strip empty customizations", () => {
             expect.assertions(1);
 
-            const store = new DevcontainerStore({
-                customizations: { vscode: { extensions: [] } },
-                image: "ubuntu",
-                name: "test",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    customizations: { vscode: { extensions: [] } },
+                    image: "ubuntu",
+                    name: "test",
+                },
+                false,
+            );
 
             expect(store.cleanConfig().customizations).toBeUndefined();
         });
@@ -451,12 +481,15 @@ describe("DevcontainerStore", () => {
         it("should strip empty env objects", () => {
             expect.assertions(2);
 
-            const store = new DevcontainerStore({
-                containerEnv: {},
-                image: "ubuntu",
-                name: "test",
-                remoteEnv: {},
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    containerEnv: {},
+                    image: "ubuntu",
+                    name: "test",
+                    remoteEnv: {},
+                },
+                false,
+            );
 
             const cleaned = store.cleanConfig();
 
@@ -467,12 +500,15 @@ describe("DevcontainerStore", () => {
         it("should preserve non-empty values", () => {
             expect.assertions(4);
 
-            const store = new DevcontainerStore({
-                features: { "ghcr.io/devcontainers/features/node:1": {} },
-                forwardPorts: [3000],
-                image: "ubuntu",
-                name: "test",
-            }, false);
+            const store = new DevcontainerStore(
+                {
+                    features: { "ghcr.io/devcontainers/features/node:1": {} },
+                    forwardPorts: [3000],
+                    image: "ubuntu",
+                    name: "test",
+                },
+                false,
+            );
 
             const cleaned = store.cleanConfig();
 

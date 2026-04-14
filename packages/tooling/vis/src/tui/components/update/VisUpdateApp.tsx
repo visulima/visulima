@@ -31,7 +31,15 @@ interface VisUpdateAppProps {
     store: UpdateStore;
 }
 
-const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, filteredOutEntries = EMPTY_ENTRIES, isDryRun, store, totalCatalogEntries = 0 }: VisUpdateAppProps): React.JSX.Element => {
+const VisUpdateApp = ({
+    autoExitSeconds = 0,
+    changelogUrls,
+    checkedCount = 0,
+    filteredOutEntries = EMPTY_ENTRIES,
+    isDryRun,
+    store,
+    totalCatalogEntries = 0,
+}: VisUpdateAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -198,9 +206,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
             if (state.focusedPanel === "list" && (key.leftArrow || key.rightArrow)) {
                 const tabs: FilterType[] = ["all", "major", "minor", "patch", "security"];
                 const currentIndex = tabs.indexOf(state.filterType);
-                const nextIndex = key.rightArrow
-                    ? (currentIndex + 1) % tabs.length
-                    : (currentIndex - 1 + tabs.length) % tabs.length;
+                const nextIndex = key.rightArrow ? (currentIndex + 1) % tabs.length : (currentIndex - 1 + tabs.length) % tabs.length;
 
                 setListScrollOffset(0);
                 detailScrollRef.current?.scrollToTop();
@@ -393,11 +399,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-                    {columns}
-                    x
-                    {rows}
-                    )
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -495,25 +497,22 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-                    {" "}
-                    scroll
-                    {" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-                    {" "}
+                    </Text>{" "}
                     close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -556,9 +555,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
                 <Text>
                     <Text bold color="white">
                         {" "}
-                        {"\u2192"}
-                        /
-                        {"\u2190"}
+                        {"\u2192"}/{"\u2190"}
                     </Text>
                     <Text dimColor> Focus detail/list</Text>
                 </Text>
@@ -660,36 +657,24 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
             {majorCount > 0 && (
                 <Box marginBottom={1} marginTop={1}>
                     <Text color="yellow">
-                        {"\u26A0"}
-                        {" "}
-                        {majorCount}
-                        {" "}
-                        major update
-                        {majorCount === 1 ? "" : "s"}
-                        {" "}
-                        — review breaking changes
+                        {"\u26A0"} {majorCount} major update
+                        {majorCount === 1 ? "" : "s"} — review breaking changes
                     </Text>
                 </Box>
             )}
             <Text dimColor>
-                Press
-                {" "}
+                Press{" "}
                 <Text bold color="white">
                     u
-                </Text>
-                {" "}
-                or
-                {" "}
+                </Text>{" "}
+                or{" "}
                 <Text bold color="white">
                     Enter
-                </Text>
-                {" "}
-                to confirm,
-                {" "}
+                </Text>{" "}
+                to confirm,{" "}
                 <Text bold color="white">
                     Esc
-                </Text>
-                {" "}
+                </Text>{" "}
                 to cancel
             </Text>
         </Box>
@@ -705,16 +690,9 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
         >
             {checkedList.map((e) => (
                 <Box gap={1} key={e.packageName}>
-                    <Text>
-                        {" "}
-                        {e.packageName}
-                    </Text>
+                    <Text> {e.packageName}</Text>
                     <Text dimColor>
-                        {e.currentRange}
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        {e.newRange}
+                        {e.currentRange} {"\u2192"} {e.newRange}
                     </Text>
                     <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>
                         {e.updateType}
@@ -726,15 +704,14 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
 
     // ── Filtered-out dialog ───────────────────────────────────────
 
-    const filteredOutDialog = filteredOutEntries.length > 0
-        ? (
+    const filteredOutDialog =
+        filteredOutEntries.length > 0 ? (
             <Dialog
-                footer={(
+                footer={
                     <Text dimColor>
                         <Text bold color="white">
                             {"\u2191\u2193"}
-                        </Text>
-                        {" "}
+                        </Text>{" "}
                         scroll
                         {"  "}
                         <Text bold color="white">
@@ -743,11 +720,10 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
                         /
                         <Text bold color="white">
                             Esc
-                        </Text>
-                        {" "}
+                        </Text>{" "}
                         close
                     </Text>
-                )}
+                }
                 scrollRef={filteredOutScrollRef}
                 title={`${filteredOutEntries.length} PACKAGE${filteredOutEntries.length === 1 ? "" : "S"} FILTERED BY TARGET`}
                 visible={filteredOutVisible}
@@ -756,27 +732,18 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
                 <Box flexDirection="column">
                     <Box marginBottom={1}>
                         <Text dimColor>
-                            These packages have newer versions available but are excluded by
-                            {" "}
-                            the current target constraint. Use
-                            {" "}
-                            <Text bold color="white">--target latest</Text>
-                            {" "}
+                            These packages have newer versions available but are excluded by the current target constraint. Use{" "}
+                            <Text bold color="white">
+                                --target latest
+                            </Text>{" "}
                             to include them.
                         </Text>
                     </Box>
                     {filteredOutEntries.map((e) => (
                         <Box gap={1} key={e.packageName}>
-                            <Text>
-                                {" "}
-                                {e.packageName}
-                            </Text>
+                            <Text> {e.packageName}</Text>
                             <Text dimColor>
-                                {e.currentRange}
-                                {" "}
-                                {"\u2192"}
-                                {" "}
-                                {e.newRange}
+                                {e.currentRange} {"\u2192"} {e.newRange}
                             </Text>
                             <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>
                                 {e.updateType}
@@ -785,8 +752,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, checkedCount = 0, fi
                     ))}
                 </Box>
             </Dialog>
-        )
-        : null;
+        ) : null;
 
     // ── Panels ──────────────────────────────────────────────────────
 
