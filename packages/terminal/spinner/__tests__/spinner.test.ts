@@ -328,8 +328,11 @@ describe("spinner", () => {
 
             const updates: string[][] = [];
             const mockManager = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 hook: vi.fn().mockReturnValue(true),
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 unhook: vi.fn().mockReturnValue(true),
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 update: vi.fn((_, rows: string[]) => {
                     updates.push(rows);
                 }),
@@ -352,8 +355,11 @@ describe("spinner", () => {
             expect.assertions(1);
 
             const mockManager = {
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 hook: vi.fn().mockReturnValue(true),
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 unhook: vi.fn().mockReturnValue(true),
+                // eslint-disable-next-line vitest/require-mock-type-parameters
                 update: vi.fn(),
             };
 
@@ -414,8 +420,11 @@ describe("multiSpinner", () => {
         expect.assertions(3);
 
         const mockManager = {
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             hook: vi.fn().mockReturnValue(true),
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             unhook: vi.fn().mockReturnValue(true),
+            // eslint-disable-next-line vitest/require-mock-type-parameters
             update: vi.fn(),
         };
 

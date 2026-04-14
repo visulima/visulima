@@ -117,6 +117,7 @@ export class Spinner {
         this.#spinnerName = options.name ?? "dots";
         this.#verbose = options.verbose !== false;
         this.#prefixText = options.prefixText ?? "";
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = interactiveManager;
         this.#icons = { ...DEFAULT_ICONS, ...options.icons };
 
@@ -185,6 +186,7 @@ export class Spinner {
      * @internal
      */
     public setInteractiveManager(manager?: InteractiveManager): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = manager;
     }
 
@@ -223,12 +225,14 @@ export class Spinner {
             this.#prefixText = options.prefixText;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const manager = this.#multiSpinner ?? this.#interactiveManager;
 
         if (manager) {
             if (this.#multiSpinner) {
                 (manager as MultiSpinner).renderAll();
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                 (manager as InteractiveManager).hook();
                 this.#render();
             }
@@ -348,6 +352,7 @@ export class Spinner {
 
     #render(): void {
         if (this.#interactiveManager) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.update("stdout", [this.getFrameOutput()]);
         }
     }
@@ -386,13 +391,16 @@ export class Spinner {
 
         this.#finalOutput = output;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const manager = this.#multiSpinner ?? this.#interactiveManager;
 
         if (manager) {
             if (this.#multiSpinner) {
                 this.#multiSpinner.renderAll();
             } else if (this.#interactiveManager) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                 this.#interactiveManager.update("stdout", [output]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                 this.#interactiveManager.unhook(false);
             }
         }
@@ -426,11 +434,13 @@ export class MultiSpinner {
 
     public constructor(options: SpinnerOptions = {}, interactiveManager?: InteractiveManager) {
         this.#options = options;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = interactiveManager;
     }
 
     /** @internal */
     public setInteractiveManager(manager?: InteractiveManager): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = manager;
     }
 
@@ -472,6 +482,7 @@ export class MultiSpinner {
         this.#isActive = false;
 
         if (this.#interactiveManager) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.unhook(false);
         }
     }
@@ -492,6 +503,7 @@ export class MultiSpinner {
 
         if (!this.#isActive) {
             this.#isActive = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.hook();
         }
 
@@ -502,6 +514,7 @@ export class MultiSpinner {
         }
 
         if (lines.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.update("stdout", lines);
         }
     }
