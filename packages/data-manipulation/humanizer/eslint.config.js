@@ -32,15 +32,15 @@ export default createConfig(
     {
         files: ["./src/language/*.ts", "./src/language/**/*.ts"],
         rules: {
+            // Circular fix conflict: no-confusing-arrow requires parens around arrow body ternaries,
+            // but @stylistic/no-extra-parens wants to remove them
+            "@stylistic/no-extra-parens": "off",
+            // Each language file exports a single named `durationLanguage` - changing to default would break the public API
+            "import/prefer-default-export": "off",
             // Language files use locale codes (e.g. sr_Latn, zh_CN) as filenames per BCP 47 standard
             "unicorn/filename-case": "off",
             // el.ts (Greek) is a valid locale code, not an abbreviation for "element"
             "unicorn/prevent-abbreviations": "off",
-            // Each language file exports a single named `durationLanguage` - changing to default would break the public API
-            "import/prefer-default-export": "off",
-            // Circular fix conflict: no-confusing-arrow requires parens around arrow body ternaries,
-            // but @stylistic/no-extra-parens wants to remove them
-            "@stylistic/no-extra-parens": "off",
         },
     },
 );

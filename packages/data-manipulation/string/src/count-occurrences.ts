@@ -2,12 +2,12 @@
 
 /**
  * Get the count of `substring` in `value`.
- * @param value Content to search in.
+ * @param value Content to search in. Will be coerced to string.
  * @param substring Substring to look for, typically one character.
  * @returns Count of `substring`s in `value`.
  * @throws {TypeError} When substring is not a string or is empty.
  */
-export const countOccurrences = (value: string, substring: string): number => {
+export const countOccurrences = (value: unknown, substring: string): number => {
     const source = String(value);
 
     if (typeof substring !== "string") {

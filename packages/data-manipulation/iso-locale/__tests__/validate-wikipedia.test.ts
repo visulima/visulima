@@ -137,9 +137,7 @@ const parseISO4217Table = (html: string): { code: string; name: string; number: 
 
     // Look for the table with class "wikitable" that contains "Active ISO 4217 currency codes"
     // The table structure: Code | Num | D | Currency | Locations
-    const tableMatch
-        = ACTIVE_CODES_TABLE_REGEX.exec(html)
-            ?? ACTIVE_ISO4217_TABLE_REGEX.exec(html);
+    const tableMatch = ACTIVE_CODES_TABLE_REGEX.exec(html) ?? ACTIVE_ISO4217_TABLE_REGEX.exec(html);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain currency data
@@ -225,9 +223,7 @@ const parseCurrencySymbolTable = (html: string): { code: string; name: string; s
     const result: { code: string; name: string; symbol: string }[] = [];
 
     // Look for currency symbol tables - Wikipedia uses wikitable class
-    const tableMatch
-        = SYMBOL_TABLE_REGEX.exec(html)
-            ?? SYMBOL_TABLE_ALT_REGEX.exec(html);
+    const tableMatch = SYMBOL_TABLE_REGEX.exec(html) ?? SYMBOL_TABLE_ALT_REGEX.exec(html);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain symbol data
@@ -328,7 +324,6 @@ describe("wikipedia Validation", () => {
         const issues: string[] = [];
         const majorCurrencies = ["USD", "EUR", "GBP", "JPY", "CNY", "AUD", "CAD", "CHF", "INR", "BRL"];
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const code of majorCurrencies) {
             const wikiCurrency = wikipediaISO4217.find((c) => c.code === code);
             const ourCurrency = currencies.find((c) => c.code === code);
@@ -412,7 +407,6 @@ describe("wikipedia Validation", () => {
         const issues: string[] = [];
         const majorCurrencies = ["USD", "EUR", "GBP", "JPY", "CNY", "AUD", "CAD", "CHF", "INR", "BRL"];
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const code of majorCurrencies) {
             const wikiSymbol = wikipediaCurrencySymbols.find((s) => s.code === code);
             const ourSymbol = currencySymbolMap.find((s) => s.code === code);
@@ -479,7 +473,6 @@ describe("wikipedia Validation", () => {
         const sampleSize = Math.min(50, wikipediaISO4217.length);
         const sampleCurrencies = wikipediaISO4217.slice(0, sampleSize);
 
-        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const wikiCurrency of sampleCurrencies) {
             if (!ourCurrencyCodes.has(wikiCurrency.code)) {
                 issues.push(`Missing currency: ${wikiCurrency.code} (${wikiCurrency.name}) - listed in Wikipedia but not in our data`);
