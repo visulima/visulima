@@ -116,10 +116,6 @@ export const pail: PailServerType = createPail();
 export type { PailErrorOptions } from "./error";
 export { createPailError, PailError } from "./error";
 export type { PailServerType as Pail } from "./pail.server";
-export type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload, ProgressBarStyle, SingleBarOptions } from "./progress-bar";
-export { getBarChar, MultiProgressBar, ProgressBar } from "./progress-bar";
-export type { SpinnerIcons, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./spinner";
-export { MultiSpinner, Spinner } from "./spinner";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,

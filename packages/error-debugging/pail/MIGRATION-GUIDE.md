@@ -2,6 +2,173 @@
 
 This guide documents breaking changes and migration steps for the `@visulima/pail` package.
 
+## Version 4.0.0
+
+### Breaking Changes Summary
+
+- **Spinner removed**: `createSpinner()` and `createMultiSpinner()` removed — use `@visulima/spinner`
+- **Progress bar removed**: `createProgressBar()` and `createMultiProgressBar()` removed — use `@visulima/progress-bar`
+- **Interactive manager extracted**: `@visulima/pail/interactive` export removed — use `@visulima/interactive-manager`
+- **Spinner/progress-bar exports removed**: `@visulima/pail/spinner` and `@visulima/pail/progress-bar` no longer exist
+
+### Install New Packages
+
+```bash
+pnpm add @visulima/spinner @visulima/progress-bar
+```
+
+`@visulima/interactive-manager` is automatically installed as a dependency of both packages and of pail itself.
+
+### Spinner Migration
+
+#### Before (v3.x)
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+const spinner = logger.createSpinner({ name: "dots" });
+spinner.start("Loading...");
+spinner.succeed("Done!");
+
+const multi = logger.createMultiSpinner({ name: "dots" });
+const s1 = multi.create("Task 1");
+s1.start();
+s1.succeed("Done");
+multi.stop();
+```
+
+#### After (v4.x)
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { MultiSpinner, Spinner } from "@visulima/spinner";
+
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+
+const spinner = new Spinner({ name: "dots" }, manager);
+spinner.start("Loading...");
+spinner.succeed("Done!");
+
+const multi = new MultiSpinner({ name: "dots" }, manager);
+const s1 = multi.create("Task 1");
+s1.start();
+s1.succeed("Done");
+multi.stop();
+```
+
+### Progress Bar Migration
+
+#### Before (v3.x)
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({ interactive: true });
+
+const bar = logger.createProgressBar({
+    total: 100,
+    format: "Downloading [{bar}] {percentage}%",
+});
+bar.start();
+bar.update(50);
+bar.stop();
+
+const multi = logger.createMultiProgressBar();
+const b1 = multi.create(100);
+b1.update(50);
+multi.stop();
+```
+
+#### After (v4.x)
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { MultiProgressBar, ProgressBar } from "@visulima/progress-bar";
+
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+
+const bar = new ProgressBar(
+    {
+        total: 100,
+        format: "Downloading [{bar}] {percentage}%",
+    },
+    manager,
+);
+bar.start();
+bar.update(50);
+bar.stop();
+
+const multi = new MultiProgressBar({}, manager);
+const b1 = multi.create(100);
+b1.update(50);
+multi.stop();
+```
+
+### Interactive Manager Migration
+
+#### Before (v3.x)
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/pail/interactive";
+```
+
+#### After (v4.x)
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+```
+
+### Spinner/Progress-Bar Type Imports
+
+#### Before (v3.x)
+
+```typescript
+import type { SpinnerOptions, SpinnerIcons } from "@visulima/pail";
+import type { ProgressBarOptions, MultiBarOptions } from "@visulima/pail";
+```
+
+#### After (v4.x)
+
+```typescript
+import type { SpinnerOptions, SpinnerIcons } from "@visulima/spinner";
+import type { ProgressBarOptions, MultiBarOptions } from "@visulima/progress-bar";
+```
+
+### Spinner API Changes
+
+The new `@visulima/spinner` package has a few API differences from pail's old spinner:
+
+| Old (pail) | New (@visulima/spinner) | Notes |
+|---|---|---|
+| `logger.createSpinner(opts)` | `new Spinner(opts, manager)` | Pass manager as 2nd arg |
+| `spinner.fail(text)` | `spinner.failed(text)` | Method renamed |
+| `SpinnerStyle` object with colorize | `style: (text) => string` or `SpinnerStyle` object | Style is now a function or uses Node.js `util.styleText` |
+
+### What Stays the Same
+
+- `getInteractiveManager()` — still available on pail, returns the manager instance
+- Interactive mode — still enabled via `{ interactive: true }`
+- All logging methods — unchanged
+- Reporters — unchanged
+- Processors — unchanged
+- Middleware — unchanged
+
+### Why This Change?
+
+Spinners and progress bars are now **independent packages** that can be used without pail:
+
+- **`@visulima/spinner`** — 109 spinner animations, styling, multi-spinner support
+- **`@visulima/progress-bar`** — 7 styles, gradients, multi-bar, composite mode
+- **`@visulima/interactive-manager`** — terminal stream coordination
+
+This reduces pail's bundle size and allows these features to be used in any CLI tool, not just with pail.
+
+---
+
 ## Version 3.0.0
 
 ### Breaking Changes Summary

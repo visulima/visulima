@@ -56,7 +56,7 @@ interface PailNextMiddlewareOptions {
  * export default middleware;
  * ```
  */
-export const pailMiddleware = (NextResponseClass: NextResponseConstructor, options?: PailNextMiddlewareOptions): ((request: NextRequest) => NextResponse) => {
+export const pailMiddleware = (NextResponseClass: NextResponseConstructor, options?: PailNextMiddlewareOptions): (request: NextRequest) => NextResponse => {
     const { exclude, include } = options ?? {};
 
     return (request: NextRequest): NextResponse => {

@@ -190,18 +190,6 @@
                 "default": "./dist/reporter/http/http-reporter.js"
             }
         },
-        "./progress-bar": {
-            "types": "./dist/progress-bar.d.ts",
-            "default": "./dist/progress-bar.js"
-        },
-        "./spinner": {
-            "types": "./dist/spinner.d.ts",
-            "default": "./dist/spinner.js"
-        },
-        "./interactive": {
-            "types": "./dist/interactive/index.d.ts",
-            "default": "./dist/interactive/index.js"
-        },
         "./object-tree": {
             "types": "./dist/object-tree.d.ts",
             "default": "./dist/object-tree.js"
@@ -261,6 +249,7 @@
     },
     "dependencies": {
         "@visulima/colorize": "2.0.0-alpha.8",
+        "@visulima/interactive-manager": "0.0.0",
         "type-fest": "catalog:prod"
     },
     "devDependencies": {
@@ -273,6 +262,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
+        "@visulima/ansi": "4.0.0-alpha.8",
         "@visulima/error": "6.0.0-alpha.8",
         "@visulima/fmt": "2.0.0-alpha.8",
         "@visulima/inspector": "2.0.0-alpha.7",
@@ -281,7 +271,6 @@
         "@visulima/string": "3.0.0-alpha.9",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
-        "cli-spinners": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",

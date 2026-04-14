@@ -2,7 +2,7 @@ import { stderr, stdout } from "node:process";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import InteractiveManager from "../../src/interactive/interactive-manager";
+import { InteractiveManager } from "@visulima/interactive-manager";
 import { PailServer } from "../../src/pail.server";
 import RawReporter from "../../src/reporter/raw/raw-reporter.server";
 
@@ -439,54 +439,20 @@ describe("pailServerImpl", () => {
     });
 });
 
-describe("interactive mode validation", () => {
-    it("should throw when creating spinner without interactive mode", () => {
+describe("interactive mode", () => {
+    it("should return undefined interactive manager when not in interactive mode", () => {
         expect.assertions(1);
 
         const pailServer = new PailServer({ interactive: false, stderr, stdout });
 
-        expect(() => pailServer.createSpinner()).toThrow("Interactive mode is not enabled");
+        expect(pailServer.getInteractiveManager()).toBeUndefined();
     });
 
-    it("should throw when creating progress bar without interactive mode", () => {
-        expect.assertions(1);
-
-        const pailServer = new PailServer({ interactive: false, stderr, stdout });
-
-        expect(() => pailServer.createProgressBar({ total: 100 })).toThrow("Interactive mode is not enabled");
-    });
-
-    it("should throw when creating multi-spinner without interactive mode", () => {
-        expect.assertions(1);
-
-        const pailServer = new PailServer({ interactive: false, stderr, stdout });
-
-        expect(() => pailServer.createMultiSpinner()).toThrow("Interactive mode is not enabled");
-    });
-
-    it("should throw when creating multi-progress-bar without interactive mode", () => {
-        expect.assertions(1);
-
-        const pailServer = new PailServer({ interactive: false, stderr, stdout });
-
-        expect(() => pailServer.createMultiProgressBar()).toThrow("Interactive mode is not enabled");
-    });
-
-    it("should accept empty options for spinner (parity with progress bar)", () => {
+    it("should return interactive manager when in interactive mode", () => {
         expect.assertions(1);
 
         const pailServer = new PailServer({ interactive: true, stderr, stdout });
-        const spinner = pailServer.createSpinner(); // no options
 
-        expect(spinner).toBeDefined();
-    });
-
-    it("should accept empty options for multi-spinner", () => {
-        expect.assertions(1);
-
-        const pailServer = new PailServer({ interactive: true, stderr, stdout });
-        const multiSpinner = pailServer.createMultiSpinner(); // no options
-
-        expect(multiSpinner).toBeDefined();
+        expect(pailServer.getInteractiveManager()).toBeInstanceOf(InteractiveManager);
     });
 });
