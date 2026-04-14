@@ -1,0 +1,7 @@
+{
+    "name": "progress-bar",
+    "sourceRoot": "packages/terminal/progress-bar/src",
+    "prefix": "",
+    "tags": ["type:package", "category:cli-terminal"],
+    "projectType": "library"
+}
