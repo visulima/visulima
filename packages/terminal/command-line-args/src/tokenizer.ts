@@ -202,9 +202,9 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
         }
 
         if (
-            isShortOptionGroup(argument) // Skip if this looks like a short option with inline value (e.g., "-o=value")
+            isShortOptionGroup(argument) && // Skip if this looks like a short option with inline value (e.g., "-o=value")
             // These should be handled by the inline value handler, not expanded as groups
-            && !argument.includes(EQUAL_CHAR)
+            !argument.includes(EQUAL_CHAR)
         ) {
             const expanded: string[] = [];
             let shortValue = "";
