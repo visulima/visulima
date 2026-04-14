@@ -263,9 +263,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         // eslint-disable-next-line no-plusplus
         for (let index = match.start; index <= match.end; index++) {
             if (
-                !processedChars[index] // Out of bounds
-                || (processedChars[index] as ProcessedChar).isIgnored // Overlaps ignore
-                || (processedChars[index] as ProcessedChar).appliedMatchId !== undefined // Overlaps higher-priority match
+                !processedChars[index] || // Out of bounds
+                (processedChars[index] as ProcessedChar).isIgnored || // Overlaps ignore
+                (processedChars[index] as ProcessedChar).appliedMatchId !== undefined // Overlaps higher-priority match
             ) {
                 canApply = false;
                 break;
@@ -273,9 +273,9 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
         }
 
         if (
-            canApply // Apply this valid match
-            && match.start >= 0
-            && match.start < processedChars.length
+            canApply && // Apply this valid match
+            match.start >= 0 &&
+            match.start < processedChars.length
         ) {
             // Mark characters covered by this match
             // eslint-disable-next-line no-plusplus
