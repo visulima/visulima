@@ -30,7 +30,7 @@ export const isUploadComplete = (chunks: ChunkInfo[], totalSize: number): boolea
     // First chunk must start at offset 0
     const firstChunk = sorted[0];
 
-    if (!firstChunk || firstChunk.offset !== 0) {
+    if (firstChunk?.offset !== 0) {
         return false;
     }
 

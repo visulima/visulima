@@ -89,7 +89,7 @@ export interface UploadResponse<T = ResponseBody> extends Record<string, unknown
  */
 export interface ValidatorConfig<T> {
     isValid?: (t: T) => Promise<boolean> | boolean;
-    response?: HttpError<HttpErrorBody> | ResponseTuple<ResponseBody>;
+    response?: HttpError | ResponseTuple;
     value?: unknown;
 }
 

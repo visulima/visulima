@@ -94,7 +94,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
     useEffect(() => {
         if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error as Error);
+            onErrorRef.current(query.error);
         }
     }, [query.error]);
 

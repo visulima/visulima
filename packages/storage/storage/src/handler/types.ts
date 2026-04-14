@@ -44,8 +44,8 @@ export type UploadEvent<TFile extends UploadFile> = RequestEvent & TFile;
 
 export type UploadErrorEvent = RequestEvent & UploadError;
 
-export type ResponseFile<TFile extends UploadFile> = BaseResponse &
-    TFile & {
+export type ResponseFile<TFile extends UploadFile> = BaseResponse
+    & TFile & {
         /** Optional stream for streaming responses instead of content buffer */
         stream?: Readable;
     };
@@ -57,11 +57,11 @@ export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
 
     fetch: (request: WebRequest) => Promise<WebResponse>;
 
-    off: ((event: "error", listener: (error: UploadErrorEvent) => void) => this) &
-        ((event: UploadEventType, listener: (payload: UploadEvent<TFile>) => void) => this);
+    off: ((event: "error", listener: (error: UploadErrorEvent) => void) => this)
+        & ((event: UploadEventType, listener: (payload: UploadEvent<TFile>) => void) => this);
 
-    on: ((event: "error", listener: (error: UploadErrorEvent) => void) => this) &
-        ((event: UploadEventType, listener: (payload: UploadEvent<TFile>) => void) => this);
+    on: ((event: "error", listener: (error: UploadErrorEvent) => void) => this)
+        & ((event: UploadEventType, listener: (payload: UploadEvent<TFile>) => void) => this);
 }
 
 export interface UploadOptions<TFile extends UploadFile> {

@@ -1,5 +1,4 @@
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
-import type AwsLightFile from "./aws-light-file";
 
 export interface AwsLightClientConfig {
     accessKeyId: string;
@@ -10,13 +9,13 @@ export interface AwsLightClientConfig {
     sessionToken?: string;
 }
 
-export type AwsLightMetaStorageOptions = AwsLightClientConfig &
-    MetaStorageOptions & {
+export type AwsLightMetaStorageOptions = AwsLightClientConfig
+    & MetaStorageOptions & {
         bucket?: string;
     };
 
-export type AwsLightStorageOptions = AwsLightClientConfig &
-    BaseStorageOptions<AwsLightFile> & {
+export type AwsLightStorageOptions = AwsLightClientConfig
+    & BaseStorageOptions & {
         /**
          * S3 bucket name.
          */

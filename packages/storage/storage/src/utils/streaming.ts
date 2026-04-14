@@ -150,8 +150,12 @@ export const withTimeout = <T extends Readable>(stream: T, timeoutMs: number, er
         stream.destroy(new Error(errorMessage));
     }, timeoutMs);
 
-    stream.on("end", () => clearTimeout(timeout));
-    stream.on("error", () => clearTimeout(timeout));
+    stream.on("end", () => {
+        clearTimeout(timeout);
+    });
+    stream.on("error", () => {
+        clearTimeout(timeout);
+    });
 
     return stream;
 };

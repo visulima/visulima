@@ -47,7 +47,7 @@ export const withQueryClient = <T extends Record<string, any>>(
 
     return {
         queryClient: client,
-        result: composableResult!,
+        result: composableResult,
         unmount,
     };
 };

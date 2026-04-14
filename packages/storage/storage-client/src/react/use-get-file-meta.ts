@@ -71,7 +71,7 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
 
     useEffect(() => {
         if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error as Error);
+            onErrorRef.current(query.error);
         }
     }, [query.error]);
 

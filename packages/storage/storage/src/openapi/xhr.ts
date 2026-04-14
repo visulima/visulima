@@ -99,7 +99,7 @@ const swaggerSpec = (
                                         },
                                         metadata: {
                                             description: "JSON stringifies metadata",
-                                            example: '{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }',
+                                            example: "{ \"name\": \"video.mp4\", \"mimeType\": \"video/mp4\", \"size\": 741, \"lastModified\": 1631750105530 }",
                                             type: "string",
                                         },
                                     },

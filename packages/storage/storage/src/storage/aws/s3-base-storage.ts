@@ -111,7 +111,7 @@ export interface S3ApiOperations {
  * Contains all shared business logic for S3 operations.
  * @template TFile The file type used by this storage backend.
  */
-export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3CompatibleFile> extends BaseStorage<TFile, FileReturn> {
+export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3CompatibleFile> extends BaseStorage<TFile> {
     public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
 
     protected bucket: string;
@@ -162,7 +162,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
         this.bucket = config.bucket;
 
-        this.partSize = typeof config.partSize === "string" ? parseBytes(config.partSize) : (config.partSize as number | undefined) || PART_SIZE;
+        this.partSize = typeof config.partSize === "string" ? parseBytes(config.partSize) : config.partSize || PART_SIZE;
 
         if (this.partSize < MIN_PART_SIZE) {
             throw new Error("Minimum allowed partSize value is 5MB");
@@ -235,7 +235,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 }
             }
 
-            const file = new (this.getFileClass())(processedConfig) as TFile;
+            const file = new (this.getFileClass())(processedConfig);
 
             file.name = this.namingFunction(file);
 
@@ -262,8 +262,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         ContentType: file.contentType,
                         Key: file.name,
                         Metadata: mapValues({ originalName: file.originalName, ...file.metadata } as Record<string, unknown>, (value) =>
-                            encodeURI(String(value)),
-                        ),
+                            encodeURI(String(value))),
                     }),
                 );
             } catch {
@@ -305,7 +304,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             let file: TFile;
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-                file = part as TFile;
+                file = part;
             } else {
                 file = await this.getMeta(part.id);
 
@@ -342,8 +341,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
-                            const readable =
-                                part.body instanceof Readable
+                            const readable
+                                = part.body instanceof Readable
                                     ? part.body
                                     : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
 
@@ -380,7 +379,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             Key: file.name,
                             PartNumber: partNumber,
                             UploadId: uploadId,
-                            ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
+                            ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
                         }),
                     );
 
@@ -454,7 +453,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     Bucket,
                     CopySource,
                     Key,
-                    ...(options?.storageClass && { StorageClass: options.storageClass }),
+                    ...options?.storageClass && { StorageClass: options.storageClass },
                 }),
             );
 
@@ -510,7 +509,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 } else {
                                     items.push({
                                         id: Key,
-                                        ...(LastModified && { createdAt: LastModified }),
+                                        ...LastModified && { createdAt: LastModified },
                                     } as TFile);
                                 }
                             }
@@ -733,8 +732,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("UploadId is required");
         }
 
-        const parts =
-            file.Parts?.map(({ ETag, PartNumber }) => {
+        const parts
+            = file.Parts?.map(({ ETag, PartNumber }) => {
                 if (!ETag || !PartNumber) {
                     throw new Error("ETag and PartNumber are required");
                 }

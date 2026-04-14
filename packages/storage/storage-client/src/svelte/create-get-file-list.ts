@@ -53,7 +53,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
     const limitStore: Readable<number | undefined> = typeof limit === "object" && "subscribe" in limit ? limit : derived([], () => limit);
     const pageStore: Readable<number | undefined> = typeof page === "object" && "subscribe" in page ? page : derived([], () => page);
-    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
+    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
     const query = createQuery(() => {
         const currentLimit = get(limitStore);
@@ -70,9 +70,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                 return Array.isArray(data)
                     ? { data }
                     : {
-                          data: data.data || (data as unknown as FileMeta[]),
-                          meta: (data as FileListResponse).meta,
-                      };
+                        data: data.data || (data as unknown as FileMeta[]),
+                        meta: data.meta,
+                    };
             },
             queryKey: storageQueryKeys.files.list(endpoint, { limit: currentLimit, page: currentPage }),
         };
@@ -80,13 +80,13 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
     const dataStore = (query.data as unknown as Readable<FileListResponse | undefined> | null) ?? readable<FileListResponse | undefined>(undefined);
     const errorStore = derived((query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined), ($error) =>
-        $error ? ($error as Error) : undefined,
+        ($error ? ($error as Error) : undefined),
     );
-    const isLoadingStore: Readable<boolean> =
+    const isLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
-            : readable<boolean>(false);
+            : readable(false);
 
     return {
         data: derived(dataStore, ($data) => $data || undefined),

@@ -123,7 +123,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             if ((file as ResponseFile<TFile>).content !== undefined) {
                 body = new Uint8Array((file as ResponseFile<TFile>).content as Buffer);
             } else if (typeof file === "object" && "data" in file) {
-                body = JSON.stringify((file as ResponseList<TFile>).data);
+                body = JSON.stringify(file.data);
             }
 
             return new Response(body, {
@@ -193,7 +193,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             ...allHeaders,
             "Access-Control-Expose-Headers":
                 "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
-            ...(basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value }),
+            ...basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value },
         });
 
         // Ensure Location header is present

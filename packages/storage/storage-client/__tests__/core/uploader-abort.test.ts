@@ -42,7 +42,9 @@ class MockXMLHttpRequest {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
-            handlers.forEach((handler) => handler(new Event("abort")));
+            handlers.forEach((handler) => {
+                handler(new Event("abort"));
+            });
         }
     });
 
@@ -132,7 +134,9 @@ describe("uploader Abort Operations", () => {
         uploader.add(file1);
         uploader.add(file2);
 
-        expect(() => uploader.abort()).not.toThrow();
+        expect(() => {
+            uploader.abort();
+        }).not.toThrow();
     });
 
     it("should handle aborting non-existent item", () => {
@@ -142,7 +146,9 @@ describe("uploader Abort Operations", () => {
             endpoint: "/api/upload",
         });
 
-        expect(() => uploader.abortItem("non-existent-id")).not.toThrow();
+        expect(() => {
+            uploader.abortItem("non-existent-id");
+        }).not.toThrow();
     });
 
     it("should handle aborting non-existent batch", () => {
@@ -152,6 +158,8 @@ describe("uploader Abort Operations", () => {
             endpoint: "/api/upload",
         });
 
-        expect(() => uploader.abortBatch("non-existent-batch-id")).not.toThrow();
+        expect(() => {
+            uploader.abortBatch("non-existent-batch-id");
+        }).not.toThrow();
     });
 });

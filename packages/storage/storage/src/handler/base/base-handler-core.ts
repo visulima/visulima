@@ -106,7 +106,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
      */
     // eslint-disable-next-line class-methods-use-this
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
-        if (!rangeHeader || !rangeHeader.startsWith("bytes=")) {
+        if (!rangeHeader?.startsWith("bytes=")) {
             return undefined;
         }
 

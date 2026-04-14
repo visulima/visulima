@@ -28,7 +28,7 @@ describe(useHeadFile, () => {
         const mockHeaders = new Headers({
             "Content-Length": "1024",
             "Content-Type": "image/jpeg",
-            ETag: '"test-etag"',
+            ETag: "\"test-etag\"",
             "Last-Modified": "Wed, 21 Oct 2015 07:28:00 GMT",
         });
 

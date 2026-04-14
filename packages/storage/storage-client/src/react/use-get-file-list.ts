@@ -65,7 +65,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
                 return { data };
             }
 
-            const response = data as FileListResponse;
+            const response = data;
             const result: FileListResponse = {
                 data: response.data || (data as unknown as FileMeta[]),
             };
@@ -100,7 +100,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     useEffect(() => {
         if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error as Error);
+            onErrorRef.current(query.error);
         }
     }, [query.error]);
 

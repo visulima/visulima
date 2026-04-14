@@ -87,7 +87,9 @@ describe(createMultipartAdapter, () => {
                     const handlers = this.eventListeners.get("error");
 
                     if (handlers) {
-                        handlers.forEach((handler) => handler(new Event("error")));
+                        handlers.forEach((handler) => {
+                            handler(new Event("error"));
+                        });
                     }
                 };
 
@@ -114,7 +116,9 @@ describe(createMultipartAdapter, () => {
             endpoint: "/api/upload",
         });
 
-        expect(() => adapter.abort()).not.toThrow();
+        expect(() => {
+            adapter.abort();
+        }).not.toThrow();
     });
 
     it("should clear uploads", () => {
@@ -124,6 +128,8 @@ describe(createMultipartAdapter, () => {
             endpoint: "/api/upload",
         });
 
-        expect(() => adapter.clear()).not.toThrow();
+        expect(() => {
+            adapter.clear();
+        }).not.toThrow();
     });
 });

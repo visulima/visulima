@@ -48,7 +48,9 @@ class MockXMLHttpRequest {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
-            handlers.forEach((handler) => handler(new Event("abort")));
+            handlers.forEach((handler) => {
+                handler(new Event("abort"));
+            });
         }
     });
 
@@ -144,7 +146,9 @@ describe(createUploader, () => {
 
         uploader.add(file);
 
-        expect(() => uploader.abort()).not.toThrow();
+        expect(() => {
+            uploader.abort();
+        }).not.toThrow();
     });
 
     it("should clear all uploads", () => {
@@ -159,6 +163,8 @@ describe(createUploader, () => {
         uploader.add(file1);
         uploader.add(file2);
 
-        expect(() => uploader.clear()).not.toThrow();
+        expect(() => {
+            uploader.clear();
+        }).not.toThrow();
     });
 });

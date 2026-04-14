@@ -37,7 +37,9 @@ class MockXMLHttpRequest {
         const handlers = this.eventListeners.get("abort");
 
         if (handlers) {
-            handlers.forEach((handler) => handler(new Event("abort")));
+            handlers.forEach((handler) => {
+                handler(new Event("abort"));
+            });
         }
     });
 

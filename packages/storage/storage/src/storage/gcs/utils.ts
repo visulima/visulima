@@ -10,7 +10,7 @@ export const getRangeEnd = (range: string): number => {
     // eslint-disable-next-line sonarjs/slow-regex
     const match = range.match(/(\d+)-(\d+)/);
 
-    const end = match && match[2] ? +match[2] : 0;
+    const end = match?.[2] ? +match[2] : 0;
 
     return end > 0 ? end + 1 : 0;
 };

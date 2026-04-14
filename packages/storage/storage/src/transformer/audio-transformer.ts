@@ -144,7 +144,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
             if (cached) {
                 this.logger?.debug("Returning cached transformed audio for %s", fileId);
 
-                return cached as AudioTransformResult<TFileReturn>;
+                return cached;
             }
         }
 

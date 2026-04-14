@@ -53,12 +53,10 @@ export interface CreateTransformFileReturn {
 export const createTransformFile = (options: CreateTransformFileOptions): CreateTransformFileReturn => {
     const { enabled = true, endpoint, id, transform } = options;
 
-    const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
-    const transformStore: Readable<TransformOptions> =
-        typeof transform === "object" && "subscribe" in transform
-            ? (transform as Readable<TransformOptions>)
-            : derived([], () => transform as TransformOptions);
-    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
+    const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id);
+    const transformStore: Readable<TransformOptions>
+        = typeof transform === "object" && "subscribe" in transform ? (transform as Readable<TransformOptions>) : derived([], () => transform);
+    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
     const query = createQuery(() => {
         const currentId = get(idStore);
@@ -102,15 +100,15 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         };
     });
 
-    const dataStore =
-        (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null) ??
-        readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
+    const dataStore
+        = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
+            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
     const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
-    const isLoadingStore: Readable<boolean> =
+    const isLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
-            : readable<boolean>(false);
+            : readable(false);
 
     return {
         data: derived(dataStore, ($data) => $data?.blob),

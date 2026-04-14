@@ -4,7 +4,7 @@ import type { Readable } from "node:stream";
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import pick from "../../utils/primitives/pick";
-import type { IncomingMessageWithBody, ResponseBody, UploadResponse } from "../../utils/types";
+import type { IncomingMessageWithBody, UploadResponse } from "../../utils/types";
 import type { ResponseFile, ResponseList } from "../types";
 import { convertHeadersToString } from "./response-builder";
 
@@ -38,7 +38,7 @@ export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends 
     request: IncomingMessage,
     response: NodeResponse,
     next: (() => void) | undefined,
-    send: (response: NodeResponse, data: UploadResponse<ResponseBody>) => void,
+    send: (response: NodeResponse, data: UploadResponse) => void,
     sendStream: (
         response: NodeResponse,
         stream: Readable,
@@ -186,10 +186,10 @@ export const handlePartialUpload = <TFile extends UploadFile, NodeResponse exten
     // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
     const responseHeaders: Record<string, string> = {
         ...convertHeadersToString(headers as Record<string, string | number | string[]>),
-        ...(fileHeaders ? convertHeadersToString(fileHeaders as Record<string, string | number | string[]>) : {}),
-        ...((basicFile as TFile).hash === undefined
+        ...fileHeaders ? convertHeadersToString(fileHeaders as Record<string, string | number | string[]>) : {},
+        ...(basicFile as TFile).hash === undefined
             ? {}
-            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) }),
+            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) },
     };
 
     if (isChunkedUploadInit) {

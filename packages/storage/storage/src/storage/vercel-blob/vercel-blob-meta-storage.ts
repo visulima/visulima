@@ -1,8 +1,7 @@
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import LocalMetaStorage from "../local/local-meta-storage";
-import type VercelBlobFile from "./vercel-blob-file";
 
-class VercelBlobMetaStorage extends LocalMetaStorage<VercelBlobFile> {
+class VercelBlobMetaStorage extends LocalMetaStorage {
     public constructor(config?: LocalMetaStorageOptions) {
         super(config);
     }

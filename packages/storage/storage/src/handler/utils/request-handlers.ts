@@ -59,9 +59,9 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
                 "X-Media-Type": transformedResult.mediaType,
                 "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
                 "X-Transformed-Format": transformedResult.format,
-                ...(transformedResult.originalFile?.expiredAt === undefined ? {} : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() }),
-                ...(transformedResult.originalFile?.modifiedAt === undefined ? {} : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() }),
-                ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
+                ...transformedResult.originalFile?.expiredAt === undefined ? {} : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
+                ...transformedResult.originalFile?.modifiedAt === undefined ? {} : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
+                ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
             } as Record<string, string>,
             statusCode: 200,
         } as ResponseFile<TFile>;
@@ -147,9 +147,9 @@ export const handleRegularRequest = async <TFile extends UploadFile>(
             "Accept-Ranges": "bytes",
             "Content-Length": String(size),
             "Content-Type": contentType,
-            ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
-            ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
-            ...(ETag === undefined ? {} : { ETag }),
+            ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
+            ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
+            ...ETag === undefined ? {} : { ETag },
         } as Record<string, string>,
         statusCode: 200,
         ...file,
@@ -173,7 +173,7 @@ export const handleGetRequest = async <TFile extends UploadFile>(
 ): Promise<ResponseFile<TFile> | ResponseList<TFile>> => {
     const pathMatch = filePathUrlMatcher(getRealPath(request));
 
-    if (pathMatch && pathMatch.params.uuid) {
+    if (pathMatch?.params.uuid) {
         const { ext, metadata, uuid: rawUuid } = pathMatch.params;
         // If ext is present, uuid includes the extension, so strip it
         const uuid = ext ? rawUuid.replace(new RegExp(String.raw`\.${ext}$`), "") : rawUuid;

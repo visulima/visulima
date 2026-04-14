@@ -76,7 +76,7 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
 
     useEffect(() => {
         if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error as Error);
+            onErrorRef.current(query.error);
         }
     }, [query.error]);
 

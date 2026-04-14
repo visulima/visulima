@@ -130,10 +130,10 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
                 const dataValue = (query as { data?: Accessor<FileHeadMetadata | undefined> | FileHeadMetadata | undefined }).data;
 
                 if (typeof dataValue === "function") {
-                    return dataValue() as FileHeadMetadata | undefined;
+                    return dataValue();
                 }
 
-                return dataValue as FileHeadMetadata | undefined;
+                return dataValue;
             } catch {
                 return undefined;
             }

@@ -90,7 +90,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
         () => query.error.value,
         (error) => {
             if (error && onError) {
-                onError(error as Error);
+                onError(error);
             }
         },
     );

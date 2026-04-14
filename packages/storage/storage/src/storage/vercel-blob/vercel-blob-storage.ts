@@ -1,5 +1,3 @@
-import type { Readable } from "node:stream";
-
 import { copy, del, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
@@ -34,12 +32,12 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
  * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
  */
-class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
+class VercelBlobStorage extends BaseStorage {
     public static override readonly name: string = "vercel-blob";
 
     public override checksumTypes: string[] = ["md5"];
 
-    protected meta: MetaStorage<VercelBlobFile>;
+    protected meta: MetaStorage;
 
     private readonly token: string;
 
@@ -58,7 +56,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
 
         const { metaStorage, metaStorageConfig } = config;
 
-        this.meta = metaStorage || new LocalMetaStorage<VercelBlobFile>(metaStorageConfig);
+        this.meta = metaStorage || new LocalMetaStorage(metaStorageConfig);
 
         this.isReady = true;
     }
@@ -109,7 +107,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
                 // part is a full file object (not a FilePart)
-                file = part as VercelBlobFile;
+                file = part;
             } else {
                 // part is FilePart or FileQuery
                 file = await this.getMeta(part.id);
@@ -139,7 +137,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
 
                     // Convert stream to buffer for Vercel Blob
                     const chunks: Buffer[] = [];
-                    const stream = part.body as Readable;
+                    const stream = part.body;
 
                     for await (const chunk of stream) {
                         chunks.push(Buffer.from(chunk));
@@ -150,8 +148,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile, FileReturn> {
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const fileType = await detectFileTypeFromBuffer(buffer);
