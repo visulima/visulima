@@ -52,12 +52,12 @@ const deepMerge = <T extends Record<string, unknown>>(target: T, source: DeepPar
         const targetValue = result[key];
 
         if (
-            sourceValue !== null &&
-            typeof sourceValue === "object" &&
-            !Array.isArray(sourceValue) &&
-            targetValue !== null &&
-            typeof targetValue === "object" &&
-            !Array.isArray(targetValue)
+            sourceValue !== null
+            && typeof sourceValue === "object"
+            && !Array.isArray(sourceValue)
+            && targetValue !== null
+            && typeof targetValue === "object"
+            && !Array.isArray(targetValue)
         ) {
             result[key] = deepMerge(targetValue as Record<string, unknown>, sourceValue as DeepPartial<Record<string, unknown>>) as T[keyof T];
         } else {
