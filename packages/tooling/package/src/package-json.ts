@@ -86,7 +86,6 @@ const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp |
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYaml types unresolvable from bundled workspace package
     const yamlData: unknown = await readYaml(filePath);
 
     return yamlData as JsonObject;
@@ -98,7 +97,6 @@ const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFileSync = (filePath: string): JsonObject => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readYamlSync types unresolvable from bundled workspace package
     const yamlData: unknown = readYamlSync(filePath);
 
     return yamlData as JsonObject;
@@ -121,7 +119,6 @@ const parseJson5File = async (filePath: string): Promise<JsonObject> => {
  * @returns The parsed JSON5 data as a JSON object
  */
 const parseJson5FileSync = (filePath: string): JsonObject => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- readFileSync types unresolvable from bundled workspace package
     const text: string = readFileSync(filePath);
 
     return JSON5.parse(text);
@@ -145,8 +142,7 @@ const parsePackageFile = async (filePath: string, options?: { json5?: boolean; y
         return parseJson5File(filePath);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readJson types unresolvable from bundled workspace package
-    return readJson(filePath) as Promise<JsonObject>;
+    return readJson(filePath);
 };
 
 /**
@@ -167,7 +163,6 @@ const parsePackageFileSync = (filePath: string, options?: { json5?: boolean; yam
         return parseJson5FileSync(filePath);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- readJsonSync types unresolvable from bundled workspace package
     return readJsonSync(filePath) as JsonObject;
 };
 
@@ -211,7 +206,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     // Search for files in order of preference
 
     for (const pattern of searchPatterns) {
-        // eslint-disable-next-line no-await-in-loop,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- sequential search by design; findUp types unresolvable from bundled workspace package
+        // eslint-disable-next-line no-await-in-loop -- sequential search by design; findUp types unresolvable from bundled workspace package
         filePath = await findUp(pattern, findUpConfig);
 
         if (filePath) {
@@ -220,7 +215,6 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
     }
 
     if (!filePath) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
         throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
     }
 
@@ -288,7 +282,6 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     // Search for files in order of preference
 
     for (const pattern of searchPatterns) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
         filePath = findUpSync(pattern, findUpConfig);
 
         if (filePath) {
@@ -297,7 +290,6 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
     }
 
     if (!filePath) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- NotFoundError types unresolvable from bundled workspace package
         throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
     }
 
@@ -346,7 +338,6 @@ export const writePackageJson = async (data: PackageJson, options: WriteJsonOpti
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- writeJson types unresolvable from bundled workspace package
     await writeJson(join(directory, "package.json"), data, writeOptions);
 };
 
@@ -354,7 +345,6 @@ export const writePackageJsonSync = (data: PackageJson, options: WriteJsonOption
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- writeJsonSync types unresolvable from bundled workspace package
     writeJsonSync(join(directory, "package.json"), data, writeOptions);
 };
 
@@ -411,7 +401,6 @@ export const parsePackageJsonSync = (
 
         isFile = true;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- parseJson types unresolvable from bundled workspace package
         json = parseJson(packageFile as string) as JsonObject;
     }
 
@@ -495,7 +484,6 @@ export const parsePackageJson = async (
 
         isFile = true;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- parseJson types unresolvable from bundled workspace package
         json = parseJson(packageFile as string) as JsonObject;
     }
 

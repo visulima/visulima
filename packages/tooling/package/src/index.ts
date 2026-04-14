@@ -1,4 +1,15 @@
 export { default as PackageNotFoundError } from "./error/package-not-found-error";
+export type { LockFileEntry, LockFileIntegrity, LockFileIntegrityAlgorithm, LockFileParseResult, LockFileType } from "./lockfile";
+export {
+    decodeSriIntegrity,
+    parseBunLockFile,
+    parseLockFile,
+    parseLockFileContent,
+    parseLockFileSync,
+    parseNpmLockFile,
+    parsePnpmLockFile,
+    parseYarnLockFile,
+} from "./lockfile";
 export type { RootMonorepo, Strategy } from "./monorepo";
 export { findMonorepoRoot, findMonorepoRootSync } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
