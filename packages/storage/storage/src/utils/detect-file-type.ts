@@ -94,7 +94,7 @@ export const detectFileTypeFromStream = async (
                 return;
             }
 
-            const timeout = setTimeout(() => resolve(), 10);
+            const timeout = setTimeout(resolve, 10);
 
             peekStream.once("data", () => {
                 clearTimeout(timeout);
@@ -106,7 +106,7 @@ export const detectFileTypeFromStream = async (
             });
         }),
         new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 10);
+            setTimeout(resolve, 10);
         }),
     ]);
 
@@ -115,7 +115,7 @@ export const detectFileTypeFromStream = async (
         await Promise.race([
             detectionPromise.then(() => undefined),
             new Promise<void>((resolve) => {
-                setTimeout(() => resolve(), 150);
+                setTimeout(resolve, 150);
             }),
         ]).catch(() => {
             // Ignore errors

@@ -46,13 +46,13 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  * - ✅ exists: Implemented (checks metadata and S3 object)
  * - ⚠️ getUrl/getUploadUrl: Limited presigned URL support (uses aws4fetch signing)
  */
-class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
+class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
 
     private s3Api: AwsLightApiAdapter;
 
     public constructor(config: AwsLightStorageOptions) {
-        const { bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET, region = process.env.S3_REGION || process.env.AWS_REGION } = config;
+        const { bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET, region } = config;
 
         if (!bucket) {
             throw new Error("S3 bucket is not defined");
@@ -109,7 +109,7 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
         if (!metaStorage) {
             const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
 
-            this.meta = new AwsLightMetaStorage<AwsLightFile>(metaConfig);
+            this.meta = new AwsLightMetaStorage(metaConfig);
         }
     }
 
@@ -154,8 +154,8 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
             // Body from adapter is ReadableStream, convert to Readable
-            const stream: Readable =
-                Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
+            const stream: Readable
+                = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
 
             const readableStream = new Readable({
                 read() {
@@ -176,9 +176,9 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...(ETag && { ETag }),
-                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...ETag && { ETag },
+                    ...Expires && { "X-Upload-Expires": Expires.toString() },
+                    ...LastModified && { "Last-Modified": LastModified.toString() },
                 },
                 size: Number(ContentLength),
                 stream: readableStream,

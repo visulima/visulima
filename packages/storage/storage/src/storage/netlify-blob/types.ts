@@ -1,8 +1,7 @@
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions } from "../types";
-import type NetlifyBlobFile from "./netlify-blob-file";
 
-export interface NetlifyBlobStorageOptions extends BaseStorageOptions<NetlifyBlobFile> {
+export interface NetlifyBlobStorageOptions extends BaseStorageOptions {
     /**
      * Configure metafiles storage
      * @example

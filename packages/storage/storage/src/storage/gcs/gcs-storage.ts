@@ -48,12 +48,12 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * - ❌ getUrl: Not implemented (GCS public URLs not supported)
  * - ❌ getUploadUrl: Not implemented (resumable upload URLs handled internally)
  */
-class GCStorage extends BaseStorage<GCSFile, FileReturn> {
+class GCStorage extends BaseStorage {
     public static override readonly name: string = "gcs";
 
     public override checksumTypes: string[] = ["md5", "crc32c"];
 
-    protected meta: MetaStorage<GCSFile>;
+    protected meta: MetaStorage;
 
     private readonly bucket: string;
 
@@ -245,7 +245,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
                 // part is a full file object (not a FilePart)
-                file = part as GCSFile;
+                file = part;
             } else {
                 // part is FilePart or FileQuery
                 file = await this.getMeta(part.id);
@@ -267,9 +267,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 // Detect file type from stream if contentType is not set or is default
                 // Only detect on first write (when bytesWritten is 0 or NaN)
                 if (
-                    hasContent(part) &&
-                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                    (!file.contentType || file.contentType === "application/octet-stream")
+                    hasContent(part)
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -424,7 +424,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
             } else if (responseData && typeof responseData === "object" && "data" in responseData) {
                 const dataValue = (responseData as { data: unknown }).data;
 
-                bufferData = Buffer.from(dataValue as unknown as ArrayLike<number>);
+                bufferData = Buffer.from(dataValue as ArrayLike<number>);
             } else {
                 bufferData = Buffer.from(responseData as unknown as ArrayLike<number>);
             }
@@ -525,7 +525,9 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         if (body?.on) {
             const abortController = new AbortController();
 
-            body.on("aborted", () => abortController.abort());
+            body.on("aborted", () => {
+                abortController.abort();
+            });
 
             options.body = body;
             options.signal = abortController.signal;
@@ -534,7 +536,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
         options.headers = {
             Accept: "application/json",
             "Content-Range": contentRange,
-            ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
+            ...size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {},
         };
 
         try {
@@ -583,7 +585,7 @@ class GCStorage extends BaseStorage<GCSFile, FileReturn> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...this.userProject === undefined ? {} : { userProject: this.userProject },
             },
             retry: true,
             retryConfig: this.retryOptions,

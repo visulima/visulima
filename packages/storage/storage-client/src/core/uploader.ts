@@ -54,19 +54,19 @@ export interface BatchState {
 /**
  * Uploader event types
  */
-export type UploaderEventType =
-    | "ITEM_START"
-    | "ITEM_PROGRESS"
-    | "ITEM_FINISH"
-    | "ITEM_ERROR"
-    | "ITEM_ABORT"
-    | "BATCH_START"
-    | "BATCH_PROGRESS"
-    | "BATCH_FINISH"
-    | "BATCH_ERROR"
-    | "BATCH_CANCELLED"
-    | "BATCH_FINALIZE"
-    | "BATCH_COMPLETE";
+export type UploaderEventType
+    = | "ITEM_START"
+        | "ITEM_PROGRESS"
+        | "ITEM_FINISH"
+        | "ITEM_ERROR"
+        | "ITEM_ABORT"
+        | "BATCH_START"
+        | "BATCH_PROGRESS"
+        | "BATCH_FINISH"
+        | "BATCH_ERROR"
+        | "BATCH_CANCELLED"
+        | "BATCH_FINALIZE"
+        | "BATCH_COMPLETE";
 
 /**
  * Event handler function type
@@ -329,7 +329,7 @@ export class Uploader {
             return [];
         }
 
-        return batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
+        return batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
     }
 
     /**
@@ -386,7 +386,7 @@ export class Uploader {
             return;
         }
 
-        const failedItems = batch.itemIds.map((id) => this.items.get(id)).filter((item): item is UploadItem => item !== undefined && item.status === "error");
+        const failedItems = batch.itemIds.map((id) => this.items.get(id)).filter((item): item is UploadItem => item?.status === "error");
 
         for (const item of failedItems) {
             this.retryItem(item.id);
@@ -423,7 +423,7 @@ export class Uploader {
      * Calculates aggregate progress for a batch.
      */
     private calculateBatchProgress(batch: BatchState): number {
-        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
 
         if (items.length === 0) {
             return 0;
@@ -445,7 +445,7 @@ export class Uploader {
             return;
         }
 
-        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean) as UploadItem[];
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
 
         batch.completedCount = items.filter((item) => item.status === "completed").length;
         batch.errorCount = items.filter((item) => item.status === "error").length;

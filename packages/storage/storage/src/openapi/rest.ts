@@ -524,7 +524,7 @@ const swaggerSpec = (
             [path.trimEnd()]: {
                 delete: {
                     description:
-                        'Delete multiple files. Supports batch delete via query parameter (?ids=id1,id2,id3) or JSON body ({ids: ["id1", "id2"]} or ["id1", "id2"]).',
+                        "Delete multiple files. Supports batch delete via query parameter (?ids=id1,id2,id3) or JSON body ({ids: [\"id1\", \"id2\"]} or [\"id1\", \"id2\"]).",
                     operationId: `${pathHash}RestBatchDelete`,
                     parameters: [
                         {
@@ -673,7 +673,7 @@ const swaggerSpec = (
                             name: "Content-Disposition",
                             required: false,
                             schema: {
-                                example: 'attachment; filename="photo.jpg"',
+                                example: "attachment; filename=\"photo.jpg\"",
                                 type: "string",
                             },
                         },
@@ -683,7 +683,7 @@ const swaggerSpec = (
                             name: "X-File-Metadata",
                             required: false,
                             schema: {
-                                example: '{"description":"My photo"}',
+                                example: "{\"description\":\"My photo\"}",
                                 type: "string",
                             },
                         },

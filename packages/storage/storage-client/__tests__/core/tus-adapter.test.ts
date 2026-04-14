@@ -287,7 +287,9 @@ describe(createTusAdapter, () => {
             endpoint: "http://localhost/api/upload/tus",
         });
 
-        expect(() => adapter.abort()).not.toThrow();
+        expect(() => {
+            adapter.abort();
+        }).not.toThrow();
     });
 
     it("should clear uploads", () => {
@@ -297,7 +299,9 @@ describe(createTusAdapter, () => {
             endpoint: "http://localhost/api/upload/tus",
         });
 
-        expect(() => adapter.clear()).not.toThrow();
+        expect(() => {
+            adapter.clear();
+        }).not.toThrow();
     });
 
     it("should get current offset", () => {
@@ -327,9 +331,17 @@ describe(createTusAdapter, () => {
         adapter.setOnFinish(onFinish);
         adapter.setOnError(onError);
 
-        expect(() => adapter.setOnStart(undefined)).not.toThrow();
-        expect(() => adapter.setOnProgress(undefined)).not.toThrow();
-        expect(() => adapter.setOnFinish(undefined)).not.toThrow();
-        expect(() => adapter.setOnError(undefined)).not.toThrow();
+        expect(() => {
+            adapter.setOnStart(undefined);
+        }).not.toThrow();
+        expect(() => {
+            adapter.setOnProgress(undefined);
+        }).not.toThrow();
+        expect(() => {
+            adapter.setOnFinish(undefined);
+        }).not.toThrow();
+        expect(() => {
+            adapter.setOnError(undefined);
+        }).not.toThrow();
     });
 });

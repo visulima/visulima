@@ -52,7 +52,7 @@ export class Validator<T> {
             this.validators[code] = { ...this.validators[code], ...validator } as Required<ValidatorConfig<T>>;
 
             if (typeof this.validators[code].isValid !== "function") {
-                throw new TypeError('Validation config "isValid" is missing, or it is not a function!');
+                throw new TypeError("Validation config \"isValid\" is missing, or it is not a function!");
             }
         });
     }
@@ -72,7 +72,7 @@ export class Validator<T> {
 
             if (!isValid) {
                 const errorResponse = validator.response || (code in ErrorMap ? ErrorMap[code as keyof typeof ErrorMap] : ErrorMap.UnknownError);
-                const response = toResponse(errorResponse as ResponseTuple<ResponseBody> | UploadResponse<ResponseBody>);
+                const response = toResponse(errorResponse as ResponseTuple | UploadResponse);
                 const { body, headers, message, statusCode } = response as {
                     body?: unknown;
                     headers?: Record<string, unknown>;

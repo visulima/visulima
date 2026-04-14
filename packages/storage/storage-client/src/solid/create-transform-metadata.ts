@@ -61,10 +61,10 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
                 const dataValue = (query as { data?: Accessor<TransformMetadata | undefined> | TransformMetadata | undefined }).data;
 
                 if (typeof dataValue === "function") {
-                    return dataValue() as TransformMetadata | undefined;
+                    return dataValue();
                 }
 
-                return dataValue as TransformMetadata | undefined;
+                return dataValue;
             } catch {
                 return undefined;
             }

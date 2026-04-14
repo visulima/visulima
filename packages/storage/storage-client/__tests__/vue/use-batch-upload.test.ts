@@ -44,7 +44,9 @@ class MockXMLHttpRequest {
                     total: 100,
                 } as ProgressEvent;
 
-                handlers.forEach((handler) => handler(progressEvent));
+                handlers.forEach((handler) => {
+                    handler(progressEvent);
+                });
             }
         }, 10);
 
@@ -64,7 +66,9 @@ class MockXMLHttpRequest {
             const handlers = this.eventListeners.get("load");
 
             if (handlers) {
-                handlers.forEach((handler) => handler(new Event("load")));
+                handlers.forEach((handler) => {
+                    handler(new Event("load"));
+                });
             }
         }, 20);
     });

@@ -65,12 +65,12 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
             // Build filters with stable structure - use undefined for missing values
             // This ensures TanStack Query can properly compare queryKeys using deep equality
-            const filters: { limit?: number; page?: number } | undefined =
-                currentLimit !== undefined || currentPage !== undefined
+            const filters: { limit?: number; page?: number } | undefined
+                = currentLimit !== undefined || currentPage !== undefined
                     ? {
-                          ...(currentLimit !== undefined && { limit: currentLimit }),
-                          ...(currentPage !== undefined && { page: currentPage }),
-                      }
+                        ...currentLimit !== undefined && { limit: currentLimit },
+                        ...currentPage !== undefined && { page: currentPage },
+                    }
                     : undefined;
 
             const queryKey = storageQueryKeys.files.list(endpoint, filters);
@@ -85,9 +85,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                     return Array.isArray(data)
                         ? { data }
                         : {
-                              data: data.data || (data as unknown as FileMeta[]),
-                              meta: (data as FileListResponse).meta,
-                          };
+                            data: data.data || (data as unknown as FileMeta[]),
+                            meta: data.meta,
+                        };
                 },
                 queryKey,
             };
@@ -101,10 +101,10 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                 const dataValue = (query as { data?: Accessor<FileListResponse | undefined> | FileListResponse | undefined }).data;
 
                 if (typeof dataValue === "function") {
-                    return dataValue() as FileListResponse | undefined;
+                    return dataValue();
                 }
 
-                return dataValue as FileListResponse | undefined;
+                return dataValue;
             } catch {
                 return undefined;
             }

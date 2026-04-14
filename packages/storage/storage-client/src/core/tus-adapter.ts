@@ -391,7 +391,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 offset: currentOffset,
                 originalName: fileMeta.originalName ?? file.name,
                 size: fileMeta.size ?? file.size,
-                status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                status: fileMeta.status ?? "completed",
                 url: location,
             };
         } finally {
@@ -446,7 +446,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
          * Resumes a paused upload.
          */
         resume: async (): Promise<void> => {
-            if (!uploadState || !uploadState.uploadUrl) {
+            if (!uploadState?.uploadUrl) {
                 throw new Error("No upload to resume");
             }
 

@@ -161,7 +161,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
             if (cached) {
                 this.logger?.debug("Returning cached transformed video for %s", fileId);
 
-                return cached as VideoTransformResult<TFileReturn>;
+                return cached;
             }
         }
 

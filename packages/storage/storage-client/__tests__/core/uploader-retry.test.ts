@@ -27,7 +27,9 @@ class ErrorMockXMLHttpRequest {
             const handlers = this.eventListeners.get("error");
 
             if (handlers) {
-                handlers.forEach((handler) => handler(new Event("error")));
+                handlers.forEach((handler) => {
+                    handler(new Event("error"));
+                });
             }
         }, 10);
     });
@@ -79,7 +81,9 @@ class RetrySuccessMockXMLHttpRequest {
                 const handlers = this.eventListeners.get("error");
 
                 if (handlers) {
-                    handlers.forEach((handler) => handler(new Event("error")));
+                    handlers.forEach((handler) => {
+                        handler(new Event("error"));
+                    });
                 }
             }, 10);
         } else {
@@ -99,7 +103,9 @@ class RetrySuccessMockXMLHttpRequest {
                 const handlers = this.eventListeners.get("load");
 
                 if (handlers) {
-                    handlers.forEach((handler) => handler(new Event("load")));
+                    handlers.forEach((handler) => {
+                        handler(new Event("load"));
+                    });
                 }
             }, 10);
         }

@@ -14,7 +14,6 @@ import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import MultipartBase from "./multipart-base";
 
-// eslint-disable-next-line sonarjs/anchor-precedence
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 
 /**
@@ -61,7 +60,7 @@ class Multipart<
         // Create MultipartBase instance with access to this Multipart instance
         const multipartInstance = this;
 
-        this.multipartBase = new (class extends MultipartBase<TFile> {
+        this.multipartBase = new class extends MultipartBase<TFile> {
             // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return multipartInstance.storage;
@@ -99,7 +98,7 @@ class Multipart<
             protected createEmptyStream(): unknown {
                 return Readable.from(new Uint8Array(0));
             }
-        })();
+        }();
     }
 
     /**

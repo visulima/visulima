@@ -93,7 +93,7 @@ class File implements FileInit {
 
     public ETag?: string;
 
-    public constructor({ contentType, expiredAt, metadata = {}, originalName, size }: FileInit) {
+    public constructor({ contentType, expiredAt, metadata, originalName, size }: FileInit) {
         this.metadata = metadata;
         this.originalName = originalName || extractOriginalName(metadata) || (this.id = nanoid());
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";

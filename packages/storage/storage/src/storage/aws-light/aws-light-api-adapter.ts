@@ -23,7 +23,7 @@ const parseXml = (text: string): Record<string, unknown> => {
     for (const match of matches) {
         const [, tagName, content] = match;
 
-        if (tagName && content && content.trim()) {
+        if (tagName && content?.trim()) {
             if (result[tagName]) {
                 // Multiple children with same tag - convert to array
                 if (!Array.isArray(result[tagName])) {
@@ -47,7 +47,7 @@ const parseXml = (text: string): Record<string, unknown> => {
     while ((nestedMatch = nestedRegex.exec(cleanText)) !== null) {
         const [, tagName, innerContent] = nestedMatch;
 
-        if (tagName && innerContent && innerContent.includes("<")) {
+        if (tagName && innerContent?.includes("<")) {
             const nested = parseXml(innerContent);
 
             if (Object.keys(nested).length > 0) {
@@ -155,8 +155,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         // Convert Node.js Readable to ReadableStream if needed
-        const body: BodyInit =
-            params.Body instanceof Readable ? (Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>) : (params.Body as BodyInit);
+        const body: BodyInit
+            = params.Body instanceof Readable ? (Readable.toWeb(params.Body) as unknown as ReadableStream<Uint8Array>) : (params.Body as BodyInit);
 
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
@@ -445,11 +445,11 @@ ${partsXml}
         return {
             Contents: Array.isArray(contents)
                 ? contents.map((item: Record<string, unknown>) => {
-                      return {
-                          Key: item.Key as string | undefined,
-                          LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
-                      };
-                  })
+                    return {
+                        Key: item.Key as string | undefined,
+                        LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
+                    };
+                })
                 : [],
             IsTruncated: listResult.IsTruncated === "true" || listResult.IsTruncated === true,
             NextContinuationToken: listResult.NextContinuationToken as string | undefined,

@@ -35,8 +35,7 @@ abstract class BaseHandlerNode<
     NodeResponse extends ServerResponse = ServerResponse,
 >
     extends BaseHandlerCore<TFile>
-    implements MethodHandler<NodeRequest, NodeResponse>
-{
+    implements MethodHandler<NodeRequest, NodeResponse> {
     /**
      * Limiting enabled HTTP method handler.
      */
@@ -349,7 +348,7 @@ abstract class BaseHandlerNode<
             statusCode = fileStatusCode;
         } else {
             // This is an UploadResponse
-            const uploadResp = uploadResponse as UploadResponse;
+            const uploadResp = uploadResponse;
 
             body = uploadResp.body;
             headers = (uploadResp.headers as Record<string, string | number>) || {};
@@ -421,7 +420,7 @@ abstract class BaseHandlerNode<
     public async get(request: NodeRequest & { originalUrl?: string }, _response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
-        if (pathMatch && pathMatch.params.uuid) {
+        if (pathMatch?.params.uuid) {
             const { ext, metadata, uuid: rawUuid } = pathMatch.params;
             // If ext is present, uuid includes the extension, so strip it
             const uuid = ext ? rawUuid.replace(new RegExp(String.raw`\.${ext}$`), "") : rawUuid;
@@ -439,8 +438,8 @@ abstract class BaseHandlerNode<
                                 charset: "utf8",
                                 mediaType: "application/json",
                             }),
-                            ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-                            ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
+                            ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
+                            ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
                         } as Record<string, string>,
                         statusCode: 200,
                     } as ResponseFile<TFile>;
@@ -481,13 +480,13 @@ abstract class BaseHandlerNode<
                                 "X-Media-Type": transformedResult.mediaType,
                                 "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
                                 "X-Transformed-Format": transformedResult.format,
-                                ...(transformedResult.originalFile?.expiredAt === undefined
+                                ...transformedResult.originalFile?.expiredAt === undefined
                                     ? {}
-                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() }),
-                                ...(transformedResult.originalFile?.modifiedAt === undefined
+                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
+                                ...transformedResult.originalFile?.modifiedAt === undefined
                                     ? {}
-                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() }),
-                                ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
+                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
+                                ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
                             } as Record<string, string>,
                             statusCode: 200,
                         } as ResponseFile<TFile>;
@@ -552,9 +551,9 @@ abstract class BaseHandlerNode<
                         "Accept-Ranges": "bytes", // Indicate we support range requests
                         "Content-Length": String(size),
                         "Content-Type": contentType,
-                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
-                        ...(ETag === undefined ? {} : { ETag }),
+                        ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
+                        ...ETag === undefined ? {} : { ETag },
                     } as Record<string, string>,
                     statusCode: 200,
                     ...file,
@@ -619,7 +618,7 @@ abstract class BaseHandlerNode<
     public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
         const pathMatch = filePathUrlMatcher(getRealPath(request));
 
-        if (!pathMatch || !pathMatch.params.uuid || !uuidRegex.test(pathMatch.params.uuid)) {
+        if (!pathMatch?.params.uuid || !uuidRegex.test(pathMatch.params.uuid)) {
             throw createHttpError(404, "File not found");
         }
 

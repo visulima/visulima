@@ -50,12 +50,12 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     const { enabled = true, endpoint, id, onError, onSuccess, transform } = options;
 
     // Convert to stores if needed
-    const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id as string);
-    const transformStore: Readable<Record<string, string | number | boolean> | undefined> =
-        typeof transform === "object" && "subscribe" in transform
+    const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id);
+    const transformStore: Readable<Record<string, string | number | boolean> | undefined>
+        = typeof transform === "object" && "subscribe" in transform
             ? (transform as Readable<Record<string, string | number | boolean> | undefined>)
             : derived([], () => transform);
-    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
+    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
     // Create derived stores for reactive query options
     const enabledDerived = derived([enabledStore, idStore], ([$enabled, $id]) => $enabled && !!$id);
@@ -96,9 +96,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             queryKey: (() => {
                 const filteredTransform = currentTransform
                     ? (Object.fromEntries(Object.entries(currentTransform).filter(([, value]) => value !== undefined)) as Record<
-                          string,
+                        string,
                           string | number | boolean
-                      >)
+                    >)
                     : undefined;
 
                 return storageQueryKeys.files.detail(endpoint, currentId, filteredTransform);
@@ -106,15 +106,15 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         };
     });
 
-    const queryDataStore =
-        (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null) ??
-        readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
+    const queryDataStore
+        = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
+            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
     const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
-    const queryIsLoadingStore: Readable<boolean> =
+    const queryIsLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
-            : readable<boolean>(false);
+            : readable(false);
 
     // Extract metadata from response if available
     const meta = derived(queryDataStore, ($data) => $data?.meta || undefined);
@@ -134,7 +134,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
         unsubscribeError = queryErrorStore.subscribe(($error: Error | null) => {
             if ($error && onError) {
-                onError($error as Error);
+                onError($error);
             }
         });
 

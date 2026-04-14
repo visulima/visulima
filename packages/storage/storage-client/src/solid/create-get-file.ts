@@ -109,7 +109,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             const { error } = query;
 
             if (error) {
-                onError(error as Error);
+                onError(error);
             }
         });
     }

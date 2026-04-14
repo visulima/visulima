@@ -54,7 +54,7 @@ import type { AwsError, S3StorageOptions } from "./types";
  * - ❌ getUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
  * - ❌ getUploadUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
  */
-class S3Storage extends S3BaseStorage<S3File> {
+class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
 
     private s3Api: S3ClientAdapter;
@@ -125,7 +125,7 @@ class S3Storage extends S3BaseStorage<S3File> {
             const localMeta = "directory" in metaConfig;
 
             if (!localMeta) {
-                this.meta = new S3MetaStorage<S3File>(metaConfig);
+                this.meta = new S3MetaStorage(metaConfig);
             }
         }
 
@@ -193,9 +193,9 @@ class S3Storage extends S3BaseStorage<S3File> {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...(ETag && { ETag }),
-                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...ETag && { ETag },
+                    ...Expires && { "X-Upload-Expires": Expires.toString() },
+                    ...LastModified && { "Last-Modified": LastModified.toString() },
                 },
                 size: Number(ContentLength),
                 stream: readableStream,

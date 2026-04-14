@@ -191,7 +191,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         if (chunksHeader) {
             try {
-                const parsed = JSON.parse(chunksHeader) as unknown;
+                const parsed = JSON.parse(chunksHeader);
 
                 if (Array.isArray(parsed)) {
                     chunks = parsed as { length: number; offset: number }[];

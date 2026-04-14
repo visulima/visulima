@@ -101,12 +101,12 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                 // Detect file type from stream if contentType is not set or is default
                 // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
                 // For chunked uploads, only detect on the first chunk (offset 0)
-                const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+                const isFirstChunk = part.start === 0 || part.start === undefined;
 
                 if (
-                    isFirstChunk &&
-                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                    (!file.contentType || file.contentType === "application/octet-stream")
+                    isFirstChunk
+                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                    && (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -177,19 +177,27 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                 resolve([Number.NaN, code]);
             };
 
-            lengthChecker.on("error", () => failWithCode(ERRORS.FILE_CONFLICT));
-            checksumChecker.on("error", () => failWithCode(ERRORS.CHECKSUM_MISMATCH));
+            lengthChecker.on("error", () => {
+                failWithCode(ERRORS.FILE_CONFLICT);
+            });
+            checksumChecker.on("error", () => {
+                failWithCode(ERRORS.CHECKSUM_MISMATCH);
+            });
 
-            part.body.on("aborted", () => failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED));
+            part.body.on("aborted", () => {
+                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+            });
 
             pipeline(part.body, lengthChecker, checksumChecker, digester, destination, (error) => {
                 if (error) {
                     digester.reset();
 
-                    return reject(error);
+                    reject(error);
+
+                    return;
                 }
 
-                return resolve([part.start + destination.bytesWritten]);
+                resolve([part.start + destination.bytesWritten]);
             });
         });
     }

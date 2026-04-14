@@ -44,7 +44,7 @@ import LocalMetaStorage from "./local-meta-storage";
  * - Metadata files use the `.META` suffix by default
  * - File paths are resolved relative to the storage directory
  */
-class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileReturn> {
+class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "disk";
 
     public override checksumTypes: string[] = ["md5", "sha1"];
@@ -192,7 +192,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
             if (isFullFile) {
                 // part is a full file object (not a FilePart)
-                file = part as TFile;
+                file = part;
             } else {
                 // part is FilePart or FileQuery
                 file = await this.getMeta(part.id);
@@ -234,12 +234,12 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     // Detect file type from stream if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
                     // For chunked uploads, only detect on the first chunk (offset 0)
-                    const isFirstChunk = (part as FilePart).start === 0 || (part as FilePart).start === undefined;
+                    const isFirstChunk = part.start === 0 || part.start === undefined;
 
                     if (
-                        isFirstChunk &&
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        isFirstChunk
+                        && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -426,8 +426,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     headers: {
                         "Content-Length": String(size || bytesWritten),
                         "Content-Type": contentType,
-                        ...(expiredAt && { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt && { "Last-Modified": modifiedAt.toString() }),
+                        ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
+                        ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
                         // Note: ETag requires reading the file content, so we don't include it for streaming
                         // Clients can use HEAD requests to get ETag if needed
                     },
@@ -584,10 +584,16 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                 resolve([Number.NaN, code]);
             };
 
-            lengthChecker.on("error", () => failWithCode(ERRORS.FILE_CONFLICT));
-            checksumChecker.on("error", () => failWithCode(ERRORS.CHECKSUM_MISMATCH));
+            lengthChecker.on("error", () => {
+                failWithCode(ERRORS.FILE_CONFLICT);
+            });
+            checksumChecker.on("error", () => {
+                failWithCode(ERRORS.CHECKSUM_MISMATCH);
+            });
 
-            part.body.on("aborted", () => failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED));
+            part.body.on("aborted", () => {
+                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+            });
             part.body.on("error", (error) => {
                 cleanupStreams();
                 reject(error);
@@ -595,7 +601,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
 
             // Check if signal is already aborted before starting pipeline
             if (signal?.aborted) {
-                return failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+
+                return;
             }
 
             // Handle AbortController signal manually
@@ -616,15 +624,19 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile, FileRetu
                     cleanupStreams();
 
                     // Check if error is due to abort signal
-                    if (signal && signal.aborted) {
-                        return resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    if (signal?.aborted) {
+                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+
+                        return;
                     }
 
                     // Convert other pipeline errors to error codes
-                    return resolve([Number.NaN, ERRORS.FILE_ERROR]);
+                    resolve([Number.NaN, ERRORS.FILE_ERROR]);
+
+                    return;
                 }
 
-                return resolve([part.start + destination.bytesWritten]);
+                resolve([part.start + destination.bytesWritten]);
             });
         });
     }

@@ -36,7 +36,7 @@ export const runInRoot = <T>(callback: () => T, queryClient?: QueryClient): T =>
             // Create a container and render the provider to establish context
             // Ensure document.body exists (for test environments)
             if (!document.body) {
-                document.body = document.createElement("body") as HTMLBodyElement;
+                document.body = document.createElement("body");
             }
 
             const container = document.createElement("div");

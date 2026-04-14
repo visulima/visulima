@@ -30,12 +30,12 @@ import type { AzureStorageOptions } from "./types";
  * - ❌ getUrl: Not implemented (Azure Blob URLs not supported)
  * - ❌ getUploadUrl: Not implemented (Azure Blob upload URLs handled internally)
  */
-class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
+class AzureStorage extends BaseStorage {
     public static override readonly name: string = "azure";
 
     public override checksumTypes: string[] = ["md5"];
 
-    protected meta: MetaStorage<AzureFile>;
+    protected meta: MetaStorage;
 
     private client: BlobServiceClient;
 
@@ -129,7 +129,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     metaConfig = { ...metaConfig, client: this.client };
                 }
 
-                this.meta = new AzureMetaStorage<AzureFile>(metaConfig);
+                this.meta = new AzureMetaStorage(metaConfig);
             }
         }
 
@@ -265,7 +265,7 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
                 // part is a full file object (not a FilePart)
-                file = part as AzureFile;
+                file = part;
             } else {
                 // part is FilePart or FileQuery
                 file = await this.getMeta(part.id);
@@ -288,8 +288,8 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
                     // Detect file type from stream if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -312,7 +312,9 @@ class AzureStorage extends BaseStorage<AzureFile, FileReturn> {
 
                     const abortController = new AbortController();
 
-                    part.body.on("error", () => abortController.abort());
+                    part.body.on("error", () => {
+                        abortController.abort();
+                    });
 
                     const response = await this.retry(() =>
                         blobClient.uploadStream(part.body, undefined, undefined, {

@@ -50,15 +50,19 @@ export const readBody = (
         let body = "";
 
         request.setEncoding(encoding);
-        // eslint-disable-next-line consistent-return
+
         request.on("data", (chunk) => {
             if (limit && body.length + chunk.length > limit) {
-                return reject(new Error("Request body length limit exceeded"));
+                reject(new Error("Request body length limit exceeded"));
+
+                return;
             }
 
             body += chunk;
         });
-        request.once("end", () => resolve(body));
+        request.once("end", () => {
+            resolve(body);
+        });
     });
 
 /**

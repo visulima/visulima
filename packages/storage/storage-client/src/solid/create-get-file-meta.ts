@@ -68,10 +68,10 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
                 const dataValue = (query as { data?: Accessor<FileMeta | undefined> | FileMeta | undefined }).data;
 
                 if (typeof dataValue === "function") {
-                    return dataValue() as FileMeta | undefined;
+                    return dataValue();
                 }
 
-                return dataValue as FileMeta | undefined;
+                return dataValue;
             } catch {
                 return undefined;
             }

@@ -84,7 +84,9 @@ class RangeHasher extends Cache<string, Hash, number> {
 
             createReadStream(path, { start })
                 .on("error", reject)
-                .on("end", () => resolve(digester.hash))
+                .on("end", () => {
+                    resolve(digester.hash);
+                })
                 .pipe(digester)
                 .resume();
         });

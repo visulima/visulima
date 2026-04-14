@@ -107,14 +107,14 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         name: fileMeta.name,
                         originalName: fileMeta.originalName ?? item.file.name,
                         size: fileMeta.size ?? item.file.size,
-                        status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                        status: fileMeta.status ?? "completed",
                         url: item.url,
                     };
                 };
 
                 const onItemFinish = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
-                        const item = itemOrBatch as UploadItem;
+                        const item = itemOrBatch;
                         const fileMeta = parseFileMeta(item);
                         const uploadResult = buildUploadResult(item, fileMeta);
 
@@ -126,7 +126,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
 
                 const onError = (itemOrBatch: UploadItem | BatchState): void => {
                     if ("file" in itemOrBatch && !resolved && itemOrBatch.file.name === file.name) {
-                        const item = itemOrBatch as UploadItem;
+                        const item = itemOrBatch;
                         const error = new Error(item.error || "Upload failed");
 
                         resolved = true;

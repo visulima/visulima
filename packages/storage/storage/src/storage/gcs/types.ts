@@ -3,7 +3,6 @@ import type { GoogleAuth, GoogleAuthOptions } from "google-auth-library";
 
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
-import type GCSFile from "./gcs-file";
 
 interface StorageSettings {
     projectId: string;
@@ -26,7 +25,7 @@ export interface ClientError extends Error {
     response?: Record<string, unknown>;
 }
 
-export interface GCStorageOptions extends BaseStorageOptions<GCSFile>, Omit<GoogleAuthOptions, "authClient" | "projectId">, StorageSettings {
+export interface GCStorageOptions extends BaseStorageOptions, Omit<GoogleAuthOptions, "authClient" | "projectId">, StorageSettings {
     /**
      * Google Cloud Storage bucket
      */

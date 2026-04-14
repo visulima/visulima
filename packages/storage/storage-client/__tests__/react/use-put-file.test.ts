@@ -20,7 +20,9 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
                     total: 100,
                 } as ProgressEvent;
 
-                progressHandlers.forEach((handler) => handler(progressEvent));
+                progressHandlers.forEach((handler) => {
+                    handler(progressEvent);
+                });
             }
         }, 10);
 
@@ -33,7 +35,9 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
             const handlers = this.eventListeners.get("load");
 
             if (handlers) {
-                handlers.forEach((handler) => handler(new Event("load")));
+                handlers.forEach((handler) => {
+                    handler(new Event("load"));
+                });
             }
         }, 100);
     });
@@ -44,7 +48,7 @@ class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
         }
 
         if (header === "ETag") {
-            return '"test-etag"';
+            return "\"test-etag\"";
         }
 
         return undefined;
@@ -148,7 +152,9 @@ describe(usePutFile, () => {
                     const handlers = this.eventListeners.get("load");
 
                     if (handlers) {
-                        handlers.forEach((handler) => handler(new Event("load")));
+                        handlers.forEach((handler) => {
+                            handler(new Event("load"));
+                        });
                     }
                 };
 

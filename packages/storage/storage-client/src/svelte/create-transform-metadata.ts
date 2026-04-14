@@ -38,7 +38,7 @@ export interface CreateTransformMetadataReturn {
 export const createTransformMetadata = (options: CreateTransformMetadataOptions): CreateTransformMetadataReturn => {
     const { enabled = true, endpoint } = options;
 
-    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled as boolean);
+    const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
     const query = createQuery(() => {
         const currentEnabled = get(enabledStore);
@@ -60,15 +60,15 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
 
     const dataStore = (query.data as Readable<TransformMetadata | undefined> | null) ?? readable<TransformMetadata | undefined>(undefined);
     const errorStore = (query.error as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
-    const isLoadingStore: Readable<boolean> =
+    const isLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
+        = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
             ? (query.isLoading as unknown as Readable<boolean>)
-            : readable<boolean>(false);
+            : readable(false);
 
     return {
         data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => ($error ? ($error as Error) : undefined)),
+        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
         isLoading: isLoadingStore,
         refetch: () => {
             query.refetch();

@@ -470,7 +470,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         if (cached) {
             this.logger?.debug("Returning cached transformed image for %s", fileId);
 
-            return cached as TransformResult<TFileReturn>;
+            return cached;
         }
 
         // Get original image from storage

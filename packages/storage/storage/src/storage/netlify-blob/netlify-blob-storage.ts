@@ -1,5 +1,3 @@
-import type { Readable } from "node:stream";
-
 import { getStore } from "@netlify/blobs";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
@@ -35,12 +33,12 @@ import type { NetlifyBlobStorageOptions } from "./types";
  * - ❌ getUrl: Not implemented (Netlify Blob URLs available via Netlify Blob API)
  * - ❌ getUploadUrl: Not implemented (Netlify Blob upload URLs handled internally)
  */
-class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
+class NetlifyBlobStorage extends BaseStorage {
     public static override readonly name: string = "netlify-blob";
 
     public override checksumTypes: string[] = ["md5"];
 
-    protected meta: MetaStorage<NetlifyBlobFile>;
+    protected meta: MetaStorage;
 
     private readonly storeName: string;
 
@@ -62,8 +60,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
         // Initialize Netlify Blob store
         this.store = getStore({
             name: this.storeName,
-            ...(this.siteID && { siteID: this.siteID }),
-            ...(this.token && { token: this.token }),
+            ...this.siteID && { siteID: this.siteID },
+            ...this.token && { token: this.token },
         });
 
         // Initialize retry wrapper with config or defaults
@@ -96,7 +94,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
         const { metaStorage, metaStorageConfig } = config;
 
-        this.meta = metaStorage || new LocalMetaStorage<NetlifyBlobFile>(metaStorageConfig);
+        this.meta = metaStorage || new LocalMetaStorage(metaStorageConfig);
 
         this.isReady = true;
     }
@@ -147,7 +145,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
             if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
                 // part is a full file object (not a FilePart)
-                file = part as NetlifyBlobFile;
+                file = part;
             } else {
                 // part is FilePart or FileQuery
                 file = await this.getMeta(part.id);
@@ -177,7 +175,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
 
                     // Convert stream to buffer for Netlify Blob
                     const chunks: Buffer[] = [];
-                    const stream = part.body as Readable;
+                    const stream = part.body;
 
                     for await (const chunk of stream) {
                         chunks.push(Buffer.from(chunk));
@@ -188,8 +186,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile, FileReturn> {
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
+                        && (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const fileType = await detectFileTypeFromBuffer(buffer);

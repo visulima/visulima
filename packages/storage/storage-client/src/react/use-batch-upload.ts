@@ -140,7 +140,7 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
                                 name: fileMeta.name,
                                 originalName: fileMeta.originalName ?? item.file.name,
                                 size: fileMeta.size ?? item.file.size,
-                                status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+                                status: fileMeta.status ?? "completed",
                                 url: item.url,
                             } as UploadResult;
                         });

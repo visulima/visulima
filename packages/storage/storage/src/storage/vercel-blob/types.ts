@@ -1,8 +1,7 @@
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions } from "../types";
-import type VercelBlobFile from "./vercel-blob-file";
 
-export interface VercelBlobStorageOptions extends BaseStorageOptions<VercelBlobFile> {
+export interface VercelBlobStorageOptions extends BaseStorageOptions {
     /**
      * Configure metafiles storage
      * @example

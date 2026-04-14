@@ -64,7 +64,7 @@ export interface NextjsHandlerConfig<TFile extends UploadFile> extends UploadOpt
  * export const OPTIONS = handler;
  * ```
  */
-export const createHandler = <TFile extends UploadFile>(config: NextjsHandlerConfig<TFile>): ((request: NextRequest) => Promise<NextResponse>) => {
+export const createHandler = <TFile extends UploadFile>(config: NextjsHandlerConfig<TFile>): (request: NextRequest) => Promise<NextResponse> => {
     let handler: Multipart<TFile> | Rest<TFile> | Tus<TFile>;
 
     // Create the appropriate handler based on type
