@@ -83,7 +83,6 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [alias, to] of Object.entries(aliases)) {
         if (!path.startsWith(alias)) {
             continue;
@@ -119,7 +118,6 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
-    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [to, alias] of Object.entries(aliases).toReversed()) {
         if (!path.startsWith(alias)) {
             continue;

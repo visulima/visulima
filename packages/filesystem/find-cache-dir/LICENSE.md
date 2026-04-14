@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/find-cache-dir artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/fs
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -53,8 +56,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
->
->
 >
 > # Licenses of bundled dependencies
 >
@@ -289,10 +290,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
->
->
->
->
 > # Licenses of bundled types
 >
 > The published @visulima/fs artifact additionally contains code with the following licenses:
@@ -328,9 +325,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 
----------------------------------------
+---
 
 ## @visulima/path
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -429,8 +427,6 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
->
->
 >
 > # Licenses of bundled dependencies
 >

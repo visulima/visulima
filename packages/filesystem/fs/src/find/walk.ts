@@ -88,12 +88,16 @@ export default async function* walk(
     }
 
     const mappedMatch = match
-        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
-        ? match.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        ? match.map(
+            // eslint-disable-next-line no-confusing-arrow
+            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
+        )
         : undefined;
     const mappedSkip = skip
-        // eslint-disable-next-line no-confusing-arrow -- ternary in arrow is clear here
-        ? skip.map((pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern)
+        ? skip.map(
+            // eslint-disable-next-line no-confusing-arrow
+            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
+        )
         : undefined;
 
     // eslint-disable-next-line no-param-reassign

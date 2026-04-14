@@ -123,7 +123,9 @@ describe.each([
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => { function_(sourcePath, destinationPath); }).toThrow(Error);
+            expect(() => {
+                function_(sourcePath, destinationPath);
+            }).toThrow(Error);
         }
 
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
@@ -177,7 +179,9 @@ describe.each([
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => { function_(sourcePath, destinationPath); }).toThrow(Error);
+            expect(() => {
+                function_(sourcePath, destinationPath);
+            }).toThrow(Error);
         }
     });
 
@@ -197,7 +201,9 @@ describe.each([
             await expect(() => function_(sourcePath, destinationPath)).rejects.toThrow(Error);
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => { function_(sourcePath, destinationPath); }).toThrow(Error);
+            expect(() => {
+                function_(sourcePath, destinationPath);
+            }).toThrow(Error);
         }
 
         const destinationDirectoryExistsAfter = existsSync(dirname(destinationPath));
