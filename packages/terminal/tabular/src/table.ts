@@ -163,13 +163,13 @@ export class Table {
         let fixedGridWidths: (number | undefined)[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            const widthArray =
-                this.#options.columnWidths.length >= numberColumns
+            const widthArray
+                = this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
                     : [
-                          ...this.#options.columnWidths,
-                          ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
-                      ];
+                        ...this.#options.columnWidths,
+                        ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
+                    ];
 
             fixedGridWidths = widthArray;
         } else if (typeof this.#options.columnWidths === "number") {
@@ -238,10 +238,10 @@ export class Table {
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
             truncate:
-                this.#options.truncate ??
-                (fixedGridWidths?.every((w) => typeof w === "number") ||
+                this.#options.truncate
+                ?? (fixedGridWidths?.every((w) => typeof w === "number")
                     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional: false from .every() must fall through to maxWidth check
-                    (this.#options.maxWidth !== undefined && !this.#options.balancedWidths)),
+                    || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths)),
             // eslint-disable-next-line sonarjs/deprecation -- forwarding deprecated option to grid for backward compatibility
             truncateOverflow: this.#options.truncateOverflow ?? true,
             wordWrap: this.#options.wordWrap ?? false,
@@ -296,8 +296,8 @@ export class Table {
                 }
 
                 // Replace real tab characters with spaces if needed
-                const processedContent =
-                    this.#options.transformTabToSpace && typeof cellInput === "string"
+                const processedContent
+                    = this.#options.transformTabToSpace && typeof cellInput === "string"
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 
