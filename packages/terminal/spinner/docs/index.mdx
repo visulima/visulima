@@ -1,0 +1,59 @@
+---
+title: Spinner
+description: 101 terminal spinner animations for Node.js and browsers
+icon: Zap
+sidebar_position: 1
+---
+
+A lightweight, zero-dependency terminal spinner library with 101 animations. Perfect for CLI tools, build processes, and long-running operations.
+
+## Features
+
+- **101 Spinners** - Carefully curated animations from multiple sources
+- **Lightweight** - Minimal dependencies, optimized bundle size
+- **Easy to Use** - Simple API with method chaining
+- **TypeScript** - Full type support out of the box
+- **Customizable** - Control symbols, text, and output stream
+- **Cross-platform** - Works in Node.js and modern browsers
+
+## Quick Example
+
+```typescript
+import { Spinner } from '@visulima/spinner';
+
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Loading...'
+});
+
+spinner.start();
+
+// Do async work
+await doSomething();
+
+spinner.succeed('Done!');
+```
+
+## Why Use This Library?
+
+- **Unique Collection** - Spinners sourced from cli-spinners, Rattles, and unicode-animations
+- **No Dependencies** - Pure JavaScript, no external dependencies
+- **Production Ready** - Used in real-world CLI tools
+- **Well Tested** - Comprehensive test coverage
+- **Accessible** - Works with TTY detection and can be disabled
+
+## What's Included
+
+The package includes spinners in several categories:
+
+- **Classic** - Traditional dots, lines, and boxes
+- **Braille** - Unicode braille-based animations (breathe, cascade, helix, etc.)
+- **Shapes** - Geometric animations (circles, arcs, bouncing)
+- **Symbols** - Various Unicode and ASCII characters
+- **Effects** - Special animation effects
+
+## Next Steps
+
+- [Getting Started](/docs/spinner/getting-started) - Install and use in 30 seconds
+- [Usage Guide](/docs/spinner/usage) - Learn the Spinner API
+- [Spinner Reference](/docs/spinner/spinners) - Explore all 101 spinners

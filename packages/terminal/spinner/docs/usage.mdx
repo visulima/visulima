@@ -1,0 +1,315 @@
+---
+title: Usage Guide
+description: Complete API reference for the Spinner class
+sidebar_position: 3
+---
+
+## Constructor Options
+
+Create a new spinner with custom options. See the [full spinner reference](/docs/spinner/spinners) for available spinner names.
+
+```typescript
+import { Spinner } from '@visulima/spinner';
+
+const spinner = new Spinner({
+  spinner: 'dots',           // Spinner name (default: 'dots')
+  text: 'Loading...',        // Display text
+  prefixText: '[INFO]',      // Text before spinner
+  successSymbol: '✓',        // Success symbol (default: '✓')
+  failureSymbol: '✖',        // Failure symbol (default: '✖')
+  warningSymbol: '⚠',        // Warning symbol (default: '⚠')
+  isEnabled: true,           // Enable/disable (default: true)
+  stream: process.stdout     // Output stream (default: stdout)
+});
+```
+
+### Default Options
+
+All options are optional. Here are the defaults:
+
+```typescript
+const spinner = new Spinner({
+  spinner: 'dots',           // Default spinner
+  text: '',                  // Empty text
+  prefixText: '',            // No prefix
+  successSymbol: '✓',        // Checkmark
+  failureSymbol: '✖',        // X mark
+  warningSymbol: '⚠',        // Warning triangle
+  isEnabled: true,           // Auto-detect TTY, can be overridden
+  stream: process.stdout     // Standard output
+});
+```
+
+## Methods
+
+### start(text?)
+
+Start the spinner animation with optional new text.
+
+```typescript
+spinner.start();
+spinner.start('New text...');
+```
+
+### stop()
+
+Stop the spinner without any message.
+
+```typescript
+spinner.stop();
+```
+
+### succeed(message?)
+
+Stop with a success symbol and optional message.
+
+```typescript
+spinner.succeed();
+spinner.succeed('Operation completed!');
+```
+
+### fail(message?)
+
+Stop with a failure symbol and optional message.
+
+```typescript
+spinner.fail();
+spinner.fail('Something went wrong');
+```
+
+### warn(message?)
+
+Stop with a warning symbol and optional message.
+
+```typescript
+spinner.warn();
+spinner.warn('This is a warning');
+```
+
+### setText(text)
+
+Update the spinner text while running.
+
+```typescript
+spinner.setText('New progress message');
+```
+
+### setPrefixText(text)
+
+Update the prefix text while running.
+
+```typescript
+spinner.setPrefixText('[STEP 2]');
+```
+
+### getStatus()
+
+Get the current spinner status.
+
+```typescript
+const status = spinner.getStatus();
+// Returns: 'spinning' | 'succeed' | 'fail' | 'warn' | 'stop'
+```
+
+### getText()
+
+Get the current spinner text.
+
+```typescript
+const text = spinner.getText();
+```
+
+## Method Chaining
+
+All methods return the spinner instance for chaining:
+
+```typescript
+spinner
+  .setPrefixText('[TASK]')
+  .setText('Building...')
+  .start();
+
+// Later
+spinner.setText('Testing...').start();
+```
+
+## Patterns
+
+### Sequential Tasks
+
+```typescript
+const spinner = new Spinner({ spinner: 'dots' });
+
+// Task 1
+spinner.setText('Task 1...').start();
+await task1();
+spinner.succeed('Task 1 done');
+
+// Task 2
+spinner.setText('Task 2...').start();
+await task2();
+spinner.succeed('Task 2 done');
+```
+
+### Helper Function
+
+```typescript
+async function withSpinner(text, fn, spinnerName = 'dots') {
+  const spinner = new Spinner({
+    spinner: spinnerName,
+    text
+  });
+
+  spinner.start();
+  try {
+    const result = await fn();
+    spinner.succeed();
+    return result;
+  } catch (error) {
+    spinner.fail(error.message);
+    throw error;
+  }
+}
+
+// Usage
+await withSpinner('Building...', build, 'line');
+await withSpinner('Testing...', test, 'breathe');
+```
+
+### Multi-step Pipeline
+
+```typescript
+async function pipeline() {
+  const spinner = new Spinner({ spinner: 'cascade' });
+
+  const tasks = [
+    { name: 'Lint', fn: lint },
+    { name: 'Build', fn: build },
+    { name: 'Test', fn: test },
+    { name: 'Deploy', fn: deploy }
+  ];
+
+  for (const task of tasks) {
+    spinner.setText(task.name).start();
+    try {
+      await task.fn();
+      spinner.succeed(`${task.name} completed`);
+    } catch (error) {
+      spinner.fail(`${task.name} failed`);
+      throw error;
+    }
+  }
+}
+```
+
+## Utility Functions
+
+### getSpinner(name)
+
+Get spinner definition by name.
+
+```typescript
+import { getSpinner } from '@visulima/spinner';
+
+const spinner = getSpinner('dots');
+// Returns: { frames: [...], interval: 80 }
+```
+
+### getSpinnerNames()
+
+Get array of all available spinner names.
+
+```typescript
+import { getSpinnerNames } from '@visulima/spinner';
+
+const names = getSpinnerNames();
+console.log(names.length); // 101
+```
+
+### getRandomSpinner()
+
+Get a random spinner definition.
+
+```typescript
+import { getRandomSpinner } from '@visulima/spinner';
+
+const randomSpinner = getRandomSpinner();
+```
+
+## Error Handling
+
+Always handle potential errors:
+
+```typescript
+const spinner = new Spinner({ spinner: 'dots', text: 'Working...' });
+
+spinner.start();
+
+try {
+  await riskyOperation();
+  spinner.succeed('Success!');
+} catch (error) {
+  spinner.fail(`Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  process.exit(1);
+} finally {
+  // Cleanup if needed
+}
+```
+
+## Disabling in Non-TTY Environments
+
+The spinner automatically disables in non-TTY environments (CI, pipes, etc.):
+
+```typescript
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Loading...',
+  isEnabled: process.stdout.isTTY // Only animate in terminals
+});
+```
+
+For testing, you can disable manually:
+
+```typescript
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Loading...',
+  isEnabled: false // No animation
+});
+```
+
+## Custom Output Stream
+
+Write spinner to a different stream:
+
+```typescript
+const fs = require('fs');
+const output = fs.createWriteStream('log.txt');
+
+const spinner = new Spinner({
+  spinner: 'dots',
+  text: 'Processing...',
+  stream: output
+});
+```
+
+## Browser Usage
+
+The spinner can also be used in browsers to update DOM elements:
+
+```typescript
+import { getSpinner } from '@visulima/spinner';
+
+const spinner = getSpinner('dots');
+const statusEl = document.getElementById('status');
+let frameIndex = 0;
+
+const interval = setInterval(() => {
+  frameIndex = (frameIndex + 1) % spinner.frames.length;
+  statusEl.textContent = `${spinner.frames[frameIndex]} Loading...`;
+}, spinner.interval);
+
+// Later, when done
+clearInterval(interval);
+statusEl.textContent = '✓ Done!';
+```
