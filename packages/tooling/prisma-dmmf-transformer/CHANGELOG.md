@@ -1,3 +1,9 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.8...@visulima/prisma-dmmf-transformer@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** add node types for assert global ([55b9c4a](https://github.com/visulima/visulima/commit/55b9c4a81531734d448bec8c860f96c3d5d94602))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.7...@visulima/prisma-dmmf-transformer@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
