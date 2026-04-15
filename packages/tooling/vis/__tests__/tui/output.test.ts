@@ -6,12 +6,16 @@ import { getStatusIcon, getStatusPrefix, isCacheStatus, logCommandOutputCI } fro
 describe("tui/status-utils", () => {
     describe(isCacheStatus, () => {
         it("should return true for cache statuses", () => {
+            expect.assertions(3);
+
             expect(isCacheStatus("local-cache")).toBe(true);
             expect(isCacheStatus("local-cache-kept-existing")).toBe(true);
             expect(isCacheStatus("remote-cache")).toBe(true);
         });
 
         it("should return false for non-cache statuses", () => {
+            expect.assertions(3);
+
             expect(isCacheStatus("success")).toBe(false);
             expect(isCacheStatus("failure")).toBe(false);
             expect(isCacheStatus("skipped")).toBe(false);
@@ -20,6 +24,8 @@ describe("tui/status-utils", () => {
 
     describe(getStatusIcon, () => {
         it("should return a non-empty string for success", () => {
+            expect.assertions(1);
+
             const icon = getStatusIcon("success");
 
             expectTypeOf(icon).toBeString();
@@ -27,6 +33,7 @@ describe("tui/status-utils", () => {
             expect(strip(icon).length).toBeGreaterThan(0);
         });
 
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- type-only assertion via expectTypeOf
         it("should return a string for cache statuses", () => {
             expectTypeOf(getStatusIcon("local-cache")).toBeString();
             expectTypeOf(getStatusIcon("local-cache-kept-existing")).toBeString();
@@ -34,6 +41,8 @@ describe("tui/status-utils", () => {
         });
 
         it("should return a string for failure", () => {
+            expect.assertions(1);
+
             const icon = getStatusIcon("failure");
 
             expectTypeOf(icon).toBeString();
@@ -42,6 +51,8 @@ describe("tui/status-utils", () => {
         });
 
         it("should return a string for skipped", () => {
+            expect.assertions(1);
+
             const icon = getStatusIcon("skipped");
 
             expectTypeOf(icon).toBeString();
@@ -52,18 +63,24 @@ describe("tui/status-utils", () => {
 
     describe(getStatusPrefix, () => {
         it("should include [cache] label for cache statuses", () => {
+            expect.assertions(1);
+
             const prefix = strip(getStatusPrefix("local-cache"));
 
             expect(prefix).toContain("[cache]");
         });
 
         it("should include [skipped] label for skipped", () => {
+            expect.assertions(1);
+
             const prefix = strip(getStatusPrefix("skipped"));
 
             expect(prefix).toContain("[skipped]");
         });
 
         it("should not include extra labels for plain success", () => {
+            expect.assertions(2);
+
             const prefix = strip(getStatusPrefix("success"));
 
             expect(prefix).not.toContain("[cache]");
@@ -83,6 +100,8 @@ describe("tui/status-utils", () => {
         });
 
         it("should write output to stdout", () => {
+            expect.assertions(3);
+
             logCommandOutputCI("app:build", "success", "build output here");
 
             expect(writeSpy.mock.calls.length).toBeGreaterThan(0);
@@ -94,12 +113,16 @@ describe("tui/status-utils", () => {
         });
 
         it("should not write anything for empty output", () => {
+            expect.assertions(1);
+
             logCommandOutputCI("app:build", "success", "   ");
 
             expect(writeSpy).not.toHaveBeenCalled();
         });
 
         it("should use GitHub Actions grouping when GITHUB_ACTIONS is set", () => {
+            expect.assertions(2);
+
             const originalEnv = process.env["GITHUB_ACTIONS"];
 
             process.env["GITHUB_ACTIONS"] = "true";

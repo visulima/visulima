@@ -28,6 +28,8 @@ describe("native-binding", () => {
 
     describe("isNativeAvailable", () => {
         it("should return a boolean", async () => {
+            expect.assertions(1);
+
             vi.resetModules();
             const { isNativeAvailable } = await import("../src/native-binding");
 

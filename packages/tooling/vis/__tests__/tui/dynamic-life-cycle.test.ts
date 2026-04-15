@@ -102,6 +102,8 @@ describe("tui/createDynamicOutputRenderer", () => {
     };
 
     it("should return a lifeCycle and renderIsDone promise", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build")];
         const result = createRenderer(tasks);
 
@@ -110,6 +112,8 @@ describe("tui/createDynamicOutputRenderer", () => {
     });
 
     it("should register signal handlers on startCommand", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
@@ -122,6 +126,8 @@ describe("tui/createDynamicOutputRenderer", () => {
     });
 
     it("should call render with alternateScreen on startCommand", () => {
+        expect.assertions(1);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
@@ -132,6 +138,7 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.endCommand!();
     });
 
+    // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
     it("should accept startTasks and endTasks without errors", () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
@@ -143,6 +150,8 @@ describe("tui/createDynamicOutputRenderer", () => {
     });
 
     it("should resolve renderIsDone after app unmounts", async () => {
+        expect.assertions(1);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle, renderIsDone } = createRenderer(tasks);
 
@@ -158,6 +167,8 @@ describe("tui/createDynamicOutputRenderer", () => {
     });
 
     it("should print summary after app exits", async () => {
+        expect.assertions(3);
+
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle, renderIsDone } = createRenderer(tasks);
 
@@ -180,6 +191,7 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(allOutput).toContain("Successfully ran target build");
     });
 
+    // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
     it("should collect task output via printTaskTerminalOutput", () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);

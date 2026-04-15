@@ -179,11 +179,7 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
                 </Text>
             </Box>
 
-            <QuitDialog
-                autoExitSeconds={3}
-                onCancel={() => setQuitDialogVisible(false)}
-                visible={quitDialogVisible}
-            />
+            <QuitDialog autoExitSeconds={3} onCancel={() => setQuitDialogVisible(false)} visible={quitDialogVisible} />
         </Box>
     );
 };
