@@ -31,7 +31,7 @@ const stackTraceViewer = async (
     const escapeHtml = (text: string): string =>
         text.replaceAll(/[&<>"']/g, (char) => {
             const entities: Record<string, string> = {
-                "\"": "&quot;",
+                '"': "&quot;",
                 "&": "&amp;",
                 "'": "&#39;",
                 "<": "&lt;",
@@ -52,19 +52,19 @@ const stackTraceViewer = async (
         const isClickable = Boolean(source);
         const sourceCodeFrame = source
             ? codeFrame(
-                source,
-                {
-                    start: {
-                        column: trace.column,
-                        line: trace.line as number,
-                    },
-                },
-                {
-                    linesAbove: 9,
-                    linesBelow: 10,
-                    showGutter: false,
-                },
-            )
+                  source,
+                  {
+                      start: {
+                          column: trace.column,
+                          line: trace.line as number,
+                      },
+                  },
+                  {
+                      linesAbove: 9,
+                      linesBelow: 10,
+                      showGutter: false,
+                  },
+              )
             : defaultSource;
 
         const lang = findLanguageBasedOnExtension(trace.file ?? "");
@@ -97,7 +97,7 @@ const stackTraceViewer = async (
 
         tabs.push({
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${String(index)}" data-stack-tab="#source-code-tabs-${uniqueKey}-${String(index)}" aria-controls="source-code-tabs-${uniqueKey}-${String(index)}" ${
-                isClickable ? "" : "disabled aria-disabled=\"true\""
+                isClickable ? "" : 'disabled aria-disabled="true"'
             } class="${cn(
                 "relative inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--ono-hover-overlay)] text-[var(--ono-text-muted)] cursor-pointer",
                 isClickable ? "cursor-pointer" : "cursor-not-allowed",
@@ -188,7 +188,7 @@ const stackTraceViewer = async (
 
     const hasToggles = togglesHtml.trim().length > 0;
     const paddingClass = hasToggles ? "p-6" : "p-0";
-    const headerLabel = hasToggles ? "<span class=\"block text-xs mb-2 text-[var(--ono-text-muted)]\">Show or Hide collapsed frames</span>" : "";
+    const headerLabel = hasToggles ? '<span class="block text-xs mb-2 text-[var(--ono-text-muted)]">Show or Hide collapsed frames</span>' : "";
 
     const html = `<section class="container rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-2)] bg-[var(--ono-surface)]" aria-label="Stack trace viewer">
     <main id="stack-trace-viewer" class="flex flex-row">
