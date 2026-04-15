@@ -102,7 +102,6 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
             return undefined;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const absPath: string = isAbsolute(filePath) ? filePath : (resolvePath(projectRoot, filePath) as unknown as string);
 
         if (!allowOutsideProject) {
@@ -112,9 +111,9 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 const targetResolved: string = realpathSync(absPath) as unknown as string;
 
                 // Normalize both paths
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
                 const normalizedProjectRoot: string = normalize(projectRootResolved) as unknown as string;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
                 const normalizedTarget: string = normalize(targetResolved) as unknown as string;
 
                 // On case-insensitive platforms, compare lowercased versions
@@ -122,14 +121,13 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 const projectRootCompare: string = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
                 const targetCompare: string = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 const relativePath: string = relative(normalizedProjectRoot, normalizedTarget) as unknown as string;
 
                 // Check if target is outside project root:
                 // - If relative path starts with '..' it's outside
                 // - If relative path is absolute, it's outside
                 // - If paths don't match on case-insensitive platforms, it's outside
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
                 if (relativePath.startsWith("..") || isAbsolute(relativePath) || (isCaseInsensitive && !targetCompare.startsWith(projectRootCompare))) {
                     return undefined;
                 }
