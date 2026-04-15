@@ -40,6 +40,7 @@ import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import sbomCommand from "./commands/sbom";
+import secretsCommand from "./commands/secrets";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
@@ -155,6 +156,7 @@ cli.addCommand(auditCommand);
 cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 cli.addCommand(sbomCommand);
+cli.addCommand(secretsCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

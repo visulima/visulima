@@ -3,6 +3,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config";
+import { backupFile } from "./backup";
 import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, LINT_STAGED_OTHER_CONFIG_FILES, STALE_LINT_STAGED_PATTERNS } from "./constants";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
 import type { MigrationReport } from "./types";
@@ -132,6 +133,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
         }
 
         if (updated) {
+            backupFile(configPath);
             writeFileSync(configPath, updated, "utf8");
             logger.info(`Merged staged config into ${configPath}`);
 
@@ -198,6 +200,7 @@ const removeLintStagedFromPackageJson = (root: string): { configRemoved: boolean
     if (modified) {
         const indent = detectJsonIndent(content);
 
+        backupFile(packageJsonPath);
         writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
     }
 
@@ -212,6 +215,7 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
         const filePath = join(root, file);
 
         if (existsSync(filePath)) {
+            backupFile(filePath, report);
             unlinkSync(filePath);
 
             report.removedConfigCount += 1;
@@ -276,6 +280,7 @@ const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => 
         return false;
     }
 
+    backupFile(hookPath);
     writeFileSync(hookPath, result.join("\n"));
 
     return true;

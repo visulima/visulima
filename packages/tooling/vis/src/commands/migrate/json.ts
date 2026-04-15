@@ -1,5 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+import { backupFile } from "./backup";
+import type { MigrationReport } from "./types";
+
 /**
  * Reads and parses a JSON file. Returns undefined if the file doesn't exist or isn't valid JSON.
  */
@@ -45,9 +48,10 @@ const detectJsonIndent = (content: string): number => {
  * Edits a JSON file in place using a mutator function.
  * The mutator receives the parsed data and should return the modified data,
  * or undefined to skip writing. Returns true if the file was modified.
- * Preserves the original indentation style.
+ * Preserves the original indentation style. When `report` is provided, a
+ * `.bak` snapshot is taken before the write.
  */
-const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined): boolean => {
+const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined, report?: MigrationReport): boolean => {
     if (!existsSync(filePath)) {
         return false;
     }
@@ -69,6 +73,10 @@ const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined):
     }
 
     const indent = detectJsonIndent(content);
+
+    if (report) {
+        backupFile(filePath, report);
+    }
 
     writeFileSync(filePath, `${JSON.stringify(result, undefined, indent)}\n`, "utf8");
 

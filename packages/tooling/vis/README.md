@@ -88,23 +88,73 @@ vis hook install
 
 ## Commands
 
-| Command                 | Alias | Description                                                       |
-| ----------------------- | ----- | ----------------------------------------------------------------- |
-| `vis create [template]` |       | Scaffold a new project from templates, npm packages, or git repos |
-| `vis init`              |       | Initialize vis.config.ts with security defaults                   |
-| `vis run <target>`      |       | Run a target across workspace projects with caching               |
-| `vis affected <target>` |       | Run tasks only on projects affected by git changes                |
-| `vis ignore <project>`  |       | CI build gating for Vercel / Netlify "Ignored Build Step"         |
-| `vis graph`             |       | Visualize the project dependency graph                            |
-| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs             |
-| `vis update [packages]` | `up`  | Update packages to their latest versions                          |
-| `vis install`           | `i`   | Install dependencies via the detected package manager             |
-| `vis dlx <package>`     |       | Execute a remote package without permanent installation           |
-| `vis audit`             |       | Audit dependencies for security vulnerabilities                   |
-| `vis clean`             |       | Remove build artifacts, caches, and node_modules                  |
-| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                    |
+| Command                 | Alias | Description                                                          |
+| ----------------------- | ----- | -------------------------------------------------------------------- |
+| `vis create [template]` |       | Scaffold a new project from templates, npm packages, or git repos    |
+| `vis init`              |       | Initialize vis.config.ts with security defaults                      |
+| `vis run <target>`      |       | Run a target across workspace projects with caching                  |
+| `vis affected <target>` |       | Run tasks only on projects affected by git changes                   |
+| `vis ignore <project>`  |       | CI build gating for Vercel / Netlify "Ignored Build Step"            |
+| `vis graph`             |       | Visualize the project dependency graph                               |
+| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs                |
+| `vis update [packages]` | `up`  | Update packages to their latest versions                             |
+| `vis install`           | `i`   | Install dependencies via the detected package manager                |
+| `vis dlx <package>`     |       | Execute a remote package without permanent installation              |
+| `vis audit`             |       | Audit dependencies for security vulnerabilities                      |
+| `vis clean`             |       | Remove build artifacts, caches, and node_modules                     |
+| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                       |
+| `vis secrets [paths]`   |       | Scan for hardcoded secrets / credentials (Rust-native)               |
+| `vis migrate <type>`    |       | Migrate from other tools — now including `gitleaks` and `secretlint` |
 
 For `vis ignore`, see the [command reference](./docs/commands/ignore.mdx) and the [deployment build gating section](./docs/guides/ci-cd.mdx#deployment-build-gating) of the CI/CD guide.
+
+### Scanning for secrets
+
+`vis secrets` wraps [`@visulima/secret-scanner`](../secret-scanner) — a Rust port of the gitleaks detection engine — with ergonomic flags for the common workflows.
+
+```sh
+vis secrets                         # scan the workspace (grouped, colourised output)
+vis secrets --staged                # pre-commit mode: scan staged files only
+vis secrets --since main            # scan files changed since the `main` branch
+vis secrets --affected              # scan only files affected by the current branch
+vis secrets --init                  # scaffold a baseline + empty .gitleaksignore
+vis secrets --list-rules            # print all bundled detection rules
+vis secrets --baseline .secrets-baseline.json   # suppress triaged findings; print diff
+vis secrets --update-baseline       # merge current findings into the baseline
+vis secrets --format sarif > report.sarif       # SARIF for GitHub code-scanning
+```
+
+**Suppression** — inline (`// gitleaks:allow`), block (`gitleaks:allow-start` … `gitleaks:allow-end`), `.gitleaksignore` fingerprints, or a baseline JSON. See the [secret-scanner README](../secret-scanner/README.md#suppression) for details.
+
+**CI example** (GitHub Actions, SARIF upload):
+
+```yaml
+name: Secrets
+on: [push, pull_request]
+jobs:
+    scan:
+        runs-on: ubuntu-latest
+        permissions: { security-events: write, contents: read }
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - run: pnpm install
+            - run: pnpm vis secrets --format sarif > report.sarif
+              continue-on-error: true
+            - uses: github/codeql-action/upload-sarif@v3
+              with: { sarif_file: report.sarif }
+```
+
+### Migrations
+
+`vis migrate` now speaks two security tools:
+
+```sh
+vis migrate gitleaks     # keeps gitleaks.toml, rewrites scripts/hooks to `vis secrets`
+vis migrate secretlint   # removes @secretlint/*, rewrites scripts/hooks, notes active rules
+```
+
+Every destructive step writes a `.bak` sidecar first and prompts for confirmation (skip with `-y`). Dry-run previews are available via `--dry-run`.
 
 ## Documentation
 
