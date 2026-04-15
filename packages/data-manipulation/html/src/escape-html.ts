@@ -59,7 +59,7 @@ const escapeHtml = (value: unknown, isAttribute: boolean = false): string => {
         const ch = htmlString[i];
 
         // eslint-disable-next-line sonarjs/no-nested-conditional
-        escaped += htmlString.slice(last, i) + (ch === "&" ? "&amp;" : ch === "\"" ? "&quot;" : "&lt;");
+        escaped += htmlString.slice(last, i) + (ch === "&" ? "&amp;" : ch === '"' ? "&quot;" : "&lt;");
         last = i + 1;
     }
 
