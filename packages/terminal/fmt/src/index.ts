@@ -1,3 +1,4 @@
+import type { CssObject } from "./inspect-colors";
 import { cssToAnsi, parseCss } from "./inspect-colors";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,8 +65,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
     let lastPosition = -1;
 
     let usedStyle = false;
-    // eslint-disable-next-line unicorn/no-null
-    let previousCss = null;
+    let previousCss: CssObject | undefined;
 
     for (let index = 0; index < fmt.length;) {
         if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
