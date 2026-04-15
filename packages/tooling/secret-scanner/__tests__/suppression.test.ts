@@ -54,7 +54,7 @@ describe("suppression", () => {
         await writeFile(baselinePath, JSON.stringify(findings));
 
         try {
-            const filtered = await nativeMod.scan([tmpDir], { baselinePath });
+            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
 
             expect(filtered).toHaveLength(0);
         } finally {

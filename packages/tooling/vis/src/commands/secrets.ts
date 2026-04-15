@@ -111,18 +111,17 @@ const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean):
 };
 
 interface VisSecretsConfig {
-    baselinePath?: string;
+    baseline?: string;
     config?: ScanOptions["config"];
-    configPath?: string;
-    disableRules?: string[];
-    extraIgnores?: string[];
-    ignoreFiles?: string[];
-    includeBundled?: boolean;
-    includeHidden?: boolean;
-    maxFileSize?: number;
-    onlyRules?: string[];
     redact?: boolean;
-    respectGitignore?: boolean;
+    rules?: { exclude?: string[]; include?: string[] };
+    walk?: {
+        excludeFromFiles?: string[];
+        excludePatterns?: string[];
+        gitignore?: boolean;
+        includeHidden?: boolean;
+        maxFileSize?: number;
+    };
 }
 
 /**
@@ -133,20 +132,30 @@ const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | 
     const cfg = visSecrets ?? {};
     const resolvePath = (p: string | undefined): string | undefined => (p ? resolve(root, p) : undefined);
 
+    const excludeList = toArray(flags.disableRule).length > 0 ? toArray(flags.disableRule) : cfg.rules?.exclude;
+    const includeList = toArray(flags.onlyRule).length > 0 ? toArray(flags.onlyRule) : cfg.rules?.include;
+    const baselinePath = resolvePath(flags.baseline) ?? resolvePath(cfg.baseline);
+    const configPath = resolvePath(flags.config) ?? resolvePath(cfg.config?.path);
+
     return {
-        baselinePath: resolvePath(flags.baseline) ?? resolvePath(cfg.baselinePath),
-        config: cfg.config,
-        configPath: resolvePath(flags.config) ?? resolvePath(cfg.configPath),
-        disableRules: toArray(flags.disableRule).length > 0 ? toArray(flags.disableRule) : cfg.disableRules,
-        extraIgnores: cfg.extraIgnores,
-        ignoreFiles: cfg.ignoreFiles?.map((p) => resolve(root, p)),
-        includeBundled: cfg.includeBundled,
-        includeHidden: flags.includeHidden ?? cfg.includeHidden,
-        maxFileSize: flags.maxSize ?? cfg.maxFileSize,
-        onlyRules: toArray(flags.onlyRule).length > 0 ? toArray(flags.onlyRule) : cfg.onlyRules,
+        baseline: baselinePath,
+        concurrency: undefined,
+        config: {
+            extendBundled: cfg.config?.extendBundled,
+            inline: cfg.config?.inline,
+            path: configPath,
+            presets: cfg.config?.presets,
+        },
         redact: flags.redact ?? cfg.redact,
-        respectGitignore: flags.noGitignore ? false : (cfg.respectGitignore ?? true),
-        warnOnSkippedRules: flags.verbose ?? false,
+        rules: { exclude: excludeList, include: includeList },
+        verbose: flags.verbose ?? false,
+        walk: {
+            excludeFromFiles: cfg.walk?.excludeFromFiles?.map((p) => resolve(root, p)),
+            excludePatterns: cfg.walk?.excludePatterns,
+            gitignore: flags.noGitignore ? false : (cfg.walk?.gitignore ?? true),
+            includeHidden: flags.includeHidden ?? cfg.walk?.includeHidden,
+            maxFileSize: flags.maxSize ?? cfg.walk?.maxFileSize,
+        },
     };
 };
 
@@ -193,7 +202,7 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
     return { paths: args && args.length > 0 ? args.map((p) => resolve(root, p)) : [root] };
 };
 
-const emitFindings = (findings: Finding[], format: ReportFormat, root: string, useColor: boolean, toolVersion: string): void => {
+const emitFindings = (findings: Finding[], format: ReportFormat, root: string, useColor: boolean, toolVersion: string, ruleMetadata: RuleInfo[]): void => {
     switch (format) {
         case "json": {
             const view = findings.map((f) => toRelativeFinding(f, root));
@@ -202,7 +211,7 @@ const emitFindings = (findings: Finding[], format: ReportFormat, root: string, u
             break;
         }
         case "sarif": {
-            process.stdout.write(`${formatSarif(findings, toolVersion)}\n`);
+            process.stdout.write(`${formatSarif(findings, toolVersion, root, ruleMetadata)}\n`);
             break;
         }
         default: {
@@ -290,7 +299,7 @@ const secrets: Command = {
             }
         }
 
-        const baselineFullPath = scanOptions.baselinePath ?? join(root, DEFAULT_BASELINE);
+        const baselineFullPath = scanOptions.baseline ?? join(root, DEFAULT_BASELINE);
         const showDiff = !flags.quiet && existsSync(baselineFullPath);
 
         if (flags.updateBaseline) {
@@ -303,7 +312,9 @@ const secrets: Command = {
 
         const format = validateFormat(flags.format);
 
-        emitFindings(findings, format, root, useColor, toolVersion);
+        const ruleMetadata = format === "sarif" ? await listRules(scanOptions).catch(() => [] as RuleInfo[]) : [];
+
+        emitFindings(findings, format, root, useColor, toolVersion, ruleMetadata);
 
         if (format === "text" && showDiff) {
             printDiff(diffBaseline(findings, baselineFullPath, root));
