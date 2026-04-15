@@ -1,3 +1,9 @@
+## @visulima/redact [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.8...@visulima/redact@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **redact:** resolve eslint and formatting issues ([634f8cf](https://github.com/visulima/visulima/commit/634f8cf401d26694bdca735d0ff4c437fee8a811))
+
 ## @visulima/redact [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.7...@visulima/redact@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
