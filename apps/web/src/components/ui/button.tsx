@@ -74,13 +74,21 @@ const Button = ({
         <Comp className={cn(buttonVariants({ className, size, variant }), Icon && "group")} ref={ref} {...properties}>
             {Icon && iconPlacement === "left" && (
                 <div className="w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-full group-hover:pr-2 group-hover:opacity-100">
-                    <Icon />
+                    {(() => {
+                        const Element: React.ElementType = Icon as unknown as React.ElementType;
+
+                        return <Element />;
+                    })()}
                 </div>
             )}
             <Slot.Slottable>{properties.children}</Slot.Slottable>
             {Icon && iconPlacement === "right" && (
                 <div className="w-0 translate-x-[100%] pl-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-0 group-hover:pl-2 group-hover:opacity-100">
-                    <Icon />
+                    {(() => {
+                        const Element: React.ElementType = Icon as unknown as React.ElementType;
+
+                        return <Element />;
+                    })()}
                 </div>
             )}
         </Comp>

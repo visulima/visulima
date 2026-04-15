@@ -36,7 +36,7 @@ type BlogEntry = {
     url: string;
 };
 
-const routeApi = getRouteApi("/blog/");
+const routeApi = getRouteApi("/blog/" as "/");
 
 const blogsPerPage = 5; // As per original code context
 const maxLinksToShowInPagination = 5; // Number of direct page links (e.g., 1,2,3,4,5 or 3,4,5,6,7)

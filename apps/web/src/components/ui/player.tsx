@@ -4,7 +4,7 @@ import { Controls, Gesture, MediaPlayer, MediaProvider, PlayButton, Poster, Tool
 import { PauseIcon, PlayIcon } from "@vidstack/react/icons";
 import type { FC } from "react";
 
-const Play = ({ tooltipPlacement }: { tooltipPlacement?: string }) => {
+const Play = ({ tooltipPlacement }: { tooltipPlacement?: any }) => {
     const isPaused = useMediaState("paused");
 
     return (

@@ -21,7 +21,7 @@ const ImageZoom: FC<
 > = ({ classes, ...properties }) => {
     const [isZoomed, setIsZoomed] = useState(false);
 
-    const escFunction = useCallback((event) => {
+    const escFunction = useCallback((event: KeyboardEvent) => {
         if (event.key === "Escape") {
             setIsZoomed(false);
         }
@@ -60,7 +60,7 @@ const ImageZoom: FC<
                             <div className="absolute top-1 right-0 left-0 mx-auto hidden w-8 rounded-md p-2 group-hover:block group-hover:bg-white">
                                 <Minimize2 className="h-4 w-4 text-gray-500" />
                             </div>
-                            <Image {...properties} className={cn("h-full", classes?.zoomImage)} />
+                            <Image {...(properties as any)} className={cn("h-full", classes?.zoomImage)} />
                         </div>
                     </div>
                 </div>
@@ -75,7 +75,7 @@ const ImageZoom: FC<
                     <Maximize2 className="h-4 w-4 text-gray-500" />
                 </div>
                 <div className="rounded-xl bg-gray-500 p-3">
-                    <Image {...properties} className={clsx(classes?.image, "cursor-pointer")} />
+                    <Image {...(properties as any)} className={clsx(classes?.image, "cursor-pointer")} />
                 </div>
             </div>
         </>

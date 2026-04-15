@@ -280,7 +280,7 @@ const Logo = ({ pathname }: { pathname: string }) => {
     return (
         <div className="relative">
             <div className="logo-context-menu" onContextMenu={handleContextMenu}>
-                <Link className="group relative z-20 flex items-center gap-2" to={pathname.startsWith("/docs") ? "/docs" : "/"}>
+                <Link className="group relative z-20 flex items-center gap-2" to={(pathname.startsWith("/docs") ? "/docs/$" : "/") as "/"}>
                     <VisulimaLogo className="h-8 w-8" title="Visulima" />
                     <span className="text-[var(--nav-text-color)] transition-colors hover:[var(--nav-text-color)]/80">
                         {pathname.startsWith("/docs") ? "Documentation" : null}
@@ -395,7 +395,7 @@ const Navbar = () => {
                 }
 
                 if (navReference.current) {
-                    navReference.current.dataset.theme = currentTheme;
+                    (navReference.current as HTMLDivElement).dataset.theme = currentTheme;
                 }
 
                 setScrolled(window.scrollY > 10);
@@ -429,7 +429,7 @@ const Navbar = () => {
                                         item?.classes?.root,
                                     )}
                                 >
-                                    {item.navItems.map((item, index) => {
+                                    {item.navItems.map((item: any, index: number) => {
                                         if (item.navItems) {
                                             return (
                                                 <li key={item.title + index}>
@@ -437,7 +437,7 @@ const Navbar = () => {
                                                         {item.title}
                                                     </h3>
                                                     <ul className="flex flex-col gap-0">
-                                                        {item.navItems.map((item, index2) => (
+                                                        {item.navItems.map((item: any, index2: number) => (
                                                             <ListItem href={item.href} icon={item.icon} key={item.title + index + index2} title={item.title}>
                                                                 {item.description}
                                                             </ListItem>
@@ -470,7 +470,7 @@ const Navbar = () => {
                     <DiscordLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Join our Discord" />
                 </a>
                 {!pathname.startsWith("/docs") && (
-                    <Link className="hidden lg:block bg-coal py-1 px-2 text-white transition-colors hover:text-white/80 rounded-[9px]" to="/docs">
+                    <Link className="hidden lg:block bg-coal py-1 px-2 text-white transition-colors hover:text-white/80 rounded-[9px]" to={"/docs/$" as "/"}>
                         Documentation
                     </Link>
                 )}

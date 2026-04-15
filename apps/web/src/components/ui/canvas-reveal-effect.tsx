@@ -128,7 +128,7 @@ const ShaderMaterial = ({ maxFps = 60, source, uniforms }: { hovered?: boolean; 
         lastFrameTime = timestamp;
 
         const { material } = reference.current;
-        const timeLocation = material.uniforms.u_time;
+        const timeLocation = (material as unknown as { uniforms: { u_time: { value: number } } }).uniforms.u_time;
 
         timeLocation.value = timestamp;
     });
