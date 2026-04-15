@@ -1,3 +1,13 @@
+## @visulima/storage-client [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.10...@visulima/storage-client@1.0.0-alpha.11) (2026-04-15)
+
+### Bug Fixes
+
+* **storage-client:** exclude tests from tsconfig include ([438ab1d](https://github.com/visulima/visulima/commit/438ab1d8da0407e9dfa8010a7ce3446a9c402ba1))
+
+### Code Refactoring
+
+* **storage:** format code with prettier ([21477ce](https://github.com/visulima/visulima/commit/21477ce4354f83f68fbcbd11e07621e3329357e2))
+
 ## @visulima/storage-client [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.9...@visulima/storage-client@1.0.0-alpha.10) (2026-04-08)
 
 ### Bug Fixes
