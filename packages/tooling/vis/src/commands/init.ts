@@ -7,6 +7,7 @@ import type { Command } from "@visulima/cerebro";
 import { findVisConfigFile } from "../config";
 import { info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
+import type { PackageManagerName } from "../security";
 import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
 
 /**
@@ -60,7 +61,7 @@ interface InitOptions {
     staged: boolean;
 }
 
-const generateConfigContent = (pm: string, options: InitOptions): string => {
+const generateConfigContent = (_pm: string, options: InitOptions): string => {
     const sections: string[] = [];
 
     // Security section
@@ -131,7 +132,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             for (const pkg of unapproved) {
                 const answer = await confirm(rl, `    Allow ${pkg}?`, false);
 
-                const pkgName = pkg.split(" (")[0];
+                const pkgName = pkg.split(" (")[0] ?? pkg;
 
                 allowBuilds[pkgName] = answer;
 
@@ -211,7 +212,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Sync to native PM config
     if (syncNative) {
         const approvedBuilds = Object.fromEntries(Object.entries(allowBuilds).filter(([, v]) => v));
-        const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, approvedBuilds);
+        const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, approvedBuilds);
 
         for (const action of actions) {
             success(`  ${action}`);
@@ -242,7 +243,7 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
     info("  Secure defaults applied automatically by defineConfig().");
 
     if (options.syncNative) {
-        const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, {});
+        const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, {});
 
         for (const action of actions) {
             success(`  ${action}`);

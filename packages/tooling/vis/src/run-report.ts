@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
-import type { TaskResult, TaskResults } from "@visulima/task-runner";
+import type { TaskResults } from "@visulima/task-runner";
 
 /**
  * Formats a compact one-line timing summary for display after a run.

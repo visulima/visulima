@@ -235,7 +235,7 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 
 // ── Main audit logic ────────────────────────────────────────────────
 
-const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, logger: Console): Promise<void> => {
+const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, _logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const isJson = (options.format as string) === "json" || Boolean(options.json);
     const showFixes = Boolean(options.fix);

@@ -367,27 +367,6 @@ const scoreColor = (score: number): "green" | "red" | "yellow" => {
     return "red";
 };
 
-/** Maps alert severity to a color name. */
-const alertSeverityColor = (severity: PackageAlert["severity"]): "cyan" | "magenta" | "red" | "yellow" => {
-    switch (severity) {
-        case "critical": {
-            return "red";
-        }
-
-        case "high": {
-            return "magenta";
-        }
-
-        case "medium": {
-            return "yellow";
-        }
-
-        default: {
-            return "cyan";
-        }
-    }
-};
-
 /** Formats a PackageReportData into a compact one-line summary string. */
 const formatReportSummary = (report: PackageReportData): string => {
     const name = getFullPackageName(report);

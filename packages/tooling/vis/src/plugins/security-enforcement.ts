@@ -54,7 +54,7 @@ const resolveInstalledPackages = (workspaceRoot: string): { name: string; versio
             // Fall back to parsing version from range
             const versionMatch = VERSION_REGEX.exec(range);
 
-            if (versionMatch) {
+            if (versionMatch?.[1]) {
                 packages.push({ name, version: versionMatch[1] });
             }
         }

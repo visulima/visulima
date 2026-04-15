@@ -771,7 +771,7 @@ const resolveFileGroupInputs = (
  * default-cache-for-type logic.
  */
 const mergeTarget = (
-    name: string,
+    _name: string,
     scriptCommand: string | undefined,
     projectTarget: VisTargetConfiguration | undefined,
     defaults: Partial<VisTargetConfiguration> | undefined,

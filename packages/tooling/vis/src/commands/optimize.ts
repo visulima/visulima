@@ -5,11 +5,8 @@ import type { Command } from "@visulima/cerebro";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
-// @ts-expect-error -- JSON import
 import microUtilitiesManifest from "module-replacements/manifests/micro-utilities.json" with { type: "json" };
-// @ts-expect-error -- JSON import
 import nativeManifest from "module-replacements/manifests/native.json" with { type: "json" };
-// @ts-expect-error -- JSON import
 import preferredManifest from "module-replacements/manifests/preferred.json" with { type: "json" };
 import React from "react";
 import { coerce } from "semver";
@@ -131,9 +128,9 @@ const buildE18eEntries = (allDeps: Set<string>): OptimizeEntry[] => {
         }
     };
 
-    scanManifest(nativeManifest as E18eManifest, "native");
-    scanManifest(preferredManifest as E18eManifest, "preferred");
-    scanManifest(microUtilitiesManifest as E18eManifest, "micro-utility");
+    scanManifest(nativeManifest as unknown as E18eManifest, "native");
+    scanManifest(preferredManifest as unknown as E18eManifest, "preferred");
+    scanManifest(microUtilitiesManifest as unknown as E18eManifest, "micro-utility");
 
     return entries;
 };

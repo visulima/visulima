@@ -95,6 +95,7 @@ const check: Command = {
             exclude: [...toFilterArray(options.exclude as string | string[] | undefined), ...toFilterArray(configDefaults.exclude)],
             ignore: toFilterArray(configDefaults.ignore),
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...argument],
+            includeLocked: Boolean(options.includeLocked),
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
             security: !options.noSecurity,
             target: target as UpdateTarget,

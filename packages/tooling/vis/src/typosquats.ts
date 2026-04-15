@@ -103,13 +103,13 @@ export const generateVariants = (name: string): Set<string> => {
             if (!isSeparator && !nextIsSeparator) {
                 const chars = name.split("");
 
-                [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
+                [chars[i], chars[i + 1]] = [chars[i + 1] as string, chars[i] as string];
                 variants.add(chars.join(""));
             }
         }
 
         // Homoglyph substitution
-        const ch = name[i].toLowerCase();
+        const ch = (name[i] as string).toLowerCase();
         const subs = SUBSTITUTIONS[ch];
 
         if (subs) {
