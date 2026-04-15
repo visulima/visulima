@@ -157,7 +157,7 @@ const ToolbarContainer = ({
     // ─── Pinned tooltips + localStorage persistence ───────────────────────────
     // Latest dragged positions per pin id — updated by card on drag-end.
     // Using a ref avoids stale closures without re-renders.
-    const pinPositionsRef = useRef(new Map());
+    const pinPositionsRef = useRef(new Map<string, { x: number; y: number }>());
 
     const savePins = useCallback((pins: PinnedTooltip[]): void => {
         try {
