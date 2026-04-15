@@ -9031,6 +9031,10 @@ importers:
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.3(@types/node@25.6.0)(typescript@6.0.2))(vite@8.0.8(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/tooling/secret-scanner:
+    dependencies:
+      ignore:
+        specifier: ^7.0.5
+        version: 7.0.5
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -9065,9 +9069,15 @@ importers:
       '@visulima/find-cache-dir':
         specifier: workspace:*
         version: link:../../filesystem/find-cache-dir
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.61(3b9e4a213e0059119c7a1fdde2b77656)
+      '@visulima/path':
+        specifier: workspace:*
+        version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.4(@vitest/browser@4.1.4)(vitest@4.1.4)
@@ -9098,6 +9108,9 @@ importers:
       semantic-release:
         specifier: catalog:cli
         version: 25.0.3(typescript@6.0.2)
+      smol-toml:
+        specifier: ^1.5.0
+        version: 1.6.1
       typescript:
         specifier: catalog:tsc
         version: 6.0.2
