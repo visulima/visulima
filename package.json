@@ -23,6 +23,7 @@
         "build": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=build --all --parallel",
         "build:affected:packages": "nx affected --target=build --exclude=*-bench,storybook,shared-utils --nxBail",
         "build:affected:prod:packages": "nx affected --target=build:prod --exclude=*-bench,storybook,shared-utils --nxBail",
+        "build:native:packages": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=build:native --parallel --projects=tag:type:package",
         "build:packages": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=build --parallel --projects=tag:type:package",
         "build:packages:prod": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=build:prod --parallel --projects=tag:type:package",
         "build:storybook": "pnpm run --filter \"storybook\" build",
