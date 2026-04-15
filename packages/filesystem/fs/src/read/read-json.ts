@@ -70,7 +70,7 @@ async function readJson<T extends JsonValue>(path: URL | string, reviver: JsonRe
         data = beforeParse(data);
     }
 
-    return parseJson<T>(data, reviver, toPath(path), { color });
+    return parseJson(data, reviver, toPath(path), { color }) as T;
 }
 
 export default readJson;
