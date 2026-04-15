@@ -44,7 +44,9 @@ export interface Screen {
 
 export const createScreen = (lastFrame: () => string | undefined, allFrames: ReadonlyArray<string>): Screen => {
     const clean = (s: string | undefined): string => {
-        if (s === undefined) return "";
+        if (s === undefined) {
+            return "";
+        }
 
         return strip(s);
     };

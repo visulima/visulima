@@ -48,7 +48,8 @@ const App = () => {
 
             {selected && (
                 <Text>
-                    Selected:{" "}
+                    Selected:
+                    {" "}
                     <Text bold color="yellow">
                         {selected}
                     </Text>

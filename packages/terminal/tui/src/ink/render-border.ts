@@ -86,9 +86,9 @@ const buildBorderWithTitle = (
     const rightFill = middleWidth - leftFill;
 
     return (
-        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim) +
-        leftTitle +
-        stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
+        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim)
+        + leftTitle
+        + stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
     );
 };
 
