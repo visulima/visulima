@@ -172,7 +172,7 @@ const SelectValue = ({ class: className, options, placeholder = "Select…" }: S
 
 const getOptionElements = (list: HTMLElement): HTMLElement[] => [...list.querySelectorAll<HTMLElement>("[role='option']:not([aria-disabled='true'])")];
 
-const getOptionValue = (element: HTMLElement): string | null => element.dataset.value;
+const getOptionValue = (element: HTMLElement): string | null => element.dataset.value ?? null;
 
 // ─── Content (dropdown) ─────────────────────────────────────────────────────────
 

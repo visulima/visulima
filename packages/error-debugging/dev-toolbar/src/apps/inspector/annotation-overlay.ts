@@ -1676,7 +1676,9 @@ const parseInlineStyle = (css: string): Record<string, string> => {
 // ─── Annotation detail popup ─────────────────────────────────────────────────
 
 const removeAnnotationDetail = (): void => {
-    const element = document.querySelector(`#${DETAIL_ID}`);
+    const element = document.querySelector(`#${DETAIL_ID}`) as
+        | (Element & { __cleanup?: () => void; __resizeObserver?: ResizeObserver; annotationId?: string })
+        | null;
 
     // Unmark the marker
     if (element?.annotationId) {
