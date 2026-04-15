@@ -77,8 +77,8 @@ const parseNpmLockfile = (content: string): Map<string, string> => {
                 const name = extractPackageName(path);
 
                 if (
-                    name && // Use the first (top-level) occurrence
-                    !versions.has(name)
+                    name // Use the first (top-level) occurrence
+                    && !versions.has(name)
                 ) {
                     versions.set(name, entry.version);
                 }
@@ -178,8 +178,8 @@ const parseYarnLockfile = (content: string): Map<string, string> => {
     //     version: 1.2.3
 
     /* eslint-disable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
-    const entryRegex =
-        /^["']?(?:@([^/@"']+)\/)?([^@"']+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+version:?\s+"?([^"\n]+)"?/gm;
+    const entryRegex
+        = /^["']?(?:@([^/@"']+)\/)?([^@"']+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+version:?\s+"?([^"\n]+)"?/gm;
     /* eslint-enable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
     let match: RegExpExecArray | undefined;
 
