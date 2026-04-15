@@ -1,3 +1,17 @@
+## @visulima/fs [5.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.7...@visulima/fs@5.0.0-alpha.8) (2026-04-15)
+
+### Bug Fixes
+
+* **filesystem:** resolve eslint issues in fs, path, and find-cache-dir ([59ad5e3](https://github.com/visulima/visulima/commit/59ad5e3051e92365eb8b1fdd73d4f4fd1f4bb547))
+* **fs:** narrow walk directory type and drop unsupported parseJson generic ([2f709ba](https://github.com/visulima/visulima/commit/2f709ba9aab0ca24d56a9a1bb0d10c35bbd7505a))
+* **fs:** relax no-unsafe-* rules and remove stale disable comments ([d49d900](https://github.com/visulima/visulima/commit/d49d9002bf0e07b420833531a22490c088384509))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.9
+* **@visulima/error:** upgraded to 6.0.0-alpha.9
+
 ## @visulima/fs [5.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.6...@visulima/fs@5.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes
