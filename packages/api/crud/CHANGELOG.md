@@ -1,3 +1,15 @@
+## @visulima/crud [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.9...@visulima/crud@3.0.0-alpha.10) (2026-04-15)
+
+### Bug Fixes
+
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.10
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/crud [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.8...@visulima/crud@3.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
