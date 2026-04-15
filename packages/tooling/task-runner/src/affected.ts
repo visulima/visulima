@@ -81,8 +81,8 @@ const findProjectForFile = (filePath: string, projects: Record<string, ProjectCo
 
         // Check if file is within this project's root
         if (
-            (filePath.startsWith(`${root}/`) || filePath === root) // Prefer the most specific (longest) match
-            && root.length > bestLength
+            (filePath.startsWith(`${root}/`) || filePath === root) && // Prefer the most specific (longest) match
+            root.length > bestLength
         ) {
             bestMatch = name;
             bestLength = root.length;
