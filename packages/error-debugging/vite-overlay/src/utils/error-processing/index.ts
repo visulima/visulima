@@ -26,7 +26,7 @@ const HTTP_ORIGIN_RE = /^https?:\/\/[^/]+/;
 const LEADING_SLASH_RE = /^\//;
 
 const HTML_ENTITIES: Record<string, string> = {
-    '"': "&quot;",
+    "\"": "&quot;",
     "&": "&amp;",
     "'": "&#39;",
     "<": "&lt;",
@@ -64,7 +64,6 @@ const extractIndividualErrors = (error: Error): Error[] => {
  * @returns Object containing compiled file path, line, and column information
  */
 const extractLocationFromStack = (error: Error) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const traces = parseStacktrace(error, { frameLimit: 10 }) as unknown as { column?: number; file?: string; line?: number }[];
 
     const httpTrace = traces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
@@ -298,8 +297,8 @@ const buildExtendedErrorData = async (
     const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
-    const isReactHydrationError =
-        framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
+    const isReactHydrationError
+        = framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
 
     let causeQuery = "";
 
@@ -307,7 +306,6 @@ const buildExtendedErrorData = async (
         for (const allError of allErrors.slice(1)) {
             const causeStack = allError.stack || "";
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 }) as unknown as { file?: string }[];
 
             const causeHttpTrace = causeTraces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
@@ -432,16 +430,15 @@ const buildExtendedErrorData = async (
     let sourceFilePath = viteErrorData?.file || compiledFilePath;
 
     if (!viteErrorData?.file && primaryError.stack) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const traces = parseStacktrace(primaryError, { frameLimit: 10 }) as unknown as { file?: string }[];
 
         const sourceTrace = traces?.find(
             (trace: { file?: string }) =>
-                trace?.file &&
-                !trace.file.startsWith("http") &&
-                !trace.file.includes("node_modules") &&
-                !trace.file.includes(".vite") &&
-                trace.file.includes(".tsx"),
+                trace?.file
+                && !trace.file.startsWith("http")
+                && !trace.file.includes("node_modules")
+                && !trace.file.includes(".vite")
+                && trace.file.includes(".tsx"),
         );
 
         if (sourceTrace?.file) {
@@ -571,21 +568,21 @@ const buildExtendedErrorData = async (
                 const columnIndex = Math.max(0, compiledColumn - 1);
                 const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
 
-                const hasErrorPattern =
-                    textAtLocation.has("new Error(") ||
-                    textAtLocation.has("throw new Error") ||
-                    textAtLocation.has("throw ") ||
-                    textAtLocation.has(errorMessage.slice(0, 20));
+                const hasErrorPattern
+                    = textAtLocation.has("new Error(")
+                        || textAtLocation.has("throw new Error")
+                        || textAtLocation.has("throw ")
+                        || textAtLocation.has(errorMessage.slice(0, 20));
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
-                    const isCompiledFramework =
-                        originalFilePath.includes(".svelte") ||
-                        originalFilePath.includes(".vue") ||
-                        originalFilePath.includes(".astro") ||
-                        compiledFilePath.includes(".js") ||
-                        compiledFilePath.includes(".ts");
+                    const isCompiledFramework
+                        = originalFilePath.includes(".svelte")
+                            || originalFilePath.includes(".vue")
+                            || originalFilePath.includes(".astro")
+                            || compiledFilePath.includes(".js")
+                            || compiledFilePath.includes(".ts");
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;
@@ -655,9 +652,8 @@ const buildExtendedErrorData = async (
         compiledColumn,
         compiledFilePath,
         compiledLine,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+
         compiledStack: formatStacktrace(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             parseStacktrace({
                 message: cleanMessage,
                 name: primaryError.name,
