@@ -123,7 +123,9 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
 
         renderRows = Math.min(reservedRows, termRows);
 
-        if (process.stdin.isTTY) process.stdin.setRawMode(true);
+        if (process.stdin.isTTY) {
+            process.stdin.setRawMode(true);
+        }
 
         process.stdin.resume();
         process.stdin.setEncoding("utf8");
@@ -180,7 +182,9 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
             write(cursorShow);
         }
 
-        if (process.stdin.isTTY) process.stdin.setRawMode(false);
+        if (process.stdin.isTTY) {
+            process.stdin.setRawMode(false);
+        }
 
         process.stdin.pause();
         process.exit(0);

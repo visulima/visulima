@@ -180,7 +180,7 @@ const TableComponent = <T extends ScalarDict>({
         }
 
         // Resolve border style
-        const border = typeof borderStyle === "string" ? (BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER) : borderStyle;
+        const border = typeof borderStyle === "string" ? BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER : borderStyle;
 
         // Build column widths array (undefined entries let tabular auto-calculate)
         const columnWidths: (number | undefined)[] = resolvedColumns.map((col) => col.width);

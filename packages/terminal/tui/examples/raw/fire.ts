@@ -128,7 +128,9 @@ function paint(buf: Uint32Array, w: number, h: number, _frame: number) {
         for (let x = 0; x < w; x++) {
             const heat = fire[y * w + x]!;
 
-            if (heat === 0) continue; // cold cells stay blank
+            if (heat === 0) {
+                continue;
+            } // cold cells stay blank
 
             const fg = PALETTE[heat]!;
 

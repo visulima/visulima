@@ -24,25 +24,25 @@ export type State<T> = {
 
 // ─── Actions ────────────────────────────────────────────────────────────────
 
-export type Action<T> =
-    | { nodeId: string; type: "collapse-node" }
-    | { nodeId: string; type: "expand-node" }
-    | { nodeId: string; type: "set-children-error" }
-    | { children: TreeNode<T>[]; parentId: string; type: "insert-children" }
-    | { isLoading: boolean; nodeId: string; type: "set-loading" }
-    | { state: State<T>; type: "reset" }
-    | { type: "collapse" }
-    | { type: "collapse-all" }
-    | { type: "expand" }
-    | { type: "expand-all" }
-    | { type: "focus-first" }
-    | { type: "focus-first-child" }
-    | { type: "focus-last" }
-    | { type: "focus-next" }
-    | { type: "focus-parent" }
-    | { type: "focus-previous" }
-    | { type: "select" }
-    | { type: "toggle-expanded" };
+export type Action<T>
+    = | { nodeId: string; type: "collapse-node" }
+        | { nodeId: string; type: "expand-node" }
+        | { nodeId: string; type: "set-children-error" }
+        | { children: TreeNode<T>[]; parentId: string; type: "insert-children" }
+        | { isLoading: boolean; nodeId: string; type: "set-loading" }
+        | { state: State<T>; type: "reset" }
+        | { type: "collapse" }
+        | { type: "collapse-all" }
+        | { type: "expand" }
+        | { type: "expand-all" }
+        | { type: "focus-first" }
+        | { type: "focus-first-child" }
+        | { type: "focus-last" }
+        | { type: "focus-next" }
+        | { type: "focus-parent" }
+        | { type: "focus-previous" }
+        | { type: "select" }
+        | { type: "toggle-expanded" };
 
 // ─── Index helper ──────────────────────────────────────────────────────────
 

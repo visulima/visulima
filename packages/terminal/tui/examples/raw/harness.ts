@@ -58,7 +58,9 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
 
         running = false;
 
-        if (timer) clearInterval(timer);
+        if (timer) {
+            clearInterval(timer);
+        }
 
         // Restore Node's stream raw mode before guard.leave() restores OS flags
         try {
@@ -79,7 +81,9 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
         process.stdin.setRawMode?.(true);
         process.stdin.resume();
         process.stdin.on("data", (data: Buffer) => {
-            if (data[0] === 3) stop(); // ETX = Ctrl+C
+            if (data[0] === 3) {
+                stop();
+            } // ETX = Ctrl+C
         });
 
         process.on("SIGINT", stop);

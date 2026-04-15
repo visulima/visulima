@@ -30,9 +30,13 @@ const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { disableFocus, enableFocus, focusNext, focusPrevious } = useFocusManager();
 
     useInput((_input, key) => {
-        if (key.tab && !key.shift) focusNext();
+        if (key.tab && !key.shift) {
+            focusNext();
+        }
 
-        if (key.tab && key.shift) focusPrevious();
+        if (key.tab && key.shift) {
+            focusPrevious();
+        }
 
         if (key.escape) {
             disableFocus();
@@ -290,9 +294,13 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
 
     // Flush buffered stdout/stderr after the inline region is gone
     process.on("exit", () => {
-        if (stdoutLines.length > 0) process.stdout.write(stdoutLines.join(""));
+        if (stdoutLines.length > 0) {
+            process.stdout.write(stdoutLines.join(""));
+        }
 
-        if (stderrLines.length > 0) process.stderr.write(stderrLines.join(""));
+        if (stderrLines.length > 0) {
+            process.stderr.write(stderrLines.join(""));
+        }
 
         resolveExit();
     });

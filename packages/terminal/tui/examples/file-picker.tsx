@@ -22,7 +22,8 @@ const App = () => {
             />
             {selectedPath && (
                 <Text>
-                    Selected:{" "}
+                    Selected:
+                    {" "}
                     <Text bold color="green">
                         {selectedPath}
                     </Text>

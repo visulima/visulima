@@ -302,9 +302,13 @@ function paintBorder(
     const yEnd = canShowBottom ? h - 1 : h;
 
     for (let y = yStart; y < yEnd; y++) {
-        if (showLeft) writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        if (showLeft) {
+            writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        }
 
-        if (showRight) writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        if (showRight) {
+            writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        }
     }
 }
 
@@ -370,7 +374,9 @@ function paintText(
             cursorY++;
         }
 
-        if (cursorY >= h) break;
+        if (cursorY >= h) {
+            break;
+        }
 
         // Wide character that can't fit even on an empty line — replace with space
         // to avoid writing a half-glyph without its continuation cell.

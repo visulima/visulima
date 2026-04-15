@@ -33,32 +33,34 @@ const App = () => {
             </Text>
             <Text dim>↑/↓ navigate · Space toggle · a all · Enter submit · Esc quit</Text>
 
-            {submitted === undefined ? (
-                <Box flexDirection="column" gap={1}>
-                    <MultiSelect
-                        onChange={setSelected}
-                        onSubmit={setSubmitted}
-                        options={[
-                            { label: "Red", value: "red" },
-                            { label: "Green", value: "green" },
-                            { label: "Yellow", value: "yellow" },
-                            { label: "Blue", value: "blue" },
-                            { label: "Magenta", value: "magenta" },
-                            { label: "Cyan", value: "cyan" },
-                            { label: "White", value: "white" },
-                        ]}
-                    />
-                    <Text>
-                        Selected:
-                        {selected.join(", ") || "(none)"}
+            {submitted === undefined
+                ? (
+                    <Box flexDirection="column" gap={1}>
+                        <MultiSelect
+                            onChange={setSelected}
+                            onSubmit={setSubmitted}
+                            options={[
+                                { label: "Red", value: "red" },
+                                { label: "Green", value: "green" },
+                                { label: "Yellow", value: "yellow" },
+                                { label: "Blue", value: "blue" },
+                                { label: "Magenta", value: "magenta" },
+                                { label: "Cyan", value: "cyan" },
+                                { label: "White", value: "white" },
+                            ]}
+                        />
+                        <Text>
+                            Selected:
+                            {selected.join(", ") || "(none)"}
+                        </Text>
+                    </Box>
+                )
+                : (
+                    <Text color="green">
+                        Submitted:
+                        {submitted.join(", ")}
                     </Text>
-                </Box>
-            ) : (
-                <Text color="green">
-                    Submitted:
-                    {submitted.join(", ")}
-                </Text>
-            )}
+                )}
         </Box>
     );
 };
