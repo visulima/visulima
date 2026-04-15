@@ -31,6 +31,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should hash all files in a directory", async () => {
+        expect.assertions(3);
+
         const hasher = new IncrementalFileHasher({
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
             workspaceRoot,
@@ -44,6 +46,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should reuse cached hashes for unchanged files", async () => {
+        expect.assertions(1);
+
         const hasher = new IncrementalFileHasher({
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
             workspaceRoot,
@@ -55,10 +59,12 @@ describe(IncrementalFileHasher, () => {
         // Second hash (warm, should reuse mtime-based cache)
         const hashes2 = await hasher.hashDirectory(join(workspaceRoot, "src"));
 
-        expect(hashes1).toEqual(hashes2);
+        expect(hashes1).toStrictEqual(hashes2);
     });
 
     it("should detect file content changes via mtime", async () => {
+        expect.assertions(2);
+
         const hasher = new IncrementalFileHasher({
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
             workspaceRoot,
@@ -80,6 +86,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should persist and restore snapshot to disk", async () => {
+        expect.assertions(2);
+
         const snapshotPath = join(workspaceRoot, ".cache", "snapshot.json");
 
         const hasher1 = new IncrementalFileHasher({
@@ -103,6 +111,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should handle new files appearing", async () => {
+        expect.assertions(3);
+
         const hasher = new IncrementalFileHasher({
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
             workspaceRoot,
@@ -122,6 +132,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should handle file deletions", async () => {
+        expect.assertions(3);
+
         const hasher = new IncrementalFileHasher({
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
             workspaceRoot,
@@ -141,6 +153,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should skip ignored directories", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "node_modules/pkg"), { recursive: true });
         await writeFile(join(workspaceRoot, "node_modules/pkg/index.js"), "module.exports = {}");
 
@@ -152,6 +166,8 @@ describe(IncrementalFileHasher, () => {
     });
 
     it("should clear the snapshot", async () => {
+        expect.assertions(2);
+
         const hasher = new IncrementalFileHasher({ workspaceRoot });
 
         await hasher.hashDirectory(join(workspaceRoot, "src"));

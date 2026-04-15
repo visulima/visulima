@@ -30,6 +30,8 @@ describe(Cache, () => {
 
     describe("put and get", () => {
         it("should store and retrieve a cache entry", async () => {
+            expect.assertions(4);
+
             await cache.put("abc123", "build output", [], 0);
 
             const result = await cache.get("abc123");
@@ -44,12 +46,16 @@ describe(Cache, () => {
         });
 
         it("should return null for non-existent entry", async () => {
+            expect.assertions(1);
+
             const result = await cache.get("nonexistent");
 
             expect(result).toBeUndefined();
         });
 
         it("should store fingerprint data when provided", async () => {
+            expect.assertions(1);
+
             const fingerprint = {
                 commandHash: "cmdhash",
                 directoryListings: {},
@@ -62,10 +68,12 @@ describe(Cache, () => {
 
             const result = await cache.get("fp123");
 
-            expect(result?.fingerprint).toEqual(fingerprint);
+            expect(result?.fingerprint).toStrictEqual(fingerprint);
         });
 
         it("should not return entry without .commit marker", async () => {
+            expect.assertions(1);
+
             // Manually create an incomplete entry
             const entryDirectory = join(cache.cacheDirectory, "incomplete");
 
@@ -80,6 +88,8 @@ describe(Cache, () => {
         });
 
         it("should overwrite existing entry", async () => {
+            expect.assertions(1);
+
             await cache.put("hash1", "first output", [], 0);
             await cache.put("hash1", "second output", [], 0);
 
@@ -91,6 +101,8 @@ describe(Cache, () => {
 
     describe("output archiving and restoration", () => {
         it("should archive and restore output files", async () => {
+            expect.assertions(2);
+
             // Create an output file
             const outputDirectory = join(workspaceRoot, "dist");
 
@@ -114,6 +126,8 @@ describe(Cache, () => {
         });
 
         it("should return true when no outputs to restore", async () => {
+            expect.assertions(1);
+
             await cache.put("noout", "output", [], 0);
 
             const restored = await cache.restoreOutputs("noout", ["dist"]);
@@ -124,6 +138,8 @@ describe(Cache, () => {
 
     describe("task index", () => {
         it("should store and retrieve task ID to hash mapping", async () => {
+            expect.assertions(2);
+
             await cache.put("hash1", "output", [], 0);
             await cache.setTaskIndex("project:build", "hash1");
 
@@ -135,12 +151,16 @@ describe(Cache, () => {
         });
 
         it("should return null for unknown task ID", async () => {
+            expect.assertions(1);
+
             const result = await cache.getByTaskId("unknown:task");
 
             expect(result).toBeUndefined();
         });
 
         it("should update existing task index entry", async () => {
+            expect.assertions(2);
+
             await cache.put("hash1", "output1", [], 0);
             await cache.put("hash2", "output2", [], 0);
             await cache.setTaskIndex("project:build", "hash1");
@@ -156,6 +176,8 @@ describe(Cache, () => {
 
     describe("removeOldEntries", () => {
         it("should remove entries older than maxCacheAge", async () => {
+            expect.assertions(1);
+
             const shortCache = new Cache({
                 maxCacheAge: 1, // 1ms - everything is old
                 workspaceRoot,
@@ -178,6 +200,8 @@ describe(Cache, () => {
 
     describe("maxCacheSize enforcement", () => {
         it("should evict oldest entries when over size limit", async () => {
+            expect.assertions(1);
+
             const smallCache = new Cache({
                 maxCacheSize: "1KB", // Very small
                 workspaceRoot,
@@ -213,6 +237,8 @@ describe(Cache, () => {
 
     describe("clear", () => {
         it("should remove the entire cache directory", async () => {
+            expect.assertions(1);
+
             await cache.put("entry1", "output", [], 0);
             await cache.clear();
 
@@ -225,44 +251,54 @@ describe(Cache, () => {
 
 describe(parseCacheSize, () => {
     it("should parse KB", () => {
+        expect.assertions(1);
         expect(parseCacheSize("100KB")).toBe(100 * 1024);
     });
 
     it("should parse MB", () => {
+        expect.assertions(1);
         expect(parseCacheSize("500MB")).toBe(500 * 1024 * 1024);
     });
 
     it("should parse GB", () => {
+        expect.assertions(1);
         expect(parseCacheSize("1GB")).toBe(1024 * 1024 * 1024);
     });
 
     it("should parse decimal values", () => {
+        expect.assertions(1);
         expect(parseCacheSize("1.5GB")).toBe(1.5 * 1024 * 1024 * 1024);
     });
 
     it("should be case insensitive", () => {
+        expect.assertions(1);
         expect(parseCacheSize("500mb")).toBe(500 * 1024 * 1024);
     });
 
     it("should throw on invalid format", () => {
+        expect.assertions(1);
         expect(() => parseCacheSize("invalid")).toThrow("Invalid cache size format");
     });
 });
 
 describe(formatCacheSize, () => {
     it("should format bytes", () => {
+        expect.assertions(1);
         expect(formatCacheSize(500)).toBe("500.0Bytes");
     });
 
     it("should format KB", () => {
+        expect.assertions(1);
         expect(formatCacheSize(2048)).toBe("2.0KB");
     });
 
     it("should format MB", () => {
+        expect.assertions(1);
         expect(formatCacheSize(5 * 1024 * 1024)).toBe("5.0MB");
     });
 
     it("should format GB", () => {
+        expect.assertions(1);
         expect(formatCacheSize(2 * 1024 * 1024 * 1024)).toBe("2.0GB");
     });
 });

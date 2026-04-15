@@ -322,7 +322,7 @@ const spawnCommandPty = (
         cwd: config.cwd ?? process.cwd(),
         env: Object.fromEntries(
             Object.entries({ ...process.env, ...config.env, FORCE_COLOR: process.env["FORCE_COLOR"] ?? "1", TERM: "xterm-256color" }).filter(
-                (entry): entry is [string, string] => entry[1] !== undefined,
+                (entry): entry is [string, string] => typeof entry[1] === "string",
             ),
         ),
         name: "xterm-256color",

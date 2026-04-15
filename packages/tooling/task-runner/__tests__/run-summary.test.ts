@@ -44,6 +44,8 @@ const createResult = (task: Task, status: TaskResult["status"], overrides: Parti
 
 describe(generateRunSummary, () => {
     it("should generate a complete summary from task results", () => {
+        expect.assertions(10);
+
         const taskA = createTask("app:build", { hash: "abc123" });
         const taskB = createTask("lib:build", { hash: "def456" });
 
@@ -74,6 +76,8 @@ describe(generateRunSummary, () => {
     });
 
     it("should track correct cache status", () => {
+        expect.assertions(7);
+
         const taskA = createTask("app:build");
         const taskB = createTask("lib:build");
         const taskC = createTask("api:build");
@@ -120,6 +124,8 @@ describe(generateRunSummary, () => {
     });
 
     it("should include task dependencies", () => {
+        expect.assertions(1);
+
         const taskA = createTask("app:build");
         const taskB = createTask("lib:build");
 
@@ -137,10 +143,12 @@ describe(generateRunSummary, () => {
         const summary = generateRunSummary(results, taskGraph, Date.now());
         const appSummary = summary.tasks.find((t) => t.taskId === "app:build");
 
-        expect(appSummary?.dependencies).toEqual(["lib:build"]);
+        expect(appSummary?.dependencies).toStrictEqual(["lib:build"]);
     });
 
     it("should include environment info", () => {
+        expect.assertions(3);
+
         const results: TaskResults = new Map();
         const taskGraph: TaskGraph = {
             dependencies: {},
@@ -156,6 +164,8 @@ describe(generateRunSummary, () => {
     });
 
     it("should include hash details when available", () => {
+        expect.assertions(3);
+
         const task = createTask("app:build", {
             hash: "abc123",
             hashDetails: {
@@ -182,6 +192,8 @@ describe(generateRunSummary, () => {
     });
 
     it("should handle skipped tasks (dry-run)", () => {
+        expect.assertions(2);
+
         const task = createTask("app:build");
 
         const results: TaskResults = new Map([["app:build", createResult(task, "skipped")]]);
@@ -199,6 +211,8 @@ describe(generateRunSummary, () => {
     });
 
     it("should calculate task duration", () => {
+        expect.assertions(1);
+
         const now = Date.now();
         const task = createTask("app:build");
         const result = createResult(task, "success", {
@@ -232,6 +246,8 @@ describe(writeRunSummary, () => {
     });
 
     it("should write summary to .task-runner/runs/ directory", async () => {
+        expect.assertions(3);
+
         const summary: RunSummary = {
             duration: 1000,
             endTime: new Date().toISOString(),
@@ -259,6 +275,8 @@ describe(writeRunSummary, () => {
     });
 
     it("should create the runs directory if it does not exist", async () => {
+        expect.assertions(1);
+
         const summary: RunSummary = {
             duration: 500,
             endTime: new Date().toISOString(),
@@ -283,6 +301,8 @@ describe(writeRunSummary, () => {
     });
 
     it("should write valid JSON with pretty formatting", async () => {
+        expect.assertions(4);
+
         const summary: RunSummary = {
             duration: 2000,
             endTime: new Date().toISOString(),

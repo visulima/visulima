@@ -9,7 +9,7 @@ import { EmptyLifeCycle } from "../src/life-cycle";
 import { InProcessTaskHasher } from "../src/task-hasher";
 import { TaskOrchestrator } from "../src/task-orchestrator";
 import { TaskScheduler } from "../src/task-scheduler";
-import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph } from "../src/types";
+import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskResult, TaskStatus } from "../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -93,6 +93,8 @@ describe(TaskOrchestrator, () => {
     };
 
     it("should execute a simple task", async () => {
+        expect.assertions(3);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -120,6 +122,8 @@ describe(TaskOrchestrator, () => {
     });
 
     it("should cache successful results", async () => {
+        expect.assertions(3);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -152,6 +156,8 @@ describe(TaskOrchestrator, () => {
     });
 
     it("should not cache failed tasks", async () => {
+        expect.assertions(1);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -181,6 +187,8 @@ describe(TaskOrchestrator, () => {
     });
 
     it("should skip cache when skipCache is true", async () => {
+        expect.assertions(1);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -210,6 +218,8 @@ describe(TaskOrchestrator, () => {
     });
 
     it("should handle executor errors gracefully", async () => {
+        expect.assertions(2);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -231,6 +241,8 @@ describe(TaskOrchestrator, () => {
     });
 
     it("should execute tasks with auto-fingerprint mode", async () => {
+        expect.assertions(1);
+
         const task: Task = {
             id: "app:build",
             outputs: [],
@@ -255,6 +267,8 @@ describe(TaskOrchestrator, () => {
 
     describe("signal handling", () => {
         it("should stop processing on SIGINT", async () => {
+            expect.assertions(2);
+
             const task1: Task = {
                 id: "app:build",
                 outputs: [],
@@ -299,6 +313,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should clean up signal listeners after run", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -319,6 +335,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should clean up signal listeners even when tasks fail", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -345,6 +363,8 @@ describe(TaskOrchestrator, () => {
 
     describe("lifecycle hooks", () => {
         it("should call startCommand and endCommand", async () => {
+            expect.assertions(2);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -354,8 +374,8 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                endCommand: vi.fn(),
-                startCommand: vi.fn(),
+                endCommand: vi.fn<() => void>(),
+                startCommand: vi.fn<() => void>(),
             };
 
             const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
@@ -367,6 +387,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should call endCommand even when task fails", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -376,8 +398,8 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                endCommand: vi.fn(),
-                startCommand: vi.fn(),
+                endCommand: vi.fn<() => void>(),
+                startCommand: vi.fn<() => void>(),
             };
 
             const executor: TaskExecutor = async () => {
@@ -392,6 +414,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should call scheduleTask for each task", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -401,7 +425,7 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                scheduleTask: vi.fn(),
+                scheduleTask: vi.fn<(task: Task) => void>(),
             };
 
             const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
@@ -412,6 +436,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should call startTasks and endTasks", async () => {
+            expect.assertions(2);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -421,8 +447,8 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                endTasks: vi.fn(),
-                startTasks: vi.fn(),
+                endTasks: vi.fn<(taskResults: TaskResult[]) => void>(),
+                startTasks: vi.fn<(tasks: Task[]) => void>(),
             };
 
             const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
@@ -441,6 +467,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should call printTaskTerminalOutput for tasks with output", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -450,7 +478,7 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                printTaskTerminalOutput: vi.fn(),
+                printTaskTerminalOutput: vi.fn<(task: Task, status: TaskStatus, terminalOutput: string) => void>(),
             };
 
             const executor: TaskExecutor = async () => {
@@ -468,6 +496,8 @@ describe(TaskOrchestrator, () => {
         });
 
         it("should report failure status in lifecycle hooks", async () => {
+            expect.assertions(1);
+
             const task: Task = {
                 id: "app:build",
                 outputs: [],
@@ -477,7 +507,7 @@ describe(TaskOrchestrator, () => {
             };
 
             const lifeCycle: LifeCycleInterface = {
-                endTasks: vi.fn(),
+                endTasks: vi.fn<(taskResults: TaskResult[]) => void>(),
             };
 
             const executor: TaskExecutor = async () => {

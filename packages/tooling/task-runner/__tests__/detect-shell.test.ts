@@ -9,6 +9,8 @@ describe(detectScriptShell, () => {
     });
 
     it("should return undefined when no script-shell is configured", () => {
+        expect.assertions(1);
+
         delete process.env["npm_config_script_shell"];
         resetShellCache();
 
@@ -20,6 +22,8 @@ describe(detectScriptShell, () => {
     });
 
     it("should detect script-shell from npm_config_script_shell env var", () => {
+        expect.assertions(1);
+
         process.env["npm_config_script_shell"] = "/usr/bin/bash";
         resetShellCache();
 
@@ -29,6 +33,8 @@ describe(detectScriptShell, () => {
     });
 
     it("should cache the result after first call", () => {
+        expect.assertions(2);
+
         process.env["npm_config_script_shell"] = "/bin/zsh";
         resetShellCache();
 
@@ -43,6 +49,8 @@ describe(detectScriptShell, () => {
     });
 
     it("should reset cache with resetShellCache", () => {
+        expect.assertions(1);
+
         process.env["npm_config_script_shell"] = "/bin/zsh";
         resetShellCache();
 

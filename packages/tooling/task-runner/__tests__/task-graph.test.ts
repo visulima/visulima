@@ -5,16 +5,20 @@ import type { ProjectGraph, Task, WorkspaceConfiguration } from "../src/types";
 
 describe(getTaskId, () => {
     it("should create task ID from project and target", () => {
+        expect.assertions(1);
         expect(getTaskId({ project: "app", target: "build" })).toBe("app:build");
     });
 
     it("should include configuration in task ID", () => {
+        expect.assertions(1);
         expect(getTaskId({ configuration: "prod", project: "app", target: "build" })).toBe("app:build:prod");
     });
 });
 
 describe(parseTaskId, () => {
     it("should parse a basic task ID", () => {
+        expect.assertions(3);
+
         const result = parseTaskId("app:build");
 
         expect(result.project).toBe("app");
@@ -23,6 +27,8 @@ describe(parseTaskId, () => {
     });
 
     it("should parse task ID with configuration", () => {
+        expect.assertions(3);
+
         const result = parseTaskId("app:build:prod");
 
         expect(result.project).toBe("app");
@@ -31,6 +37,7 @@ describe(parseTaskId, () => {
     });
 
     it("should throw on invalid task ID", () => {
+        expect.assertions(1);
         expect(() => parseTaskId("invalid")).toThrow("Invalid task ID");
     });
 });
@@ -84,6 +91,8 @@ describe(createTaskGraph, () => {
     };
 
     it("should create a task graph with dependencies", () => {
+        expect.assertions(3);
+
         const appBuild: Task = {
             id: "app:build",
             outputs: ["apps/app/dist"],
@@ -100,6 +109,8 @@ describe(createTaskGraph, () => {
     });
 
     it("should resolve dependency ordering", () => {
+        expect.assertions(2);
+
         const appBuild: Task = {
             id: "app:build",
             outputs: [],
@@ -115,6 +126,8 @@ describe(createTaskGraph, () => {
     });
 
     it("should handle same-project dependencies", () => {
+        expect.assertions(1);
+
         const workspaceWithSelf: WorkspaceConfiguration = {
             projects: {
                 app: {
@@ -150,6 +163,8 @@ describe(createTaskGraph, () => {
     });
 
     it("should identify root tasks", () => {
+        expect.assertions(1);
+
         const task: Task = {
             id: "lib-a:build",
             outputs: [],

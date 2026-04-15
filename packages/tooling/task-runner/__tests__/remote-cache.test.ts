@@ -64,6 +64,8 @@ describe(RemoteCache, () => {
 
     describe("exists", () => {
         it("should return true when artifact exists", async () => {
+            expect.assertions(1);
+
             const { server, url } = await startMockServer((request, response) => {
                 if (request.method === "HEAD" && request.url?.includes("/v8/artifacts/abc123")) {
                     response.writeHead(200);
@@ -85,6 +87,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false when artifact does not exist", async () => {
+            expect.assertions(1);
+
             const { server, url } = await startMockServer((_request, response) => {
                 response.writeHead(404);
                 response.end();
@@ -101,6 +105,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false when reads are disabled", async () => {
+            expect.assertions(1);
+
             const cache = new RemoteCache({ read: false, url: "http://localhost:9999" });
             const result = await cache.exists("abc123");
 
@@ -108,6 +114,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false on network error", async () => {
+            expect.assertions(1);
+
             const cache = new RemoteCache({ timeout: 100, url: "http://127.0.0.1:1" });
             const result = await cache.exists("abc123");
 
@@ -115,6 +123,8 @@ describe(RemoteCache, () => {
         });
 
         it("should include teamId in query params", async () => {
+            expect.assertions(1);
+
             let requestUrl = "";
             const { server, url } = await startMockServer((request, response) => {
                 requestUrl = request.url ?? "";
@@ -134,6 +144,8 @@ describe(RemoteCache, () => {
         });
 
         it("should send authorization header", async () => {
+            expect.assertions(1);
+
             let authHeader = "";
             const { server, url } = await startMockServer((request, response) => {
                 authHeader = request.headers.authorization ?? "";
@@ -155,6 +167,8 @@ describe(RemoteCache, () => {
 
     describe("store", () => {
         it("should return false when writes are disabled", async () => {
+            expect.assertions(1);
+
             const cache = new RemoteCache({ url: "http://localhost:9999", write: false });
             const result = await cache.store("abc123", cacheDirectory);
 
@@ -162,6 +176,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false when cache entry is incomplete (no .commit)", async () => {
+            expect.assertions(1);
+
             const entryDirectory = join(cacheDirectory, "abc123");
 
             await mkdir(entryDirectory, { recursive: true });
@@ -174,6 +190,8 @@ describe(RemoteCache, () => {
         });
 
         it("should upload a valid cache entry", async () => {
+            expect.assertions(3);
+
             const entryDirectory = join(cacheDirectory, "abc123");
 
             await mkdir(entryDirectory, { recursive: true });
@@ -214,6 +232,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false when server returns error", async () => {
+            expect.assertions(1);
+
             const entryDirectory = join(cacheDirectory, "abc123");
 
             await mkdir(entryDirectory, { recursive: true });
@@ -235,7 +255,9 @@ describe(RemoteCache, () => {
         });
 
         it("should call onUploadError callback on failure", async () => {
-            const onUploadError = vi.fn();
+            expect.assertions(1);
+
+            const onUploadError = vi.fn<(hash: string, error: unknown) => void>();
             const cache = new RemoteCache({
                 onUploadError,
                 timeout: 100,
@@ -253,12 +275,14 @@ describe(RemoteCache, () => {
         });
 
         it("should not call onUploadError on success", async () => {
+            expect.assertions(2);
+
             const entryDirectory = join(cacheDirectory, "ok-hash");
 
             await mkdir(entryDirectory, { recursive: true });
             await writeFile(join(entryDirectory, ".commit"), "ok-hash");
 
-            const onUploadError = vi.fn();
+            const onUploadError = vi.fn<(hash: string, error: unknown) => void>();
 
             const { server, url } = await startMockServer((_request, response) => {
                 collectRequestBody(_request)
@@ -288,6 +312,8 @@ describe(RemoteCache, () => {
 
     describe("retrieve", () => {
         it("should return false when reads are disabled", async () => {
+            expect.assertions(1);
+
             const cache = new RemoteCache({ read: false, url: "http://localhost:9999" });
             const result = await cache.retrieve("abc123", cacheDirectory);
 
@@ -295,6 +321,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false when artifact not found", async () => {
+            expect.assertions(1);
+
             const { server, url } = await startMockServer((_request, response) => {
                 response.writeHead(404);
                 response.end();
@@ -311,6 +339,8 @@ describe(RemoteCache, () => {
         });
 
         it("should return false on network error", async () => {
+            expect.assertions(1);
+
             const cache = new RemoteCache({ timeout: 100, url: "http://127.0.0.1:1" });
             const result = await cache.retrieve("abc123", cacheDirectory);
 
@@ -318,6 +348,8 @@ describe(RemoteCache, () => {
         });
 
         it("should download and extract a valid artifact", async () => {
+            expect.assertions(4);
+
             // Create a source directory with cache entry content
             const sourceDirectory = join(cacheDirectory, "source-entry");
 
@@ -385,6 +417,8 @@ describe(RemoteCache, () => {
 
     describe("uRL construction", () => {
         it("should strip trailing slash from URL", async () => {
+            expect.assertions(1);
+
             let requestUrl = "";
             const { server, url } = await startMockServer((request, response) => {
                 requestUrl = request.url ?? "";
@@ -404,6 +438,8 @@ describe(RemoteCache, () => {
         });
 
         it("should encode teamId in URL", async () => {
+            expect.assertions(1);
+
             let requestUrl = "";
             const { server, url } = await startMockServer((request, response) => {
                 requestUrl = request.url ?? "";

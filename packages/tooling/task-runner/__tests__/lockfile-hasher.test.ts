@@ -17,6 +17,8 @@ const createTemporaryDirectory = async (): Promise<string> => {
 
 describe(parseNpmLockfile, () => {
     it("should parse v2/v3 packages format", () => {
+        expect.assertions(3);
+
         const lockfile = JSON.stringify({
             lockfileVersion: 3,
             packages: {
@@ -35,6 +37,8 @@ describe(parseNpmLockfile, () => {
     });
 
     it("should parse v1 dependencies format", () => {
+        expect.assertions(2);
+
         const lockfile = JSON.stringify({
             dependencies: {
                 express: { version: "4.18.2" },
@@ -50,6 +54,8 @@ describe(parseNpmLockfile, () => {
     });
 
     it("should prefer top-level packages for duplicates", () => {
+        expect.assertions(1);
+
         const lockfile = JSON.stringify({
             lockfileVersion: 3,
             packages: {
@@ -64,6 +70,8 @@ describe(parseNpmLockfile, () => {
     });
 
     it("should return empty map for invalid JSON", () => {
+        expect.assertions(1);
+
         const versions = parseNpmLockfile("not json");
 
         expect(versions.size).toBe(0);
@@ -72,6 +80,8 @@ describe(parseNpmLockfile, () => {
 
 describe(parsePnpmLockfile, () => {
     it("should parse dependencies section with specifier+version", () => {
+        expect.assertions(2);
+
         const lockfile = `lockfileVersion: '9.0'
 
 importers:
@@ -92,6 +102,8 @@ importers:
     });
 
     it("should parse packages section as fallback", () => {
+        expect.assertions(2);
+
         const lockfile = `lockfileVersion: '6.0'
 
 packages:
@@ -110,6 +122,8 @@ packages:
 
 describe(parseYarnLockfile, () => {
     it("should parse Yarn v1 format", () => {
+        expect.assertions(2);
+
         const lockfile = `# yarn lockfile v1
 
 "lodash@^4.17.0":
@@ -128,6 +142,8 @@ describe(parseYarnLockfile, () => {
     });
 
     it("should parse Yarn Berry format", () => {
+        expect.assertions(2);
+
         const lockfile = `__metadata:
   version: 8
 
@@ -149,26 +165,32 @@ describe(parseYarnLockfile, () => {
 
 describe(extractPackageName, () => {
     it("should extract simple package name", () => {
+        expect.assertions(1);
         expect(extractPackageName("node_modules/lodash")).toBe("lodash");
     });
 
     it("should extract scoped package name", () => {
+        expect.assertions(1);
         expect(extractPackageName("node_modules/@types/node")).toBe("@types/node");
     });
 
     it("should handle nested node_modules", () => {
+        expect.assertions(1);
         expect(extractPackageName("node_modules/pkg-a/node_modules/lodash")).toBe("lodash");
     });
 
     it("should return null for empty path", () => {
+        expect.assertions(1);
         expect(extractPackageName("")).toBeUndefined();
     });
 
     it("should return null for hidden entries", () => {
+        expect.assertions(1);
         expect(extractPackageName("node_modules/.package-lock.json")).toBeUndefined();
     });
 
     it("should return null for paths without node_modules", () => {
+        expect.assertions(1);
         expect(extractPackageName("src/index.ts")).toBeUndefined();
     });
 });
@@ -185,6 +207,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should hash only relevant dependencies from npm lockfile", async () => {
+        expect.assertions(5);
+
         // Create package.json for project
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await writeFile(
@@ -224,6 +248,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should produce different hashes for different resolved versions", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
@@ -265,6 +291,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should return null when no lockfile exists", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
@@ -281,6 +309,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should return null when package.json has no dependencies", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await writeFile(join(workspaceRoot, "packages/app/package.json"), JSON.stringify({ name: "app" }));
 
@@ -301,6 +331,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should detect lockfile type", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
@@ -328,6 +360,8 @@ describe(LockfileHasher, () => {
     });
 
     it("should cache lockfile parsing across calls", async () => {
+        expect.assertions(5);
+
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
         await mkdir(join(workspaceRoot, "packages/lib"), { recursive: true });
 
