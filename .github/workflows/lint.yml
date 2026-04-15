@@ -87,6 +87,8 @@ jobs:
               with:
                   node-version: "22.x"
                   cache-prefix: "lint"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-npm-audit: false
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -141,6 +143,8 @@ jobs:
               with:
                   node-version: "22.x"
                   cache-prefix: "lint"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-npm-audit: false
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"

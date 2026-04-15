@@ -38,6 +38,8 @@ jobs:
                   node-version: "22.x"
                   cache-prefix: "data-sync"
                   install-packages: "true"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-npm-audit: false
 
             - name: "Sync disposable email domains"
               if: "success()"

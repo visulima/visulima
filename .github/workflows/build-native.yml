@@ -168,7 +168,9 @@ jobs:
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
+                  run-npm-audit: false
 
             - name: "Install Rust toolchain"
               if: "steps.need-build.outputs.any == 'true'"
