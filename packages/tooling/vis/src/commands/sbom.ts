@@ -41,7 +41,10 @@ const sbom: Command = {
 
         const focusRaw = options.focus as string | undefined;
         const focus = focusRaw
-            ? focusRaw.split(",").map((name) => name.trim()).filter(Boolean)
+            ? focusRaw
+                  .split(",")
+                  .map((name) => name.trim())
+                  .filter(Boolean)
             : undefined;
 
         const format = ((options.format as string | undefined) ?? "json").toLowerCase();

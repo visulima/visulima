@@ -38,10 +38,20 @@ const SRI_TO_CYCLONEDX_ALG: Record<LockFileIntegrityAlgorithm, HashAlgorithm> = 
     sha512: "SHA-512",
 };
 
+// Expected digest length in hex characters for each algorithm. CycloneDX 1.6's
+// hash content schema enforces these exact lengths — emitting a partial digest
+// (e.g. a fixture's truncated `sha512-aGVsbG8=` that decodes to 10 hex chars)
+// makes the entire BOM fail schema validation.
+const SRI_HEX_LENGTH: Record<LockFileIntegrityAlgorithm, number> = {
+    sha256: 64,
+    sha384: 96,
+    sha512: 128,
+};
+
 const toResolvedPackage = (entry: LockFileEntry): ResolvedPackage => {
     const resolved: ResolvedPackage = { name: entry.name, version: entry.version };
 
-    if (entry.integrity) {
+    if (entry.integrity && entry.integrity.hex.length === SRI_HEX_LENGTH[entry.integrity.algorithm]) {
         resolved.hash = {
             alg: SRI_TO_CYCLONEDX_ALG[entry.integrity.algorithm],
             content: entry.integrity.hex,
@@ -75,9 +85,7 @@ const LOCKFILE_CANDIDATES: readonly { file: string; type: LockFileType }[] = [
  * own their lockfile) and returns entries keyed by `name@version`.
  * Returns `undefined` if no supported lockfile is present.
  */
-export const readLockfilePackages = (
-    workspaceRoot: string,
-): { packages: Map<string, ResolvedPackage>; type: LockFileType } | undefined => {
+export const readLockfilePackages = (workspaceRoot: string): { packages: Map<string, ResolvedPackage>; type: LockFileType } | undefined => {
     for (const { file, type } of LOCKFILE_CANDIDATES) {
         let content: string;
 
