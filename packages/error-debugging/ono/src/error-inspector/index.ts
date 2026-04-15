@@ -13,8 +13,11 @@ import { sanitizeAttribute, sanitizeOptions } from "./utils/sanitize";
 const domUtilitiesScript = `
 // DOM utility functions
 function ready(fn) {
-  if (document.readyState !== 'loading') fn();
-  else document.addEventListener('DOMContentLoaded', fn);
+  if (document.readyState !== 'loading') {
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
 }
 
 function $(selector, context) {
@@ -52,7 +55,9 @@ function copyToClipboard(text, successCallback) {
   }
 
   navigator.clipboard.writeText(text).then(function() {
-    if (successCallback) successCallback();
+    if (successCallback) {
+      successCallback();
+    }
   }).catch(function(err) {
     console.warn('Failed to copy:', err);
   });
@@ -261,7 +266,9 @@ function copyToClipboard(text, successCallback) {
   }
 
   navigator.clipboard.writeText(text).then(function() {
-    if (successCallback) successCallback();
+    if (successCallback) {
+      successCallback();
+    }
   }).catch(function(err) {
     console.warn('Failed to copy:', err);
   });

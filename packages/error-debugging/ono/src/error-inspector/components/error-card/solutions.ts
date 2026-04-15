@@ -23,9 +23,8 @@ const solutions = async (
 }> => {
     let hint: Solution | undefined;
 
-    const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder as SolutionFinder, errorHintFinder as SolutionFinder];
+    const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder, errorHintFinder];
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const traces: Trace[] = parseStacktrace(error as Error, { frameLimit: 1 }) as unknown as Trace[];
     const firstTrace: Trace | undefined = traces[0];
 
@@ -92,8 +91,11 @@ const solutions = async (
     </div>
 </div>`,
         script: `(window.subscribeToDOMContentLoaded || function (fn) {
-          if (document.readyState !== 'loading') fn();
-          else document.addEventListener('DOMContentLoaded', fn);
+          if (document.readyState !== 'loading') {
+              fn();
+          } else {
+              document.addEventListener('DOMContentLoaded', fn);
+          }
         })(function () {
           // Get DOM elements
           const wrapper = document.querySelector('#ono-solution-wrapper');
