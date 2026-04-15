@@ -1,5 +1,6 @@
 import { dirname, resolve } from "@visulima/path";
 
+// eslint-disable-next-line sonarjs/function-return-type -- mirrors input variance (URL|string)
 const resolveSymlinkTarget = (target: URL | string, linkName: URL | string): URL | string => {
     if (typeof target !== "string") {
         return target;
