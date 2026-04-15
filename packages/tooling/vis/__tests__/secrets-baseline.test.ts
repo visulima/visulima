@@ -16,10 +16,12 @@ afterEach(() => {
     cleanupTemporaryDirectory(tmpDir);
 });
 
-const makeFinding = (overrides: Partial<ReturnType<typeof baseFinding>> = {}): ReturnType<typeof baseFinding> => ({
-    ...baseFinding(),
-    ...overrides,
-});
+const makeFinding = (overrides: Partial<ReturnType<typeof baseFinding>> = {}): ReturnType<typeof baseFinding> => {
+    return {
+        ...baseFinding(),
+        ...overrides,
+    };
+};
 
 const baseFinding = (): {
     description: string;
@@ -33,21 +35,23 @@ const baseFinding = (): {
     startColumn: number;
     startLine: number;
     tags: string[];
-} => ({
-    description: "",
-    endColumn: 10,
-    endLine: 1,
-    entropy: 0,
-    file: "",
-    match: "",
-    ruleId: "",
-    secret: "",
-    startColumn: 1,
-    startLine: 1,
-    tags: [],
-});
+} => {
+    return {
+        description: "",
+        endColumn: 10,
+        endLine: 1,
+        entropy: 0,
+        file: "",
+        match: "",
+        ruleId: "",
+        secret: "",
+        startColumn: 1,
+        startLine: 1,
+        tags: [],
+    };
+};
 
-describe("toRelativeFinding", () => {
+describe(toRelativeFinding, () => {
     it("converts absolute paths to root-relative", () => {
         expect.assertions(1);
 
@@ -67,7 +71,7 @@ describe("toRelativeFinding", () => {
     });
 });
 
-describe("writeBaseline", () => {
+describe(writeBaseline, () => {
     it("creates a new baseline when none exists", () => {
         expect.assertions(3);
 
@@ -79,7 +83,7 @@ describe("writeBaseline", () => {
         expect(count).toBe(1);
         expect(existsSync(baselinePath)).toBe(true);
 
-        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as Array<{ file: string }>;
+        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as { file: string }[];
 
         expect(parsed[0]!.file).toBe("a.env");
     });
@@ -97,7 +101,7 @@ describe("writeBaseline", () => {
 
         expect(count).toBe(2);
 
-        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as Array<{ ruleId: string }>;
+        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as { ruleId: string }[];
         const ids = parsed.map((f) => f.ruleId);
 
         expect(ids).toEqual(expect.arrayContaining(["old-rule", "new-rule"]));
@@ -114,13 +118,13 @@ describe("writeBaseline", () => {
 
         expect(count).toBe(1);
 
-        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as Array<{ ruleId: string }>;
+        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as { ruleId: string }[];
 
         expect(parsed[0]!.ruleId).toBe("fresh");
     });
 });
 
-describe("diffBaseline", () => {
+describe(diffBaseline, () => {
     it("splits findings into fresh / surviving / resolved", () => {
         expect.assertions(3);
 

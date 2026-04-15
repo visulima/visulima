@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 
-import type { Finding } from "@visulima/secret-scanner";
 import { cyan, dim, red, yellow } from "@visulima/colorize";
 import { relative } from "@visulima/path";
+import type { Finding } from "@visulima/secret-scanner";
 
 const CONTEXT_RADIUS = 1;
 
@@ -91,25 +91,27 @@ export const formatSarif = (findings: Finding[], toolVersion: string): string =>
             $schema: "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
             runs: [
                 {
-                    results: findings.map((f) => ({
-                        level: "error",
-                        locations: [
-                            {
-                                physicalLocation: {
-                                    artifactLocation: { uri: f.file },
-                                    region: {
-                                        endColumn: f.endColumn,
-                                        endLine: f.endLine,
-                                        snippet: { text: f.match },
-                                        startColumn: f.startColumn,
-                                        startLine: f.startLine,
+                    results: findings.map((f) => {
+                        return {
+                            level: "error",
+                            locations: [
+                                {
+                                    physicalLocation: {
+                                        artifactLocation: { uri: f.file },
+                                        region: {
+                                            endColumn: f.endColumn,
+                                            endLine: f.endLine,
+                                            snippet: { text: f.match },
+                                            startColumn: f.startColumn,
+                                            startLine: f.startLine,
+                                        },
                                     },
                                 },
-                            },
-                        ],
-                        message: { text: f.description },
-                        ruleId: f.ruleId,
-                    })),
+                            ],
+                            message: { text: f.description },
+                            ruleId: f.ruleId,
+                        };
+                    }),
                     tool: {
                         driver: {
                             informationUri: "https://visulima.com/packages/secret-scanner",

@@ -30,6 +30,8 @@ export default createConfig(
             "@stylistic/max-statements-per-line": "off",
             // Extra parens are sometimes needed for clarity
             "@stylistic/no-extra-parens": "off",
+            "@stylistic/quotes": "off",
+            "antfu/if-newline": "off",
             // Explicit member accessibility not required for internal CLI code
             "@typescript-eslint/explicit-member-accessibility": "off",
             // Explicit module boundary types not required

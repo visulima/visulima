@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { dim, green, yellow } from "@visulima/colorize";
@@ -12,20 +12,22 @@ import { formatSarif, formatText } from "../secrets/format";
 import { filesSince, hasGit, stagedFiles } from "../secrets/git";
 import { startSpinner } from "../secrets/spinner";
 
+type RepeatableString = string | string[];
+type ReportFormat = "json" | "sarif" | "text";
+
 interface SecretsFlags {
     affected?: boolean;
     baseline?: string;
     config?: string;
-    disableRule?: string | string[];
+    disableRule?: RepeatableString;
     dryRun?: boolean;
-    format?: "json" | "sarif" | "text";
-    ignoreFile?: string;
+    format?: ReportFormat;
     includeHidden?: boolean;
     init?: boolean;
     listRules?: boolean;
     maxSize?: number;
     noGitignore?: boolean;
-    onlyRule?: string | string[];
+    onlyRule?: RepeatableString;
     quiet?: boolean;
     redact?: boolean;
     replaceBaseline?: boolean;
@@ -36,15 +38,16 @@ interface SecretsFlags {
 }
 
 const DEFAULT_BASELINE = ".secrets-baseline.json";
-const DEFAULT_IGNORE_FILE = ".gitleaksignore";
 
 const toArray = (value: string | string[] | undefined): string[] => {
-    if (!value) return [];
+    if (!value) {
+        return [];
+    }
 
     return Array.isArray(value) ? value : [value];
 };
 
-const validateFormat = (raw: string | undefined): "json" | "sarif" | "text" => {
+const validateFormat = (raw: string | undefined): ReportFormat => {
     const allowed = new Set(["json", "sarif", "text"]);
 
     if (raw && !allowed.has(raw)) {
@@ -52,7 +55,7 @@ const validateFormat = (raw: string | undefined): "json" | "sarif" | "text" => {
         process.exit(2);
     }
 
-    return (raw ?? "text") as "json" | "sarif" | "text";
+    return (raw ?? "text") as ReportFormat;
 };
 
 const printListRules = async (scanOptions: ScanOptions, useColor: boolean): Promise<void> => {
@@ -78,10 +81,9 @@ const printListRules = async (scanOptions: ScanOptions, useColor: boolean): Prom
 
 const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean): Promise<void> => {
     const baselinePath = join(root, DEFAULT_BASELINE);
-    const ignorePath = join(root, DEFAULT_IGNORE_FILE);
 
-    if (!dryRun && (existsSync(baselinePath) || existsSync(ignorePath))) {
-        warn(`Detected existing ${existsSync(baselinePath) ? DEFAULT_BASELINE : DEFAULT_IGNORE_FILE} — refusing to overwrite. Delete it first to re-init.`);
+    if (!dryRun && existsSync(baselinePath)) {
+        warn(`Detected existing ${DEFAULT_BASELINE} — refusing to overwrite. Delete it first to re-init.`);
         process.exit(1);
     }
 
@@ -98,31 +100,55 @@ const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean):
 
     if (dryRun) {
         info(`[dry-run] Would create ${DEFAULT_BASELINE} with ${String(findings.length)} finding(s).`);
-        info(`[dry-run] Would create an empty ${DEFAULT_IGNORE_FILE}.`);
 
         return;
     }
 
     const count = writeBaseline(findings, baselinePath, root, { replace: true });
 
-    writeFileSync(ignorePath, "# Fingerprints to suppress (file:ruleID:startLine). One per line, # comments allowed.\n");
-
-    success(`Wrote ${DEFAULT_BASELINE} (${String(count)} findings) and empty ${DEFAULT_IGNORE_FILE}.`);
-    note("Commit both files. Use `vis secrets --baseline .secrets-baseline.json` in CI.");
+    success(`Wrote ${DEFAULT_BASELINE} (${String(count)} findings).`);
+    note("Commit it. Use `vis secrets --baseline .secrets-baseline.json` in CI. Add path patterns to .gitignore to exclude directories from scanning.");
 };
 
-const resolveScanOptions = (flags: SecretsFlags, root: string): ScanOptions => ({
-    baselinePath: flags.baseline ? resolve(root, flags.baseline) : undefined,
-    configPath: flags.config ? resolve(root, flags.config) : undefined,
-    disableRules: toArray(flags.disableRule),
-    ignorePath: flags.ignoreFile ? resolve(root, flags.ignoreFile) : undefined,
-    includeHidden: flags.includeHidden,
-    maxFileSize: flags.maxSize,
-    onlyRules: toArray(flags.onlyRule),
-    redact: flags.redact,
-    respectGitignore: !flags.noGitignore,
-    warnOnSkippedRules: flags.verbose ?? false,
-});
+interface VisSecretsConfig {
+    baselinePath?: string;
+    config?: ScanOptions["config"];
+    configPath?: string;
+    disableRules?: string[];
+    extraIgnores?: string[];
+    ignoreFiles?: string[];
+    includeBundled?: boolean;
+    includeHidden?: boolean;
+    maxFileSize?: number;
+    onlyRules?: string[];
+    redact?: boolean;
+    respectGitignore?: boolean;
+}
+
+/**
+ * Resolve scan options by layering (high → low precedence):
+ *   CLI flags > vis.config.secrets > built-in defaults.
+ */
+const resolveScanOptions = (flags: SecretsFlags, visSecrets: VisSecretsConfig | undefined, root: string): ScanOptions => {
+    const cfg = visSecrets ?? {};
+    const resolvePath = (p: string | undefined): string | undefined => (p ? resolve(root, p) : undefined);
+
+    return {
+        baselinePath: resolvePath(flags.baseline) ?? resolvePath(cfg.baselinePath),
+        config: cfg.config,
+        configPath: resolvePath(flags.config) ?? resolvePath(cfg.configPath),
+        disableRules: toArray(flags.disableRule).length > 0 ? toArray(flags.disableRule) : cfg.disableRules,
+        extraIgnores: cfg.extraIgnores,
+        ignoreFiles: cfg.ignoreFiles?.map((p) => resolve(root, p)),
+        includeBundled: cfg.includeBundled,
+        includeHidden: flags.includeHidden ?? cfg.includeHidden,
+        maxFileSize: flags.maxSize ?? cfg.maxFileSize,
+        onlyRules: toArray(flags.onlyRule).length > 0 ? toArray(flags.onlyRule) : cfg.onlyRules,
+        redact: flags.redact ?? cfg.redact,
+        respectGitignore: flags.noGitignore ? false : (cfg.respectGitignore ?? true),
+        warnOnSkippedRules: flags.verbose ?? false,
+    };
+};
 
 const printDiff = (diff: { fresh: Finding[]; resolved: Finding[]; surviving: Finding[] }): void => {
     process.stderr.write(
@@ -167,7 +193,7 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
     return { paths: args && args.length > 0 ? args.map((p) => resolve(root, p)) : [root] };
 };
 
-const emitFindings = (findings: Finding[], format: "json" | "sarif" | "text", root: string, useColor: boolean, toolVersion: string): void => {
+const emitFindings = (findings: Finding[], format: ReportFormat, root: string, useColor: boolean, toolVersion: string): void => {
     switch (format) {
         case "json": {
             const view = findings.map((f) => toRelativeFinding(f, root));
@@ -197,7 +223,7 @@ const secrets: Command = {
         ["vis secrets --staged", "Scan only files staged for the current commit (pre-commit hooks)"],
         ["vis secrets --since main", "Scan only files changed since the `main` branch"],
         ["vis secrets --affected", "Scan only projects affected by the current branch"],
-        ["vis secrets --init", "Write an initial baseline + empty .gitleaksignore"],
+        ["vis secrets --init", "Write an initial baseline from current findings"],
         ["vis secrets --list-rules", "Print all bundled detection rules"],
         ["vis secrets --disable-rule generic-api-key --disable-rule aws-access-token", "Drop noisy rules"],
         ["vis secrets --only-rule stripe-access-token", "Check a single rule"],
@@ -205,12 +231,13 @@ const secrets: Command = {
         ["vis secrets --update-baseline", "Merge current findings into the baseline (use --replace-baseline to overwrite)"],
         ["vis secrets --format sarif > report.sarif", "SARIF output for GitHub code-scanning"],
     ],
-    execute: async ({ argument, options, workspaceRoot }) => {
+    execute: async ({ argument, options, visConfig, workspaceRoot }) => {
         const flags = options as SecretsFlags;
         const args = argument as string[] | undefined;
         const root = workspaceRoot ?? process.cwd();
         const useColor = !flags.quiet && process.stdout.isTTY;
-        const scanOptions = resolveScanOptions(flags, root);
+        const visSecrets = (visConfig as { secrets?: VisSecretsConfig } | undefined)?.secrets;
+        const scanOptions = resolveScanOptions(flags, visSecrets, root);
         const toolVersion = "0.0.0-alpha"; // vis injects its own version via cerebro; this just tags SARIF.
 
         if (flags.listRules) {
@@ -227,19 +254,21 @@ const secrets: Command = {
 
         const target = await chooseScanPaths(flags, args ?? [], root);
 
-        if (target.files !== undefined && target.files.length === 0) {
-            if (!flags.quiet) success("No files to scan.");
+        if (target.files?.length === 0) {
+            if (!flags.quiet) {
+                success("No files to scan.");
+            }
 
             return;
         }
 
-        const spinner =
-            !flags.quiet && !["json", "sarif"].includes(flags.format ?? "text") ? startSpinner("scanning for secrets") : { stop: () => {}, update: () => {} };
+        const isInteractive = !flags.quiet && !["json", "sarif"].includes(flags.format ?? "text");
+        const spinner = isInteractive ? startSpinner("scanning for secrets") : { stop: () => {}, update: () => {} };
 
         let findings: Finding[];
 
         try {
-            findings = target.files !== undefined ? await scanFiles(target.files, scanOptions) : await scan(target.paths ?? [root], scanOptions);
+            findings = target.files === undefined ? await scan(target.paths ?? [root], scanOptions) : await scanFiles(target.files, scanOptions);
         } catch (error) {
             spinner.stop();
             failure(`secret scan failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -289,14 +318,15 @@ const secrets: Command = {
             process.exit(1);
         }
 
-        if (!flags.quiet) success("No secrets detected.");
+        if (!flags.quiet) {
+            success("No secrets detected.");
+        }
     },
     group: "Security",
     name: "secrets",
     options: [
         { description: "Path to a gitleaks-compatible TOML config (defaults to bundled ruleset)", name: "config", type: String },
         { defaultValue: "text", description: "Output format: text (default), json, sarif", name: "format", type: String },
-        { description: "Path to a `.gitleaksignore` (default: <root>/.gitleaksignore)", name: "ignore-file", type: String },
         { description: "Path to a baseline JSON of previously-triaged findings", name: "baseline", type: String },
         { defaultValue: false, description: "Scan only files staged for commit", name: "staged", type: Boolean },
         { description: "Scan only files changed since <ref> (e.g. main, origin/HEAD)", name: "since", type: String },
@@ -309,7 +339,7 @@ const secrets: Command = {
         { description: "Skip files larger than this (bytes). Default: 10 MiB", name: "max-size", type: Number },
         { defaultValue: false, description: "Merge current findings into the baseline and exit 0", name: "update-baseline", type: Boolean },
         { defaultValue: false, description: "With --update-baseline, replace rather than merge", name: "replace-baseline", type: Boolean },
-        { defaultValue: false, description: "Scaffold a baseline + empty .gitleaksignore", name: "init", type: Boolean },
+        { defaultValue: false, description: "Scaffold a baseline from current findings", name: "init", type: Boolean },
         { defaultValue: false, description: "With --init, preview the baseline without writing files", name: "dry-run", type: Boolean },
         { defaultValue: false, description: "Print all bundled detection rules and exit", name: "list-rules", type: Boolean },
         { defaultValue: false, description: "Suppress all progress output (only emit findings)", name: "quiet", type: Boolean },

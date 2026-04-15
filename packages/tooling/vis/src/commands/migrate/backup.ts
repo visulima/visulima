@@ -9,7 +9,9 @@ import type { MigrationReport } from "./types";
  * the backup path is recorded for the migration summary.
  */
 export const backupFile = (path: string, report?: MigrationReport): void => {
-    if (!existsSync(path)) return;
+    if (!existsSync(path)) {
+        return;
+    }
 
     const backupPath = `${path}.bak`;
 

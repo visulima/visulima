@@ -359,8 +359,12 @@ edges.forEach(e => {
   const edgeColors = { implicit: '#475569', devDependency: '#888888', peerDependency: '#CC8800' };
   line.setAttribute('stroke', edgeColors[e.type] || '#64748b');
   line.setAttribute('stroke-width', '1.5');
-  if (e.type === 'implicit' || e.type === 'peerDependency') line.setAttribute('stroke-dasharray', '6,4');
-  if (e.type === 'devDependency') line.setAttribute('stroke-dasharray', '3,3');
+  if (e.type === 'implicit' || e.type === 'peerDependency') {
+      line.setAttribute('stroke-dasharray', '6,4');
+  }
+  if (e.type === 'devDependency') {
+      line.setAttribute('stroke-dasharray', '3,3');
+  }
   svg.appendChild(line);
 });
 
