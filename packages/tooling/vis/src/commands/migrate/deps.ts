@@ -1,5 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+import { backupFile } from "./backup";
+
 import { join } from "@visulima/path";
 
 import type { VisConfig } from "../../workspace";
@@ -295,6 +297,7 @@ const updatePnpmWorkspaceCatalog = (root: string, overrides: Record<string, stri
 
     const result = insertCatalogEntries(lines, newEntries, content);
 
+    backupFile(filePath);
     writeFileSync(filePath, result.join("\n"), "utf8");
 };
 

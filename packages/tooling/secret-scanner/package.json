@@ -1,25 +1,28 @@
 {
-    "name": "@visulima/vis",
-    "version": "1.0.0-alpha.5",
-    "description": "A CLI task runner for monorepo workspaces, powered by @visulima/task-runner",
+    "name": "@visulima/secret-scanner",
+    "version": "0.0.0-alpha.0",
+    "description": "Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI",
     "keywords": [
         "visulima",
-        "vis",
-        "cli",
-        "task-runner",
-        "monorepo",
-        "workspace",
-        "build",
-        "cache"
+        "secret",
+        "secrets",
+        "scanner",
+        "gitleaks",
+        "leaks",
+        "credentials",
+        "security",
+        "pre-commit",
+        "napi",
+        "rust"
     ],
-    "homepage": "https://visulima.com/packages/vis",
+    "homepage": "https://visulima.com/packages/secret-scanner",
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/vis"
+        "directory": "packages/tooling/secret-scanner"
     },
     "funding": [
         {
@@ -39,21 +42,15 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "./config": {
-            "types": "./dist/config.d.ts",
-            "default": "./dist/config.js"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
-        "./schemas/project.schema.json": "./schemas/project.schema.json",
-        "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
         "./package.json": "./package.json"
     },
-    "bin": {
-        "v": "./dist/bin.js",
-        "vis": "./dist/bin.js"
-    },
     "files": [
+        "assets/**",
         "dist/**",
-        "schemas/**",
         "index.js",
         "README.md",
         "CHANGELOG.md",
@@ -74,33 +71,11 @@
         "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
         "lint:types": "tsc --noEmit",
         "test": "vitest run",
+        "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
+        "test:parity": "SECRET_SCANNER_PARITY=1 vitest run __tests__/parity.test.ts",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
-    },
-    "dependencies": {
-        "@nkzw/safe-word-list": "^3.1.2",
-        "@socketsecurity/registry": "^2.0.2",
-        "@visulima/ansi": "workspace:*",
-        "@visulima/cerebro": "workspace:*",
-        "@visulima/colorize": "workspace:*",
-        "@visulima/find-ai-runner": "workspace:*",
-        "@visulima/find-cache-dir": "workspace:*",
-        "@visulima/fs": "workspace:*",
-        "@visulima/humanizer": "workspace:*",
-        "@visulima/package": "workspace:*",
-        "@visulima/path": "workspace:*",
-        "@visulima/secret-scanner": "workspace:*",
-        "@visulima/task-runner": "workspace:*",
-        "@visulima/tui": "workspace:*",
-        "giget": "^3.2.0",
-        "jiti": "catalog:dev",
-        "jstoxml": "catalog:prod",
-        "module-replacements": "^2.11.0",
-        "module-replacements-codemods": "^1.2.1",
-        "react": "catalog:frontend",
-        "semver": "^7.7.1",
-        "validate-npm-package-name": "^7.0.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -108,33 +83,18 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
-        "@eslint-react/eslint-plugin": "3.0.0",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
-        "@shared/xxh3": "workspace:*",
         "@total-typescript/ts-reset": "catalog:dev",
-        "@types/jstoxml": "catalog:types",
         "@types/node": "catalog:types",
-        "@types/react": "catalog:types",
-        "@types/semver": "^7.7.0",
-        "@types/validate-npm-package-name": "^4.0.2",
+        "@visulima/find-cache-dir": "workspace:*",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
-        "ajv": "catalog:dev",
-        "ajv-formats": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "eslint-plugin-jsx-a11y": "6.10.2",
-        "eslint-plugin-react": "7.37.5",
-        "eslint-plugin-react-hooks": "7.0.1",
-        "eslint-plugin-react-perf": "3.3.3",
-        "eslint-plugin-react-refresh": "0.5.2",
-        "eslint-plugin-react-you-might-not-need-an-effect": "0.9.2",
-        "eslint-plugin-validate-jsx-nesting": "0.1.1",
-        "is-in-ci": "2.0.0",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
@@ -143,23 +103,15 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "peerDependencies": {
-        "lint-staged": ">=15.0.0"
-    },
-    "peerDependenciesMeta": {
-        "lint-staged": {
-            "optional": true
-        }
-    },
     "optionalDependencies": {
-        "@visulima/vis-binding-darwin-arm64": "workspace:*",
-        "@visulima/vis-binding-darwin-x64": "workspace:*",
-        "@visulima/vis-binding-linux-arm64-gnu": "workspace:*",
-        "@visulima/vis-binding-linux-arm64-musl": "workspace:*",
-        "@visulima/vis-binding-linux-x64-gnu": "workspace:*",
-        "@visulima/vis-binding-linux-x64-musl": "workspace:*",
-        "@visulima/vis-binding-win32-arm64-msvc": "workspace:*",
-        "@visulima/vis-binding-win32-x64-msvc": "workspace:*"
+        "@visulima/secret-scanner-binding-darwin-arm64": "workspace:*",
+        "@visulima/secret-scanner-binding-darwin-x64": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-x64-musl": "workspace:*",
+        "@visulima/secret-scanner-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/secret-scanner-binding-win32-x64-msvc": "workspace:*"
     },
     "engines": {
         "node": ">=22.13 <=25.x"
@@ -169,8 +121,8 @@
         "provenance": true
     },
     "napi": {
-        "binaryName": "vis-native",
-        "packageName": "@visulima/vis-binding",
+        "binaryName": "secret-scanner-native",
+        "packageName": "@visulima/secret-scanner-binding",
         "targets": [
             "x86_64-apple-darwin",
             "aarch64-apple-darwin",
