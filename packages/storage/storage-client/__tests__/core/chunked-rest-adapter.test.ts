@@ -138,7 +138,7 @@ describe(createChunkedRestAdapter, () => {
         // Mock chunk upload - this will be aborted
         mockFetch.mockImplementationOnce(
             () =>
-                new Promise((resolve, reject) => {
+                new Promise((_resolve, reject) => {
                     setTimeout(() => {
                         reject(new Error("Upload aborted"));
                     }, 50);
