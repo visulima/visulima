@@ -8,40 +8,40 @@ import setErrorHeaders from "./utils/set-error-headers";
 
 const defaultCallbackParameter = "callback";
 
-const jsonpErrorHandler =
-    (options: JsonpErrorHandlerOptions = {}): ErrorHandler =>
-    async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
-        addStatusCodeToResponse(response, error);
+const jsonpErrorHandler
+    = (options: JsonpErrorHandlerOptions = {}): ErrorHandler =>
+        async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
+            addStatusCodeToResponse(response, error);
 
-        setErrorHeaders(response, error);
+            setErrorHeaders(response, error);
 
-        const { statusCode } = response;
-        const reasonPhrase = getReasonPhrase(statusCode);
+            const { statusCode } = response;
+            const reasonPhrase = getReasonPhrase(statusCode);
 
-        const url = new URL(request.url ?? "http://localhost", "http://localhost");
-        const callbackParameterName = options.callbackParamName ?? defaultCallbackParameter;
-        const callbackName = url.searchParams.get(callbackParameterName) ?? "callback";
+            const url = new URL(request.url ?? "http://localhost", "http://localhost");
+            const callbackParameterName = options.callbackParamName ?? defaultCallbackParameter;
+            const callbackName = url.searchParams.get(callbackParameterName) ?? "callback";
 
-        let payload: JsonpErrorBody;
+            let payload: JsonpErrorBody;
 
-        if (options.formatter) {
-            payload = await options.formatter({ error, reasonPhrase, request, response, statusCode });
-        } else {
-            const { expose } = error as Error & { expose?: boolean };
+            if (options.formatter) {
+                payload = await options.formatter({ error, reasonPhrase, request, response, statusCode });
+            } else {
+                const { expose } = error as Error & { expose?: boolean };
 
-            payload = {
-                message: error.message || reasonPhrase,
-                // eslint-disable-next-line perfectionist/sort-objects
-                error: reasonPhrase,
+                payload = {
+                    message: error.message || reasonPhrase,
+                    // eslint-disable-next-line perfectionist/sort-objects
+                    error: reasonPhrase,
 
-                statusCode,
-                ...(expose ? { stack: error.stack } : {}),
-            };
-        }
+                    statusCode,
+                    ...expose ? { stack: error.stack } : {},
+                };
+            }
 
-        response.setHeader("content-type", "application/javascript; charset=utf-8");
-        response.end(`${callbackName}(${JSON.stringify(payload)});`);
-    };
+            response.setHeader("content-type", "application/javascript; charset=utf-8");
+            response.end(`${callbackName}(${JSON.stringify(payload)});`);
+        };
 
 export type JsonpErrorBody = Record<string, unknown> | unknown[];
 
