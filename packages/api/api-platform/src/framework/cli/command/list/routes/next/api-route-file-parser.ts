@@ -19,12 +19,10 @@ const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false):
 
     const parsedJsDocumentFile = parseFile(apiRouteFile, jsDocumentCommentsToOpenApi, verbose);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     specs = [...specs, ...parsedJsDocumentFile.map((item: Record<string, unknown>) => item.spec)];
 
     const parsedSwaggerJsDocumentFile = parseFile(apiRouteFile, swaggerJsDocumentCommentsToOpenApi, verbose);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     specs = [...specs, ...parsedSwaggerJsDocumentFile.map((item: Record<string, unknown>) => item.spec)];
 
     const routes: Route[] = [];
