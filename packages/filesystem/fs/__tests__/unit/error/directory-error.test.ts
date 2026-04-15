@@ -22,7 +22,7 @@ describe("directoryError", () => {
         expect(directoryError.message).toContain(errorMessage);
     });
 
-    it('should have the error code set to "EISDIR"', () => {
+    it("should have the error code set to \"EISDIR\"", () => {
         expect.assertions(1);
 
         const errorMessage = "Invalid directory";
