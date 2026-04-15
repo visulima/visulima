@@ -17,6 +17,8 @@ describe("features catalog", () => {
     });
 
     it("should have valid categories for all entries", () => {
+        expect.assertions(1);
+
         const validCategories = new Set(["language", "tool", "cloud", "database", "other"]);
         const invalid = FEATURE_CATALOG.filter((f) => !validCategories.has(f.category));
 
@@ -24,12 +26,16 @@ describe("features catalog", () => {
     });
 
     it("should have non-empty name and description for all entries", () => {
+        expect.assertions(1);
+
         const empty = FEATURE_CATALOG.filter((f) => !f.name || !f.description);
 
         expect(empty).toHaveLength(0);
     });
 
     it("should have ghcr.io IDs for all entries", () => {
+        expect.assertions(1);
+
         const invalid = FEATURE_CATALOG.filter((f) => !f.id.startsWith("ghcr.io/"));
 
         expect(invalid).toHaveLength(0);
@@ -55,12 +61,16 @@ describe("extensions catalog", () => {
     });
 
     it("should have publisher.name format for all IDs", () => {
+        expect.assertions(1);
+
         const invalid = EXTENSION_CATALOG.filter((e) => !/^[\w-]+\.[\w-]+$/u.test(e.id));
 
         expect(invalid).toHaveLength(0);
     });
 
     it("should have valid categories for all entries", () => {
+        expect.assertions(1);
+
         const validCategories = new Set(["linting", "formatting", "language", "git", "testing", "debugging", "other"]);
         const invalid = EXTENSION_CATALOG.filter((e) => !validCategories.has(e.category));
 
@@ -102,12 +112,16 @@ describe("templates", () => {
     });
 
     it("should have image or dockerComposeFile for every template", () => {
+        expect.assertions(1);
+
         const invalid = TEMPLATES.filter((t) => !t.config.image && !t.config.dockerComposeFile);
 
         expect(invalid).toHaveLength(0);
     });
 
     it("should have non-empty name and description", () => {
+        expect.assertions(1);
+
         const empty = TEMPLATES.filter((t) => !t.name || !t.description);
 
         expect(empty).toHaveLength(0);

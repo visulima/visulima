@@ -46,6 +46,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     };
 
     it("should print header on startCommand", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build")];
         const lc = createLifeCycle(tasks);
 
@@ -58,6 +60,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should print task IDs on startTasks", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build"), createTask("app-b", "build")];
         const lc = createLifeCycle(tasks);
 
@@ -70,6 +74,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should print results with status icons on endTasks", () => {
+        expect.assertions(1);
+
         const task = createTask("app-a", "build");
         const lc = createLifeCycle([task]);
 
@@ -81,6 +87,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should show [cache] label for cached tasks", () => {
+        expect.assertions(1);
+
         const task = createTask("app-a", "build");
         const lc = createLifeCycle([task]);
 
@@ -92,6 +100,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should print success summary when all tasks pass", () => {
+        expect.assertions(2);
+
         const task = createTask("app-a", "build");
         const lc = createLifeCycle([task]);
 
@@ -108,6 +118,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should print cache statistics in success summary", () => {
+        expect.assertions(1);
+
         const tasks = [createTask("app-a", "build"), createTask("app-b", "build")];
         const lc = createLifeCycle(tasks);
 
@@ -123,6 +135,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should print failure summary when tasks fail", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build"), createTask("app-b", "build")];
         const lc = createLifeCycle(tasks);
 
@@ -139,6 +153,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should detect skipped tasks", () => {
+        expect.assertions(2);
+
         const tasks = [createTask("app-a", "build"), createTask("app-b", "build"), createTask("app-c", "build")];
         const lc = createLifeCycle(tasks);
 
@@ -156,6 +172,8 @@ describe("tui/StaticOutputLifeCycle", () => {
     });
 
     it("should forward terminal output via printTaskTerminalOutput", () => {
+        expect.assertions(1);
+
         const task = createTask("app-a", "build");
         const lc = createLifeCycle([task]);
 
