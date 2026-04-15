@@ -9328,12 +9328,12 @@ importers:
       jiti:
         specifier: catalog:dev
         version: 2.6.1
+      jstoxml:
+        specifier: catalog:prod
+        version: 7.1.0
       lint-staged:
         specifier: '>=15.0.0'
         version: 16.4.0
-      lockparse:
-        specifier: ^0.5.0
-        version: 0.5.0
       module-replacements:
         specifier: ^2.11.0
         version: 2.11.0
@@ -9383,6 +9383,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: catalog:dev
         version: 0.6.1
+      '@types/jstoxml':
+        specifier: catalog:types
+        version: 5.0.0
       '@types/node':
         specifier: catalog:types
         version: 25.5.2
@@ -25540,9 +25543,6 @@ packages:
   locate-path@8.0.0:
     resolution: {integrity: sha512-XT9ewWAC43tiAV7xDAPflMkG0qOPn2QjHqlgX8FOqmWa/rxnyYDulF9T0F7tRy1u+TVTmK/M//6VIOye+2zDXg==}
     engines: {node: '>=20'}
-
-  lockparse@0.5.0:
-    resolution: {integrity: sha512-seaI91ZVc4mnEGL+/cEEd5MybTnb86NH3W5lM0Ft7CMCZsLP5z1orWnu8g7YacpiMc5GxU7wIrYLhb6W2DvNWg==}
 
   lodash-es@4.18.1:
     resolution: {integrity: sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==}
@@ -52761,8 +52761,6 @@ snapshots:
   locate-path@8.0.0:
     dependencies:
       p-locate: 6.0.0
-
-  lockparse@0.5.0: {}
 
   lodash-es@4.18.1: {}
 
