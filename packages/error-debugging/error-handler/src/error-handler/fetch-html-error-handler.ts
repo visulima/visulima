@@ -134,7 +134,6 @@ class MockServerResponse {
     public end(data?: string | Buffer, callback?: () => void): this;
     // eslint-disable-next-line @typescript-eslint/unified-signatures
     public end(data?: string | Buffer, encoding?: BufferEncoding, callback?: () => void): this;
-    // @ts-expect-error TS6133: 'encoding' and 'callback' are declared but never read - required for interface compliance.
     public end(data?: string | Buffer, _encoding?: BufferEncoding | (() => void), _callback?: () => void): this {
         if (data) {
             this.body += data.toString();
