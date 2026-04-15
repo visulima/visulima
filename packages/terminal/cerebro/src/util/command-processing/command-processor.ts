@@ -71,7 +71,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
         delete mergedAll[POSITIONALS_KEY];
     }
 
-    toolbox.argument = (positionals as Record<string, unknown> | undefined)?.[POSITIONALS_KEY] ?? [];
+    toolbox.argument = ((positionals as Record<string, unknown> | undefined)?.[POSITIONALS_KEY] as string[] | undefined) ?? [];
 
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 
