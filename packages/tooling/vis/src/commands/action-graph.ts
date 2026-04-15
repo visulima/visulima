@@ -136,7 +136,7 @@ const actionGraph: Command = {
 
         const taskGraph = createTaskGraph(initialTasks, {
             projectGraph,
-            targetDefaults: config.targetDefaults,
+            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<import("@visulima/task-runner").TargetConfiguration>>,
             workspace,
         });
 

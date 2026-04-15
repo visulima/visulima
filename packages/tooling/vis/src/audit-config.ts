@@ -71,7 +71,7 @@ const readPnpmAuditExclusions = (workspaceRoot: string): NativeAuditExclusions =
     }
 
     try {
-        const data = readYamlSync<PnpmWorkspaceYaml>(filePath);
+        const data = readYamlSync(filePath) as PnpmWorkspaceYaml | undefined;
 
         return {
             excludedPackages: [],
@@ -90,7 +90,7 @@ const readYarnAuditExclusions = (workspaceRoot: string): NativeAuditExclusions =
     }
 
     try {
-        const data = readYamlSync<YarnrcYml>(filePath);
+        const data = readYamlSync(filePath) as YarnrcYml | undefined;
 
         return {
             excludedPackages: toStringArray(data?.npmAuditExcludePackages),

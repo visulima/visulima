@@ -2,6 +2,8 @@
 import config from "@anolilab/prettier-config";
 
 /** @type {import('prettier').Config} */
-export default {
+const prettierConfig = {
     ...config,
 };
+
+export default prettierConfig;

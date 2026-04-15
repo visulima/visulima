@@ -1,3 +1,4 @@
+import type { Trace } from "@visulima/error";
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 
@@ -113,7 +114,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         }),
     );
 
-    return formatStacktrace(mapped as unknown, { header });
+    return formatStacktrace(mapped as unknown as Trace[], { header });
 };
 
 /**

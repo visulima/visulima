@@ -66,16 +66,18 @@ describe("classes", () => {
         expect.assertions(4);
 
         // eslint-disable-next-line func-style
-        function C() {
+        function C(this: { a: number }) {
             this.a = 1;
         }
 
-        expect(Object.prototype.toString.call(new C()), "instance, no toStringTag, Object.prototype.toString").toBe("[object Object]");
-        expect(inspect(new C()), "instance, no toStringTag").toBe("C { a: 1 }");
+        const CCtor = C as unknown as new () => { a: number };
 
-        C.prototype[Symbol.toStringTag] = "Class!";
+        expect(Object.prototype.toString.call(new CCtor()), "instance, no toStringTag, Object.prototype.toString").toBe("[object Object]");
+        expect(inspect(new CCtor()), "instance, no toStringTag").toBe("C { a: 1 }");
 
-        expect(Object.prototype.toString.call(new C()), "instance, with toStringTag, Object.prototype.toString").toBe("[object Class!]");
-        expect(inspect(new C()), "instance, with toStringTag").toBe("C [Class!] { a: 1 }");
+        (C as unknown as { prototype: Record<PropertyKey, unknown> }).prototype[Symbol.toStringTag] = "Class!";
+
+        expect(Object.prototype.toString.call(new CCtor()), "instance, with toStringTag, Object.prototype.toString").toBe("[object Class!]");
+        expect(inspect(new CCtor()), "instance, with toStringTag").toBe("C [Class!] { a: 1 }");
     });
 });

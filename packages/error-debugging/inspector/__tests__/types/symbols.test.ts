@@ -41,7 +41,7 @@ describe("symbols", () => {
 
         expect(inspect(object), "object, no Symbol.toStringTag").toBe("{ a: 1 }");
 
-        object[Symbol.toStringTag] = "foo";
+        (object as Record<PropertyKey, unknown>)[Symbol.toStringTag] = "foo";
 
         expect(inspect(object), "object with Symbol.toStringTag").toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: 'foo' }");
 
@@ -49,7 +49,7 @@ describe("symbols", () => {
 
         expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Object: null prototype] { a: 1 }");
 
-        dict[Symbol.toStringTag] = "Dict";
+        (dict as Record<PropertyKey, unknown>)[Symbol.toStringTag] = "Dict";
 
         expect(inspect(dict), "null object with Symbol.toStringTag").toBe("[Dict: null prototype] { a: 1, [Symbol(Symbol.toStringTag)]: 'Dict' }");
     });

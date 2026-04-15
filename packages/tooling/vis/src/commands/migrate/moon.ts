@@ -157,7 +157,7 @@ export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }
     let parsed: MoonTasksYaml;
 
     try {
-        parsed = readYamlSync<MoonTasksYaml>(tasksFile);
+        parsed = readYamlSync(tasksFile) as MoonTasksYaml;
     } catch (error) {
         throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
     }
