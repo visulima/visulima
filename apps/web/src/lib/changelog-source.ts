@@ -20,29 +20,29 @@ if (typeof import.meta.glob === "function") {
     files = FastGlob.sync("./src/content/changelogs/**/*").map((file) => [file, readFileSync(file).toString()]);
 }
 
-const virtualFiles: VirtualFile[] = files.flatMap(([file, content]) => {
+const virtualFiles: VirtualFile[] = files.flatMap(([file, content]): VirtualFile[] => {
     const extension = extname(file);
     const virtualPath = relative("src/content/changelogs", join(process.cwd(), file));
 
     if (extension === ".mdx" || extension === ".md") {
         const parsed = matter(content);
 
-        return {
+        return [{
             data: {
                 ...parsed.data,
                 content: parsed.content,
-            },
+            } as PageData,
             path: virtualPath,
             type: "page",
-        };
+        }];
     }
 
     if (extension === ".json") {
-        return {
-            data: JSON.parse(content),
+        return [{
+            data: JSON.parse(content) as MetaData,
             path: virtualPath,
             type: "meta",
-        };
+        }];
     }
 
     return [];

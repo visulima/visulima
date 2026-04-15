@@ -106,8 +106,8 @@ const CollisionMechanism = ({
         translateX?: number;
         translateY?: number;
     };
-    containerRef: RefObject<HTMLDivElement>;
-    parentRef: RefObject<HTMLDivElement>;
+    containerRef: RefObject<HTMLDivElement | null>;
+    parentRef: RefObject<HTMLDivElement | null>;
 } & { ref?: React.RefObject<HTMLDivElement | null> }) => {
     const beamReference = useRef<HTMLDivElement>(null);
     const [collision, setCollision] = useState<{

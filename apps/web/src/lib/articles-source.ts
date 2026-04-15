@@ -27,22 +27,22 @@ const virtualFiles: VirtualFile[] = files.flatMap(([file, content]): VirtualFile
     if (extension === ".mdx" || extension === ".md") {
         const parsed = matter(content);
 
-        return {
+        return [{
             data: {
                 ...parsed.data,
                 content: parsed.content,
-            },
+            } as PageData,
             path: virtualPath,
             type: "page",
-        };
+        }];
     }
 
     if (extension === ".json") {
-        return {
-            data: JSON.parse(content),
+        return [{
+            data: JSON.parse(content) as MetaData,
             path: virtualPath,
             type: "meta",
-        };
+        }];
     }
 
     return [];
