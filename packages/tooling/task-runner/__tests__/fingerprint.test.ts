@@ -37,6 +37,8 @@ describe(FingerprintManager, () => {
 
     describe("createFingerprint", () => {
         it("should create fingerprint from file accesses", async () => {
+            expect.assertions(4);
+
             const accesses: FileAccess[] = [
                 { path: join(workspaceRoot, "src/index.ts"), type: "read" },
                 { path: join(workspaceRoot, "package.json"), type: "stat" },
@@ -51,6 +53,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should track missing files", async () => {
+            expect.assertions(1);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/nonexistent.ts"), type: "missing" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -59,6 +63,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should track directory listings", async () => {
+            expect.assertions(3);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src"), type: "readdir" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -69,6 +75,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should include env var hashes with wildcard patterns", async () => {
+            expect.assertions(3);
+
             const envVariables = {
                 NODE_ENV: "development",
                 VITE_API_URL: "http://localhost:3000",
@@ -83,6 +91,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should exclude untracked env vars from fingerprint", async () => {
+            expect.assertions(3);
+
             const envVariables = {
                 VITE_API_URL: "http://localhost:3000",
                 VITE_MODE: "dev",
@@ -97,6 +107,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should not affect fingerprint when untracked env var changes", async () => {
+            expect.assertions(3);
+
             const envVariables1 = {
                 CI_BUILD_ID: "build-1",
                 VITE_API_URL: "http://localhost:3000",
@@ -119,6 +131,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should produce different command hashes for different args", async () => {
+            expect.assertions(1);
+
             const fp1 = await manager.createFingerprint([], "app:build", { mode: "dev" }, {});
 
             const fp2 = await manager.createFingerprint([], "app:build", { mode: "prod" }, {});
@@ -129,6 +143,8 @@ describe(FingerprintManager, () => {
 
     describe("validate", () => {
         it("should return null when fingerprint is still valid", async () => {
+            expect.assertions(1);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -139,6 +155,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should detect file content changes", async () => {
+            expect.assertions(2);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -154,6 +172,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should detect file deletions", async () => {
+            expect.assertions(2);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/utils.ts"), type: "read" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -169,6 +189,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should detect previously missing files being created", async () => {
+            expect.assertions(2);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/new-module.ts"), type: "missing" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -184,6 +206,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should detect directory listing changes", async () => {
+            expect.assertions(2);
+
             const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src"), type: "readdir" }];
 
             const fingerprint = await manager.createFingerprint(accesses, "app:build", {}, {});
@@ -201,6 +225,8 @@ describe(FingerprintManager, () => {
 
     describe("validateCommand", () => {
         it("should return null when command matches", async () => {
+            expect.assertions(1);
+
             const fingerprint = await manager.createFingerprint([], "app:build", { mode: "dev" }, {});
 
             const result = manager.validateCommand(fingerprint, "app:build", { mode: "dev" });
@@ -209,6 +235,8 @@ describe(FingerprintManager, () => {
         });
 
         it("should detect command argument changes", async () => {
+            expect.assertions(2);
+
             const fingerprint = await manager.createFingerprint([], "app:build", { mode: "dev" }, {});
 
             const result = manager.validateCommand(fingerprint, "app:build", { mode: "prod" });
@@ -221,6 +249,8 @@ describe(FingerprintManager, () => {
 
     describe("formatMissReasons", () => {
         it("should format cache miss reasons", () => {
+            expect.assertions(2);
+
             const output = manager.formatMissReasons([
                 { detail: "src/index.ts", type: "file-changed" },
                 { detail: "NODE_ENV", type: "env-changed" },

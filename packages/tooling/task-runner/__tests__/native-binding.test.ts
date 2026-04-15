@@ -23,10 +23,8 @@ try {
 
 describe("native-binding", () => {
     describe("loadNativeBindings", () => {
-        it("should load the native addon when the binary is compiled", async () => {
-            if (!nativeBinaryPresent) {
-                return;
-            }
+        it.skipIf(!nativeBinaryPresent)("should load the native addon when the binary is compiled", async () => {
+            expect.assertions(1);
 
             vi.resetModules();
 
@@ -41,10 +39,8 @@ describe("native-binding", () => {
             expectTypeOf(result!.runConcurrent).toBeFunction();
         });
 
-        it("should return undefined when native addon is not available", async () => {
-            if (nativeBinaryPresent) {
-                return;
-            }
+        it.skipIf(nativeBinaryPresent)("should return undefined when native addon is not available", async () => {
+            expect.assertions(1);
 
             vi.resetModules();
 
@@ -55,6 +51,8 @@ describe("native-binding", () => {
         });
 
         it("should cache the result after the first attempt", async () => {
+            expect.assertions(1);
+
             vi.resetModules();
 
             const { loadNativeBindings } = await import("../src/native-binding");
@@ -67,10 +65,8 @@ describe("native-binding", () => {
     });
 
     describe("isNativeAvailable", () => {
-        it("should return true when native addon is compiled", async () => {
-            if (!nativeBinaryPresent) {
-                return;
-            }
+        it.skipIf(!nativeBinaryPresent)("should return true when native addon is compiled", async () => {
+            expect.assertions(1);
 
             vi.resetModules();
 
@@ -79,10 +75,8 @@ describe("native-binding", () => {
             expect(isNativeAvailable()).toBe(true);
         });
 
-        it("should return false when native addon is not available", async () => {
-            if (nativeBinaryPresent) {
-                return;
-            }
+        it.skipIf(nativeBinaryPresent)("should return false when native addon is not available", async () => {
+            expect.assertions(1);
 
             vi.resetModules();
 
@@ -92,6 +86,8 @@ describe("native-binding", () => {
         });
 
         it("should be consistent with loadNativeBindings", async () => {
+            expect.assertions(1);
+
             vi.resetModules();
 
             const { isNativeAvailable, loadNativeBindings } = await import("../src/native-binding");

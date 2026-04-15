@@ -5,6 +5,8 @@ import type { ProcessEvent } from "../src/types";
 
 describe("runConcurrently (public API)", () => {
     it("should run a single string command", async () => {
+        expect.assertions(3);
+
         const result = await runConcurrently(["echo hello"]);
 
         expect(result.success).toBe(true);
@@ -13,6 +15,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should run a command config object", async () => {
+        expect.assertions(3);
+
         const result = await runConcurrently([{ command: "echo world", name: "greeter" }]);
 
         expect(result.success).toBe(true);
@@ -21,6 +25,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should handle multiple commands", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrently(["echo a", "echo b", "echo c"]);
 
         expect(result.success).toBe(true);
@@ -28,6 +34,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should detect failures", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrently(["exit 1"]);
 
         expect(result.success).toBe(false);
@@ -35,6 +43,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should return empty result for no commands", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrently([]);
 
         expect(result.success).toBe(true);
@@ -42,6 +52,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should stream events via onEvent", async () => {
+        expect.assertions(3);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrently(["echo streamed"], {
@@ -58,6 +70,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should respect maxProcesses", async () => {
+        expect.assertions(1);
+
         const order: number[] = [];
 
         await runConcurrently(["echo 0", "echo 1", "echo 2"], {
@@ -70,10 +84,12 @@ describe("runConcurrently (public API)", () => {
         });
 
         // Sequential: should complete in order
-        expect(order).toEqual([0, 1, 2]);
+        expect(order).toStrictEqual([0, 1, 2]);
     });
 
     it("should support killOthers on failure", async () => {
+        expect.assertions(3);
+
         const start = Date.now();
 
         const result = await runConcurrently(["exit 1", "sleep 10"], {
@@ -88,6 +104,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should support success condition", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrently(
             [
                 { command: "exit 1", name: "irrelevant" },
@@ -100,6 +118,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should pass environment variables", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrently([{ command: "echo $CONCURRENT_TEST_VAR", env: { CONCURRENT_TEST_VAR: "it_works" } }], { onEvent: (event) => events.push(event) });
@@ -110,6 +130,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should handle mixed string and object inputs", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrently(["echo plain", { command: "echo named", name: "obj" }]);
 
         expect(result.success).toBe(true);
@@ -117,12 +139,16 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should track duration", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrently(["sleep 0.1"]);
 
         expect(result.closeEvents[0]!.durationMs).toBeGreaterThan(50);
     });
 
     it("should support stdin null mode (default)", async () => {
+        expect.assertions(1);
+
         // cat with stdin=null reads EOF and exits 0
         const result = await runConcurrently([{ command: "cat", stdin: "null" }]);
 
@@ -130,6 +156,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should support stdin pipe mode", async () => {
+        expect.assertions(2);
+
         // echo doesn't read stdin, so pipe mode doesn't block
         const result = await runConcurrently([{ command: "echo pipe-test", stdin: "pipe" }]);
 
@@ -138,6 +166,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should use custom shellPath when provided", async () => {
+        expect.assertions(2);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrently(["echo shell-override"], {
@@ -150,6 +180,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should execute without shell when shell is false", async () => {
+        expect.assertions(2);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrently([{ command: "echo direct", shell: false }], { onEvent: (event) => events.push(event) });
@@ -159,6 +191,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should restart failed commands with restart option", async () => {
+        expect.assertions(2);
+
         // Command that always fails -- should be retried
         const events: ProcessEvent[] = [];
 
@@ -177,6 +211,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should run teardown commands after completion", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrently(["echo main"], {
@@ -190,6 +226,8 @@ describe("runConcurrently (public API)", () => {
     });
 
     it("should not fail when teardown is empty", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrently(["echo ok"], {
             teardown: [],
         });

@@ -27,22 +27,28 @@ const makeGraph = (overrides?: Partial<ProjectGraph>): ProjectGraph => {
 describe(enforceProjectConstraints, () => {
     describe("no constraints", () => {
         it("should return no violations when constraints are empty", () => {
+            expect.assertions(1);
+
             const violations = enforceProjectConstraints(makeGraph(), {});
 
-            expect(violations).toEqual([]);
+            expect(violations).toStrictEqual([]);
         });
 
         it("should return no violations when no tag relationships or type boundaries are set", () => {
+            expect.assertions(1);
+
             const violations = enforceProjectConstraints(makeGraph(), {
                 tagRelationships: {},
             });
 
-            expect(violations).toEqual([]);
+            expect(violations).toStrictEqual([]);
         });
     });
 
     describe("tag relationships", () => {
         it("should detect tag relationship violations", () => {
+            expect.assertions(1);
+
             const constraints: ConstraintsConfig = {
                 tagRelationships: {
                     // frontend projects can only depend on frontend or shared
@@ -58,6 +64,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should report violation when dependency lacks required tags", () => {
+            expect.assertions(4);
+
             const graph = makeGraph();
 
             // Remove "shared" tag from lib-api so it only has "backend"
@@ -83,6 +91,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should not apply tag rules to projects without the source tag", () => {
+            expect.assertions(1);
+
             const constraints: ConstraintsConfig = {
                 tagRelationships: {
                     // Only "admin" tagged projects have restrictions
@@ -97,6 +107,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should handle projects with no tags", () => {
+            expect.assertions(1);
+
             const graph = makeGraph();
 
             graph.nodes["lib-notags"] = {
@@ -119,6 +131,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should report violation when dependency has no tags but source requires them", () => {
+            expect.assertions(3);
+
             const graph = makeGraph();
 
             graph.nodes["lib-notags"] = {
@@ -144,6 +158,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should check multiple source tags independently", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     dep: [],
@@ -171,6 +187,8 @@ describe(enforceProjectConstraints, () => {
 
     describe("type boundaries", () => {
         it("should detect application boundary violations", () => {
+            expect.assertions(4);
+
             const graph = makeGraph();
 
             // Make lib-ui depend on app (which is an application)
@@ -191,6 +209,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should enforce application boundary by default", () => {
+            expect.assertions(1);
+
             const graph = makeGraph();
 
             graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
@@ -205,6 +225,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should skip application boundary when disabled", () => {
+            expect.assertions(1);
+
             const graph = makeGraph();
 
             graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
@@ -219,6 +241,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should enforce custom allowedDependencyTypes", () => {
+            expect.assertions(1);
+
             const constraints: ConstraintsConfig = {
                 typeBoundaries: {
                     // applications can only depend on libraries
@@ -236,6 +260,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should report custom type boundary violation", () => {
+            expect.assertions(2);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app1: [{ source: "app1", target: "app2", type: "static" }],
@@ -266,6 +292,8 @@ describe(enforceProjectConstraints, () => {
 
     describe("combined constraints", () => {
         it("should report both tag and type violations", () => {
+            expect.assertions(3);
+
             const graph = makeGraph();
 
             // lib-ui depends on app (application boundary violation)
@@ -302,6 +330,8 @@ describe(enforceProjectConstraints, () => {
 
     describe("edge cases", () => {
         it("should handle empty graph", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = { dependencies: {}, nodes: {} };
 
             const violations = enforceProjectConstraints(graph, {
@@ -309,10 +339,12 @@ describe(enforceProjectConstraints, () => {
                 typeBoundaries: { enforceApplicationBoundary: true },
             });
 
-            expect(violations).toEqual([]);
+            expect(violations).toStrictEqual([]);
         });
 
         it("should handle self-dependency edges", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     a: [{ source: "a", target: "a", type: "static" }],
@@ -333,6 +365,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should not produce duplicate violations for application boundary + allowedDependencyTypes", () => {
+            expect.assertions(2);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app: [],
@@ -357,6 +391,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should handle missing dependency nodes gracefully", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     a: [{ source: "a", target: "nonexistent", type: "static" }],
@@ -371,12 +407,14 @@ describe(enforceProjectConstraints, () => {
             });
 
             // nonexistent node is skipped, not an error
-            expect(violations).toEqual([]);
+            expect(violations).toStrictEqual([]);
         });
     });
 
     describe("dependency kind rules", () => {
         it("should detect production dependency on application", () => {
+            expect.assertions(3);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app: [],
@@ -398,6 +436,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should allow devDependency on application when noProductionDependencyOnApplication is set", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app: [],
@@ -417,6 +457,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should detect devDependency that duplicates a production dependency", () => {
+            expect.assertions(3);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     lib: [
@@ -441,6 +483,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should not flag devDependency that is not also a production dependency", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     lib: [{ source: "lib", target: "test-utils", type: "devDependency" }],
@@ -460,6 +504,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should only apply noDevDependencyOnProductionDep to library projects", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app: [
@@ -483,6 +529,8 @@ describe(enforceProjectConstraints, () => {
         });
 
         it("should return no violations when no dependency kind rules are set", () => {
+            expect.assertions(1);
+
             const graph: ProjectGraph = {
                 dependencies: {
                     app: [],

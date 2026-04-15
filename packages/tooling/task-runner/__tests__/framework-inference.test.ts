@@ -27,6 +27,8 @@ describe(detectFrameworks, () => {
     });
 
     it("should detect Next.js", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -40,10 +42,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Next.js");
-        expect(frameworks[0]?.envPrefixes).toEqual(["NEXT_PUBLIC_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["NEXT_PUBLIC_"]);
     });
 
     it("should detect Vite", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -57,10 +61,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Vite");
-        expect(frameworks[0]?.envPrefixes).toEqual(["VITE_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["VITE_"]);
     });
 
     it("should detect Create React App", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -74,10 +80,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Create React App");
-        expect(frameworks[0]?.envPrefixes).toEqual(["REACT_APP_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["REACT_APP_"]);
     });
 
     it("should detect multiple frameworks", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -99,6 +107,8 @@ describe(detectFrameworks, () => {
     });
 
     it("should detect Gatsby", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -112,10 +122,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Gatsby");
-        expect(frameworks[0]?.envPrefixes).toEqual(["GATSBY_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["GATSBY_"]);
     });
 
     it("should detect Nuxt", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -129,10 +141,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Nuxt");
-        expect(frameworks[0]?.envPrefixes).toEqual(["NUXT_PUBLIC_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["NUXT_PUBLIC_"]);
     });
 
     it("should detect Expo", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -146,10 +160,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("Expo");
-        expect(frameworks[0]?.envPrefixes).toEqual(["EXPO_PUBLIC_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["EXPO_PUBLIC_"]);
     });
 
     it("should detect Remix", async () => {
+        expect.assertions(2);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -166,6 +182,8 @@ describe(detectFrameworks, () => {
     });
 
     it("should detect SvelteKit", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -179,10 +197,12 @@ describe(detectFrameworks, () => {
 
         expect(frameworks).toHaveLength(1);
         expect(frameworks[0]?.name).toBe("SvelteKit");
-        expect(frameworks[0]?.envPrefixes).toEqual(["PUBLIC_"]);
+        expect(frameworks[0]?.envPrefixes).toStrictEqual(["PUBLIC_"]);
     });
 
     it("should return empty array for no frameworks", async () => {
+        expect.assertions(1);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -198,6 +218,8 @@ describe(detectFrameworks, () => {
     });
 
     it("should return empty array for missing package.json", async () => {
+        expect.assertions(1);
+
         const frameworks = await detectFrameworks(join(workspaceRoot, "nonexistent.json"));
 
         expect(frameworks).toHaveLength(0);
@@ -216,6 +238,8 @@ describe(inferFrameworkEnvPatterns, () => {
     });
 
     it("should infer patterns across multiple projects", async () => {
+        expect.assertions(2);
+
         await mkdir(join(workspaceRoot, "packages/web"), { recursive: true });
         await mkdir(join(workspaceRoot, "packages/admin"), { recursive: true });
 
@@ -233,6 +257,8 @@ describe(inferFrameworkEnvPatterns, () => {
     });
 
     it("should deduplicate prefixes", async () => {
+        expect.assertions(1);
+
         await mkdir(join(workspaceRoot, "packages/web1"), { recursive: true });
         await mkdir(join(workspaceRoot, "packages/web2"), { recursive: true });
 
@@ -264,6 +290,8 @@ describe(getFrameworkEnvVariables, () => {
     });
 
     it("should return matching framework env vars", async () => {
+        expect.assertions(1);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(packageJsonPath, JSON.stringify({ dependencies: { next: "14.0.0" } }));
@@ -277,13 +305,15 @@ describe(getFrameworkEnvVariables, () => {
 
         const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             NEXT_PUBLIC_ANALYTICS_ID: "abc123",
             NEXT_PUBLIC_API_URL: "https://api.example.com",
         });
     });
 
     it("should return empty for no matching env vars", async () => {
+        expect.assertions(1);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(packageJsonPath, JSON.stringify({ dependencies: { next: "14.0.0" } }));
@@ -295,10 +325,12 @@ describe(getFrameworkEnvVariables, () => {
 
         const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
-        expect(result).toEqual({});
+        expect(result).toStrictEqual({});
     });
 
     it("should handle multiple framework prefixes", async () => {
+        expect.assertions(1);
+
         const packageJsonPath = join(workspaceRoot, "package.json");
 
         await writeFile(
@@ -317,7 +349,7 @@ describe(getFrameworkEnvVariables, () => {
 
         const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
             NEXT_PUBLIC_API: "https://api.example.com",
             VITE_APP_TITLE: "My App",
         });

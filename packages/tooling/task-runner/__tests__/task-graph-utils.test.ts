@@ -44,10 +44,13 @@ const createCyclicGraph = (): TaskGraph => {
 
 describe(findCycle, () => {
     it("should return null for acyclic graph", () => {
+        expect.assertions(1);
         expect(findCycle(createSimpleGraph())).toBeUndefined();
     });
 
     it("should find a cycle in cyclic graph", () => {
+        expect.assertions(2);
+
         const cycle = findCycle(createCyclicGraph());
 
         expect(cycle).toBeDefined();
@@ -57,10 +60,13 @@ describe(findCycle, () => {
 
 describe(findCycles, () => {
     it("should return empty array for acyclic graph", () => {
-        expect(findCycles(createSimpleGraph())).toEqual([]);
+        expect.assertions(1);
+        expect(findCycles(createSimpleGraph())).toStrictEqual([]);
     });
 
     it("should find cycles in cyclic graph", () => {
+        expect.assertions(1);
+
         const cycles = findCycles(createCyclicGraph());
 
         expect(cycles.length).toBeGreaterThan(0);
@@ -69,6 +75,8 @@ describe(findCycles, () => {
 
 describe(walkTaskGraph, () => {
     it("should visit tasks in topological order", () => {
+        expect.assertions(2);
+
         const visited: string[] = [];
 
         walkTaskGraph(createSimpleGraph(), (taskId) => {
@@ -85,6 +93,8 @@ describe(walkTaskGraph, () => {
     });
 
     it("should visit all tasks", () => {
+        expect.assertions(1);
+
         const visited: string[] = [];
 
         walkTaskGraph(createSimpleGraph(), (taskId) => {
@@ -97,41 +107,51 @@ describe(walkTaskGraph, () => {
 
 describe(reverseTaskGraph, () => {
     it("should reverse edge directions", () => {
+        expect.assertions(3);
+
         const reversed = reverseTaskGraph(createSimpleGraph());
 
         // Original: a -> b -> c
         // Reversed: c -> b -> a
         expect(reversed.dependencies["c:build"]).toContain("b:build");
         expect(reversed.dependencies["b:build"]).toContain("a:build");
-        expect(reversed.dependencies["a:build"]).toEqual([]);
+        expect(reversed.dependencies["a:build"]).toStrictEqual([]);
     });
 });
 
 describe(getLeafTasks, () => {
     it("should return tasks with no dependencies", () => {
+        expect.assertions(1);
+
         const leaves = getLeafTasks(createSimpleGraph());
 
-        expect(leaves).toEqual(["c:build"]);
+        expect(leaves).toStrictEqual(["c:build"]);
     });
 });
 
 describe(makeAcyclic, () => {
     it("should remove cycle-forming edges", () => {
+        expect.assertions(1);
+
         const acyclic = makeAcyclic(createCyclicGraph());
 
         expect(findCycle(acyclic)).toBeUndefined();
     });
 
     it("should not modify acyclic graphs", () => {
+        expect.assertions(1);
+
         const original = createSimpleGraph();
         const result = makeAcyclic(original);
 
-        expect(result.dependencies).toEqual(original.dependencies);
+        expect(result.dependencies).toStrictEqual(original.dependencies);
     });
 });
 
 describe(getDependentTasks, () => {
     it("should find all tasks that depend on a task", () => {
+        expect.assertions(2);
+
         const dependents = getDependentTasks(createSimpleGraph(), "c:build");
 
         expect(dependents).toContain("b:build");
@@ -139,14 +159,18 @@ describe(getDependentTasks, () => {
     });
 
     it("should return empty for root tasks with no dependents", () => {
+        expect.assertions(1);
+
         const dependents = getDependentTasks(createSimpleGraph(), "a:build");
 
-        expect(dependents).toEqual([]);
+        expect(dependents).toStrictEqual([]);
     });
 });
 
 describe(getTransitiveDependencies, () => {
     it("should find all transitive dependencies", () => {
+        expect.assertions(2);
+
         const deps = getTransitiveDependencies(createSimpleGraph(), "a:build");
 
         expect(deps).toContain("b:build");
@@ -154,8 +178,10 @@ describe(getTransitiveDependencies, () => {
     });
 
     it("should return empty for leaf tasks", () => {
+        expect.assertions(1);
+
         const deps = getTransitiveDependencies(createSimpleGraph(), "c:build");
 
-        expect(deps).toEqual([]);
+        expect(deps).toStrictEqual([]);
     });
 });

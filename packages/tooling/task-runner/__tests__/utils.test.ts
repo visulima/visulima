@@ -28,6 +28,8 @@ describe(hashFile, () => {
     });
 
     it("should return the xxh3-128 hash of a file's content", async () => {
+        expect.assertions(1);
+
         const filePath = join(temporaryDirectory, "test.txt");
         const content = "hello world";
 
@@ -40,12 +42,16 @@ describe(hashFile, () => {
     });
 
     it("should return undefined for a non-existent file", async () => {
+        expect.assertions(1);
+
         const result = await hashFile(join(temporaryDirectory, "nonexistent.txt"));
 
         expect(result).toBeUndefined();
     });
 
     it("should handle empty files", async () => {
+        expect.assertions(1);
+
         const filePath = join(temporaryDirectory, "empty.txt");
 
         await writeFile(filePath, "");
@@ -59,6 +65,8 @@ describe(hashFile, () => {
 
 describe(hashStrings, () => {
     it("should hash a single string deterministically", () => {
+        expect.assertions(2);
+
         const result = hashStrings("hello");
 
         // Should be a 32-char hex string (xxh3-128)
@@ -68,6 +76,8 @@ describe(hashStrings, () => {
     });
 
     it("should hash multiple strings deterministically", () => {
+        expect.assertions(2);
+
         const result = hashStrings("hello", "world");
 
         expect(result).toMatch(/^[\da-f]{32}$/);
@@ -75,34 +85,44 @@ describe(hashStrings, () => {
     });
 
     it("should produce different hashes for different inputs", () => {
+        expect.assertions(1);
+
         expect(hashStrings("a", "b")).not.toBe(hashStrings("b", "a"));
     });
 });
 
 describe(sortObjectKeys, () => {
     it("should sort top-level keys alphabetically", () => {
+        expect.assertions(1);
+
         const result = sortObjectKeys({ a: 1, b: 2, c: 3 });
 
-        expect(Object.keys(result)).toEqual(["a", "b", "c"]);
+        expect(Object.keys(result)).toStrictEqual(["a", "b", "c"]);
     });
 
     it("should recursively sort nested object keys", () => {
+        expect.assertions(2);
+
         const result = sortObjectKeys({ a: 1, b: { a: 2, z: 1 } });
 
-        expect(Object.keys(result)).toEqual(["a", "b"]);
-        expect(Object.keys(result["b"] as Record<string, unknown>)).toEqual(["a", "z"]);
+        expect(Object.keys(result)).toStrictEqual(["a", "b"]);
+        expect(Object.keys(result["b"] as Record<string, unknown>)).toStrictEqual(["a", "z"]);
     });
 
     it("should preserve arrays without sorting them", () => {
+        expect.assertions(1);
+
         const result = sortObjectKeys({ arr: [3, 1, 2] });
 
-        expect(result["arr"]).toEqual([3, 1, 2]);
+        expect(result["arr"]).toStrictEqual([3, 1, 2]);
     });
 
     it("should handle null and undefined values", () => {
+        expect.assertions(1);
+
         const result = sortObjectKeys({ a: undefined, b: null });
 
-        expect(result).toEqual({ a: undefined, b: null });
+        expect(result).toStrictEqual({ a: undefined, b: null });
     });
 });
 
@@ -118,15 +138,19 @@ describe(collectFiles, () => {
     });
 
     it("should collect all files in a flat directory", async () => {
+        expect.assertions(1);
+
         await writeFile(join(temporaryDirectory, "a.txt"), "a");
         await writeFile(join(temporaryDirectory, "b.txt"), "b");
 
         const result = await collectFiles(temporaryDirectory, new Set());
 
-        expect(result.sort()).toEqual([join(temporaryDirectory, "a.txt"), join(temporaryDirectory, "b.txt")]);
+        expect(result.sort()).toStrictEqual([join(temporaryDirectory, "a.txt"), join(temporaryDirectory, "b.txt")]);
     });
 
     it("should collect files recursively", async () => {
+        expect.assertions(1);
+
         const subDirectory = join(temporaryDirectory, "sub");
 
         await mkdir(subDirectory);
@@ -135,10 +159,12 @@ describe(collectFiles, () => {
 
         const result = await collectFiles(temporaryDirectory, new Set());
 
-        expect(result.sort()).toEqual([join(temporaryDirectory, "root.txt"), join(subDirectory, "nested.txt")].sort());
+        expect(result.sort()).toStrictEqual([join(temporaryDirectory, "root.txt"), join(subDirectory, "nested.txt")].sort());
     });
 
     it("should skip ignored directories", async () => {
+        expect.assertions(1);
+
         const nodeModules = join(temporaryDirectory, "node_modules");
 
         await mkdir(nodeModules);
@@ -147,26 +173,32 @@ describe(collectFiles, () => {
 
         const result = await collectFiles(temporaryDirectory, new Set(["node_modules"]));
 
-        expect(result).toEqual([join(temporaryDirectory, "src.ts")]);
+        expect(result).toStrictEqual([join(temporaryDirectory, "src.ts")]);
     });
 
     it("should return a single file if path points to a file", async () => {
+        expect.assertions(1);
+
         const filePath = join(temporaryDirectory, "single.txt");
 
         await writeFile(filePath, "data");
 
         const result = await collectFiles(filePath, new Set());
 
-        expect(result).toEqual([filePath]);
+        expect(result).toStrictEqual([filePath]);
     });
 
     it("should return empty array for non-existent directory", async () => {
+        expect.assertions(1);
+
         const result = await collectFiles(join(temporaryDirectory, "nope"), new Set());
 
-        expect(result).toEqual([]);
+        expect(result).toStrictEqual([]);
     });
 
     it("should follow symlinks to files", async () => {
+        expect.assertions(1);
+
         const realFile = join(temporaryDirectory, "real.txt");
         const linkFile = join(temporaryDirectory, "link.txt");
 
@@ -175,12 +207,14 @@ describe(collectFiles, () => {
 
         const result = await collectFiles(temporaryDirectory, new Set());
 
-        expect(result.sort()).toEqual([linkFile, realFile].sort());
+        expect(result.sort()).toStrictEqual([linkFile, realFile].sort());
     });
 });
 
 describe(resolveTaskCwd, () => {
     it("should return workspace root when task has no projectRoot", () => {
+        expect.assertions(1);
+
         const task = {
             id: "test:build",
             outputs: [],
@@ -192,6 +226,8 @@ describe(resolveTaskCwd, () => {
     });
 
     it("should join workspace root and projectRoot", () => {
+        expect.assertions(1);
+
         const task = {
             id: "test:build",
             outputs: [],
@@ -206,6 +242,8 @@ describe(resolveTaskCwd, () => {
 
 describe(createFailureResult, () => {
     it("should create a failure result from an Error", () => {
+        expect.assertions(6);
+
         const task = {
             id: "test:build",
             outputs: [],
@@ -224,6 +262,8 @@ describe(createFailureResult, () => {
     });
 
     it("should create a failure result from a non-Error value", () => {
+        expect.assertions(1);
+
         const task = {
             id: "test:build",
             outputs: [],
@@ -248,6 +288,8 @@ describe(readPackageDeps, () => {
     });
 
     it("should read all dependency types by default", async () => {
+        expect.assertions(2);
+
         const packageJsonPath = join(temporaryDirectory, "package.json");
 
         await writeFile(
@@ -263,10 +305,12 @@ describe(readPackageDeps, () => {
         const result = await readPackageDeps(packageJsonPath);
 
         expect(result).toBeDefined();
-        expect(result).toEqual(new Set(["fsevents", "lodash", "react", "vitest"]));
+        expect(result).toStrictEqual(new Set(["fsevents", "lodash", "react", "vitest"]));
     });
 
     it("should exclude peer dependencies when peer is false", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(temporaryDirectory, "package.json");
 
         await writeFile(
@@ -285,6 +329,8 @@ describe(readPackageDeps, () => {
     });
 
     it("should exclude optional dependencies when optional is false", async () => {
+        expect.assertions(3);
+
         const packageJsonPath = join(temporaryDirectory, "package.json");
 
         await writeFile(
@@ -303,12 +349,16 @@ describe(readPackageDeps, () => {
     });
 
     it("should return undefined for non-existent file", async () => {
+        expect.assertions(1);
+
         const result = await readPackageDeps(join(temporaryDirectory, "nonexistent.json"));
 
         expect(result).toBeUndefined();
     });
 
     it("should handle package.json with no dependencies", async () => {
+        expect.assertions(2);
+
         const packageJsonPath = join(temporaryDirectory, "package.json");
 
         await writeFile(packageJsonPath, JSON.stringify({ name: "empty-pkg" }));

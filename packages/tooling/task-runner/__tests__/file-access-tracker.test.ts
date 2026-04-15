@@ -28,17 +28,19 @@ describe(FileAccessTracker, () => {
     });
 
     describe("isSupported", () => {
-        it("should return false on non-Linux platforms", () => {
+        it.skipIf(process.platform === "linux")("should return false on non-Linux platforms", () => {
+            expect.assertions(1);
+
             const tracker = new FileAccessTracker(workspaceRoot);
 
-            if (process.platform !== "linux") {
-                expect(tracker.isSupported()).toBe(false);
-            }
+            expect(tracker.isSupported()).toBe(false);
         });
     });
 
     describe("track", () => {
         it("should run a command and return output", async () => {
+            expect.assertions(2);
+
             const tracker = new FileAccessTracker(workspaceRoot);
             const result = await tracker.track("echo hello", { cwd: workspaceRoot });
 
@@ -50,19 +52,19 @@ describe(FileAccessTracker, () => {
         });
 
         it("should return exit code 0 for successful command", async () => {
+            expect.assertions(1);
+
             const tracker = new FileAccessTracker(workspaceRoot);
             const result = await tracker.track("true", { cwd: workspaceRoot });
 
             expect(result.code).toBe(0);
         });
 
-        it("should track file accesses when strace is available (Linux)", async () => {
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isSupported())("should track file accesses when strace is available (Linux)", async () => {
+            expect.assertions(2);
+
             // Use empty exclude patterns so /tmp paths are not filtered out
             const tracker = new FileAccessTracker(workspaceRoot, []);
-
-            if (!tracker.isSupported()) {
-                return;
-            }
 
             // Create a file that the command will read
             const testFile = join(workspaceRoot, "test.txt");
@@ -79,12 +81,10 @@ describe(FileAccessTracker, () => {
             expect(accessedPaths).toContain(testFile);
         });
 
-        it("should filter out system paths", async () => {
-            const tracker = new FileAccessTracker(workspaceRoot);
+        it.skipIf(!new FileAccessTracker(tmpdir()).isSupported())("should filter out system paths", async () => {
+            expect.assertions(1);
 
-            if (!tracker.isSupported()) {
-                return;
-            }
+            const tracker = new FileAccessTracker(workspaceRoot);
 
             const result = await tracker.track("ls /proc/self/status", { cwd: workspaceRoot });
 
@@ -94,12 +94,10 @@ describe(FileAccessTracker, () => {
             expect(procAccesses).toHaveLength(0);
         });
 
-        it("should only include paths within workspace root", async () => {
-            const tracker = new FileAccessTracker(workspaceRoot, []);
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isSupported())("should only include paths within workspace root", async () => {
+            expect.hasAssertions();
 
-            if (!tracker.isSupported()) {
-                return;
-            }
+            const tracker = new FileAccessTracker(workspaceRoot, []);
 
             const testFile = join(workspaceRoot, "test.txt");
 
@@ -112,13 +110,11 @@ describe(FileAccessTracker, () => {
             }
         });
 
-        it("should use custom exclude patterns", async () => {
+        it.skipIf(!new FileAccessTracker(tmpdir(), [/\.log$/]).isSupported())("should use custom exclude patterns", async () => {
+            expect.assertions(1);
+
             // Only exclude .log files, not /tmp/ (since our workspace is in /tmp)
             const tracker = new FileAccessTracker(workspaceRoot, [/\.log$/]);
-
-            if (!tracker.isSupported()) {
-                return;
-            }
 
             const logFile = join(workspaceRoot, "test.log");
             const txtFile = join(workspaceRoot, "test.txt");
@@ -134,6 +130,8 @@ describe(FileAccessTracker, () => {
         });
 
         it("should pass environment variables to the command", async () => {
+            expect.assertions(1);
+
             const tracker = new FileAccessTracker(workspaceRoot);
             const result = await tracker.track('echo "$MY_TEST_VAR"', {
                 cwd: workspaceRoot,
@@ -145,17 +143,14 @@ describe(FileAccessTracker, () => {
     });
 
     describe("track on unsupported platform", () => {
-        it("should return empty accesses when tracking is not supported", async () => {
-            const tracker = new FileAccessTracker(workspaceRoot);
+        it.skipIf(new FileAccessTracker(tmpdir()).isSupported())("should return empty accesses when tracking is not supported", async () => {
+            expect.assertions(2);
 
-            if (tracker.isSupported()) {
-                // This test is for unsupported platforms; skip on Linux
-                return;
-            }
+            const tracker = new FileAccessTracker(workspaceRoot);
 
             const result = await tracker.track("echo hello", { cwd: workspaceRoot });
 
-            expect(result.accesses).toEqual([]);
+            expect(result.accesses).toStrictEqual([]);
             expect(result.output).toContain("hello");
         });
     });
@@ -163,12 +158,16 @@ describe(FileAccessTracker, () => {
 
 describe(generatePreloadScript, () => {
     it("should return a string containing the output path", () => {
+        expect.assertions(1);
+
         const script = generatePreloadScript("/tmp/test-log.jsonl");
 
         expect(script).toContain("/tmp/test-log.jsonl");
     });
 
     it("should patch fs sync and async methods", () => {
+        expect.assertions(3);
+
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('"readFileSync"');
@@ -177,6 +176,8 @@ describe(generatePreloadScript, () => {
     });
 
     it("should patch fs/promises", () => {
+        expect.assertions(4);
+
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('require("node:fs/promises")');
@@ -186,6 +187,8 @@ describe(generatePreloadScript, () => {
     });
 
     it("should flush on process exit", () => {
+        expect.assertions(1);
+
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('process.on("beforeExit"');

@@ -25,6 +25,8 @@ const createResult = (taskId: string, status: "success" | "failure" = "success")
 
 describe(EmptyLifeCycle, () => {
     it("should not throw when methods are called", () => {
+        expect.assertions(1);
+
         const lc: LifeCycleInterface = new EmptyLifeCycle();
 
         expect(() => {
@@ -40,15 +42,17 @@ describe(EmptyLifeCycle, () => {
 
 describe(CompositeLifeCycle, () => {
     it("should forward events to all registered handlers", () => {
+        expect.assertions(5);
+
         const handler1: LifeCycleInterface = {
-            endCommand: vi.fn(),
-            scheduleTask: vi.fn(),
-            startCommand: vi.fn(),
+            endCommand: vi.fn<() => void>(),
+            scheduleTask: vi.fn<(task: Task) => void>(),
+            startCommand: vi.fn<() => void>(),
         };
 
         const handler2: LifeCycleInterface = {
-            scheduleTask: vi.fn(),
-            startCommand: vi.fn(),
+            scheduleTask: vi.fn<(task: Task) => void>(),
+            startCommand: vi.fn<() => void>(),
         };
 
         const composite = new CompositeLifeCycle([handler1, handler2]);
@@ -65,8 +69,10 @@ describe(CompositeLifeCycle, () => {
     });
 
     it("should forward printCacheMiss to all handlers", () => {
+        expect.assertions(1);
+
         const handler: LifeCycleInterface = {
-            printCacheMiss: vi.fn(),
+            printCacheMiss: vi.fn<(task: Task, reason: string) => void>(),
         };
 
         const composite = new CompositeLifeCycle([handler]);
@@ -80,6 +86,8 @@ describe(CompositeLifeCycle, () => {
 
 describe(ConsoleLifeCycle, () => {
     it("should log task starts", () => {
+        expect.assertions(1);
+
         const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
         const lc = new ConsoleLifeCycle();
 
@@ -91,6 +99,8 @@ describe(ConsoleLifeCycle, () => {
     });
 
     it("should log task results with duration", () => {
+        expect.assertions(2);
+
         const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
         const lc = new ConsoleLifeCycle();
 
@@ -103,6 +113,8 @@ describe(ConsoleLifeCycle, () => {
     });
 
     it("should log verbose messages in verbose mode", () => {
+        expect.assertions(1);
+
         const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
         const lc = new ConsoleLifeCycle(true);
 
@@ -114,6 +126,8 @@ describe(ConsoleLifeCycle, () => {
     });
 
     it("should log cache miss in verbose mode", () => {
+        expect.assertions(1);
+
         const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
         const lc = new ConsoleLifeCycle(true);
 

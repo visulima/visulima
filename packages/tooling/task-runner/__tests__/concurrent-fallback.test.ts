@@ -12,6 +12,8 @@ const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => 
 
 describe(runConcurrentFallback, () => {
     it("should run a single echo command", async () => {
+        expect.assertions(4);
+
         const result = await runConcurrentFallback([makeConfig("echo hello", "greeter")], {});
 
         expect(result.success).toBe(true);
@@ -21,6 +23,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should run multiple commands", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrentFallback([makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")], {});
 
         expect(result.success).toBe(true);
@@ -28,6 +32,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should detect failing commands", async () => {
+        expect.assertions(3);
+
         const result = await runConcurrentFallback([makeConfig("exit 42")], {});
 
         expect(result.success).toBe(false);
@@ -36,6 +42,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should handle mixed success and failure", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrentFallback([makeConfig("echo ok"), makeConfig("exit 1")], {});
 
         expect(result.success).toBe(false);
@@ -43,6 +51,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should handle empty commands", async () => {
+        expect.assertions(2);
+
         const result = await runConcurrentFallback([], {});
 
         expect(result.success).toBe(true);
@@ -50,6 +60,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should stream events via onEvent callback", async () => {
+        expect.assertions(4);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrentFallback([makeConfig("echo hello")], {
@@ -67,6 +79,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should respect maxProcesses for sequential execution", async () => {
+        expect.assertions(1);
+
         const completionOrder: number[] = [];
 
         await runConcurrentFallback([makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")], {
@@ -79,10 +93,12 @@ describe(runConcurrentFallback, () => {
         });
 
         // With maxProcesses=1, should complete in order
-        expect(completionOrder).toEqual([0, 1, 2]);
+        expect(completionOrder).toStrictEqual([0, 1, 2]);
     });
 
     it("should support success condition 'first'", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrentFallback([makeConfig("echo ok"), makeConfig("sleep 0.1 && exit 1")], { successCondition: "first" });
 
         // First to complete is "echo ok" (instant)
@@ -90,6 +106,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should kill others on failure", async () => {
+        expect.assertions(3);
+
         const start = Date.now();
 
         const result = await runConcurrentFallback([makeConfig("exit 1"), makeConfig("sleep 10")], { killOthers: ["failure"], killTimeout: 1000 });
@@ -103,6 +121,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should capture stderr output", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrentFallback([makeConfig("echo error >&2")], {
@@ -115,6 +135,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should pass environment variables to child processes", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrentFallback([{ command: "echo $MY_TEST_VAR", env: { MY_TEST_VAR: "hello_test" } }], { onEvent: (event) => events.push(event) });
@@ -125,12 +147,16 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should track duration in close events", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrentFallback([makeConfig("sleep 0.1")], {});
 
         expect(result.closeEvents[0]!.durationMs).toBeGreaterThan(50);
     });
 
     it("should handle success condition 'command-<name>'", async () => {
+        expect.assertions(1);
+
         const result = await runConcurrentFallback([makeConfig("exit 1", "irrelevant"), makeConfig("echo ok", "important")], {
             successCondition: "command-important",
         });
@@ -139,6 +165,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should execute directly when shell is false", async () => {
+        expect.assertions(2);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrentFallback([{ command: "echo hello", shell: false }], { onEvent: (event) => events.push(event) });
@@ -151,6 +179,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should report stdout lines before close events", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrentFallback([makeConfig("echo line1 && echo line2 && echo line3")], {
@@ -167,6 +197,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should emit 'started' event with write function for pipe mode", async () => {
+        expect.assertions(2);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrentFallback([{ command: "echo pipe-test", stdin: "pipe" }], {
@@ -183,6 +215,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should emit 'started' event with write and resize for PTY mode", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         await runConcurrentFallback([{ command: "echo pty-test", stdin: "pty" }], {
@@ -198,6 +232,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should run PTY commands and capture output", async () => {
+        expect.assertions(2);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrentFallback([{ command: "echo pty-hello", stdin: "pty" }], {
@@ -212,6 +248,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should flush partial lines after 100ms timeout", async () => {
+        expect.assertions(1);
+
         const events: ProcessEvent[] = [];
 
         // printf writes without trailing newline — should be flushed by timer
@@ -225,6 +263,8 @@ describe(runConcurrentFallback, () => {
     });
 
     it("should handle PTY with interactive read prompt", async () => {
+        expect.assertions(3);
+
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrentFallback([{ command: 'read -p "Name: " name && echo "Got: $name"', stdin: "pty" }], {
@@ -250,6 +290,8 @@ describe(runConcurrentFallback, () => {
     }, 10_000);
 
     it("should kill PTY processes in killAll", async () => {
+        expect.assertions(3);
+
         const start = Date.now();
 
         const result = await runConcurrentFallback(

@@ -41,6 +41,8 @@ const createProjectGraph = (): ProjectGraph => {
 
 describe(toGraphvizDot, () => {
     it("should generate valid DOT output", () => {
+        expect.assertions(4);
+
         const dot = toGraphvizDot(createTaskGraph());
 
         expect(dot).toContain("digraph TaskGraph");
@@ -50,6 +52,8 @@ describe(toGraphvizDot, () => {
     });
 
     it("should group by project in subgraphs", () => {
+        expect.assertions(2);
+
         const dot = toGraphvizDot(createTaskGraph(), { groupByProject: true });
 
         expect(dot).toContain("cluster_app");
@@ -57,6 +61,8 @@ describe(toGraphvizDot, () => {
     });
 
     it("should highlight focused tasks", () => {
+        expect.assertions(2);
+
         const dot = toGraphvizDot(createTaskGraph(), {
             focusedTasks: ["app:build", "lib-a:build"],
         });
@@ -68,6 +74,8 @@ describe(toGraphvizDot, () => {
     });
 
     it("should color nodes by status", () => {
+        expect.assertions(3);
+
         const statuses = new Map([
             ["app:build", "success"],
             ["lib-a:build", "local-cache"],
@@ -84,14 +92,18 @@ describe(toGraphvizDot, () => {
 
 describe(toGraphJson, () => {
     it("should export nodes and edges", () => {
+        expect.assertions(3);
+
         const json = toGraphJson(createTaskGraph());
 
         expect(json.nodes).toHaveLength(4);
         expect(json.edges).toHaveLength(4);
-        expect(json.roots).toEqual(["app:build"]);
+        expect(json.roots).toStrictEqual(["app:build"]);
     });
 
     it("should include project and target in nodes", () => {
+        expect.assertions(2);
+
         const json = toGraphJson(createTaskGraph());
         const appNode = json.nodes.find((n) => n.id === "app:build");
 
@@ -100,6 +112,8 @@ describe(toGraphJson, () => {
     });
 
     it("should include task statuses when provided", () => {
+        expect.assertions(1);
+
         const statuses = new Map([["app:build", "success"]]);
         const json = toGraphJson(createTaskGraph(), statuses);
         const appNode = json.nodes.find((n) => n.id === "app:build");
@@ -110,6 +124,8 @@ describe(toGraphJson, () => {
 
 describe(toGraphHtml, () => {
     it("should generate a self-contained HTML page", () => {
+        expect.assertions(4);
+
         const html = toGraphHtml(createTaskGraph());
 
         expect(html).toContain("<!DOCTYPE html>");
@@ -119,6 +135,8 @@ describe(toGraphHtml, () => {
     });
 
     it("should embed the graph data as JSON", () => {
+        expect.assertions(2);
+
         const html = toGraphHtml(createTaskGraph());
 
         expect(html).toContain('"app:build"');
@@ -128,6 +146,8 @@ describe(toGraphHtml, () => {
 
 describe(toGraphAscii, () => {
     it("should render a tree structure", () => {
+        expect.assertions(4);
+
         const ascii = toGraphAscii(createTaskGraph());
 
         expect(ascii).toContain("Task Graph (4 tasks, 4 dependencies)");
@@ -137,6 +157,8 @@ describe(toGraphAscii, () => {
     });
 
     it("should mark duplicate nodes with (*)", () => {
+        expect.assertions(1);
+
         const ascii = toGraphAscii(createTaskGraph());
 
         // lib-core:build appears as dep of both lib-a and lib-b
@@ -144,6 +166,8 @@ describe(toGraphAscii, () => {
     });
 
     it("should show status icons", () => {
+        expect.assertions(3);
+
         const statuses = new Map([
             ["app:build", "success"],
             ["lib-a:build", "local-cache"],
@@ -160,6 +184,8 @@ describe(toGraphAscii, () => {
 
 describe(projectGraphToDot, () => {
     it("should generate DOT for project graph", () => {
+        expect.assertions(4);
+
         const dot = projectGraphToDot(createProjectGraph());
 
         expect(dot).toContain("digraph ProjectGraph");
@@ -169,6 +195,8 @@ describe(projectGraphToDot, () => {
     });
 
     it("should use different colors for applications and libraries", () => {
+        expect.assertions(2);
+
         const dot = projectGraphToDot(createProjectGraph());
 
         expect(dot).toContain("#FFD700"); // application = gold
@@ -176,6 +204,8 @@ describe(projectGraphToDot, () => {
     });
 
     it("should style implicit deps as dashed", () => {
+        expect.assertions(2);
+
         const dot = projectGraphToDot(createProjectGraph());
 
         expect(dot).toContain("style=dashed");

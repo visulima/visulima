@@ -4,6 +4,8 @@ import { TerminalBuffer } from "../src/terminal-buffer";
 
 describe(TerminalBuffer, () => {
     it("should handle plain text", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
@@ -12,6 +14,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle newlines", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
@@ -20,6 +24,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle carriage return (overwrite from start of line)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("old text\rnew");
@@ -28,6 +34,8 @@ describe(TerminalBuffer, () => {
     });
 
     it(String.raw`should handle \r\n as CRLF (newline, not overwrite)`, () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\r\nline2\r\n");
@@ -36,6 +44,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle cursor up (CSI A)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
@@ -47,6 +57,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle cursor down (CSI B)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
@@ -59,6 +71,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle erase line (CSI 2K)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
@@ -68,6 +82,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle erase to end of line (CSI 0K)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
@@ -79,6 +95,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle erase display (CSI 2J)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
@@ -88,6 +106,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle cursor position (CSI H)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("aaaa\nbbbb\ncccc");
@@ -98,6 +118,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle cursor to column (CSI G)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("hello world");
@@ -108,6 +130,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should preserve SGR color sequences", () => {
+        expect.assertions(3);
+
         const buf = new TerminalBuffer();
 
         buf.write("\u001B[31mred text\u001B[0m");
@@ -120,6 +144,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should preserve SGR sequences when overwriting lines", () => {
+        expect.assertions(3);
+
         const buf = new TerminalBuffer();
 
         buf.write("\u001B[32mgreen\u001B[0m\n");
@@ -136,6 +162,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should skip non-CSI escape sequences", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("\u001B(Bhello"); // ESC(B is "select character set"
@@ -144,6 +172,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle inquirer-like redraw pattern", () => {
+        expect.assertions(4);
+
         const buf = new TerminalBuffer();
 
         // Simulate inquirer: print prompt, then redraw with selection
@@ -172,6 +202,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should respect maxBytes limit", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer(50);
 
         // Write more than 50 bytes
@@ -183,6 +215,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle multiple writes incrementally", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("hel");
@@ -194,6 +228,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle cursor forward (CSI C) and back (CSI D)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("abcdef");
@@ -204,6 +240,8 @@ describe(TerminalBuffer, () => {
     });
 
     it("should handle erase from cursor to end of display (CSI 0J)", () => {
+        expect.assertions(1);
+
         const buf = new TerminalBuffer();
 
         buf.write("line1\nline2\nline3");
