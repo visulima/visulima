@@ -68,7 +68,7 @@ const capitalCase = <T extends string = string>(value?: T, options?: CaseOptions
         cacheStore.set(cacheKey, result);
     }
 
-    return result;
+    return result as CapitalCase<T>;
 };
 
 export default capitalCase;
