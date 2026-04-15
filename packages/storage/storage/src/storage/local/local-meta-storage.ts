@@ -8,8 +8,10 @@ import { join, normalize } from "@visulima/path";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage from "../meta-storage";
-import type { MetaStorageOptions } from "../types";
+import type { LocalMetaStorageOptions } from "../meta-storage-options";
 import type { File } from "../utils/file";
+
+export type { LocalMetaStorageOptions } from "../meta-storage-options";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 
 /**
@@ -104,13 +106,6 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     private async accessCheck(): Promise<void> {
         await ensureDir(this.directory);
     }
-}
-
-export interface LocalMetaStorageOptions extends MetaStorageOptions {
-    /**
-     * Where the upload metadata should be stored
-     */
-    directory?: string;
 }
 
 export default LocalMetaStorage;
