@@ -7,7 +7,7 @@ type ItemValue = boolean | string | (() => string) | null | undefined;
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, @stylistic/no-extra-parens
 const _r = (item: ItemValue): boolean | string | null | undefined => (typeof item === "function" ? item() : item);
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-const _s = (item: ItemValue): string => (JSON.stringify(_r(item)) || "undefined").replaceAll('"', "'");
+const _s = (item: ItemValue): string => (JSON.stringify(_r(item)) || "undefined").replaceAll("\"", "'");
 
 const TRAILING_NEWLINE_RE = /\n$/;
 
