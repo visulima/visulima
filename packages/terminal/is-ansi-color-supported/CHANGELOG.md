@@ -1,3 +1,10 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.8...@visulima/is-ansi-color-supported@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** add node types for process global ([ac91525](https://github.com/visulima/visulima/commit/ac915251cb0390ca930c2ffef42cf20be98231b8))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.7...@visulima/is-ansi-color-supported@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
