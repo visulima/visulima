@@ -132,8 +132,7 @@ describe("callbacksAndPosition", () => {
         expect(onItemHeightChange).not.toHaveBeenCalled();
 
         // 2. Change internal lines
-        if (globalStore["setLines_0"])
-            globalStore["setLines_0"](3);
+        if (globalStore["setLines_0"]) globalStore["setLines_0"](3);
 
         await delay(100);
 

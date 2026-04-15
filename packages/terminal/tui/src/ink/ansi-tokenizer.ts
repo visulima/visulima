@@ -98,11 +98,11 @@ const readCsiSequence = (
     fromIndex: number,
 ):
     | {
-        readonly endIndex: number;
-        readonly finalCharacter: string;
-        readonly intermediateString: string;
-        readonly parameterString: string;
-    }
+          readonly endIndex: number;
+          readonly finalCharacter: string;
+          readonly intermediateString: string;
+          readonly parameterString: string;
+      }
     | undefined => {
     let index = fromIndex;
 
@@ -179,10 +179,10 @@ const readEscapeSequence = (
     fromIndex: number,
 ):
     | {
-        readonly endIndex: number;
-        readonly finalCharacter: string;
-        readonly intermediateString: string;
-    }
+          readonly endIndex: number;
+          readonly finalCharacter: string;
+          readonly intermediateString: string;
+      }
     | undefined => {
     let index = fromIndex;
 
@@ -215,9 +215,9 @@ const getControlStringFromEscapeIntroducer = (
     character: string,
 ):
     | {
-        readonly allowBellTerminator: boolean;
-        readonly type: ControlStringType;
-    }
+          readonly allowBellTerminator: boolean;
+          readonly type: ControlStringType;
+      }
     | undefined => {
     switch (character) {
         case "]": {
@@ -250,9 +250,9 @@ const getControlStringFromC1Introducer = (
     character: string,
 ):
     | {
-        readonly allowBellTerminator: boolean;
-        readonly type: ControlStringType;
-    }
+          readonly allowBellTerminator: boolean;
+          readonly type: ControlStringType;
+      }
     | undefined => {
     switch (character) {
         case apcCharacter: {
@@ -314,7 +314,7 @@ export const tokenizeAnsi = (text: string): AnsiToken[] => {
     const tokens: AnsiToken[] = [];
     let textStartIndex = 0;
 
-    for (let index = 0; index < text.length;) {
+    for (let index = 0; index < text.length; ) {
         const character = text[index];
 
         if (character === undefined) {

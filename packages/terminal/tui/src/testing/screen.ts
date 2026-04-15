@@ -43,8 +43,11 @@ export interface Screen {
 }
 
 export const createScreen = (lastFrame: () => string | undefined, allFrames: ReadonlyArray<string>): Screen => {
-    // eslint-disable-next-line no-confusing-arrow -- no-extra-parens and arrow-body-style block the alternatives
-    const clean = (s: string | undefined): string => s ? strip(s) : "";
+    const clean = (s: string | undefined): string => {
+        if (s === undefined) return "";
+
+        return strip(s);
+    };
 
     return {
         contains(text: string): boolean {

@@ -116,14 +116,11 @@ export default function Code({ code, highlightLines, language, showLineNumbers =
 
                 return (
                     <Box key={index}>
-                        {showLineNumbers
-                            ? (
-                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                    {String(lineNumber).padStart(gutterWidth)}
-                                    {" "}
-                                </Text>
-                            )
-                            : undefined}
+                        {showLineNumbers ? (
+                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                {String(lineNumber).padStart(gutterWidth)}{" "}
+                            </Text>
+                        ) : undefined}
                         <Text>{line}</Text>
                     </Box>
                 );
