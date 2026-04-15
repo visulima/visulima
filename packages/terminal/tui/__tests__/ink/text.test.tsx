@@ -196,7 +196,7 @@ describe("text", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
     });
 
-    it("text with content \"constructor\" wraps correctly", () => {
+    it('text with content "constructor" wraps correctly', () => {
         expect.assertions(1);
 
         const output = renderToString(<Text>constructor</Text>);

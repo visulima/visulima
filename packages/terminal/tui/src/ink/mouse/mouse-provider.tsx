@@ -27,13 +27,13 @@ type MouseState = {
     scroll: MouseScrollAction;
 };
 
-type MouseAction
-    = | { button: MouseButton; click: MouseClickAction; position: MousePosition; type: "click" }
-        | { type: "click-reset" }
-        | { button: MouseButton; drag: MouseDragAction; position: MousePosition; type: "drag" }
-        | { position: MousePosition; type: "move" }
-        | { position: MousePosition; scroll: MouseScrollAction; type: "scroll" }
-        | { type: "scroll-reset" };
+type MouseAction =
+    | { button: MouseButton; click: MouseClickAction; position: MousePosition; type: "click" }
+    | { type: "click-reset" }
+    | { button: MouseButton; drag: MouseDragAction; position: MousePosition; type: "drag" }
+    | { position: MousePosition; type: "move" }
+    | { position: MousePosition; scroll: MouseScrollAction; type: "scroll" }
+    | { type: "scroll-reset" };
 
 const initialMouseState: MouseState = {
     button: null,

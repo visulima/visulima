@@ -174,15 +174,13 @@ function drawEdge(buf: Uint32Array, cols: number, rows: number, a: ProjectedPoin
         const x = Math.round(a.sx + dx * t);
         const y = Math.round(a.sy + dy * t);
 
-        if (x < 0 || x >= cols || y < 1 || y >= rows - 1)
-            continue;
+        if (x < 0 || x >= cols || y < 1 || y >= rows - 1) continue;
 
         const depth = a.depth + (b.depth - a.depth) * t;
         const index = y * cols + x;
 
         // Skip edge points clearly behind already-rendered face points.
-        if (depth + 0.004 < zBuf[index]!)
-            continue;
+        if (depth + 0.004 < zBuf[index]!) continue;
 
         setCell(buf, cols, x, y, "#", 231, 0, 1);
     }
@@ -251,14 +249,12 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
 
         const proj = projectPoint(p, cols, rows, cameraZ, fov, xScale, yScale);
 
-        if (!proj)
-            continue;
+        if (!proj) continue;
 
         // Depth test (larger = closer)
         const index = proj.sy * cols + proj.sx;
 
-        if (proj.depth <= zBuf[index]!)
-            continue;
+        if (proj.depth <= zBuf[index]!) continue;
 
         zBuf[index] = proj.depth;
 
@@ -290,8 +286,7 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
         const pa = projectedCorners[a];
         const pb = projectedCorners[b];
 
-        if (!pa || !pb)
-            continue;
+        if (!pa || !pb) continue;
 
         drawEdge(buf, cols, rows, pa, pb, zBuf);
     }

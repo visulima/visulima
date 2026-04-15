@@ -6,7 +6,7 @@ describe("parse-keypress", () => {
     // VT220-style modifier sequences (ESC [ 1 ; <mod> P/Q/R/S)
     // Modifier encoding: ctrl = 5 (bit 4 + 1), shift = 2 (bit 1 + 1)
 
-    it("ctrl+F1 resolves to name \"f1\"", () => {
+    it('ctrl+F1 resolves to name "f1"', () => {
         expect.assertions(3);
 
         const key = parseKeypress("\u001B[1;5P");
@@ -16,7 +16,7 @@ describe("parse-keypress", () => {
         expect(key.shift).toBe(false);
     });
 
-    it("ctrl+F2 resolves to name \"f2\"", () => {
+    it('ctrl+F2 resolves to name "f2"', () => {
         expect.assertions(3);
 
         const key = parseKeypress("\u001B[1;5Q");
@@ -26,7 +26,7 @@ describe("parse-keypress", () => {
         expect(key.shift).toBe(false);
     });
 
-    it("ctrl+F3 resolves to name \"f3\"", () => {
+    it('ctrl+F3 resolves to name "f3"', () => {
         expect.assertions(3);
 
         const key = parseKeypress("\u001B[1;5R");
@@ -36,7 +36,7 @@ describe("parse-keypress", () => {
         expect(key.shift).toBe(false);
     });
 
-    it("ctrl+F4 resolves to name \"f4\"", () => {
+    it('ctrl+F4 resolves to name "f4"', () => {
         expect.assertions(3);
 
         const key = parseKeypress("\u001B[1;5S");
@@ -66,7 +66,7 @@ describe("parse-keypress", () => {
         expect(key.ctrl).toBe(true);
     });
 
-    it("shift+F1 resolves to name \"f1\" with shift", () => {
+    it('shift+F1 resolves to name "f1" with shift', () => {
         expect.assertions(3);
 
         const key = parseKeypress("\u001B[1;2P");

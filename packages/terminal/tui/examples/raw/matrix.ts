@@ -193,8 +193,7 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
         for (let x = 0; x < cols; x++) {
             const cell = screen[y * cols + x]!;
 
-            if (cell.age >= FADE_OUT)
-                continue; // fully faded — leave blank
+            if (cell.age >= FADE_OUT) continue; // fully faded — leave blank
 
             const color = FADE[cell.age]!;
             const bold = cell.age === 0 ? 1 : 0;
