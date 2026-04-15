@@ -363,8 +363,11 @@ describe(RemoteCache, () => {
 
             await new Promise<void>((resolve, reject) => {
                 execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) reject(error);
-                    else resolve();
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
                 });
             });
 
