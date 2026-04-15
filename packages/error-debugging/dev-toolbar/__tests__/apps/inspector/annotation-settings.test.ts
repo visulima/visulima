@@ -12,6 +12,8 @@ describe("annotation-settings", () => {
 
     describe("dEFAULT_SETTINGS", () => {
         it("has expected default values", () => {
+            expect.assertions(4);
+
             expect(DEFAULT_SETTINGS.outputDetail).toBe("standard");
             expect(DEFAULT_SETTINGS.markerColorName).toBe("indigo");
             expect(DEFAULT_SETTINGS.markerClickBehavior).toBe("detail");
@@ -21,10 +23,14 @@ describe("annotation-settings", () => {
 
     describe("mARKER_COLORS", () => {
         it("has 7 colors", () => {
+            expect.assertions(1);
+
             expect(MARKER_COLORS).toHaveLength(7);
         });
 
         it("each color has required fields", () => {
+            expect.assertions(6);
+
             for (const color of MARKER_COLORS) {
                 expect(color).toHaveProperty("name");
                 expect(color).toHaveProperty("bg");
@@ -36,6 +42,8 @@ describe("annotation-settings", () => {
         });
 
         it("yellow has dark text for contrast", () => {
+            expect.assertions(1);
+
             const yellow = MARKER_COLORS.find((c) => c.name === "yellow");
 
             expect(yellow?.fg).toBe("#1a1a1a");
@@ -44,6 +52,8 @@ describe("annotation-settings", () => {
 
     describe("loadSettings / saveSettings", () => {
         it("returns defaults when nothing saved", () => {
+            expect.assertions(1);
+
             localStorage.clear();
             // Force cache reset
             saveSettings(DEFAULT_SETTINGS);
@@ -54,6 +64,8 @@ describe("annotation-settings", () => {
         });
 
         it("persists settings to localStorage", () => {
+            expect.assertions(2);
+
             saveSettings({ ...DEFAULT_SETTINGS, outputDetail: "forensic" });
 
             const raw = localStorage.getItem("__vdt_annotation_settings");
@@ -63,6 +75,8 @@ describe("annotation-settings", () => {
         });
 
         it("reads saved settings", () => {
+            expect.assertions(1);
+
             saveSettings({ ...DEFAULT_SETTINGS, markerColorName: "red" });
 
             const settings = loadSettings();
@@ -71,6 +85,8 @@ describe("annotation-settings", () => {
         });
 
         it("merges with defaults for partial data", () => {
+            expect.assertions(2);
+
             localStorage.setItem("__vdt_annotation_settings", JSON.stringify({ outputDetail: "compact" }));
             // Reset cache
             saveSettings({ ...DEFAULT_SETTINGS, outputDetail: "compact" });
@@ -84,6 +100,8 @@ describe("annotation-settings", () => {
 
     describe(getMarkerColor, () => {
         it("returns the configured color", () => {
+            expect.assertions(2);
+
             saveSettings({ ...DEFAULT_SETTINGS, markerColorName: "red" });
 
             const color = getMarkerColor(loadSettings());
@@ -93,6 +111,8 @@ describe("annotation-settings", () => {
         });
 
         it("falls back to first color for unknown name", () => {
+            expect.assertions(1);
+
             saveSettings({ ...DEFAULT_SETTINGS, markerColorName: "nonexistent" });
 
             const color = getMarkerColor(loadSettings());

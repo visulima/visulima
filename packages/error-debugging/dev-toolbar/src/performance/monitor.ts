@@ -225,7 +225,7 @@ class PerformanceMonitor {
 
     private loadTtfb(): void {
         // Try from NavigationTiming (already available at page load)
-        const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+        const entries = performance.getEntriesByType("navigation");
 
         if (entries.length > 0 && entries[0]) {
             this.vitals.ttfb = Math.round(entries[0].responseStart - entries[0].requestStart);
