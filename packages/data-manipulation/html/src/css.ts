@@ -23,10 +23,10 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
             const cssKey = key.startsWith("--")
                 ? key
                 : (() => {
-                      const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+                    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
 
-                      return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
-                  })();
+                    return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+                })();
 
             styles.push(`${cssKey}: ${String(value)};`);
         }
