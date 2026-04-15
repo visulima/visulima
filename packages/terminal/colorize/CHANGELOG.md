@@ -1,3 +1,15 @@
+## @visulima/colorize [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.8...@visulima/colorize@2.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **colorize:** resolve eslint and formatting issues ([edc292a](https://github.com/visulima/visulima/commit/edc292a567fb3a97e6428e6fee86b47137e00952))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/colorize [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.7...@visulima/colorize@2.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
