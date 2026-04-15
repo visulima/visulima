@@ -66,7 +66,7 @@ class SpecBuilder implements OpenApiObject {
 
             // overwrite everything else:
             Object.entries(rest).forEach(([key, value]) => {
-                // @ts-expect-error
+                // @ts-expect-error dynamic key assignment across heterogeneous OpenAPI fields
                 this[key as keyof OpenApiObject] = value;
             });
         });

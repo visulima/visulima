@@ -17,7 +17,6 @@ const parseFile = (
     commentsToOpenApi: (fileContent: string, verbose?: boolean) => { loc: number; spec: OpenApiObject }[],
     verbose?: boolean,
 ): { loc: number; spec: OpenApiObject }[] => {
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(file, { encoding: "utf8" });
     const extension = path.extname(file);
 

@@ -9,6 +9,7 @@ export default createConfig(
             "coverage",
             "__fixtures__",
             "__docs__",
+            "docs",
             "examples",
             "vitest.config.ts",
             "packem.config.ts",
@@ -22,12 +23,38 @@ export default createConfig(
         },
     },
     {
+        files: ["bin/**/*.js"],
+        rules: {
+            "@typescript-eslint/no-require-imports": "off",
+        },
+    },
+    {
         files: ["**/*.test.ts"],
         rules: {
+            "@stylistic/max-statements-per-line": "off",
             "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+            "vitest/require-mock-type-parameters": "off",
+        },
+    },
+    {
+        // JSDoc parser code inherently works with dynamic any-typed parsed objects
+        // (comment-parser output, JSDoc AST, lodash merge). These are not real issues.
+        files: ["src/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
         },
     },
 );

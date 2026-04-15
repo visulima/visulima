@@ -25,16 +25,15 @@ const generateCommand = async (
         veryVerbose?: boolean;
     },
 ): Promise<void> => {
-    let openapiConfig: {
+    type OpenApiConfig = {
         exclude: string[];
         extensions?: string[];
         followSymlinks?: boolean;
         include?: (RegExp | string)[];
         swaggerDefinition: BaseDefinition;
-    } = {
-        exclude: [],
-        swaggerDefinition: {} as BaseDefinition,
     };
+
+    let openapiConfig: OpenApiConfig;
 
     try {
         let config = await import(pathToFileURL(normalize(options.config ?? configName)).href);
@@ -60,15 +59,16 @@ const generateCommand = async (
     const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
     const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
 
-    // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
-    for await (const dir of paths) {
+    // eslint-disable-next-line unicorn/prevent-abbreviations
+    for (const dir of paths) {
         // Check if the path is a directory
-        // eslint-disable-next-line security/detect-non-literal-fs-filename,unicorn/no-await-expression-member
+        // eslint-disable-next-line unicorn/no-await-expression-member,no-await-in-loop
         (await lstat(dir)).isDirectory();
 
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        // eslint-disable-next-line no-await-in-loop
         const realDirectory = await realpath(dir);
 
+        // eslint-disable-next-line no-await-in-loop
         const files: string[] = await collect(realDirectory, {
             extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
             followSymlinks: openapiConfig.followSymlinks ?? false,
@@ -113,10 +113,10 @@ const generateCommand = async (
 
     if (options.veryVerbose) {
         // eslint-disable-next-line no-console
-        console.log(JSON.stringify(spec, null, 2));
+        console.log(JSON.stringify(spec, undefined, 2));
     }
 
-    await validate(JSON.parse(JSON.stringify(spec)) as Record<string, unknown>);
+    await validate(structuredClone(spec) as unknown as Record<string, unknown>);
 
     const output = options.output ?? "swagger.json";
 
@@ -127,10 +127,8 @@ const generateCommand = async (
         console.log(`Written swagger spec to "${output}" file`);
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await mkdir(dirname(output), { recursive: true });
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    await writeFile(output, JSON.stringify(spec, null, 2));
+    await writeFile(output, JSON.stringify(spec, undefined, 2));
 
     // eslint-disable-next-line no-console
     console.log(`\nSwagger specification is ready, check the "${output}" file.`);

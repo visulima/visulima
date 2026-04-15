@@ -1,6 +1,6 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports
+// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
 import mergeWith from "lodash.mergewith";
 import type { YAMLError } from "yaml";
 import yaml from "yaml";
@@ -21,13 +21,13 @@ type ExtendedYAMLError = YAMLError & { annotation?: string };
 const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
     specs.map((spec: Spec) => {
         // Check if we have content to parse (description or name that should be combined)
-        const hasContent = spec.description !== "" || (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":")));
+        const hasContent = spec.description !== "" || spec.name.startsWith("/") || spec.name.endsWith(":");
 
         if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && hasContent) {
             // Combine name and description if name is a path (starts with "/") or a top-level property (ends with ":")
             let yamlContent = spec.description;
 
-            if (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":"))) {
+            if (spec.name.startsWith("/") || spec.name.endsWith(":")) {
                 // If description starts with newlines, preserve them; otherwise add one newline
                 yamlContent = yamlContent.trim() === "" ? spec.name : `${spec.name}\n${yamlContent}`;
             }
@@ -35,20 +35,17 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
             const parsed = yaml.parseDocument(yamlContent);
 
             if (parsed.errors.length > 0) {
-                parsed.errors.map<ExtendedYAMLError>((error) => {
-                    const newError: ExtendedYAMLError = error;
-
-                    newError.annotation = yamlContent;
-
-                    return newError;
+                parsed.errors.forEach((error) => {
+                    // eslint-disable-next-line no-param-reassign
+                    (error as ExtendedYAMLError).annotation = yamlContent;
                 });
 
                 let errorString = "Error parsing YAML in @openapi spec:";
 
                 errorString += verbose
                     ? (parsed.errors as ExtendedYAMLError[])
-                        .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``)
-                        .join("\n")
+                          .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``)
+                          .join("\n")
                     : parsed.errors.map((error) => error.toString()).join("\n");
 
                 throw new Error(errorString);
@@ -60,7 +57,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
             };
 
             specificationTemplate[getSwaggerVersionFromSpec(spec)].forEach((property) => {
-                specification[property] = specification[property] || {};
+                specification[property] = specification[property] ?? {};
             });
 
             Object.keys(parsedDocument).forEach((property) => {
@@ -90,7 +87,8 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
             }
         });
 
-        // Purge all undefined objects/arrays.
+        // Purge all undefined properties — the JSON roundtrip drops them.
+        // eslint-disable-next-line unicorn/prefer-structured-clone
         const spec = JSON.parse(JSON.stringify(result));
 
         return {
