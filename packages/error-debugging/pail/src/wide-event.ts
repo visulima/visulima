@@ -46,18 +46,18 @@ const deepMerge = <T extends Record<string, unknown>>(target: T, source: DeepPar
 
     for (let i = 0; i < keys.length; i += 1) {
         const key = keys[i];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- DeepPartial types are inherently loose
+
         const sourceValue = source[key];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- result[key] has complex union type
+
         const targetValue = result[key];
 
         if (
-            sourceValue !== null &&
-            typeof sourceValue === "object" &&
-            !Array.isArray(sourceValue) &&
-            targetValue !== null &&
-            typeof targetValue === "object" &&
-            !Array.isArray(targetValue)
+            sourceValue !== null
+            && typeof sourceValue === "object"
+            && !Array.isArray(sourceValue)
+            && targetValue !== null
+            && typeof targetValue === "object"
+            && !Array.isArray(targetValue)
         ) {
             result[key] = deepMerge(targetValue as Record<string, unknown>, sourceValue as DeepPartial<Record<string, unknown>>) as T[keyof T];
         } else {
@@ -279,6 +279,7 @@ export class WideEvent<TData extends Record<string, unknown> = Record<string, un
         this.timestamp = new Date().toISOString();
         this.emitted = false;
         this.autoEmit = options.autoEmit ?? true;
+        // eslint-disable-next-line no-underscore-dangle -- underscore marks "reserved, not yet consumed"
         this._type = options.type ?? ("info" as DefaultLogTypes);
         this.level = "info";
         this.requestLogs = [];
