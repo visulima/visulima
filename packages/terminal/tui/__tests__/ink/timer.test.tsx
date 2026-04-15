@@ -19,11 +19,11 @@ describe("timer", () => {
         it("starts with full duration remaining", () => {
             expect.assertions(1);
 
-            function TimerDisplay() {
+            const TimerDisplay = () => {
                 const { remaining } = useTimer({ duration: 10_000 });
 
                 return <Text>{remaining}</Text>;
-            }
+            };
 
             const output = renderToString(<TimerDisplay />);
 
@@ -33,11 +33,11 @@ describe("timer", () => {
         it("shows not running by default", () => {
             expect.assertions(1);
 
-            function TimerDisplay() {
+            const TimerDisplay = () => {
                 const { isRunning } = useTimer({ duration: 10_000 });
 
                 return <Text>{isRunning ? "running" : "stopped"}</Text>;
-            }
+            };
 
             const output = renderToString(<TimerDisplay />);
 
@@ -47,14 +47,15 @@ describe("timer", () => {
         it("autoStart begins counting", async () => {
             expect.assertions(1);
 
-            function TimerDisplay() {
+            const TimerDisplay = () => {
                 const { remaining } = useTimer({ autoStart: true, duration: 5000, interval: 50 });
 
                 return <Text>{String(remaining)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<TimerDisplay />, { debug: true, stdout });
+
             currentUnmount = unmount;
 
             await delay(200);
@@ -67,11 +68,11 @@ describe("timer", () => {
         it("shows not finished initially", () => {
             expect.assertions(1);
 
-            function TimerDisplay() {
+            const TimerDisplay = () => {
                 const { isFinished } = useTimer({ duration: 10_000 });
 
                 return <Text>{isFinished ? "done" : "pending"}</Text>;
-            }
+            };
 
             const output = renderToString(<TimerDisplay />);
 
@@ -79,7 +80,7 @@ describe("timer", () => {
         });
     });
 
-    describe("Timer component", () => {
+    describe("timer component", () => {
         it("renders formatted time", () => {
             expect.assertions(1);
 

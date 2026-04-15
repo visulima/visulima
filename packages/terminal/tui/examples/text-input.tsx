@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/lines-before-block */
 /**
- * text-input.tsx — <TextInput> component demo
+ * text-input.tsx — &lt;TextInput> component demo
  *
  * Controls:
  *   Type     enter text

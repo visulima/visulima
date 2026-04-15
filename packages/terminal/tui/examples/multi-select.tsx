@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * multi-select.tsx — <MultiSelect> component demo
+ * multi-select.tsx — &lt;MultiSelect> component demo
  *
  * Controls:
  *   ↑/↓ or j/k   navigate
@@ -17,8 +17,8 @@ import React, { useState } from "react";
 
 const App = () => {
     const { exit } = useApp();
-    const [selected, setSelected] = useState<readonly string[]>([]);
-    const [submitted, setSubmitted] = useState<readonly string[] | undefined>();
+    const [selected, setSelected] = useState<ReadonlyArray<string>>([]);
+    const [submitted, setSubmitted] = useState<ReadonlyArray<string> | undefined>();
 
     useInput((_input, key) => {
         if (key.escape) {
@@ -48,10 +48,16 @@ const App = () => {
                             { label: "White", value: "white" },
                         ]}
                     />
-                    <Text>Selected: {selected.join(", ") || "(none)"}</Text>
+                    <Text>
+                        Selected:
+                        {selected.join(", ") || "(none)"}
+                    </Text>
                 </Box>
             ) : (
-                <Text color="green">Submitted: {submitted.join(", ")}</Text>
+                <Text color="green">
+                    Submitted:
+                    {submitted.join(", ")}
+                </Text>
             )}
         </Box>
     );

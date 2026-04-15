@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import type { Props } from "../components/FocusContext";
-import FocusContext from "../components/FocusContext";
+import type { Props } from "../components/focus-context";
+import FocusContext from "../components/focus-context";
 
 type Output = {
     /**

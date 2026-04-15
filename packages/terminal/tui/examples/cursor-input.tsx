@@ -2,18 +2,20 @@ import React, { useState } from "react";
 
 import { Box, Cursor, render, Text, useInput } from "../../src/ink/index";
 
-function CursorTextInputExample() {
+const CursorTextInputExample = () => {
     const [value, setValue] = useState("");
     const prompt = "> ";
 
     useInput((input, key) => {
         if (key.escape) {
             setValue("");
+
             return;
         }
 
         if (key.backspace || key.delete) {
             setValue((previousValue) => previousValue.slice(0, -1));
+
             return;
         }
 
@@ -32,6 +34,6 @@ function CursorTextInputExample() {
             </Box>
         </Box>
     );
-}
+};
 
 render(<CursorTextInputExample />);

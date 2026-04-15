@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { getStringWidth as stringWidth } from "@visulima/string";
 import { Box, Text } from "@visulima/tui";
 import { render, useCursor, useInput } from "@visulima/tui/react";

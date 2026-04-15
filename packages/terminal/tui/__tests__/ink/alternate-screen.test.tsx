@@ -107,7 +107,12 @@ describe("alternate screen", () => {
         const CountingApp = () => {
             renderCount++;
 
-            return <Text>Render {renderCount}</Text>;
+            return (
+                <Text>
+                    Render
+                    {renderCount}
+                </Text>
+            );
         };
 
         const { unmount } = render(<CountingApp />, {

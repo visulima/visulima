@@ -12,7 +12,7 @@ const Spacer: React.FC = () => React.createElement(Box, { flexGrow: 1 });
 describe("ratatat renderer layout", () => {
     it("should render a bordered box with full-width content", () => {
         const output = renderToString(
-            <Box borderStyle="single" width={20} height={3}>
+            <Box borderStyle="single" height={3} width={20}>
                 <Text>Hello World</Text>
             </Box>,
             { columns: 30, rows: 5 },
@@ -65,7 +65,7 @@ describe("ratatat renderer layout", () => {
 
     it("should position content correctly inside bordered box with padding", () => {
         const output = renderToString(
-            <Box borderStyle="single" paddingX={1} width={12} height={3}>
+            <Box borderStyle="single" height={3} paddingX={1} width={12}>
                 <Text>test</Text>
             </Box>,
             { columns: 20, rows: 5 },
@@ -80,8 +80,8 @@ describe("ratatat renderer layout", () => {
 
     it("should render nested boxes with borders correctly", () => {
         const output = renderToString(
-            <Box borderStyle="round" width={20} height={5} flexDirection="column">
-                <Box borderStyle="single" width={10} height={3}>
+            <Box borderStyle="round" flexDirection="column" height={5} width={20}>
+                <Box borderStyle="single" height={3} width={10}>
                     <Text>nested</Text>
                 </Box>
             </Box>,
@@ -96,11 +96,11 @@ describe("ratatat renderer layout", () => {
 
     it("should handle flex row with multiple boxes", () => {
         const output = renderToString(
-            <Box flexDirection="row" width={40} height={3}>
-                <Box borderStyle="single" width={15} height={3}>
+            <Box flexDirection="row" height={3} width={40}>
+                <Box borderStyle="single" height={3} width={15}>
                     <Text>A</Text>
                 </Box>
-                <Box borderStyle="single" width={15} height={3}>
+                <Box borderStyle="single" height={3} width={15}>
                     <Text>B</Text>
                 </Box>
             </Box>,
@@ -111,8 +111,10 @@ describe("ratatat renderer layout", () => {
 
         // Both boxes should appear on the same row
         expect(lines[0]).toContain("┌");
+
         // Count the top-left corners — should be 2 (one per box)
         const topLeftCount = (lines[0].match(/┌/g) || []).length;
+
         expect(topLeftCount).toBe(2);
         // Both text content should be present
         expect(output).toContain("A");
@@ -121,7 +123,7 @@ describe("ratatat renderer layout", () => {
 
     it("should use Spacer to push content apart", () => {
         const output = renderToString(
-            <Box borderStyle="single" width={30} height={3}>
+            <Box borderStyle="single" height={3} width={30}>
                 <Text>left</Text>
                 <Spacer />
                 <Text>right</Text>
@@ -133,20 +135,20 @@ describe("ratatat renderer layout", () => {
         const contentLine = lines[1];
 
         // "left" should be near the start, "right" near the end
-        const leftIdx = contentLine.indexOf("left");
-        const rightIdx = contentLine.indexOf("right");
+        const leftIndex = contentLine.indexOf("left");
+        const rightIndex = contentLine.indexOf("right");
 
-        expect(leftIdx).toBeGreaterThan(0); // after border
-        expect(rightIdx).toBeGreaterThan(leftIdx + 10); // well separated
+        expect(leftIndex).toBeGreaterThan(0); // after border
+        expect(rightIndex).toBeGreaterThan(leftIndex + 10); // well separated
     });
 
     it("should apply gap between flex children", () => {
         const output = renderToString(
-            <Box flexDirection="row" gap={3} width={30} height={3}>
-                <Box borderStyle="single" width={10} height={3}>
+            <Box flexDirection="row" gap={3} height={3} width={30}>
+                <Box borderStyle="single" height={3} width={10}>
                     <Text>A</Text>
                 </Box>
-                <Box borderStyle="single" width={10} height={3}>
+                <Box borderStyle="single" height={3} width={10}>
                     <Text>B</Text>
                 </Box>
             </Box>,

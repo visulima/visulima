@@ -1,11 +1,10 @@
-import React, { useRef, useState } from "react";
-
+import React, { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import Box from "../../../src/ink/components/Box";
-import { ScrollView } from "../../../src/ink/components/scroll/ScrollView";
-import type { ScrollViewRef } from "../../../src/ink/components/scroll/ScrollView";
-import Text from "../../../src/ink/components/Text";
+import Box from "../../../src/ink/components/box";
+import type { ScrollViewRef } from "../../../src/ink/components/scroll/scroll-view";
+import { ScrollView } from "../../../src/ink/components/scroll/scroll-view";
+import Text from "../../../src/ink/components/text";
 import { cleanup, render } from "../../../src/testing/index";
 
 afterEach(() => {
@@ -23,7 +22,7 @@ const Item = ({ height = 1, label }: { height?: number; label: string }) => (
     </Box>
 );
 
-describe("ScrollView - onReachEnd / onReachStart", () => {
+describe("scrollView - onReachEnd / onReachStart", () => {
     it("should fire onReachEnd when near bottom", async () => {
         const onReachEnd = vi.fn();
         const scrollRef = React.createRef<ScrollViewRef>();
@@ -103,7 +102,7 @@ describe("ScrollView - onReachEnd / onReachStart", () => {
     });
 });
 
-describe("ScrollView - followOutput", () => {
+describe("scrollView - followOutput", () => {
     it("should auto-scroll to bottom when content grows and user is at bottom", async () => {
         const scrollRef = React.createRef<ScrollViewRef>();
         let setItemCount: (n: number) => void;
@@ -144,7 +143,7 @@ describe("ScrollView - followOutput", () => {
     });
 });
 
-describe("ScrollView - keyboard/vimBindings props exist", () => {
+describe("scrollView - keyboard/vimBindings props exist", () => {
     it("should accept keyboard and vimBindings props without error", () => {
         expect(() => {
             render(
@@ -159,7 +158,7 @@ describe("ScrollView - keyboard/vimBindings props exist", () => {
     });
 });
 
-describe("ScrollView - virtualize prop", () => {
+describe("scrollView - virtualize prop", () => {
     it("should accept virtualize and overscan props without error", async () => {
         const scrollRef = React.createRef<ScrollViewRef>();
 

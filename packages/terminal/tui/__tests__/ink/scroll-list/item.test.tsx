@@ -19,17 +19,18 @@
  * - Item height changes trigger `handleItemHeightChange` which adjusts scroll position
  */
 
-import { useRef, useState, useEffect } from "react";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import { useEffect, useRef, useState } from "react";
+import { describe, expect, it } from "vitest";
+
 import type { ScrollListRef } from "../../../src/ink/index";
-import { describe, it, expect } from "vitest";
+import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 
 /**
  * Helper function to introduce artificial delays in tests.
  */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe("Item", () => {
+describe("item", () => {
     /**
      * Test: Scroll behavior when items are added to the list.
      *
@@ -48,7 +49,7 @@ describe("Item", () => {
      */
     it("should scroll to selected item when items are added", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setItemsFn: (items: number[]) => void;
+        let setItemsFunction: (items: number[]) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -59,13 +60,13 @@ describe("Item", () => {
             });
 
             useEffect(() => {
-                setItemsFn = setItems;
+                setItemsFunction = setItems;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={2}>
+                <ScrollList height={5} ref={ref} selectedIndex={2}>
                     {items.map((i) => (
-                        <Box key={i} height={1}>
+                        <Box height={1} key={i}>
                             <Text>{i}</Text>
                         </Box>
                     ))}
@@ -74,16 +75,18 @@ describe("Item", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         const scrollList = scrollListRef!;
+
         // Initially 3 items (height 3), viewport 5. Item 2 at line 2. No scroll needed.
         expect(scrollList.getScrollOffset()).toBe(0);
 
         // Add items at end. Total now 10 items.
         // selectedIndex 2 still points to what was originally item 3.
         // Item 2 is still at line 2, still visible. No scroll change.
-        setItemsFn!([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        setItemsFunction!([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         await delay(100);
 
         expect(scrollList.getScrollOffset()).toBe(0);
@@ -109,8 +112,8 @@ describe("Item", () => {
      */
     it("should handle selectedIndex when items are removed", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setItemsFn: (items: number[]) => void;
-        let setIndexFn: (index: number) => void;
+        let setItemsFunction: (items: number[]) => void;
+        let setIndexFunction: (index: number) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -122,14 +125,14 @@ describe("Item", () => {
             });
 
             useEffect(() => {
-                setItemsFn = setItems;
-                setIndexFn = setIndex;
+                setItemsFunction = setItems;
+                setIndexFunction = setIndex;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={index}>
+                <ScrollList height={5} ref={ref} selectedIndex={index}>
                     {items.map((i) => (
-                        <Box key={i} height={1}>
+                        <Box height={1} key={i}>
                             <Text>{i}</Text>
                         </Box>
                     ))}
@@ -138,15 +141,17 @@ describe("Item", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         // Remove items to leave only 2 items
-        setItemsFn!([1, 2]);
+        setItemsFunction!([1, 2]);
         // Parent MUST clamp selectedIndex - component doesn't do this
-        setIndexFn!(1); // Clamp to last valid index
+        setIndexFunction!(1); // Clamp to last valid index
         await delay(100);
 
         const scrollList = scrollListRef!;
+
         // With only 2 items and height 5, no scrolling needed
         expect(scrollList.getScrollOffset()).toBe(0);
 
@@ -171,17 +176,20 @@ describe("Item", () => {
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
+
             useEffect(() => {
                 scrollListRef = ref.current;
             }, []);
+
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={0}>
+                <ScrollList height={5} ref={ref} selectedIndex={0}>
                     {/* Empty list */}
                 </ScrollList>
             );
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
         const scrollList = scrollListRef!;
 
@@ -213,7 +221,7 @@ describe("Item", () => {
      */
     it("should handle item height changes correctly", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setExpandedFn: (expanded: boolean) => void;
+        let setExpandedFunction: (expanded: boolean) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -221,11 +229,11 @@ describe("Item", () => {
 
             useEffect(() => {
                 scrollListRef = ref.current;
-                setExpandedFn = setExpanded;
+                setExpandedFunction = setExpanded;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={3} selectedIndex={2}>
+                <ScrollList height={3} ref={ref} selectedIndex={2}>
                     {/* Item 0: fixed height 1 */}
                     <Box height={1}>
                         <Text>Item 0</Text>
@@ -247,6 +255,7 @@ describe("Item", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         const scrollList = scrollListRef!;
@@ -254,7 +263,7 @@ describe("Item", () => {
 
         // Expand item 1 (which is before selected item 2)
         // This triggers handleItemHeightChange which should adjust scroll
-        setExpandedFn!(true);
+        setExpandedFunction!(true);
         await delay(100);
 
         // The scroll position should have adjusted to keep item 2 visible
@@ -262,6 +271,7 @@ describe("Item", () => {
         // After expansion: items at 0, 1-3, 4, 5. Total height 6. Selected at line 4.
         // With viewport 3, scroll should increase to show line 4.
         const newOffset = scrollList.getScrollOffset();
+
         expect(newOffset).toBeGreaterThanOrEqual(initialOffset);
 
         unmount();

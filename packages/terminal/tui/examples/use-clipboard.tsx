@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components, react-x/no-array-index-key */
+/* eslint-disable jsdoc/lines-before-block */
 /**
  * use-clipboard.tsx — useClipboard hook demo
  *
@@ -27,6 +27,7 @@ const App = () => {
     useInput((input, key) => {
         if (key.escape || input === "q") {
             exit();
+
             return;
         }
 
@@ -35,6 +36,7 @@ const App = () => {
 
             copy(text);
             setLastCopied(text);
+
             return;
         }
 
@@ -43,6 +45,7 @@ const App = () => {
 
             copy(text);
             setLastCopied(text);
+
             return;
         }
 

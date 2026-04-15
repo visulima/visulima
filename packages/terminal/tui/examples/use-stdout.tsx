@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, react-hooks/exhaustive-deps, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stdout
 import { Box, Text } from "@visulima/tui";

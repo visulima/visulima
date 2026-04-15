@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { disposeHighlighter, isLanguageSupported, resolveLanguage } from "../../src/ink/highlighter";
 
 describe("highlighter", () => {
-    describe("resolveLanguage", () => {
+    describe(resolveLanguage, () => {
         it("should resolve common aliases", () => {
             expect(resolveLanguage("js")).toBe("javascript");
             expect(resolveLanguage("ts")).toBe("typescript");
@@ -35,7 +35,7 @@ describe("highlighter", () => {
         });
     });
 
-    describe("isLanguageSupported", () => {
+    describe(isLanguageSupported, () => {
         it("should recognize supported languages", () => {
             expect(isLanguageSupported("javascript")).toBe(true);
             expect(isLanguageSupported("typescript")).toBe(true);
@@ -69,14 +69,19 @@ describe("highlighter", () => {
         });
     });
 
-    describe("disposeHighlighter", () => {
+    describe(disposeHighlighter, () => {
         it("should not throw when called without initialization", () => {
-            expect(() => disposeHighlighter()).not.toThrow();
+            expect(() => {
+                disposeHighlighter();
+            }).not.toThrow();
         });
 
         it("should not throw when called multiple times", () => {
             disposeHighlighter();
-            expect(() => disposeHighlighter()).not.toThrow();
+
+            expect(() => {
+                disposeHighlighter();
+            }).not.toThrow();
         });
     });
 });

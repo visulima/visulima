@@ -6,7 +6,7 @@ import { INVERSE_MASK } from "../../src/ink/style-flags";
 import { plainTextToStyledLine } from "../../src/ink/styled-line-factory";
 
 describe("selection", () => {
-    describe("comparePoints", () => {
+    describe(comparePoints, () => {
         it("should return 0 for same node and offset", () => {
             const node = createTextNode("hello");
 
@@ -34,7 +34,7 @@ describe("selection", () => {
         });
     });
 
-    describe("Range", () => {
+    describe(Range, () => {
         it("should start collapsed", () => {
             const range = new Range();
 
@@ -84,10 +84,12 @@ describe("selection", () => {
         it("should select a node", () => {
             const parent = createNode("ink-box");
             const child = createTextNode("hello");
+
             child.parentNode = parent;
             parent.childNodes.push(child);
 
             const range = new Range();
+
             range.selectNode(child);
 
             expect(range.startContainer).toBe(parent);
@@ -99,6 +101,7 @@ describe("selection", () => {
             const node = createTextNode("hello");
 
             const range = new Range();
+
             range.selectNodeContents(node);
 
             expect(range.startOffset).toBe(0);
@@ -109,6 +112,7 @@ describe("selection", () => {
             const node = createTextNode("hello");
 
             const range = new Range();
+
             range.setStart(node, 0);
             range.setEnd(node, 5);
 
@@ -125,6 +129,7 @@ describe("selection", () => {
             parent.childNodes.push(child1, child2);
 
             const range = new Range();
+
             range.setStart(child1, 0);
             range.setEnd(child2, 0);
 
@@ -132,7 +137,7 @@ describe("selection", () => {
         });
     });
 
-    describe("Selection", () => {
+    describe(Selection, () => {
         it("should start with no ranges", () => {
             const selection = new Selection();
 
@@ -229,7 +234,7 @@ describe("selection", () => {
         });
     });
 
-    describe("applySelectionToStyledLine", () => {
+    describe(applySelectionToStyledLine, () => {
         it("should apply INVERSE style to characters in range", () => {
             const line = plainTextToStyledLine("hello");
 

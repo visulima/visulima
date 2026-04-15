@@ -1,12 +1,13 @@
 import delay from "delay";
 import React from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import type { vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { Markdown, render } from "../../src/ink/index";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("Markdown", () => {
+describe(Markdown, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element, waitMs = 100) => {
@@ -18,13 +19,13 @@ describe("Markdown", () => {
         await delay(waitMs);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             for (let index = calls.length - 1; index >= 0; index--) {
-                const arg = calls[index]?.[0] as string;
+                const argument = calls[index]?.[0] as string;
 
-                if (typeof arg === "string" && arg.length > 0 && !arg.startsWith("\u001B[?")) {
-                    return arg;
+                if (typeof argument === "string" && argument.length > 0 && !argument.startsWith("\u001B[?")) {
+                    return argument;
                 }
             }
 
@@ -43,7 +44,7 @@ describe("Markdown", () => {
     it("should render headings", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"# Hello World"}</Markdown>);
+        const { getOutput } = await setup(<Markdown># Hello World</Markdown>);
 
         expect(getOutput()).toContain("Hello World");
     });
@@ -51,7 +52,7 @@ describe("Markdown", () => {
     it("should render paragraphs", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"This is a paragraph."}</Markdown>);
+        const { getOutput } = await setup(<Markdown>This is a paragraph.</Markdown>);
 
         expect(getOutput()).toContain("This is a paragraph.");
     });
@@ -59,7 +60,7 @@ describe("Markdown", () => {
     it("should render bold text", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"This is **bold** text."}</Markdown>);
+        const { getOutput } = await setup(<Markdown>This is **bold** text.</Markdown>);
         const output = getOutput();
 
         expect(output).toContain("bold");
@@ -68,7 +69,7 @@ describe("Markdown", () => {
     it("should render italic text", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"This is *italic* text."}</Markdown>);
+        const { getOutput } = await setup(<Markdown>This is *italic* text.</Markdown>);
         const output = getOutput();
 
         expect(output).toContain("italic");
@@ -77,7 +78,7 @@ describe("Markdown", () => {
     it("should render inline code", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"Use `console.log` here."}</Markdown>);
+        const { getOutput } = await setup(<Markdown>Use `console.log` here.</Markdown>);
 
         expect(getOutput()).toContain("console.log");
     });
@@ -99,7 +100,7 @@ describe("Markdown", () => {
     it("should render horizontal rules", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"---"}</Markdown>);
+        const { getOutput } = await setup(<Markdown>---</Markdown>);
         const output = getOutput();
 
         expect(output).toContain("─");
@@ -116,7 +117,7 @@ describe("Markdown", () => {
     it("should render links", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"[Click here](https://example.com)"}</Markdown>);
+        const { getOutput } = await setup(<Markdown>[Click here](https://example.com)</Markdown>);
 
         expect(getOutput()).toContain("Click here");
     });
@@ -146,7 +147,7 @@ describe("Markdown", () => {
     it("should handle empty markdown", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{""}</Markdown>);
+        const { getOutput } = await setup(<Markdown />);
 
         expect(getOutput()).toBeDefined();
     });
@@ -165,7 +166,7 @@ describe("Markdown", () => {
     it("should handle strikethrough", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(<Markdown>{"This is ~~deleted~~ text."}</Markdown>);
+        const { getOutput } = await setup(<Markdown>This is ~~deleted~~ text.</Markdown>);
 
         expect(getOutput()).toContain("deleted");
     });

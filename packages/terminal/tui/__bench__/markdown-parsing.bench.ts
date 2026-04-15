@@ -104,7 +104,7 @@ describe("Markdown streaming (incremental re-lex)", () => {
         let accumulated = "";
 
         for (const chunk of chunks) {
-            accumulated += chunk + "\n";
+            accumulated += `${chunk}\n`;
             Lexer.lex(accumulated);
         }
     });

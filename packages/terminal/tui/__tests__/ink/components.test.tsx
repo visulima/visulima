@@ -68,7 +68,9 @@ describe("components", () => {
 
         const output = renderToString(
             <Text>
-                Hello <World />
+                Hello
+                {" "}
+                <World />
             </Text>,
         );
 
@@ -80,7 +82,11 @@ describe("components", () => {
 
         const output = renderToString(
             <Text>
-                Hello <>World</> {}
+                Hello
+                {" "}
+                <>World</>
+                {" "}
+                {}
             </Text>,
         );
 
@@ -327,7 +333,7 @@ describe("components", () => {
         );
 
         expect(error).toBeInstanceOf(Error);
-        expect(error?.message).toBe('Text string "Hello" must be rendered inside <Text> component');
+        expect(error?.message).toBe("Text string \"Hello\" must be rendered inside <Text> component");
     });
 
     it("fail when text node is not within <Text> component", () => {
@@ -361,7 +367,7 @@ describe("components", () => {
         );
 
         expect(error).toBeInstanceOf(Error);
-        expect(error?.message).toBe('Text string "Hello World" must be rendered inside <Text> component');
+        expect(error?.message).toBe("Text string \"Hello World\" must be rendered inside <Text> component");
     });
 
     it("fail when <Box> is inside <Text> component", () => {
@@ -999,7 +1005,6 @@ describe("components", () => {
             const [count, setCount] = useState(0);
 
             useEffect(() => {
-                // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler -- Test intentionally uses effect for timer-based counting
                 if (count < 3) {
                     const timer = setTimeout(() => {
                         setCount((c) => c + 1);

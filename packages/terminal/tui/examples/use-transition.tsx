@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions, func-style, no-empty, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, func-style, no-empty, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/use-transition
 import { Box, Text } from "@visulima/tui";

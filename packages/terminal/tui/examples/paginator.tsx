@@ -10,12 +10,25 @@ const App = () => {
     useInput((input, key) => {
         if (key.escape || input === "q") {
             exit();
-        } else if (input === "1") {
-            setStyle("dots");
-        } else if (input === "2") {
-            setStyle("numeric");
-        } else if (input === "3") {
-            setStyle("fraction");
+        } else {
+            switch (input) {
+                case "1": {
+                    setStyle("dots");
+
+                    break;
+                }
+                case "2": {
+                    setStyle("numeric");
+
+                    break;
+                }
+                case "3": {
+                    setStyle("fraction");
+
+                    break;
+                }
+                // No default
+            }
         }
     });
 

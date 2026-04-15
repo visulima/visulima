@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { accessibilityContext } from "../components/AccessibilityContext";
+import { accessibilityContext } from "../components/accessibility-context";
 
 /**
  * A React hook that returns whether a screen reader is enabled.

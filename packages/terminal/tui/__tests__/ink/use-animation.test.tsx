@@ -1,4 +1,3 @@
-/* eslint-disable react-x/no-array-index-key */
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import process from "node:process";
@@ -26,19 +25,19 @@ const ptyAvailable = (() => {
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
-function AnimatedCounter({ interval }: { readonly interval?: number }) {
+const AnimatedCounter = ({ interval }: { readonly interval?: number }) => {
     const { frame } = useAnimation({ interval });
 
     return <Text>{String(frame)}</Text>;
-}
+};
 
-function ConditionalAnimation({ interval, isActive }: { readonly interval?: number; readonly isActive: boolean }) {
+const ConditionalAnimation = ({ interval, isActive }: { readonly interval?: number; readonly isActive: boolean }) => {
     const { frame } = useAnimation({ interval, isActive });
 
     return <Text>{String(frame)}</Text>;
-}
+};
 
-describe("useAnimation", () => {
+describe(useAnimation, () => {
     it("frame increments over time", async () => {
         const stdout = createStdout();
         const { unmount } = render(<AnimatedCounter interval={50} />, {
@@ -47,12 +46,14 @@ describe("useAnimation", () => {
         });
 
         await delay(20);
+
         expect(stdout.get()).toBe("0");
 
         await delay(80);
         const frame = Number.parseInt(stdout.get(), 10);
 
         expect(frame).toBeGreaterThanOrEqual(1);
+
         unmount();
     });
 
@@ -64,15 +65,18 @@ describe("useAnimation", () => {
         });
 
         await delay(20);
+
         expect(stdout.get()).toBe("0");
 
         await delay(120);
+
         expect(stdout.get()).toBe("0");
+
         unmount();
     });
 
     it("multiple animations with the same interval stay in sync", async () => {
-        function MultiSpinner() {
+        const MultiSpinner = () => {
             const { frame: frame1 } = useAnimation({ interval: 50 });
             const { frame: frame2 } = useAnimation({ interval: 50 });
 
@@ -81,7 +85,7 @@ describe("useAnimation", () => {
                     {String(frame1)},{String(frame2)}
                 </Text>
             );
-        }
+        };
 
         const stdout = createStdout();
         const { unmount } = render(<MultiSpinner />, {
@@ -90,6 +94,7 @@ describe("useAnimation", () => {
         });
 
         await delay(20);
+
         expect(stdout.get()).toBe("0,0");
 
         await delay(100);
@@ -99,6 +104,7 @@ describe("useAnimation", () => {
         // Both frames should be equal since they use the same interval.
         expect(a).toBe(b);
         expect(a!).toBeGreaterThanOrEqual(1);
+
         unmount();
     });
 
@@ -115,7 +121,7 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function MultiSpinner() {
+                const MultiSpinner = () => {
                     const { frame: frame1 } = useAnimation({ interval: 50 });
                     const { frame: frame2 } = useAnimation({ interval: 50 });
 
@@ -124,7 +130,7 @@ describe("useAnimation", () => {
                             {String(frame1)},{String(frame2)}
                         </Text>
                     );
-                }
+                };
 
                 const stdout = createStdout();
                 const { unmount } = render(<MultiSpinner />, {
@@ -152,7 +158,7 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function MultiSpinner() {
+                const MultiSpinner = () => {
                     const { frame: fastFrame } = useAnimation({ interval: 50 });
                     const { frame: slowFrame } = useAnimation({ interval: 80 });
 
@@ -161,7 +167,7 @@ describe("useAnimation", () => {
                             {String(fastFrame)},{String(slowFrame)}
                         </Text>
                     );
-                }
+                };
 
                 const stdout = createStdout();
                 const { unmount } = render(<MultiSpinner />, {
@@ -196,6 +202,7 @@ describe("useAnimation", () => {
                 expect(mocks.setTimeoutCallCount).toBeGreaterThanOrEqual(1);
 
                 firstRender.unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(1);
 
                 const secondRender = render(<AnimatedCounter interval={50} />, {
@@ -206,9 +213,11 @@ describe("useAnimation", () => {
                 expect(mocks.setTimeoutCallCount).toBe(2);
 
                 await vi.advanceTimersByTimeAsync(120);
+
                 expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
 
                 secondRender.unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(2);
             } finally {
                 mocks.restore();
@@ -219,21 +228,19 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function AnimationValue() {
+                const AnimationValue = () => {
                     const { frame } = useAnimation({ interval: 50 });
 
                     return <Text>{String(frame)}</Text>;
-                }
+                };
 
-                function MaybeDualAnimation({ showSecond }: { readonly showSecond: boolean }) {
-                    return (
-                        <>
-                            <AnimationValue />
-                            {showSecond ? <Text>,</Text> : undefined}
-                            {showSecond ? <AnimationValue /> : undefined}
-                        </>
-                    );
-                }
+                const MaybeDualAnimation = ({ showSecond }: { readonly showSecond: boolean }) => (
+                    <>
+                        <AnimationValue />
+                        {showSecond ? <Text>,</Text> : undefined}
+                        {showSecond ? <AnimationValue /> : undefined}
+                    </>
+                );
 
                 const stdout = createStdout();
                 const { rerender, unmount } = render(<MaybeDualAnimation showSecond />, {
@@ -259,6 +266,7 @@ describe("useAnimation", () => {
                 expect(frameAfterUnmount).toBeGreaterThan(frameBeforeUnmount);
 
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(2);
             } finally {
                 mocks.restore();
@@ -269,21 +277,19 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function AnimationValue({ interval }: { readonly interval: number }) {
+                const AnimationValue = ({ interval }: { readonly interval: number }) => {
                     const { frame } = useAnimation({ interval });
 
                     return <Text>{String(frame)}</Text>;
-                }
+                };
 
-                function MaybeDualAnimation({ showSecond }: { readonly showSecond: boolean }) {
-                    return (
-                        <>
-                            <AnimationValue interval={50} />
-                            {showSecond ? <Text>,</Text> : undefined}
-                            {showSecond ? <AnimationValue interval={80} /> : undefined}
-                        </>
-                    );
-                }
+                const MaybeDualAnimation = ({ showSecond }: { readonly showSecond: boolean }) => (
+                    <>
+                        <AnimationValue interval={50} />
+                        {showSecond ? <Text>,</Text> : undefined}
+                        {showSecond ? <AnimationValue interval={80} /> : undefined}
+                    </>
+                );
 
                 const stdout = createStdout();
                 const { rerender, unmount } = render(<MaybeDualAnimation showSecond />, {
@@ -309,6 +315,7 @@ describe("useAnimation", () => {
                 expect(frameAfterUnmount).toBeGreaterThan(frameBeforeUnmount);
 
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(2);
             } finally {
                 mocks.restore();
@@ -319,7 +326,7 @@ describe("useAnimation", () => {
             const mocks = mockTimerCalls();
 
             try {
-                function MaybeActiveAnimations({ isFirstActive, isSecondActive }: { readonly isFirstActive: boolean; readonly isSecondActive: boolean }) {
+                const MaybeActiveAnimations = ({ isFirstActive, isSecondActive }: { readonly isFirstActive: boolean; readonly isSecondActive: boolean }) => {
                     const { frame: firstFrame } = useAnimation({
                         interval: 50,
                         isActive: isFirstActive,
@@ -334,7 +341,7 @@ describe("useAnimation", () => {
                             {String(firstFrame)},{String(secondFrame)}
                         </Text>
                     );
-                }
+                };
 
                 const stdout = createStdout();
                 const { rerender, unmount } = render(<MaybeActiveAnimations isFirstActive={false} isSecondActive={false} />, {
@@ -345,6 +352,7 @@ describe("useAnimation", () => {
                 expect(mocks.setTimeoutCallCount).toBe(0);
 
                 await vi.advanceTimersByTimeAsync(100);
+
                 expect(stdout.get()).toBe("0,0");
 
                 rerender(<MaybeActiveAnimations isFirstActive isSecondActive={false} />);
@@ -358,6 +366,7 @@ describe("useAnimation", () => {
                 expect(secondFrame).toBe(0);
 
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(1);
             } finally {
                 mocks.restore();
@@ -377,17 +386,21 @@ describe("useAnimation", () => {
 
                 // Activate - timer should start
                 rerender(<ConditionalAnimation interval={50} isActive />);
+
                 expect(mocks.setTimeoutCallCount).toBe(1);
 
                 await vi.advanceTimersByTimeAsync(120);
+
                 expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
 
                 // Deactivate - subscriber unsubscribes, timer should be cleaned up
                 rerender(<ConditionalAnimation interval={50} isActive={false} />);
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(1);
 
                 // Unmount - timer should already be gone
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(1);
             } finally {
                 mocks.restore();
@@ -402,6 +415,7 @@ describe("useAnimation", () => {
             });
 
             await vi.advanceTimersByTimeAsync(220);
+
             expect(stdout.get()).toBe("4");
 
             unmount();
@@ -423,6 +437,7 @@ describe("useAnimation", () => {
                 expect(stdout.get()).toBe("0");
 
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBe(0);
             } finally {
                 mocks.restore();
@@ -455,11 +470,11 @@ describe("useAnimation", () => {
         });
 
         it("changing interval unsubscribes stale ticks before reset", async () => {
-            function DynamicInterval({ interval }: { readonly interval: number }) {
+            const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { rerender, unmount } = render(<DynamicInterval interval={8} />, {
@@ -469,6 +484,7 @@ describe("useAnimation", () => {
             });
 
             await vi.advanceTimersByTimeAsync(25);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
 
             rerender(<DynamicInterval interval={200} />);
@@ -522,13 +538,13 @@ describe("useAnimation", () => {
         });
 
         it("newly mounted animations do not inherit elapsed time", async () => {
-            function AnimationValue({ interval }: { readonly interval: number }) {
+            const AnimationValue = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
-            function DelayedDualAnimation() {
+            const DelayedDualAnimation = () => {
                 const [showSecond, setShowSecond] = React.useState(false);
 
                 React.useEffect(() => {
@@ -548,7 +564,7 @@ describe("useAnimation", () => {
                         {showSecond ? <AnimationValue interval={20} /> : <Text>-</Text>}
                     </>
                 );
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<DelayedDualAnimation />, {
@@ -574,13 +590,13 @@ describe("useAnimation", () => {
         });
 
         it("newly activated animations do not inherit elapsed time", async () => {
-            function AnimationValue({ interval, isActive = true }: { readonly interval: number; readonly isActive?: boolean }) {
+            const AnimationValue = ({ interval, isActive = true }: { readonly interval: number; readonly isActive?: boolean }) => {
                 const { frame } = useAnimation({ interval, isActive });
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
-            function DelayedActivationAnimation() {
+            const DelayedActivationAnimation = () => {
                 const [isSecondActive, setIsSecondActive] = React.useState(false);
 
                 React.useEffect(() => {
@@ -600,7 +616,7 @@ describe("useAnimation", () => {
                         <AnimationValue interval={20} isActive={isSecondActive} />
                     </>
                 );
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<DelayedActivationAnimation />, {
@@ -626,11 +642,11 @@ describe("useAnimation", () => {
         });
 
         it("rerendering with the same interval does not reset the frame", async () => {
-            function DynamicInterval({ interval }: { readonly interval: number }) {
+            const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { rerender, unmount } = render(<DynamicInterval interval={20} />, {
@@ -658,23 +674,32 @@ describe("useAnimation", () => {
 
             // Cycle 1
             await vi.advanceTimersByTimeAsync(120);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
+
             rerender(<ConditionalAnimation interval={50} isActive={false} />);
             rerender(<ConditionalAnimation interval={50} isActive />);
+
             expect(stdout.get()).toBe("0");
 
             // Cycle 2
             await vi.advanceTimersByTimeAsync(120);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
+
             rerender(<ConditionalAnimation interval={50} isActive={false} />);
             rerender(<ConditionalAnimation interval={50} isActive />);
+
             expect(stdout.get()).toBe("0");
 
             // Cycle 3
             await vi.advanceTimersByTimeAsync(120);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
+
             rerender(<ConditionalAnimation interval={50} isActive={false} />);
             rerender(<ConditionalAnimation interval={50} isActive />);
+
             expect(stdout.get()).toBe("0");
 
             unmount();
@@ -695,24 +720,26 @@ describe("useAnimation", () => {
 
                 // Unmount before any tick fires
                 unmount();
+
                 expect(mocks.clearTimeoutCallCount).toBeGreaterThanOrEqual(1);
 
                 // Confirm no animation ticks fire after unmount
                 const writeCountAfterUnmount = (stdout.write as ReturnType<typeof vi.fn>).mock.calls.length;
 
                 await vi.advanceTimersByTimeAsync(200);
-                expect((stdout.write as ReturnType<typeof vi.fn>).mock.calls.length).toBe(writeCountAfterUnmount);
+
+                expect(stdout.write as ReturnType<typeof vi.fn>).toHaveBeenCalledTimes(writeCountAfterUnmount);
             } finally {
                 mocks.restore();
             }
         });
 
         it("defaults to 100ms interval", async () => {
-            function DefaultInterval() {
+            const DefaultInterval = () => {
                 const { frame } = useAnimation();
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<DefaultInterval />, {
@@ -867,7 +894,7 @@ describe("useAnimation", () => {
         });
 
         it("time and delta reset to 0 when interval changes", async () => {
-            function DynamicInterval({ interval }: { readonly interval: number }) {
+            const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { delta, frame, time } = useAnimation({ interval });
 
                 return (
@@ -875,7 +902,7 @@ describe("useAnimation", () => {
                         {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
-            }
+            };
 
             const stdout = createStdout();
             const { rerender, unmount } = render(<DynamicInterval interval={50} />, {
@@ -892,13 +919,14 @@ describe("useAnimation", () => {
 
             // Changing interval should reset frame, time, and delta to 0
             rerender(<DynamicInterval interval={200} />);
+
             expect(stdout.get()).toBe("0,0,0");
 
             unmount();
         });
 
         it("time and delta reset to 0 when animation is resumed", async () => {
-            function ConditionalDisplay({ isActive }: { readonly isActive: boolean }) {
+            const ConditionalDisplay = ({ isActive }: { readonly isActive: boolean }) => {
                 const { delta, frame, time } = useAnimation({ interval: 50, isActive });
 
                 return (
@@ -906,7 +934,7 @@ describe("useAnimation", () => {
                         {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
-            }
+            };
 
             const stdout = createStdout();
             const { rerender, unmount } = render(<ConditionalDisplay isActive />, {
@@ -924,6 +952,7 @@ describe("useAnimation", () => {
             // Pause then resume - frame, time, and delta should all reset to 0
             rerender(<ConditionalDisplay isActive={false} />);
             rerender(<ConditionalDisplay isActive />);
+
             expect(stdout.get()).toBe("0,0,0");
 
             unmount();
@@ -932,7 +961,7 @@ describe("useAnimation", () => {
         it("reset() resets frame, time, and delta to 0", async () => {
             let resetAnimation!: () => void;
 
-            function ResettableAnimation() {
+            const ResettableAnimation = () => {
                 const { delta, frame, reset, time } = useAnimation({ interval: 50 });
 
                 resetAnimation = reset;
@@ -942,7 +971,7 @@ describe("useAnimation", () => {
                         {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
                     </Text>
                 );
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<ResettableAnimation />, {
@@ -961,6 +990,7 @@ describe("useAnimation", () => {
 
             // Let React flush the state update from reset()
             await vi.advanceTimersByTimeAsync(1);
+
             expect(stdout.get()).toBe("0,0,0");
 
             // Confirm it advances again after reset
@@ -979,13 +1009,13 @@ describe("useAnimation", () => {
         it("reset() while paused takes effect when animation is resumed", async () => {
             let resetAnimation!: () => void;
 
-            function PausableAnimation({ isActive }: { readonly isActive: boolean }) {
+            const PausableAnimation = ({ isActive }: { readonly isActive: boolean }) => {
                 const { frame, reset } = useAnimation({ interval: 50, isActive });
 
                 resetAnimation = reset;
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { rerender, unmount } = render(<PausableAnimation isActive />, {
@@ -996,6 +1026,7 @@ describe("useAnimation", () => {
 
             // Let a few frames accumulate
             await vi.advanceTimersByTimeAsync(200);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
 
             // Pause the animation
@@ -1004,14 +1035,17 @@ describe("useAnimation", () => {
             // Call reset while paused
             resetAnimation();
             await vi.advanceTimersByTimeAsync(1);
+
             expect(stdout.get()).not.toBe("-1");
 
             // Resume - the pending reset should now take effect and frame should be 0
             rerender(<PausableAnimation isActive />);
+
             expect(stdout.get()).toBe("0");
 
             // And then advance again to confirm animation restarts cleanly
             await vi.advanceTimersByTimeAsync(100);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
 
             unmount();
@@ -1020,12 +1054,12 @@ describe("useAnimation", () => {
         it("low maxFps caps animation rerenders", async () => {
             let renderCount = 0;
 
-            function RenderCountingAnimation() {
+            const RenderCountingAnimation = () => {
                 renderCount++;
                 const { frame } = useAnimation({ interval: 10 });
 
                 return <Text>{String(frame)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<RenderCountingAnimation />, {
@@ -1053,7 +1087,7 @@ describe("useAnimation", () => {
             resolveSuspense = resolve;
         });
 
-        function MaybeSuspendingAnimation({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) {
+        const MaybeSuspendingAnimation = ({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) => {
             const { frame } = useAnimation({ interval });
 
             if (shouldSuspend) {
@@ -1062,7 +1096,7 @@ describe("useAnimation", () => {
             }
 
             return <Text>{String(frame)}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         let instance: ReturnType<typeof render> | undefined;
@@ -1104,6 +1138,7 @@ describe("useAnimation", () => {
             expect(stdout.get()).toBe("0");
 
             await delay(260);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThanOrEqual(1);
         } finally {
             resolveSuspense();
@@ -1118,7 +1153,7 @@ describe("useAnimation", () => {
         });
         let suspendWithNewInterval!: () => void;
 
-        function MaybeSuspendingAnimation({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) {
+        const MaybeSuspendingAnimation = ({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) => {
             const { frame } = useAnimation({ interval });
 
             if (shouldSuspend) {
@@ -1127,9 +1162,9 @@ describe("useAnimation", () => {
             }
 
             return <Text>{String(frame)}</Text>;
-        }
+        };
 
-        function TestCase() {
+        const TestCase = () => {
             const [interval, setInterval] = React.useState(50);
             const [shouldSuspend, setShouldSuspend] = React.useState(false);
 
@@ -1145,7 +1180,7 @@ describe("useAnimation", () => {
                     <MaybeSuspendingAnimation interval={interval} shouldSuspend={shouldSuspend} />
                 </Suspense>
             );
-        }
+        };
 
         const stdout = createStdout();
         let instance: ReturnType<typeof render> | undefined;
@@ -1169,6 +1204,7 @@ describe("useAnimation", () => {
             expect(stdout.get()).toBe(String(frameBeforeSuspend));
 
             await delay(120);
+
             expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameBeforeSuspend);
         } finally {
             resolveSuspense();
@@ -1189,6 +1225,7 @@ describe("useAnimation", () => {
         const outputAfterUnmount = stdout.get();
 
         await delay(120);
+
         // No new writes should happen after unmount
         expect(stdout.get()).toBe(outputAfterUnmount);
     });
@@ -1208,6 +1245,7 @@ describe("useAnimation", () => {
 
         // Resume - frame should reset to 0
         rerender(<ConditionalAnimation interval={50} isActive />);
+
         expect(stdout.get()).toBe("0");
 
         // Should start incrementing again
@@ -1215,15 +1253,16 @@ describe("useAnimation", () => {
         const frameAfterResume = Number.parseInt(stdout.get(), 10);
 
         expect(frameAfterResume).toBeGreaterThanOrEqual(1);
+
         unmount();
     });
 
     it("resets frame when interval changes", async () => {
-        function DynamicInterval({ interval }: { readonly interval: number }) {
+        const DynamicInterval = ({ interval }: { readonly interval: number }) => {
             const { frame } = useAnimation({ interval });
 
             return <Text>{String(frame)}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const { rerender, unmount } = render(<DynamicInterval interval={50} />, {
@@ -1238,12 +1277,14 @@ describe("useAnimation", () => {
 
         // Change interval - frame should reset to 0
         rerender(<DynamicInterval interval={200} />);
+
         expect(stdout.get()).toBe("0");
+
         unmount();
     });
 
     it("different intervals advance at different rates", async () => {
-        function DualAnimation() {
+        const DualAnimation = () => {
             const { frame: fast } = useAnimation({ interval: 50 });
             const { frame: slow } = useAnimation({ interval: 200 });
 
@@ -1252,7 +1293,7 @@ describe("useAnimation", () => {
                     {String(fast)},{String(slow)}
                 </Text>
             );
-        }
+        };
 
         const stdout = createStdout();
         const { unmount } = render(<DualAnimation />, {
@@ -1265,15 +1306,16 @@ describe("useAnimation", () => {
         const [fast, slow] = output.split(",").map(Number);
 
         expect(fast!).toBeGreaterThan(slow!);
+
         unmount();
     });
 
     it("time increases with each tick", async () => {
-        function TimeDisplay() {
+        const TimeDisplay = () => {
             const { time } = useAnimation({ interval: 50 });
 
             return <Text>{String(Math.round(time))}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const { unmount } = render(<TimeDisplay />, { debug: true, stdout });
@@ -1294,11 +1336,11 @@ describe("useAnimation", () => {
     });
 
     it("delta approximates interval on each tick", async () => {
-        function DeltaDisplay() {
+        const DeltaDisplay = () => {
             const { delta } = useAnimation({ interval: 50 });
 
             return <Text>{String(Math.round(delta))}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const { unmount } = render(<DeltaDisplay />, { debug: true, stdout });
@@ -1323,7 +1365,7 @@ describe("useAnimation", () => {
     it("delta accounts for throttled ticks", async () => {
         let lastRenderedDelta = 0;
 
-        function DeltaCapture() {
+        const DeltaCapture = () => {
             const { delta } = useAnimation({ interval: 20 });
 
             // Captured in the render phase so we can verify the coalesced delta
@@ -1331,7 +1373,7 @@ describe("useAnimation", () => {
             lastRenderedDelta = delta;
 
             return <Text>x</Text>;
-        }
+        };
 
         // Deliberately no debug: true - that forces renderThrottleMs = 0 and
         // would prevent the throttle code path from activating.
@@ -1350,15 +1392,15 @@ describe("useAnimation", () => {
     });
 
     it("reset is a stable function reference", () => {
-        const resets: Array<() => void> = [];
+        const resets: (() => void)[] = [];
 
-        function ResettableAnimation() {
+        const ResettableAnimation = () => {
             const { reset } = useAnimation({ interval: 50 });
 
             resets.push(reset);
 
             return <Text>x</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const { rerender, unmount } = render(<ResettableAnimation />, {
@@ -1390,7 +1432,7 @@ describe("useAnimation", () => {
 
             let output = "";
 
-            fixtureProcess.stdout!.on("data", (data: Uint8Array | string) => {
+            fixtureProcess.stdout.on("data", (data: Uint8Array | string) => {
                 output += typeof data === "string" ? data : data.toString();
             });
 
@@ -1419,7 +1461,7 @@ describe("useAnimation", () => {
 
             let output = "";
 
-            fixtureProcess.stdout!.on("data", (data: Uint8Array | string) => {
+            fixtureProcess.stdout.on("data", (data: Uint8Array | string) => {
                 output += typeof data === "string" ? data : data.toString();
             });
 

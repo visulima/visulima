@@ -8,21 +8,23 @@
  */
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { Box, getInnerHeight, getScrollHeight, render, Text, useInput } from "../src/ink/index";
 import type { DOMElement } from "../src/ink/index";
+import { Box, getInnerHeight, getScrollHeight, render, Text, useInput } from "../src/ink/index";
 
-function ScrollDemo() {
+const ScrollDemo = () => {
     const [scrollTop, setScrollTop] = useState(0);
     const ref = useRef<DOMElement>(null);
     const [metrics, setMetrics] = useState({ innerHeight: 0, scrollHeight: 0 });
 
     const items = useMemo(
         () =>
-            Array.from({ length: 30 }, (_, i) => ({
-                id: i,
-                lines: Array.from({ length: (i % 5) + 2 }, (_, j) => `  Line ${j + 1} of item ${i + 1}`),
-                title: `Section ${i + 1}`,
-            })),
+            Array.from({ length: 30 }, (_, i) => {
+                return {
+                    id: i,
+                    lines: Array.from({ length: (i % 5) + 2 }, (_, j) => `  Line ${j + 1} of item ${i + 1}`),
+                    title: `Section ${i + 1}`,
+                };
+            }),
         [],
     );
 
@@ -41,28 +43,28 @@ function ScrollDemo() {
         const maxScroll = Math.max(0, metrics.scrollHeight - metrics.innerHeight);
 
         if (key.upArrow) {
-            setScrollTop((prev) => Math.max(0, prev - 1));
+            setScrollTop((previous) => Math.max(0, previous - 1));
         }
 
         if (key.downArrow) {
-            setScrollTop((prev) => Math.min(maxScroll, prev + 1));
+            setScrollTop((previous) => Math.min(maxScroll, previous + 1));
         }
 
         if (key.pageDown) {
-            setScrollTop((prev) => Math.min(maxScroll, prev + metrics.innerHeight));
+            setScrollTop((previous) => Math.min(maxScroll, previous + metrics.innerHeight));
         }
 
         if (key.pageUp) {
-            setScrollTop((prev) => Math.max(0, prev - metrics.innerHeight));
+            setScrollTop((previous) => Math.max(0, previous - metrics.innerHeight));
         }
     });
 
     return (
         <Box flexDirection="column" height={20}>
             <Text bold> Scroll Demo (↑↓ to scroll, PgUp/PgDn for pages)</Text>
-            <Box ref={ref} borderStyle="round" flexDirection="column" flexGrow={1} overflowY="scroll" scrollTop={scrollTop} scrollbarThumbColor="cyan">
+            <Box borderStyle="round" flexDirection="column" flexGrow={1} overflowY="scroll" ref={ref} scrollbarThumbColor="cyan" scrollTop={scrollTop}>
                 {items.map((item) => (
-                    <Box key={item.id} flexDirection="column" marginBottom={1}>
+                    <Box flexDirection="column" key={item.id} marginBottom={1}>
                         <Box sticky>
                             <Text bold color="green">
                                 {item.title}
@@ -76,10 +78,13 @@ function ScrollDemo() {
             </Box>
             <Text dimColor>
                 {" "}
-                scrollTop={scrollTop} innerHeight={metrics.innerHeight} scrollHeight={metrics.scrollHeight}
+                scrollTop=
+                {scrollTop} innerHeight=
+                {metrics.innerHeight} scrollHeight=
+                {metrics.scrollHeight}
             </Text>
         </Box>
     );
-}
+};
 
 render(<ScrollDemo />);

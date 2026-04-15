@@ -10,47 +10,47 @@ export {
     rgbToHex,
     transformHexColor,
 } from "./color-matrix";
-export type { Props as AlertProps, AlertVariant } from "./components/Alert";
-export { default as Alert } from "./components/Alert";
-export type { Props as AppProps } from "./components/AppContext";
-export type { Props as BadgeProps } from "./components/Badge";
-export { default as Badge } from "./components/Badge";
-export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/BigText";
-export { default as BigText } from "./components/BigText";
-export type { Props as BoxProps } from "./components/Box";
-export { default as Box } from "./components/Box";
-export type { Props as CodeProps } from "./components/Code";
-export { default as Code } from "./components/Code";
-export type { Props as ConfirmInputProps } from "./components/ConfirmInput";
-export { default as ConfirmInput } from "./components/ConfirmInput";
-export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./components/ConsoleOverlay";
-export { default as ConsoleOverlay } from "./components/ConsoleOverlay";
-export type { Props as CursorProps } from "./components/Cursor";
-export { default as Cursor } from "./components/Cursor";
-export type { Props as DialogProps } from "./components/Dialog";
-export { default as Dialog } from "./components/Dialog";
-export type { DiffViewMode, Props as DiffViewProps, InlineDiffMode } from "./components/DiffView";
-export { default as DiffView } from "./components/DiffView";
+export type { Props as AlertProps, AlertVariant } from "./components/alert";
+export { default as Alert } from "./components/alert";
+export type { Props as AppProps } from "./components/app-context";
+export type { Props as BadgeProps } from "./components/badge";
+export { default as Badge } from "./components/badge";
+export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/big-text";
+export { default as BigText } from "./components/big-text";
+export type { Props as BoxProps } from "./components/box";
+export { default as Box } from "./components/box";
+export type { Props as CodeProps } from "./components/code";
+export { default as Code } from "./components/code";
+export type { Props as ConfirmInputProps } from "./components/confirm-input";
+export { default as ConfirmInput } from "./components/confirm-input";
+export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./components/console-overlay";
+export { default as ConsoleOverlay } from "./components/console-overlay";
+export type { Props as CursorProps } from "./components/cursor";
+export { default as Cursor } from "./components/cursor";
+export type { Props as DialogProps } from "./components/dialog";
+export { default as Dialog } from "./components/dialog";
+export type { DiffViewMode, Props as DiffViewProps, InlineDiffMode } from "./components/diff-view";
+export { default as DiffView } from "./components/diff-view";
 export type { FileEntry, FilePickerFilter, FilePickerProps } from "./components/file-picker";
 export { FilePicker } from "./components/file-picker";
-export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
-export { default as Gradient } from "./components/Gradient";
-export type { Props as HelpProps } from "./components/Help";
-export { default as Help } from "./components/Help";
-export type { Props as LinkProps } from "./components/Link";
-export { default as Link } from "./components/Link";
-export type { Props as MarkdownProps } from "./components/Markdown";
-export { default as Markdown } from "./components/Markdown";
-export type { MultiSelectOption, Props as MultiSelectProps } from "./components/MultiSelect";
-export { default as MultiSelect } from "./components/MultiSelect";
-export type { Props as NewlineProps } from "./components/Newline";
-export { default as Newline } from "./components/Newline";
-export type { OrderedListEntry, Props as OrderedListProps } from "./components/OrderedList";
-export { default as OrderedList } from "./components/OrderedList";
-export type { PageMeta, Props as PaginatorProps } from "./components/Paginator";
-export { default as Paginator } from "./components/Paginator";
-export type { Props as ProgressBarProps } from "./components/ProgressBar";
-export { default as ProgressBar } from "./components/ProgressBar";
+export type { GradientColors, GradientName, Props as GradientProps } from "./components/gradient";
+export { default as Gradient } from "./components/gradient";
+export type { Props as HelpProps } from "./components/help";
+export { default as Help } from "./components/help";
+export type { Props as LinkProps } from "./components/link";
+export { default as Link } from "./components/link";
+export type { Props as MarkdownProps } from "./components/markdown";
+export { default as Markdown } from "./components/markdown";
+export type { MultiSelectOption, Props as MultiSelectProps } from "./components/multi-select";
+export { default as MultiSelect } from "./components/multi-select";
+export type { Props as NewlineProps } from "./components/newline";
+export { default as Newline } from "./components/newline";
+export type { OrderedListEntry, Props as OrderedListProps } from "./components/ordered-list";
+export { default as OrderedList } from "./components/ordered-list";
+export type { PageMeta, Props as PaginatorProps } from "./components/paginator";
+export { default as Paginator } from "./components/paginator";
+export type { Props as ProgressBarProps } from "./components/progress-bar";
+export { default as ProgressBar } from "./components/progress-bar";
 export type {
     ControlledScrollViewProps,
     ControlledScrollViewRef,
@@ -65,44 +65,49 @@ export type {
     ScrollViewRef,
 } from "./components/scroll";
 export { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "./components/scroll";
-export type { SelectInputEntry, Item as SelectInputItemType, Props as SelectInputProps, SeparatorItem as SelectInputSeparator } from "./components/SelectInput";
-export { default as SelectInput } from "./components/SelectInput";
-export type { Props as SelectInputIndicatorProps } from "./components/SelectInputIndicator";
-export { default as SelectInputIndicator } from "./components/SelectInputIndicator";
-export type { Props as SelectInputItemProps } from "./components/SelectInputItem";
-export { default as SelectInputItem } from "./components/SelectInputItem";
-export type { Props as SliderProps } from "./components/Slider";
-export { default as Slider } from "./components/Slider";
-export { default as Spacer } from "./components/Spacer";
-export type { Props as SpinnerProps } from "./components/Spinner";
-export { default as Spinner } from "./components/Spinner";
-export type { Props as StaticProps } from "./components/Static";
-export { default as Static } from "./components/Static";
-export type { Props as StaticRenderProps } from "./components/StaticRender";
-export { default as StaticRender } from "./components/StaticRender";
-export type { Props as StatusMessageProps, StatusMessageVariant } from "./components/StatusMessage";
-export { default as StatusMessage } from "./components/StatusMessage";
-export type { Props as StderrProps } from "./components/StderrContext";
-export type { PublicProps as StdinProps } from "./components/StdinContext";
-export type { Props as StdoutProps } from "./components/StdoutContext";
-export type { Props as StopwatchProps, StopwatchRef } from "./components/Stopwatch";
-export { default as Stopwatch } from "./components/Stopwatch";
-export type { Props as TabProps } from "./components/Tab";
-export { default as Tab } from "./components/Tab";
-export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as TableScalar, ScalarDict as TableScalarDict } from "./components/Table";
-export { default as Table } from "./components/Table";
-export type { TabColors, KeyMap as TabsKeyMap, Props as TabsProps } from "./components/Tabs";
-export { default as Tabs } from "./components/Tabs";
-export type { Props as TextProps } from "./components/Text";
-export { default as Text } from "./components/Text";
-export type { Props as TextareaProps } from "./components/Textarea";
-export { default as Textarea } from "./components/Textarea";
-export type { Props as TextInputProps } from "./components/TextInput";
-export { default as TextInput } from "./components/TextInput";
-export type { Props as TimerProps, TimerRef } from "./components/Timer";
-export { default as Timer } from "./components/Timer";
-export type { Props as TransformProps } from "./components/Transform";
-export { default as Transform } from "./components/Transform";
+export type {
+    SelectInputEntry,
+    Item as SelectInputItemType,
+    Props as SelectInputProps,
+    SeparatorItem as SelectInputSeparator,
+} from "./components/select-input";
+export { default as SelectInput } from "./components/select-input";
+export type { Props as SelectInputIndicatorProps } from "./components/select-input-indicator";
+export { default as SelectInputIndicator } from "./components/select-input-indicator";
+export type { Props as SelectInputItemProps } from "./components/select-input-item";
+export { default as SelectInputItem } from "./components/select-input-item";
+export type { Props as SliderProps } from "./components/slider";
+export { default as Slider } from "./components/slider";
+export { default as Spacer } from "./components/spacer";
+export type { Props as SpinnerProps } from "./components/spinner";
+export { default as Spinner } from "./components/spinner";
+export type { Props as StaticProps } from "./components/static";
+export { default as Static } from "./components/static";
+export type { Props as StaticRenderProps } from "./components/static-render";
+export { default as StaticRender } from "./components/static-render";
+export type { Props as StatusMessageProps, StatusMessageVariant } from "./components/status-message";
+export { default as StatusMessage } from "./components/status-message";
+export type { Props as StderrProps } from "./components/stderr-context";
+export type { PublicProps as StdinProps } from "./components/stdin-context";
+export type { Props as StdoutProps } from "./components/stdout-context";
+export type { Props as StopwatchProps, StopwatchRef } from "./components/stopwatch";
+export { default as Stopwatch } from "./components/stopwatch";
+export type { Props as TabProps } from "./components/tab";
+export { default as Tab } from "./components/tab";
+export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as TableScalar, ScalarDict as TableScalarDict } from "./components/table";
+export { default as Table } from "./components/table";
+export type { TabColors, KeyMap as TabsKeyMap, Props as TabsProps } from "./components/tabs";
+export { default as Tabs } from "./components/tabs";
+export type { Props as TextProps } from "./components/text";
+export { default as Text } from "./components/text";
+export type { Props as TextInputProps } from "./components/text-input";
+export { default as TextInput } from "./components/text-input";
+export type { Props as TextareaProps } from "./components/textarea";
+export { default as Textarea } from "./components/textarea";
+export type { Props as TimerProps, TimerRef } from "./components/timer";
+export { default as Timer } from "./components/timer";
+export type { Props as TransformProps } from "./components/transform";
+export { default as Transform } from "./components/transform";
 export type {
     AsyncChildrenFunction,
     FlatNode,
@@ -117,8 +122,8 @@ export type {
     UseTreeViewStateProps,
 } from "./components/tree-view";
 export { TreeNodeMap, TreeView, treeViewTheme, useTreeView, useTreeViewState } from "./components/tree-view";
-export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
-export { default as UnorderedList } from "./components/UnorderedList";
+export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/unordered-list";
+export { default as UnorderedList } from "./components/unordered-list";
 export type { DOMElement, StickyHeader } from "./dom";
 export { getPathToRoot, isNodeSelectable } from "./dom";
 export type { AnimationResult } from "./hooks/use-animation";

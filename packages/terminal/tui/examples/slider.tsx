@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * slider.tsx — <Slider> component demo
+ * slider.tsx — &lt;Slider> component demo
  *
  * Controls:
  *   Left/Right  adjust value
@@ -45,7 +45,8 @@ const App = () => {
                 <Box gap={1}>
                     <Box width={14}>
                         <Text bold={activeIndex === 0} color={activeIndex === 0 ? "green" : undefined}>
-                            {activeIndex === 0 ? "▸ " : "  "}Volume
+                            {activeIndex === 0 ? "▸ " : "  "}
+                            Volume
                         </Text>
                     </Box>
                     <Slider accentColor="green" defaultValue={volume} isFocused={activeIndex === 0} onChange={setVolume} width={30} />
@@ -55,7 +56,8 @@ const App = () => {
                 <Box gap={1}>
                     <Box width={14}>
                         <Text bold={activeIndex === 1} color={activeIndex === 1 ? "yellow" : undefined}>
-                            {activeIndex === 1 ? "▸ " : "  "}Brightness
+                            {activeIndex === 1 ? "▸ " : "  "}
+                            Brightness
                         </Text>
                     </Box>
                     <Slider accentColor="yellow" defaultValue={brightness} isFocused={activeIndex === 1} onChange={setBrightness} width={30} />
@@ -65,7 +67,8 @@ const App = () => {
                 <Box gap={1}>
                     <Box width={14}>
                         <Text bold={activeIndex === 2} color={activeIndex === 2 ? "red" : undefined}>
-                            {activeIndex === 2 ? "▸ " : "  "}Temperature
+                            {activeIndex === 2 ? "▸ " : "  "}
+                            Temperature
                         </Text>
                     </Box>
                     <Slider

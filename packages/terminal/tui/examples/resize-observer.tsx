@@ -7,20 +7,18 @@
  */
 import React, { forwardRef, useEffect, useRef, useState } from "react";
 
-import { Box, render, ResizeObserver, Text } from "../src/ink/index";
 import type { DOMElement } from "../src/ink/index";
+import { Box, render, ResizeObserver, Text } from "../src/ink/index";
 
-const ObservedBox = forwardRef<DOMElement, { label: string }>(({ label }, ref) => {
-    return (
-        <Box ref={ref} borderStyle="single" flexGrow={1} padding={1}>
-            <Text>{label}</Text>
-        </Box>
-    );
-});
+const ObservedBox = forwardRef<DOMElement, { label: string }>(({ label }, ref) => (
+    <Box borderStyle="single" flexGrow={1} padding={1} ref={ref}>
+        <Text>{label}</Text>
+    </Box>
+));
 
 ObservedBox.displayName = "ObservedBox";
 
-function ResizeObserverDemo() {
+const ResizeObserverDemo = () => {
     const ref = useRef<DOMElement>(null);
     const [size, setSize] = useState({ height: 0, width: 0 });
 
@@ -37,19 +35,21 @@ function ResizeObserverDemo() {
 
         observer.observe(ref.current);
 
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+        };
     }, []);
 
     return (
         <Box flexDirection="column" height={10}>
             <Text bold> ResizeObserver Demo</Text>
-            <ObservedBox ref={ref} label="Resize your terminal to see this update" />
+            <ObservedBox label="Resize your terminal to see this update" ref={ref} />
             <Text>
                 {" "}
                 Observed size: {size.width}x{size.height}
             </Text>
         </Box>
     );
-}
+};
 
 render(<ResizeObserverDemo />);

@@ -1,6 +1,6 @@
 import { useCallback, useContext, useLayoutEffect, useRef, useState } from "react";
 
-import AnimationContext from "../components/AnimationContext";
+import AnimationContext from "../components/animation-context";
 
 const defaultAnimationInterval = 100;
 const maximumTimerInterval = 2_147_483_647;
@@ -73,7 +73,7 @@ export default function useAnimation(options?: Options): AnimationResult {
 
     useLayoutEffect(() => {
         if (!isActive) {
-            return;
+            return undefined;
         }
 
         // Reset to zero immediately so any render that occurs between this

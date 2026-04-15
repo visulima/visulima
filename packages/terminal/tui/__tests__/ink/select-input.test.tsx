@@ -13,7 +13,7 @@ const items = [
     { label: "Third", value: "third" },
 ];
 
-describe("SelectInput", () => {
+describe(SelectInput, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -25,7 +25,7 @@ describe("SelectInput", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };
@@ -350,8 +350,8 @@ describe("SelectInput", () => {
             emitReadable(stdin, "\r");
             await delay(50);
 
-            expect(onSelect).toHaveBeenCalledOnce();
-            expect(action).toHaveBeenCalledOnce();
+            expect(onSelect).toHaveBeenCalledTimes(1);
+            expect(action).toHaveBeenCalledTimes(1);
         });
 
         it("should call item action on number key", async () => {
@@ -369,8 +369,8 @@ describe("SelectInput", () => {
             emitReadable(stdin, "2");
             await delay(50);
 
-            expect(onSelect).toHaveBeenCalledOnce();
-            expect(action).toHaveBeenCalledOnce();
+            expect(onSelect).toHaveBeenCalledTimes(1);
+            expect(action).toHaveBeenCalledTimes(1);
         });
 
         it("should work without onSelect when action is defined", async () => {
@@ -384,7 +384,7 @@ describe("SelectInput", () => {
             emitReadable(stdin, "\r");
             await delay(50);
 
-            expect(action).toHaveBeenCalledOnce();
+            expect(action).toHaveBeenCalledTimes(1);
         });
 
         it("should not respond to input when not focused", async () => {
@@ -455,7 +455,7 @@ describe("SelectInput", () => {
             await delay(50);
 
             const getOutput = () => {
-                const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+                const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
                 return (calls.at(-1)?.[0] ?? "") as string;
             };
@@ -515,7 +515,7 @@ describe("SelectInput", () => {
             await delay(50);
 
             const getOutput = () => {
-                const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+                const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
                 return (calls.at(-1)?.[0] ?? "") as string;
             };
@@ -581,7 +581,7 @@ describe("SelectInput", () => {
             await delay(50);
 
             const getOutput = () => {
-                const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+                const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
                 return (calls.at(-1)?.[0] ?? "") as string;
             };
@@ -607,7 +607,7 @@ describe("SelectInput", () => {
         });
 
         it("should pass highlighted index as second argument to onHighlight", async () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             const onHighlight = vi.fn();
             const { stdin } = await setup(<SelectInput initialIndex={0} items={items} limit={2} onHighlight={onHighlight} />);
@@ -615,8 +615,7 @@ describe("SelectInput", () => {
             emitReadable(stdin, "\u001B[B");
             await delay(50);
 
-            expect(onHighlight).toHaveBeenCalledOnce();
-            expect(onHighlight).toHaveBeenCalledWith({ label: "Second", value: "second" }, 1);
+            expect(onHighlight).toHaveBeenCalledExactlyOnceWith({ label: "Second", value: "second" }, 1);
         });
     });
 
@@ -806,13 +805,13 @@ describe("SelectInput", () => {
         it("should render separator with custom label", async () => {
             expect.assertions(1);
 
-            const customSepItems = [
+            const customSeparatorItems = [
                 { label: "A", value: "a" },
                 { isSeparator: true as const, label: "--- options ---" },
                 { label: "B", value: "b" },
             ];
 
-            const { getOutput } = await setup(<SelectInput initialIndex={0} items={customSepItems} />);
+            const { getOutput } = await setup(<SelectInput initialIndex={0} items={customSeparatorItems} />);
 
             expect(getOutput()).toContain("--- options ---");
         });
@@ -870,10 +869,15 @@ describe("SelectInput", () => {
         it("should skip multiple consecutive separators", async () => {
             expect.assertions(1);
 
-            const multiSepItems = [{ label: "A", value: "a" }, { isSeparator: true as const }, { isSeparator: true as const }, { label: "B", value: "b" }];
+            const multiSeparatorItems = [
+                { label: "A", value: "a" },
+                { isSeparator: true as const },
+                { isSeparator: true as const },
+                { label: "B", value: "b" },
+            ];
 
             const onHighlight = vi.fn();
-            const { stdin } = await setup(<SelectInput initialIndex={0} items={multiSepItems} onHighlight={onHighlight} />);
+            const { stdin } = await setup(<SelectInput initialIndex={0} items={multiSeparatorItems} onHighlight={onHighlight} />);
 
             emitReadable(stdin, "\u001B[B");
             await delay(50);

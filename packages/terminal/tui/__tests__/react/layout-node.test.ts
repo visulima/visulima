@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { LayoutNode } from "../../src/react/layout";
 
-describe("LayoutNode", () => {
+describe(LayoutNode, () => {
     describe("remove", () => {
         it("should remove itself from its parent", () => {
             const parent = new LayoutNode();
@@ -23,7 +23,9 @@ describe("LayoutNode", () => {
             const node = new LayoutNode();
 
             // Should not throw
-            expect(() => node.remove()).not.toThrow();
+            expect(() => {
+                node.remove();
+            }).not.toThrow();
         });
 
         it("should also detach the yoga node from its parent", () => {

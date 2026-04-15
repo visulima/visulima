@@ -7,6 +7,7 @@ import { calculateScroll } from "../../src/ink/scroll";
 
 const setupScrollableContainer = () => {
     const container = createNode("ink-box");
+
     container.style = { overflow: "scroll", scrollTop: 0 };
     container.yogaNode!.setWidth(40);
     container.yogaNode!.setHeight(10);
@@ -17,6 +18,7 @@ const setupScrollableContainer = () => {
 
 const addChild = (parent: ReturnType<typeof createNode>, height: number, sticky?: boolean | "top" | "bottom") => {
     const child = createNode("ink-box");
+
     child.yogaNode!.setWidth(40);
     child.yogaNode!.setHeight(height);
     child.parentNode = parent;
@@ -31,9 +33,10 @@ const addChild = (parent: ReturnType<typeof createNode>, height: number, sticky?
 };
 
 describe("render-sticky", () => {
-    describe("getStickyDescendants", () => {
+    describe(getStickyDescendants, () => {
         it("should find sticky children", () => {
             const container = setupScrollableContainer();
+
             addChild(container, 3, true);
             addChild(container, 20);
             addChild(container, 3, "bottom");
@@ -49,6 +52,7 @@ describe("render-sticky", () => {
 
         it("should return empty array when no sticky nodes", () => {
             const container = setupScrollableContainer();
+
             addChild(container, 20);
 
             container.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
@@ -61,10 +65,12 @@ describe("render-sticky", () => {
         it("should not recurse into nested scroll containers", () => {
             const container = setupScrollableContainer();
             const nestedScroll = addChild(container, 20);
+
             nestedScroll.style = { overflow: "scroll" };
 
             // Sticky child inside nested scroll container should NOT be found
             const stickyChild = createNode("ink-box");
+
             stickyChild.internal_sticky = true;
             stickyChild.yogaNode!.setWidth(40);
             stickyChild.yogaNode!.setHeight(3);
@@ -85,6 +91,7 @@ describe("render-sticky", () => {
 
             // Add alternate sticky version inside the sticky node
             const alternate = createNode("ink-box");
+
             alternate.internal_stickyAlternate = true;
             alternate.yogaNode!.setWidth(40);
             alternate.yogaNode!.setHeight(3);
@@ -109,6 +116,7 @@ describe("render-sticky", () => {
 
             // Sticky child inside a non-scrollable wrapper SHOULD be found
             const stickyChild = createNode("ink-box");
+
             stickyChild.internal_sticky = true;
             stickyChild.yogaNode!.setWidth(40);
             stickyChild.yogaNode!.setHeight(3);
@@ -124,10 +132,11 @@ describe("render-sticky", () => {
         });
     });
 
-    describe("identifyActiveStickyNodes", () => {
+    describe(identifyActiveStickyNodes, () => {
         it("should identify top-sticky as active when scrolled past it", () => {
             const container = setupScrollableContainer();
             const stickyNode = addChild(container, 3, true);
+
             addChild(container, 30);
 
             container.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
@@ -147,6 +156,7 @@ describe("render-sticky", () => {
 
         it("should not identify top-sticky as active when it is visible", () => {
             const container = setupScrollableContainer();
+
             addChild(container, 3, true);
             addChild(container, 30);
 

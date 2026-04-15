@@ -1,5 +1,5 @@
-import { Box, render, Text, Timer, useApp, useInput } from "@visulima/tui";
 import type { TimerRef } from "@visulima/tui";
+import { Box, render, Text, Timer, useApp, useInput } from "@visulima/tui";
 import React, { useRef, useState } from "react";
 
 const App = () => {
@@ -10,18 +10,40 @@ const App = () => {
     useInput((input, key) => {
         if (key.escape || input === "q") {
             exit();
-        } else if (input === "s") {
-            timerRef.current?.start();
-        } else if (input === "p") {
-            timerRef.current?.stop();
-        } else if (input === "t") {
-            timerRef.current?.toggle();
-        } else if (input === "r") {
-            timerRef.current?.reset();
-        } else if (input === "+") {
-            setDuration((d) => d + 10_000);
-        } else if (input === "-") {
-            setDuration((d) => Math.max(1000, d - 10_000));
+        } else {
+            switch (input) {
+                case "+": {
+                    setDuration((d) => d + 10_000);
+
+                    break;
+                }
+                case "-": {
+                    setDuration((d) => Math.max(1000, d - 10_000));
+
+                    break;
+                }
+                case "p": {
+                    timerRef.current?.stop();
+
+                    break;
+                }
+                case "r": {
+                    timerRef.current?.reset();
+
+                    break;
+                }
+                case "s": {
+                    timerRef.current?.start();
+
+                    break;
+                }
+                case "t": {
+                    timerRef.current?.toggle();
+
+                    break;
+                }
+                // No default
+            }
         }
     });
 
@@ -33,9 +55,12 @@ const App = () => {
             <Box borderColor="cyan" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Box gap={1}>
                     <Text>Countdown:</Text>
-                    <Timer ref={timerRef} bold color="yellow" duration={duration} onTimeout={() => {}} />
+                    <Timer bold color="yellow" duration={duration} onTimeout={() => {}} ref={timerRef} />
                 </Box>
-                <Text dimColor>Duration: {duration / 1000}s</Text>
+                <Text dimColor>
+                    Duration:
+                    {duration / 1000}s
+                </Text>
             </Box>
             <Box flexDirection="column">
                 <Text dimColor>s = start · p = pause · t = toggle · r = reset</Text>

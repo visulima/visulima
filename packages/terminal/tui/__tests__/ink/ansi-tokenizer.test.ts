@@ -20,9 +20,7 @@ describe("ansi-tokenizer", () => {
 
         const csiToken = tokens[1];
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (csiToken?.type !== "csi") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -40,9 +38,7 @@ describe("ansi-tokenizer", () => {
         const tokens = tokenizeAnsi("A\u009B2 qB");
         const csiToken = tokens[1];
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (csiToken?.type !== "csi") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -62,9 +58,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (oscToken?.type !== "osc") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -81,9 +75,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "dcs", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (dcsToken?.type !== "dcs") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -134,9 +126,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "esc", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (escToken?.type !== "esc") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -155,9 +145,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (oscToken?.type !== "osc") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -174,9 +162,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (oscToken?.type !== "osc") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -193,9 +179,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "csi", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (csiToken?.type !== "csi") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -237,9 +221,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "dcs", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (dcsToken?.type !== "dcs") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -257,9 +239,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (oscToken?.type !== "osc") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -276,9 +256,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (sosToken?.type !== "sos") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -295,9 +273,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (sosToken?.type !== "sos") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -314,9 +290,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (sosToken?.type !== "sos") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -333,9 +307,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (sosToken?.type !== "sos") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -396,9 +368,7 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (sosToken?.type !== "sos") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
@@ -417,17 +387,13 @@ describe("ansi-tokenizer", () => {
 
         expect(tokens.map((token) => token.type)).toStrictEqual(["text", "c1", "text", "c1", "text"]);
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (c1Token1?.type !== "c1") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;
         }
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (c1Token2?.type !== "c1") {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect.fail();
 
             return;

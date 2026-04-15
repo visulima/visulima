@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
  * scroll-test.tsx — minimal useScrollable demo
  *

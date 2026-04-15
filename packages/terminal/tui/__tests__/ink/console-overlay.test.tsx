@@ -1,12 +1,13 @@
 import delay from "delay";
 import React from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import type { vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { ConsoleOverlay, render } from "../../src/ink/index";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("ConsoleOverlay", () => {
+describe(ConsoleOverlay, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element, waitMs = 100) => {
@@ -18,13 +19,13 @@ describe("ConsoleOverlay", () => {
         await delay(waitMs);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             for (let index = calls.length - 1; index >= 0; index--) {
-                const arg = calls[index]?.[0] as string;
+                const argument = calls[index]?.[0] as string;
 
-                if (typeof arg === "string" && arg.length > 0 && !arg.startsWith("\u001B[?")) {
-                    return arg;
+                if (typeof argument === "string" && argument.length > 0 && !argument.startsWith("\u001B[?")) {
+                    return argument;
                 }
             }
 

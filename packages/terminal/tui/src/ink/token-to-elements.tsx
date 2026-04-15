@@ -6,8 +6,8 @@
 import type { ReactElement } from "react";
 import type { ThemedToken } from "shiki";
 
-import Box from "./components/Box";
-import Text from "./components/Text";
+import Box from "./components/box";
+import Text from "./components/text";
 
 // FontStyle bitmask values from @shikijs/vscode-textmate
 const FONT_STYLE_ITALIC = 1;
@@ -62,14 +62,11 @@ export const tokenLinesToElements = (lines: ThemedToken[][], options: TokenRende
 
                 return (
                     <Box key={lineIndex}>
-                        {showLineNumbers
-                            ? (
-                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                    {String(lineNumber).padStart(gutterWidth)}
-                                    {" "}
-                                </Text>
-                            )
-                            : undefined}
+                        {showLineNumbers ? (
+                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                {String(lineNumber).padStart(gutterWidth)}{" "}
+                            </Text>
+                        ) : undefined}
                         <Text backgroundColor={isHighlighted ? "#3a3a00" : undefined}>
                             {line.length > 0 ? line.map((token, tokenIndex) => renderToken(token, tokenIndex)) : ""}
                         </Text>

@@ -6,7 +6,7 @@ import { render, Tab, Tabs } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("Tabs", () => {
+describe(Tabs, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -18,7 +18,7 @@ describe("Tabs", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };
@@ -67,7 +67,7 @@ describe("Tabs", () => {
     });
 
     it("should call onChange on mount with the first tab", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
 
@@ -78,12 +78,11 @@ describe("Tabs", () => {
             </Tabs>,
         );
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 
     it("should select the defaultValue tab on mount", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
 
@@ -94,12 +93,11 @@ describe("Tabs", () => {
             </Tabs>,
         );
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should navigate to next tab with right arrow", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -113,12 +111,11 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[C"); // right arrow
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should navigate to previous tab with left arrow", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -132,12 +129,11 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[D"); // left arrow
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 
     it("should wrap around from last to first tab", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -151,12 +147,11 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[C"); // right arrow (wraps from second to first)
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 
     it("should wrap around from first to last tab", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -170,12 +165,11 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[D"); // left arrow (wraps from first to second)
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should use up/down arrows in column layout", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -189,8 +183,7 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[B"); // down arrow
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should not respond to input when isFocused is false", async () => {
@@ -254,7 +247,7 @@ describe("Tabs", () => {
     });
 
     it("should fall back to first tab when defaultValue is invalid", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
 
@@ -265,12 +258,11 @@ describe("Tabs", () => {
             </Tabs>,
         );
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 
     it("should navigate with Tab key when isFocused is unmanaged", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -284,12 +276,11 @@ describe("Tabs", () => {
         emitReadable(stdin, "\t"); // Tab key
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should navigate backward with Shift+Tab when isFocused is unmanaged", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -303,8 +294,7 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[Z"); // Shift+Tab
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 
     it("should not use Tab key when isFocused is true (managed by Ink)", async () => {
@@ -326,7 +316,7 @@ describe("Tabs", () => {
     });
 
     it("should jump to tab with Meta+number key", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -341,8 +331,7 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B3"); // Meta+3
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("third", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("third", expect.anything());
     });
 
     it("should ignore Meta+number when index is out of range", async () => {
@@ -430,7 +419,7 @@ describe("Tabs", () => {
     });
 
     it("should call onChange on arrow key in controlled mode", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const { stdin } = await setup(
@@ -443,8 +432,7 @@ describe("Tabs", () => {
         emitReadable(stdin, "\u001B[C"); // right arrow
         await delay(50);
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("second", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("second", expect.anything());
     });
 
     it("should fall back to first tab when value is invalid", async () => {
@@ -479,7 +467,7 @@ describe("Tabs", () => {
     });
 
     it("should handle fragments and conditional children", async () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const onChange = vi.fn();
         const showThird = false;
@@ -492,7 +480,6 @@ describe("Tabs", () => {
             </Tabs>,
         );
 
-        expect(onChange).toHaveBeenCalledOnce();
-        expect(onChange).toHaveBeenCalledWith("first", expect.anything());
+        expect(onChange).toHaveBeenCalledExactlyOnceWith("first", expect.anything());
     });
 });

@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 // @ts-nocheck
+
 /**
- * tabs.tsx - <Tab> / <Tabs> component demo
+ * tabs.tsx - &lt;Tab> / &lt;Tabs> component demo
  *
  * Controls:
  *   Left/Right  switch tab

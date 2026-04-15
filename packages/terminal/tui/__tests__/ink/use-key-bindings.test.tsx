@@ -6,9 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, Text, useKeyBindings } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
-import { renderToString } from "../helpers/ink-render";
 
-describe("useKeyBindings", () => {
+describe(useKeyBindings, () => {
     let currentUnmount: (() => void) | undefined;
 
     afterEach(async () => {
@@ -19,7 +18,7 @@ describe("useKeyBindings", () => {
     it("returns enabled bindings only", async () => {
         expect.assertions(1);
 
-        function App() {
+        const App = () => {
             const { bindings } = useKeyBindings([
                 { binding: { description: "Quit", key: "q" }, handler: () => {} },
                 { binding: { description: "Hidden", enabled: false, key: "h" }, handler: () => {} },
@@ -27,12 +26,13 @@ describe("useKeyBindings", () => {
             ]);
 
             return <Text>{String(bindings.length)}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);
@@ -43,18 +43,26 @@ describe("useKeyBindings", () => {
     it("calls handler on matching key press", async () => {
         expect.assertions(1);
 
-        function App() {
+        const App = () => {
             const [count, setCount] = useState(0);
 
-            useKeyBindings([{ binding: { description: "Increment", key: "i" }, handler: () => setCount((c) => c + 1) }]);
+            useKeyBindings([
+                {
+                    binding: { description: "Increment", key: "i" },
+                    handler: () => {
+                        setCount((c) => c + 1);
+                    },
+                },
+            ]);
 
             return <Text>{String(count)}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);
@@ -67,18 +75,26 @@ describe("useKeyBindings", () => {
     it("handles special key bindings", async () => {
         expect.assertions(1);
 
-        function App() {
+        const App = () => {
             const [pressed, setPressed] = useState("none");
 
-            useKeyBindings([{ binding: { description: "Up", key: "upArrow" }, handler: () => setPressed("up") }]);
+            useKeyBindings([
+                {
+                    binding: { description: "Up", key: "upArrow" },
+                    handler: () => {
+                        setPressed("up");
+                    },
+                },
+            ]);
 
             return <Text>{pressed}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);
@@ -94,16 +110,17 @@ describe("useKeyBindings", () => {
 
         const handler = vi.fn();
 
-        function App() {
+        const App = () => {
             useKeyBindings([{ binding: { description: "Disabled", enabled: false, key: "d" }, handler }]);
 
             return <Text>ok</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);
@@ -118,16 +135,17 @@ describe("useKeyBindings", () => {
 
         const handler = vi.fn();
 
-        function App() {
+        const App = () => {
             useKeyBindings([{ binding: { description: "Test", key: "t" }, handler }], { isActive: false });
 
             return <Text>ok</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);
@@ -140,18 +158,26 @@ describe("useKeyBindings", () => {
     it("matches array of keys", async () => {
         expect.assertions(1);
 
-        function App() {
+        const App = () => {
             const [pressed, setPressed] = useState(false);
 
-            useKeyBindings([{ binding: { description: "Test", key: ["a", "b"] }, handler: () => setPressed(true) }]);
+            useKeyBindings([
+                {
+                    binding: { description: "Test", key: ["a", "b"] },
+                    handler: () => {
+                        setPressed(true);
+                    },
+                },
+            ]);
 
             return <Text>{pressed ? "yes" : "no"}</Text>;
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
 
         const { unmount } = render(<App />, { debug: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await delay(50);

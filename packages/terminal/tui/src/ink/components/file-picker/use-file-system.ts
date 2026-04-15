@@ -74,42 +74,44 @@ export default function useFileSystem(options: UseFileSystemOptions): UseFileSys
             setError(undefined);
 
             try {
-                const dirEntries = await readdir(currentPath, { withFileTypes: true });
-                const fileEntries: FileEntry[] = [];
+                const directoryEntries = await readdir(currentPath, { withFileTypes: true });
 
-                for (const entry of dirEntries) {
+                // Gather stats for all entries in parallel — sequential stat() calls
+                // serialize filesystem latency unnecessarily.
+                const statsResults = await Promise.all(
+                    directoryEntries.map(async (entry) => {
+                        try {
+                            return await stat(join(currentPath, entry.name));
+                        } catch {
+                            return undefined;
+                        }
+                    }),
+                );
+
+                const fileEntries: FileEntry[] = directoryEntries.map((entry, index) => {
                     const entryPath = join(currentPath, entry.name);
                     const isDirectory = entry.isDirectory();
                     const isHidden = entry.name.startsWith(".");
+                    const stats = statsResults[index];
+                    const size = stats?.size ?? 0;
+                    const permissions = stats ? formatPermissions(stats.mode) : "---------";
 
-                    let size = 0;
-                    let permissions = "---------";
-
-                    try {
-                        const stats = await stat(entryPath);
-
-                        size = stats.size;
-                        permissions = formatPermissions(stats.mode);
-                    } catch {
-                        // Permission denied or broken symlink — keep defaults
-                    }
-
-                    fileEntries.push({
+                    return {
                         isDirectory,
                         isHidden,
                         name: entry.name,
                         path: entryPath,
                         permissions,
                         size,
-                    });
-                }
+                    };
+                });
 
                 if (cancelled) {
                     return;
                 }
 
                 // Filter entries
-                const filtered = fileEntries.filter((e) => matchesFilter(e, filterRef.current));
+                const filtered = fileEntries.filter((entry) => matchesFilter(entry, filterRef.current));
 
                 // Sort: directories first, then alphabetical (case-insensitive)
                 filtered.sort((a, b) => {
@@ -133,7 +135,7 @@ export default function useFileSystem(options: UseFileSystemOptions): UseFileSys
             }
         };
 
-        void loadDirectory();
+        loadDirectory().catch(() => undefined);
 
         return () => {
             cancelled = true;

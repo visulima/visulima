@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    applyColorMatrix,
-    COLOR_BLINDNESS_COMPENSATION,
-    COLOR_BLINDNESS_SIMULATION,
-    hexToRgb,
-    IDENTITY_MATRIX,
-    transformHexColor,
-} from "../../src/ink/color-matrix";
+import { COLOR_BLINDNESS_COMPENSATION, COLOR_BLINDNESS_SIMULATION, hexToRgb, IDENTITY_MATRIX, transformHexColor } from "../../src/ink/color-matrix";
 
 describe("useColorBlindness (via color-matrix utilities)", () => {
     describe("identity passthrough", () => {

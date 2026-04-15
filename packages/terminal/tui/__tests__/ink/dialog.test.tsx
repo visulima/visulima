@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Box, Dialog, Text } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
-describe("Dialog", () => {
+describe(Dialog, () => {
     it("should render nothing when visible is false", () => {
         const output = renderToString(
             <Box height={24} width={80}>

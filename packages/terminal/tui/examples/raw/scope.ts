@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/cognitive-complexity */
+/* eslint-disable func-style, jsdoc/lines-before-block */
 /**
  * scope.ts — Sine harmonic oscilloscope
  *

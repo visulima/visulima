@@ -54,7 +54,7 @@ describe("Shiki Highlighting", () => {
             disposeHighlighter();
             highlighter = await getHighlighter(["typescript"]);
         },
-        { warmup: 0, iterations: 5 },
+        { iterations: 5, warmup: 0 },
     );
 
     bench("highlighter get (warm, already loaded)", async () => {

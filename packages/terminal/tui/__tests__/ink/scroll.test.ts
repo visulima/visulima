@@ -5,9 +5,10 @@ import { createNode } from "../../src/ink/dom";
 import { calculateScroll, getScrollHeight, getScrollLeft, getScrollTop, getScrollWidth } from "../../src/ink/scroll";
 
 describe("scroll", () => {
-    describe("calculateScroll", () => {
+    describe(calculateScroll, () => {
         it("should calculate scroll state for a scrollable node", () => {
             const node = createNode("ink-box");
+
             node.style = { overflow: "scroll", scrollTop: 0 };
 
             // Set up parent dimensions
@@ -16,6 +17,7 @@ describe("scroll", () => {
 
             // Add a child that is taller than the parent
             const child = Yoga.Node.create();
+
             child.setWidth(20);
             child.setHeight(30);
             node.yogaNode!.insertChild(child, 0);
@@ -35,12 +37,14 @@ describe("scroll", () => {
 
         it("should clamp scrollTop to valid range", () => {
             const node = createNode("ink-box");
+
             node.style = { overflow: "scroll", scrollTop: 999 };
 
             node.yogaNode!.setWidth(20);
             node.yogaNode!.setHeight(10);
 
             const child = Yoga.Node.create();
+
             child.setWidth(20);
             child.setHeight(30);
             node.yogaNode!.insertChild(child, 0);
@@ -57,6 +61,7 @@ describe("scroll", () => {
 
         it("should handle node without yoga node", () => {
             const node = createNode("ink-virtual-text");
+
             node.style = { overflow: "scroll" };
 
             calculateScroll(node);
@@ -66,6 +71,7 @@ describe("scroll", () => {
 
         it("should ensure clientHeight and clientWidth are non-negative", () => {
             const node = createNode("ink-box");
+
             node.style = { borderStyle: "single", overflow: "scroll", scrollTop: 0 };
 
             // Very small node with borders
@@ -102,12 +108,14 @@ describe("scroll", () => {
 
         it("should return computed scroll position", () => {
             const node = createNode("ink-box");
+
             node.style = { overflow: "scroll", scrollTop: 5 };
 
             node.yogaNode!.setWidth(20);
             node.yogaNode!.setHeight(10);
 
             const child = Yoga.Node.create();
+
             child.setWidth(20);
             child.setHeight(30);
             node.yogaNode!.insertChild(child, 0);

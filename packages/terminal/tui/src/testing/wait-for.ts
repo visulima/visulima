@@ -23,7 +23,8 @@ export const waitFor = async (condition: (() => void) | string, screenText: () =
     const timeout = options.timeout ?? 3000;
     const interval = options.interval ?? 50;
     const start = Date.now();
-    let lastError: Error | undefined;
+    // eslint-disable-next-line no-useless-assignment -- overwritten on every failed attempt; last value is rethrown on timeout
+    let lastError: Error = new Error("waitFor timed out");
 
     const check = (): void => {
         if (typeof condition === "string") {
@@ -43,9 +44,11 @@ export const waitFor = async (condition: (() => void) | string, screenText: () =
 
             return;
         } catch (error) {
+            // eslint-disable-next-line no-useless-assignment -- latest error is rethrown after timeout
             lastError = error as Error;
         }
 
+        // eslint-disable-next-line no-await-in-loop -- polling loop by design
         await new Promise<void>((resolve) => {
             setTimeout(resolve, interval);
         });
@@ -60,5 +63,5 @@ export const waitFor = async (condition: (() => void) | string, screenText: () =
         lastError = error as Error;
     }
 
-    throw lastError ?? new Error("waitFor timed out");
+    throw lastError;
 };

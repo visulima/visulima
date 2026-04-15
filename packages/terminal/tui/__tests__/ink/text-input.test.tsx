@@ -6,7 +6,7 @@ import { render, TextInput } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("TextInput", () => {
+describe(TextInput, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -18,7 +18,7 @@ describe("TextInput", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };
@@ -72,7 +72,7 @@ describe("TextInput", () => {
         emitReadable(stdin, "\u0008");
         await delay(50);
 
-        if (!onChange.mock.calls.length) {
+        if (onChange.mock.calls.length === 0) {
             emitReadable(stdin, "\u007F");
             await delay(50);
         }

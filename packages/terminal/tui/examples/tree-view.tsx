@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * tree-view.tsx — <TreeView> component demo
+ * tree-view.tsx — &lt;TreeView> component demo
  *
  * Controls:
  *   ↑/↓         navigate
@@ -12,8 +12,8 @@
  * Run: node --import @oxc-node/core/register examples/tree-view.tsx
  */
 
-import { Box, render, Text, TreeView, useApp, useInput } from "@visulima/tui";
 import type { TreeNode } from "@visulima/tui";
+import { Box, render, Text, TreeView, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const fileTree: TreeNode[] = [
@@ -92,9 +92,12 @@ const App = () => {
                     )}
                     {selectedIds.size > 0 && (
                         <Box flexDirection="column" marginTop={1}>
-                            <Text bold>Selected ({selectedIds.size}):</Text>
+                            <Text bold>
+                                Selected ({selectedIds.size}
+                                ):
+                            </Text>
                             {[...selectedIds].map((id) => (
-                                <Text key={id} color="green">
+                                <Text color="green" key={id}>
                                     {" "}
                                     {id}
                                 </Text>

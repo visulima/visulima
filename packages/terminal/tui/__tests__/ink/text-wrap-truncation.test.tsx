@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 

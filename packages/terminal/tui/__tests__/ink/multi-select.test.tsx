@@ -12,7 +12,7 @@ const options = [
     { label: "Python", value: "py" },
 ];
 
-describe("MultiSelect", () => {
+describe(MultiSelect, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -24,7 +24,7 @@ describe("MultiSelect", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };

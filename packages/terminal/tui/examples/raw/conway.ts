@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/restrict-template-expressions, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-plusplus, sonarjs/cognitive-complexity, sonarjs/pseudo-random, unused-imports/no-unused-vars */
+/* eslint-disable func-style, jsdoc/lines-before-block, sonarjs/pseudo-random */
 /**
  * conway.ts — Conway's Game of Life
  *

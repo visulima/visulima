@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Spinner } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
-describe("Spinner", () => {
+describe(Spinner, () => {
     it("should render default dots spinner", () => {
         const output = renderToString(<Spinner />);
 

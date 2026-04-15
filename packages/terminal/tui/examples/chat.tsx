@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, no-plusplus, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/chat
 import { Box, Text } from "@visulima/tui";

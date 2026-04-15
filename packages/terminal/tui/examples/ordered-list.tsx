@@ -1,6 +1,6 @@
-/* eslint-disable jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * ordered-list.tsx — <OrderedList> component demo
+ * ordered-list.tsx — &lt;OrderedList> component demo
  *
  * Run: node --import @oxc-node/core/register examples/ordered-list.tsx
  */

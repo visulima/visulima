@@ -1,4 +1,3 @@
-/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import { gameReducer } from "../../examples/alternate-screen/alternate-screen";
 
 const boardWidth = 20;

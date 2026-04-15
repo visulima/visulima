@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Console } from "node:console";
 import { PassThrough } from "node:stream";
 

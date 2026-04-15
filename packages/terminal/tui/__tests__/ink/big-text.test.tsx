@@ -252,18 +252,18 @@ describe("big-text", () => {
         const wide = renderToString(<BigText letterSpacing={3} text="Hi" />);
 
         // Wider letter spacing means more characters per line
-        const tightMaxLineLen = Math.max(
+        const tightMaxLineLength = Math.max(
             ...stripAnsi(tight)
                 .split("\n")
                 .map((l) => l.length),
         );
-        const wideMaxLineLen = Math.max(
+        const wideMaxLineLength = Math.max(
             ...stripAnsi(wide)
                 .split("\n")
                 .map((l) => l.length),
         );
 
-        expect(wideMaxLineLen).toBeGreaterThan(tightMaxLineLen);
+        expect(wideMaxLineLength).toBeGreaterThan(tightMaxLineLength);
     });
 
     // ── Max length ─────────────────────────────────────────

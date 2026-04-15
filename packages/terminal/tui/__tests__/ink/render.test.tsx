@@ -213,6 +213,7 @@ describe("render", () => {
         stdout.emit("resize");
         await waitFor(() => {
             const writes = getContentWrites(stdout.write);
+
             return stripAnsi(writes.at(-1) ?? "") !== stripAnsi(contentWrites[0]!);
         });
 

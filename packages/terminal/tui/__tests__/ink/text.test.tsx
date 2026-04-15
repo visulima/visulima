@@ -1,5 +1,5 @@
 import { strip as stripAnsi } from "@visulima/ansi";
-import { ansi256, bgAnsi256, bgGreen, bgHex, bgRgb, dim, green, hex, inverse, rgb } from "@visulima/colorize";
+import { ansi256, bgAnsi256, bgGreen, bgHex, bgRgb, green, hex, inverse, rgb } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { Box, render, Text } from "../../src/ink/index";

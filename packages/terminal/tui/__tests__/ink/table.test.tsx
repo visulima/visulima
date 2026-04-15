@@ -5,13 +5,13 @@ import { describe, expect, it } from "vitest";
 import { Table } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
-describe("Table", () => {
+describe(Table, () => {
     it("should render a basic table with headers", () => {
         expect.assertions(6);
 
         const data = [
-            { name: "Alice", age: 30 },
-            { name: "Bob", age: 25 },
+            { age: 30, name: "Alice" },
+            { age: 25, name: "Bob" },
         ];
 
         const output = strip(renderToString(<Table data={data} />));
@@ -35,9 +35,9 @@ describe("Table", () => {
     it("should render only specified columns in order", () => {
         expect.assertions(3);
 
-        const data = [{ name: "Alice", age: 30, city: "NYC" }];
+        const data = [{ age: 30, city: "NYC", name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} columns={["city", "name"]} />));
+        const output = strip(renderToString(<Table columns={["city", "name"]} data={data} />));
 
         expect(output).toContain("city");
         expect(output).toContain("name");
@@ -48,16 +48,16 @@ describe("Table", () => {
     it("should support ColumnConfig objects with custom headers", () => {
         expect.assertions(4);
 
-        const data = [{ name: "Alice", age: 30 }];
+        const data = [{ age: 30, name: "Alice" }];
 
         const output = strip(
             renderToString(
                 <Table
-                    data={data}
                     columns={[
-                        { key: "name", header: "Full Name" },
-                        { key: "age", header: "Years" },
+                        { header: "Full Name", key: "name" },
+                        { header: "Years", key: "age" },
                     ]}
+                    data={data}
                 />,
             ),
         );
@@ -71,9 +71,9 @@ describe("Table", () => {
     it("should support mixed string and ColumnConfig columns", () => {
         expect.assertions(2);
 
-        const data = [{ name: "Alice", age: 30 }];
+        const data = [{ age: 30, name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} columns={["name", { key: "age", header: "Years" }]} />));
+        const output = strip(renderToString(<Table columns={["name", { header: "Years", key: "age" }]} data={data} />));
 
         expect(output).toContain("name");
         expect(output).toContain("Years");
@@ -96,7 +96,7 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} borderStyle="rounded" />));
+        const output = strip(renderToString(<Table borderStyle="rounded" data={data} />));
 
         // Rounded borders use ╭ and ╮ corners
         expect(output).toContain("╭");
@@ -108,7 +108,7 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} borderStyle="ascii" />));
+        const output = strip(renderToString(<Table borderStyle="ascii" data={data} />));
 
         // ASCII borders use + for corners
         expect(output).toContain("+");
@@ -119,7 +119,7 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} borderStyle="none" />));
+        const output = strip(renderToString(<Table borderStyle="none" data={data} />));
 
         // No borders should not contain box-drawing characters
         expect(output).not.toContain("┌");
@@ -132,7 +132,7 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} borderStyle="double" />));
+        const output = strip(renderToString(<Table borderStyle="double" data={data} />));
 
         // Double borders use ╔ and ║
         expect(output).toContain("╔");
@@ -162,7 +162,7 @@ describe("Table", () => {
             topRight: { char: "=", width: 1 },
         };
 
-        const output = strip(renderToString(<Table data={data} borderStyle={customBorder} />));
+        const output = strip(renderToString(<Table borderStyle={customBorder} data={data} />));
 
         expect(output).toContain("=");
         expect(output).toContain("|");
@@ -171,7 +171,7 @@ describe("Table", () => {
     it("should hide headers when showHeader is false", () => {
         expect.assertions(2);
 
-        const data = [{ name: "Alice", age: 30 }];
+        const data = [{ age: 30, name: "Alice" }];
 
         const withHeader = strip(renderToString(<Table data={data} showHeader />));
         const withoutHeader = strip(renderToString(<Table data={data} showHeader={false} />));
@@ -185,7 +185,7 @@ describe("Table", () => {
     it("should apply formatCell", () => {
         expect.assertions(1);
 
-        const data = [{ name: "alice", age: 30 }];
+        const data = [{ age: 30, name: "alice" }];
 
         const output = strip(
             renderToString(
@@ -219,8 +219,8 @@ describe("Table", () => {
         expect.assertions(1);
 
         const data = [
-            { name: "Alice", city: null },
-            { name: "Bob", city: undefined },
+            { city: null, name: "Alice" },
+            { city: undefined, name: "Bob" },
         ];
 
         const output = strip(renderToString(<Table data={data} skeleton="N/A" />));
@@ -254,7 +254,7 @@ describe("Table", () => {
     it("should render a single row table", () => {
         expect.assertions(2);
 
-        const data = [{ name: "Alice", age: 30 }];
+        const data = [{ age: 30, name: "Alice" }];
 
         const output = strip(renderToString(<Table data={data} />));
 
@@ -278,13 +278,13 @@ describe("Table", () => {
 
         const data = [{ x: 1 }];
 
-        const defaultOutput = strip(renderToString(<Table data={data} borderStyle="default" />));
-        const roundedOutput = strip(renderToString(<Table data={data} borderStyle="rounded" />));
-        const asciiOutput = strip(renderToString(<Table data={data} borderStyle="ascii" />));
-        const noneOutput = strip(renderToString(<Table data={data} borderStyle="none" />));
+        const defaultOutput = strip(renderToString(<Table borderStyle="default" data={data} />));
+        const roundedOutput = strip(renderToString(<Table borderStyle="rounded" data={data} />));
+        const asciiOutput = strip(renderToString(<Table borderStyle="ascii" data={data} />));
+        const noneOutput = strip(renderToString(<Table borderStyle="none" data={data} />));
 
         // All should be distinct
-        const outputs = new Set([defaultOutput, roundedOutput, asciiOutput, noneOutput]);
+        const outputs = new Set([asciiOutput, defaultOutput, noneOutput, roundedOutput]);
 
         expect(outputs.size).toBe(4);
     });
@@ -294,15 +294,15 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const narrowOutput = strip(renderToString(<Table data={data} columns={[{ key: "name", width: 10 }]} />));
-        const wideOutput = strip(renderToString(<Table data={data} columns={[{ key: "name", width: 20 }]} />));
+        const narrowOutput = strip(renderToString(<Table columns={[{ key: "name", width: 10 }]} data={data} />));
+        const wideOutput = strip(renderToString(<Table columns={[{ key: "name", width: 20 }]} data={data} />));
 
         // Wider column should produce longer output lines
         expect(wideOutput.length).toBeGreaterThan(narrowOutput.length);
     });
 
     it("should render with maxWidth constraint", () => {
-        const data = [{ name: "A very long name value", description: "Another long description value" }];
+        const data = [{ description: "Another long description value", name: "A very long name value" }];
 
         const output = strip(renderToString(<Table data={data} maxWidth={40} />));
 
@@ -322,7 +322,7 @@ describe("Table", () => {
 
         const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(<Table data={data} borderStyle="markdown" />));
+        const output = strip(renderToString(<Table borderStyle="markdown" data={data} />));
 
         // Markdown borders use | for vertical separators
         expect(output).toContain("|");

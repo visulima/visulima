@@ -1,4 +1,3 @@
-/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import process from "node:process";
 
 import React from "react";
@@ -7,7 +6,7 @@ import { render, Text, useApp, useInput } from "../../../src/ink/index";
 
 const IMEInput = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();
-    const [received, setReceived] = React.useState<string>("");
+    const [received, setReceived] = React.useState("");
 
     useInput(
         (input, _key) => {

@@ -1,4 +1,3 @@
-/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import React from "react";
 
 import { render, Static, Text } from "../../../src/ink/index";
@@ -42,7 +41,7 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
     }
 
     public override render() {
-        const { items, counter } = this.state;
+        const { counter, items } = this.state;
 
         return (
             <>

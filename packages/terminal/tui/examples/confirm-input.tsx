@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/lines-before-block */
 /**
- * confirm-input.tsx — <ConfirmInput> component demo
+ * confirm-input.tsx — &lt;ConfirmInput> component demo
  *
  * Controls:
  *   Y        confirm

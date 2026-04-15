@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 
+import { BOLD_MASK, FULL_WIDTH_MASK, ITALIC_MASK } from "../../src/ink/style-flags";
 import { StyledLine } from "../../src/ink/styled-line";
 import { styledLineToString } from "../../src/ink/styled-line-serializer";
-import { BOLD_MASK, DIM_MASK, FULL_WIDTH_MASK, INVERSE_MASK, ITALIC_MASK, UNDERLINE_MASK } from "../../src/ink/style-flags";
 
-describe("StyledLine", () => {
+describe(StyledLine, () => {
     describe("empty", () => {
         it("should create an empty line of spaces", () => {
             const line = StyledLine.empty(5);
 
-            expect(line.length).toBe(5);
+            expect(line).toHaveLength(5);
             expect(line.getValue(0)).toBe(" ");
             expect(line.getValue(4)).toBe(" ");
             expect(line.getText()).toBe("     ");
@@ -18,7 +18,7 @@ describe("StyledLine", () => {
         it("should return zero-length for empty(0)", () => {
             const line = StyledLine.empty(0);
 
-            expect(line.length).toBe(0);
+            expect(line).toHaveLength(0);
             expect(line.getText()).toBe("");
         });
 
@@ -27,8 +27,10 @@ describe("StyledLine", () => {
             const b = StyledLine.empty(10);
 
             expect(a.equals(b)).toBe(true);
+
             // They should be different instances (cloned)
             a.setChar(0, "X", 0);
+
             expect(b.getValue(0)).toBe(" ");
         });
     });
@@ -38,6 +40,7 @@ describe("StyledLine", () => {
             const line = StyledLine.empty(5);
 
             line.setChar(0, "A", 0);
+
             expect(line.getValue(0)).toBe("A");
             expect(line.getValue(1)).toBe(" ");
         });
@@ -46,8 +49,9 @@ describe("StyledLine", () => {
             const line = StyledLine.empty(5);
 
             line.setChar(0, "B", BOLD_MASK, "red");
+
             expect(line.getValue(0)).toBe("B");
-            expect(line.getFormatFlags(0) & BOLD_MASK).toBeTruthy();
+            expect((line.getFormatFlags(0) & BOLD_MASK) !== 0).toBe(true);
             expect(line.getFgColor(0)).toBe("red");
         });
 
@@ -55,6 +59,7 @@ describe("StyledLine", () => {
             const line = StyledLine.empty(5);
 
             line.setChar(0, "\u4E16", FULL_WIDTH_MASK); // CJK char
+
             expect(line.getValue(0)).toBe("\u4E16");
             expect(line.getFullWidth(0)).toBe(true);
         });
@@ -64,6 +69,7 @@ describe("StyledLine", () => {
 
             line.setChar(-1, "X", 0);
             line.setChar(3, "X", 0);
+
             expect(line.getText()).toBe("   ");
         });
     });
@@ -74,7 +80,8 @@ describe("StyledLine", () => {
 
             line.pushChar("H", 0);
             line.pushChar("i", 0);
-            expect(line.length).toBe(2);
+
+            expect(line).toHaveLength(2);
             expect(line.getText()).toBe("Hi");
         });
 
@@ -84,8 +91,9 @@ describe("StyledLine", () => {
             line.pushChar("A", BOLD_MASK);
             line.pushChar("B", BOLD_MASK);
             line.pushChar("C", 0);
+
             expect(line.getSpans()).toHaveLength(2);
-            expect(line.getSpans()[0]!.length).toBe(2);
+            expect(line.getSpans()[0]!).toHaveLength(2);
         });
     });
 
@@ -102,6 +110,7 @@ describe("StyledLine", () => {
 
             // Mutation of clone should not affect original
             cloned.setChar(0, "Y", 0);
+
             expect(original.getValue(0)).toBe("X");
         });
     });
@@ -118,7 +127,7 @@ describe("StyledLine", () => {
 
             const sliced = line.slice(1, 4);
 
-            expect(sliced.length).toBe(3);
+            expect(sliced).toHaveLength(3);
             expect(sliced.getValue(0)).toBe("B");
             expect(sliced.getValue(2)).toBe("D");
         });
@@ -127,7 +136,7 @@ describe("StyledLine", () => {
             const line = StyledLine.empty(3);
             const sliced = line.slice(2, 2);
 
-            expect(sliced.length).toBe(0);
+            expect(sliced).toHaveLength(0);
         });
     });
 
@@ -145,7 +154,7 @@ describe("StyledLine", () => {
 
             const combined = a.combine(b);
 
-            expect(combined.length).toBe(4);
+            expect(combined).toHaveLength(4);
             expect(combined.getText()).toBe("Helo");
         });
     });
@@ -220,7 +229,7 @@ describe("StyledLine", () => {
 
             expect(chars).toHaveLength(2);
             expect(chars[0]!.value).toBe("A");
-            expect(chars[0]!.formatFlags & BOLD_MASK).toBeTruthy();
+            expect((chars[0]!.formatFlags & BOLD_MASK) !== 0).toBe(true);
             expect(chars[0]!.fgColor).toBe("red");
             expect(chars[0]!.hasStyles).toBe(true);
             expect(chars[1]!.value).toBe("B");
@@ -229,7 +238,7 @@ describe("StyledLine", () => {
     });
 });
 
-describe("styledLineToString", () => {
+describe(styledLineToString, () => {
     it("should serialize plain text", () => {
         const line = StyledLine.empty(5);
 

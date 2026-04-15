@@ -8,16 +8,35 @@ const App = () => {
     useInput((input, key) => {
         if (key.escape || input === "q") {
             exit();
-        } else if (input === "s") {
-            sw.start();
-        } else if (input === "p") {
-            sw.stop();
-        } else if (input === "t") {
-            sw.toggle();
-        } else if (input === "r") {
-            sw.reset();
-        } else if (input === "l") {
-            sw.lap();
+        } else {
+            switch (input) {
+                case "l": {
+                    sw.lap();
+
+                    break;
+                }
+                case "p": {
+                    sw.stop();
+
+                    break;
+                }
+                case "r": {
+                    sw.reset();
+
+                    break;
+                }
+                case "s": {
+                    sw.start();
+
+                    break;
+                }
+                case "t": {
+                    sw.toggle();
+
+                    break;
+                }
+                // No default
+            }
         }
     });
 
@@ -49,7 +68,7 @@ const App = () => {
                         {sw.laps.map((lap, i) => (
                             <Text key={i}>
                                 {"  "}
-                                {i + 1}. {formatElapsed(lap)}
+                                {i + 1}.{formatElapsed(lap)}
                             </Text>
                         ))}
                     </Box>

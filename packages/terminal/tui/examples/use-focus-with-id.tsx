@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-use-before-define, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-use-before-define, jsdoc/lines-before-block */
 /**
  * use-focus-with-id example — port of the Ink use-focus-with-id example
  * Press 1/2/3 to focus by ID, Tab/Shift+Tab to cycle, Esc to quit.

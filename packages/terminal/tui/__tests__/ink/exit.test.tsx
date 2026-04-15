@@ -153,7 +153,6 @@ describe("exit", () => {
             term.onData((data) => {
                 if (data === "s") {
                     setTimeout(() => {
-                        // eslint-disable-next-line vitest/no-conditional-expect
                         expect(isExited).toBe(false);
 
                         term.write("q");
@@ -172,7 +171,6 @@ describe("exit", () => {
                 isExited = true;
 
                 if (exitCode === 0) {
-                    // eslint-disable-next-line vitest/no-conditional-expect
                     expect(output).toContain("exited");
 
                     resolve();

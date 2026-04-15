@@ -12,12 +12,15 @@ describe("scroll-acceleration (unit)", () => {
 
         // Simulate 3 rapid scroll events
         velocity = Math.min(Math.abs(velocity * acceleration), maxVelocity);
+
         expect(velocity).toBe(1.5);
 
         velocity = Math.min(Math.abs(velocity * acceleration), maxVelocity);
+
         expect(velocity).toBe(2.25);
 
         velocity = Math.min(Math.abs(velocity * acceleration), maxVelocity);
+
         expect(velocity).toBeCloseTo(3.375);
     });
 
@@ -27,6 +30,7 @@ describe("scroll-acceleration (unit)", () => {
         let velocity = 4;
 
         velocity = Math.min(Math.abs(velocity * acceleration), maxVelocity);
+
         expect(velocity).toBe(5); // clamped
     });
 
@@ -35,9 +39,11 @@ describe("scroll-acceleration (unit)", () => {
         let velocity = 10;
 
         velocity *= decayRate;
+
         expect(velocity).toBeCloseTo(9.2);
 
         velocity *= decayRate;
+
         expect(velocity).toBeCloseTo(8.464);
 
         // After many decays, should approach zero

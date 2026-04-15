@@ -1,6 +1,6 @@
-/* eslint-disable jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * alert.tsx — <Alert> component demo
+ * alert.tsx — &lt;Alert> component demo
  *
  * Run: node --import @oxc-node/core/register examples/alert.tsx
  */

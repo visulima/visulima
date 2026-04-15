@@ -80,8 +80,8 @@ export const handleTextNode = (
     const { width: currentWidth } = measureStyledLine(styledLine);
     const maxWidth = getMaxWidth(node.yogaNode!);
 
-    let lines: StyledLine[]
-        = currentWidth > maxWidth
+    let lines: StyledLine[] =
+        currentWidth > maxWidth
             ? wrapOrTruncateStyledLine(styledLine, Math.floor(maxWidth), node.style.textWrap ?? "wrap")
             : splitStyledLineByNewline(styledLine);
 

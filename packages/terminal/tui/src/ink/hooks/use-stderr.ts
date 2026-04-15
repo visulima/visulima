@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import type { Props } from "../components/StderrContext";
-import StderrContext from "../components/StderrContext";
+import type { Props } from "../components/stderr-context";
+import StderrContext from "../components/stderr-context";
 
 /**
  * A React hook that returns the stderr stream.

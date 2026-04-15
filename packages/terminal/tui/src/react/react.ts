@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-use-before-define, jsdoc/match-description, no-console, promise/param-names, sonarjs/no-dead-store, unicorn/no-null, unicorn/no-process-exit, unused-imports/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-use-before-define, jsdoc/match-description, no-console, promise/param-names, sonarjs/no-dead-store, unicorn/no-null, unicorn/no-process-exit, unused-imports/no-unused-vars */
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
 
@@ -30,11 +30,9 @@ const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { disableFocus, enableFocus, focusNext, focusPrevious } = useFocusManager();
 
     useInput((_input, key) => {
-        if (key.tab && !key.shift)
-            focusNext();
+        if (key.tab && !key.shift) focusNext();
 
-        if (key.tab && key.shift)
-            focusPrevious();
+        if (key.tab && key.shift) focusPrevious();
 
         if (key.escape) {
             disableFocus();
@@ -292,11 +290,9 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
 
     // Flush buffered stdout/stderr after the inline region is gone
     process.on("exit", () => {
-        if (stdoutLines.length > 0)
-            process.stdout.write(stdoutLines.join(""));
+        if (stdoutLines.length > 0) process.stdout.write(stdoutLines.join(""));
 
-        if (stderrLines.length > 0)
-            process.stderr.write(stderrLines.join(""));
+        if (stderrLines.length > 0) process.stderr.write(stderrLines.join(""));
 
         resolveExit();
     });

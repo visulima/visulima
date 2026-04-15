@@ -9,7 +9,7 @@ const trailChar = "\u2501";
 const maxTrail = rainbowColors.length * 3;
 const trackWidth = 44;
 
-function UseAnimationDemo() {
+const UseAnimationDemo = () => {
     const [paused, setPaused] = useState(false);
 
     // Three animations at different speeds
@@ -36,7 +36,7 @@ function UseAnimationDemo() {
     const position = frame.movement % trackWidth;
 
     // Build each cell: trail wraps around behind the unicorn
-    const cells: Array<{ color?: (typeof rainbowColors)[number]; text: string }> = [];
+    const cells: { color?: (typeof rainbowColors)[number]; text: string }[] = [];
 
     for (let column = 0; column < trackWidth; column++) {
         if (column === position) {
@@ -55,7 +55,7 @@ function UseAnimationDemo() {
     }
 
     // Group consecutive cells with the same color into segments
-    const segments: Array<{ color?: (typeof rainbowColors)[number]; text: string }> = [];
+    const segments: { color?: (typeof rainbowColors)[number]; text: string }[] = [];
 
     for (const cell of cells) {
         const last = segments.at(-1);
@@ -114,10 +114,15 @@ function UseAnimationDemo() {
             </Text>
             <Text />
             <Text dimColor>
-                {"  "}Press {"<"}space{">"} to {paused ? "resume" : "pause"}
+                {"  "}
+                Press
+                {"<"}
+                space
+                {">"} to
+                {paused ? "resume" : "pause"}
             </Text>
         </Box>
     );
-}
+};
 
 render(<UseAnimationDemo />);

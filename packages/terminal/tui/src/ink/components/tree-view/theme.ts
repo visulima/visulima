@@ -1,5 +1,5 @@
-import type { Props as BoxProps } from "../Box";
-import type { Props as TextProps } from "../Text";
+import type { Props as BoxProps } from "../box";
+import type { Props as TextProps } from "../text";
 
 type StyleFunctionProps = {
     readonly depth?: number;

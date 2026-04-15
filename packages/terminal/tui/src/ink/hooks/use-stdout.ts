@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import type { Props } from "../components/StdoutContext";
-import StdoutContext from "../components/StdoutContext";
+import type { Props } from "../components/stdout-context";
+import StdoutContext from "../components/stdout-context";
 
 /**
  * A React hook that returns the stdout stream where Ink renders your app.

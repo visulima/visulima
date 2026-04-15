@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/counter
 // Original: https://github.com/vadimdemedes/ink/tree/master/examples/counter

@@ -3,8 +3,8 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Box, render, Text, TreeView } from "../../src/ink/index";
 import type { TreeNode } from "../../src/ink/index";
+import { render, Text, TreeView } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -24,7 +24,7 @@ const sampleData: TreeNode[] = [
     { id: "2", label: "Root 2" },
 ];
 
-describe("TreeView", () => {
+describe(TreeView, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -36,7 +36,7 @@ describe("TreeView", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return strip((calls.at(-1)?.[0] ?? "") as string);
         };
@@ -54,6 +54,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
+
         expect(text).toContain("Root 1");
         expect(text).toContain("Root 2");
     });
@@ -62,6 +63,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
+
         expect(text).not.toContain("Child A");
         expect(text).not.toContain("Child B");
     });
@@ -70,6 +72,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
         const text = getOutput();
+
         expect(text).toContain("Child A");
         expect(text).toContain("Child B");
         // Grandchild should not be visible (1.2 not expanded)
@@ -80,6 +83,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded="all" />);
 
         const text = getOutput();
+
         expect(text).toContain("Root 1");
         expect(text).toContain("Child A");
         expect(text).toContain("Child B");
@@ -91,6 +95,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
+
         expect(text).toContain("❯");
     });
 
@@ -98,6 +103,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
+
         expect(text).toContain("▸");
     });
 
@@ -105,6 +111,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
         const text = getOutput();
+
         expect(text).toContain("▾");
     });
 
@@ -121,19 +128,23 @@ describe("TreeView", () => {
         );
 
         const text = getOutput();
+
         expect(text).toContain("[Root 1]");
         expect(text).toContain("[Root 2]");
     });
 
     it("should show scroll indicators when using visibleNodeCount", async () => {
-        const manyNodes: TreeNode[] = Array.from({ length: 20 }, (_, index) => ({
-            id: String(index),
-            label: `Node ${index}`,
-        }));
+        const manyNodes: TreeNode[] = Array.from({ length: 20 }, (_, index) => {
+            return {
+                id: String(index),
+                label: `Node ${index}`,
+            };
+        });
 
         const { getOutput } = await setup(<TreeView data={manyNodes} visibleNodeCount={5} />);
 
         const text = getOutput();
+
         expect(text).toContain("Node 0");
         expect(text).toContain("Node 4");
         expect(text).toContain("more below");
@@ -143,6 +154,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} defaultSelected={new Set(["1"])} selectionMode="single" />);
 
         const text = getOutput();
+
         expect(text).toContain("✔");
     });
 
@@ -150,6 +162,7 @@ describe("TreeView", () => {
         const { getOutput } = await setup(<TreeView data={sampleData} defaultSelected={new Set(["1"])} selectionMode="multiple" />);
 
         const text = getOutput();
+
         expect(text).toContain("☒");
         expect(text).toContain("☐");
     });
@@ -166,6 +179,7 @@ describe("TreeView", () => {
 
             // Initially focused on Root 1
             let text = getOutput();
+
             expect(text).toMatch(/❯.*Root 1/);
 
             // Press down arrow
@@ -173,6 +187,7 @@ describe("TreeView", () => {
             await delay(50);
 
             text = getOutput();
+
             expect(text).toMatch(/❯.*Root 2/);
         });
 
@@ -186,6 +201,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toMatch(/❯.*Root 1/);
         });
 
@@ -197,6 +213,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toContain("Child A");
             expect(text).toContain("Child B");
         });
@@ -209,6 +226,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).not.toContain("Child A");
         });
 
@@ -220,6 +238,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toContain("Child A");
         });
 
@@ -232,8 +251,9 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toContain("✔");
-            expect(onSelectChange).toHaveBeenCalled();
+            expect(onSelectChange).toHaveBeenCalledWith(new Set(["1"]));
         });
 
         it("should toggle checkbox with Space in multiple selection mode", async () => {
@@ -244,6 +264,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toContain("☒");
         });
 
@@ -255,6 +276,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).not.toContain("Child A");
         });
 
@@ -275,8 +297,10 @@ describe("TreeView", () => {
             emitReadable(stdin, "\u001B[C");
             await delay(50);
 
-            expect(onExpandChange).toHaveBeenCalled();
+            expect(onExpandChange).toHaveBeenCalledWith(expect.any(Set));
+
             const expandedIds = onExpandChange.mock.calls[0]?.[0] as ReadonlySet<string>;
+
             expect(expandedIds.has("1")).toBe(true);
         });
 
@@ -288,6 +312,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toMatch(/❯.*Child A/);
         });
 
@@ -303,6 +328,7 @@ describe("TreeView", () => {
             await delay(50);
 
             const text = getOutput();
+
             expect(text).toMatch(/❯.*Root 1/);
         });
     });
