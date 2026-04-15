@@ -1,3 +1,19 @@
+## @visulima/ansi [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.8...@visulima/ansi@4.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **ansi:** remove unused [@ts-expect-error](https://github.com/ts-expect-error) directives ([078d12b](https://github.com/visulima/visulima/commit/078d12b6429160dafc9ffaf6c0cee55fe871c509))
+* **ansi:** resolve eslint and formatting issues ([da359e8](https://github.com/visulima/visulima/commit/da359e8248c5c06ae1aed97609520f6699ce77aa))
+* **ansi:** resolve eslint and formatting issues ([3fc3401](https://github.com/visulima/visulima/commit/3fc340173818b239ccf5d8f0f574ebe0c0d3465e))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.9
+* **@visulima/path:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/ansi [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.7...@visulima/ansi@4.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
