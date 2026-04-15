@@ -180,9 +180,4 @@ export class LayoutNode {
     getLayout(): ReturnType<YogaNode["getComputedLayout"]> {
         return this.yogaNode.getComputedLayout();
     }
-
-    /** @deprecated use destroy() */
-    free(): void {
-        this.destroy();
-    }
 }
