@@ -1,3 +1,10 @@
+## @visulima/html [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.7...@visulima/html@1.0.0-alpha.8) (2026-04-15)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **html:** resolve eslint and formatting issues ([e455a78](https://github.com/visulima/visulima/commit/e455a78dc8464049c3e557cba096fc3694de8812))
+
 ## @visulima/html [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.6...@visulima/html@1.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes
