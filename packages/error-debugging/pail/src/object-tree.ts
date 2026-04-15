@@ -64,39 +64,39 @@ const buildContext = (options?: ObjectTreeOptions) => {
 
     // Validate all required options are strings or functions
     if (typeof context.joined !== "boolean") {
-        throw new TypeError("Option \"joined\" must be a boolean");
+        throw new TypeError('Option "joined" must be a boolean');
     }
 
     if (typeof context.spacerNoNeighbour !== "string") {
-        throw new TypeError("Option \"spacerNoNeighbour\" must be a string");
+        throw new TypeError('Option "spacerNoNeighbour" must be a string');
     }
 
     if (typeof context.spacerNeighbour !== "string") {
-        throw new TypeError("Option \"spacerNeighbour\" must be a string");
+        throw new TypeError('Option "spacerNeighbour" must be a string');
     }
 
     if (typeof context.keyNoNeighbour !== "string") {
-        throw new TypeError("Option \"keyNoNeighbour\" must be a string");
+        throw new TypeError('Option "keyNoNeighbour" must be a string');
     }
 
     if (typeof context.keyNeighbour !== "string") {
-        throw new TypeError("Option \"keyNeighbour\" must be a string");
+        throw new TypeError('Option "keyNeighbour" must be a string');
     }
 
     if (typeof context.separator !== "string") {
-        throw new TypeError("Option \"separator\" must be a string");
+        throw new TypeError('Option "separator" must be a string');
     }
 
     if (typeof context.renderFn !== "function") {
-        throw new TypeError("Option \"renderFn\" must be a function");
+        throw new TypeError('Option "renderFn" must be a function');
     }
 
     if (context.sortFn !== undefined && typeof context.sortFn !== "function") {
-        throw new TypeError("Option \"sortFn\" must be a function or undefined");
+        throw new TypeError('Option "sortFn" must be a function or undefined');
     }
 
     if (context.breakCircularWith !== null && typeof context.breakCircularWith !== "string") {
-        throw new TypeError("Option \"breakCircularWith\" must be a string or null");
+        throw new TypeError('Option "breakCircularWith" must be a string or null');
     }
 
     return context;
@@ -185,7 +185,7 @@ export const renderObjectTree = (tree: Record<string, unknown> | unknown[], opti
         const keyName = key.at(-1) ?? "";
         const nodeRendered = context.renderFn(node);
         const value = nodeRendered === undefined ? "" : `${context.separator}${nodeRendered}`;
-        const circular = isCircular ? context.breakCircularWith ?? "" : "";
+        const circular = isCircular ? (context.breakCircularWith ?? "") : "";
 
         result.push(`${indent}${connector}${keyName}${value}${circular}`);
 

@@ -93,37 +93,37 @@ type ExpressMiddlewareOptions<T extends string = string> = PailMiddlewareOptions
  * });
  * ```
  */
-export const pailMiddleware
-    = <T extends string = string>(options: ExpressMiddlewareOptions<T>): PailExpressMiddleware =>
-        (request: PailRequest, response: PailResponse, next: PailNextFunction): void => {
+export const pailMiddleware =
+    <T extends string = string>(options: ExpressMiddlewareOptions<T>): PailExpressMiddleware =>
+    (request: PailRequest, response: PailResponse, next: PailNextFunction): void => {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            const requestId = (request.headers["x-request-id"] as string | undefined) ?? crypto.randomUUID();
-            const path: string = request.originalUrl ?? (request.url as string | undefined) ?? "/";
-            const safeHeaders = extractSafeNodeHeaders(request.headers);
+        const requestId = (request.headers["x-request-id"] as string | undefined) ?? crypto.randomUUID();
+        const path: string = request.originalUrl ?? (request.url as string | undefined) ?? "/";
+        const safeHeaders = extractSafeNodeHeaders(request.headers);
 
-            const { finish, logger, skipped } = createMiddlewareLogger(options, {
-                headers: safeHeaders,
-                method: request.method,
-                path,
-                requestId,
-            });
+        const { finish, logger, skipped } = createMiddlewareLogger(options, {
+            headers: safeHeaders,
+            method: request.method,
+            path,
+            requestId,
+        });
 
-            if (skipped) {
-                next();
+        if (skipped) {
+            next();
 
-                return;
-            }
+            return;
+        }
 
-            request.log = logger;
+        request.log = logger;
 
-            response.on("finish", () => {
-                finish({ status: response.statusCode });
-            });
+        response.on("finish", () => {
+            finish({ status: response.statusCode });
+        });
 
-            loggerStorage.storage.run(logger, () => {
-                next();
-            });
-        };
+        loggerStorage.storage.run(logger, () => {
+            next();
+        });
+    };
 
 export { useLogger };
 export type { ExpressMiddlewareOptions, PailExpressMiddleware, PailNextFunction, PailRequest, PailResponse };
