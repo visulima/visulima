@@ -23,7 +23,7 @@ export {
 
 export type Path = Omit<typeof NodePath, "posix" | "win32">;
 
-export const posix: Path = path satisfies Path;
-export const win32: Path = path satisfies Path;
+export const posix: Path = path as unknown as Path;
+export const win32: Path = path as unknown as Path;
 
-export default path as Path;
+export default path as unknown as Path;
