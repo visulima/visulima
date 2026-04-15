@@ -167,16 +167,16 @@ const BYTE_SIZES = {
     ],
 } as const;
 
-type ByteSize
-    = | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
-        | (typeof BYTE_SIZES)["iec"][number]["short"]
-        | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
-        | (typeof BYTE_SIZES)["metric"][number]["short"];
-type LongByteSize
-    = | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["iec"][number]["long"]
-        | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["metric"][number]["long"];
+type ByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["iec"][number]["short"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["metric"][number]["short"];
+type LongByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["iec"][number]["long"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["metric"][number]["long"];
 
 type Unit = ByteSize | LongByteSize;
 
@@ -288,7 +288,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const base = fromBase(givenBase);
 
     const absoluteBytes = Math.abs(bytes);
-    const space = options?.space ?? true ? " " : "";
+    const space = (options?.space ?? true) ? " " : "";
     const referenceTable = BYTE_SIZES[units];
 
     const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);
