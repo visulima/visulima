@@ -44,6 +44,8 @@ describe("selection", () => {
      *   - Item 2 is at y=2..3, current viewport shows 4..9, so offset = 2
      */
     it("should scroll to selected item when selectedIndex prop changes", async () => {
+        expect.assertions(3);
+
         let scrollListRef: ScrollListRef | null = null;
         let setIndexFunction: (i: number) => void;
 
@@ -113,6 +115,8 @@ describe("selection", () => {
      * gracefully handles invalid indices without throwing errors.
      */
     it("should handle selectedIndex larger than item count gracefully", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
 
         const TestComponent = () => {
@@ -165,6 +169,8 @@ describe("selection", () => {
      * before triggering auto-scroll.
      */
     it("should handle negative selectedIndex gracefully", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
 
         const TestComponent = () => {
@@ -214,6 +220,8 @@ describe("selection", () => {
      * - This mode allows pure scroll control without selection tracking
      */
     it("should handle undefined selectedIndex (no auto-scroll)", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
 
         const TestComponent = () => {
@@ -266,6 +274,8 @@ describe("selection", () => {
      * - All intermediate scroll animations should be handled correctly
      */
     it("should handle dynamic selectedIndex changes", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
         let setIndexFunction: (i: number) => void;
 
@@ -331,6 +341,8 @@ describe("selection", () => {
          * - Content height should be 0
          */
         it("should handle empty list gracefully", async () => {
+            expect.assertions(2);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -377,6 +389,8 @@ describe("selection", () => {
          * - Content height should be 1
          */
         it("should handle single-item list", async () => {
+            expect.assertions(2);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -431,6 +445,8 @@ describe("selection", () => {
          * - scrollTo(8) should work (within bounds)
          */
         it("should constrain scrollTo to keep selected item visible", async () => {
+            expect.assertions(3);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -495,6 +511,8 @@ describe("selection", () => {
          * Expected: Offset = 6 (item 10 at bottom of viewport)
          */
         it("should constrain scrollToTop to keep selected item visible", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -548,6 +566,8 @@ describe("selection", () => {
          * Expected: Offset = 5 (item 5 at top of viewport)
          */
         it("should constrain scrollToBottom to keep selected item visible", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -600,6 +620,8 @@ describe("selection", () => {
          * - scrollBy(+5) should clamp to 10, not 13
          */
         it("should constrain scrollBy to keep selected item visible", async () => {
+            expect.assertions(3);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -661,6 +683,8 @@ describe("selection", () => {
          * - scrollTo should only be constrained by global bounds [0, 5]
          */
         it("should not constrain scroll when no selectedIndex", async () => {
+            expect.assertions(3);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {
@@ -732,6 +756,8 @@ describe("selection", () => {
          * - scrollTo(10) should clamp to 6
          */
         it("should allow scrolling within large items (item > viewport)", async () => {
+            expect.assertions(5);
+
             let scrollListRef: ScrollListRef | null = null;
 
             const TestComponent = () => {

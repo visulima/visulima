@@ -5,6 +5,8 @@ import { LayoutNode } from "../../src/react/layout";
 describe(LayoutNode, () => {
     describe("remove", () => {
         it("should remove itself from its parent", () => {
+            expect.assertions(4);
+
             const parent = new LayoutNode();
             const child = new LayoutNode();
 
@@ -20,6 +22,8 @@ describe(LayoutNode, () => {
         });
 
         it("should be a no-op when node has no parent", () => {
+            expect.assertions(1);
+
             const node = new LayoutNode();
 
             // Should not throw
@@ -29,6 +33,8 @@ describe(LayoutNode, () => {
         });
 
         it("should also detach the yoga node from its parent", () => {
+            expect.assertions(2);
+
             const parent = new LayoutNode();
             const child = new LayoutNode();
 
@@ -42,6 +48,8 @@ describe(LayoutNode, () => {
         });
 
         it("should allow re-insertion after removal", () => {
+            expect.assertions(3);
+
             const parentA = new LayoutNode();
             const parentB = new LayoutNode();
             const child = new LayoutNode();
@@ -56,6 +64,8 @@ describe(LayoutNode, () => {
         });
 
         it("should remove the correct child when parent has multiple children", () => {
+            expect.assertions(4);
+
             const parent = new LayoutNode();
             const childA = new LayoutNode();
             const childB = new LayoutNode();

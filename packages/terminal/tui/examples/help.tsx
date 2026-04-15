@@ -11,7 +11,7 @@ const App = () => {
         { binding: { description: "Decrement", group: "Counter", key: ["downArrow", "j"] }, handler: () => { setCount((c) => c - 1); } },
         { binding: { description: "Reset", group: "Counter", key: "r" }, handler: () => { setCount(0); } },
         { binding: { description: "Toggle help", group: "General", key: "?" }, handler: () => { setShowFullHelp((s) => !s); } },
-        { binding: { description: "Quit", group: "General", key: "q" }, handler: () => exit() },
+        { binding: { description: "Quit", group: "General", key: "q" }, handler: () => { exit(); } },
     ]);
 
     return (

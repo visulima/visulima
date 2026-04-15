@@ -19,22 +19,32 @@ describe("useTextBuffer core logic", () => {
 
     describe("splitLines / joinLines", () => {
         it("should split text into lines", () => {
+            expect.assertions(1);
+
             expect(splitLines("a\nb\nc")).toEqual(["a", "b", "c"]);
         });
 
         it("should handle empty string", () => {
+            expect.assertions(1);
+
             expect(splitLines("")).toEqual([""]);
         });
 
         it("should handle single line", () => {
+            expect.assertions(1);
+
             expect(splitLines("hello")).toEqual(["hello"]);
         });
 
         it("should handle trailing newline", () => {
+            expect.assertions(1);
+
             expect(splitLines("a\n")).toEqual(["a", ""]);
         });
 
         it("should roundtrip through join", () => {
+            expect.assertions(1);
+
             const text = "line1\nline2\nline3";
 
             expect(joinLines(splitLines(text))).toBe(text);
@@ -51,6 +61,8 @@ describe("useTextBuffer core logic", () => {
         };
 
         it("should order cursor before anchor when cursor is ahead", () => {
+            expect.assertions(2);
+
             const result = getSelectionRange({ col: 5, line: 2 }, { col: 0, line: 0 });
 
             expect(result.start).toEqual({ col: 0, line: 0 });
@@ -58,6 +70,8 @@ describe("useTextBuffer core logic", () => {
         });
 
         it("should order anchor before cursor when anchor is ahead", () => {
+            expect.assertions(2);
+
             const result = getSelectionRange({ col: 0, line: 0 }, { col: 5, line: 2 });
 
             expect(result.start).toEqual({ col: 0, line: 0 });
@@ -65,6 +79,8 @@ describe("useTextBuffer core logic", () => {
         });
 
         it("should handle same line different columns", () => {
+            expect.assertions(2);
+
             const result = getSelectionRange({ col: 10, line: 1 }, { col: 3, line: 1 });
 
             expect(result.start.col).toBe(3);
@@ -72,6 +88,8 @@ describe("useTextBuffer core logic", () => {
         });
 
         it("should handle same position", () => {
+            expect.assertions(1);
+
             const result = getSelectionRange({ col: 5, line: 1 }, { col: 5, line: 1 });
 
             expect(result.start).toEqual(result.end);
@@ -92,6 +110,8 @@ describe("useTextBuffer core logic", () => {
         };
 
         it("should set anchor from cursor when starting selection", () => {
+            expect.assertions(2);
+
             const state = { anchor: null, cursor: { col: 5, line: 0 }, lines: ["hello"] };
             const result = withSelection(state, { col: 10, line: 0 }, true);
 
@@ -100,6 +120,8 @@ describe("useTextBuffer core logic", () => {
         });
 
         it("should preserve existing anchor when extending selection", () => {
+            expect.assertions(1);
+
             const state = { anchor: { col: 0, line: 0 }, cursor: { col: 5, line: 0 }, lines: ["hello"] };
             const result = withSelection(state, { col: 10, line: 0 }, true);
 
@@ -107,6 +129,8 @@ describe("useTextBuffer core logic", () => {
         });
 
         it("should clear anchor when not selecting", () => {
+            expect.assertions(1);
+
             const state = { anchor: { col: 0, line: 0 }, cursor: { col: 5, line: 0 }, lines: ["hello"] };
             const result = withSelection(state, { col: 3, line: 0 }, false);
 
@@ -117,6 +141,8 @@ describe("useTextBuffer core logic", () => {
     describe("undo coalescing", () => {
         it("should coalesce edits within 300ms window", () => {
             // Simulate the coalescing logic
+            expect.assertions(1);
+
             const UNDO_COALESCE_MS = 300;
             const undoStack: string[] = [];
             let lastEditTime = 0;

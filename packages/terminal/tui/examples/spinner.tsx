@@ -31,9 +31,11 @@ const App = () => {
             return;
         }
 
-        if (input === "+" || input === "=") setIntervalMs((ms) => Math.max(20, ms - 20));
+        if (input === "+" || input === "=")
+            setIntervalMs((ms) => Math.max(20, ms - 20));
 
-        if (input === "-") setIntervalMs((ms) => Math.min(400, ms + 20));
+        if (input === "-")
+            setIntervalMs((ms) => Math.min(400, ms + 20));
     });
 
     return (
@@ -42,11 +44,13 @@ const App = () => {
                 Spinner demo
             </Text>
             <Text dim>
-                +/= faster · - slower · current interval{" "}
+                +/= faster · - slower · current interval
+                {" "}
                 <Text color="yellow">
                     {intervalMs}
                     ms
-                </Text>{" "}
+                </Text>
+                {" "}
                 · q quit
             </Text>
 
@@ -68,7 +72,12 @@ const App = () => {
             </Box>
 
             <Text>
-                uptime: <Text color="green">{seconds}s</Text>
+                uptime:
+                {" "}
+                <Text color="green">
+                    {seconds}
+                    s
+                </Text>
             </Text>
         </Box>
     );

@@ -13,6 +13,8 @@ describe(Link, () => {
         it("should append URL after text with default fallback", () => {
             // renderToString uses a mock stdout that is a TTY but process.stdout.isTTY
             // may not be set in test env. Force non-hyperlink mode.
+            expect.assertions(1);
+
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(
@@ -25,6 +27,8 @@ describe(Link, () => {
         });
 
         it("should render just text when fallback is false", () => {
+            expect.assertions(1);
+
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(
@@ -37,6 +41,8 @@ describe(Link, () => {
         });
 
         it("should use custom fallback function", () => {
+            expect.assertions(1);
+
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(
@@ -51,6 +57,8 @@ describe(Link, () => {
 
     describe("hyperlink mode", () => {
         it("should render OSC 8 hyperlink when FORCE_HYPERLINK is set", () => {
+            expect.assertions(3);
+
             vi.stubEnv("FORCE_HYPERLINK", "1");
 
             const output = renderToString(
@@ -68,6 +76,8 @@ describe(Link, () => {
 
     describe("children rendering", () => {
         it("should render plain text children", () => {
+            expect.assertions(1);
+
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(<Link url="https://example.com">Visit</Link>);

@@ -201,9 +201,9 @@ export default function Tabs({
     // In controlled mode, derive activeTab from value prop
     const activeTab = isControlled
         ? Math.max(
-              0,
-              tabs.findIndex((tab) => tab.props.name === value),
-          )
+            0,
+            tabs.findIndex((tab) => tab.props.name === value),
+        )
         : internalTab;
 
     // no-op in controlled mode; parent drives state via onChange.

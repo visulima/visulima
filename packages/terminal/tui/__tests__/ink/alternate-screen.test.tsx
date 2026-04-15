@@ -10,6 +10,8 @@ const CURSOR_SHOW = "\u001B[?25h";
 
 describe("alternate screen", () => {
     it("should enter alternate screen on render when alternateScreen is true", () => {
+        expect.assertions(1);
+
         const stdout = createStdout();
 
         const { unmount } = render(<Text>Hello</Text>, {
@@ -26,6 +28,8 @@ describe("alternate screen", () => {
     });
 
     it("should leave alternate screen on unmount", async () => {
+        expect.assertions(2);
+
         const stdout = createStdout();
 
         const { unmount } = render(<Text>Hello</Text>, {
@@ -47,6 +51,8 @@ describe("alternate screen", () => {
     });
 
     it("should leave alternate screen when exit() is called via unmount", async () => {
+        expect.assertions(2);
+
         const stdout = createStdout();
 
         const { unmount, waitUntilExit } = render(<Text>Hello</Text>, {
@@ -68,6 +74,8 @@ describe("alternate screen", () => {
     });
 
     it("should not write last frame content after leaving alternate screen", async () => {
+        expect.assertions(1);
+
         const stdout = createStdout();
 
         const { unmount } = render(<Text>Secret Content</Text>, {
@@ -101,6 +109,8 @@ describe("alternate screen", () => {
     });
 
     it("should not render a final frame when in alternate screen mode", async () => {
+        expect.assertions(2);
+
         const stdout = createStdout();
         let renderCount = 0;
 

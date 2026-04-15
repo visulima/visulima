@@ -24,6 +24,8 @@ const Item = ({ height = 1, label }: { height?: number; label: string }) => (
 
 describe("scrollView - onReachEnd / onReachStart", () => {
     it("should fire onReachEnd when near bottom", async () => {
+        expect.assertions(1);
+
         const onReachEnd = vi.fn();
         const scrollRef = React.createRef<ScrollViewRef>();
 
@@ -47,6 +49,8 @@ describe("scrollView - onReachEnd / onReachStart", () => {
     });
 
     it("should fire onReachStart when scrolling back near top", async () => {
+        expect.assertions(2);
+
         const onReachStart = vi.fn();
         const scrollRef = React.createRef<ScrollViewRef>();
 
@@ -76,6 +80,8 @@ describe("scrollView - onReachEnd / onReachStart", () => {
     });
 
     it("should not fire onReachEnd repeatedly while in threshold zone", async () => {
+        expect.assertions(1);
+
         const onReachEnd = vi.fn();
         const scrollRef = React.createRef<ScrollViewRef>();
 
@@ -104,6 +110,8 @@ describe("scrollView - onReachEnd / onReachStart", () => {
 
 describe("scrollView - followOutput", () => {
     it("should auto-scroll to bottom when content grows and user is at bottom", async () => {
+        expect.assertions(1);
+
         const scrollRef = React.createRef<ScrollViewRef>();
         let setItemCount: (n: number) => void;
 
@@ -145,6 +153,8 @@ describe("scrollView - followOutput", () => {
 
 describe("scrollView - keyboard/vimBindings props exist", () => {
     it("should accept keyboard and vimBindings props without error", () => {
+        expect.assertions(1);
+
         expect(() => {
             render(
                 <Box height={5}>
@@ -160,6 +170,8 @@ describe("scrollView - keyboard/vimBindings props exist", () => {
 
 describe("scrollView - virtualize prop", () => {
     it("should accept virtualize and overscan props without error", async () => {
+        expect.assertions(1);
+
         const scrollRef = React.createRef<ScrollViewRef>();
 
         render(

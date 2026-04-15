@@ -39,6 +39,8 @@ const ConditionalAnimation = ({ interval, isActive }: { readonly interval?: numb
 
 describe(useAnimation, () => {
     it("frame increments over time", async () => {
+        expect.assertions(2);
+
         const stdout = createStdout();
         const { unmount } = render(<AnimatedCounter interval={50} />, {
             debug: true,
@@ -58,6 +60,8 @@ describe(useAnimation, () => {
     });
 
     it("does not update when isActive is false", async () => {
+        expect.assertions(2);
+
         const stdout = createStdout();
         const { unmount } = render(<ConditionalAnimation interval={50} isActive={false} />, {
             debug: true,
@@ -76,13 +80,17 @@ describe(useAnimation, () => {
     });
 
     it("multiple animations with the same interval stay in sync", async () => {
+        expect.assertions(3);
+
         const MultiSpinner = () => {
             const { frame: frame1 } = useAnimation({ interval: 50 });
             const { frame: frame2 } = useAnimation({ interval: 50 });
 
             return (
                 <Text>
-                    {String(frame1)},{String(frame2)}
+                    {String(frame1)}
+                    ,
+                    {String(frame2)}
                 </Text>
             );
         };
@@ -118,6 +126,8 @@ describe(useAnimation, () => {
         });
 
         it("multiple animations with the same interval share one timer", async () => {
+            expect.assertions(4);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -127,7 +137,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(frame1)},{String(frame2)}
+                            {String(frame1)}
+                            ,
+                            {String(frame2)}
                         </Text>
                     );
                 };
@@ -155,6 +167,8 @@ describe(useAnimation, () => {
         });
 
         it("animations with different intervals still use the shared timer", async () => {
+            expect.assertions(2);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -164,7 +178,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(fastFrame)},{String(slowFrame)}
+                            {String(fastFrame)}
+                            ,
+                            {String(slowFrame)}
                         </Text>
                     );
                 };
@@ -190,6 +206,8 @@ describe(useAnimation, () => {
         });
 
         it("shared timer is cleaned up and recreated after the last animation unmounts", async () => {
+            expect.assertions(5);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -225,6 +243,8 @@ describe(useAnimation, () => {
         });
 
         it("shared timer stays alive while another same-interval animation remains mounted", async () => {
+            expect.assertions(6);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -274,6 +294,8 @@ describe(useAnimation, () => {
         });
 
         it("shared timer stays alive while another different-interval animation remains mounted", async () => {
+            expect.assertions(6);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -323,6 +345,8 @@ describe(useAnimation, () => {
         });
 
         it("inactive animations do not start the shared timer until one becomes active", async () => {
+            expect.assertions(6);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -338,7 +362,9 @@ describe(useAnimation, () => {
 
                     return (
                         <Text>
-                            {String(firstFrame)},{String(secondFrame)}
+                            {String(firstFrame)}
+                            ,
+                            {String(secondFrame)}
                         </Text>
                     );
                 };
@@ -374,6 +400,8 @@ describe(useAnimation, () => {
         });
 
         it("no timer leak when all animations are inactive", async () => {
+            expect.assertions(5);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -408,6 +436,8 @@ describe(useAnimation, () => {
         });
 
         it("frame catches up when the shared timer is delayed", async () => {
+            expect.assertions(1);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={50} />, {
                 debug: true,
@@ -422,6 +452,8 @@ describe(useAnimation, () => {
         });
 
         it("isActive false from mount never starts a timer or advances the frame", async () => {
+            expect.assertions(5);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -445,6 +477,8 @@ describe(useAnimation, () => {
         });
 
         it("pausing animation stops ticks before the next frame", async () => {
+            expect.assertions(3);
+
             const stdout = createStdout();
             const { rerender, unmount } = render(<ConditionalAnimation interval={8} isActive />, {
                 debug: true,
@@ -470,6 +504,8 @@ describe(useAnimation, () => {
         });
 
         it("changing interval unsubscribes stale ticks before reset", async () => {
+            expect.assertions(3);
+
             const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
@@ -499,6 +535,8 @@ describe(useAnimation, () => {
         });
 
         it("wall clock changes do not move animations backwards", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={8} />, {
                 debug: true,
@@ -520,6 +558,8 @@ describe(useAnimation, () => {
         });
 
         it("animations advance in debug mode when interactive is false", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={8} />, {
                 debug: true,
@@ -538,6 +578,8 @@ describe(useAnimation, () => {
         });
 
         it("newly mounted animations do not inherit elapsed time", async () => {
+            expect.assertions(4);
+
             const AnimationValue = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
@@ -590,6 +632,8 @@ describe(useAnimation, () => {
         });
 
         it("newly activated animations do not inherit elapsed time", async () => {
+            expect.assertions(4);
+
             const AnimationValue = ({ interval, isActive = true }: { readonly interval: number; readonly isActive?: boolean }) => {
                 const { frame } = useAnimation({ interval, isActive });
 
@@ -642,6 +686,8 @@ describe(useAnimation, () => {
         });
 
         it("rerendering with the same interval does not reset the frame", async () => {
+            expect.assertions(2);
+
             const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { frame } = useAnimation({ interval });
 
@@ -669,6 +715,8 @@ describe(useAnimation, () => {
         });
 
         it("frame resets to 0 on each resume across multiple cycles", async () => {
+            expect.assertions(6);
+
             const stdout = createStdout();
             const { rerender, unmount } = render(<ConditionalAnimation interval={50} isActive />, { debug: true, maxFps: 120, stdout });
 
@@ -706,6 +754,8 @@ describe(useAnimation, () => {
         });
 
         it("unmount before first tick cleans up without error", async () => {
+            expect.assertions(4);
+
             const mocks = mockTimerCalls();
 
             try {
@@ -735,6 +785,8 @@ describe(useAnimation, () => {
         });
 
         it("defaults to 100ms interval", async () => {
+            expect.assertions(2);
+
             const DefaultInterval = () => {
                 const { frame } = useAnimation();
 
@@ -758,6 +810,8 @@ describe(useAnimation, () => {
         });
 
         it("treats NaN interval as the default interval", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={Number.NaN} />, {
                 debug: true,
@@ -775,6 +829,8 @@ describe(useAnimation, () => {
         });
 
         it("treats Infinity interval as the default interval", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={Number.POSITIVE_INFINITY} />, {
                 debug: true,
@@ -792,6 +848,8 @@ describe(useAnimation, () => {
         });
 
         it("treats negative Infinity interval as the default interval", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={Number.NEGATIVE_INFINITY} />, {
                 debug: true,
@@ -809,6 +867,8 @@ describe(useAnimation, () => {
         });
 
         it("clamps oversized finite interval to the timer maximum", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={Number.MAX_SAFE_INTEGER} />, {
                 debug: true,
@@ -826,6 +886,8 @@ describe(useAnimation, () => {
         });
 
         it("clamps zero interval to 1ms", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={0} />, {
                 debug: true,
@@ -843,6 +905,8 @@ describe(useAnimation, () => {
         });
 
         it("clamps negative interval to 1ms", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={-10} />, {
                 debug: true,
@@ -860,6 +924,8 @@ describe(useAnimation, () => {
         });
 
         it("maxFps does not speed up animation state", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={8} />, {
                 debug: true,
@@ -877,6 +943,8 @@ describe(useAnimation, () => {
         });
 
         it("maxFps 0 does not affect animation cadence", async () => {
+            expect.assertions(2);
+
             const stdout = createStdout();
             const { unmount } = render(<AnimatedCounter interval={8} />, {
                 debug: true,
@@ -894,12 +962,18 @@ describe(useAnimation, () => {
         });
 
         it("time and delta reset to 0 when interval changes", async () => {
+            expect.assertions(3);
+
             const DynamicInterval = ({ interval }: { readonly interval: number }) => {
                 const { delta, frame, time } = useAnimation({ interval });
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+                        ,
+                        {String(Math.round(time))}
+                        ,
+                        {String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -926,12 +1000,18 @@ describe(useAnimation, () => {
         });
 
         it("time and delta reset to 0 when animation is resumed", async () => {
+            expect.assertions(3);
+
             const ConditionalDisplay = ({ isActive }: { readonly isActive: boolean }) => {
                 const { delta, frame, time } = useAnimation({ interval: 50, isActive });
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+                        ,
+                        {String(Math.round(time))}
+                        ,
+                        {String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -959,6 +1039,8 @@ describe(useAnimation, () => {
         });
 
         it("reset() resets frame, time, and delta to 0", async () => {
+            expect.assertions(7);
+
             let resetAnimation!: () => void;
 
             const ResettableAnimation = () => {
@@ -968,7 +1050,11 @@ describe(useAnimation, () => {
 
                 return (
                     <Text>
-                        {String(frame)},{String(Math.round(time))},{String(Math.round(delta))}
+                        {String(frame)}
+                        ,
+                        {String(Math.round(time))}
+                        ,
+                        {String(Math.round(delta))}
                     </Text>
                 );
             };
@@ -1007,6 +1093,8 @@ describe(useAnimation, () => {
         });
 
         it("reset() while paused takes effect when animation is resumed", async () => {
+            expect.assertions(4);
+
             let resetAnimation!: () => void;
 
             const PausableAnimation = ({ isActive }: { readonly isActive: boolean }) => {
@@ -1052,6 +1140,8 @@ describe(useAnimation, () => {
         });
 
         it("low maxFps caps animation rerenders", async () => {
+            expect.assertions(3);
+
             let renderCount = 0;
 
             const RenderCountingAnimation = () => {
@@ -1082,6 +1172,8 @@ describe(useAnimation, () => {
     });
 
     it("concurrent aborted renders do not suppress interval reset", async () => {
+        expect.assertions(4);
+
         let resolveSuspense!: () => void;
         const suspendedRender = new Promise<void>((resolve) => {
             resolveSuspense = resolve;
@@ -1147,6 +1239,8 @@ describe(useAnimation, () => {
     });
 
     it("suspended transitions do not reset the committed animation before commit", async () => {
+        expect.assertions(3);
+
         let resolveSuspense!: () => void;
         const suspendedRender = new Promise<void>((resolve) => {
             resolveSuspense = resolve;
@@ -1213,6 +1307,8 @@ describe(useAnimation, () => {
     });
 
     it("cleans up on unmount", async () => {
+        expect.assertions(1);
+
         const stdout = createStdout();
         const { unmount } = render(<AnimatedCounter interval={50} />, {
             debug: true,
@@ -1231,6 +1327,8 @@ describe(useAnimation, () => {
     });
 
     it("resets frame when isActive toggles from false to true", async () => {
+        expect.assertions(3);
+
         const stdout = createStdout();
         const { rerender, unmount } = render(<ConditionalAnimation interval={50} isActive />, { debug: true, stdout });
 
@@ -1258,6 +1356,8 @@ describe(useAnimation, () => {
     });
 
     it("resets frame when interval changes", async () => {
+        expect.assertions(2);
+
         const DynamicInterval = ({ interval }: { readonly interval: number }) => {
             const { frame } = useAnimation({ interval });
 
@@ -1284,13 +1384,17 @@ describe(useAnimation, () => {
     });
 
     it("different intervals advance at different rates", async () => {
+        expect.assertions(1);
+
         const DualAnimation = () => {
             const { frame: fast } = useAnimation({ interval: 50 });
             const { frame: slow } = useAnimation({ interval: 200 });
 
             return (
                 <Text>
-                    {String(fast)},{String(slow)}
+                    {String(fast)}
+                    ,
+                    {String(slow)}
                 </Text>
             );
         };
@@ -1311,6 +1415,8 @@ describe(useAnimation, () => {
     });
 
     it("time increases with each tick", async () => {
+        expect.assertions(3);
+
         const TimeDisplay = () => {
             const { time } = useAnimation({ interval: 50 });
 
@@ -1336,6 +1442,8 @@ describe(useAnimation, () => {
     });
 
     it("delta approximates interval on each tick", async () => {
+        expect.assertions(3);
+
         const DeltaDisplay = () => {
             const { delta } = useAnimation({ interval: 50 });
 
@@ -1363,6 +1471,8 @@ describe(useAnimation, () => {
     });
 
     it("delta accounts for throttled ticks", async () => {
+        expect.assertions(2);
+
         let lastRenderedDelta = 0;
 
         const DeltaCapture = () => {
@@ -1392,6 +1502,8 @@ describe(useAnimation, () => {
     });
 
     it("reset is a stable function reference", () => {
+        expect.assertions(2);
+
         const resets: (() => void)[] = [];
 
         const ResettableAnimation = () => {
@@ -1419,6 +1531,8 @@ describe(useAnimation, () => {
 
     describe("non-interactive process exit", () => {
         it.skipIf(!ptyAvailable)("useAnimation can drive non-interactive process exit", async () => {
+            expect.assertions(2);
+
             const { spawn: spawnProcess } = await import("node:child_process");
 
             const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/use-animation-non-interactive-exit.tsx")], {
@@ -1448,6 +1562,8 @@ describe(useAnimation, () => {
         });
 
         it.skipIf(!ptyAvailable)("useAnimation can drive explicitly non-interactive process exit", async () => {
+            expect.assertions(2);
+
             const { spawn: spawnProcess } = await import("node:child_process");
 
             const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/use-animation-interactive-false-exit.tsx")], {

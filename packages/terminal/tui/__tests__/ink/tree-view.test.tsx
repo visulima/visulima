@@ -51,6 +51,8 @@ describe(TreeView, () => {
     });
 
     it("should render root nodes", async () => {
+        expect.assertions(2);
+
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
@@ -60,6 +62,8 @@ describe(TreeView, () => {
     });
 
     it("should not render children when collapsed", async () => {
+        expect.assertions(2);
+
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
@@ -69,6 +73,8 @@ describe(TreeView, () => {
     });
 
     it("should render children when defaultExpanded is set", async () => {
+        expect.assertions(3);
+
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
         const text = getOutput();
@@ -80,6 +86,8 @@ describe(TreeView, () => {
     });
 
     it("should render all descendants when defaultExpanded is 'all'", async () => {
+        expect.assertions(5);
+
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded="all" />);
 
         const text = getOutput();
@@ -92,6 +100,8 @@ describe(TreeView, () => {
     });
 
     it("should focus the first node by default", async () => {
+        expect.assertions(1);
+
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
@@ -100,6 +110,8 @@ describe(TreeView, () => {
     });
 
     it("should show expand indicators for parent nodes", async () => {
+        expect.assertions(1);
+
         const { getOutput } = await setup(<TreeView data={sampleData} />);
 
         const text = getOutput();
@@ -108,6 +120,8 @@ describe(TreeView, () => {
     });
 
     it("should show down triangle for expanded nodes", async () => {
+        expect.assertions(1);
+
         const { getOutput } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
         const text = getOutput();
@@ -116,12 +130,17 @@ describe(TreeView, () => {
     });
 
     it("should render with custom renderNode", async () => {
+        expect.assertions(2);
+
         const { getOutput } = await setup(
             <TreeView
                 data={sampleData}
                 renderNode={({ node, state }) => (
                     <Text>
-                        {"  ".repeat(state.depth)}[{node.label}]
+                        {"  ".repeat(state.depth)}
+                        [
+                        {node.label}
+                        ]
                     </Text>
                 )}
             />,
@@ -134,6 +153,8 @@ describe(TreeView, () => {
     });
 
     it("should show scroll indicators when using visibleNodeCount", async () => {
+        expect.assertions(3);
+
         const manyNodes: TreeNode[] = Array.from({ length: 20 }, (_, index) => {
             return {
                 id: String(index),
@@ -151,6 +172,8 @@ describe(TreeView, () => {
     });
 
     it("should render with single selection mode", async () => {
+        expect.assertions(1);
+
         const { getOutput } = await setup(<TreeView data={sampleData} defaultSelected={new Set(["1"])} selectionMode="single" />);
 
         const text = getOutput();
@@ -159,6 +182,8 @@ describe(TreeView, () => {
     });
 
     it("should render with multiple selection mode", async () => {
+        expect.assertions(2);
+
         const { getOutput } = await setup(<TreeView data={sampleData} defaultSelected={new Set(["1"])} selectionMode="multiple" />);
 
         const text = getOutput();
@@ -168,6 +193,8 @@ describe(TreeView, () => {
     });
 
     it("should render empty tree without errors", async () => {
+        expect.assertions(1);
+
         const { getOutput } = await setup(<TreeView data={[]} />);
 
         expect(getOutput()).toBeDefined();
@@ -175,6 +202,8 @@ describe(TreeView, () => {
 
     describe("keyboard navigation", () => {
         it("should move focus down with arrow down", async () => {
+            expect.assertions(2);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} />);
 
             // Initially focused on Root 1
@@ -192,6 +221,8 @@ describe(TreeView, () => {
         });
 
         it("should move focus up with arrow up", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} />);
 
             // Move down first, then back up
@@ -206,6 +237,8 @@ describe(TreeView, () => {
         });
 
         it("should expand node with right arrow", async () => {
+            expect.assertions(2);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} />);
 
             // Right arrow on Root 1 should expand it
@@ -219,6 +252,8 @@ describe(TreeView, () => {
         });
 
         it("should collapse node with left arrow", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
             // Left arrow on Root 1 should collapse it
@@ -231,6 +266,8 @@ describe(TreeView, () => {
         });
 
         it("should toggle expand with Enter in none selection mode", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} />);
 
             // Enter should expand Root 1
@@ -243,6 +280,8 @@ describe(TreeView, () => {
         });
 
         it("should select with Enter in single selection mode", async () => {
+            expect.assertions(2);
+
             const onSelectChange = vi.fn();
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} onSelectChange={onSelectChange} selectionMode="single" />);
 
@@ -257,6 +296,8 @@ describe(TreeView, () => {
         });
 
         it("should toggle checkbox with Space in multiple selection mode", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} selectionMode="multiple" />);
 
             // Space should toggle selection on Root 1
@@ -269,6 +310,8 @@ describe(TreeView, () => {
         });
 
         it("should ignore input when disabled", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} isDisabled />);
 
             // Right arrow should not expand
@@ -281,6 +324,8 @@ describe(TreeView, () => {
         });
 
         it("should call onFocusChange when focus moves", async () => {
+            expect.assertions(1);
+
             const onFocusChange = vi.fn();
             const { stdin } = await setup(<TreeView data={sampleData} onFocusChange={onFocusChange} />);
 
@@ -291,6 +336,8 @@ describe(TreeView, () => {
         });
 
         it("should call onExpandChange when node is expanded", async () => {
+            expect.assertions(2);
+
             const onExpandChange = vi.fn();
             const { stdin } = await setup(<TreeView data={sampleData} onExpandChange={onExpandChange} />);
 
@@ -305,6 +352,8 @@ describe(TreeView, () => {
         });
 
         it("should move to first child when right arrow on expanded node", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
             // Right arrow on expanded Root 1 should focus Child A
@@ -317,6 +366,8 @@ describe(TreeView, () => {
         });
 
         it("should move to parent with left arrow on child", async () => {
+            expect.assertions(1);
+
             const { getOutput, stdin } = await setup(<TreeView data={sampleData} defaultExpanded={new Set(["1"])} />);
 
             // Move to Child A via right arrow on expanded parent

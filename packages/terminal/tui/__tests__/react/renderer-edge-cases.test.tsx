@@ -13,6 +13,8 @@ describe("renderer edge cases", () => {
 
     describe("empty text nodes", () => {
         it("should not crash on empty text content", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={3} width={10}>
                     <Text />
@@ -25,6 +27,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should render siblings around empty text correctly", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={1} width={20}>
                     <Text>A</Text>
@@ -43,6 +47,8 @@ describe("renderer edge cases", () => {
 
     describe("border edge cases", () => {
         it("should render a box with height=1 and all borders", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box borderStyle="single" height={1} width={10}>
                     <Text>x</Text>
@@ -59,6 +65,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should render a box with width=1 and all borders", () => {
+            expect.assertions(1);
+
             const output = renderToString(<Box borderStyle="single" height={3} width={1} />, { columns: 5, rows: 5 });
 
             const lines = output.split("\n");
@@ -68,6 +76,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should render a box with height=2 and full borders correctly", () => {
+            expect.assertions(4);
+
             const output = renderToString(
                 <Box borderStyle="single" height={2} width={10}>
                     <Text>hi</Text>
@@ -85,6 +95,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle all 16 partial border permutations without crashing", () => {
+            expect.assertions(1);
+
             for (let i = 0; i < 16; i++) {
                 const top = Boolean(i & 8);
                 const bottom = Boolean(i & 4);
@@ -107,6 +119,8 @@ describe("renderer edge cases", () => {
 
     describe("partial borders with overflow clipping", () => {
         it("should clip content inside borders when overflow is hidden and borderTop is disabled", () => {
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box borderBottom borderLeft borderRight borderStyle="single" borderTop={false} height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
@@ -123,6 +137,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should clip content when overflow is hidden and no left border", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box borderBottom borderLeft={false} borderRight borderStyle="single" borderTop height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
@@ -138,6 +154,8 @@ describe("renderer edge cases", () => {
 
     describe("wide characters", () => {
         it("should render CJK characters with correct width", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={1} width={10}>
                     <Text>你好</Text>
@@ -152,6 +170,8 @@ describe("renderer edge cases", () => {
 
         it("should wrap wide characters that don't fit on the current line", () => {
             // Box width 5: "A" takes 1 cell, "你" takes 2 cells → 3 used, "好" needs 2 more = 5 → fits
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={2} width={5}>
                     <Text>A你好</Text>
@@ -165,6 +185,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should replace wide char with space when container is 1 cell wide", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={1}>
                     <Text>你</Text>
@@ -177,6 +199,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle emoji (surrogate pairs)", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={1} width={10}>
                     <Text>🐭AB</Text>
@@ -193,6 +217,8 @@ describe("renderer edge cases", () => {
 
     describe("transform component", () => {
         it("should apply uppercase transform to child text", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={1} transform={(s: string) => s.toUpperCase()} width={20}>
                     <Text>hello world</Text>
@@ -205,6 +231,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle transform on empty text", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} transform={(s: string) => s.toUpperCase()} width={10}>
                     <Text />
@@ -220,6 +248,8 @@ describe("renderer edge cases", () => {
 
     describe("color inheritance", () => {
         it("should render text with explicit color without crashing", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box height={1} width={20}>
                     <Text color="green">green text</Text>
@@ -234,6 +264,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle backgroundColor on text nodes", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={20}>
                     <Text backgroundColor="blue">highlighted</Text>
@@ -249,6 +281,8 @@ describe("renderer edge cases", () => {
 
     describe("flex layout", () => {
         it("should handle zero-width container", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={0}>
                     <Text>text</Text>
@@ -261,6 +295,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle zero-height container", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={0} width={10}>
                     <Text>text</Text>
@@ -272,6 +308,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle deeply nested boxes", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="column" height={5} width={20}>
                     <Box flexDirection="row">
@@ -289,6 +327,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should apply gap correctly in column direction", () => {
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box flexDirection="column" gap={1} height={5} width={10}>
                     <Text>A</Text>
@@ -307,6 +347,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle marginLeft correctly (physical edge, not logical)", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={20}>
                     <Box marginLeft={3}>
@@ -328,6 +370,8 @@ describe("renderer edge cases", () => {
     describe("newlines in text", () => {
         it("should render multi-line text in a tall box", () => {
             // Use a Box with flexDirection column wrapping Text elements for multi-line
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box flexDirection="column" height={3} width={20}>
                     <Text>line1</Text>
@@ -345,6 +389,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should clip children that exceed container height with overflow hidden", () => {
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box flexDirection="column" height={2} overflow="hidden" width={20}>
                     <Box flexShrink={0}>
@@ -371,6 +417,8 @@ describe("renderer edge cases", () => {
 
     describe("spacer in various layouts", () => {
         it("should work in a column layout", () => {
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box flexDirection="column" height={5} width={10}>
                     <Text>top</Text>
@@ -392,6 +440,8 @@ describe("renderer edge cases", () => {
 
     describe("absolute positioning", () => {
         it("should position a box absolutely within its parent", () => {
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box flexDirection="column" height={5} width={20}>
                     <Text>background</Text>
@@ -416,6 +466,8 @@ describe("renderer edge cases", () => {
 
     describe(renderToString, () => {
         it("should trim trailing empty rows", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={10}>
                     <Text>hi</Text>
@@ -430,6 +482,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should trim trailing spaces from each row", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={5}>
                     <Text>AB</Text>
@@ -446,6 +500,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle very small terminal (1x1)", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} width={1}>
                     <Text>X</Text>
@@ -461,6 +517,8 @@ describe("renderer edge cases", () => {
 
     describe("paintBorder h=1 and w=1 degenerate cases", () => {
         it("h=1 with top+bottom: top border should take priority", () => {
+            expect.assertions(4);
+
             const output = renderToString(<Box borderStyle="single" height={1} width={6} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
@@ -474,6 +532,8 @@ describe("renderer edge cases", () => {
         });
 
         it("h=1 with bottom-only border: bottom should render", () => {
+            expect.assertions(2);
+
             const output = renderToString(<Box borderStyle="single" borderTop={false} height={1} width={6} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
@@ -483,6 +543,8 @@ describe("renderer edge cases", () => {
         });
 
         it("w=1 with all borders: should render vertical line character", () => {
+            expect.assertions(2);
+
             const output = renderToString(<Box borderStyle="single" height={4} width={1} />, { columns: 5, rows: 6 });
 
             const lines = output.split("\n");
@@ -501,6 +563,8 @@ describe("renderer edge cases", () => {
 
     describe("nested Transform", () => {
         it("should apply inner transform before outer transform", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={1} transform={(s: string) => s.toUpperCase()} width={30}>
                     <Text>hello </Text>
@@ -522,6 +586,8 @@ describe("renderer edge cases", () => {
     describe("overflow hidden with partial borders", () => {
         it("should correctly clip when borderTop is disabled", () => {
             // With borderTop=false, the clip region top should start at absY (no border offset)
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box borderStyle="single" borderTop={false} height={5} overflow="hidden" width={20}>
                     <Box flexDirection="column" flexShrink={0}>
@@ -540,6 +606,8 @@ describe("renderer edge cases", () => {
         });
 
         it("should correctly clip when borderBottom is disabled", () => {
+            expect.assertions(3);
+
             const output = renderToString(
                 <Box borderBottom={false} borderStyle="single" height={5} overflow="hidden" width={20}>
                     <Box flexDirection="column" flexShrink={0}>
@@ -563,6 +631,8 @@ describe("renderer edge cases", () => {
     describe("empty text node rendering path", () => {
         it("should not queue border jobs for empty text nodes", () => {
             // Empty text should go through text path (not box path that queues borders)
+            expect.assertions(2);
+
             const output = renderToString(
                 <Box borderStyle="single" height={3} width={20}>
                     <Text />

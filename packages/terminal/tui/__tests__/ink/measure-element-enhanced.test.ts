@@ -14,6 +14,8 @@ import {
 describe("measure-element enhanced", () => {
     describe(getInnerWidth, () => {
         it("should return width minus borders", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             node.yogaNode!.setWidth(20);
@@ -25,6 +27,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should return 0 for nodes without yoga node", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-virtual-text");
 
             expect(getInnerWidth(node)).toBe(0);
@@ -33,6 +37,8 @@ describe("measure-element enhanced", () => {
 
     describe(getInnerHeight, () => {
         it("should return height minus borders", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             node.yogaNode!.setWidth(20);
@@ -47,6 +53,8 @@ describe("measure-element enhanced", () => {
 
     describe(getBoundingBox, () => {
         it("should return position and dimensions", () => {
+            expect.assertions(4);
+
             const root = createNode("ink-root");
             const child = createNode("ink-box");
 
@@ -70,6 +78,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should return zeros for nodes without yoga node", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-virtual-text");
             const box = getBoundingBox(node);
 
@@ -79,12 +89,16 @@ describe("measure-element enhanced", () => {
 
     describe(getAddedScrollHeight, () => {
         it("should return 0 when no scroll state", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             expect(getAddedScrollHeight(node)).toBe(0);
         });
 
         it("should return difference between scroll height and actual scroll height", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             node.internal_scrollState = {
@@ -103,6 +117,8 @@ describe("measure-element enhanced", () => {
 
     describe(calculateScrollbarThumb, () => {
         it("should calculate thumb position for vertical scrollbar", () => {
+            expect.assertions(3);
+
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
@@ -117,6 +133,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should position thumb at end when scrolled to bottom", () => {
+            expect.assertions(1);
+
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
@@ -129,6 +147,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should handle zero max scroll position", () => {
+            expect.assertions(1);
+
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
@@ -143,6 +163,8 @@ describe("measure-element enhanced", () => {
 
     describe(calculateScrollbarLayout, () => {
         it("should return undefined when content fits", () => {
+            expect.assertions(1);
+
             const result = calculateScrollbarLayout({
                 axis: "vertical",
                 clientDimension: 10,
@@ -161,6 +183,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should return layout for vertical scrollbar", () => {
+            expect.assertions(4);
+
             const result = calculateScrollbarLayout({
                 axis: "vertical",
                 clientDimension: 10,
@@ -182,6 +206,8 @@ describe("measure-element enhanced", () => {
         });
 
         it("should return layout for horizontal scrollbar", () => {
+            expect.assertions(3);
+
             const result = calculateScrollbarLayout({
                 axis: "horizontal",
                 clientDimension: 20,

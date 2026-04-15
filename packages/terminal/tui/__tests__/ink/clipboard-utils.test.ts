@@ -7,6 +7,8 @@ import { clearOsc52, isOsc52Supported, writeOsc52 } from "../../src/ink/clipboar
 describe("clipboard utilities", () => {
     describe(writeOsc52, () => {
         it("should write correct OSC 52 sequence for clipboard target", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -21,6 +23,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should write correct sequence for primary selection", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -34,6 +38,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should handle empty text", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -47,6 +53,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should handle Unicode text", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -61,6 +69,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should reject invalid targets at runtime", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
 
             expect(() => {
@@ -71,6 +81,8 @@ describe("clipboard utilities", () => {
 
     describe(clearOsc52, () => {
         it("should write empty payload for clipboard", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -84,6 +96,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should support secondary selection", () => {
+            expect.assertions(1);
+
             const stream = new PassThrough();
             const chunks: Buffer[] = [];
 
@@ -99,6 +113,8 @@ describe("clipboard utilities", () => {
 
     describe(isOsc52Supported, () => {
         it("should detect known terminals", () => {
+            expect.assertions(3);
+
             const original = process.env["TERM_PROGRAM"];
 
             process.env["TERM_PROGRAM"] = "kitty";
@@ -121,6 +137,8 @@ describe("clipboard utilities", () => {
         });
 
         it("should detect xterm via TERM", () => {
+            expect.assertions(1);
+
             const originalProgram = process.env["TERM_PROGRAM"];
             const originalTerm = process.env["TERM"];
 
@@ -142,6 +160,7 @@ describe("clipboard utilities", () => {
             }
         });
 
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- type-only assertion via expectTypeOf
         it("should return boolean for unknown terminals", () => {
             const original = process.env["TERM_PROGRAM"];
 

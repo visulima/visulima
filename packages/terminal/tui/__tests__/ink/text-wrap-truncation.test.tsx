@@ -5,6 +5,8 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("text wrap truncation", () => {
     it("nested Text: wrapped lines are not truncated after per-line child offset", () => {
+        expect.assertions(1);
+
         const chunk = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         const message = chunk.repeat(3);
         const output = renderToString(

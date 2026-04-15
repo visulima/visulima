@@ -49,6 +49,8 @@ describe("viewport", () => {
      * measurement system.
      */
     it("should update ContentHeight when ScrollList width changes (text wrapping)", async () => {
+        expect.assertions(3);
+
         let scrollListRef: ScrollListRef | null = null;
         let setWidthFunction: (w: number) => void;
 
@@ -118,6 +120,8 @@ describe("viewport", () => {
      * e.g., to update a scroll indicator or status display.
      */
     it("should trigger onViewportSizeChange when dimensions change", async () => {
+        expect.assertions(4);
+
         let setSizeFunction: (size: { h: number; w: number }) => void;
         const onViewportSizeChange = vi.fn();
 
@@ -178,6 +182,8 @@ describe("viewport", () => {
      * to keep the selected item visible after resize.
      */
     it("should maintain valid ScrollOffset when height changes with selected item", async () => {
+        expect.assertions(4);
+
         let scrollListRef: ScrollListRef | null = null;
         let setHeightFunction: (h: number) => void;
         let setIndexFunction: (i: number) => void;
@@ -263,6 +269,8 @@ describe("viewport", () => {
          * This prevents showing empty space at the bottom of the list.
          */
         it("should clamp scroll offset to 0 when viewport is larger than content", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -312,6 +320,8 @@ describe("viewport", () => {
          * This tests the minimum viewport size where only one item is visible.
          */
         it("should handle viewport size 1", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);

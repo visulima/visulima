@@ -9,11 +9,11 @@
 import { SGR_MOUSE_PATTERN } from "./constants";
 import type { MouseButton } from "./mouse-context";
 
-type SgrMouseEvent =
-    | { action: "press" | "release"; button: MouseButton; type: "click"; x: number; y: number }
-    | { action: "press" | "release"; button: MouseButton; type: "drag"; x: number; y: number }
-    | { type: "move"; x: number; y: number }
-    | { direction: "scrolldown" | "scrollup"; type: "scroll"; x: number; y: number };
+type SgrMouseEvent
+    = | { action: "press" | "release"; button: MouseButton; type: "click"; x: number; y: number }
+        | { action: "press" | "release"; button: MouseButton; type: "drag"; x: number; y: number }
+        | { type: "move"; x: number; y: number }
+        | { direction: "scrolldown" | "scrollup"; type: "scroll"; x: number; y: number };
 
 const CLICK_BUTTONS: Record<number, MouseButton> = { 0: "left", 1: "middle", 2: "right" };
 const DRAG_BUTTONS: Record<number, MouseButton> = { 32: "left", 33: "middle", 34: "right" };

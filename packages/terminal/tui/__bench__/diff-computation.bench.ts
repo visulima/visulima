@@ -7,16 +7,19 @@ const SMALL_NEW = "hello beautiful world";
 
 const MEDIUM_OLD = Array.from({ length: 50 }, (_, i) => `line ${i + 1}: original content here`).join("\n");
 const MEDIUM_NEW = Array.from({ length: 50 }, (_, i) => {
-    if (i % 10 === 5) return `line ${i + 1}: MODIFIED content here`;
+    if (i % 10 === 5)
+        return `line ${i + 1}: MODIFIED content here`;
 
-    if (i === 25) return `line ${i + 1}: original content here\nnew inserted line`;
+    if (i === 25)
+        return `line ${i + 1}: original content here\nnew inserted line`;
 
     return `line ${i + 1}: original content here`;
 }).join("\n");
 
 const LARGE_OLD = Array.from({ length: 500 }, (_, i) => `line ${i + 1}: ${i % 2 === 0 ? "even" : "odd"} content data=${i * 7}`).join("\n");
 const LARGE_NEW = Array.from({ length: 500 }, (_, i) => {
-    if (i % 50 === 25) return `line ${i + 1}: CHANGED content data=${i * 7}`;
+    if (i % 50 === 25)
+        return `line ${i + 1}: CHANGED content data=${i * 7}`;
 
     return `line ${i + 1}: ${i % 2 === 0 ? "even" : "odd"} content data=${i * 7}`;
 }).join("\n");

@@ -56,6 +56,8 @@ describe("scrollAlignment", () => {
          * Expected: Scroll offset becomes 5 (item 5 at top of viewport)
          */
         it("should scroll to top if item is above current viewport", async () => {
+            expect.assertions(2);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -113,6 +115,8 @@ describe("scrollAlignment", () => {
          * Calculation: item 8 spans lines 8-9, viewport 5, offset = 9 - 5 = 4
          */
         it("should scroll to bottom if item is below current viewport", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -163,6 +167,8 @@ describe("scrollAlignment", () => {
          * Expected: Scroll offset doesn't change when item is already visible
          */
         it("should not scroll if item is already visible", async () => {
+            expect.assertions(3);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -231,6 +237,8 @@ describe("scrollAlignment", () => {
          * Expected: Scroll offset = 10 (item 10's top at viewport top)
          */
         it("should align to top", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -277,6 +285,8 @@ describe("scrollAlignment", () => {
          * Expected: Scroll offset = 6
          */
         it("should align to bottom", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -323,6 +333,8 @@ describe("scrollAlignment", () => {
          * Expected: Scroll offset = 8
          */
         it("should align to center", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -379,6 +391,8 @@ describe("scrollAlignment", () => {
          * - Should clamp to 5 (max scroll)
          */
         it("should clamp to bounds when aligning would go out of bounds", async () => {
+            expect.assertions(2);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -444,6 +458,8 @@ describe("scrollAlignment", () => {
          * - Bottom 11 > viewport end (0+5=5), so offset = 11 - 5 = 6
          */
         it("should handle aligning items larger than the viewport", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
@@ -499,6 +515,8 @@ describe("scrollAlignment", () => {
          * - Should clamp to 0
          */
         it("should handle aligning the first item with bottom alignment (clamped)", async () => {
+            expect.assertions(1);
+
             let scrollListRef: ScrollListRef | null = null;
             let setIndexFunction: (i: number) => void;
 
