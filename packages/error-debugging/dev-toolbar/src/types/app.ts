@@ -38,24 +38,24 @@ export interface ToolbarAppEventTarget extends EventTarget {
 /**
  * App view configuration
  */
-export type AppView
-    = | {
-        /**
-         * Render app inline in shadow DOM (default)
-         */
-        type: "inline";
-    }
+export type AppView =
     | {
-        /**
-         * URL to load in iframe
-         */
-        src: string;
+          /**
+           * Render app inline in shadow DOM (default)
+           */
+          type: "inline";
+      }
+    | {
+          /**
+           * URL to load in iframe
+           */
+          src: string;
 
-        /**
-         * Render app in iframe for isolation
-         */
-        type: "iframe";
-    };
+          /**
+           * Render app in iframe for isolation
+           */
+          type: "iframe";
+      };
 
 /**
  * Props passed to Preact component apps

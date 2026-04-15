@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "../../../src/rpc/functions/annotations";
 import { resolvePaths, writeAnnotations } from "../../../src/store/annotation-store";
@@ -67,11 +67,13 @@ describe("rpc/functions/annotations", () => {
                 y: 100,
             } as Parameters<typeof createAnnotation>[1]);
 
-            expect(result.id).toBe(true);
+            expectTypeOf(result.id).toBeString();
+
             expect(result.id.length).toBeGreaterThan(10); // UUID
             expect(result.status).toBe("pending");
-            expect(result.createdAt).toBe(true);
-            expect(result.updatedAt).toBe(true);
+
+            expectTypeOf(result.createdAt).toBeString();
+            expectTypeOf(result.updatedAt).toBeString();
         });
 
         it("does NOT allow client to inject server fields", async () => {
@@ -152,7 +154,8 @@ describe("rpc/functions/annotations", () => {
 
             expect(result?.status).toBe("resolved");
             expect(result?.resolvedBy).toBe("human");
-            expect(result?.resolvedAt).toBe(true);
+
+            expectTypeOf(result?.resolvedAt).toBeString();
         });
 
         it("sets resolvedBy to agent when specified", async () => {

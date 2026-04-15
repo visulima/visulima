@@ -18,7 +18,7 @@ import {
 beforeAll(() => {
     if (typeof CSS === "undefined" || !CSS.escape) {
         (globalThis as any).CSS = {
-            ...typeof CSS === "undefined" ? {} : CSS,
+            ...(typeof CSS === "undefined" ? {} : CSS),
             escape: (value: string) => value.replaceAll(/([^\w-])/g, String.raw`\$1`),
         };
     }
@@ -73,7 +73,7 @@ describe("element-utils", () => {
 
             btn.textContent = "Submit";
 
-            expect(getElementLabel(btn)).toBe("button \"Submit\"");
+            expect(getElementLabel(btn)).toBe('button "Submit"');
         });
 
         it("labels links with href", () => {
@@ -82,7 +82,7 @@ describe("element-utils", () => {
             a.href = "/about";
             a.textContent = "About";
 
-            expect(getElementLabel(a)).toBe("link \"About\" to /about");
+            expect(getElementLabel(a)).toBe('link "About" to /about');
         });
 
         it("labels images with alt text", () => {
@@ -90,7 +90,7 @@ describe("element-utils", () => {
 
             img.alt = "Logo";
 
-            expect(getElementLabel(img)).toBe("image \"Logo\"");
+            expect(getElementLabel(img)).toBe('image "Logo"');
         });
 
         it("labels inputs with type and placeholder", () => {
@@ -99,7 +99,7 @@ describe("element-utils", () => {
             input.type = "email";
             input.placeholder = "Enter email";
 
-            expect(getElementLabel(input)).toBe("input[email] \"Enter email\"");
+            expect(getElementLabel(input)).toBe('input[email] "Enter email"');
         });
 
         it("labels headings with text", () => {
@@ -107,7 +107,7 @@ describe("element-utils", () => {
 
             h1.textContent = "Welcome";
 
-            expect(getElementLabel(h1)).toBe("h1 \"Welcome\"");
+            expect(getElementLabel(h1)).toBe('h1 "Welcome"');
         });
 
         it("falls back to tag for empty elements", () => {

@@ -127,11 +127,11 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                 isVisible
                     ? "opacity-100 translate-y-0 scale-100"
                     : clsx(
-                        "opacity-0 scale-[0.97]",
-                        position === "bottom" && "translate-y-1",
-                        position === "top" && "-translate-y-1",
-                        isVertical && "translate-x-[-2px]",
-                    ),
+                          "opacity-0 scale-[0.97]",
+                          position === "bottom" && "translate-y-1",
+                          position === "top" && "-translate-y-1",
+                          isVertical && "translate-x-[-2px]",
+                      ),
             )}
             onMouseEnter={() => {
                 setHoveredApp(hoveredApp, hoveredAppRect);

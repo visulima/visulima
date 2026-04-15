@@ -170,12 +170,12 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
         envPrefix: config.envPrefix,
         esbuild: config.esbuild
             ? {
-                jsx: config.esbuild.jsx as string | undefined,
-                jsxFactory: config.esbuild.jsxFactory,
-                jsxFragment: config.esbuild.jsxFragment,
-                jsxImportSource: config.esbuild.jsxImportSource,
-                target: config.esbuild.target,
-            }
+                  jsx: config.esbuild.jsx as string | undefined,
+                  jsxFactory: config.esbuild.jsxFactory,
+                  jsxFragment: config.esbuild.jsxFragment,
+                  jsxImportSource: config.esbuild.jsxImportSource,
+                  target: config.esbuild.target,
+              }
             : undefined,
         mode: config.mode,
         optimizeDeps: {
@@ -221,11 +221,11 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
             config.ssr === undefined
                 ? undefined
                 : {
-                    // external can be string[] | true — normalise to string[] only
-                    external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
-                    noExternal: ssrNoExternalNormalized,
-                    target: config.ssr?.target,
-                },
+                      // external can be string[] | true — normalise to string[] only
+                      external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
+                      noExternal: ssrNoExternalNormalized,
+                      target: config.ssr?.target,
+                  },
     };
 };
 

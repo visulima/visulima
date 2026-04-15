@@ -458,9 +458,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo
-                && filename
-                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo &&
+                filename &&
+                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }
