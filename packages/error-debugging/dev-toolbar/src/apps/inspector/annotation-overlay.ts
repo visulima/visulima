@@ -1675,6 +1675,13 @@ const parseInlineStyle = (css: string): Record<string, string> => {
 
 // ─── Annotation detail popup ─────────────────────────────────────────────────
 
+// eslint-disable-next-line unused-imports/no-unused-vars -- kept for future typed querySelector casts
+interface AnnotationElement extends Element {
+    __cleanup?: () => void;
+    __resizeObserver?: ResizeObserver;
+    annotationId?: string;
+}
+
 const removeAnnotationDetail = (): void => {
     const element = document.querySelector(`#${DETAIL_ID}`);
 
