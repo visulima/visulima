@@ -10,12 +10,6 @@ export const CAUSE_CHAIN_DEPTH_LIMIT: number = 8 as const;
 
 export const WEBSOCKET_MESSAGE_TYPE: string = MESSAGE_TYPE;
 
-/**
- * @deprecated Use MESSAGE_TYPE instead
- * Kept for backward compatibility during transition period.
- */
-export const PLUGIN_VERSION: string = "0.0.0" as const;
-
 export const ERROR_SEVERITY_LEVELS: Record<string, string> = {
     CRITICAL: "critical",
     HIGH: "high",

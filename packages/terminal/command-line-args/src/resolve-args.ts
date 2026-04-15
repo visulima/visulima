@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { AlreadySetError, UnknownOptionError, UnknownValueError } from "./errors/index";
-import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./index";
+import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./types";
 import type { ArgumentToken } from "./tokenizer";
 import convertValue from "./utils/convert-value";
 import debugLog from "./utils/debug";

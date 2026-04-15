@@ -4,6 +4,7 @@ import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 
 import { buildCacheKey, getCachedAnalysis, getTtlForAnalysisType, setCachedAnalysis } from "./ai-cache";
+import type { AiAnalysisResult, AiRecommendation, AnalysisType } from "./ai-types";
 import type { OutdatedEntry } from "./catalog";
 
 // --- Provider selection (vis-specific) ---
@@ -16,8 +17,6 @@ interface AiConfig {
     /** Use a specific provider, skip auto-detection. */
     provider?: string;
 }
-
-type AnalysisType = "compatibility" | "impact" | "recommend" | "security";
 
 const DEFAULT_PRIORITY: Record<string, number> = {
     amp: 30,
@@ -57,23 +56,6 @@ const resolveProvider = (config?: AiConfig): AiProviderInfo | undefined => {
 };
 
 // --- Types ---
-
-interface AiRecommendation {
-    action: "defer" | "review" | "skip" | "update";
-    breakingChanges: string[];
-    effort: "high" | "low" | "medium";
-    package: string;
-    reason: string;
-    riskLevel: "critical" | "high" | "low" | "medium";
-}
-
-interface AiAnalysisResult {
-    analysisType: AnalysisType;
-    provider: string;
-    recommendations: AiRecommendation[];
-    summary: string;
-    warnings: string[];
-}
 
 // --- Constants ---
 

@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { xxh3Hash } from "@shared/xxh3";
 import { join } from "@visulima/path";
 
-import type { AiAnalysisResult, AnalysisType } from "./ai-analysis";
+import type { AiAnalysisResult, AnalysisType } from "./ai-types";
 import type { OutdatedEntry } from "./catalog";
 
 // --- Constants ---
