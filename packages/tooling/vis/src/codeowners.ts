@@ -1,15 +1,8 @@
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 
-import type { OwnersEntry, VisProjectConfiguration } from "./workspace";
+import type { CodeownersConfig, OwnersEntry, VisProjectConfiguration } from "./workspace";
 
-export interface CodeownersConfig {
-    /** Sort order for generated entries — mirrors moon's `orderBy`. */
-    orderBy?: "file-source" | "project-id";
-    /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
-    globalPaths?: Record<string, string[]>;
-    /** Provider determines whether `channel` is emitted (GitHub supports it via comment). */
-    provider?: "bitbucket" | "github" | "gitlab" | "other";
-}
+export type { CodeownersConfig } from "./workspace";
 
 /**
  * A single resolved CODEOWNERS line, pre-sorted by path. Kept as an
