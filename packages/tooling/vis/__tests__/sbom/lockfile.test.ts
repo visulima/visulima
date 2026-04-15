@@ -45,7 +45,8 @@ describe(readLockfilePackages, () => {
         const lodash = result?.packages.get("lodash@4.17.21");
 
         expect(lodash?.name).toBe("lodash");
-        expect(lodash?.hash).toEqual({ alg: "SHA-512", content: "68656c6c6f" });
+        // Truncated fixture digest doesn't match SHA-512's 128-hex-char length, so it's filtered.
+        expect(lodash?.hash).toBeUndefined();
     });
 
     it("should prefer pnpm-lock.yaml over package-lock.json when both exist", () => {

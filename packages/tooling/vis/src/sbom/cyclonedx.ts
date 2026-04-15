@@ -176,20 +176,9 @@ const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson 
  * I/O is relative to `workspaceRoot` so tests point it at a temp dir.
  */
 export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
-    const {
-        focus,
-        generatorVersion,
-        includeDev = false,
-        now = new Date(),
-        projectGraph,
-        serialNumber,
-        workspace,
-        workspaceRoot,
-    } = options;
+    const { focus, generatorVersion, includeDev = false, now = new Date(), projectGraph, serialNumber, workspace, workspaceRoot } = options;
 
-    const projectNames = focus && focus.length > 0
-        ? [...resolveFocusProjects(focus, projectGraph)].sort()
-        : Object.keys(workspace.projects).sort();
+    const projectNames = focus && focus.length > 0 ? [...resolveFocusProjects(focus, projectGraph)].sort() : Object.keys(workspace.projects).sort();
 
     const inScope = new Set(projectNames);
 
@@ -490,9 +479,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     // mirrors a workspace project (focus mode), drop that project from
     // components[] to avoid a duplicate.
     const metadataRef = metadataComponent["bom-ref"];
-    const filteredProjectComponents = metadataRef
-        ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef)
-        : projectComponents;
+    const filteredProjectComponents = metadataRef ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef) : projectComponents;
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,

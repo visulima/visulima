@@ -66,11 +66,7 @@ const isSafePackageName = (name: string): boolean => {
 };
 
 const isSafeVersion = (version: string): boolean =>
-    version.length > 0
-    && !version.includes("/")
-    && !version.includes("\\")
-    && !version.includes("..")
-    && !version.includes("\0");
+    version.length > 0 && !version.includes("/") && !version.includes("\\") && !version.includes("..") && !version.includes("\0");
 
 /**
  * pnpm's virtual store encodes `name@version` into the directory
@@ -79,11 +75,7 @@ const isSafeVersion = (version: string): boolean =>
  * then scan `.pnpm/` for a directory matching `foo@1.0.0` or
  * `foo@1.0.0_*`.
  */
-const readPnpmVirtualStore = (
-    workspaceRoot: string,
-    name: string,
-    version: string,
-): InstalledPackageMetadata | undefined => {
+const readPnpmVirtualStore = (workspaceRoot: string, name: string, version: string): InstalledPackageMetadata | undefined => {
     const encodedName = name.replaceAll("/", "+");
     const exactDir = `${encodedName}@${version}`;
     const pnpmRoot = join(workspaceRoot, "node_modules", ".pnpm");
@@ -121,11 +113,7 @@ const readPnpmVirtualStore = (
     return undefined;
 };
 
-const readHoistedCopy = (
-    workspaceRoot: string,
-    name: string,
-    version: string,
-): InstalledPackageMetadata | undefined => {
+const readHoistedCopy = (workspaceRoot: string, name: string, version: string): InstalledPackageMetadata | undefined => {
     const metadata = readJsonSafe(join(workspaceRoot, "node_modules", name, "package.json"));
 
     // The hoisted copy might be a different version of the same package —
@@ -145,15 +133,10 @@ const readHoistedCopy = (
  * `version: "../../../etc"` would otherwise escape `workspaceRoot`
  * because `join` collapses `..` segments.
  */
-export const readInstalledPackageMetadata = (
-    workspaceRoot: string,
-    name: string,
-    version: string,
-): InstalledPackageMetadata | undefined => {
+export const readInstalledPackageMetadata = (workspaceRoot: string, name: string, version: string): InstalledPackageMetadata | undefined => {
     if (!isSafePackageName(name) || !isSafeVersion(version)) {
         return undefined;
     }
 
-    return readPnpmVirtualStore(workspaceRoot, name, version)
-        ?? readHoistedCopy(workspaceRoot, name, version);
+    return readPnpmVirtualStore(workspaceRoot, name, version) ?? readHoistedCopy(workspaceRoot, name, version);
 };

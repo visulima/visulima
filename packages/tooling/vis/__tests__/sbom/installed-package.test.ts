@@ -152,11 +152,11 @@ describe(readInstalledPackageMetadata, () => {
 
         // Only the peer-suffixed dir exists — the un-suffixed path is absent,
         // forcing the slow-path `.pnpm` scan.
-        writePackageJson(
-            tmpDir,
-            "node_modules/.pnpm/some-plugin@1.0.0_react@18.0.0/node_modules/some-plugin",
-            { license: "BSD-3-Clause", name: "some-plugin", version: "1.0.0" },
-        );
+        writePackageJson(tmpDir, "node_modules/.pnpm/some-plugin@1.0.0_react@18.0.0/node_modules/some-plugin", {
+            license: "BSD-3-Clause",
+            name: "some-plugin",
+            version: "1.0.0",
+        });
 
         const result = readInstalledPackageMetadata(tmpDir, "some-plugin", "1.0.0");
 
