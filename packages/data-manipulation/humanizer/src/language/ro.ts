@@ -39,25 +39,25 @@ const roUnitMap: Record<string, keyof DurationUnitMeasures> = {
  * @param unit The unit forms [singular, plural, plural with "de"].
  * @returns Function that returns the appropriate form based on counter.
  */
-const romanianUnit =
-    (unit: [string, string, string]) =>
-    (counter: number): string => {
-        if (counter === 1) {
-            return unit[0];
-        }
+const romanianUnit
+    = (unit: [string, string, string]) =>
+        (counter: number): string => {
+            if (counter === 1) {
+                return unit[0];
+            }
 
-        if (Math.floor(counter) !== counter || counter === 0) {
-            return unit[1];
-        }
+            if (Math.floor(counter) !== counter || counter === 0) {
+                return unit[1];
+            }
 
-        const remainder = counter % 100;
+            const remainder = counter % 100;
 
-        if (remainder >= 1 && remainder <= 19) {
-            return unit[1];
-        }
+            if (remainder >= 1 && remainder <= 19) {
+                return unit[1];
+            }
 
-        return unit[2];
-    };
+            return unit[2];
+        };
 
 export const durationLanguage: DurationLanguage = createDurationLanguage(
     romanianUnit(["an", "ani", "de ani"]),
