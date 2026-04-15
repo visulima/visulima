@@ -177,10 +177,18 @@ app.get("/files/:id", async (req, res) => {
         if (width || height) {
             const resizeOptions: any = {};
 
-            if (width) resizeOptions.width = Number(width);
-            if (height) resizeOptions.height = Number(height);
-            if (fit) resizeOptions.fit = fit as string;
-            if (position) resizeOptions.position = position as string;
+            if (width) {
+                resizeOptions.width = Number(width);
+            }
+            if (height) {
+                resizeOptions.height = Number(height);
+            }
+            if (fit) {
+                resizeOptions.fit = fit as string;
+            }
+            if (position) {
+                resizeOptions.position = position as string;
+            }
 
             steps.push({
                 type: "resize",
@@ -190,12 +198,24 @@ app.get("/files/:id", async (req, res) => {
 
         // Quality and format options
         const formatOptions: any = {};
-        if (quality) formatOptions.quality = Number(quality);
-        if (lossless) formatOptions.lossless = lossless === "true";
-        if (effort) formatOptions.effort = Number(effort);
-        if (alphaQuality) formatOptions.alphaQuality = Number(alphaQuality);
-        if (loop) formatOptions.loop = Number(loop);
-        if (delay) formatOptions.delay = Number(delay);
+        if (quality) {
+            formatOptions.quality = Number(quality);
+        }
+        if (lossless) {
+            formatOptions.lossless = lossless === "true";
+        }
+        if (effort) {
+            formatOptions.effort = Number(effort);
+        }
+        if (alphaQuality) {
+            formatOptions.alphaQuality = Number(alphaQuality);
+        }
+        if (loop) {
+            formatOptions.loop = Number(loop);
+        }
+        if (delay) {
+            formatOptions.delay = Number(delay);
+        }
 
         if (Object.keys(formatOptions).length > 0) {
             steps.push({

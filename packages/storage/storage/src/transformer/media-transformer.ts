@@ -381,14 +381,17 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         };
 
         // Remove undefined values to clean up the response
-        if (stats.image === undefined)
+        if (stats.image === undefined) {
             delete stats.image;
+        }
 
-        if (stats.video === undefined)
+        if (stats.video === undefined) {
             delete stats.video;
+        }
 
-        if (stats.audio === undefined)
+        if (stats.audio === undefined) {
             delete stats.audio;
+        }
 
         return stats;
     }
