@@ -52,14 +52,16 @@ class SwaggerCompilerPlugin {
     public apply(compiler: Compiler): void {
         const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...this.ignore]);
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
 
             const spec = new SpecBuilder(this.swaggerDefinition);
 
-            // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
-            for await (const dir of this.sources) {
+            // eslint-disable-next-line unicorn/prevent-abbreviations
+            for (const dir of this.sources) {
+                // eslint-disable-next-line no-await-in-loop
                 const files: string[] = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
                     includeDirs: false,
@@ -101,10 +103,10 @@ class SwaggerCompilerPlugin {
                     // eslint-disable-next-line no-console
                     console.log("Validating swagger spec");
                     // eslint-disable-next-line no-console
-                    console.log(JSON.stringify(spec, null, 2));
+                    console.log(JSON.stringify(spec, undefined, 2));
                 }
 
-                await validate(JSON.parse(JSON.stringify(spec)));
+                await validate(structuredClone(spec) as unknown as Record<string, unknown>);
             } catch (error: any) {
                 // eslint-disable-next-line no-console
                 console.error(error.toJSON());
@@ -114,14 +116,12 @@ class SwaggerCompilerPlugin {
 
             const { assetsPath } = this;
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             mkdir(dirname(assetsPath), { recursive: true }, (error) => {
                 if (error) {
                     errorHandler(error);
                 }
 
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
-                writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
+                writeFile(assetsPath, JSON.stringify(spec, undefined, 2), errorHandler);
             });
 
             if (this.verbose) {

@@ -1,28 +1,34 @@
 import type { Spec } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports
+// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
 import mergeWith from "lodash.mergewith";
 
 /**
  * A recursive deep-merge that ignores null values when merging.
  * This returns the merged object and does not mutate.
  * @param first the first object to get merged
- * @param {object} second the second object to get merged
+ * @param second the second object to get merged
  */
+export const mergeDeep = (first?: object, second?: object): object =>
+    mergeWith({}, first, second, (a, b) => {
+        if (b === null) {
+            return a;
+        }
 
-export const mergeDeep = (first?: object, second?: object): object => mergeWith({}, first, second, (a, b) => (b === null ? a : undefined));
+        return undefined;
+    });
 
 /**
- * Checks if there is any properties of the input object which are an empty object
+ * Checks if there is any properties of the input object which are an empty object.
  * @param object the object to check
  * @returns boolean
  */
 export const hasEmptyProperty = (object: Record<string, any>): boolean =>
     Object.keys(object)
-
         .map((key) => object[key])
         .every((keyObject) => typeof keyObject === "object" && Object.keys(keyObject).every((key) => !(key in keyObject)));
 
 /**
+ * Checks whether the given tag is present in tags.
  * @param tag
  * @param tags
  * @returns boolean

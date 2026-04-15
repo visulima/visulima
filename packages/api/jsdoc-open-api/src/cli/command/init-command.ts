@@ -17,7 +17,7 @@ const initCommand = (configName: string, packageJsonPath: string = process.cwd()
         const packageJson = readJsonSync(packagePath) as { type?: string };
 
         // eslint-disable-next-line no-console
-        console.info(`Found package.json at "${packagePath}"`);
+        console.info(`Found package.json at "${String(packagePath)}"`);
 
         if (packageJson.type === "module") {
             // eslint-disable-next-line no-console
