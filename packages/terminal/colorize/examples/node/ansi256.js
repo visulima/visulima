@@ -18,14 +18,20 @@ let textCol;
 out = "";
 let prefix = "";
 for (let i = 0; i <= 7; i++) {
-    if (i < 10) prefix = " ";
-    else prefix = "";
+    if (i < 10) {
+        prefix = " ";
+    } else {
+        prefix = "";
+    }
     out += colorize.bg(i).whiteBright("  " + prefix + i.toString() + "  ");
 }
 
 for (let i = 8; i <= 15; i++) {
-    if (i < 10) prefix = " ";
-    else prefix = "";
+    if (i < 10) {
+        prefix = " ";
+    } else {
+        prefix = "";
+    }
     out += colorize.bg(i).black("  " + prefix + i.toString() + "  ");
 }
 out += "\n\n";
@@ -52,8 +58,11 @@ const generate216colors = (textCol, offset = 0) => {
 
         color = startColorNum + (i + 18 * row);
 
-        if (color < 10) prefix = "  ";
-        else if (color < 100) prefix = " ";
+        if (color < 10) {
+            prefix = "  ";
+        } else if (color < 100) {
+            prefix = " ";
+        }
         out += "" + colorize.fg(textCol).bg(color)(prefix + " " + color.toString() + " ") + "";
         offset++;
     }
@@ -68,8 +77,12 @@ out += generate216colors(0, 18);
 textCol = 15;
 n = 0;
 for (let i = 232; i <= 255; i++) {
-    if (i > 243) textCol = 0;
-    if (n % 12 === 0) out += "\n";
+    if (i > 243) {
+        textCol = 0;
+    }
+    if (n % 12 === 0) {
+        out += "\n";
+    }
 
     out += colorize.fg(textCol).bg(i)("   " + i.toString() + "  ");
     n++;

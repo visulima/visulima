@@ -22,11 +22,11 @@ const supportedColor: ColorSupportLevel = isStdoutColorSupported();
 
 const mono = { close: "", open: "" };
 
-const esc: (open: number | string, close: number | string) => ColorData =
-    supportedColor > 0
+const esc: (open: number | string, close: number | string) => ColorData
+    = supportedColor > 0
         ? (open: number | string, close: number | string): ColorData => {
-              return { close: `\u001B[${String(close)}m`, open: `\u001B[${String(open)}m` };
-          }
+            return { close: `\u001B[${String(close)}m`, open: `\u001B[${String(open)}m` };
+        }
         : (): ColorData => mono;
 
 const createRgbFunction = (function_: (code: number | string) => ColorData) => (r: number | string, g: number | string, b: number | string) =>
