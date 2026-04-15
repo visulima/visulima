@@ -1,4 +1,4 @@
-type CssObject = {
+export type CssObject = {
     __proto__: null;
     backgroundColor: string | null;
     color: string | null;
