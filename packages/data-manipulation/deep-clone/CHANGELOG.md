@@ -1,3 +1,10 @@
+## @visulima/deep-clone [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.9...@visulima/deep-clone@4.0.0-alpha.10) (2026-04-15)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **deep-clone:** add node types for Buffer resolution ([55a5976](https://github.com/visulima/visulima/commit/55a597653cdf1c98500178f102a7636227c7b803))
+
 ## @visulima/deep-clone [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.8...@visulima/deep-clone@4.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
