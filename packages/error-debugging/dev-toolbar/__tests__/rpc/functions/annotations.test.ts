@@ -26,12 +26,16 @@ describe("rpc/functions/annotations", () => {
 
     describe(getAnnotations, () => {
         it("returns empty array when no file exists", async () => {
+            expect.assertions(1);
+
             const result = await getAnnotations(server);
 
             expect(result).toEqual([]);
         });
 
         it("returns stored annotations", async () => {
+            expect.assertions(2);
+
             await writeAnnotations(tmpDir, [
                 {
                     comment: "test",
@@ -57,6 +61,8 @@ describe("rpc/functions/annotations", () => {
 
     describe(createAnnotation, () => {
         it("generates id, status, timestamps", async () => {
+            expect.assertions(2);
+
             const result = await createAnnotation(server, {
                 comment: "Fix this",
                 elementTag: "button",
@@ -77,6 +83,8 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("does NOT allow client to inject server fields", async () => {
+            expect.assertions(3);
+
             const result = await createAnnotation(server, {
                 comment: "test",
                 // These should be ignored (server-generated)
@@ -97,6 +105,8 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("persists to disk", async () => {
+            expect.assertions(1);
+
             await createAnnotation(server, {
                 comment: "test",
                 elementTag: "div",
@@ -131,18 +141,24 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("returns null for non-existent id", async () => {
+            expect.assertions(1);
+
             const result = await updateAnnotation(server, "nonexistent", { comment: "changed" });
 
             expect(result).toBeNull();
         });
 
         it("updates comment", async () => {
+            expect.assertions(1);
+
             const result = await updateAnnotation(server, annotationId, { comment: "updated" });
 
             expect(result?.comment).toBe("updated");
         });
 
         it("updates intent and severity", async () => {
+            expect.assertions(2);
+
             const result = await updateAnnotation(server, annotationId, { intent: "question", severity: "suggestion" });
 
             expect(result?.intent).toBe("question");
@@ -150,6 +166,8 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("sets resolvedBy and resolvedAt on resolve", async () => {
+            expect.assertions(2);
+
             const result = await updateAnnotation(server, annotationId, { status: "resolved" });
 
             expect(result?.status).toBe("resolved");
@@ -159,12 +177,16 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("sets resolvedBy to agent when specified", async () => {
+            expect.assertions(1);
+
             const result = await updateAnnotation(server, annotationId, { resolvedBy: "agent", status: "resolved" });
 
             expect(result?.resolvedBy).toBe("agent");
         });
 
         it("appends thread message with server timestamp", async () => {
+            expect.assertions(4);
+
             const result = await updateAnnotation(server, annotationId, {
                 threadMessage: { content: "Hello", role: "human", timestamp: "client-time" },
             });
@@ -177,6 +199,8 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("creates thread array if missing", async () => {
+            expect.assertions(1);
+
             const result = await updateAnnotation(server, annotationId, {
                 threadMessage: { content: "first", role: "agent", timestamp: "" },
             });
@@ -187,12 +211,16 @@ describe("rpc/functions/annotations", () => {
 
     describe(deleteAnnotation, () => {
         it("returns false for non-existent id", async () => {
+            expect.assertions(1);
+
             const result = await deleteAnnotation(server, "nonexistent");
 
             expect(result).toBe(false);
         });
 
         it("deletes annotation from disk", async () => {
+            expect.assertions(2);
+
             const a = await createAnnotation(server, {
                 comment: "delete me",
                 elementTag: "div",
@@ -215,6 +243,8 @@ describe("rpc/functions/annotations", () => {
 
     describe(saveScreenshot, () => {
         it("saves PNG data URL", async () => {
+            expect.assertions(2);
+
             const a = await createAnnotation(server, {
                 comment: "test",
                 elementTag: "div",
@@ -242,10 +272,14 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("rejects unsupported formats", async () => {
+            expect.assertions(1);
+
             await expect(saveScreenshot(server, "test-id", "data:image/bmp;base64,abc")).rejects.toThrow("Unsupported screenshot format");
         });
 
         it("sECURITY: rejects traversal in annotation ID", async () => {
+            expect.assertions(1);
+
             const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
             const dataUrl = `data:image/png;base64,${pngBase64}`;
 
@@ -257,18 +291,24 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("rejects empty annotation ID", async () => {
+            expect.assertions(1);
+
             await expect(saveScreenshot(server, "", "data:image/png;base64,abc")).rejects.toThrow("Invalid annotation ID");
         });
     });
 
     describe(getScreenshot, () => {
         it("returns null for non-existent annotation", async () => {
+            expect.assertions(1);
+
             const result = await getScreenshot(server, "nonexistent");
 
             expect(result).toBeNull();
         });
 
         it("returns null for annotation without screenshot", async () => {
+            expect.assertions(1);
+
             const a = await createAnnotation(server, {
                 comment: "no screenshot",
                 elementTag: "div",
@@ -286,6 +326,8 @@ describe("rpc/functions/annotations", () => {
 
         it("sECURITY: returns null for traversal paths in screenshot field", async () => {
             // Manually write annotation with malicious screenshot path
+            expect.assertions(1);
+
             await writeAnnotations(tmpDir, [
                 {
                     comment: "evil",

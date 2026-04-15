@@ -17,7 +17,7 @@ const V_RULER_ID = "__vdt_ruler_v";
 const GUIDELINE_CLASS = "__vdt_guideline";
 const SNAP_THRESHOLD = 5; // px — guideline snaps to element edges within this range
 const SNAP_VELOCITY_MAX = 3; // px/ms — above this speed, snapping is skipped
-const FONT = '9px "JetBrains Mono","Geist Mono",ui-monospace,monospace';
+const FONT = "9px \"JetBrains Mono\",\"Geist Mono\",ui-monospace,monospace";
 
 // ─── Module state ───────────────────────────────────────────────────────────────
 
@@ -330,7 +330,7 @@ const spawnGuideline = (orientation: "horizontal" | "vertical", startViewportPos
         "position:absolute",
         `background:${palette.primary}`,
         "color:#fff",
-        'font:9px/1 "JetBrains Mono","Geist Mono",ui-monospace,monospace',
+        "font:9px/1 \"JetBrains Mono\",\"Geist Mono\",ui-monospace,monospace",
         "padding:2px 4px",
         "white-space:nowrap",
         "pointer-events:none",

@@ -29,6 +29,8 @@ describe("annotation-store", () => {
 
     describe(resolvePaths, () => {
         it("returns correct paths", () => {
+            expect.assertions(3);
+
             const paths = resolvePaths("/root");
 
             expect(paths.base).toBe("/root/.devtoolbar");
@@ -39,58 +41,84 @@ describe("annotation-store", () => {
 
     describe(isPathInsideBase, () => {
         it("returns true for paths inside base", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/base/sub/file.txt", "/base")).toBe(true);
         });
 
         it("returns false for paths outside base", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/other/file.txt", "/base")).toBe(false);
         });
 
         it("returns false for directory traversal", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/base/../etc/passwd", "/base")).toBe(false);
         });
 
         it("returns true for the base path itself", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/base", "/base")).toBe(true);
         });
 
         it("returns true when .. resolves back inside base", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/base/sub/../sub/file.txt", "/base")).toBe(true);
         });
 
         it("returns false when .. escapes base", () => {
+            expect.assertions(1);
+
             expect(isPathInsideBase("/base/sub/../../etc/passwd", "/base")).toBe(false);
         });
     });
 
     describe(sanitizeId, () => {
         it("keeps alphanumeric and hyphens", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("abc-123")).toBe("abc-123");
         });
 
         it("strips path separators", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("../../etc/passwd")).toBe("etcpasswd");
         });
 
         it("strips special characters", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("a@b#c$d")).toBe("abcd");
         });
 
         it("handles UUIDs", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("550e8400-e29b-41d4-a716-446655440000")).toBe("550e8400-e29b-41d4-a716-446655440000");
         });
 
         it("returns empty string for empty input", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("")).toBe("");
         });
 
         it("returns empty string for all-special-chars input", () => {
+            expect.assertions(1);
+
             expect(sanitizeId("@#$%^&")).toBe("");
         });
     });
 
     describe(ensureStoreDir, () => {
         it("creates directories recursively", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
 
             const screenshotsDir = path.join(tmpDir, ".devtoolbar", "screenshots");
@@ -100,6 +128,8 @@ describe("annotation-store", () => {
         });
 
         it("is idempotent", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
             await ensureStoreDir(tmpDir);
 
@@ -112,12 +142,16 @@ describe("annotation-store", () => {
 
     describe("readAnnotations / writeAnnotations", () => {
         it("returns empty array when file does not exist", async () => {
+            expect.assertions(1);
+
             const result = await readAnnotations(tmpDir);
 
             expect(result).toEqual([]);
         });
 
         it("writes and reads annotations", async () => {
+            expect.assertions(2);
+
             const annotations = [
                 {
                     comment: "test",
@@ -142,6 +176,8 @@ describe("annotation-store", () => {
         });
 
         it("returns empty array for corrupted JSON", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
             const { annotationsFile } = resolvePaths(tmpDir);
 
@@ -153,10 +189,12 @@ describe("annotation-store", () => {
         });
 
         it("returns empty array for non-array JSON", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
             const { annotationsFile } = resolvePaths(tmpDir);
 
-            await fs.writeFile(annotationsFile, '{"not": "an array"}', "utf8");
+            await fs.writeFile(annotationsFile, "{\"not\": \"an array\"}", "utf8");
 
             const result = await readAnnotations(tmpDir);
 
@@ -167,6 +205,8 @@ describe("annotation-store", () => {
     describe(withLock, () => {
         it("releases lock even when function throws", async () => {
             // First operation throws
+            expect.assertions(2);
+
             await expect(
                 withLock(async () => {
                     throw new Error("boom");
@@ -180,6 +220,8 @@ describe("annotation-store", () => {
         });
 
         it("serializes concurrent operations", async () => {
+            expect.assertions(3);
+
             const order: number[] = [];
 
             const op1 = withLock(async () => {
@@ -207,6 +249,8 @@ describe("annotation-store", () => {
 
     describe(deleteScreenshotFile, () => {
         it("deletes a screenshot file", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
 
             const { screenshotsDir } = resolvePaths(tmpDir);
@@ -219,6 +263,8 @@ describe("annotation-store", () => {
         });
 
         it("ignores paths that don't start with screenshots/", async () => {
+            expect.assertions(1);
+
             await ensureStoreDir(tmpDir);
 
             const { base } = resolvePaths(tmpDir);
@@ -233,11 +279,13 @@ describe("annotation-store", () => {
             expect(stat.isFile()).toBe(true);
         });
 
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
         it("ignores traversal attempts", async () => {
             await deleteScreenshotFile(tmpDir, "screenshots/../../etc/passwd");
             // Should not throw
         });
 
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- smoke test; verifies no throw
         it("ignores missing files", async () => {
             await deleteScreenshotFile(tmpDir, "screenshots/nonexistent.png");
             // Should not throw

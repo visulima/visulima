@@ -6,6 +6,8 @@ import { captureA11yInfo, formatA11yText } from "../../../src/apps/inspector/a11
 describe(captureA11yInfo, () => {
     describe("role", () => {
         it("returns role when present", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("role", "navigation");
@@ -14,6 +16,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("returns null when no role", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             expect(captureA11yInfo(element).role).toBeNull();
@@ -22,6 +26,8 @@ describe(captureA11yInfo, () => {
 
     describe("aria attributes", () => {
         it("captures all aria-* attributes", () => {
+            expect.assertions(1);
+
             const element = document.createElement("button");
 
             element.setAttribute("aria-expanded", "true");
@@ -38,6 +44,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("returns empty object when no aria attributes", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("class", "foo");
@@ -47,6 +55,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("ignores non-aria attributes", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.dataset.ariaTest = "value";
@@ -60,6 +70,8 @@ describe(captureA11yInfo, () => {
 
     describe("tabindex", () => {
         it("captures tabindex as number", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("tabindex", "0");
@@ -68,6 +80,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("captures negative tabindex", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("tabindex", "-1");
@@ -76,6 +90,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("returns null when no tabindex", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             expect(captureA11yInfo(element).tabindex).toBeNull();
@@ -84,48 +100,64 @@ describe(captureA11yInfo, () => {
 
     describe("focusability", () => {
         it("button is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("button");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("input is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("input");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("select is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("select");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("textarea is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("textarea");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("anchor is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("a");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("details is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("details");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("summary is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("summary");
 
             expect(captureA11yInfo(element).focusable).toBe(true);
         });
 
         it("disabled button is not focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("button");
 
             element.setAttribute("disabled", "");
@@ -134,6 +166,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("disabled input is not focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("input");
 
             element.setAttribute("disabled", "");
@@ -142,12 +176,16 @@ describe(captureA11yInfo, () => {
         });
 
         it("div is not focusable by default", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             expect(captureA11yInfo(element).focusable).toBe(false);
         });
 
         it("div with tabindex=0 is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("tabindex", "0");
@@ -156,6 +194,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("div with tabindex=-1 is not focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("tabindex", "-1");
@@ -164,6 +204,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("contenteditable element is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("contenteditable", "true");
@@ -172,6 +214,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("contenteditable=false is not focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("contenteditable", "false");
@@ -180,6 +224,8 @@ describe(captureA11yInfo, () => {
         });
 
         it("contenteditable (empty value) is focusable", () => {
+            expect.assertions(1);
+
             const element = document.createElement("div");
 
             element.setAttribute("contenteditable", "");
@@ -190,6 +236,8 @@ describe(captureA11yInfo, () => {
 
     describe("combined attributes", () => {
         it("captures role, aria, tabindex, and focusability together", () => {
+            expect.assertions(4);
+
             const element = document.createElement("div");
 
             element.setAttribute("role", "listbox");
@@ -212,6 +260,8 @@ describe(captureA11yInfo, () => {
 
 describe(formatA11yText, () => {
     it("formats role and focusable", () => {
+        expect.assertions(1);
+
         const text = formatA11yText({
             ariaAttributes: {},
             focusable: true,
@@ -223,6 +273,8 @@ describe(formatA11yText, () => {
     });
 
     it("includes tabindex when present", () => {
+        expect.assertions(1);
+
         const text = formatA11yText({
             ariaAttributes: {},
             focusable: true,
@@ -234,6 +286,8 @@ describe(formatA11yText, () => {
     });
 
     it("includes aria attributes", () => {
+        expect.assertions(1);
+
         const text = formatA11yText({
             ariaAttributes: {
                 "aria-expanded": "false",
@@ -248,6 +302,8 @@ describe(formatA11yText, () => {
     });
 
     it("minimal output for plain div", () => {
+        expect.assertions(1);
+
         const text = formatA11yText({
             ariaAttributes: {},
             focusable: false,

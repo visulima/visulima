@@ -262,8 +262,6 @@ export default createConfig(
             "unicorn/prevent-abbreviations": "off",
             // Expect in callbacks is valid pattern
             "vitest/expect-expect": "off",
-            // Expect assertions count not required - tests are clear
-            "vitest/prefer-expect-assertions": "off",
             // Strict equal not always needed
             "vitest/prefer-strict-equal": "off",
             "vitest/require-mock-type-parameters": "off",

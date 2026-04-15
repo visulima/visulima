@@ -17,6 +17,8 @@ const makeAnnotation = (overrides = {}) => {
 
 describe(annotationsToMarkdown, () => {
     it("returns 'no annotations' message for empty array", () => {
+        expect.assertions(1);
+
         const md = annotationsToMarkdown([]);
 
         expect(md).toContain("No annotations found");
@@ -24,26 +26,34 @@ describe(annotationsToMarkdown, () => {
 
     describe("compact format", () => {
         it("outputs one line per annotation", () => {
+            expect.assertions(1);
+
             const md = annotationsToMarkdown([makeAnnotation()], "compact");
 
             expect(md).toContain("- **button:** Fix the padding");
         });
 
         it("includes selected text", () => {
+            expect.assertions(1);
+
             const md = annotationsToMarkdown([makeAnnotation({ selectedText: "some selected text" })], "compact");
 
             expect(md).toContain(`(re: "some selected tex`);
         });
 
         it("uses elementLabel when available", () => {
-            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: 'button "Submit"' })], "compact");
+            expect.assertions(1);
 
-            expect(md).toContain('**button "Submit":**');
+            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: "button \"Submit\"" })], "compact");
+
+            expect(md).toContain("**button \"Submit\":**");
         });
     });
 
     describe("standard format", () => {
         it("includes status and URL", () => {
+            expect.assertions(2);
+
             const md = annotationsToMarkdown([makeAnnotation()], "standard");
 
             expect(md).toContain("**Status:** pending");
@@ -51,18 +61,24 @@ describe(annotationsToMarkdown, () => {
         });
 
         it("includes selector", () => {
+            expect.assertions(1);
+
             const md = annotationsToMarkdown([makeAnnotation({ elementPath: "#submit-btn" })], "standard");
 
             expect(md).toContain("**Selector:** `#submit-btn`");
         });
 
         it("includes source", () => {
+            expect.assertions(1);
+
             const md = annotationsToMarkdown([makeAnnotation({ source: "src/App.tsx:42:10" })], "standard");
 
             expect(md).toContain("**Source:** `src/App.tsx:42:10`");
         });
 
         it("includes framework context", () => {
+            expect.assertions(3);
+
             const md = annotationsToMarkdown(
                 [
                     makeAnnotation({
@@ -84,6 +100,8 @@ describe(annotationsToMarkdown, () => {
         });
 
         it("does NOT include detailed fields", () => {
+            expect.assertions(3);
+
             const md = annotationsToMarkdown(
                 [makeAnnotation({ computedStyles: "color: red", cssClasses: "btn primary", fullPath: "body > div > button" })],
                 "standard",
@@ -97,6 +115,8 @@ describe(annotationsToMarkdown, () => {
 
     describe("detailed format", () => {
         it("includes classes, context, DOM path", () => {
+            expect.assertions(3);
+
             const md = annotationsToMarkdown(
                 [makeAnnotation({ cssClasses: "btn primary", fullPath: "body > div > button", nearbyText: "Click here" })],
                 "detailed",
@@ -108,6 +128,8 @@ describe(annotationsToMarkdown, () => {
         });
 
         it("does NOT include forensic fields", () => {
+            expect.assertions(3);
+
             const md = annotationsToMarkdown(
                 [makeAnnotation({ accessibility: { focusable: true, role: "button" }, computedStyles: "color: red", nearbyElements: "span, div" })],
                 "detailed",
@@ -121,6 +143,8 @@ describe(annotationsToMarkdown, () => {
 
     describe("forensic format", () => {
         it("includes everything", () => {
+            expect.assertions(6);
+
             const md = annotationsToMarkdown(
                 [
                     makeAnnotation({
@@ -145,12 +169,16 @@ describe(annotationsToMarkdown, () => {
     });
 
     it("defaults to standard format", () => {
+        expect.assertions(1);
+
         const md = annotationsToMarkdown([makeAnnotation({ elementPath: "#btn" })]);
 
         expect(md).toContain("**Selector:** `#btn`");
     });
 
     it("handles multiple annotations", () => {
+        expect.assertions(3);
+
         const md = annotationsToMarkdown([makeAnnotation({ comment: "First" }), makeAnnotation({ comment: "Second" })]);
 
         expect(md).toContain("2 annotation(s)");
