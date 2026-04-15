@@ -3,20 +3,20 @@
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+use ignore::gitignore::GitignoreBuilder;
 use ignore::{WalkBuilder, WalkState};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct WalkOptions {
     pub respect_gitignore: bool,
     pub respect_hidden: bool,
+    /// Raw gitignore-syntax lines (e.g. `dist/`, `!keep-me.env`). Applied on top of
+    /// `.gitignore`, supports negation and directory markers.
     pub extra_ignores: Vec<String>,
+    /// Paths to additional files whose content is gitignore-syntax. Loaded alongside
+    /// any `.gitignore` / `.git/info/exclude` the walker already picks up.
+    pub ignore_files: Vec<PathBuf>,
     pub threads: usize,
-}
-
-impl Default for WalkOptions {
-    fn default() -> Self {
-        Self { respect_gitignore: true, respect_hidden: true, extra_ignores: Vec::new(), threads: 0 }
-    }
 }
 
 /// Synchronously walk `roots` and return every file path discovered, respecting
@@ -43,33 +43,56 @@ pub fn walk_paths(roots: &[PathBuf], opts: &WalkOptions) -> Vec<PathBuf> {
         .follow_links(false)
         .threads(opts.threads);
 
-    if !opts.extra_ignores.is_empty() {
-        let mut ob = ignore::overrides::OverrideBuilder::new(&roots[0]);
-        for pat in &opts.extra_ignores {
-            // `!` prefix makes it an exclusion pattern in the `ignore` override syntax.
-            if let Err(e) = ob.add(&format!("!{pat}")) {
-                eprintln!("secret-scanner: ignoring invalid extraIgnores pattern {pat:?}: {e}");
-            }
-        }
-        match ob.build() {
-            Ok(over) => {
-                builder.overrides(over);
-            }
-            Err(e) => {
-                eprintln!("secret-scanner: failed to build extraIgnores overrides: {e}");
-            }
+    // Additional ignore files — treated exactly like `.gitignore` (negation, `/` prefix,
+    // directory markers, etc. all behave as git would).
+    for path in &opts.ignore_files {
+        if let Some(e) = builder.add_ignore(path) {
+            eprintln!("secret-scanner: ignoring invalid ignore file {}: {e}", path.display());
         }
     }
 
+    // Inline gitignore-syntax patterns. Compile once and attach via `add_custom_ignore_filename`
+    // isn't an option (that takes a filename, not patterns), so we build a Gitignore matcher
+    // and use it as a filter inside the parallel walker below.
+    let custom_gitignore = if opts.extra_ignores.is_empty() {
+        None
+    } else {
+        let mut b = GitignoreBuilder::new(&roots[0]);
+        for pat in &opts.extra_ignores {
+            if let Err(e) = b.add_line(None, pat) {
+                eprintln!("secret-scanner: ignoring invalid extraIgnores pattern {pat:?}: {e}");
+            }
+        }
+        match b.build() {
+            Ok(gi) => Some(gi),
+            Err(e) => {
+                eprintln!("secret-scanner: failed to build extraIgnores matcher: {e}");
+                None
+            }
+        }
+    };
+
     let collected = Mutex::new(Vec::<PathBuf>::new());
+    let custom = custom_gitignore.as_ref();
+
     builder.build_parallel().run(|| {
         let collected = &collected;
         Box::new(move |result| {
             if let Ok(entry) = result {
-                if entry.file_type().map(|t| t.is_file()).unwrap_or(false) {
-                    if let Ok(mut v) = collected.lock() {
-                        v.push(entry.into_path());
+                let is_file = entry.file_type().map(|t| t.is_file()).unwrap_or(false);
+                if !is_file {
+                    return WalkState::Continue;
+                }
+
+                let path = entry.path();
+                if let Some(gi) = custom {
+                    if gi.matched(path, false).is_ignore() {
+                        return WalkState::Continue;
                     }
+                }
+
+                if let Ok(mut v) = collected.lock() {
+                    v.push(entry.into_path());
                 }
             }
             WalkState::Continue

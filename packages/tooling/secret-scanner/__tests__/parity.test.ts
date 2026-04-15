@@ -35,7 +35,9 @@ interface GitleaksUpstream {
 const fetchTestdata = async (): Promise<string> => {
     const cacheDir = await findCacheDir("secret-scanner", { create: true, cwd: packageRoot });
 
-    if (!cacheDir) throw new Error("no writable node_modules/.cache directory — run pnpm install first");
+    if (!cacheDir) {
+        throw new Error("no writable node_modules/.cache directory — run pnpm install first");
+    }
 
     const tdRoot = resolve(cacheDir, `gitleaks-testdata-${ref}`);
 

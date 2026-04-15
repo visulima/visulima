@@ -21,22 +21,23 @@ use crate::scanner::scan_file;
 use crate::walker::{walk_paths, WalkOptions};
 
 const DEFAULT_MAX_FILE_SIZE: u32 = 10 * 1024 * 1024; // 10 MiB
-const MAX_CONFIG_SIZE: u64 = 16 * 1024 * 1024; // 16 MiB
 
 #[napi(object)]
 #[derive(Default)]
 pub struct ScanOptions {
-    /// Path to a gitleaks-compatible TOML config. If omitted, the caller is expected
-    /// to provide `configToml`, otherwise no rules are loaded.
-    pub config_path: Option<String>,
-    /// Raw TOML rule string (used as-is, no file IO).
-    pub config_toml: Option<String>,
+    /// Parsed config object (gitleaks-compatible shape). The JS wrapper is responsible
+    /// for loading from any format (TOML/JSON/YAML/TS/JS) via c12 and passing the result
+    /// here. If absent, no rules are loaded and every scan returns an empty result.
+    pub config: Option<serde_json::Value>,
     /// Respect .gitignore / .ignore (default: true)
     pub respect_gitignore: Option<bool>,
     /// Visit dotfiles (default: false — matches ignore crate default)
     pub include_hidden: Option<bool>,
-    /// Extra glob patterns to exclude (rooted at each scan root)
+    /// Extra gitignore-syntax patterns to exclude (negation, directory markers, etc. all work).
     pub extra_ignores: Option<Vec<String>>,
+    /// Paths to additional `.gitignore`-syntax files to honor (beyond the walker's default
+    /// `.gitignore` / `.git/info/exclude` pickup). Useful for `.secretsignore` etc.
+    pub ignore_files: Option<Vec<String>>,
     /// Max file size in bytes (default 10 MiB). Files above are skipped.
     pub max_file_size: Option<u32>,
     /// Redact secret values in output (default: false)
@@ -107,18 +108,11 @@ fn to_napi_finding(f: RawFinding, redact_secrets: bool) -> Finding {
 }
 
 fn load_ruleset(opts: &ScanOptions) -> Result<Arc<CompiledRuleset>> {
-    let toml_str = if let Some(s) = &opts.config_toml {
-        s.clone()
-    } else if let Some(p) = &opts.config_path {
-        let meta = std::fs::metadata(p).map_err(|e| Error::from_reason(format!("stat config: {e}")))?;
-        if meta.len() > MAX_CONFIG_SIZE {
-            return Err(Error::from_reason(format!("config file larger than {MAX_CONFIG_SIZE} bytes")));
-        }
-        std::fs::read_to_string(p).map_err(|e| Error::from_reason(format!("read config: {e}")))?
-    } else {
-        return Err(Error::from_reason("ScanOptions requires `configPath` or `configToml`"));
+    let Some(value) = opts.config.as_ref() else {
+        return Err(Error::from_reason("ScanOptions.config is required (pass a parsed gitleaks-shaped object)"));
     };
-    let cfg = Config::from_toml_str(&toml_str).map_err(|e| Error::from_reason(format!("parse config: {e}")))?;
+    let cfg: Config =
+        serde_json::from_value(value.clone()).map_err(|e| Error::from_reason(format!("config shape: {e}")))?;
     let ruleset = CompiledRuleset::compile(&cfg).map_err(|e| Error::from_reason(format!("compile rules: {e}")))?;
     Ok(Arc::new(ruleset))
 }
@@ -136,7 +130,8 @@ fn scan_impl(paths: Vec<String>, opts: ScanOptions) -> Result<Vec<Finding>> {
     let walk_opts = WalkOptions {
         respect_gitignore: opts.respect_gitignore.unwrap_or(true),
         respect_hidden: !opts.include_hidden.unwrap_or(false),
-        extra_ignores: opts.extra_ignores.unwrap_or_default(),
+        extra_ignores: opts.extra_ignores.clone().unwrap_or_default(),
+        ignore_files: opts.ignore_files.clone().unwrap_or_default().into_iter().map(PathBuf::from).collect(),
         threads: concurrency,
     };
 

@@ -1,6 +1,8 @@
-// Gitleaks-compatible TOML config schema.
+// Gitleaks-compatible config schema.
 //
-// Mirrors the subset of fields used by the default gitleaks.toml ruleset.
+// The JS wrapper is responsible for loading configs from any format (TOML, JSON, YAML, JS, etc.)
+// via c12. The native side only sees a deserialized object — this struct receives it through
+// serde_json::from_value on the ScanOptions.config field.
 // Reference: https://github.com/gitleaks/gitleaks/blob/master/config/config.go
 #![allow(dead_code)]
 
@@ -51,8 +53,8 @@ pub struct RawRule {
     pub allowlist: Allowlists,
 }
 
-// gitleaks.toml has a single top-level [allowlist] OR [[allowlists]] array,
-// and the same inside rules. We accept both.
+// gitleaks schema has a single top-level [allowlist] OR [[allowlists]] array, and the same
+// inside rules. We accept both forms.
 #[derive(Debug, Default, Clone)]
 pub struct Allowlists(pub Vec<Allowlist>);
 
@@ -91,10 +93,4 @@ pub struct Allowlist {
     pub regex_target: Option<String>,
     #[serde(default)]
     pub condition: Option<String>,
-}
-
-impl Config {
-    pub fn from_toml_str(src: &str) -> Result<Self, toml::de::Error> {
-        toml::from_str(src)
-    }
 }

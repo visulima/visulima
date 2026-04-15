@@ -34,7 +34,9 @@ describe("edge cases", () => {
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         const secret = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b";
         const bin = Buffer.concat([Buffer.from([0x00, 0x01, 0x02]), Buffer.from(`token = "${secret}"`)]);
@@ -51,7 +53,9 @@ describe("edge cases", () => {
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         const padding = "lorem ipsum\n".repeat(100_000); // ~1.2 MiB
         const secret = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b";
@@ -68,7 +72,9 @@ describe("edge cases", () => {
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         const secret = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b";
         const bytes = Buffer.concat([Buffer.from('token = "'), Buffer.from([0xff, 0xfe]), Buffer.from(`${secret}"\n`)]);
@@ -85,7 +91,9 @@ describe("edge cases", () => {
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(resolve(tmpDir, "a.env"), 'a = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
         await writeFile(resolve(tmpDir, "b.env"), 'b = "ghp_zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0fE9dC8bA7a"\n');
@@ -103,50 +111,22 @@ describe("edge cases", () => {
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
-        const badToml = `
-title = "bad"
-[[rules]]
-id = "broken-rule"
-regex = "("
-keywords = ["tok"]
-[[rules]]
-id = "ok-rule"
-regex = "ok[0-9]+"
-keywords = ["ok"]
-`;
+        const badConfig = {
+            rules: [
+                { id: "broken-rule", keywords: ["tok"], regex: "(" },
+                { id: "ok-rule", keywords: ["ok"], regex: "ok[0-9]+" },
+            ],
+            title: "bad",
+        };
 
-        const skipped = await api.inspectRuleset({ configToml: badToml });
+        const skipped = await api.inspectRuleset({ config: badConfig, includeBundled: false });
 
         expect(skipped.length).toBeGreaterThan(0);
         expect(skipped[0]!.ruleId).toBe("broken-rule");
-    });
-
-    it("scanString does not sniff cwd for .gitleaksignore", async () => {
-        expect.assertions(1);
-
-        const api = await loadApi();
-
-        if (!api) return;
-
-        const originalCwd = process.cwd();
-
-        try {
-            // Plant a .gitleaksignore in tmpDir and cd there to verify scanString ignores it.
-            process.chdir(tmpDir);
-
-            const content = 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"';
-
-            // Fingerprint that, if cwd were sniffed, would suppress the finding for "fake.env":
-            await writeFile(resolve(tmpDir, ".gitleaksignore"), "fake.env:github-pat:1\n");
-
-            const findings = await api.scanString(content, "fake.env");
-
-            expect(findings.length).toBeGreaterThan(0);
-        } finally {
-            process.chdir(originalCwd);
-        }
     });
 
     it("respects gitleaks:allow inline comment", async () => {
@@ -154,7 +134,9 @@ keywords = ["ok"]
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(resolve(tmpDir, "allowed.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b" // gitleaks:allow\n');
 
@@ -168,7 +150,9 @@ keywords = ["ok"]
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(resolve(tmpDir, "allowed.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b" # secret-scanner:allow\n');
 
@@ -182,7 +166,9 @@ keywords = ["ok"]
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         const secret = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b";
 
@@ -200,7 +186,9 @@ keywords = ["ok"]
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         // Both high-entropy to satisfy the rule's entropy threshold.
         const secret1 = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b";
@@ -228,7 +216,9 @@ leaked = "${secret2}"
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         const rules = await api.listRules();
 
@@ -245,7 +235,9 @@ leaked = "${secret2}"
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(
             resolve(tmpDir, "multi.env"),
@@ -262,7 +254,9 @@ leaked = "${secret2}"
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 
@@ -271,12 +265,70 @@ leaked = "${secret2}"
         expect(findings.every((f) => f.ruleId !== "github-pat")).toBe(true);
     });
 
+    it("extraIgnores excludes files matching a gitignore pattern", async () => {
+        expect.assertions(1);
+
+        const api = await loadApi();
+
+        if (!api) {
+            return;
+        }
+
+        await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
+
+        const findings = await api.scan([tmpDir], { extraIgnores: ["*.env"] });
+
+        expect(findings).toHaveLength(0);
+    });
+
+    it("ignoreFiles honors a .secretsignore file with gitignore syntax", async () => {
+        expect.assertions(1);
+
+        const api = await loadApi();
+
+        if (!api) {
+            return;
+        }
+
+        await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
+        await writeFile(resolve(tmpDir, ".secretsignore"), "*.env\n");
+
+        const findings = await api.scan([tmpDir], { ignoreFiles: [resolve(tmpDir, ".secretsignore")] });
+
+        expect(findings).toHaveLength(0);
+    });
+
+    it("scanFiles respects ignoreFiles and extraIgnores via JS matcher", async () => {
+        expect.assertions(1);
+
+        const api = await loadApi();
+
+        if (!api) {
+            return;
+        }
+
+        await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
+
+        const originalCwd = process.cwd();
+
+        try {
+            process.chdir(tmpDir);
+            const findings = await api.scanFiles([resolve(tmpDir, "leak.env")], { extraIgnores: ["*.env"] });
+
+            expect(findings).toHaveLength(0);
+        } finally {
+            process.chdir(originalCwd);
+        }
+    });
+
     it("ignores malformed baseline files with a warning", async () => {
         expect.assertions(1);
 
         const api = await loadApi();
 
-        if (!api) return;
+        if (!api) {
+            return;
+        }
 
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 

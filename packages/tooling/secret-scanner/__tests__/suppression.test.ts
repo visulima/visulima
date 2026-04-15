@@ -29,38 +29,14 @@ const loadNative = async (): Promise<typeof import("../src/index") | undefined> 
 };
 
 describe("suppression", () => {
-    it(".gitleaksignore suppresses matching findings", async () => {
-        expect.assertions(2);
-
-        const nativeMod = await loadNative();
-
-        if (!nativeMod) return;
-
-        const leakFile = resolve(tmpDir, "leak.env");
-
-        await writeFile(leakFile, 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
-
-        // Sanity: unfiltered scan finds it
-        const findings = await nativeMod.scan([tmpDir]);
-
-        expect(findings.length).toBeGreaterThan(0);
-
-        // Write a .gitleaksignore with the exact fingerprint
-        const fp = nativeMod.fingerprint(findings[0]!);
-
-        await writeFile(resolve(tmpDir, ".gitleaksignore"), `${fp}\n`);
-
-        const filtered = await nativeMod.scan([tmpDir]);
-
-        expect(filtered.map((f) => nativeMod.fingerprint(f))).not.toContain(fp);
-    });
-
     it("baseline JSON suppresses matching findings", async () => {
         expect.assertions(2);
 
         const nativeMod = await loadNative();
 
-        if (!nativeMod) return;
+        if (!nativeMod) {
+            return;
+        }
 
         const leakFile = resolve(tmpDir, "leak.env");
 

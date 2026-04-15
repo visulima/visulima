@@ -40,18 +40,22 @@ export declare function scanFiles(files: Array<string>, options?: ScanOptions | 
 
 export interface ScanOptions {
     /**
-     * Path to a gitleaks-compatible TOML config. If omitted, the caller is expected
-     * to provide `configToml`, otherwise no rules are loaded.
+     * Parsed config object (gitleaks-compatible shape). The JS wrapper is responsible
+     * for loading from any format (TOML/JSON/YAML/TS/JS) via c12 and passing the result
+     * here. If absent, no rules are loaded and every scan returns an empty result.
      */
-    configPath?: string;
-    /** Raw TOML rule string (used as-is, no file IO). */
-    configToml?: string;
+    config?: any;
     /** Respect .gitignore / .ignore (default: true) */
     respectGitignore?: boolean;
     /** Visit dotfiles (default: false — matches ignore crate default) */
     includeHidden?: boolean;
-    /** Extra glob patterns to exclude (rooted at each scan root) */
+    /** Extra gitignore-syntax patterns to exclude (negation, directory markers, etc. all work). */
     extraIgnores?: Array<string>;
+    /**
+     * Paths to additional `.gitignore`-syntax files to honor (beyond the walker's default
+     * `.gitignore` / `.git/info/exclude` pickup). Useful for `.secretsignore` etc.
+     */
+    ignoreFiles?: Array<string>;
     /** Max file size in bytes (default 10 MiB). Files above are skipped. */
     maxFileSize?: number;
     /** Redact secret values in output (default: false) */
