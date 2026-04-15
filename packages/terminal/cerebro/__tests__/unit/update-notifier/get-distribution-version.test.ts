@@ -26,7 +26,7 @@ describe("update-notifier/get-dist-version", () => {
         vi.mocked(get).mockImplementation((_, callback) => {
             callback(st);
 
-            st.emit("data", "{\"latest\":\"1.0.0\"}");
+            st.emit("data", '{"latest":"1.0.0"}');
             st.emit("end");
         });
 
