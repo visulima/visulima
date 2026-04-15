@@ -1,11 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`kitchen-sink Layout (Flexbox) snapshots > Spacer > should push content to opposite ends of a row 1`] = `
-"┌──────────────────────┐
-│◀ left         right ▶│
-└──────────────────────┘"
-`;
-
 exports[`kitchen-sink Layout (Flexbox) snapshots > alignItems > should render alignItems=center with height=5 1`] = `
 "┌──────────────┐
 │              │

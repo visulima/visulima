@@ -14,8 +14,16 @@ import type {
 } from "@visulima/task-runner";
 import type { Configuration as StagedConfig } from "lint-staged";
 
-import type { CodeownersConfig } from "./codeowners";
 import { applyPreset, defaultCacheForType, type VisTargetConfiguration } from "./target-options";
+
+export interface CodeownersConfig {
+    /** Sort order for generated entries — mirrors moon's `orderBy`. */
+    orderBy?: "file-source" | "project-id";
+    /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
+    globalPaths?: Record<string, string[]>;
+    /** Provider determines whether `channel` is emitted (GitHub supports it via comment). */
+    provider?: "bitbucket" | "github" | "gitlab" | "other";
+}
 
 interface PackageJson {
     bin?: Record<string, string> | string;
