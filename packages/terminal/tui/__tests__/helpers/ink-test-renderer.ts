@@ -56,6 +56,7 @@ export const renderSync = (node: React.ReactNode, options: TestRenderOptions = {
         getOutput: () => stdout.get(),
         rerenderAsync(newNode: React.ReactNode) {
             instance.rerender(newNode);
+
             return Promise.resolve();
         },
         stdout,

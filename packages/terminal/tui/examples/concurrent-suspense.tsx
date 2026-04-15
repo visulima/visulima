@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/only-throw-error, @typescript-eslint/restrict-template-expressions, func-style, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/only-throw-error, func-style, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/concurrent-suspense
 import { Box, Text } from "@visulima/tui";

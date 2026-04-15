@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
  * use-focus example — port of the Ink use-focus example
  * Press Tab to cycle focus forward, Shift+Tab to cycle backward.

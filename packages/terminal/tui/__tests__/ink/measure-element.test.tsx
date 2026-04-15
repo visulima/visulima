@@ -25,7 +25,6 @@ describe("measure-element", () => {
             const [width, setWidth] = useState(0);
             const ref = useRef<DOMElement>(null);
 
-            // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
             useEffect(() => {
                 if (!ref.current) {
                     return;
@@ -45,6 +44,7 @@ describe("measure-element", () => {
         };
 
         const { unmount } = render(<Test />, { debug: true, stdout });
+
         currentUnmount = unmount;
 
         expect((stdout.write as any).mock.calls[0][0]).toBe("Width:0");
@@ -67,7 +67,6 @@ describe("measure-element", () => {
 
             setTestItems = setItems;
 
-            // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
             useEffect(() => {
                 if (!ref.current) {
                     return;
@@ -92,6 +91,7 @@ describe("measure-element", () => {
         };
 
         const { unmount } = render(<Test />, { debug: true, stdout });
+
         currentUnmount = unmount;
         await delay(100);
 
@@ -115,7 +115,6 @@ describe("measure-element", () => {
             setTestItems = setItems;
 
             useEffect(() => {
-                // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }
@@ -139,6 +138,7 @@ describe("measure-element", () => {
         };
 
         const { unmount } = render(<Test />, { debug: true, stdout });
+
         currentUnmount = unmount;
         await delay(100);
 
@@ -188,6 +188,7 @@ describe("measure-element", () => {
         };
 
         const { unmount } = render(<Test />, { debug: true, stdout });
+
         currentUnmount = unmount;
         await delay(100);
 
@@ -208,7 +209,6 @@ describe("measure-element", () => {
             const ref = useRef<DOMElement>(null);
 
             useEffect(() => {
-                // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }
@@ -231,9 +231,7 @@ describe("measure-element", () => {
         rerender(<Test />);
         await delay(100);
 
-        const writes: string[] = (stdout.write as any).mock.calls
-            .map((c: any) => c[0] as string)
-            .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
         const lastContentWrite = writes.at(-1)!;
 
         expect(stripAnsi(lastContentWrite).trim()).toBe("Width:100");

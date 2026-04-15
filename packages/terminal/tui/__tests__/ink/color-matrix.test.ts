@@ -11,7 +11,7 @@ import {
 } from "../../src/ink/color-matrix";
 
 describe("color-matrix", () => {
-    describe("applyColorMatrix", () => {
+    describe(applyColorMatrix, () => {
         it("identity matrix should return same colors", () => {
             expect(applyColorMatrix(128, 64, 32, IDENTITY_MATRIX)).toEqual([128, 64, 32]);
         });
@@ -58,7 +58,7 @@ describe("color-matrix", () => {
         });
     });
 
-    describe("hexToRgb", () => {
+    describe(hexToRgb, () => {
         it("should parse 6-digit hex with hash", () => {
             expect(hexToRgb("#ff8040")).toEqual([255, 128, 64]);
         });
@@ -74,7 +74,7 @@ describe("color-matrix", () => {
         });
     });
 
-    describe("rgbToHex", () => {
+    describe(rgbToHex, () => {
         it("should produce correct hex string", () => {
             expect(rgbToHex(255, 128, 64)).toBe("#ff8040");
         });
@@ -88,7 +88,7 @@ describe("color-matrix", () => {
         });
     });
 
-    describe("transformHexColor", () => {
+    describe(transformHexColor, () => {
         it("should transform hex through identity matrix", () => {
             expect(transformHexColor("#ff8040", IDENTITY_MATRIX)).toBe("#ff8040");
         });
@@ -111,7 +111,7 @@ describe("color-matrix", () => {
     describe("compensation matrices", () => {
         it("should have protanopia compensation", () => {
             expect(COLOR_BLINDNESS_COMPENSATION.protanopia).toBeDefined();
-            expect(COLOR_BLINDNESS_COMPENSATION.protanopia.length).toBe(3);
+            expect(COLOR_BLINDNESS_COMPENSATION.protanopia).toHaveLength(3);
         });
 
         it("should have deuteranopia compensation", () => {

@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/restrict-template-expressions, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-empty, no-plusplus, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/no-nested-conditional, sonarjs/pseudo-random */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, func-style, jsdoc/lines-before-block, no-empty, sonarjs/no-nested-conditional, sonarjs/pseudo-random */
 /**
  * incremental-rendering.tsx — ratatat port of Ink's incremental-rendering example
  *

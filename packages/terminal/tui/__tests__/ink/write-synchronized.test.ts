@@ -54,12 +54,9 @@ describe("write-synchronized", () => {
 
         const ttyStream = createStream({ tty: true });
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (isInCi) {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect(shouldSynchronize(ttyStream)).toBe(false);
         } else {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect(shouldSynchronize(ttyStream)).toBe(true);
         }
     });

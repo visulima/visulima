@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Link, Text } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
-describe("Link", () => {
+describe(Link, () => {
     afterEach(() => {
         vi.unstubAllEnvs();
     });
@@ -28,7 +28,7 @@ describe("Link", () => {
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(
-                <Link url="https://example.com" fallback={false}>
+                <Link fallback={false} url="https://example.com">
                     <Text>My Website</Text>
                 </Link>,
             );
@@ -40,7 +40,7 @@ describe("Link", () => {
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
             const output = renderToString(
-                <Link url="https://example.com" fallback={(text, url) => `[${text}](${url})`}>
+                <Link fallback={(text, url) => `[${text}](${url})`} url="https://example.com">
                     <Text>My Website</Text>
                 </Link>,
             );

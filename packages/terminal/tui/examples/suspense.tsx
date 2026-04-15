@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-floating-promises, @typescript-eslint/no-shadow, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, consistent-return, no-promise-executor-return, react-refresh/only-export-components, sonarjs/different-types-comparison */
+/* eslint-disable @typescript-eslint/no-floating-promises, no-promise-executor-return, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/suspense
 import { Text } from "@visulima/tui";

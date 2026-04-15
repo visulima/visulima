@@ -6,7 +6,7 @@ import { ConfirmInput, render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("ConfirmInput", () => {
+describe(ConfirmInput, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -18,7 +18,7 @@ describe("ConfirmInput", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };
@@ -57,7 +57,7 @@ describe("ConfirmInput", () => {
         emitReadable(stdin, "y");
         await delay(50);
 
-        expect(onConfirm).toHaveBeenCalledOnce();
+        expect(onConfirm).toHaveBeenCalledTimes(1);
     });
 
     it("should call onCancel when N is pressed", async () => {
@@ -69,7 +69,7 @@ describe("ConfirmInput", () => {
         emitReadable(stdin, "n");
         await delay(50);
 
-        expect(onCancel).toHaveBeenCalledOnce();
+        expect(onCancel).toHaveBeenCalledTimes(1);
     });
 
     it("should call onConfirm on Enter when default is confirm", async () => {
@@ -81,7 +81,7 @@ describe("ConfirmInput", () => {
         emitReadable(stdin, "\r");
         await delay(50);
 
-        expect(onConfirm).toHaveBeenCalledOnce();
+        expect(onConfirm).toHaveBeenCalledTimes(1);
     });
 
     it("should call onCancel on Enter when default is cancel", async () => {
@@ -93,7 +93,7 @@ describe("ConfirmInput", () => {
         emitReadable(stdin, "\r");
         await delay(50);
 
-        expect(onCancel).toHaveBeenCalledOnce();
+        expect(onCancel).toHaveBeenCalledTimes(1);
     });
 
     it("should not call callbacks on Enter when submitOnEnter is false", async () => {

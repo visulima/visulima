@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Alert, Badge, OrderedList, StatusMessage, Text, UnorderedList } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
-describe("Badge", () => {
+describe(Badge, () => {
     it("should render uppercase label", () => {
         expect.assertions(1);
 
@@ -34,7 +34,7 @@ describe("Badge", () => {
     });
 });
 
-describe("StatusMessage", () => {
+describe(StatusMessage, () => {
     it("should render success variant with checkmark", () => {
         expect.assertions(2);
 
@@ -72,7 +72,7 @@ describe("StatusMessage", () => {
     });
 });
 
-describe("Alert", () => {
+describe(Alert, () => {
     it("should render with message", () => {
         expect.assertions(1);
 
@@ -111,7 +111,7 @@ describe("Alert", () => {
     });
 });
 
-describe("UnorderedList", () => {
+describe(UnorderedList, () => {
     it("should render items with markers", () => {
         expect.assertions(2);
 
@@ -156,7 +156,7 @@ describe("UnorderedList", () => {
     });
 });
 
-describe("OrderedList", () => {
+describe(OrderedList, () => {
     it("should render numbered items", () => {
         expect.assertions(3);
 
@@ -197,7 +197,9 @@ describe("OrderedList", () => {
     it("should pad numbers for alignment with many items", () => {
         expect.assertions(1);
 
-        const items = Array.from({ length: 10 }, (_, index) => ({ label: `Item ${index + 1}` }));
+        const items = Array.from({ length: 10 }, (_, index) => {
+            return { label: `Item ${index + 1}` };
+        });
         const output = renderToString(<OrderedList items={items} />);
 
         expect(output).toContain("10.");

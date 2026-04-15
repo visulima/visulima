@@ -1,9 +1,8 @@
 import React from "react";
+import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
-import { describe, expect, it, afterEach } from "vitest";
-
-import Box from "../../src/ink/components/Box";
-import Text from "../../src/ink/components/Text";
+import Box from "../../src/ink/components/box";
+import Text from "../../src/ink/components/text";
 import { cleanup, render } from "../../src/testing/index";
 
 afterEach(() => {
@@ -40,7 +39,7 @@ describe("testing library", () => {
     });
 
     it("should support unmount", () => {
-        const { unmount, lastFrame } = render(<Text>Test</Text>);
+        const { lastFrame, unmount } = render(<Text>Test</Text>);
 
         expect(lastFrame()).toBe("Test");
 
@@ -71,7 +70,7 @@ describe("testing library", () => {
     });
 
     it("should expose stdout frames and lastFrame", () => {
-        const { stdout, rerender } = render(<Text>first</Text>);
+        const { rerender, stdout } = render(<Text>first</Text>);
 
         expect(stdout.lastFrame()).toBe("first");
 
@@ -86,8 +85,10 @@ describe("testing library", () => {
 
         // stderr exists and has the testing API
         expect(stderr).toBeDefined();
-        expect(typeof stderr.lastFrame).toBe("function");
-        expect(typeof stderr.write).toBe("function");
+
+        expectTypeOf(stderr.lastFrame).toBeFunction();
+        expectTypeOf(stderr.write).toBeFunction();
+
         expect(stderr.frames).toBeDefined();
     });
 
@@ -97,7 +98,8 @@ describe("testing library", () => {
         // stdin exists and has the testing API
         expect(stdin).toBeDefined();
         expect(stdin.isTTY).toBe(true);
-        expect(typeof stdin.write).toBe("function");
+
+        expectTypeOf(stdin.write).toBeFunction();
     });
 
     it("should cleanup all instances when calling module-level cleanup", () => {

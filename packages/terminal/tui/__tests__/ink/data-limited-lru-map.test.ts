@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import DataLimitedLruMap from "../../src/ink/data-limited-lru-map";
 
-describe("DataLimitedLruMap", () => {
+describe(DataLimitedLruMap, () => {
     it("should store and retrieve values", () => {
         const map = new DataLimitedLruMap<number>(10, 1000);
 
         map.set("foo", 42);
+
         expect(map.get("foo")).toBe(42);
         expect(map.size).toBe(1);
     });

@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-perf/jsx-no-new-array-as-prop, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
  * box-slices.tsx — All 16 permutations of border sides
  *

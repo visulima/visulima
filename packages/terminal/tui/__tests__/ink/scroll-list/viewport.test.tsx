@@ -20,10 +20,11 @@
  * - Width changes can cause text to rewrap, affecting content height
  */
 
-import { useRef, useState, useEffect } from "react";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import { useEffect, useRef, useState } from "react";
+import { describe, expect, it, vi } from "vitest";
+
 import type { ScrollListRef } from "../../../src/ink/index";
-import { describe, it, expect, vi } from "vitest";
+import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import waitFor from "../../helpers/wait-for";
 
 /**
@@ -31,7 +32,7 @@ import waitFor from "../../helpers/wait-for";
  */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe("Viewport", () => {
+describe("viewport", () => {
     /**
      * Test: Content height updates when width changes (text wrapping).
      *
@@ -49,18 +50,19 @@ describe("Viewport", () => {
      */
     it("should update ContentHeight when ScrollList width changes (text wrapping)", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setWidthFn: (w: number) => void;
+        let setWidthFunction: (w: number) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
             const [width, setWidth] = useState(10);
+
             useEffect(() => {
                 scrollListRef = ref.current;
-                setWidthFn = setWidth;
+                setWidthFunction = setWidth;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5} width={width}>
+                <ScrollList height={5} ref={ref} width={width}>
                     {/* 20 characters of text. Width 10 -> 2 lines. Width 25 -> 1 line. */}
                     <Box flexShrink={0}>
                         <Text>12345678901234567890</Text>
@@ -73,6 +75,7 @@ describe("Viewport", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -80,17 +83,20 @@ describe("Viewport", () => {
         // Initial width 10. Long text wraps.
         await waitFor(() => scrollList.getContentHeight() >= 1);
         const h1 = scrollList.getContentHeight();
+
         expect(h1).toBeGreaterThanOrEqual(1);
 
         // Increase width to 25 - text should fit without wrapping
-        setWidthFn!(25);
+        setWidthFunction!(25);
         await waitFor(() => scrollList.getContentHeight() === 2);
 
         const h2 = scrollList.getContentHeight();
+
         // Height should decrease (less wrapping)
         if (h1 > 2) {
             expect(h2).toBeLessThan(h1);
         }
+
         // With width 25, each item is 1 line: total 2
         expect(h2).toBe(2);
 
@@ -112,39 +118,45 @@ describe("Viewport", () => {
      * e.g., to update a scroll indicator or status display.
      */
     it("should trigger onViewportSizeChange when dimensions change", async () => {
-        let setSizeFn: (size: { w: number; h: number }) => void;
+        let setSizeFunction: (size: { h: number; w: number }) => void;
         const onViewportSizeChange = vi.fn();
 
         const TestComponent = () => {
-            const [size, setSize] = useState({ w: 10, h: 5 });
+            const [size, setSize] = useState({ h: 5, w: 10 });
+
             useEffect(() => {
-                setSizeFn = setSize;
+                setSizeFunction = setSize;
             }, []);
 
             return (
-                <ScrollList width={size.w} height={size.h} onViewportSizeChange={onViewportSizeChange}>
+                <ScrollList height={size.h} onViewportSizeChange={onViewportSizeChange} width={size.w}>
                     <Text>Content</Text>
                 </ScrollList>
             );
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => onViewportSizeChange.mock.calls.length > 0);
 
         // Initial call on mount
-        expect(onViewportSizeChange).toHaveBeenCalled();
+        expect(onViewportSizeChange).toHaveBeenCalledWith({ height: 5, width: 10 }, expect.any(Object));
+
         const initialCall = onViewportSizeChange.mock.calls[0];
-        expect(initialCall?.[0]).toEqual({ width: 10, height: 5 });
+
+        expect(initialCall?.[0]).toEqual({ height: 5, width: 10 });
 
         // Change size
         onViewportSizeChange.mockClear();
-        setSizeFn!({ w: 15, h: 8 });
+        setSizeFunction!({ h: 8, w: 15 });
         await waitFor(() => onViewportSizeChange.mock.calls.length > 0);
 
         // Should be called again with new dimensions
-        expect(onViewportSizeChange).toHaveBeenCalled();
+        expect(onViewportSizeChange).toHaveBeenCalledWith({ height: 8, width: 15 }, expect.any(Object));
+
         const lastCall = onViewportSizeChange.mock.calls[0];
-        expect(lastCall?.[0]).toEqual({ width: 15, height: 8 });
+
+        expect(lastCall?.[0]).toEqual({ height: 8, width: 15 });
 
         unmount();
     });
@@ -167,8 +179,8 @@ describe("Viewport", () => {
      */
     it("should maintain valid ScrollOffset when height changes with selected item", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setHeightFn: (h: number) => void;
-        let setIndexFn: (i: number) => void;
+        let setHeightFunction: (h: number) => void;
+        let setIndexFunction: (i: number) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -177,15 +189,18 @@ describe("Viewport", () => {
 
             useEffect(() => {
                 scrollListRef = ref.current;
-                setHeightFn = setHeight;
-                setIndexFn = setIndex;
+                setHeightFunction = setHeight;
+                setIndexFunction = setIndex;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={height} selectedIndex={index}>
+                <ScrollList height={height} ref={ref} selectedIndex={index}>
                     {Array.from({ length: 20 }).map((_, i) => (
                         <Box key={i}>
-                            <Text>Item {i}</Text>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -193,6 +208,7 @@ describe("Viewport", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -201,11 +217,12 @@ describe("Viewport", () => {
         // Item 10 should be visible. With auto alignment, offset should be around 6.
         await waitFor(() => scrollList.getScrollOffset() > 0);
         const offsetBefore = scrollList.getScrollOffset();
+
         expect(offsetBefore).toBeGreaterThan(0);
 
         // Increase height to 15. More content visible.
         // Max scroll = 20 - 15 = 5. Current offset may need clamping.
-        setHeightFn!(15);
+        setHeightFunction!(15);
         await waitFor(() => scrollList.getScrollOffset() <= 5);
 
         // If previous offset was 6, it should clamp to max (5)
@@ -214,10 +231,11 @@ describe("Viewport", () => {
         // Shrink height to 2. Only 2 items visible at once.
         // Item 10 must still be visible -> offset should be 9 or 10.
         // handleViewportSizeChange auto-scrolls to keep selection visible.
-        setHeightFn!(2);
+        setHeightFunction!(2);
         await waitFor(() => scrollList.getScrollOffset() >= 9);
 
         const offsetAfter = scrollList.getScrollOffset();
+
         // Item 10 is at line 10. Viewport 2 shows [offset, offset+2).
         // For item 10 to be visible: offset <= 10 < offset + 2
         // So offset should be 9 or 10.
@@ -230,7 +248,7 @@ describe("Viewport", () => {
     /**
      * Tests for boundary conditions.
      */
-    describe("Boundary Cases", () => {
+    describe("boundary Cases", () => {
         /**
          * Test: Scroll offset clamped when viewport is larger than content.
          *
@@ -248,13 +266,15 @@ describe("Viewport", () => {
             let scrollListRef: ScrollListRef | null = null;
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={10}>
+                    <ScrollList height={10} ref={ref}>
                         {Array.from({ length: 3 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -263,6 +283,7 @@ describe("Viewport", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
@@ -271,6 +292,7 @@ describe("Viewport", () => {
             scrollList.scrollTo(5);
             // Offset stays 0 (clamped). Give a brief delay then check.
             await delay(50);
+
             expect(scrollList.getScrollOffset()).toBe(0);
 
             unmount();
@@ -293,13 +315,15 @@ describe("Viewport", () => {
             let scrollListRef: ScrollListRef | null = null;
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={1}>
+                    <ScrollList height={1} ref={ref}>
                         {Array.from({ length: 5 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -308,12 +332,14 @@ describe("Viewport", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Content 5. Viewport 1. Max scroll = 5 - 1 = 4.
             scrollList.scrollTo(10);
             await waitFor(() => scrollList.getScrollOffset() === 4);
+
             expect(scrollList.getScrollOffset()).toBe(4);
 
             unmount();

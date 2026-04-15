@@ -1,12 +1,13 @@
 import delay from "delay";
 import React, { useEffect } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import type { vi } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { Box, render, Text, useClipboard } from "../../src/ink/index";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("useClipboard", () => {
+describe(useClipboard, () => {
     let currentUnmount: (() => void) | undefined;
 
     afterEach(async () => {
@@ -16,11 +17,12 @@ describe("useClipboard", () => {
     });
 
     it("should provide copy function and isSupported flag", async () => {
-        expect.assertions(2);
+        // expectTypeOf is compile-time only — only the runtime expect counts here.
+        expect.assertions(1);
 
         let clipboardResult: { copy: (text: string) => void; isSupported: boolean } | undefined;
 
-        function TestComponent() {
+        const TestComponent = () => {
             clipboardResult = useClipboard();
 
             return (
@@ -28,7 +30,7 @@ describe("useClipboard", () => {
                     <Text>test</Text>
                 </Box>
             );
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -38,13 +40,14 @@ describe("useClipboard", () => {
         await delay(50);
 
         expect(clipboardResult).toBeDefined();
-        expect(typeof clipboardResult!.copy).toBe("function");
+
+        expectTypeOf(clipboardResult!.copy).toBeFunction();
     });
 
     it("should write OSC 52 sequence to stdout when copying", async () => {
         expect.assertions(1);
 
-        function TestComponent() {
+        const TestComponent = () => {
             const { copy } = useClipboard();
 
             useEffect(() => {
@@ -56,7 +59,7 @@ describe("useClipboard", () => {
                     <Text>test</Text>
                 </Box>
             );
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -74,15 +77,14 @@ describe("useClipboard", () => {
 
             const writeCalls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
             const osc52Call = writeCalls.find((call) => {
-                const arg = call[0] as string;
+                const argument = call[0] as string;
 
-                return typeof arg === "string" && arg.includes("\x1B]52;c;");
+                return typeof argument === "string" && argument.includes("\u001B]52;c;");
             });
 
             expect(osc52Call).toBeDefined();
         } finally {
             if (originalTermProgram === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete process.env["TERM_PROGRAM"];
             } else {
                 process.env["TERM_PROGRAM"] = originalTermProgram;
@@ -98,16 +100,16 @@ describe("clipboard utilities", () => {
         const originalTermProgram = process.env["TERM_PROGRAM"];
 
         process.env["TERM_PROGRAM"] = "kitty";
+
         expect(isOsc52Supported()).toBe(true);
 
         process.env["TERM_PROGRAM"] = "unknown-terminal";
         // May or may not be supported depending on other env vars
         const result = isOsc52Supported();
 
-        expect(typeof result).toBe("boolean");
+        expectTypeOf(result).toBeBoolean();
 
         if (originalTermProgram === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete process.env["TERM_PROGRAM"];
         } else {
             process.env["TERM_PROGRAM"] = originalTermProgram;
@@ -128,7 +130,7 @@ describe("clipboard utilities", () => {
         const output = Buffer.concat(chunks).toString();
         const expectedBase64 = Buffer.from("hello", "utf8").toString("base64");
 
-        expect(output).toBe(`\x1B]52;c;${expectedBase64}\x07`);
+        expect(output).toBe(`\u001B]52;c;${expectedBase64}\u0007`);
     });
 
     it("clearOsc52 should write empty payload", async () => {
@@ -144,7 +146,7 @@ describe("clipboard utilities", () => {
 
         const output = Buffer.concat(chunks).toString();
 
-        expect(output).toBe("\x1B]52;c;\x07");
+        expect(output).toBe("\u001B]52;c;\u0007");
     });
 
     it("writeOsc52 should support primary selection target", async () => {

@@ -14,8 +14,8 @@ describe("renderer edge cases", () => {
     describe("empty text nodes", () => {
         it("should not crash on empty text content", () => {
             const output = renderToString(
-                <Box width={10} height={3}>
-                    <Text>{""}</Text>
+                <Box height={3} width={10}>
+                    <Text />
                 </Box>,
                 { columns: 15, rows: 5 },
             );
@@ -26,9 +26,9 @@ describe("renderer edge cases", () => {
 
         it("should render siblings around empty text correctly", () => {
             const output = renderToString(
-                <Box width={20} height={1}>
+                <Box height={1} width={20}>
                     <Text>A</Text>
-                    <Text>{""}</Text>
+                    <Text />
                     <Text>B</Text>
                 </Box>,
                 { columns: 25, rows: 3 },
@@ -44,7 +44,7 @@ describe("renderer edge cases", () => {
     describe("border edge cases", () => {
         it("should render a box with height=1 and all borders", () => {
             const output = renderToString(
-                <Box borderStyle="single" width={10} height={1}>
+                <Box borderStyle="single" height={1} width={10}>
                     <Text>x</Text>
                 </Box>,
                 { columns: 15, rows: 3 },
@@ -52,28 +52,31 @@ describe("renderer edge cases", () => {
 
             // Height=1 with borders means top and bottom overlap at the same row
             const lines = output.split("\n");
+
             expect(lines.length).toBeGreaterThanOrEqual(1);
             // Should contain border characters
             expect(lines[0]).toMatch(/[┌└─┐┘│]/);
         });
 
         it("should render a box with width=1 and all borders", () => {
-            const output = renderToString(<Box borderStyle="single" width={1} height={3} />, { columns: 5, rows: 5 });
+            const output = renderToString(<Box borderStyle="single" height={3} width={1} />, { columns: 5, rows: 5 });
 
             const lines = output.split("\n");
+
             // Width=1: all border chars at the same column
             expect(lines.length).toBeGreaterThanOrEqual(1);
         });
 
         it("should render a box with height=2 and full borders correctly", () => {
             const output = renderToString(
-                <Box borderStyle="single" width={10} height={2}>
+                <Box borderStyle="single" height={2} width={10}>
                     <Text>hi</Text>
                 </Box>,
                 { columns: 15, rows: 4 },
             );
 
             const lines = output.split("\n");
+
             // Row 0: top border, Row 1: bottom border (no content row)
             expect(lines[0]).toContain("┌");
             expect(lines[0]).toContain("┐");
@@ -105,7 +108,7 @@ describe("renderer edge cases", () => {
     describe("partial borders with overflow clipping", () => {
         it("should clip content inside borders when overflow is hidden and borderTop is disabled", () => {
             const output = renderToString(
-                <Box borderBottom={true} borderLeft={true} borderRight={true} borderStyle="single" borderTop={false} height={4} overflow="hidden" width={12}>
+                <Box borderBottom borderLeft borderRight borderStyle="single" borderTop={false} height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
                 </Box>,
                 { columns: 15, rows: 6 },
@@ -121,7 +124,7 @@ describe("renderer edge cases", () => {
 
         it("should clip content when overflow is hidden and no left border", () => {
             const output = renderToString(
-                <Box borderBottom={true} borderLeft={false} borderRight={true} borderStyle="single" borderTop={true} height={4} overflow="hidden" width={12}>
+                <Box borderBottom borderLeft={false} borderRight borderStyle="single" borderTop height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
                 </Box>,
                 { columns: 15, rows: 6 },
@@ -136,7 +139,7 @@ describe("renderer edge cases", () => {
     describe("wide characters", () => {
         it("should render CJK characters with correct width", () => {
             const output = renderToString(
-                <Box width={10} height={1}>
+                <Box height={1} width={10}>
                     <Text>你好</Text>
                 </Box>,
                 { columns: 15, rows: 3 },
@@ -150,7 +153,7 @@ describe("renderer edge cases", () => {
         it("should wrap wide characters that don't fit on the current line", () => {
             // Box width 5: "A" takes 1 cell, "你" takes 2 cells → 3 used, "好" needs 2 more = 5 → fits
             const output = renderToString(
-                <Box width={5} height={2}>
+                <Box height={2} width={5}>
                     <Text>A你好</Text>
                 </Box>,
                 { columns: 10, rows: 4 },
@@ -163,7 +166,7 @@ describe("renderer edge cases", () => {
 
         it("should replace wide char with space when container is 1 cell wide", () => {
             const output = renderToString(
-                <Box width={1} height={1}>
+                <Box height={1} width={1}>
                     <Text>你</Text>
                 </Box>,
                 { columns: 5, rows: 3 },
@@ -175,7 +178,7 @@ describe("renderer edge cases", () => {
 
         it("should handle emoji (surrogate pairs)", () => {
             const output = renderToString(
-                <Box width={10} height={1}>
+                <Box height={1} width={10}>
                     <Text>🐭AB</Text>
                 </Box>,
                 { columns: 15, rows: 3 },
@@ -188,10 +191,10 @@ describe("renderer edge cases", () => {
 
     // ─── Transform nodes ─────────────────────────────────────────────────
 
-    describe("Transform component", () => {
+    describe("transform component", () => {
         it("should apply uppercase transform to child text", () => {
             const output = renderToString(
-                <Box width={20} height={1} transform={(s: string) => s.toUpperCase()}>
+                <Box height={1} transform={(s: string) => s.toUpperCase()} width={20}>
                     <Text>hello world</Text>
                 </Box>,
                 { columns: 25, rows: 3 },
@@ -203,8 +206,8 @@ describe("renderer edge cases", () => {
 
         it("should handle transform on empty text", () => {
             const output = renderToString(
-                <Box width={10} height={1} transform={(s: string) => s.toUpperCase()}>
-                    <Text>{""}</Text>
+                <Box height={1} transform={(s: string) => s.toUpperCase()} width={10}>
+                    <Text />
                 </Box>,
                 { columns: 15, rows: 3 },
             );
@@ -218,7 +221,7 @@ describe("renderer edge cases", () => {
     describe("color inheritance", () => {
         it("should render text with explicit color without crashing", () => {
             const output = renderToString(
-                <Box width={20} height={1}>
+                <Box height={1} width={20}>
                     <Text color="green">green text</Text>
                     <Text> </Text>
                     <Text color="red">red text</Text>
@@ -232,7 +235,7 @@ describe("renderer edge cases", () => {
 
         it("should handle backgroundColor on text nodes", () => {
             const output = renderToString(
-                <Box width={20} height={1}>
+                <Box height={1} width={20}>
                     <Text backgroundColor="blue">highlighted</Text>
                 </Box>,
                 { columns: 25, rows: 3 },
@@ -247,7 +250,7 @@ describe("renderer edge cases", () => {
     describe("flex layout", () => {
         it("should handle zero-width container", () => {
             const output = renderToString(
-                <Box width={0} height={1}>
+                <Box height={1} width={0}>
                     <Text>text</Text>
                 </Box>,
                 { columns: 10, rows: 3 },
@@ -259,7 +262,7 @@ describe("renderer edge cases", () => {
 
         it("should handle zero-height container", () => {
             const output = renderToString(
-                <Box width={10} height={0}>
+                <Box height={0} width={10}>
                     <Text>text</Text>
                 </Box>,
                 { columns: 15, rows: 3 },
@@ -270,7 +273,7 @@ describe("renderer edge cases", () => {
 
         it("should handle deeply nested boxes", () => {
             const output = renderToString(
-                <Box width={20} height={5} flexDirection="column">
+                <Box flexDirection="column" height={5} width={20}>
                     <Box flexDirection="row">
                         <Box flexDirection="column">
                             <Box>
@@ -287,7 +290,7 @@ describe("renderer edge cases", () => {
 
         it("should apply gap correctly in column direction", () => {
             const output = renderToString(
-                <Box flexDirection="column" gap={1} width={10} height={5}>
+                <Box flexDirection="column" gap={1} height={5} width={10}>
                     <Text>A</Text>
                     <Text>B</Text>
                     <Text>C</Text>
@@ -296,6 +299,7 @@ describe("renderer edge cases", () => {
             );
 
             const lines = output.split("\n");
+
             // A at row 0, gap at row 1, B at row 2, gap at row 3, C at row 4
             expect(lines[0]).toContain("A");
             expect(lines[2]).toContain("B");
@@ -304,7 +308,7 @@ describe("renderer edge cases", () => {
 
         it("should handle marginLeft correctly (physical edge, not logical)", () => {
             const output = renderToString(
-                <Box width={20} height={1}>
+                <Box height={1} width={20}>
                     <Box marginLeft={3}>
                         <Text>X</Text>
                     </Box>
@@ -314,6 +318,7 @@ describe("renderer edge cases", () => {
 
             const line = output.split("\n")[0] || "";
             const xPos = line.indexOf("X");
+
             expect(xPos).toBe(3);
         });
     });
@@ -324,7 +329,7 @@ describe("renderer edge cases", () => {
         it("should render multi-line text in a tall box", () => {
             // Use a Box with flexDirection column wrapping Text elements for multi-line
             const output = renderToString(
-                <Box width={20} height={3} flexDirection="column">
+                <Box flexDirection="column" height={3} width={20}>
                     <Text>line1</Text>
                     <Text>line2</Text>
                     <Text>line3</Text>
@@ -333,6 +338,7 @@ describe("renderer edge cases", () => {
             );
 
             const lines = output.split("\n");
+
             expect(lines[0]).toContain("line1");
             expect(lines[1]).toContain("line2");
             expect(lines[2]).toContain("line3");
@@ -340,7 +346,7 @@ describe("renderer edge cases", () => {
 
         it("should clip children that exceed container height with overflow hidden", () => {
             const output = renderToString(
-                <Box width={20} height={2} flexDirection="column" overflow="hidden">
+                <Box flexDirection="column" height={2} overflow="hidden" width={20}>
                     <Box flexShrink={0}>
                         <Text>line1</Text>
                     </Box>
@@ -363,10 +369,10 @@ describe("renderer edge cases", () => {
 
     // ─── Spacer component ────────────────────────────────────────────────
 
-    describe("Spacer in various layouts", () => {
+    describe("spacer in various layouts", () => {
         it("should work in a column layout", () => {
             const output = renderToString(
-                <Box flexDirection="column" width={10} height={5}>
+                <Box flexDirection="column" height={5} width={10}>
                     <Text>top</Text>
                     <Spacer />
                     <Text>bottom</Text>
@@ -375,6 +381,7 @@ describe("renderer edge cases", () => {
             );
 
             const lines = output.split("\n");
+
             expect(lines[0]).toContain("top");
             // "bottom" should be at the last row
             expect(lines[lines.length - 1]).toContain("bottom");
@@ -386,9 +393,9 @@ describe("renderer edge cases", () => {
     describe("absolute positioning", () => {
         it("should position a box absolutely within its parent", () => {
             const output = renderToString(
-                <Box width={20} height={5} flexDirection="column">
+                <Box flexDirection="column" height={5} width={20}>
                     <Text>background</Text>
-                    <Box position="absolute" top={2} left={5}>
+                    <Box left={5} position="absolute" top={2}>
                         <Text>overlay</Text>
                     </Box>
                 </Box>,
@@ -397,37 +404,41 @@ describe("renderer edge cases", () => {
 
             expect(output).toContain("background");
             expect(output).toContain("overlay");
+
             // "overlay" should be at row 2
             const lines = output.split("\n");
+
             expect(lines[2]).toContain("overlay");
         });
     });
 
     // ─── Render-to-string cleanup ────────────────────────────────────────
 
-    describe("renderToString", () => {
+    describe(renderToString, () => {
         it("should trim trailing empty rows", () => {
             const output = renderToString(
-                <Box width={10} height={1}>
+                <Box height={1} width={10}>
                     <Text>hi</Text>
                 </Box>,
                 { columns: 20, rows: 10 },
             );
 
             const lines = output.split("\n");
+
             // Should not have 10 lines — trailing empty ones should be removed
             expect(lines.length).toBeLessThan(10);
         });
 
         it("should trim trailing spaces from each row", () => {
             const output = renderToString(
-                <Box width={5} height={1}>
+                <Box height={1} width={5}>
                     <Text>AB</Text>
                 </Box>,
                 { columns: 20, rows: 3 },
             );
 
             const lines = output.split("\n");
+
             // No trailing spaces
             for (const line of lines) {
                 expect(line).toBe(line.trimEnd());
@@ -436,7 +447,7 @@ describe("renderer edge cases", () => {
 
         it("should handle very small terminal (1x1)", () => {
             const output = renderToString(
-                <Box width={1} height={1}>
+                <Box height={1} width={1}>
                     <Text>X</Text>
                 </Box>,
                 { columns: 1, rows: 1 },
@@ -450,9 +461,10 @@ describe("renderer edge cases", () => {
 
     describe("paintBorder h=1 and w=1 degenerate cases", () => {
         it("h=1 with top+bottom: top border should take priority", () => {
-            const output = renderToString(<Box borderStyle="single" width={6} height={1} />, { columns: 10, rows: 3 });
+            const output = renderToString(<Box borderStyle="single" height={1} width={6} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
+
             // Top border should be painted (not bottom overwriting it)
             expect(line).toContain("┌");
             expect(line).toContain("┐");
@@ -462,19 +474,22 @@ describe("renderer edge cases", () => {
         });
 
         it("h=1 with bottom-only border: bottom should render", () => {
-            const output = renderToString(<Box borderStyle="single" borderTop={false} width={6} height={1} />, { columns: 10, rows: 3 });
+            const output = renderToString(<Box borderStyle="single" borderTop={false} height={1} width={6} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
+
             expect(line).toContain("└");
             expect(line).toContain("┘");
         });
 
         it("w=1 with all borders: should render vertical line character", () => {
-            const output = renderToString(<Box borderStyle="single" width={1} height={4} />, { columns: 5, rows: 6 });
+            const output = renderToString(<Box borderStyle="single" height={4} width={1} />, { columns: 5, rows: 6 });
 
             const lines = output.split("\n");
+
             // Top row should be topLeft (corners merge to vertical line for w=1 with both L+R)
             expect(lines[0]).toMatch(/[┌│]/);
+
             // Middle rows should be left/right vertical (they share the column)
             if (lines.length > 2) {
                 expect(lines[1]).toContain("│");
@@ -487,7 +502,7 @@ describe("renderer edge cases", () => {
     describe("nested Transform", () => {
         it("should apply inner transform before outer transform", () => {
             const output = renderToString(
-                <Box width={30} height={1} transform={(s: string) => s.toUpperCase()}>
+                <Box height={1} transform={(s: string) => s.toUpperCase()} width={30}>
                     <Text>hello </Text>
                     <Box transform={(s: string) => s.split("").reverse().join("")}>
                         <Text>world</Text>
@@ -526,7 +541,7 @@ describe("renderer edge cases", () => {
 
         it("should correctly clip when borderBottom is disabled", () => {
             const output = renderToString(
-                <Box borderStyle="single" borderBottom={false} height={5} overflow="hidden" width={20}>
+                <Box borderBottom={false} borderStyle="single" height={5} overflow="hidden" width={20}>
                     <Box flexDirection="column" flexShrink={0}>
                         <Text>visible1</Text>
                         <Text>visible2</Text>
@@ -549,8 +564,8 @@ describe("renderer edge cases", () => {
         it("should not queue border jobs for empty text nodes", () => {
             // Empty text should go through text path (not box path that queues borders)
             const output = renderToString(
-                <Box width={20} height={3} borderStyle="single">
-                    <Text>{""}</Text>
+                <Box borderStyle="single" height={3} width={20}>
+                    <Text />
                     <Text>visible</Text>
                 </Box>,
                 { columns: 25, rows: 5 },

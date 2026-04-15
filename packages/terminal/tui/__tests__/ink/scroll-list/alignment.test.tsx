@@ -22,10 +22,11 @@
  * - Auto alignment: minimal scroll to bring item fully into view
  */
 
-import { useRef, useState, useEffect } from "react";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import { useEffect, useRef, useState } from "react";
+import { describe, expect, it } from "vitest";
+
 import type { ScrollListRef } from "../../../src/ink/index";
-import { describe, it, expect } from "vitest";
+import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import waitFor from "../../helpers/wait-for";
 
 /**
@@ -34,7 +35,7 @@ import waitFor from "../../helpers/wait-for";
  */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe("ScrollAlignment", () => {
+describe("scrollAlignment", () => {
     /**
      * Tests for 'auto' alignment mode (default behavior).
      *
@@ -43,7 +44,7 @@ describe("ScrollAlignment", () => {
      * - If item is below viewport: scroll down to show item's bottom
      * - If item is already visible: don't scroll at all
      */
-    describe("Auto", () => {
+    describe("auto", () => {
         /**
          * Test: Scroll up when selecting an item above the current viewport.
          *
@@ -56,7 +57,7 @@ describe("ScrollAlignment", () => {
          */
         it("should scroll to top if item is above current viewport", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -64,13 +65,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="auto" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="auto" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -79,19 +80,22 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Manually scroll to offset 10 (viewport shows lines 10-14)
             scrollList.scrollTo(10);
             await waitFor(() => scrollList.getScrollOffset() === 10);
+
             expect(scrollList.getScrollOffset()).toBe(10);
 
             // Select item 5, which is above the viewport
             // Item 5 is at line 5. Since 5 < 10 (current offset), scroll up.
             // Auto mode: new offset = item top = 5
-            setIndexFn!(5);
+            setIndexFunction!(5);
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -110,7 +114,7 @@ describe("ScrollAlignment", () => {
          */
         it("should scroll to bottom if item is below current viewport", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -118,13 +122,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="auto" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="auto" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -133,14 +137,16 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Initially at offset 0. Viewport shows lines 0-4.
             // Select item 8 (at lines 8-9), which is below viewport.
             // Auto mode: scroll to show bottom. offset = itemBottom - viewport = 9 - 5 = 4
-            setIndexFn!(8);
+            setIndexFunction!(8);
             await waitFor(() => scrollList.getScrollOffset() === 4);
+
             expect(scrollList.getScrollOffset()).toBe(4);
 
             unmount();
@@ -158,7 +164,7 @@ describe("ScrollAlignment", () => {
          */
         it("should not scroll if item is already visible", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -166,13 +172,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="auto" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="auto" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -181,21 +187,24 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Viewport at offset 0 shows lines 0-4.
             // Item 2 (lines 2-3) is fully visible. No scroll needed.
-            setIndexFn!(2);
+            setIndexFunction!(2);
             // Item is already visible, offset stays 0. Give a brief delay then check.
             await delay(50);
+
             expect(scrollList.getScrollOffset()).toBe(0);
 
             // Now select item 7.
             // Item 7 is at line 7-8. From offset 0, it's below viewport (0-4).
             // Auto mode should scroll to show it: offset = 8 - 5 = 3.
-            setIndexFn!(7);
+            setIndexFunction!(7);
             await waitFor(() => scrollList.getScrollOffset() === 3);
+
             expect(scrollList.getScrollOffset()).toBe(3);
 
             // Now item 7 is visible (viewport shows 3-7).
@@ -204,6 +213,7 @@ describe("ScrollAlignment", () => {
             // So scrollTo(5) should result in offset 5 (within [3, 7]).
             scrollList.scrollTo(5);
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -213,7 +223,7 @@ describe("ScrollAlignment", () => {
     /**
      * Tests for explicit alignment modes: top, bottom, center.
      */
-    describe("Explicit Modes", () => {
+    describe("explicit Modes", () => {
         /**
          * Test: Top alignment - selected item at top of viewport.
          *
@@ -222,7 +232,7 @@ describe("ScrollAlignment", () => {
          */
         it("should align to top", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -230,13 +240,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="top" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="top" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -245,12 +255,14 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Top alignment: offset = item top = 10
-            setIndexFn!(10);
+            setIndexFunction!(10);
             await waitFor(() => scrollList.getScrollOffset() === 10);
+
             expect(scrollList.getScrollOffset()).toBe(10);
 
             unmount();
@@ -266,7 +278,7 @@ describe("ScrollAlignment", () => {
          */
         it("should align to bottom", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -274,13 +286,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="bottom" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="bottom" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -289,12 +301,14 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Bottom alignment: offset = itemTop + itemHeight - viewport = 10 + 1 - 5 = 6
-            setIndexFn!(10);
+            setIndexFunction!(10);
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -310,7 +324,7 @@ describe("ScrollAlignment", () => {
          */
         it("should align to center", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -318,13 +332,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="center" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="center" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -333,12 +347,14 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Center alignment: offset = itemCenter - viewportCenter = 10.5 - 2.5 = 8
-            setIndexFn!(10);
+            setIndexFunction!(10);
             await waitFor(() => scrollList.getScrollOffset() === 8);
+
             expect(scrollList.getScrollOffset()).toBe(8);
 
             unmount();
@@ -348,7 +364,7 @@ describe("ScrollAlignment", () => {
     /**
      * Tests for scroll offset clamping at list boundaries.
      */
-    describe("Clamping", () => {
+    describe("clamping", () => {
         /**
          * Test: Scroll offset is clamped when alignment would go out of bounds.
          *
@@ -364,7 +380,7 @@ describe("ScrollAlignment", () => {
          */
         it("should clamp to bounds when aligning would go out of bounds", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -372,13 +388,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="center" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="center" selectedIndex={index}>
                         {Array.from({ length: 10 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -387,21 +403,24 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
             // Total height 10. Viewport 5. Max scroll = 10 - 5 = 5.
 
             // Select item 1. Center of 1 is 1.5.
             // Target offset = 1.5 - 2.5 = -1. Clamp to 0.
-            setIndexFn!(1);
+            setIndexFunction!(1);
             // Offset stays 0 (clamped from negative). Give a brief delay then check.
             await delay(50);
+
             expect(scrollList.getScrollOffset()).toBe(0);
 
             // Select item 8. Center of 8 is 8.5.
             // Target offset = 8.5 - 2.5 = 6. Max is 5. Clamp to 5.
-            setIndexFn!(8);
+            setIndexFunction!(8);
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -411,7 +430,7 @@ describe("ScrollAlignment", () => {
     /**
      * Tests for boundary and edge cases.
      */
-    describe("Boundary Cases", () => {
+    describe("boundary Cases", () => {
         /**
          * Test: Aligning items larger than the viewport.
          *
@@ -426,7 +445,7 @@ describe("ScrollAlignment", () => {
          */
         it("should handle aligning items larger than the viewport", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -434,11 +453,11 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="auto" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="auto" selectedIndex={index}>
                         <Box height={1}>
                             <Text>Small</Text>
                         </Box>
@@ -453,13 +472,15 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Select large item (index 1). Top: 1. Height: 10. Bottom: 11.
             // Auto mode: bottom 11 > viewport end 5, so offset = 11 - 5 = 6
-            setIndexFn!(1);
+            setIndexFunction!(1);
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -479,7 +500,7 @@ describe("ScrollAlignment", () => {
          */
         it("should handle aligning the first item with bottom alignment (clamped)", async () => {
             let scrollListRef: ScrollListRef | null = null;
-            let setIndexFn: (i: number) => void;
+            let setIndexFunction: (i: number) => void;
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
@@ -487,13 +508,13 @@ describe("ScrollAlignment", () => {
 
                 useEffect(() => {
                     scrollListRef = ref.current;
-                    setIndexFn = setIndex;
+                    setIndexFunction = setIndex;
                 }, []);
 
                 return (
-                    <ScrollList ref={ref} height={5} scrollAlignment="bottom" selectedIndex={index}>
+                    <ScrollList height={5} ref={ref} scrollAlignment="bottom" selectedIndex={index}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
+                            <Box height={1} key={i}>
                                 <Text>{i}</Text>
                             </Box>
                         ))}
@@ -502,15 +523,17 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Bottom alignment for item 0:
             // offset = top + height - viewport = 0 + 1 - 5 = -4
             // Clamp to 0
-            setIndexFn!(0);
+            setIndexFunction!(0);
             // Offset stays 0 (clamped from negative). Give a brief delay then check.
             await delay(50);
+
             expect(scrollList.getScrollOffset()).toBe(0);
 
             unmount();

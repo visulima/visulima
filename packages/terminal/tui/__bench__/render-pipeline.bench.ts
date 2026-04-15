@@ -10,22 +10,21 @@ const COLS = 80;
 const ROWS = 24;
 const CELLS = COLS * ROWS;
 
-const simpleTree = (n: number) => {
-    return React.createElement(
+const simpleTree = (n: number) =>
+    React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
-        React.createElement("text", { color: "green", bold: true }, "Hello World"),
+        React.createElement("text", { bold: true, color: "green" }, "Hello World"),
         React.createElement("text", {}, `Counter: ${n}`),
     );
-};
 
-const complexTree = (n: number) => {
-    return React.createElement(
+const complexTree = (n: number) =>
+    React.createElement(
         "box",
-        { flexDirection: "column", width: COLS, height: ROWS },
+        { flexDirection: "column", height: ROWS, width: COLS },
         React.createElement(
             "box",
-            { borderStyle: "round", borderColor: "green", padding: 1, marginBottom: 1 },
+            { borderColor: "green", borderStyle: "round", marginBottom: 1, padding: 1 },
             React.createElement("text", { bold: true, color: "cyan" }, "ratatat benchmark"),
             React.createElement("text", { color: "white" }, `Frame: ${n}`),
         ),
@@ -53,7 +52,6 @@ const complexTree = (n: number) => {
         ),
         React.createElement("box", { marginTop: 1 }, React.createElement("text", { dim: true }, "Press Ctrl+C to exit")),
     );
-};
 
 const makeContainer = () => {
     const root = new LayoutNode();
@@ -61,49 +59,47 @@ const makeContainer = () => {
     root.yogaNode.setWidth(COLS);
     root.yogaNode.setHeight(ROWS);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const container = (TuiReconciler as any).createContainer(root, 0, null, false, null, "", () => {}, null);
 
     return { buffer: new Uint32Array(CELLS * 2), container, root };
 };
 
-const doRender = (ctx: ReturnType<typeof makeContainer>, element: React.ReactElement) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    TuiReconciler.updateContainer(element as any, ctx.container, null, () => {});
-    ctx.root.calculateLayout(COLS, ROWS);
-    renderTreeToBuffer(ctx.root, ctx.buffer, COLS, ROWS);
+const doRender = (context: ReturnType<typeof makeContainer>, element: React.ReactElement) => {
+    TuiReconciler.updateContainer(element as any, context.container, null, () => {});
+    context.root.calculateLayout(COLS, ROWS);
+    renderTreeToBuffer(context.root, context.buffer, COLS, ROWS);
 };
 
 describe("Render Pipeline", () => {
     describe("Mount + Render", () => {
-        const mountCtx = makeContainer();
+        const mountContext = makeContainer();
 
         bench("simple tree", () => {
-            doRender(mountCtx, simpleTree(0));
+            doRender(mountContext, simpleTree(0));
         });
 
         bench("complex tree", () => {
-            doRender(mountCtx, complexTree(0));
+            doRender(mountContext, complexTree(0));
         });
     });
 
     describe("Rerender (state change)", () => {
         let frameSimple = 0;
-        const simpleCtx = makeContainer();
+        const simpleContext = makeContainer();
 
-        doRender(simpleCtx, simpleTree(0));
+        doRender(simpleContext, simpleTree(0));
 
         bench("simple tree", () => {
-            doRender(simpleCtx, simpleTree(++frameSimple));
+            doRender(simpleContext, simpleTree(++frameSimple));
         });
 
         let frameComplex = 0;
-        const complexCtx = makeContainer();
+        const complexContext = makeContainer();
 
-        doRender(complexCtx, complexTree(0));
+        doRender(complexContext, complexTree(0));
 
         bench("complex tree", () => {
-            doRender(complexCtx, complexTree(++frameComplex));
+            doRender(complexContext, complexTree(++frameComplex));
         });
     });
 });

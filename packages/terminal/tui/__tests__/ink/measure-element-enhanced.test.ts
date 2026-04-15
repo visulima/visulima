@@ -12,9 +12,10 @@ import {
 } from "../../src/ink/measure-element";
 
 describe("measure-element enhanced", () => {
-    describe("getInnerWidth", () => {
+    describe(getInnerWidth, () => {
         it("should return width minus borders", () => {
             const node = createNode("ink-box");
+
             node.yogaNode!.setWidth(20);
             node.yogaNode!.setBorder(Yoga.EDGE_LEFT, 1);
             node.yogaNode!.setBorder(Yoga.EDGE_RIGHT, 1);
@@ -30,9 +31,10 @@ describe("measure-element enhanced", () => {
         });
     });
 
-    describe("getInnerHeight", () => {
+    describe(getInnerHeight, () => {
         it("should return height minus borders", () => {
             const node = createNode("ink-box");
+
             node.yogaNode!.setWidth(20);
             node.yogaNode!.setHeight(10);
             node.yogaNode!.setBorder(Yoga.EDGE_TOP, 1);
@@ -43,7 +45,7 @@ describe("measure-element enhanced", () => {
         });
     });
 
-    describe("getBoundingBox", () => {
+    describe(getBoundingBox, () => {
         it("should return position and dimensions", () => {
             const root = createNode("ink-root");
             const child = createNode("ink-box");
@@ -75,7 +77,7 @@ describe("measure-element enhanced", () => {
         });
     });
 
-    describe("getAddedScrollHeight", () => {
+    describe(getAddedScrollHeight, () => {
         it("should return 0 when no scroll state", () => {
             const node = createNode("ink-box");
 
@@ -84,6 +86,7 @@ describe("measure-element enhanced", () => {
 
         it("should return difference between scroll height and actual scroll height", () => {
             const node = createNode("ink-box");
+
             node.internal_scrollState = {
                 actualScrollHeight: 50,
                 clientHeight: 10,
@@ -98,14 +101,14 @@ describe("measure-element enhanced", () => {
         });
     });
 
-    describe("calculateScrollbarThumb", () => {
+    describe(calculateScrollbarThumb, () => {
         it("should calculate thumb position for vertical scrollbar", () => {
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
+                scrollbarDimension: 10,
                 scrollDimension: 100,
                 scrollPosition: 0,
-                scrollbarDimension: 10,
             });
 
             expect(result.startIndex).toBeGreaterThanOrEqual(0);
@@ -117,9 +120,9 @@ describe("measure-element enhanced", () => {
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
+                scrollbarDimension: 10,
                 scrollDimension: 100,
                 scrollPosition: 90,
-                scrollbarDimension: 10,
             });
 
             expect(result.endIndex).toBe(10);
@@ -129,16 +132,16 @@ describe("measure-element enhanced", () => {
             const result = calculateScrollbarThumb({
                 axis: "vertical",
                 clientDimension: 10,
+                scrollbarDimension: 10,
                 scrollDimension: 10,
                 scrollPosition: 0,
-                scrollbarDimension: 10,
             });
 
             expect(result.startIndex).toBe(0);
         });
     });
 
-    describe("calculateScrollbarLayout", () => {
+    describe(calculateScrollbarLayout, () => {
         it("should return undefined when content fits", () => {
             const result = calculateScrollbarLayout({
                 axis: "vertical",

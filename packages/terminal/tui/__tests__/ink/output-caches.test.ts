@@ -94,7 +94,7 @@ describe("output-caches", () => {
         const caches = new OutputCaches();
         const line = caches.getStyledLine("Hello");
 
-        expect(line.length).toBe(5);
+        expect(line).toHaveLength(5);
         expect(line.getText()).toBe("Hello");
     });
 
@@ -104,7 +104,7 @@ describe("output-caches", () => {
         const caches = new OutputCaches();
         const line = caches.getStyledLine("\u001B[31mA\u001B[39m");
 
-        expect(line.length).toBe(1);
+        expect(line).toHaveLength(1);
         expect(line.getText()).toBe("A");
     });
 
@@ -137,7 +137,7 @@ describe("output-caches", () => {
         const caches = new OutputCaches();
         const line = caches.getStyledLine("漢");
 
-        expect(line.length).toBe(1);
+        expect(line).toHaveLength(1);
         expect(line.getFullWidth(0)).toBe(true);
     });
 

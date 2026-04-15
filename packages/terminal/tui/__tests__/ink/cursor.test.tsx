@@ -69,6 +69,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -86,6 +87,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -104,6 +106,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -124,6 +127,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -169,6 +173,7 @@ describe("cursor", () => {
         };
 
         const { unmount } = render(<Parent />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -182,6 +187,7 @@ describe("cursor", () => {
         emitReadable(stdin, "\r");
         await waitFor(() => {
             const output = getWriteCalls(stdout).slice(writesBeforeEnter).join("");
+
             return output.includes(hideCursorEscape);
         });
 
@@ -225,6 +231,7 @@ describe("cursor", () => {
 
         await act(() => {
             const result = render(<Test />, { concurrent: true, interactive: true, stdin, stdout });
+
             currentUnmount = result.unmount;
         });
 
@@ -270,6 +277,7 @@ describe("cursor", () => {
         };
 
         const { unmount } = render(<MultiLineApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -300,6 +308,7 @@ describe("cursor", () => {
 
         const stdout = createStdout();
         const { unmount } = render(<DebugStdoutWriteApp />, { debug: true, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
@@ -325,6 +334,7 @@ describe("cursor", () => {
         );
 
         const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -351,6 +361,7 @@ describe("cursor", () => {
         );
 
         const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -386,6 +397,7 @@ describe("cursor", () => {
         };
 
         const { unmount } = render(<InlineInputApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(2)));
@@ -418,6 +430,7 @@ describe("cursor", () => {
         );
 
         const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
@@ -444,6 +457,7 @@ describe("cursor", () => {
         );
 
         const { unmount } = render(<InlineApp />, { interactive: true, stdin, stdout });
+
         currentUnmount = unmount;
 
         await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));

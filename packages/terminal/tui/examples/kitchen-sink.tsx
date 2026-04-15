@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, default-case, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-bitwise, no-confusing-arrow, no-empty, no-param-reassign, no-plusplus, no-secrets/no-secrets, no-underscore-dangle, react-perf/jsx-no-new-array-as-prop, react-refresh/only-export-components, react-web-api/no-leaked-timeout, react-x/no-array-index-key, react-x/no-unnecessary-use-memo, react/jsx-props-no-spreading, sonarjs/cognitive-complexity, sonarjs/no-dead-store, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/no-unused-vars, sonarjs/pseudo-random, unicorn/prefer-math-trunc, unicorn/prevent-abbreviations, unused-imports/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/no-use-before-define, func-style, no-empty, no-param-reassign, no-secrets/no-secrets, no-underscore-dangle, react-x/no-unnecessary-use-memo, sonarjs/no-dead-store, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/no-unused-vars, sonarjs/pseudo-random, unicorn/prefer-math-trunc, unicorn/prevent-abbreviations */
 
 /**
  * kitchen-sink.tsx — Ratatat interactive kitchen sink
@@ -48,18 +48,21 @@ const Spinner = ({ frames = DEFAULT_SPINNER_FRAMES, interval = 80, ...textProps 
 
     React.useEffect(() => {
         if (interval <= 0 || resolvedFrames.length <= 1) return;
+
         const timer = setInterval(() => setIndex((p) => (p + 1) % resolvedFrames.length), interval);
+
         return () => clearInterval(timer);
     }, [interval, resolvedFrames]);
 
     return React.createElement(Text, textProps, resolvedFrames[index] ?? "-");
 };
 
-const ProgressBar = ({ value, max = 100, width = 20, bracket = true, completeChar = "█", incompleteChar = "░", showPercentage = true, ...textProps }) => {
+const ProgressBar = ({ bracket = true, completeChar = "█", incompleteChar = "░", max = 100, showPercentage = true, value, width = 20, ...textProps }) => {
     const ratio = Math.max(0, Math.min(value, max)) / (max > 0 ? max : 1);
     const filled = Math.round(ratio * Math.max(1, width));
     const body = completeChar.repeat(filled) + incompleteChar.repeat(Math.max(0, width - filled));
     const bar = bracket ? `[${body}]` : body;
+
     return React.createElement(Text, textProps, showPercentage ? `${bar} ${Math.round(ratio * 100)}%` : bar);
 };
 

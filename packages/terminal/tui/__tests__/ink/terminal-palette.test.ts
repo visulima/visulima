@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { isTerminalPaletteQuerySupported } from "../../src/ink/terminal-palette";
 
@@ -7,13 +7,14 @@ describe("terminal-palette", () => {
         const original = process.env["TERM_PROGRAM"];
 
         process.env["TERM_PROGRAM"] = "kitty";
+
         expect(isTerminalPaletteQuerySupported()).toBe(true);
 
         process.env["TERM_PROGRAM"] = "unknown-terminal";
         // May return true if TERM is xterm or WT_SESSION is set
         const result = isTerminalPaletteQuerySupported();
 
-        expect(typeof result).toBe("boolean");
+        expectTypeOf(result).toBeBoolean();
 
         if (original === undefined) {
             delete process.env["TERM_PROGRAM"];
@@ -26,6 +27,7 @@ describe("terminal-palette", () => {
         const original = process.env["TERM_PROGRAM"];
 
         process.env["TERM_PROGRAM"] = "WezTerm";
+
         expect(isTerminalPaletteQuerySupported()).toBe(true);
 
         if (original === undefined) {
@@ -41,6 +43,7 @@ describe("terminal-palette", () => {
 
         process.env["TERM_PROGRAM"] = "";
         process.env["TERM"] = "xterm-256color";
+
         expect(isTerminalPaletteQuerySupported()).toBe(true);
 
         if (originalProgram === undefined) {

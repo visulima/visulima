@@ -6,7 +6,7 @@ import { render, Textarea } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("Textarea", () => {
+describe(Textarea, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -18,14 +18,14 @@ describe("Textarea", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             // Find the last render output, skipping bracketed paste mode and other control sequences
             for (let index = calls.length - 1; index >= 0; index--) {
-                const arg = calls[index]?.[0] as string;
+                const argument = calls[index]?.[0] as string;
 
-                if (typeof arg === "string" && arg.length > 0 && !arg.startsWith("\u001B[?")) {
-                    return arg;
+                if (typeof argument === "string" && argument.length > 0 && !argument.startsWith("\u001B[?")) {
+                    return argument;
                 }
             }
 
@@ -98,7 +98,7 @@ describe("Textarea", () => {
         const onChange = vi.fn();
         const { stdin } = await setup(<Textarea defaultValue="hello" onChange={onChange} />);
 
-        emitReadable(stdin, "\x7F"); // Backspace
+        emitReadable(stdin, "\u007F"); // Backspace
         await delay(50);
 
         expect(onChange).toHaveBeenCalledWith("hell");
@@ -234,10 +234,12 @@ describe("Textarea", () => {
         // Move cursor to middle (after "hello"), then Ctrl+K
         emitReadable(stdin, "\u001B[H"); // Home
         await delay(50);
+
         for (let index = 0; index < 5; index++) {
             emitReadable(stdin, "\u001B[C"); // right arrow x5
             await delay(20);
         }
+
         emitReadable(stdin, "\u000B"); // Ctrl+K
         await delay(50);
 
@@ -362,14 +364,14 @@ describe("useTextBuffer", () => {
 
         await delay(50);
 
-        const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+        const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
         let output = "";
 
         for (let index = calls.length - 1; index >= 0; index--) {
-            const arg = calls[index]?.[0] as string;
+            const argument = calls[index]?.[0] as string;
 
-            if (typeof arg === "string" && arg.length > 0 && !arg.startsWith("\u001B[?")) {
-                output = arg;
+            if (typeof argument === "string" && argument.length > 0 && !argument.startsWith("\u001B[?")) {
+                output = argument;
                 break;
             }
         }

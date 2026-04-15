@@ -1,14 +1,14 @@
 import delay from "delay";
 import React, { useRef } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { Box, render, Text, useTextSelection } from "../../src/ink/index";
 import { Range, Selection } from "../../src/ink/selection";
 import { createStdin } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("Selection/Range foundation", () => {
-    it("Range should track start and end positions", () => {
+describe("selection/Range foundation", () => {
+    it("range should track start and end positions", () => {
         expect.assertions(3);
 
         const range = new Range();
@@ -23,7 +23,7 @@ describe("Selection/Range foundation", () => {
         expect(range.startContainer).toBeDefined();
     });
 
-    it("Selection should manage ranges", () => {
+    it("selection should manage ranges", () => {
         expect.assertions(3);
 
         const selection = new Selection();
@@ -33,13 +33,15 @@ describe("Selection/Range foundation", () => {
         const range = new Range();
 
         selection.addRange(range);
+
         expect(selection.rangeCount).toBe(1);
 
         selection.removeAllRanges();
+
         expect(selection.rangeCount).toBe(0);
     });
 
-    it("Selection should not add duplicate ranges", () => {
+    it("selection should not add duplicate ranges", () => {
         expect.assertions(1);
 
         const selection = new Selection();
@@ -51,7 +53,7 @@ describe("Selection/Range foundation", () => {
         expect(selection.rangeCount).toBe(1);
     });
 
-    it("Selection should notify on change", () => {
+    it("selection should notify on change", () => {
         expect.assertions(1);
 
         const selection = new Selection();
@@ -69,7 +71,7 @@ describe("Selection/Range foundation", () => {
         expect(changeCount).toBe(2);
     });
 
-    it("Selection onChange should return unsubscribe function", () => {
+    it("selection onChange should return unsubscribe function", () => {
         expect.assertions(1);
 
         const selection = new Selection();
@@ -88,7 +90,7 @@ describe("Selection/Range foundation", () => {
         expect(changeCount).toBe(1);
     });
 
-    it("Range collapse should set both endpoints equal", () => {
+    it("range collapse should set both endpoints equal", () => {
         expect.assertions(2);
 
         const node = { nodeName: "#text", nodeValue: "test" } as any;
@@ -102,7 +104,7 @@ describe("Selection/Range foundation", () => {
         expect(range.endOffset).toBe(0);
     });
 
-    it("Range collapse to end should use endOffset", () => {
+    it("range collapse to end should use endOffset", () => {
         expect.assertions(2);
 
         const node = { nodeName: "#text", nodeValue: "test" } as any;
@@ -116,7 +118,7 @@ describe("Selection/Range foundation", () => {
         expect(range.endOffset).toBe(5);
     });
 
-    it("Selection removeRange should reduce rangeCount", () => {
+    it("selection removeRange should reduce rangeCount", () => {
         expect.assertions(2);
 
         const selection = new Selection();
@@ -125,9 +127,11 @@ describe("Selection/Range foundation", () => {
 
         selection.addRange(range1);
         selection.addRange(range2);
+
         expect(selection.rangeCount).toBe(2);
 
         selection.removeRange(range1);
+
         expect(selection.rangeCount).toBe(1);
     });
 });
@@ -142,11 +146,12 @@ describe("useTextSelection hook (mounted)", () => {
     });
 
     it("should provide selection API when mounted", async () => {
-        expect.assertions(3);
+        // expectTypeOf is compile-time only — only the runtime expects count.
+        expect.assertions(2);
 
         let hookResult: ReturnType<typeof useTextSelection> | undefined;
 
-        function TestComponent() {
+        const TestComponent = () => {
             const ref = useRef(null);
 
             hookResult = useTextSelection(ref);
@@ -156,7 +161,7 @@ describe("useTextSelection hook (mounted)", () => {
                     <Text>selectable text</Text>
                 </Box>
             );
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -167,15 +172,17 @@ describe("useTextSelection hook (mounted)", () => {
 
         expect(hookResult).toBeDefined();
         expect(hookResult!.selectedText).toBe("");
-        expect(typeof hookResult!.clearSelection).toBe("function");
+
+        expectTypeOf(hookResult!.clearSelection).toBeFunction();
     });
 
     it("should call onSelectionChange callback", async () => {
-        expect.assertions(1);
+        // expectTypeOf is compile-time only — no runtime assertions in this test body.
+        expect.assertions(0);
 
         const onSelectionChange = vi.fn();
 
-        function TestComponent() {
+        const TestComponent = () => {
             const ref = useRef(null);
 
             useTextSelection(ref, { onSelectionChange });
@@ -185,7 +192,7 @@ describe("useTextSelection hook (mounted)", () => {
                     <Text>text</Text>
                 </Box>
             );
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -196,7 +203,7 @@ describe("useTextSelection hook (mounted)", () => {
 
         // onSelectionChange is only called when the underlying Selection fires onChange
         // which happens via selectAll/clearSelection or programmatic range manipulation
-        expect(typeof onSelectionChange).toBe("function");
+        expectTypeOf(onSelectionChange).toBeFunction();
     });
 
     it("should respect isActive=false", async () => {
@@ -204,7 +211,7 @@ describe("useTextSelection hook (mounted)", () => {
 
         let hookResult: ReturnType<typeof useTextSelection> | undefined;
 
-        function TestComponent() {
+        const TestComponent = () => {
             const ref = useRef(null);
 
             hookResult = useTextSelection(ref, { isActive: false });
@@ -214,7 +221,7 @@ describe("useTextSelection hook (mounted)", () => {
                     <Text>text</Text>
                 </Box>
             );
-        }
+        };
 
         const stdout = createStdout();
         const stdin = createStdin();

@@ -6,7 +6,7 @@ import { render, Slider } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
-describe("Slider", () => {
+describe(Slider, () => {
     let currentUnmount: (() => void) | undefined;
 
     const setup = async (jsx: React.JSX.Element) => {
@@ -18,7 +18,7 @@ describe("Slider", () => {
         await delay(50);
 
         const getOutput = () => {
-            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+            const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
             return (calls.at(-1)?.[0] ?? "") as string;
         };
@@ -45,7 +45,7 @@ describe("Slider", () => {
     it("should render filled and empty portions", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(<Slider defaultValue={0} min={0} max={100} width={10} />);
+        const { getOutput } = await setup(<Slider defaultValue={0} max={100} min={0} width={10} />);
         const output = getOutput();
 
         expect(output).toContain("\u25CF"); // thumb at position 0
@@ -80,7 +80,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={0} min={0} max={100} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={0} max={100} min={0} onChange={onChange} />);
 
         emitReadable(stdin, "\u001B[D"); // left arrow
         await delay(50);
@@ -92,7 +92,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={100} min={0} max={100} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={100} max={100} min={0} onChange={onChange} />);
 
         emitReadable(stdin, "\u001B[C"); // right arrow
         await delay(50);
@@ -128,7 +128,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={50} step={5} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={50} onChange={onChange} step={5} />);
 
         emitReadable(stdin, "\u001B[C"); // right arrow
         await delay(50);
@@ -140,7 +140,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={0} min={0} max={100} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={0} max={100} min={0} onChange={onChange} />);
 
         emitReadable(stdin, "5"); // 50%
         await delay(50);
@@ -177,7 +177,7 @@ describe("Slider", () => {
 
         const onChange = vi.fn();
 
-        function Controlled() {
+        const Controlled = () => {
             const [value, setValue] = useState(50);
 
             return (
@@ -192,7 +192,7 @@ describe("Slider", () => {
                     width={10}
                 />
             );
-        }
+        };
 
         const { stdin } = await setup(<Controlled />);
 
@@ -227,7 +227,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={50} step={2} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={50} onChange={onChange} step={2} />);
 
         emitReadable(stdin, "\u001B[5~"); // Page Up
         await delay(50);
@@ -239,7 +239,7 @@ describe("Slider", () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(<Slider defaultValue={50} step={2} onChange={onChange} />);
+        const { stdin } = await setup(<Slider defaultValue={50} onChange={onChange} step={2} />);
 
         emitReadable(stdin, "\u001B[6~"); // Page Down
         await delay(50);

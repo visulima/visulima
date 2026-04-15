@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return, sonarjs/pseudo-random */
 import { useContext, useEffect, useMemo } from "react";
 
-import FocusContext from "../components/FocusContext";
+import FocusContext from "../components/focus-context";
 import useStdin from "./use-stdin";
 
 type Input = {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import isIntersecting from "../../../src/ink/mouse/is-intersecting";
 
-describe("isIntersecting", () => {
+describe(isIntersecting, () => {
     const element = { height: 10, left: 5, top: 5, width: 10 };
 
     it("should return true when mouse is inside element", () => {

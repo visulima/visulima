@@ -17,10 +17,11 @@
  * - Items must use explicit height or flex behavior for accurate measurement
  */
 
-import { useRef, useState, useEffect } from "react";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import { useEffect, useRef, useState } from "react";
+import { describe, expect, it, vi } from "vitest";
+
 import type { ScrollListRef } from "../../../src/ink/index";
-import { describe, it, expect, vi } from "vitest";
+import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 
 /**
  * Helper function to introduce artificial delays in tests.
@@ -28,7 +29,7 @@ import { describe, it, expect, vi } from "vitest";
  */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe("ContentHeight", () => {
+describe("contentHeight", () => {
     /**
      * Test: Content height updates when elements are added or removed.
      *
@@ -41,21 +42,25 @@ describe("ContentHeight", () => {
      */
     it("should update ContentHeight when adding/removing elements", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setItemsFn: any;
+        let setItemsFunction: any;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
             const [items, setItems] = useState([1, 2]); // Initial height 2
+
             useEffect(() => {
                 scrollListRef = ref.current;
-                setItemsFn = setItems;
+                setItemsFunction = setItems;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5}>
+                <ScrollList height={5} ref={ref}>
                     {items.map((i) => (
-                        <Box key={i} height={1} flexShrink={0}>
-                            <Text>Item {i}</Text>
+                        <Box flexShrink={0} height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -63,19 +68,23 @@ describe("ContentHeight", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         const scrollList = scrollListRef!;
+
         expect(scrollList.getContentHeight()).toBe(2);
 
         // Add items
-        setItemsFn([1, 2, 3, 4]);
+        setItemsFunction([1, 2, 3, 4]);
         await delay(100);
+
         expect(scrollList.getContentHeight()).toBe(4);
 
         // Remove items
-        setItemsFn([1]);
+        setItemsFunction([1]);
         await delay(100);
+
         expect(scrollList.getContentHeight()).toBe(1);
 
         unmount();
@@ -86,15 +95,13 @@ describe("ContentHeight", () => {
      */
     it("should update ContentHeight when element size changes", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setHeightFn: any;
+        let setHeightFunction: any;
 
-        const Wrapper = ({ children, height }: { children: React.ReactNode; height: number }) => {
-            return (
-                <Box height={height} flexShrink={0}>
-                    {children}
-                </Box>
-            );
-        };
+        const Wrapper = ({ children, height }: { children: React.ReactNode; height: number }) => (
+            <Box flexShrink={0} height={height}>
+                {children}
+            </Box>
+        );
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -102,15 +109,15 @@ describe("ContentHeight", () => {
 
             useEffect(() => {
                 scrollListRef = ref.current;
-                setHeightFn = setHeight;
+                setHeightFunction = setHeight;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5}>
+                <ScrollList height={5} ref={ref}>
                     <Wrapper height={height}>
                         <Text>Item 1</Text>
                     </Wrapper>
-                    <Box height={1} flexShrink={0}>
+                    <Box flexShrink={0} height={1}>
                         <Text>Item 2</Text>
                     </Box>
                 </ScrollList>
@@ -118,13 +125,15 @@ describe("ContentHeight", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         const scrollList = scrollListRef!;
+
         expect(scrollList.getContentHeight()).toBe(2); // 1 + 1
 
         // Change height of first item
-        setHeightFn(3);
+        setHeightFunction(3);
         await delay(100);
 
         // Check if height updated
@@ -140,8 +149,9 @@ describe("ContentHeight", () => {
         let scrollListRef: ScrollListRef | null = null;
         const DynamicItem = ({ index }: { index: number }) => {
             const [lines, setLines] = useState(1);
+
             useEffect(() => {
-                (global as any).window[`setLines_${index}`] = setLines;
+                (globalThis as any).window[`setLines_${index}`] = setLines;
             }, [index]);
 
             return (
@@ -155,12 +165,13 @@ describe("ContentHeight", () => {
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
+
             useEffect(() => {
                 scrollListRef = ref.current;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={10}>
+                <ScrollList height={10} ref={ref}>
                     <DynamicItem index={0} />
                     <Box height={1}>
                         <Text>Fixed</Text>
@@ -170,22 +181,28 @@ describe("ContentHeight", () => {
         };
 
         const globalStore: any = {};
-        (global as any).window = globalStore;
+
+        (globalThis as any).window = globalStore;
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
         const scrollList = scrollListRef!;
+
         expect(scrollList.getContentHeight()).toBe(2);
 
         if (globalStore["setLines_0"]) {
             globalStore["setLines_0"](5);
         }
+
         await delay(100);
+
         expect(scrollList.getContentHeight()).toBe(2); // Still thinks it is 2
 
         scrollList.remeasureItem(0);
         await delay(100);
+
         expect(scrollList.getContentHeight()).toBe(6);
 
         unmount();
@@ -196,18 +213,19 @@ describe("ContentHeight", () => {
      */
     it("should trigger onContentHeightChange callback accurately", async () => {
         const onHeightChange = vi.fn();
-        let setItemsFn: any;
+        let setItemsFunction: any;
 
         const TestComponent = () => {
             const [items, setItems] = useState([1]);
+
             useEffect(() => {
-                setItemsFn = setItems;
+                setItemsFunction = setItems;
             }, []);
 
             return (
                 <ScrollList height={5} onContentHeightChange={onHeightChange}>
                     {items.map((i) => (
-                        <Box key={i} height={1} flexShrink={0}>
+                        <Box flexShrink={0} height={1} key={i}>
                             <Text>{i}</Text>
                         </Box>
                     ))}
@@ -216,23 +234,28 @@ describe("ContentHeight", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await delay(100);
 
-        expect(onHeightChange).toHaveBeenCalled();
+        expect(onHeightChange).toHaveBeenCalledWith(1, expect.any(Number));
+
         // Usually called with (1, 0) initially or just (1, undefined)
         const initialCall = onHeightChange.mock.calls[0];
+
         expect(initialCall?.[0]).toBe(1);
 
         // Add Items
         onHeightChange.mockClear();
-        setItemsFn([1, 2, 3]);
+        setItemsFunction([1, 2, 3]);
         await delay(100);
+
         expect(onHeightChange).toHaveBeenCalledWith(3, 1);
 
         // Remove Items
         onHeightChange.mockClear();
-        setItemsFn([1]);
+        setItemsFunction([1]);
         await delay(100);
+
         expect(onHeightChange).toHaveBeenCalledWith(1, 3);
 
         unmount();

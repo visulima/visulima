@@ -1,6 +1,6 @@
 import { strip } from "@visulima/ansi";
 import { boxen } from "@visulima/boxen";
-import { blue, bold, dim, green } from "@visulima/colorize";
+import { dim, green } from "@visulima/colorize";
 import { indent as indentString } from "@visulima/string";
 import cliBoxes from "cli-boxes";
 import { describe, expect, it } from "vitest";

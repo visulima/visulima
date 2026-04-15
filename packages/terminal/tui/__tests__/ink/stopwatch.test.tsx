@@ -19,11 +19,11 @@ describe("stopwatch", () => {
         it("starts with zero elapsed", () => {
             expect.assertions(1);
 
-            function StopwatchDisplay() {
+            const StopwatchDisplay = () => {
                 const { elapsed } = useStopwatch();
 
                 return <Text>{String(elapsed)}</Text>;
-            }
+            };
 
             const output = renderToString(<StopwatchDisplay />);
 
@@ -33,11 +33,11 @@ describe("stopwatch", () => {
         it("shows not running by default", () => {
             expect.assertions(1);
 
-            function StopwatchDisplay() {
+            const StopwatchDisplay = () => {
                 const { isRunning } = useStopwatch();
 
                 return <Text>{isRunning ? "running" : "stopped"}</Text>;
-            }
+            };
 
             const output = renderToString(<StopwatchDisplay />);
 
@@ -47,14 +47,15 @@ describe("stopwatch", () => {
         it("autoStart begins counting", async () => {
             expect.assertions(1);
 
-            function StopwatchDisplay() {
+            const StopwatchDisplay = () => {
                 const { elapsed } = useStopwatch({ autoStart: true, interval: 50 });
 
                 return <Text>{String(elapsed)}</Text>;
-            }
+            };
 
             const stdout = createStdout();
             const { unmount } = render(<StopwatchDisplay />, { debug: true, stdout });
+
             currentUnmount = unmount;
 
             await delay(200);
@@ -67,11 +68,11 @@ describe("stopwatch", () => {
         it("starts with empty laps", () => {
             expect.assertions(1);
 
-            function StopwatchDisplay() {
+            const StopwatchDisplay = () => {
                 const { laps } = useStopwatch();
 
                 return <Text>{String(laps.length)}</Text>;
-            }
+            };
 
             const output = renderToString(<StopwatchDisplay />);
 
@@ -79,7 +80,7 @@ describe("stopwatch", () => {
         });
     });
 
-    describe("Stopwatch component", () => {
+    describe("stopwatch component", () => {
         it("renders formatted time", () => {
             expect.assertions(1);
 

@@ -3,21 +3,21 @@ import { describe, expect, it } from "vitest";
 import { isControlCharacter, isInsertableInput } from "../../src/ink/input-utils";
 
 describe("input-utils", () => {
-    describe("isControlCharacter", () => {
+    describe(isControlCharacter, () => {
         it("should detect NUL", () => {
-            expect(isControlCharacter("\x00")).toBe(true);
+            expect(isControlCharacter("\u0000")).toBe(true);
         });
 
         it("should detect ESC", () => {
-            expect(isControlCharacter("\x1B")).toBe(true);
+            expect(isControlCharacter("\u001B")).toBe(true);
         });
 
         it("should detect DEL (0x7F)", () => {
-            expect(isControlCharacter("\x7F")).toBe(true);
+            expect(isControlCharacter("\u007F")).toBe(true);
         });
 
         it("should detect BEL", () => {
-            expect(isControlCharacter("\x07")).toBe(true);
+            expect(isControlCharacter("\u0007")).toBe(true);
         });
 
         it("should not detect printable ASCII", () => {
@@ -37,7 +37,7 @@ describe("input-utils", () => {
         });
     });
 
-    describe("isInsertableInput", () => {
+    describe(isInsertableInput, () => {
         it("should accept regular characters", () => {
             expect(isInsertableInput("a", { ctrl: false, meta: false })).toBe(true);
             expect(isInsertableInput("Z", { ctrl: false, meta: false })).toBe(true);
@@ -49,8 +49,8 @@ describe("input-utils", () => {
         });
 
         it("should reject control characters", () => {
-            expect(isInsertableInput("\x01", { ctrl: false, meta: false })).toBe(false);
-            expect(isInsertableInput("\x7F", { ctrl: false, meta: false })).toBe(false);
+            expect(isInsertableInput("\u0001", { ctrl: false, meta: false })).toBe(false);
+            expect(isInsertableInput("\u007F", { ctrl: false, meta: false })).toBe(false);
         });
 
         it("should reject Ctrl chords", () => {

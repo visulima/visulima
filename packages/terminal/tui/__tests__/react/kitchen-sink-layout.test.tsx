@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 /**
  * Snapshot tests for the kitchen-sink Layout (Flexbox) section.
  *
@@ -91,11 +92,13 @@ const LayoutSection = () => (
 describe("kitchen-sink Layout (Flexbox) snapshots", () => {
     it("should render the full layout section at 130x40", () => {
         const output = renderToString(<LayoutSection />, { columns: 130, rows: 40 });
+
         expect(output).toMatchSnapshot();
     });
 
     it("should render the full layout section at 80x30 (narrower terminal)", () => {
         const output = renderToString(<LayoutSection />, { columns: 80, rows: 30 });
+
         expect(output).toMatchSnapshot();
     });
 
@@ -111,6 +114,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 30, rows: 5 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -125,13 +129,14 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 20, rows: 7 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
 
     // ─── Spacer ──────────────────────────────────────────────────────────
 
-    describe("Spacer", () => {
+    describe("spacer", () => {
         it("should push content to opposite ends of a row", () => {
             const output = renderToString(
                 <Box borderStyle="single" width={24}>
@@ -141,6 +146,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 30, rows: 5 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -157,6 +163,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 30, rows: 7 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -175,6 +182,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 25, rows: 7 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -185,33 +193,35 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
         it("should apply row gap=3 between columns", () => {
             const output = renderToString(
                 <Box flexDirection="row" gap={3}>
-                    <Box borderStyle="single" width={8} height={3}>
+                    <Box borderStyle="single" height={3} width={8}>
                         <Text>A</Text>
                     </Box>
-                    <Box borderStyle="single" width={8} height={3}>
+                    <Box borderStyle="single" height={3} width={8}>
                         <Text>B</Text>
                     </Box>
-                    <Box borderStyle="single" width={8} height={3}>
+                    <Box borderStyle="single" height={3} width={8}>
                         <Text>C</Text>
                     </Box>
                 </Box>,
                 { columns: 40, rows: 5 },
             );
+
             expect(output).toMatchSnapshot();
         });
 
         it("should apply column gap=1 between rows", () => {
             const output = renderToString(
                 <Box flexDirection="column" gap={1}>
-                    <Box borderStyle="single" width={12} height={3}>
+                    <Box borderStyle="single" height={3} width={12}>
                         <Text>Row 1</Text>
                     </Box>
-                    <Box borderStyle="single" width={12} height={3}>
+                    <Box borderStyle="single" height={3} width={12}>
                         <Text>Row 2</Text>
                     </Box>
                 </Box>,
                 { columns: 20, rows: 10 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -228,6 +238,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 15, rows: 5 },
             );
+
             expect(output).toMatchSnapshot();
         });
 
@@ -240,6 +251,7 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
                 </Box>,
                 { columns: 25, rows: 3 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -249,16 +261,17 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
     describe("flexGrow", () => {
         it("should distribute remaining space according to flexGrow", () => {
             const output = renderToString(
-                <Box width={30} height={3}>
+                <Box height={3} width={30}>
                     <Box borderStyle="single" flexGrow={1} height={3}>
                         <Text>grow</Text>
                     </Box>
-                    <Box borderStyle="single" width={8} height={3}>
+                    <Box borderStyle="single" height={3} width={8}>
                         <Text>fixed</Text>
                     </Box>
                 </Box>,
                 { columns: 35, rows: 5 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });
@@ -268,23 +281,25 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
     describe("padding and margin", () => {
         it("should render box with padding", () => {
             const output = renderToString(
-                <Box borderStyle="single" paddingX={2} paddingY={1} width={20} height={5}>
+                <Box borderStyle="single" height={5} paddingX={2} paddingY={1} width={20}>
                     <Text>padded</Text>
                 </Box>,
                 { columns: 25, rows: 7 },
             );
+
             expect(output).toMatchSnapshot();
         });
 
         it("should render box with margin", () => {
             const output = renderToString(
-                <Box width={20} height={5} flexDirection="column">
-                    <Box borderStyle="single" marginLeft={3} width={10} height={3}>
+                <Box flexDirection="column" height={5} width={20}>
+                    <Box borderStyle="single" height={3} marginLeft={3} width={10}>
                         <Text>margin</Text>
                     </Box>
                 </Box>,
                 { columns: 25, rows: 7 },
             );
+
             expect(output).toMatchSnapshot();
         });
     });

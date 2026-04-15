@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable jsdoc/lines-before-block */
 /**
- * markdown.tsx — <Markdown> component demo
+ * markdown.tsx — &lt;Markdown> component demo
  *
  * Controls:
  *   q / Esc     quit

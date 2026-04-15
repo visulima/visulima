@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/ban-ts-comment, @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-for-of-array/no-for-of-array, no-plusplus, no-underscore-dangle, react-hooks/exhaustive-deps, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-use-before-define, func-style, no-underscore-dangle, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
 
 /**
  * rattata.tsx — Rattata AI coding assistant (demo)

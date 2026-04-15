@@ -20,13 +20,14 @@
  * - Invalid indices are handled gracefully (no crash, no scroll)
  */
 
-import { useRef, useState, useEffect } from "react";
-import { Box, render, ScrollList, Text } from "../../../src/ink/index";
+import { useEffect, useRef, useState } from "react";
+import { describe, expect, it } from "vitest";
+
 import type { ScrollListRef } from "../../../src/ink/index";
-import { describe, it, expect } from "vitest";
+import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import waitFor from "../../helpers/wait-for";
 
-describe("Selection", () => {
+describe("selection", () => {
     /**
      * Test: Basic auto-scroll behavior when selectedIndex changes.
      *
@@ -44,7 +45,7 @@ describe("Selection", () => {
      */
     it("should scroll to selected item when selectedIndex prop changes", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setIndexFn: (i: number) => void;
+        let setIndexFunction: (i: number) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -52,14 +53,17 @@ describe("Selection", () => {
 
             useEffect(() => {
                 scrollListRef = ref.current;
-                setIndexFn = setIndex;
+                setIndexFunction = setIndex;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={index}>
+                <ScrollList height={5} ref={ref} selectedIndex={index}>
                     {Array.from({ length: 10 }).map((_, i) => (
-                        <Box key={i} height={1}>
-                            <Text>Item {i}</Text>
+                        <Box height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -67,6 +71,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -76,15 +81,17 @@ describe("Selection", () => {
 
         // Change to index 8, should scroll to show it (auto alignment)
         // Item 8 spans lines 8-9. To show line 9 in viewport of 5, offset = 9 - 5 = 4
-        setIndexFn!(8);
+        setIndexFunction!(8);
         await waitFor(() => scrollList.getScrollOffset() === 4);
+
         expect(scrollList.getScrollOffset()).toBe(4);
 
         // Change to index 2, should scroll back up
         // Item 2 is at line 2. Current viewport shows 4-9.
         // Since 2 < 4, scroll to show item at top: offset = 2
-        setIndexFn!(2);
+        setIndexFunction!(2);
         await waitFor(() => scrollList.getScrollOffset() === 2);
+
         expect(scrollList.getScrollOffset()).toBe(2);
 
         unmount();
@@ -110,14 +117,19 @@ describe("Selection", () => {
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
+
             useEffect(() => {
                 scrollListRef = ref.current;
             }, []);
+
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={100}>
+                <ScrollList height={5} ref={ref} selectedIndex={100}>
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <Box key={i} height={1}>
-                            <Text>Item {i}</Text>
+                        <Box height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -125,6 +137,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -156,14 +169,19 @@ describe("Selection", () => {
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
+
             useEffect(() => {
                 scrollListRef = ref.current;
             }, []);
+
             return (
-                <ScrollList ref={ref} height={5} selectedIndex={-1}>
+                <ScrollList height={5} ref={ref} selectedIndex={-1}>
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <Box key={i} height={1}>
-                            <Text>Item {i}</Text>
+                        <Box height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -171,6 +189,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -199,14 +218,19 @@ describe("Selection", () => {
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
+
             useEffect(() => {
                 scrollListRef = ref.current;
             }, []);
+
             return (
-                <ScrollList ref={ref} height={5}>
+                <ScrollList height={5} ref={ref}>
                     {Array.from({ length: 10 }).map((_, i) => (
-                        <Box key={i} height={1}>
-                            <Text>Item {i}</Text>
+                        <Box height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -214,6 +238,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
@@ -221,6 +246,7 @@ describe("Selection", () => {
         // Manual scroll should work even without selectedIndex
         scrollList.scrollTo(5);
         await waitFor(() => scrollList.getScrollOffset() === 5);
+
         expect(scrollList.getScrollOffset()).toBe(5);
 
         unmount();
@@ -241,7 +267,7 @@ describe("Selection", () => {
      */
     it("should handle dynamic selectedIndex changes", async () => {
         let scrollListRef: ScrollListRef | null = null;
-        let setIndexFn: (i: number) => void;
+        let setIndexFunction: (i: number) => void;
 
         const TestComponent = () => {
             const ref = useRef<ScrollListRef>(null);
@@ -249,14 +275,17 @@ describe("Selection", () => {
 
             useEffect(() => {
                 scrollListRef = ref.current;
-                setIndexFn = setIndex;
+                setIndexFunction = setIndex;
             }, []);
 
             return (
-                <ScrollList ref={ref} height={3} selectedIndex={index}>
+                <ScrollList height={3} ref={ref} selectedIndex={index}>
                     {Array.from({ length: 20 }).map((_, i) => (
-                        <Box key={i} height={1}>
-                            <Text>Item {i}</Text>
+                        <Box height={1} key={i}>
+                            <Text>
+                                Item
+                                {i}
+                            </Text>
                         </Box>
                     ))}
                 </ScrollList>
@@ -264,15 +293,17 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
+
         await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
         // Simulate rapid keyboard navigation
         for (let i = 0; i <= 15; i++) {
-            setIndexFn!(i);
+            setIndexFunction!(i);
             // Wait for each scroll to settle before moving to the next
             const expectedOffset = Math.max(0, i + 1 - 3);
+
             await waitFor(() => scrollList.getScrollOffset() === expectedOffset);
         }
 
@@ -286,7 +317,7 @@ describe("Selection", () => {
     /**
      * Tests for edge case: empty list.
      */
-    describe("With Empty List", () => {
+    describe("with Empty List", () => {
         /**
          * Test: Empty list with selectedIndex=0.
          *
@@ -304,17 +335,20 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={0}>
+                    <ScrollList height={5} ref={ref} selectedIndex={0}>
                         {/* Empty list - no children */}
                     </ScrollList>
                 );
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
@@ -329,7 +363,7 @@ describe("Selection", () => {
     /**
      * Tests for edge case: single item list.
      */
-    describe("With Single Item", () => {
+    describe("with Single Item", () => {
         /**
          * Test: Single item list.
          *
@@ -347,11 +381,13 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={0}>
+                    <ScrollList height={5} ref={ref} selectedIndex={0}>
                         <Box height={1}>
                             <Text>Only Item</Text>
                         </Box>
@@ -360,11 +396,13 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Single item should work correctly
             await waitFor(() => scrollList.getContentHeight() === 1);
+
             expect(scrollList.getScrollOffset()).toBe(0);
             expect(scrollList.getContentHeight()).toBe(1);
 
@@ -378,7 +416,7 @@ describe("Selection", () => {
      * When a selected item exists, scroll methods (scrollTo, scrollBy, scrollToTop,
      * scrollToBottom) are constrained to keep the selected item visible in the viewport.
      */
-    describe("Scroll Constraints", () => {
+    describe("scroll Constraints", () => {
         /**
          * Test: scrollTo is constrained to keep selected item visible.
          *
@@ -397,14 +435,19 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={10}>
+                    <ScrollList height={5} ref={ref} selectedIndex={10}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
-                                <Text>Item {i}</Text>
+                            <Box height={1} key={i}>
+                                <Text>
+                                    Item
+                                    {i}
+                                </Text>
                             </Box>
                         ))}
                     </ScrollList>
@@ -412,6 +455,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -423,16 +467,19 @@ describe("Selection", () => {
             // Try to scroll to 0 - should clamp to 6
             scrollList.scrollTo(0);
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // Try to scroll to 15 - should clamp to 10
             scrollList.scrollTo(15);
             await waitFor(() => scrollList.getScrollOffset() === 10);
+
             expect(scrollList.getScrollOffset()).toBe(10);
 
             // Scroll to 8 - within bounds, should work
             scrollList.scrollTo(8);
             await waitFor(() => scrollList.getScrollOffset() === 8);
+
             expect(scrollList.getScrollOffset()).toBe(8);
 
             unmount();
@@ -452,14 +499,19 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={10}>
+                    <ScrollList height={5} ref={ref} selectedIndex={10}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
-                                <Text>Item {i}</Text>
+                            <Box height={1} key={i}>
+                                <Text>
+                                    Item
+                                    {i}
+                                </Text>
                             </Box>
                         ))}
                     </ScrollList>
@@ -467,6 +519,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -477,6 +530,7 @@ describe("Selection", () => {
             // scrollToTop with item 10 selected should go to min offset = 6
             scrollList.scrollToTop();
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -498,14 +552,19 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={5}>
+                    <ScrollList height={5} ref={ref} selectedIndex={5}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
-                                <Text>Item {i}</Text>
+                            <Box height={1} key={i}>
+                                <Text>
+                                    Item
+                                    {i}
+                                </Text>
                             </Box>
                         ))}
                     </ScrollList>
@@ -513,6 +572,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -524,6 +584,7 @@ describe("Selection", () => {
             // (because item 5 visible range is [1, 5])
             scrollList.scrollToBottom();
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -543,14 +604,19 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={10}>
+                    <ScrollList height={5} ref={ref} selectedIndex={10}>
                         {Array.from({ length: 20 }).map((_, i) => (
-                            <Box key={i} height={1}>
-                                <Text>Item {i}</Text>
+                            <Box height={1} key={i}>
+                                <Text>
+                                    Item
+                                    {i}
+                                </Text>
                             </Box>
                         ))}
                     </ScrollList>
@@ -558,6 +624,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -568,16 +635,19 @@ describe("Selection", () => {
             // Start at offset 8 (within [6, 10])
             scrollList.scrollTo(8);
             await waitFor(() => scrollList.getScrollOffset() === 8);
+
             expect(scrollList.getScrollOffset()).toBe(8);
 
             // scrollBy(-5): 8 - 5 = 3, but min is 6, so should be 6
             scrollList.scrollBy(-5);
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // scrollBy(+10): 6 + 10 = 16, but max is 10, so should be 10
             scrollList.scrollBy(10);
             await waitFor(() => scrollList.getScrollOffset() === 10);
+
             expect(scrollList.getScrollOffset()).toBe(10);
 
             unmount();
@@ -595,14 +665,19 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5}>
+                    <ScrollList height={5} ref={ref}>
                         {Array.from({ length: 10 }).map((_, i) => (
-                            <Box key={i} height={1}>
-                                <Text>Item {i}</Text>
+                            <Box height={1} key={i}>
+                                <Text>
+                                    Item
+                                    {i}
+                                </Text>
                             </Box>
                         ))}
                     </ScrollList>
@@ -610,6 +685,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -618,14 +694,17 @@ describe("Selection", () => {
             // Without selectedIndex, we can scroll freely within [0, 5]
             scrollList.scrollTo(5);
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             scrollList.scrollToTop();
             await waitFor(() => scrollList.getScrollOffset() === 0);
+
             expect(scrollList.getScrollOffset()).toBe(0);
 
             scrollList.scrollToBottom();
             await waitFor(() => scrollList.getScrollOffset() === 5);
+
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -657,11 +736,13 @@ describe("Selection", () => {
 
             const TestComponent = () => {
                 const ref = useRef<ScrollListRef>(null);
+
                 useEffect(() => {
                     scrollListRef = ref.current;
                 }, []);
+
                 return (
-                    <ScrollList ref={ref} height={5} selectedIndex={1}>
+                    <ScrollList height={5} ref={ref} selectedIndex={1}>
                         <Box height={1}>
                             <Text>Small 0</Text>
                         </Box>
@@ -676,6 +757,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
+
             await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
@@ -692,26 +774,31 @@ describe("Selection", () => {
             // Try scrollTo(0) - should clamp to min=1
             scrollList.scrollTo(0);
             await waitFor(() => scrollList.getScrollOffset() === 1);
+
             expect(scrollList.getScrollOffset()).toBe(1);
 
             // scrollToTop should go to min=1
             scrollList.scrollToTop();
             await waitFor(() => scrollList.getScrollOffset() === 1);
+
             expect(scrollList.getScrollOffset()).toBe(1);
 
             // scrollTo(3) should work (within [1, 6])
             scrollList.scrollTo(3);
             await waitFor(() => scrollList.getScrollOffset() === 3);
+
             expect(scrollList.getScrollOffset()).toBe(3);
 
             // scrollTo(10) should clamp to max=6
             scrollList.scrollTo(10);
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // scrollToBottom should go to max=6
             scrollList.scrollToBottom();
             await waitFor(() => scrollList.getScrollOffset() === 6);
+
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();

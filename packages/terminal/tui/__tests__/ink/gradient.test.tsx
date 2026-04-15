@@ -9,7 +9,7 @@ describe("gradient", () => {
     it("throws when neither `name` nor `colors` is provided", () => {
         expect.assertions(1);
 
-        expect(() => renderToString(<Gradient>{""}</Gradient>)).toThrow("Either `name` or `colors` prop must be provided");
+        expect(() => renderToString(<Gradient />)).toThrow("Either `name` or `colors` prop must be provided");
     });
 
     it("throws when both `name` and `colors` are provided", () => {

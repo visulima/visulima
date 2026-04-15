@@ -5,20 +5,19 @@ import { bench, describe } from "vitest";
 
 import { renderToString } from "../src/react/render-to-string";
 
-const TuiSimpleApp = () => {
-    return React.createElement(
+const TuiSimpleApp = () =>
+    React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
-        React.createElement("text", { color: "green", bold: true }, "Hello World"),
+        React.createElement("text", { bold: true, color: "green" }, "Hello World"),
         React.createElement("text", {}, "A simple line of text."),
     );
-};
 
-const TuiStyledApp = () => {
-    return React.createElement(
+const TuiStyledApp = () =>
+    React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
-        React.createElement("text", { underline: true, bold: true, color: "red" }, "Hello World"),
+        React.createElement("text", { bold: true, color: "red", underline: true }, "Hello World"),
         React.createElement(
             "box",
             { marginTop: 1, width: 60 },
@@ -26,7 +25,7 @@ const TuiStyledApp = () => {
         ),
         React.createElement(
             "box",
-            { marginTop: 1, flexDirection: "column" },
+            { flexDirection: "column", marginTop: 1 },
             React.createElement("text", { backgroundColor: "white", color: "black" }, "Colors:"),
             React.createElement(
                 "box",
@@ -37,15 +36,14 @@ const TuiStyledApp = () => {
             ),
         ),
     );
-};
 
-const TuiDashboardApp = () => {
-    return React.createElement(
+const TuiDashboardApp = () =>
+    React.createElement(
         "box",
-        { flexDirection: "column", width: 80, height: 24 },
+        { flexDirection: "column", height: 24, width: 80 },
         React.createElement(
             "box",
-            { borderStyle: "round", borderColor: "green", padding: 1, marginBottom: 1 },
+            { borderColor: "green", borderStyle: "round", marginBottom: 1, padding: 1 },
             React.createElement("text", { bold: true, color: "cyan" }, "Dashboard"),
         ),
         React.createElement(
@@ -71,22 +69,20 @@ const TuiDashboardApp = () => {
             ),
         ),
     );
-};
 
-const InkSimpleApp = () => {
-    return React.createElement(
+const InkSimpleApp = () =>
+    React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
-        React.createElement(InkText, { color: "green", bold: true }, "Hello World"),
+        React.createElement(InkText, { bold: true, color: "green" }, "Hello World"),
         React.createElement(InkText, {}, "A simple line of text."),
     );
-};
 
-const InkStyledApp = () => {
-    return React.createElement(
+const InkStyledApp = () =>
+    React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
-        React.createElement(InkText, { underline: true, bold: true, color: "red" }, "Hello World"),
+        React.createElement(InkText, { bold: true, color: "red", underline: true }, "Hello World"),
         React.createElement(
             InkBox,
             { marginTop: 1, width: 60 },
@@ -94,7 +90,7 @@ const InkStyledApp = () => {
         ),
         React.createElement(
             InkBox,
-            { marginTop: 1, flexDirection: "column" },
+            { flexDirection: "column", marginTop: 1 },
             React.createElement(InkText, { backgroundColor: "white", color: "black" }, "Colors:"),
             React.createElement(
                 InkBox,
@@ -105,15 +101,14 @@ const InkStyledApp = () => {
             ),
         ),
     );
-};
 
-const InkDashboardApp = () => {
-    return React.createElement(
+const InkDashboardApp = () =>
+    React.createElement(
         InkBox,
-        { flexDirection: "column", width: 80, height: 24 },
+        { flexDirection: "column", height: 24, width: 80 },
         React.createElement(
             InkBox,
-            { borderStyle: "round", borderColor: "green", padding: 1, marginBottom: 1 },
+            { borderColor: "green", borderStyle: "round", marginBottom: 1, padding: 1 },
             React.createElement(InkText, { bold: true, color: "cyan" }, "Dashboard"),
         ),
         React.createElement(
@@ -139,7 +134,6 @@ const InkDashboardApp = () => {
             ),
         ),
     );
-};
 
 describe("renderToString", () => {
     describe("Simple component", () => {

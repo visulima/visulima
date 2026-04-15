@@ -166,6 +166,12 @@ justifyContent               alignItems         Spacer / nesting
 └────────────────────────┘"
 `;
 
+exports[`kitchen-sink Layout (Flexbox) snapshots > spacer > should push content to opposite ends of a row 1`] = `
+"┌──────────────────────┐
+│◀ left         right ▶│
+└──────────────────────┘"
+`;
+
 exports[`kitchen-sink Layout (Flexbox) snapshots > staircase boxes > should render boxes with increasing heights in a row 1`] = `
 "┌────┐ ┌────┐ ┌────┐
 └────┘ │  2 │ │    │

@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/lines-before-block */
 /**
- * select-input.tsx — <SelectInput> component demo
+ * select-input.tsx — &lt;SelectInput> component demo
  *
  * Controls:
  *   ↑/↓ or j/k   navigate

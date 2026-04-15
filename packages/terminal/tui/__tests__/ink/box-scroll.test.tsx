@@ -1,7 +1,7 @@
 /**
  * Integration tests for Box overflow="scroll" — ported from upstream ink.
  *
- * These verify that <Box overflowY="scroll" scrollTop={n}> renders correct
+ * These verify that &lt;Box overflowY="scroll" scrollTop={n}> renders correct
  * clipping, scrollbar characters, and scroll position behavior.
  */
 import { describe, expect, it } from "vitest";
@@ -17,7 +17,7 @@ const tallText = Array.from({ length: 20 }, (_, i) => `line ${i}`).join("\n");
 describe("box scroll – vertical", () => {
     it("renders vertical scrollbar at default scrollTop 0", () => {
         const output = renderToString(
-            <Box height={5} overflowY="scroll" borderStyle="round" flexDirection="column" width={15}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -34,7 +34,7 @@ describe("box scroll – vertical", () => {
 
     it("renders vertical scroll with scrollTop offset", () => {
         const output = renderToString(
-            <Box height={5} overflowY="scroll" borderStyle="round" flexDirection="column" width={15} scrollTop={10}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={10} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -50,7 +50,7 @@ describe("box scroll – vertical", () => {
 
     it("clamps scrollTop to bottom when exceeding content", () => {
         const output = renderToString(
-            <Box height={5} overflowY="scroll" borderStyle="round" flexDirection="column" width={15} scrollTop={Number.MAX_SAFE_INTEGER}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={Number.MAX_SAFE_INTEGER} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -65,7 +65,7 @@ describe("box scroll – vertical", () => {
 
     it("renders in narrow container", () => {
         const output = renderToString(
-            <Box height={5} overflowY="scroll" borderStyle="round" flexDirection="column" width={9}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" width={9}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -82,7 +82,7 @@ describe("box scroll – vertical", () => {
 describe("box scroll – horizontal", () => {
     it("renders horizontal scrollbar at default scrollLeft 0", () => {
         const output = renderToString(
-            <Box width={15} height={4} overflowX="scroll" overflowY="hidden" borderStyle="round" flexDirection="row">
+            <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
                     <Text>The quick brown fox jumps over the lazy dog</Text>
                 </Box>
@@ -97,7 +97,7 @@ describe("box scroll – horizontal", () => {
 
     it("renders horizontal scroll with scrollLeft offset", () => {
         const output = renderToString(
-            <Box width={15} height={4} overflowX="scroll" overflowY="hidden" borderStyle="round" flexDirection="row" scrollLeft={9}>
+            <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" scrollLeft={9} width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
                     <Text>The quick brown fox jumps over the lazy dog</Text>
                 </Box>
@@ -111,7 +111,7 @@ describe("box scroll – horizontal", () => {
 
     it("clamps scrollLeft to end when exceeding content", () => {
         const output = renderToString(
-            <Box width={15} height={4} overflowX="scroll" overflowY="hidden" borderStyle="round" flexDirection="row" scrollLeft={Number.MAX_SAFE_INTEGER}>
+            <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" scrollLeft={Number.MAX_SAFE_INTEGER} width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
                     <Text>The quick brown fox jumps over the lazy dog</Text>
                 </Box>
@@ -128,8 +128,8 @@ describe("box scroll – horizontal", () => {
 describe("box scroll – both axes", () => {
     it("renders both vertical and horizontal scrollbars", () => {
         const output = renderToString(
-            <Box width={15} height={5} overflow="scroll" borderStyle="round" padding={1} flexDirection="column">
-                <Box width={100} height={100} flexShrink={0}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflow="scroll" padding={1} width={15}>
+                <Box flexShrink={0} height={100} width={100}>
                     <Text>Scroll me</Text>
                 </Box>
             </Box>,
@@ -142,8 +142,8 @@ describe("box scroll – both axes", () => {
 
     it("renders both axes with scroll offsets", () => {
         const output = renderToString(
-            <Box width={15} height={5} overflow="scroll" borderStyle="round" padding={1} flexDirection="column" scrollTop={50} scrollLeft={50}>
-                <Box width={100} height={100} flexShrink={0}>
+            <Box borderStyle="round" flexDirection="column" height={5} overflow="scroll" padding={1} scrollLeft={50} scrollTop={50} width={15}>
+                <Box flexShrink={0} height={100} width={100}>
                     <Text>Scroll me</Text>
                 </Box>
             </Box>,
@@ -162,19 +162,20 @@ describe("box scroll – dynamic updates", () => {
         const stdout = createStdout(100);
 
         const { rerender } = render(
-            <Box width={15} height={5} overflowY="scroll" borderStyle="round" scrollTop={0} flexDirection="column">
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={0} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
             </Box>,
-            { stdout, debug: true },
+            { debug: true, stdout },
         );
 
         const firstRender = stdout.get();
+
         expect(firstRender).toContain("line 0");
 
         rerender(
-            <Box width={15} height={5} overflowY="scroll" borderStyle="round" scrollTop={5} flexDirection="column">
+            <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={5} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -182,6 +183,7 @@ describe("box scroll – dynamic updates", () => {
         );
 
         const secondRender = stdout.get();
+
         expect(secondRender).toContain("line 5");
         expect(secondRender).not.toMatch(/\bline 0\b/);
     });
@@ -192,8 +194,8 @@ describe("box scroll – dynamic updates", () => {
 describe("box scroll – flexGrow", () => {
     it("renders scrollbar in flexGrow container", () => {
         const output = renderToString(
-            <Box width={20} height={5}>
-                <Box flexGrow={1} overflowY="scroll" borderStyle="round" flexDirection="column" scrollTop={10}>
+            <Box height={5} width={20}>
+                <Box borderStyle="round" flexDirection="column" flexGrow={1} overflowY="scroll" scrollTop={10}>
                     <Box flexDirection="column" flexShrink={0}>
                         <Text>{tallText}</Text>
                     </Box>
@@ -212,7 +214,7 @@ describe("box scroll – flexGrow", () => {
 describe("box scroll – padding", () => {
     it("scrollTop 0 with padding preserves padding space", () => {
         const output = renderToString(
-            <Box width={15} height={7} overflowY="scroll" borderStyle="round" padding={2} flexDirection="column" overflow="hidden" scrollTop={0}>
+            <Box borderStyle="round" flexDirection="column" height={7} overflow="hidden" overflowY="scroll" padding={2} scrollTop={0} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>
@@ -225,14 +227,14 @@ describe("box scroll – padding", () => {
     it("scrollTop max with padding shows last lines", () => {
         const output = renderToString(
             <Box
-                width={15}
-                height={7}
-                overflowY="scroll"
                 borderStyle="round"
-                padding={2}
                 flexDirection="column"
+                height={7}
                 overflow="hidden"
+                overflowY="scroll"
+                padding={2}
                 scrollTop={Number.MAX_SAFE_INTEGER}
+                width={15}
             >
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
@@ -249,7 +251,7 @@ describe("box scroll – padding", () => {
 describe("box scroll – no scrollbar needed", () => {
     it("does not render scrollbar when content is smaller than container", () => {
         const output = renderToString(
-            <Box width={20} height={10} overflow="scroll" borderStyle="round" flexDirection="column">
+            <Box borderStyle="round" flexDirection="column" height={10} overflow="scroll" width={20}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>Fit</Text>
                 </Box>
@@ -265,8 +267,8 @@ describe("box scroll – no scrollbar needed", () => {
         const content = Array.from({ length: 8 }, (_, i) => `line ${i}`).join("\n");
 
         const output = renderToString(
-            <Box width={20} height={10} overflow="scroll" borderStyle="round" flexDirection="column">
-                <Box width={18} height={8} flexShrink={0}>
+            <Box borderStyle="round" flexDirection="column" height={10} overflow="scroll" width={20}>
+                <Box flexShrink={0} height={8} width={18}>
                     <Text>{content}</Text>
                 </Box>
             </Box>,
@@ -283,12 +285,12 @@ describe("box scroll – no scrollbar needed", () => {
 describe("box scroll – nested", () => {
     it("renders nested scroll containers independently", () => {
         const output = renderToString(
-            <Box width={40} height={10} overflow="scroll" borderStyle="double" flexDirection="column" scrollTop={17}>
+            <Box borderStyle="double" flexDirection="column" height={10} overflow="scroll" scrollTop={17} width={40}>
                 <Box flexDirection="column" flexShrink={0}>
                     <Box flexDirection="column">
                         <Text>{tallText}</Text>
                     </Box>
-                    <Box width={20} height={5} overflow="scroll" borderStyle="round" flexDirection="column" scrollTop={12}>
+                    <Box borderStyle="round" flexDirection="column" height={5} overflow="scroll" scrollTop={12} width={20}>
                         <Box flexDirection="column" flexShrink={0}>
                             <Text>{tallText}</Text>
                         </Box>
@@ -312,8 +314,8 @@ describe("box scroll – nested", () => {
 describe("box scroll – scrollbar color", () => {
     it("applies custom scrollbar thumb color", () => {
         const output = renderToString(
-            <Box width={15} height={5} overflow="scroll" borderStyle="round" scrollbarThumbColor="red">
-                <Box width={100} height={100} flexShrink={0}>
+            <Box borderStyle="round" height={5} overflow="scroll" scrollbarThumbColor="red" width={15}>
+                <Box flexShrink={0} height={100} width={100}>
                     <Text>Scroll me</Text>
                 </Box>
             </Box>,
@@ -330,8 +332,8 @@ describe("box scroll – scrollbar color", () => {
 describe("box scroll – overflow modes", () => {
     it("overflow hidden clips content without scrollbar", () => {
         const output = renderToString(
-            <Box width={15} height={5} overflow="hidden" borderStyle="round">
-                <Box width={100} height={100} flexShrink={0}>
+            <Box borderStyle="round" height={5} overflow="hidden" width={15}>
+                <Box flexShrink={0} height={100} width={100}>
                     <Text>{tallText}</Text>
                 </Box>
             </Box>,
@@ -347,8 +349,8 @@ describe("box scroll – overflow modes", () => {
 
     it("overflow visible does not clip", () => {
         const output = renderToString(
-            <Box width={15} height={5} overflow="visible" borderStyle="round">
-                <Box width={100} height={100} flexShrink={0}>
+            <Box borderStyle="round" height={5} overflow="visible" width={15}>
+                <Box flexShrink={0} height={100} width={100}>
                     <Text>{tallText}</Text>
                 </Box>
             </Box>,

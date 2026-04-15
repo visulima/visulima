@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 // These tests run in the CI native-build workflow where the compiled .node
 // binary is present.  They verify that the NAPI-RS binding loads correctly
@@ -26,7 +26,8 @@ describe("native-binding", () => {
         }
 
         expect(binding.Renderer).toBeDefined();
-        expect(typeof binding.Renderer).toBe("function");
+
+        expectTypeOf(binding.Renderer).toBeFunction();
     });
 
     it("should export TerminalGuard constructor", async () => {
@@ -37,7 +38,8 @@ describe("native-binding", () => {
         }
 
         expect(binding.TerminalGuard).toBeDefined();
-        expect(typeof binding.TerminalGuard).toBe("function");
+
+        expectTypeOf(binding.TerminalGuard).toBeFunction();
     });
 
     it("should export terminalSize function", async () => {
@@ -48,7 +50,8 @@ describe("native-binding", () => {
         }
 
         expect(binding.terminalSize).toBeDefined();
-        expect(typeof binding.terminalSize).toBe("function");
+
+        expectTypeOf(binding.terminalSize).toBeFunction();
     });
 
     it("should return valid terminal size", async () => {
@@ -70,8 +73,10 @@ describe("native-binding", () => {
         }
 
         expect(size).toBeDefined();
-        expect(typeof size.cols).toBe("number");
-        expect(typeof size.rows).toBe("number");
+
+        expectTypeOf(size.cols).toBeNumber();
+        expectTypeOf(size.rows).toBeNumber();
+
         expect(size.cols).toBeGreaterThan(0);
         expect(size.rows).toBeGreaterThan(0);
     });
@@ -88,10 +93,11 @@ describe("native-binding", () => {
         expect(renderer).toBeDefined();
         expect(renderer.width).toBe(80);
         expect(renderer.height).toBe(24);
-        expect(typeof renderer.render).toBe("function");
-        expect(typeof renderer.renderDiff).toBe("function");
-        expect(typeof renderer.resize).toBe("function");
-        expect(typeof renderer.setRowOffset).toBe("function");
-        expect(typeof renderer.writeRaw).toBe("function");
+
+        expectTypeOf(renderer.render).toBeFunction();
+        expectTypeOf(renderer.renderDiff).toBeFunction();
+        expectTypeOf(renderer.resize).toBeFunction();
+        expectTypeOf(renderer.setRowOffset).toBeFunction();
+        expectTypeOf(renderer.writeRaw).toBeFunction();
     });
 });

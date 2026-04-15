@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/aria-props, react-perf/jsx-no-new-object-as-prop, react-refresh/only-export-components */
+/* eslint-disable jsx-a11y/aria-props */
 import { Box, Text } from "@visulima/tui";
 import { render, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";

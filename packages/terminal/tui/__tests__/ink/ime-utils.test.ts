@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { IMECompositionBuffer, isIMEInput } from "../../src/ink/ime-utils";
 
-describe("isIMEInput", () => {
+describe(isIMEInput, () => {
     describe("returns false for ASCII input", () => {
         it("empty string", () => {
             expect(isIMEInput("")).toBe(false);
@@ -15,7 +15,7 @@ describe("isIMEInput", () => {
             expect(isIMEInput(" ")).toBe(false);
         });
 
-        it("ASCII control characters", () => {
+        it("aSCII control characters", () => {
             expect(isIMEInput("\r")).toBe(false);
             expect(isIMEInput("\n")).toBe(false);
             expect(isIMEInput("\t")).toBe(false);
@@ -40,42 +40,42 @@ describe("isIMEInput", () => {
     });
 
     describe("returns true for CJK input", () => {
-        it("Chinese characters", () => {
+        it("chinese characters", () => {
             expect(isIMEInput("\u4F60")).toBe(true); // 你
             expect(isIMEInput("\u4F60\u597D")).toBe(true); // 你好
         });
 
-        it("Japanese Hiragana", () => {
+        it("japanese Hiragana", () => {
             expect(isIMEInput("\u3042")).toBe(true); // あ
             expect(isIMEInput("\u3053\u3093\u306B\u3061\u306F")).toBe(true); // こんにちは
         });
 
-        it("Japanese Katakana", () => {
+        it("japanese Katakana", () => {
             expect(isIMEInput("\u30A2")).toBe(true); // ア
             expect(isIMEInput("\u30AB\u30BF\u30AB\u30CA")).toBe(true); // カタカナ
         });
 
-        it("CJK extension characters", () => {
+        it("cJK extension characters", () => {
             expect(isIMEInput("\u3400")).toBe(true); // CJK Extension A
             expect(isIMEInput("\uF900")).toBe(true); // CJK Compatibility Ideographs
         });
     });
 
     describe("returns true for Korean input", () => {
-        it("Hangul syllables", () => {
+        it("hangul syllables", () => {
             expect(isIMEInput("\uAC00")).toBe(true); // 가
             expect(isIMEInput("\uC548\uB155")).toBe(true); // 안녕
             expect(isIMEInput("\uC548\uB155\uD558\uC138\uC694")).toBe(true); // 안녕하세요
         });
 
-        it("Hangul Jamo", () => {
+        it("hangul Jamo", () => {
             expect(isIMEInput("\u1100")).toBe(true); // ᄀ
             expect(isIMEInput("\u3130")).toBe(true); // Hangul Compatibility Jamo
         });
     });
 
     describe("returns true for Vietnamese input", () => {
-        it("Vietnamese-specific precomposed characters (above U+00FF)", () => {
+        it("vietnamese-specific precomposed characters (above U+00FF)", () => {
             expect(isIMEInput("\u0103")).toBe(true); // ă
             expect(isIMEInput("\u0110")).toBe(true); // Đ
             expect(isIMEInput("\u01A1")).toBe(true); // ơ
@@ -91,24 +91,24 @@ describe("isIMEInput", () => {
     });
 
     describe("returns true for other scripts", () => {
-        it("Thai characters", () => {
+        it("thai characters", () => {
             expect(isIMEInput("\u0E2A")).toBe(true); // ส
             expect(isIMEInput("\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35")).toBe(true); // สวัสดี
         });
 
-        it("Arabic characters", () => {
+        it("arabic characters", () => {
             expect(isIMEInput("\u0645")).toBe(true); // م
             expect(isIMEInput("\u0645\u0631\u062D\u0628\u0627")).toBe(true); // مرحبا
         });
 
-        it("Devanagari characters", () => {
+        it("devanagari characters", () => {
             expect(isIMEInput("\u0928")).toBe(true); // न
             expect(isIMEInput("\u0928\u092E\u0938\u094D\u0924\u0947")).toBe(true); // नमस्ते
         });
     });
 });
 
-describe("IMECompositionBuffer", () => {
+describe(IMECompositionBuffer, () => {
     beforeEach(() => {
         vi.useFakeTimers();
     });

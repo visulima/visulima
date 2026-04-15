@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/lines-before-block */
 /**
- * textarea.tsx — <Textarea> component demo
+ * textarea.tsx — &lt;Textarea> component demo
  *
  * Controls:
  *   Type         enter text
@@ -55,7 +55,9 @@ const App = () => {
             </Box>
 
             <Text dimColor>
-                {lineCount} line{lineCount !== 1 ? "s" : ""} · {charCount} char{charCount !== 1 ? "s" : ""}
+                {lineCount} line
+                {lineCount === 1 ? "" : "s"} ·{charCount} char
+                {charCount === 1 ? "" : "s"}
             </Text>
 
             {submitted !== undefined && (

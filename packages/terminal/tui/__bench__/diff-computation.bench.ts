@@ -8,6 +8,7 @@ const SMALL_NEW = "hello beautiful world";
 const MEDIUM_OLD = Array.from({ length: 50 }, (_, i) => `line ${i + 1}: original content here`).join("\n");
 const MEDIUM_NEW = Array.from({ length: 50 }, (_, i) => {
     if (i % 10 === 5) return `line ${i + 1}: MODIFIED content here`;
+
     if (i === 25) return `line ${i + 1}: original content here\nnew inserted line`;
 
     return `line ${i + 1}: original content here`;
@@ -60,8 +61,8 @@ describe("diffChars (inline highlighting)", () => {
     });
 
     bench("long line pair (500 chars)", () => {
-        const longOld = "a".repeat(250) + "OLD" + "b".repeat(247);
-        const longNew = "a".repeat(250) + "NEW" + "b".repeat(247);
+        const longOld = `${"a".repeat(250)}OLD${"b".repeat(247)}`;
+        const longNew = `${"a".repeat(250)}NEW${"b".repeat(247)}`;
 
         diffChars(longOld, longNew);
     });

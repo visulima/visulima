@@ -11,7 +11,6 @@ import createStdout from "../helpers/ink-create-stdout";
 const ERROR_LOCATION_RE = /errors\.test\.tsx:\d+:\d+/u;
 const ERROR_COMPONENT_RE = /Test.*errors\.test\.tsx:\d+:\d+/u;
 
-// eslint-disable-next-line vitest/require-hook -- restore must be module-scoped for beforeAll/afterAll
 let restore = () => {};
 
 describe("errors", () => {
@@ -113,9 +112,7 @@ describe("errors", () => {
 
         const setRawModeCalls: boolean[] = [];
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
         if (!process.stdin.isTTY) {
-            // eslint-disable-next-line vitest/no-conditional-expect
             expect(true).toBe(true); // Skipping test - stdin is not a TTY
 
             return;

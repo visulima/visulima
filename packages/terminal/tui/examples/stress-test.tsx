@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, consistent-return, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-bitwise, no-empty, no-param-reassign, no-plusplus, no-secrets/no-secrets, no-underscore-dangle, react-refresh/only-export-components, react-x/set-state-in-effect */
+/* eslint-disable func-style, no-empty, no-param-reassign, no-secrets/no-secrets, no-underscore-dangle */
 
 /**
  * stress-test.tsx — Ratatat stress test

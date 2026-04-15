@@ -22,15 +22,15 @@ const mockTimerCalls = () => {
         get clearTimeoutCallCount() {
             return clearTimeoutCallCount;
         },
+        restore() {
+            globalThis.setTimeout = originalSetTimeout;
+            globalThis.clearTimeout = originalClearTimeout;
+        },
         get setTimeoutCallCount() {
             return setTimeoutCallCount;
         },
         get timeoutDelays() {
             return timeoutDelays;
-        },
-        restore() {
-            globalThis.setTimeout = originalSetTimeout;
-            globalThis.clearTimeout = originalClearTimeout;
         },
     };
 };

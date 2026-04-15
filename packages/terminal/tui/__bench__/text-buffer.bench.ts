@@ -42,32 +42,32 @@ describe("Text Buffer Operations", () => {
     describe("Line insert (simulating typing)", () => {
         bench("insert char at end of 100-line doc", () => {
             const lines = splitLines(MEDIUM_DOC);
-            const lastIdx = lines.length - 1;
-            const line = lines[lastIdx]!;
+            const lastIndex = lines.length - 1;
+            const line = lines[lastIndex]!;
 
-            lines[lastIdx] = line + "x";
+            lines[lastIndex] = `${line}x`;
         });
 
         bench("insert char in middle of 100-line doc", () => {
             const lines = splitLines(MEDIUM_DOC);
-            const midIdx = Math.floor(lines.length / 2);
-            const line = lines[midIdx]!;
+            const midIndex = Math.floor(lines.length / 2);
+            const line = lines[midIndex]!;
             const col = Math.floor(line.length / 2);
 
-            lines[midIdx] = line.slice(0, col) + "x" + line.slice(col);
+            lines[midIndex] = `${line.slice(0, col)}x${line.slice(col)}`;
         });
     });
 
     describe("Newline insert (simulating Enter)", () => {
         bench("split line in middle of 100-line doc", () => {
             const lines = [...splitLines(MEDIUM_DOC)];
-            const midIdx = Math.floor(lines.length / 2);
-            const line = lines[midIdx]!;
+            const midIndex = Math.floor(lines.length / 2);
+            const line = lines[midIndex]!;
             const col = Math.floor(line.length / 2);
             const before = line.slice(0, col);
             const after = line.slice(col);
 
-            lines.splice(midIdx, 1, before, after);
+            lines.splice(midIndex, 1, before, after);
         });
     });
 

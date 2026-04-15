@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-plusplus, sonarjs/pseudo-random */
+/* eslint-disable func-style, jsdoc/lines-before-block, sonarjs/pseudo-random */
 /**
  * fire.ts — Doom-style plasma fire effect
  *
