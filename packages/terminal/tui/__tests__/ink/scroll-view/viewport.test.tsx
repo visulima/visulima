@@ -18,6 +18,8 @@ describe("dimensions", () => {
      * When width decreases, text should wrap more, increasing content height. When width increases, height should decrease.
      */
     it("should update ContentHeight when ScrollView width changes (text wrapping)", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setWidthFunction: any;
 
@@ -79,6 +81,8 @@ describe("dimensions", () => {
      * Should be called whenever the ScrollView's own `width` or `height` props change (or terminal resizes).
      */
     it("should trigger onViewportSizeChange when dimensions change", async () => {
+        expect.assertions(4);
+
         let setSizeFunction: any;
         const onViewportSizeChange = vi.fn();
 
@@ -128,6 +132,8 @@ describe("dimensions", () => {
      * More importantly: Expanding height reduces max scrollable range, but if we are at top (0), we stay at top.
      */
     it("should maintain valid ScrollOffset when height changes", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setHeightFunction: any;
 
@@ -192,6 +198,8 @@ describe("dimensions", () => {
      */
     it("should handle ScrollView with zero height", async () => {
         // While rare, user might hide the view by setting height 0
+        expect.assertions(6);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setHeightFunction: any;
 

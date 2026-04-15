@@ -30,7 +30,8 @@ function fetchData(key, delay) {
         return cached.data;
     }
 
-    if (cached?.status === "pending") throw cached.promise;
+    if (cached?.status === "pending")
+        throw cached.promise;
 
     const promise = new Promise((resolve) => {
         setTimeout(() => {
@@ -46,14 +47,20 @@ function fetchData(key, delay) {
 const DataComponent = ({ delay, id }) => {
     const data = fetchData(id, delay);
 
-    return <Text color="green">✓{data}</Text>;
+    return (
+        <Text color="green">
+            ✓
+            {data}
+        </Text>
+    );
 };
 
 const App = () => {
     const [showThird, setShowThird] = useState(false);
 
     useInput((_, key) => {
-        if (key.return) setShowThird((s) => !s);
+        if (key.return)
+            setShowThird((s) => !s);
     });
 
     return (

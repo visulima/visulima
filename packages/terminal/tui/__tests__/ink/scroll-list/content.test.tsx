@@ -41,6 +41,8 @@ describe("contentHeight", () => {
      * Expected: `getContentHeight()` returns the accurate sum of all item heights
      */
     it("should update ContentHeight when adding/removing elements", async () => {
+        expect.assertions(3);
+
         let scrollListRef: ScrollListRef | null = null;
         let setItemsFunction: any;
 
@@ -94,6 +96,8 @@ describe("contentHeight", () => {
      * Verifies that ContentHeight updates when an individual child element resizes.
      */
     it("should update ContentHeight when element size changes", async () => {
+        expect.assertions(2);
+
         let scrollListRef: ScrollListRef | null = null;
         let setHeightFunction: any;
 
@@ -146,6 +150,8 @@ describe("contentHeight", () => {
      * Verifies that `remeasureItem` triggers a height update when internal content size changes.
      */
     it("should trigger remeasureItem correctly when internal content changes size without prop change", async () => {
+        expect.assertions(3);
+
         let scrollListRef: ScrollListRef | null = null;
         const DynamicItem = ({ index }: { index: number }) => {
             const [lines, setLines] = useState(1);
@@ -212,6 +218,8 @@ describe("contentHeight", () => {
      * Verifies that the `onContentHeightChange` callback is triggered accurately.
      */
     it("should trigger onContentHeightChange callback accurately", async () => {
+        expect.assertions(4);
+
         const onHeightChange = vi.fn();
         let setItemsFunction: any;
 

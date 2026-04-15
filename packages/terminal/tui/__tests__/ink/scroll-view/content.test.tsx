@@ -18,6 +18,8 @@ describe("contentHeight", () => {
      * The content height should exactly match the number of visible items (assuming height 1 per item).
      */
     it("should update ContentHeight when adding/removing elements", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setItemsFunction: any;
 
@@ -73,6 +75,8 @@ describe("contentHeight", () => {
      * The total content height should reflect the new size of the child.
      */
     it("should update ContentHeight when element size changes", async () => {
+        expect.assertions(2);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setHeightFunction: any;
 
@@ -125,6 +129,8 @@ describe("contentHeight", () => {
      * Verifies that ContentHeight drops to 0 when all children are cleared.
      */
     it("should update ContentHeight when all elements are cleared", async () => {
+        expect.assertions(2);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setItemsFunction: any;
 
@@ -174,6 +180,8 @@ describe("contentHeight", () => {
      * This covers scenarios where children are replaced with new objects having different keys.
      */
     it("should update ContentHeight when elements are replaced entirely", async () => {
+        expect.assertions(2);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setItemsFunction: any;
 
@@ -231,6 +239,8 @@ describe("contentHeight", () => {
      * without triggering a prop update or re-render in the parent ScrollView.
      */
     it("should trigger remeasureItem correctly when internal content changes size without prop change", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
         const DynamicItem = ({ index }: { forwardedRef: any; index: number }) => {
             const [lines, setLines] = useState(1);
@@ -301,6 +311,8 @@ describe("contentHeight", () => {
      * Expects the component to render without error and report 0 height.
      */
     it("should handle empty children gracefully (ContentHeight 0)", async () => {
+        expect.assertions(2);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -333,6 +345,8 @@ describe("contentHeight", () => {
      * Verifies that children with 0 height do not contribute to the total content height.
      */
     it("should ignore zero-height children in calculations", async () => {
+        expect.assertions(1);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -373,6 +387,8 @@ describe("contentHeight", () => {
      * Verifies that ContentHeight is calculated correctly immediately after the initial render.
      */
     it("should initialize with correct content height", async () => {
+        expect.assertions(1);
+
         let scrollViewRef: ScrollViewRef | null = null;
         const TestComponent = () => {
             const ref = useRef<ScrollViewRef>(null);
@@ -409,6 +425,8 @@ describe("contentHeight", () => {
      * The callback should receive `(newHeight, oldHeight)` arguments whenever the height changes.
      */
     it("should trigger onContentHeightChange callback accurately", async () => {
+        expect.assertions(4);
+
         const onHeightChange = vi.fn();
         let setItemsFunction: any;
 
@@ -464,6 +482,8 @@ describe("contentHeight", () => {
      * This ensures that sparse arrays resulting from conditional rendering do not break index or key tracking.
      */
     it("should handle mixed empty/valid children correctly", async () => {
+        expect.assertions(1);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -504,6 +524,8 @@ describe("contentHeight", () => {
      * Tests switching a child from `false` to an Element and back, ensuring height updates reflect presence/absence.
      */
     it("should handle conditional rendering of children", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setShowFunction: any;
 

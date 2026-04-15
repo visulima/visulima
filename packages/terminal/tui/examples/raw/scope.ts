@@ -116,7 +116,8 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
             const v = h.amp * Math.sin(2 * Math.PI * h.freq * xNorm + h.phase);
             const row = midRow - Math.round(v * halfH);
 
-            if (row < chartTop || row > chartBottom) continue;
+            if (row < chartTop || row > chartBottom)
+                continue;
 
             paintCell(buf, cols, x, row, "▪", h.color, true);
         }

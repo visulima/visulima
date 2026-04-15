@@ -27,7 +27,8 @@ function pushSample(ms: number) {
     samples[sampleHead % MAX_SAMPLES] = ms;
     sampleHead++;
 
-    if (sampleCount < MAX_SAMPLES) sampleCount++;
+    if (sampleCount < MAX_SAMPLES)
+        sampleCount++;
 }
 
 function getSample(i: number): number {
@@ -85,9 +86,11 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
     for (let i = sampleCount - statN; i < sampleCount; i++) {
         const v = getSample(i);
 
-        if (v < rollingMin) rollingMin = v;
+        if (v < rollingMin)
+            rollingMin = v;
 
-        if (v > rollingMax) rollingMax = v;
+        if (v > rollingMax)
+            rollingMax = v;
 
         rollingSum += v;
     }
@@ -110,7 +113,8 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
         // Map column to sample index (oldest on left, newest on right)
         const sampleIndex = sampleCount - displayN + Math.floor((cx / chartCols) * displayN);
 
-        if (sampleIndex < 0 || sampleIndex >= sampleCount) continue;
+        if (sampleIndex < 0 || sampleIndex >= sampleCount)
+            continue;
 
         const v = getSample(sampleIndex);
         const normalized = (v - yMin) / (yMax - yMin);
@@ -142,14 +146,14 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
 
     // Stats bar
     const targetMs = (1000 / 60).toFixed(1);
-    const stats =
-        ` frame Δt   ` +
-        `cur ${delta.toFixed(2)}ms  ` +
-        `avg ${rollingAvg.toFixed(2)}ms  ` +
-        `min ${rollingMin.toFixed(2)}ms  ` +
-        `max ${rollingMax.toFixed(2)}ms  ` +
-        `target ${targetMs}ms  ` +
-        `Ctrl+C quit`;
+    const stats
+        = ` frame Δt   `
+            + `cur ${delta.toFixed(2)}ms  `
+            + `avg ${rollingAvg.toFixed(2)}ms  `
+            + `min ${rollingMin.toFixed(2)}ms  `
+            + `max ${rollingMax.toFixed(2)}ms  `
+            + `target ${targetMs}ms  `
+            + `Ctrl+C quit`;
 
     for (let i = 0; i < Math.min(stats.length, cols); i++) {
         setCell(buf, cols, i, rows - 2, stats[i]!, 250, 0);

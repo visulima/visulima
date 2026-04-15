@@ -16,6 +16,8 @@ const tallText = Array.from({ length: 20 }, (_, i) => `line ${i}`).join("\n");
 
 describe("box scroll – vertical", () => {
     it("renders vertical scrollbar at default scrollTop 0", () => {
+        expect.assertions(4);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" width={15}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -33,6 +35,8 @@ describe("box scroll – vertical", () => {
     });
 
     it("renders vertical scroll with scrollTop offset", () => {
+        expect.assertions(3);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={10} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -49,6 +53,8 @@ describe("box scroll – vertical", () => {
     });
 
     it("clamps scrollTop to bottom when exceeding content", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" scrollTop={Number.MAX_SAFE_INTEGER} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -64,6 +70,8 @@ describe("box scroll – vertical", () => {
     });
 
     it("renders in narrow container", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflowY="scroll" width={9}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -81,6 +89,8 @@ describe("box scroll – vertical", () => {
 
 describe("box scroll – horizontal", () => {
     it("renders horizontal scrollbar at default scrollLeft 0", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
@@ -96,6 +106,8 @@ describe("box scroll – horizontal", () => {
     });
 
     it("renders horizontal scroll with scrollLeft offset", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" scrollLeft={9} width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
@@ -110,6 +122,8 @@ describe("box scroll – horizontal", () => {
     });
 
     it("clamps scrollLeft to end when exceeding content", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="row" height={4} overflowX="scroll" overflowY="hidden" scrollLeft={Number.MAX_SAFE_INTEGER} width={15}>
                 <Box flexDirection="column" flexShrink={0} paddingX={1}>
@@ -127,6 +141,8 @@ describe("box scroll – horizontal", () => {
 
 describe("box scroll – both axes", () => {
     it("renders both vertical and horizontal scrollbars", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflow="scroll" padding={1} width={15}>
                 <Box flexShrink={0} height={100} width={100}>
@@ -141,6 +157,8 @@ describe("box scroll – both axes", () => {
     });
 
     it("renders both axes with scroll offsets", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} overflow="scroll" padding={1} scrollLeft={50} scrollTop={50} width={15}>
                 <Box flexShrink={0} height={100} width={100}>
@@ -159,6 +177,8 @@ describe("box scroll – both axes", () => {
 
 describe("box scroll – dynamic updates", () => {
     it("updates scroll position on rerender", () => {
+        expect.assertions(3);
+
         const stdout = createStdout(100);
 
         const { rerender } = render(
@@ -193,6 +213,8 @@ describe("box scroll – dynamic updates", () => {
 
 describe("box scroll – flexGrow", () => {
     it("renders scrollbar in flexGrow container", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box height={5} width={20}>
                 <Box borderStyle="round" flexDirection="column" flexGrow={1} overflowY="scroll" scrollTop={10}>
@@ -213,6 +235,8 @@ describe("box scroll – flexGrow", () => {
 
 describe("box scroll – padding", () => {
     it("scrollTop 0 with padding preserves padding space", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={7} overflow="hidden" overflowY="scroll" padding={2} scrollTop={0} width={15}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -225,6 +249,8 @@ describe("box scroll – padding", () => {
     });
 
     it("scrollTop max with padding shows last lines", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box
                 borderStyle="round"
@@ -250,6 +276,8 @@ describe("box scroll – padding", () => {
 
 describe("box scroll – no scrollbar needed", () => {
     it("does not render scrollbar when content is smaller than container", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={10} overflow="scroll" width={20}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -264,6 +292,8 @@ describe("box scroll – no scrollbar needed", () => {
     });
 
     it("does not render scrollbar when content exactly matches container", () => {
+        expect.assertions(3);
+
         const content = Array.from({ length: 8 }, (_, i) => `line ${i}`).join("\n");
 
         const output = renderToString(
@@ -284,6 +314,8 @@ describe("box scroll – no scrollbar needed", () => {
 
 describe("box scroll – nested", () => {
     it("renders nested scroll containers independently", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="double" flexDirection="column" height={10} overflow="scroll" scrollTop={17} width={40}>
                 <Box flexDirection="column" flexShrink={0}>
@@ -313,6 +345,8 @@ describe("box scroll – nested", () => {
 
 describe("box scroll – scrollbar color", () => {
     it("applies custom scrollbar thumb color", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" height={5} overflow="scroll" scrollbarThumbColor="red" width={15}>
                 <Box flexShrink={0} height={100} width={100}>
@@ -331,6 +365,8 @@ describe("box scroll – scrollbar color", () => {
 
 describe("box scroll – overflow modes", () => {
     it("overflow hidden clips content without scrollbar", () => {
+        expect.assertions(4);
+
         const output = renderToString(
             <Box borderStyle="round" height={5} overflow="hidden" width={15}>
                 <Box flexShrink={0} height={100} width={100}>
@@ -348,6 +384,8 @@ describe("box scroll – overflow modes", () => {
     });
 
     it("overflow visible does not clip", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="round" height={5} overflow="visible" width={15}>
                 <Box flexShrink={0} height={100} width={100}>

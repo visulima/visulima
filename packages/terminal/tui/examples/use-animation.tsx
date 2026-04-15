@@ -70,8 +70,7 @@ const UseAnimationDemo = () => {
     // Sparkle line
     const sparkleLine = (seed: number) =>
         Array.from({ length: trackWidth + 4 }, (_, index) =>
-            (index * 7 + seed * 13) % 19 < 3 ? sparkleChars[(frame.slow + index + seed) % sparkleChars.length]! : " ",
-        ).join("");
+            (index * 7 + seed * 13) % 19 < 3 ? sparkleChars[(frame.slow + index + seed) % sparkleChars.length]! : " ").join("");
 
     const title = "Unicorns are magical!";
     const spinner = spinnerFrames[frame.fast % spinnerFrames.length]!;
@@ -110,7 +109,9 @@ const UseAnimationDemo = () => {
             <Text />
             <Text color="cyan">
                 {"  "}
-                {spinner} Loading more unicorns...
+                {spinner}
+                {" "}
+                Loading more unicorns...
             </Text>
             <Text />
             <Text dimColor>
@@ -118,7 +119,9 @@ const UseAnimationDemo = () => {
                 Press
                 {"<"}
                 space
-                {">"} to
+                {">"}
+                {" "}
+                to
                 {paused ? "resume" : "pause"}
             </Text>
         </Box>

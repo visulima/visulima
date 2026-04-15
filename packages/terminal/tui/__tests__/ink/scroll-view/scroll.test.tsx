@@ -18,6 +18,8 @@ describe("scrollOffset", () => {
      * Scroll offset should update correctly according to the requested operation.
      */
     it("should handle basic scrolling", async () => {
+        expect.assertions(4);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -78,6 +80,8 @@ describe("scrollOffset", () => {
      * Scroll offset should be clamped between 0 and (contentHeight - viewportHeight).
      */
     it("should clamp illegal positions", async () => {
+        expect.assertions(2);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -128,6 +132,8 @@ describe("scrollOffset", () => {
      * If the user is scrolled past the new maximum offset, the scroll position should automatically snap back to the new bottom.
      */
     it("should adjust ScrollOffset when ContentHeight decreases", async () => {
+        expect.assertions(5);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setItemsFunction: any;
 
@@ -193,6 +199,8 @@ describe("scrollOffset", () => {
      * Scroll logic should work identically whether content is many small items or one large item.
      */
     it("should scroll correctly with a single child larger than viewport", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -241,6 +249,8 @@ describe("scrollOffset", () => {
      * Max scroll offset should be 0.
      */
     it("should behave correctly when content fits exactly in viewport", async () => {
+        expect.assertions(3);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {
@@ -294,6 +304,8 @@ describe("scrollOffset", () => {
      * Should gracefully ignore NaN values and not change the offset.
      */
     it("should handle invalid scroll destinations safely (NaN)", async () => {
+        expect.assertions(1);
+
         let scrollViewRef: ScrollViewRef | null = null;
 
         const TestComponent = () => {

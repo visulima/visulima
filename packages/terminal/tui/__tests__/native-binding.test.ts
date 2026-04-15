@@ -19,6 +19,8 @@ async function loadBinding() {
 
 describe("native-binding", () => {
     it("should export Renderer constructor", async () => {
+        expect.assertions(1);
+
         const binding = await loadBinding();
 
         if (!binding) {
@@ -31,6 +33,8 @@ describe("native-binding", () => {
     });
 
     it("should export TerminalGuard constructor", async () => {
+        expect.assertions(1);
+
         const binding = await loadBinding();
 
         if (!binding) {
@@ -43,6 +47,8 @@ describe("native-binding", () => {
     });
 
     it("should export terminalSize function", async () => {
+        expect.assertions(1);
+
         const binding = await loadBinding();
 
         if (!binding) {
@@ -55,6 +61,8 @@ describe("native-binding", () => {
     });
 
     it("should return valid terminal size", async () => {
+        expect.assertions(3);
+
         const binding = await loadBinding();
 
         if (!binding) {
@@ -82,6 +90,8 @@ describe("native-binding", () => {
     });
 
     it("should create a Renderer instance", async () => {
+        expect.assertions(3);
+
         const binding = await loadBinding();
 
         if (!binding) {

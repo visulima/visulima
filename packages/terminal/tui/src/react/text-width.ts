@@ -59,7 +59,8 @@ export function measureTextBlock(text: string, wrapWidth: number): { maxLineWidt
     for (const line of lines) {
         const lineWidth = getStringWidth(line);
 
-        if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+        if (lineWidth > maxLineWidth)
+            maxLineWidth = lineWidth;
 
         wrappedRows += wrapWidth > 0 ? countWrappedRowsForLine(line, wrapWidth) : 0;
     }

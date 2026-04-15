@@ -35,6 +35,8 @@ const addChild = (parent: ReturnType<typeof createNode>, height: number, sticky?
 describe("render-sticky", () => {
     describe(getStickyDescendants, () => {
         it("should find sticky children", () => {
+            expect.assertions(3);
+
             const container = setupScrollableContainer();
 
             addChild(container, 3, true);
@@ -51,6 +53,8 @@ describe("render-sticky", () => {
         });
 
         it("should return empty array when no sticky nodes", () => {
+            expect.assertions(1);
+
             const container = setupScrollableContainer();
 
             addChild(container, 20);
@@ -63,6 +67,8 @@ describe("render-sticky", () => {
         });
 
         it("should not recurse into nested scroll containers", () => {
+            expect.assertions(1);
+
             const container = setupScrollableContainer();
             const nestedScroll = addChild(container, 20);
 
@@ -86,6 +92,8 @@ describe("render-sticky", () => {
         });
 
         it("should skip stickyAlternate nodes", () => {
+            expect.assertions(2);
+
             const container = setupScrollableContainer();
             const stickyNode = addChild(container, 3, true);
 
@@ -111,6 +119,8 @@ describe("render-sticky", () => {
         });
 
         it("should find sticky nodes in non-scrollable nested containers", () => {
+            expect.assertions(1);
+
             const container = setupScrollableContainer();
             const wrapper = addChild(container, 25);
 
@@ -134,6 +144,8 @@ describe("render-sticky", () => {
 
     describe(identifyActiveStickyNodes, () => {
         it("should identify top-sticky as active when scrolled past it", () => {
+            expect.assertions(3);
+
             const container = setupScrollableContainer();
             const stickyNode = addChild(container, 3, true);
 
@@ -155,6 +167,8 @@ describe("render-sticky", () => {
         });
 
         it("should not identify top-sticky as active when it is visible", () => {
+            expect.assertions(1);
+
             const container = setupScrollableContainer();
 
             addChild(container, 3, true);
