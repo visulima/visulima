@@ -100,8 +100,9 @@ export default async function* walk(
           )
         : undefined;
 
+    const resolvedDirectory: string = resolve(toPath(directory));
     // eslint-disable-next-line no-param-reassign
-    directory = resolve(toPath(directory));
+    directory = resolvedDirectory;
 
     if (includeDirectories && walkInclude(directory, extensions, mappedMatch, mappedSkip)) {
         yield await _createWalkEntry(directory);
