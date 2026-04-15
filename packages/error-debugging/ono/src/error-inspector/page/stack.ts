@@ -71,7 +71,7 @@ const extractMainError = (allCauses: unknown[]): Error => {
  * @returns Complete HTML content wrapped in a container div
  */
 const buildHtmlContent = (errorCardHtml: string, stackTraceHtml: string, causesViewerHtml: string, stackTraceContent: string): string => {
-    const htmlParts = ['<div class="flex flex-col gap-6">', errorCardHtml, stackTraceHtml, causesViewerHtml, stackTraceContent, "</div>"];
+    const htmlParts = ["<div class=\"flex flex-col gap-6\">", errorCardHtml, stackTraceHtml, causesViewerHtml, stackTraceContent, "</div>"];
 
     return htmlParts.join("");
 };
@@ -106,7 +106,6 @@ const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], o
 
     // Get all error causes - optimize by avoiding full array creation if no causes
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const allCauses: ErrorType[] = getErrorCauses(error);
 
     // Extract and validate the main error
