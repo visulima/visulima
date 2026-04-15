@@ -89,99 +89,99 @@ const negotiateContentType = (acceptHeader: string | null): string => {
 };
 
 // Adapter to convert node-style error handler to fetch-style
-const adaptErrorHandlerToFetch =
-    (nodeHandler: ErrorHandler) =>
-    async (error: unknown, request: Request): Promise<Response> => {
+const adaptErrorHandlerToFetch
+    = (nodeHandler: ErrorHandler) =>
+        async (error: unknown, request: Request): Promise<Response> => {
         // Create mock request/response for the node handler
-        const mockRequest = {
-            headers: Object.fromEntries(request.headers.entries()),
-            method: request.method,
-            url: request.url,
-        } as IncomingMessage;
+            const mockRequest = {
+                headers: Object.fromEntries(request.headers.entries()),
+                method: request.method,
+                url: request.url,
+            } as IncomingMessage;
 
-        const mockResponse = new MockServerResponse();
+            const mockResponse = new MockServerResponse();
 
-        // Call the node handler
-        await nodeHandler(error as Error, mockRequest, mockResponse as unknown as ServerResponse);
+            // Call the node handler
+            await nodeHandler(error as Error, mockRequest, mockResponse as unknown as ServerResponse);
 
-        // Convert to fetch Response
-        const headers: Record<string, string> = {};
+            // Convert to fetch Response
+            const headers: Record<string, string> = {};
 
-        for (const [key, value] of Object.entries(mockResponse.headers)) {
-            headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
-        }
+            for (const [key, value] of Object.entries(mockResponse.headers)) {
+                headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
+            }
 
-        return new Response(mockResponse.responseBody, {
-            headers,
-            status: mockResponse.statusCode,
-        });
-    };
+            return new Response(mockResponse.responseBody, {
+                headers,
+                status: mockResponse.statusCode,
+            });
+        };
 
-const createFetchNegotiatedErrorHandler =
-    (errorHandlers: FetchErrorHandlers, showTrace: boolean, defaultHtmlHandler?: (error: Error, request: Request) => Promise<Response>) =>
-    async (error: Error, request: Request): Promise<Response> => {
-        const accept = request.headers.get("accept");
-        const chosenType = negotiateContentType(accept);
+const createFetchNegotiatedErrorHandler
+    = (errorHandlers: FetchErrorHandlers, showTrace: boolean, defaultHtmlHandler?: (error: Error, request: Request) => Promise<Response>) =>
+        async (error: Error, request: Request): Promise<Response> => {
+            const accept = request.headers.get("accept");
+            const chosenType = negotiateContentType(accept);
 
-        let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler ?? adaptErrorHandlerToFetch(ProblemErrorHandler);
+            let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler ?? adaptErrorHandlerToFetch(ProblemErrorHandler);
 
-        // Convert node handlers to fetch handlers
-        if (chosenType === "text/html" && defaultHtmlHandler) {
-            fetchErrorHandler = defaultHtmlHandler;
-        } else {
-            switch (chosenType) {
-                case "application/javascript": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(JsonpErrorHandler());
+            // Convert node handlers to fetch handlers
+            if (chosenType === "text/html" && defaultHtmlHandler) {
+                fetchErrorHandler = defaultHtmlHandler;
+            } else {
+                switch (chosenType) {
+                    case "application/javascript": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonpErrorHandler());
 
-                    break;
-                }
-                case "application/json": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(JsonErrorHandler());
+                        break;
+                    }
+                    case "application/json": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonErrorHandler());
 
-                    break;
-                }
-                case "application/problem+json": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(ProblemErrorHandler);
+                        break;
+                    }
+                    case "application/problem+json": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(ProblemErrorHandler);
 
-                    break;
-                }
-                case "application/vnd.api+json": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(JsonapiErrorHandler);
+                        break;
+                    }
+                    case "application/vnd.api+json": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonapiErrorHandler);
 
-                    break;
-                }
-                case "application/xml": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(XmlErrorHandler());
+                        break;
+                    }
+                    case "application/xml": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(XmlErrorHandler());
 
-                    break;
-                }
-                case "text/plain": {
-                    fetchErrorHandler = adaptErrorHandlerToFetch(TextErrorHandler());
+                        break;
+                    }
+                    case "text/plain": {
+                        fetchErrorHandler = adaptErrorHandlerToFetch(TextErrorHandler());
 
-                    break;
-                }
-                default: {
+                        break;
+                    }
+                    default: {
                     // Use the default fetchErrorHandler already set above
+                        break;
+                    }
+                }
+            }
+
+            // Allow consumer overrides via regex
+            for (const { handler, regex } of errorHandlers) {
+                const headerString = accept ?? "";
+
+                if (regex.test(headerString)) {
+                    fetchErrorHandler = handler;
                     break;
                 }
             }
-        }
 
-        // Allow consumer overrides via regex
-        for (const { handler, regex } of errorHandlers) {
-            const headerString = accept ?? "";
+            // Set expose property
+            // eslint-disable-next-line no-param-reassign
+            (error as Error & { expose: boolean }).expose = showTrace;
 
-            if (regex.test(headerString)) {
-                fetchErrorHandler = handler;
-                break;
-            }
-        }
-
-        // Set expose property
-        // eslint-disable-next-line no-param-reassign
-        (error as Error & { expose: boolean }).expose = showTrace;
-
-        return fetchErrorHandler(error, request);
-    };
+            return fetchErrorHandler(error, request);
+        };
 
 export default createFetchNegotiatedErrorHandler;
