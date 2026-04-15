@@ -1,6 +1,7 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 
+import { removeSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 /**
@@ -8,7 +9,9 @@ import { join } from "@visulima/path";
  * Use together with {@link cleanupTemporaryDirectory} in `afterEach`
  * to avoid leaking fixtures between tests.
  *
- * @param prefix - Short prefix used for debugging.
+ * Uses Node's `mkdtempSync` (no `@visulima/fs` equivalent exists for
+ * "create a unique temp dir" — the rest of the helper uses `@visulima/fs`).
+ * @param prefix Short prefix used for debugging.
  * @returns The absolute path to the created directory.
  */
 export const createTemporaryDirectory = (prefix = "vis-test-"): string => mkdtempSync(join(tmpdir(), prefix));
@@ -16,11 +19,10 @@ export const createTemporaryDirectory = (prefix = "vis-test-"): string => mkdtem
 /**
  * Removes a directory created by {@link createTemporaryDirectory}.
  * Safe to call even if the directory no longer exists.
- *
- * @param path - Absolute path to the directory.
+ * @param path Absolute path to the directory.
  */
 export const cleanupTemporaryDirectory = (path: string): void => {
-    rmSync(path, { force: true, recursive: true });
+    removeSync(path);
 };
 
 /**
