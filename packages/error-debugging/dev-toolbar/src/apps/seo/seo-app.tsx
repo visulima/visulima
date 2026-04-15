@@ -105,28 +105,33 @@ type Validator = (schema: Record<string, unknown>) => JsonLdValidationMessage[];
 const validateArticle: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "headline") && !has(schema, "name"))
+    if (!has(schema, "headline") && !has(schema, "name")) {
         msgs.push({ message: "headline (or name) is required", property: "headline", severity: "error" });
+    }
 
     if (has(schema, "author")) {
         const author = schema["author"] as Record<string, unknown>;
 
-        if (typeof author === "object" && !Array.isArray(author) && !has(author, "name"))
+        if (typeof author === "object" && !Array.isArray(author) && !has(author, "name")) {
             msgs.push({ message: "author.name is missing", property: "author.name", severity: "warning" });
+        }
     } else {
         msgs.push({ message: "author is required", property: "author", severity: "error" });
     }
 
-    if (!has(schema, "datePublished"))
+    if (!has(schema, "datePublished")) {
         msgs.push({ message: "datePublished is required", property: "datePublished", severity: "error" });
-    else if (!isISO8601(schema["datePublished"]))
+    } else if (!isISO8601(schema["datePublished"])) {
         msgs.push({ message: "datePublished should be ISO 8601 format (e.g. 2024-01-15T09:00:00Z)", property: "datePublished", severity: "warning" });
+    }
 
-    if (!has(schema, "image"))
+    if (!has(schema, "image")) {
         msgs.push({ message: "image is recommended for rich results", property: "image", severity: "warning" });
+    }
 
-    if (!has(schema, "description"))
+    if (!has(schema, "description")) {
         msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -134,8 +139,9 @@ const validateArticle: Validator = (schema) => {
 const validateProduct: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
     const hasOffers = has(schema, "offers");
     const hasRating = has(schema, "aggregateRating");
@@ -149,26 +155,31 @@ const validateProduct: Validator = (schema) => {
         const offers = Array.isArray(schema["offers"]) ? (schema["offers"] as Record<string, unknown>[])[0] : (schema["offers"] as Record<string, unknown>);
 
         if (offers && typeof offers === "object") {
-            if (!has(offers, "price") && !has(offers, "priceSpecification"))
+            if (!has(offers, "price") && !has(offers, "priceSpecification")) {
                 msgs.push({ message: "offers.price is required", property: "offers.price", severity: "error" });
+            }
 
-            if (!has(offers, "priceCurrency"))
+            if (!has(offers, "priceCurrency")) {
                 msgs.push({ message: "offers.priceCurrency is required (e.g. 'USD')", property: "offers.priceCurrency", severity: "error" });
+            }
         }
     }
 
     if (hasRating) {
         const rating = schema["aggregateRating"] as Record<string, unknown>;
 
-        if (!has(rating, "ratingValue"))
+        if (!has(rating, "ratingValue")) {
             msgs.push({ message: "aggregateRating.ratingValue is required", property: "aggregateRating.ratingValue", severity: "error" });
+        }
 
-        if (!has(rating, "reviewCount") && !has(rating, "ratingCount"))
+        if (!has(rating, "reviewCount") && !has(rating, "ratingCount")) {
             msgs.push({ message: "aggregateRating.reviewCount (or ratingCount) is required", property: "aggregateRating.reviewCount", severity: "error" });
+        }
     }
 
-    if (!has(schema, "image"))
+    if (!has(schema, "image")) {
         msgs.push({ message: "image is recommended for rich results", property: "image", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -183,8 +194,9 @@ const validateBreadcrumbList: Validator = (schema) => {
         return msgs;
     }
 
-    if (items.length < 2)
+    if (items.length < 2) {
         msgs.push({ message: "itemListElement should have at least 2 items", property: "itemListElement", severity: "warning" });
+    }
 
     items.forEach((item: Record<string, unknown>, i: number) => {
         if (item["position"] !== i + 1) {
@@ -193,8 +205,9 @@ const validateBreadcrumbList: Validator = (schema) => {
 
         const name = (item["name"] as string) || (item["item"] as Record<string, unknown>)?.["name"];
 
-        if (!name)
+        if (!name) {
             msgs.push({ message: `itemListElement[${i}].name is required`, property: `itemListElement[${i}].name`, severity: "error" });
+        }
     });
 
     return msgs;
@@ -211,13 +224,15 @@ const validateFaqPage: Validator = (schema) => {
     }
 
     items.forEach((item: Record<string, unknown>, i: number) => {
-        if (!has(item, "name"))
+        if (!has(item, "name")) {
             msgs.push({ message: `mainEntity[${i}].name (question text) is required`, property: `mainEntity[${i}].name`, severity: "error" });
+        }
 
         const answer = item["acceptedAnswer"] as Record<string, unknown> | undefined;
 
-        if (!answer || !has(answer, "text"))
+        if (!answer || !has(answer, "text")) {
             msgs.push({ message: `mainEntity[${i}].acceptedAnswer.text is required`, property: `mainEntity[${i}].acceptedAnswer.text`, severity: "error" });
+        }
     });
 
     return msgs;
@@ -226,23 +241,27 @@ const validateFaqPage: Validator = (schema) => {
 const validateEvent: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "startDate"))
+    if (!has(schema, "startDate")) {
         msgs.push({ message: "startDate is required", property: "startDate", severity: "error" });
-    else if (!isISO8601(schema["startDate"]))
+    } else if (!isISO8601(schema["startDate"])) {
         msgs.push({ message: "startDate should be ISO 8601 format", property: "startDate", severity: "warning" });
+    }
 
     const location = schema["location"] as Record<string, unknown> | undefined;
 
-    if (!location)
+    if (!location) {
         msgs.push({ message: "location is required", property: "location", severity: "error" });
-    else if (!has(location, "name"))
+    } else if (!has(location, "name")) {
         msgs.push({ message: "location.name is required", property: "location.name", severity: "error" });
+    }
 
-    if (!has(schema, "description"))
+    if (!has(schema, "description")) {
         msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -250,14 +269,17 @@ const validateEvent: Validator = (schema) => {
 const validateOrganization: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "url"))
+    if (!has(schema, "url")) {
         msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+    }
 
-    if (!has(schema, "logo"))
+    if (!has(schema, "logo")) {
         msgs.push({ message: "logo is recommended for Knowledge Panel eligibility", property: "logo", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -265,11 +287,13 @@ const validateOrganization: Validator = (schema) => {
 const validatePerson: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "url"))
+    if (!has(schema, "url")) {
         msgs.push({ message: "url is recommended", property: "url", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -277,20 +301,25 @@ const validatePerson: Validator = (schema) => {
 const validateRecipe: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "image"))
+    if (!has(schema, "image")) {
         msgs.push({ message: "image is required for rich results", property: "image", severity: "error" });
+    }
 
-    if (!has(schema, "recipeIngredient") && !has(schema, "ingredients"))
+    if (!has(schema, "recipeIngredient") && !has(schema, "ingredients")) {
         msgs.push({ message: "recipeIngredient is recommended", property: "recipeIngredient", severity: "suggestion" });
+    }
 
-    if (!has(schema, "recipeInstructions"))
+    if (!has(schema, "recipeInstructions")) {
         msgs.push({ message: "recipeInstructions is recommended", property: "recipeInstructions", severity: "suggestion" });
+    }
 
-    if (!has(schema, "author"))
+    if (!has(schema, "author")) {
         msgs.push({ message: "author is recommended", property: "author", severity: "suggestion" });
+    }
 
     return msgs;
 };
@@ -298,11 +327,13 @@ const validateRecipe: Validator = (schema) => {
 const validateWebSiteOrPage: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "url"))
+    if (!has(schema, "url")) {
         msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+    }
 
     return msgs;
 };
@@ -310,19 +341,23 @@ const validateWebSiteOrPage: Validator = (schema) => {
 const validateVideoObject: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
+    if (!has(schema, "name")) {
         msgs.push({ message: "name is required", property: "name", severity: "error" });
+    }
 
-    if (!has(schema, "description"))
+    if (!has(schema, "description")) {
         msgs.push({ message: "description is required", property: "description", severity: "error" });
+    }
 
-    if (!has(schema, "thumbnailUrl"))
+    if (!has(schema, "thumbnailUrl")) {
         msgs.push({ message: "thumbnailUrl is required for rich results", property: "thumbnailUrl", severity: "error" });
+    }
 
-    if (!has(schema, "uploadDate"))
+    if (!has(schema, "uploadDate")) {
         msgs.push({ message: "uploadDate is required", property: "uploadDate", severity: "error" });
-    else if (!isISO8601(schema["uploadDate"]))
+    } else if (!isISO8601(schema["uploadDate"])) {
         msgs.push({ message: "uploadDate should be ISO 8601 format", property: "uploadDate", severity: "warning" });
+    }
 
     return msgs;
 };
@@ -352,10 +387,11 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
     const context = String(schema["@context"] ?? "");
     const type = String(schema["@type"] ?? "");
 
-    if (!context)
+    if (!context) {
         msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
-    else if (!context.includes("schema.org"))
+    } else if (!context.includes("schema.org")) {
         msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
+    }
 
     if (!type) {
         msgs.push({ message: "@type is required", property: "@type", severity: "error" });
@@ -363,13 +399,15 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
         return msgs;
     }
 
-    if (!KNOWN_TYPES.has(type))
+    if (!KNOWN_TYPES.has(type)) {
         msgs.push({ message: `@type '${type}' is not validated — no known rules for this type`, property: "@type", severity: "suggestion" });
+    }
 
     const validator = TYPE_VALIDATORS[type];
 
-    if (validator)
+    if (validator) {
         msgs.push(...validator(schema));
+    }
 
     return msgs;
 };
