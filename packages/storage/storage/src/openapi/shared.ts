@@ -566,8 +566,9 @@ const getOrganizedTransformationParameters = (
 
 // Helper function to get transformation response headers
 const getTransformationHeaders = (transform?: TransformType): Record<string, OpenAPIV3.HeaderObject> => {
-    if (!transform)
+    if (!transform) {
         return {};
+    }
 
     const headers: Record<string, OpenAPIV3.HeaderObject> = {
         "X-Media-Type": {
@@ -596,8 +597,9 @@ const getTransformationHeaders = (transform?: TransformType): Record<string, Ope
 
 // Helper function to get transformation error responses
 const getTransformationErrorResponses = (transform?: TransformType): Record<string, OpenAPIV3.ResponseObject> => {
-    if (!transform)
+    if (!transform) {
         return {};
+    }
 
     return {
         400: {
