@@ -1,3 +1,9 @@
+## @visulima/find-ai-runner [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.3...@visulima/find-ai-runner@1.0.0-alpha.4) (2026-04-15)
+
+### Bug Fixes
+
+* **tooling:** resolve eslint and formatting issues ([399d292](https://github.com/visulima/visulima/commit/399d29282be5b29bb26b4e5b24d45e2a6cdeeca3))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.2...@visulima/find-ai-runner@1.0.0-alpha.3) (2026-04-08)
 
 ### Features
