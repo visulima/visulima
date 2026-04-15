@@ -98,7 +98,7 @@ const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageMa
 export const findLockFile = async (cwd?: URL | string): Promise<string> => {
     const filePath: string | undefined = await findUp(lockFileNames, {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (!filePath) {
@@ -111,7 +111,7 @@ export const findLockFile = async (cwd?: URL | string): Promise<string> => {
 export const findLockFileSync = (cwd?: URL | string): string => {
     const filePath: string | undefined = findUpSync(lockFileNames, {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (!filePath) {
@@ -140,7 +140,7 @@ export type PackageManagerResult = {
  */
 export const findPackageManager = async (cwd?: URL | string): Promise<PackageManagerResult> => {
     const foundFile: string | undefined = await findUp(packageMangerFindUpMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     return resolvePackageManagerFromFile(foundFile);
@@ -159,7 +159,7 @@ export const findPackageManager = async (cwd?: URL | string): Promise<PackageMan
 
 export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult => {
     const foundFile: string | undefined = findUpSync(packageMangerFindUpMatcher, {
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     return resolvePackageManagerFromFile(foundFile);
@@ -182,9 +182,9 @@ export const getPackageManagerVersion = (name: string): string => execSync(`${na
  */
 export const identifyInitiatingPackageManager = ():
     | {
-          name: PackageManager | "cnpm";
-          version: string;
-      }
+        name: PackageManager | "cnpm";
+        version: string;
+    }
     | undefined => {
     if (!process.env.npm_config_user_agent) {
         return undefined;
