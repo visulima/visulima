@@ -277,7 +277,7 @@ describe("select", () => {
             const options = screen.getAllByRole("option");
 
             for (const option of options) {
-                expect(option.id).toBe(true);
+                expect(option.id.length).toBeGreaterThan(0);
             }
         });
     });
@@ -829,7 +829,7 @@ describe("select", () => {
 
             const activedescendant = listbox.getAttribute("aria-activedescendant");
 
-            expect(activedescendant).toBe(true);
+            expect(activedescendant).not.toBeNull();
 
             // The id should match the first option's id
             const options = screen.getAllByRole("option");
@@ -868,7 +868,7 @@ describe("select", () => {
                 await Promise.resolve();
             });
 
-            expect(computePosition).toHaveBeenCalledWith();
+            expect(computePosition).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ placement: "bottom-start" }));
         });
 
         it("passes correct placement for align=end side=top", async () => {

@@ -122,8 +122,8 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
         }),
     ];
 
-    const visibleEvents: TimelineEvent[]
-        = activeTab === ALL_TAB ? groups.flatMap((g) => g.events).toSorted((a, b) => a.time - b.time) : (groups.find((g) => g.id === activeTab)?.events ?? []);
+    const visibleEvents: TimelineEvent[] =
+        activeTab === ALL_TAB ? groups.flatMap((g) => g.events).toSorted((a, b) => a.time - b.time) : (groups.find((g) => g.id === activeTab)?.events ?? []);
 
     const clearAll = (): void => {
         const store = getTimelineStore();

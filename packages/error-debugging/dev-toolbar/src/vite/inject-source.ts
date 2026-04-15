@@ -46,9 +46,9 @@ const getPropsNameFromFunctionDeclaration = (
     };
 
     if (
-        functionDeclaration.type === "FunctionExpression"
-        || functionDeclaration.type === "ArrowFunctionExpression"
-        || functionDeclaration.type === "FunctionDeclaration"
+        functionDeclaration.type === "FunctionExpression" ||
+        functionDeclaration.type === "ArrowFunctionExpression" ||
+        functionDeclaration.type === "FunctionDeclaration"
     ) {
         extractFromParams(functionDeclaration.params);
 
@@ -57,8 +57,8 @@ const getPropsNameFromFunctionDeclaration = (
 
     // VariableDeclarator — init may be an arrow or function expression
     if (
-        functionDeclaration.type === "VariableDeclarator"
-        && (functionDeclaration.init?.type === "ArrowFunctionExpression" || functionDeclaration.init?.type === "FunctionExpression")
+        functionDeclaration.type === "VariableDeclarator" &&
+        (functionDeclaration.init?.type === "ArrowFunctionExpression" || functionDeclaration.init?.type === "FunctionExpression")
     ) {
         extractFromParams(functionDeclaration.init.params);
     }
@@ -156,12 +156,12 @@ const transformJSX = (
     // Skip fragments and structural HTML document elements — there is no useful
     // click-to-source action for <html>, <head>, or <body>.
     if (
-        nameOfElement === "Fragment"
-        || nameOfElement === "React.Fragment"
-        || nameOfElement === "html"
-        || nameOfElement === "head"
-        || nameOfElement === "body"
-        || matcher(ignoreComponents, nameOfElement)
+        nameOfElement === "Fragment" ||
+        nameOfElement === "React.Fragment" ||
+        nameOfElement === "html" ||
+        nameOfElement === "head" ||
+        nameOfElement === "body" ||
+        matcher(ignoreComponents, nameOfElement)
     ) {
         return false;
     }
@@ -200,13 +200,13 @@ const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents
     // position map built from the original source.
     const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
-    const visitJSX
-        = (propsName: string | undefined) =>
-            (element: NodePath<t.JSXOpeningElement>): void => {
-                if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
-                    didTransform = true;
-                }
-            };
+    const visitJSX =
+        (propsName: string | undefined) =>
+        (element: NodePath<t.JSXOpeningElement>): void => {
+            if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
+                didTransform = true;
+            }
+        };
 
     trav(ast, {
         ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
