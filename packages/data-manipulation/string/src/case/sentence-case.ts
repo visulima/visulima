@@ -77,7 +77,7 @@ const sentenceCase = <T extends string = string>(value?: T, options?: CaseOption
         cacheStore.set(cacheKey, result);
     }
 
-    return result;
+    return result as SentenceCase<T>;
 };
 
 export default sentenceCase;
