@@ -1,3 +1,10 @@
+## @visulima/humanizer [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.9...@visulima/humanizer@3.0.0-alpha.10) (2026-04-15)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **humanizer:** resolve eslint and formatting issues ([18e63f7](https://github.com/visulima/visulima/commit/18e63f701b8a75ba9d24bee32d38a59304a1bbc4))
+
 ## @visulima/humanizer [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.8...@visulima/humanizer@3.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
