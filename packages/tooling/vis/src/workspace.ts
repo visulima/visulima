@@ -237,42 +237,57 @@ interface VisConfig {
      * once and every invocation picks it up.
      */
     secrets?: {
-        /** Path to a baseline JSON of previously-triaged findings. */
-        baselinePath?: string;
-        /** Inline rule overrides. Wins over `configPath` when both are set. */
+        /** Path to a baseline of previously-triaged findings (relative to workspace root). */
+        baseline?: string;
+
+        /** Where the ruleset comes from. Omit for the bundled gitleaks default. */
         config?: {
-            allowlist?: unknown;
-            allowlists?: unknown[];
-            description?: string;
-            rules?: unknown[];
-            title?: string;
+            /** Layer the user's rules on top of the bundled ruleset. Default: `true`. */
+            extendBundled?: boolean;
+            /** Inline rule overrides. Wins over `path` when both are set. */
+            inline?: {
+                allowlist?: unknown;
+                allowlists?: unknown[];
+                description?: string;
+                rules?: unknown[];
+                title?: string;
+            };
+            /** Path to a JSON config (gitleaks-compatible). */
+            path?: string;
+            /** Bundled presets layered on top of the default ruleset (e.g. `"weak-passwords"`). */
+            presets?: string[];
         };
-        /** Path to a JSON config file (gitleaks-compatible shape). */
-        configPath?: string;
-        /** Drop findings whose ruleId matches. */
-        disableRules?: string[];
-        /**
-         * Extra gitignore-syntax patterns (negation, directory markers, leading `/`,
-         * etc. — exactly like `.gitignore` lines). Applied on top of `.gitignore`.
-         */
-        extraIgnores?: string[];
-        /**
-         * Paths to additional `.gitignore`-syntax files (e.g. `.secretsignore`) the
-         * scanner should honor alongside `.gitignore` / `.git/info/exclude`.
-         */
-        ignoreFiles?: string[];
-        /** Set `false` to skip merging the bundled gitleaks ruleset. Default: `true`. */
-        includeBundled?: boolean;
-        /** Include hidden (dotfile) entries. Default: `false`. */
-        includeHidden?: boolean;
-        /** Max file size in bytes. Default 10 MiB. */
-        maxFileSize?: number;
-        /** Only report findings whose ruleId matches. */
-        onlyRules?: string[];
-        /** Redact secret values in output. */
+
+        /** Redact secret values in findings. */
         redact?: boolean;
-        /** Respect `.gitignore`. Default: `true`. */
-        respectGitignore?: boolean;
+
+        /** Rule-id filters applied after scanning. */
+        rules?: {
+            /** Drop findings whose ruleId matches. */
+            exclude?: string[];
+            /** Only report findings whose ruleId matches. */
+            include?: string[];
+        };
+
+        /** Walker / filesystem traversal. */
+        walk?: {
+            /**
+             * Paths to additional `.gitignore`-syntax files (e.g. `.secretsignore`).
+             */
+            excludeFromFiles?: string[];
+
+            /**
+             * Gitignore-syntax patterns (supports negation, directory markers, leading `/`).
+             * Applied on top of `.gitignore`.
+             */
+            excludePatterns?: string[];
+            /** Respect `.gitignore`. Default: `true`. */
+            gitignore?: boolean;
+            /** Include hidden (dotfile) entries. Default: `false`. */
+            includeHidden?: boolean;
+            /** Max file size in bytes. Default 10 MiB. */
+            maxFileSize?: number;
+        };
     };
 
     /**

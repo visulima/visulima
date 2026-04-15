@@ -1,3 +1,9 @@
 # Native addon build artifacts (napi v3 outputs to package root)
 *.node
 native/target/
+
+# Build artifacts from `pnpm run build:rules` — regenerated from the TOML source.
+# TOML is the source of truth (nicer to edit; resync from upstream gitleaks).
+# JSON ships to npm via the `files` array; both are produced deterministically.
+assets/gitleaks.json
+assets/presets/*.json

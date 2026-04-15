@@ -1,10 +1,4 @@
-/**
- * Pre-build step: converts the vendored `assets/gitleaks.toml` to
- * `assets/gitleaks.json`. The scanner reads the JSON at runtime — the TOML
- * file is the source of truth we resync from upstream gitleaks but is never
- * parsed at runtime, so we don't ship a TOML parser in the Node dependency
- * graph. Run by `pnpm run build:native` and `pnpm run build`.
- */
+import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { readFileSync, writeFileSync } from "@visulima/fs";
@@ -12,15 +6,33 @@ import { dirname, resolve } from "@visulima/path";
 import { parse as parseTOML } from "smol-toml";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const tomlPath = resolve(here, "..", "assets", "gitleaks.toml");
-const jsonPath = resolve(here, "..", "assets", "gitleaks.json");
+const assetsDir = resolve(here, "..", "assets");
 
-const toml = readFileSync(tomlPath);
-const parsed = parseTOML(toml);
+// Convert a single TOML ruleset to JSON alongside it.
+const convert = (tomlPath, jsonPath) => {
+    const parsed = parseTOML(readFileSync(tomlPath));
 
-writeFileSync(jsonPath, `${JSON.stringify(parsed, undefined, 2)}\n`);
+    writeFileSync(jsonPath, `${JSON.stringify(parsed, undefined, 2)}\n`);
 
-const ruleCount = Array.isArray(parsed?.rules) ? parsed.rules.length : 0;
+    const ruleCount = Array.isArray(parsed?.rules) ? parsed.rules.length : 0;
 
-// eslint-disable-next-line no-console -- build-time progress output
-console.log(`secret-scanner: wrote ${jsonPath} (${ruleCount} rules)`);
+    // eslint-disable-next-line no-console -- build-time progress output
+    console.log(`secret-scanner: wrote ${jsonPath} (${ruleCount} rules)`);
+};
+
+// Bundled gitleaks ruleset — the runtime's default config source.
+convert(resolve(assetsDir, "gitleaks.toml"), resolve(assetsDir, "gitleaks.json"));
+
+// Named presets (e.g. `weak-passwords`) live under assets/presets/*.toml and get the
+// same treatment so the runtime only ever reads JSON.
+const presetsDir = resolve(assetsDir, "presets");
+
+for (const entry of readdirSync(presetsDir)) {
+    if (!entry.endsWith(".toml")) {
+        continue;
+    }
+
+    const name = entry.replace(/\.toml$/, "");
+
+    convert(resolve(presetsDir, entry), resolve(presetsDir, `${name}.json`));
+}

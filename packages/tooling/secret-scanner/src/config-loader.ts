@@ -5,11 +5,6 @@ import { readJsonSync } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { dirname, resolve } from "@visulima/path";
 
-/**
- * Minimal mirror of the gitleaks config shape. The Rust side is the structural
- * source of truth; the JS layer only validates presence of `rules` and performs
- * a lightweight merge with the bundled ruleset.
- */
 interface GitleaksConfig {
     allowlist?: unknown;
     allowlists?: unknown[];
@@ -19,25 +14,25 @@ interface GitleaksConfig {
     title?: string;
 }
 
+/** Named rulesets bundled alongside the default gitleaks config. */
+type PresetName = "weak-passwords";
+
+const KNOWN_PRESETS: ReadonlySet<PresetName> = new Set(["weak-passwords"]);
+
 interface ConfigLoadOptions {
-    /** Pre-parsed config object. Fastest path — skips all file IO. */
     config?: GitleaksConfig;
-    /** Path to a JSON config file. Must be valid JSON (no auto-format detection). */
     configPath?: string;
-    /** Set `false` to skip merging the bundled gitleaks ruleset (default: merge). */
-    includeBundled?: boolean;
+    extendBundled?: boolean;
+    presets?: PresetName[];
 }
 
 const here: string = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 const bundledConfigPath: string = resolve(here, "..", "assets", "gitleaks.json");
+const presetsDir = resolve(here, "..", "assets", "presets");
 
 let cachedBundledConfig: GitleaksConfig | undefined;
+const presetCache = new Map<PresetName, GitleaksConfig>();
 
-/**
- * Read and cache the bundled gitleaks ruleset. The TOML source is converted
- * to JSON at build time by `scripts/build-rules.mjs`, so the runtime never
- * parses TOML — zero `confbox`/`toml` cost.
- */
 const getBundledConfig = (): GitleaksConfig => {
     if (cachedBundledConfig !== undefined) {
         return cachedBundledConfig;
@@ -48,16 +43,26 @@ const getBundledConfig = (): GitleaksConfig => {
     return cachedBundledConfig;
 };
 
-/**
- * Deep merge where user rules append and override bundled rules with the same `id`.
- */
+const loadPreset = (name: PresetName): GitleaksConfig => {
+    const cached = presetCache.get(name);
+
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const config = readJsonSync(resolve(presetsDir, `${name}.json`)) as GitleaksConfig;
+
+    presetCache.set(name, config);
+
+    return config;
+};
+
 const mergeConfigs = (base: GitleaksConfig, overlay: GitleaksConfig): GitleaksConfig => {
     const overlayRuleIds = new Set(
         (overlay.rules ?? [])
             .filter((r): r is { id: string } => typeof r === "object" && r !== null && typeof (r as { id?: unknown }).id === "string")
             .map((r) => r.id),
     );
-
     const baseRules = (base.rules ?? []).filter((r) => {
         if (typeof r !== "object" || r === null) {
             return true;
@@ -80,23 +85,31 @@ const mergeConfigs = (base: GitleaksConfig, overlay: GitleaksConfig): GitleaksCo
 
 const resolveCache = new Map<string, GitleaksConfig>();
 
-/**
- * Resolve the effective config. Strategy:
- *
- * 1. `options.config` wins (pre-parsed, no file IO).
- * 2. `options.configPath` → parse as JSON once, cache by absolute path.
- * 3. Neither set → bundled gitleaks ruleset.
- *
- * When a user config is present and `includeBundled` is not `false`, rules are
- * merged onto the bundled set (user rule ids override).
- */
 const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
+    const invalidPresets = (options.presets ?? []).filter((p) => !KNOWN_PRESETS.has(p));
+
+    if (invalidPresets.length > 0) {
+        throw new Error(`Unknown preset(s): ${invalidPresets.join(", ")}. Known: ${[...KNOWN_PRESETS].join(", ")}`);
+    }
+
+    const applyPresets = (base: GitleaksConfig): GitleaksConfig => {
+        let out = base;
+
+        for (const name of options.presets ?? []) {
+            out = mergeConfigs(out, loadPreset(name));
+        }
+
+        return out;
+    };
+
     if (options.config) {
-        return options.includeBundled === false ? options.config : mergeConfigs(getBundledConfig(), options.config);
+        const baseForUser = options.extendBundled === false ? options.config : mergeConfigs(getBundledConfig(), options.config);
+
+        return applyPresets(baseForUser);
     }
 
     if (!options.configPath) {
-        return getBundledConfig();
+        return applyPresets(getBundledConfig());
     }
 
     const absolute = resolve(options.configPath);
@@ -107,16 +120,16 @@ const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
         resolveCache.set(absolute, userConfig);
     }
 
-    if (options.includeBundled === false) {
-        return userConfig;
+    if (options.extendBundled === false) {
+        return applyPresets(userConfig);
     }
 
     if (!userConfig.rules || userConfig.rules.length === 0) {
-        return getBundledConfig();
+        return applyPresets(getBundledConfig());
     }
 
-    return mergeConfigs(getBundledConfig(), userConfig);
+    return applyPresets(mergeConfigs(getBundledConfig(), userConfig));
 };
 
-export type { ConfigLoadOptions, GitleaksConfig };
+export type { ConfigLoadOptions, GitleaksConfig, PresetName };
 export { bundledConfigPath, getBundledConfig, resolveConfig };

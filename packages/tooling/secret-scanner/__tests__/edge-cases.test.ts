@@ -123,7 +123,7 @@ describe("edge cases", () => {
             title: "bad",
         };
 
-        const skipped = await api.inspectRuleset({ config: badConfig, includeBundled: false });
+        const skipped = await api.inspectRuleset({ config: { extendBundled: false, inline: badConfig } });
 
         expect(skipped.length).toBeGreaterThan(0);
         expect(skipped[0]!.ruleId).toBe("broken-rule");
@@ -244,7 +244,7 @@ leaked = "${secret2}"
             ['gh = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"', 'stripe = "sk_live_4eC39HqLyjWDarjtT1zdp7dc"'].join("\n"),
         );
 
-        const findings = await api.scan([tmpDir], { onlyRules: ["github-pat"] });
+        const findings = await api.scan([tmpDir], { rules: { include: ["github-pat"] } });
 
         expect(findings.every((f) => f.ruleId === "github-pat")).toBe(true);
     });
@@ -260,12 +260,12 @@ leaked = "${secret2}"
 
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 
-        const findings = await api.scan([tmpDir], { disableRules: ["github-pat"] });
+        const findings = await api.scan([tmpDir], { rules: { exclude: ["github-pat"] } });
 
         expect(findings.every((f) => f.ruleId !== "github-pat")).toBe(true);
     });
 
-    it("extraIgnores excludes files matching a gitignore pattern", async () => {
+    it("excludePatterns excludes files matching a gitignore pattern", async () => {
         expect.assertions(1);
 
         const api = await loadApi();
@@ -276,12 +276,12 @@ leaked = "${secret2}"
 
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 
-        const findings = await api.scan([tmpDir], { extraIgnores: ["*.env"] });
+        const findings = await api.scan([tmpDir], { walk: { excludePatterns: ["*.env"] } });
 
         expect(findings).toHaveLength(0);
     });
 
-    it("ignoreFiles honors a .secretsignore file with gitignore syntax", async () => {
+    it("excludeFromFiles honors a .secretsignore file with gitignore syntax", async () => {
         expect.assertions(1);
 
         const api = await loadApi();
@@ -293,12 +293,12 @@ leaked = "${secret2}"
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
         await writeFile(resolve(tmpDir, ".secretsignore"), "*.env\n");
 
-        const findings = await api.scan([tmpDir], { ignoreFiles: [resolve(tmpDir, ".secretsignore")] });
+        const findings = await api.scan([tmpDir], { walk: { excludeFromFiles: [resolve(tmpDir, ".secretsignore")] } });
 
         expect(findings).toHaveLength(0);
     });
 
-    it("scanFiles respects ignoreFiles and extraIgnores via JS matcher", async () => {
+    it("scanFiles respects excludeFromFiles and excludePatterns via JS matcher", async () => {
         expect.assertions(1);
 
         const api = await loadApi();
@@ -313,7 +313,7 @@ leaked = "${secret2}"
 
         try {
             process.chdir(tmpDir);
-            const findings = await api.scanFiles([resolve(tmpDir, "leak.env")], { extraIgnores: ["*.env"] });
+            const findings = await api.scanFiles([resolve(tmpDir, "leak.env")], { walk: { excludePatterns: ["*.env"] } });
 
             expect(findings).toHaveLength(0);
         } finally {
@@ -338,7 +338,7 @@ leaked = "${secret2}"
         await writeFile(baselinePath, "{not-an-array");
 
         try {
-            const findings = await api.scan([tmpDir], { baselinePath });
+            const findings = await api.scan([tmpDir], { baseline: baselinePath });
 
             // Malformed baseline is ignored, scan should still return the leak.
             expect(findings.length).toBeGreaterThan(0);

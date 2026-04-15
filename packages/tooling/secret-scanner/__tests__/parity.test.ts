@@ -64,7 +64,7 @@ describe.skipIf(!shouldRun)("gitleaks parity", () => {
 
         expect(existsSync(scanRoot)).toBe(true);
 
-        const ours = await scan([scanRoot], { includeHidden: true, respectGitignore: false });
+        const ours = await scan([scanRoot], { walk: { gitignore: false, includeHidden: true } });
         const ourRuleIds = new Set(ours.map((f) => f.ruleId));
 
         // eslint-disable-next-line no-console

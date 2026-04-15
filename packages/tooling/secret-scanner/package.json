@@ -50,6 +50,7 @@
     },
     "files": [
         "assets/gitleaks.json",
+        "assets/presets/*.json",
         "assets/LICENSE-GITLEAKS",
         "dist/**",
         "index.js",
@@ -93,7 +94,6 @@
         "@semantic-release/exec": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "smol-toml": "^1.5.0",
         "@visulima/find-cache-dir": "workspace:*",
         "@visulima/fs": "workspace:*",
         "@visulima/packem": "catalog:dev",
@@ -108,6 +108,7 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
+        "smol-toml": "^1.5.0",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
