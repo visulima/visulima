@@ -17,6 +17,7 @@ jobs:
         with:
             target-repo: "visulima/visulima"
             node-version: "22.x"
-            run-audit-fix: true
+            # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+            run-audit-fix: false
         secrets:
             github-token: "${{ secrets.LOCK_MAINTENANCE_GITHUB_TOKEN }}"
