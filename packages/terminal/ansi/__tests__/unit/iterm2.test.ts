@@ -54,14 +54,12 @@ describe("iTerm2 Integration", () => {
             it("should throw for a null payload", () => {
                 expect.assertions(1);
 
-                // @ts-expect-error -- testing runtime error for invalid input
                 expect(() => indexTerm2(null as unknown as IITerm2Payload)).toThrow("Cannot read properties of null");
             });
 
             it("should return an empty string for a payload with no toString", () => {
                 expect.assertions(1);
 
-                // @ts-expect-error -- testing runtime error for invalid input
                 expect(() => indexTerm2({} as unknown as IITerm2Payload)).toThrow(
                     "Invalid payload: must implement IITerm2Payload with a custom toString method",
                 );
@@ -72,7 +70,6 @@ describe("iTerm2 Integration", () => {
 
                 const payload = { foo: "bar" }; // Uses Object.prototype.toString
 
-                // @ts-expect-error -- testing runtime error for invalid input
                 expect(() => indexTerm2(payload as unknown as IITerm2Payload)).toThrow(
                     "Invalid payload: must implement IITerm2Payload with a custom toString method",
                 );
