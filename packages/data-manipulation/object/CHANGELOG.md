@@ -1,3 +1,10 @@
+## @visulima/object [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.8...@visulima/object@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **object:** pass OmittedKeys/PickedKeys generics to recursive calls ([1943c39](https://github.com/visulima/visulima/commit/1943c3912844b133611fe5d207c52a0f78ef51dc))
+
 ## @visulima/object [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.7...@visulima/object@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
