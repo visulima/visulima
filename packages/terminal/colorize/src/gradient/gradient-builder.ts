@@ -84,9 +84,9 @@ export class GradientBuilder {
                     position: index / (l - 1),
                 };
             } else if (
-                (stop_ as RGB | undefined)?.r !== undefined &&
-                (stop_ as RGB | undefined)?.g !== undefined &&
-                (stop_ as RGB | undefined)?.b !== undefined
+                (stop_ as RGB | undefined)?.r !== undefined
+                && (stop_ as RGB | undefined)?.g !== undefined
+                && (stop_ as RGB | undefined)?.b !== undefined
             ) {
                 stop = {
                     color: [(stop_ as RGB).r, (stop_ as RGB).g, (stop_ as RGB).b],
