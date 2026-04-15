@@ -31,8 +31,10 @@ Fast secret and credential scanner for Node.js — a Rust port of the [gitleaks]
 - Parallel file scanning via `rayon`, memory-mapped zero-copy reads for large files
 - Respects `.gitignore` / `.ignore` out of the box
 - Deterministic output order across runs
-- `.gitleaksignore`, baseline JSON, inline (`gitleaks:allow`) and block (`gitleaks:allow-start` / `gitleaks:allow-end`) suppression
+- Baseline JSON (fingerprint suppression), inline (`gitleaks:allow`) and block (`gitleaks:allow-start` / `gitleaks:allow-end`) suppression
 - Also accepts `secret-scanner:allow` / `-start` / `-end` markers
+- Config loading via [`c12`](https://github.com/unjs/c12) — accepts `.toml`, `.json`, `.yaml`, `.ts`, `.js`, `.mjs`, `.cjs` configs on top of the bundled gitleaks ruleset
+- Path exclusion via `.gitignore` (respected by the walker) + `extraIgnores` option
 
 ## Install
 
@@ -105,18 +107,25 @@ const testFixtures = {
 // gitleaks:allow-end
 ```
 
-**Fingerprint file / baseline JSON**
+**Baseline JSON**
 
-- `.gitleaksignore` — one fingerprint per line (`<file>:<ruleID>:<startLine>`), `#` comments allowed. Auto-loaded from the first scan root.
-- Baseline JSON — an array of `Finding` objects (same shape `scan()` returns). Pass via `baselinePath`.
+- Array of `Finding` objects (same shape `scan()` returns). Pass via `baselinePath`. Findings whose fingerprint (`<file>:<ruleID>:<startLine>`) appears in the baseline are suppressed.
 - `disableRules` / `onlyRules` option arrays for rule-id level filtering.
+- Use `.gitignore` to exclude paths from scanning (respected by the walker).
 
 ### API
 
 ```ts
 interface ScanOptions {
+    /** Pre-parsed config object (gitleaks-compatible shape). */
+    config?: GitleaksConfig;
+    /** Path to a config file — c12 auto-detects TOML/JSON/YAML/TS/JS. */
     configPath?: string;
-    configToml?: string;
+    /** Directory to resolve the config from. Defaults to cwd. */
+    cwd?: string;
+    /** Set false to skip merging the bundled gitleaks ruleset (default: merge). */
+    includeBundled?: boolean;
+
     respectGitignore?: boolean;
     includeHidden?: boolean;
     extraIgnores?: string[];
@@ -124,8 +133,6 @@ interface ScanOptions {
     redact?: boolean;
     concurrency?: number;
     baselinePath?: string;
-    ignorePath?: string;
-    ignoreFingerprints?: string[];
     onlyRules?: string[];
     disableRules?: string[];
     warnOnSkippedRules?: boolean;

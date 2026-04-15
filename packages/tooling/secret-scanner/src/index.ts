@@ -1,60 +1,76 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { isAbsolute, relative, resolve as resolvePath } from "node:path";
+
+import ignoreModule from "ignore";
 
 import type * as Native from "../index.js";
+import type { GitleaksConfig } from "./config-loader";
+import { resolveConfig } from "./config-loader";
 
-// The napi-generated `index.js` at the package root is CJS and handles
-// platform-binding selection via optionalDependencies. We load it with
-// createRequire so the bundler leaves the reference intact.
+// The napi-generated `index.js` at the package root is CJS and handles platform-binding
+// selection via optionalDependencies. We load it with createRequire so the bundler leaves
+// the reference intact.
 const esmRequire = createRequire(import.meta.url);
 
 type Binding = typeof Native;
 const binding: Binding = esmRequire("../index.js") as Binding;
 
+/**
+ * Grouped scan options. Keys are namespaced by concern — config source, walker, rule
+ * filters, output, baseline — so autocomplete surfaces only related settings at each level.
+ */
 export interface ScanOptions {
-    /**
-     * Path to a baseline JSON file (array of `Finding` objects). Findings whose
-     * fingerprint matches a baseline entry are suppressed.
-     */
-    baselinePath?: string;
-    /** Worker thread count (rayon). `0` or omit = auto. */
+    /** Where the ruleset comes from. */
+    config?: {
+        /** Pre-parsed gitleaks-shaped object. Fastest path — zero file IO. */
+        value?: GitleaksConfig;
+        /** Path to a JSON file (gitleaks-compatible shape). */
+        path?: string;
+        /** Merge on top of the bundled gitleaks ruleset. Default: `true`. */
+        merge?: boolean;
+    };
+
+    /** Walker / filesystem traversal. */
+    walk?: {
+        /** Gitignore-syntax lines applied on top of `.gitignore`. */
+        ignore?: string[];
+        /** Additional `.gitignore`-shaped files to honor (e.g. `.secretsignore`). */
+        ignoreFiles?: string[];
+        /** Respect `.gitignore`, `.ignore` and global excludes. Default: `true`. */
+        respectGitignore?: boolean;
+        /** Visit dotfiles and hidden entries. Default: `false`. */
+        includeHidden?: boolean;
+        /** Skip files larger than this (bytes). Default: 10 MiB. */
+        maxFileSize?: number;
+    };
+
+    /** Rule-id level filters, applied after scanning. */
+    rules?: {
+        /** Only report findings whose ruleId is in this list. */
+        only?: string[];
+        /** Drop findings whose ruleId is in this list. */
+        disable?: string[];
+    };
+
+    /** Output shaping. */
+    output?: {
+        /** Mask `match` / `secret` strings in every finding. */
+        redact?: boolean;
+    };
+
+    /** Suppression via a previously-triaged baseline snapshot. */
+    baseline?: {
+        /** Path to a JSON array of `Finding` objects. */
+        path: string;
+    };
+
+    /** Rayon worker threads. `0` / omit = auto (use rayon's global pool). */
     concurrency?: number;
-    /** Path to a gitleaks-compatible TOML config. Defaults to the bundled gitleaks ruleset. */
-    configPath?: string;
-    /** Raw TOML rule string. Takes precedence over `configPath`. */
-    configToml?: string;
-    /** Drop findings whose ruleId is in this list. Applied after scanning. */
-    disableRules?: string[];
-    /** Additional glob patterns to exclude. */
-    extraIgnores?: string[];
-    /** Inline ignore fingerprints, merged with any loaded from `ignorePath`. */
-    ignoreFingerprints?: string[];
 
-    /**
-     * Path to a `.gitleaksignore` file. Each line is a finding fingerprint
-     * (`&lt;file>:&lt;ruleID>:&lt;startLine>`); matching findings are suppressed.
-     * If omitted, a `.gitleaksignore` at the first scan root is auto-loaded.
-     */
-    ignorePath?: string;
-    /** Include hidden (dotfile) entries. Default: `false`. */
-    includeHidden?: boolean;
-    /** Maximum per-file size in bytes. Default: 10 MiB. Larger files are skipped. */
-    maxFileSize?: number;
-    /** Only report findings whose ruleId is in this list. Applied after scanning. */
-    onlyRules?: string[];
-    /** Replace `match` and `secret` strings with a redacted form in the output. */
-    redact?: boolean;
-    /** Respect `.gitignore`, `.ignore` and global excludes. Default: `true`. */
-    respectGitignore?: boolean;
-
-    /**
-     * Warn to stderr about rules that failed to compile from the config. Default: `false`
-     * (callers should invoke `inspectRuleset()` explicitly when they care).
-     */
-    warnOnSkippedRules?: boolean;
+    /** Print diagnostics (skipped rules, etc.) to stderr on first run. */
+    verbose?: boolean;
 }
 
 export interface Finding {
@@ -71,117 +87,6 @@ export interface Finding {
     tags: string[];
 }
 
-const here: string = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
-const bundledConfigPath: string = resolve(here, "..", "assets", "gitleaks.toml");
-
-let cachedConfigToml: string | undefined;
-
-const loadBundledConfig = async (): Promise<string> => {
-    if (cachedConfigToml !== undefined) {
-        return cachedConfigToml;
-    }
-
-    cachedConfigToml = await readFile(bundledConfigPath, "utf8");
-
-    return cachedConfigToml;
-};
-
-const resolveOptions = async (options: ScanOptions | undefined): Promise<Native.ScanOptions> => {
-    const hasConfig = options?.configPath !== undefined || options?.configToml !== undefined;
-    const configToml: string | undefined = hasConfig ? options?.configToml : await loadBundledConfig();
-    const resolved: Native.ScanOptions = {
-        concurrency: options?.concurrency,
-        configPath: options?.configPath,
-        configToml,
-        extraIgnores: options?.extraIgnores,
-        includeHidden: options?.includeHidden,
-        maxFileSize: options?.maxFileSize,
-        redact: options?.redact,
-        respectGitignore: options?.respectGitignore,
-    };
-
-    return resolved;
-};
-
-/** Gitleaks-compatible fingerprint: `&lt;file>:&lt;ruleID>:&lt;startLine>`. */
-export const fingerprint = (f: Finding): string => `${f.file}:${f.ruleId}:${f.startLine}`;
-
-const loadIgnoreSet = async (ignorePath: string | undefined, inline: string[] | undefined, paths: string[]): Promise<Set<string>> => {
-    const set = new Set<string>(inline);
-    let actualPath = ignorePath;
-
-    if (!actualPath) {
-        for (const root of paths) {
-            const candidate = resolve(root, ".gitleaksignore");
-
-            if (existsSync(candidate)) {
-                actualPath = candidate;
-                break;
-            }
-        }
-    }
-
-    if (actualPath && existsSync(actualPath)) {
-        const raw = await readFile(actualPath, "utf8");
-
-        for (const line of raw.split(/\r?\n/)) {
-            const trimmed = line.trim();
-
-            if (trimmed && !trimmed.startsWith("#")) set.add(trimmed);
-        }
-    }
-
-    return set;
-};
-
-const loadBaselineSet = async (baselinePath: string | undefined): Promise<Set<string>> => {
-    if (!baselinePath || !existsSync(baselinePath)) return new Set();
-
-    const raw = await readFile(baselinePath, "utf8");
-    let parsed: unknown;
-
-    try {
-        parsed = JSON.parse(raw);
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-
-        process.stderr.write(`secret-scanner: ignoring malformed baseline ${baselinePath}: ${message}\n`);
-
-        return new Set();
-    }
-
-    if (!Array.isArray(parsed)) {
-        process.stderr.write(`secret-scanner: baseline ${baselinePath} must be an array of findings; ignoring\n`);
-
-        return new Set();
-    }
-
-    const isFinding = (f: unknown): f is Finding => {
-        if (typeof f !== "object" || f === null) return false;
-
-        const candidate = f as Finding;
-
-        return typeof candidate.ruleId === "string" && typeof candidate.file === "string" && typeof candidate.startLine === "number";
-    };
-
-    return new Set(parsed.filter(isFinding).map((f) => fingerprint(f)));
-};
-
-const applySuppressions = async (findings: Finding[], options: ScanOptions | undefined, paths: string[]): Promise<Finding[]> => {
-    const [ignore, baseline] = await Promise.all([
-        loadIgnoreSet(options?.ignorePath, options?.ignoreFingerprints, paths),
-        loadBaselineSet(options?.baselinePath),
-    ]);
-
-    if (ignore.size === 0 && baseline.size === 0) return findings;
-
-    return findings.filter((f) => {
-        const fp = fingerprint(f);
-
-        return !ignore.has(fp) && !baseline.has(fp);
-    });
-};
-
 export interface SkippedRule {
     reason: string;
     ruleId: string;
@@ -197,105 +102,199 @@ export interface RuleInfo {
     tags: string[];
 }
 
-/** Return metadata for every compiled rule in the config. */
-export const listRules = async (options?: ScanOptions): Promise<RuleInfo[]> => {
-    const resolved = await resolveOptions(options);
+/**
+ * Flatten grouped options into the shape the NAPI binding expects. Centralising the
+ * mapping here means every public API function (`scan`/`scanFiles`/`scanString`/
+ * `listRules`/`inspectRuleset`) sees a single canonical normalisation step.
+ */
+const toNativeOptions = (options: ScanOptions | undefined): Native.ScanOptions => {
+    const config = resolveConfig({
+        config: options?.config?.value,
+        configPath: options?.config?.path,
+        includeBundled: options?.config?.merge,
+    });
 
-    return binding.listRules(resolved) as RuleInfo[];
+    return {
+        concurrency: options?.concurrency,
+        config: config as unknown as Native.ScanOptions["config"],
+        extraIgnores: options?.walk?.ignore,
+        ignoreFiles: options?.walk?.ignoreFiles,
+        includeHidden: options?.walk?.includeHidden,
+        maxFileSize: options?.walk?.maxFileSize,
+        redact: options?.output?.redact,
+        respectGitignore: options?.walk?.respectGitignore,
+    };
 };
 
-/**
- * Scan a fixed list of files (e.g., paths produced by `git diff --name-only`).
- * Bypasses directory walking.
- */
-export const scanFiles = async (files: string[], options?: ScanOptions): Promise<Finding[]> => {
-    const resolved = await resolveOptions(options);
+// `ignore` ships as ESM and CJS; handle both default-export shapes transparently.
+interface IgnoreFactory {
+    (): IgnoreMatcher;
+}
 
-    if (options?.warnOnSkippedRules) {
-        await warnOnSkippedRules(resolved);
+interface IgnoreMatcher {
+    add: (pattern: string | string[]) => IgnoreMatcher;
+    ignores: (path: string) => boolean;
+}
+
+const ignore: IgnoreFactory = (ignoreModule as { default?: IgnoreFactory }).default ?? (ignoreModule as unknown as IgnoreFactory);
+
+/**
+ * Build a gitignore matcher for the `scanFiles` path — it bypasses the native walker
+ * and therefore has to filter paths itself.
+ */
+const buildIgnoreMatcher = (options: ScanOptions | undefined): IgnoreMatcher | undefined => {
+    const ignoreFiles = options?.walk?.ignoreFiles ?? [];
+    const patterns = options?.walk?.ignore ?? [];
+
+    if (ignoreFiles.length === 0 && patterns.length === 0) { return undefined; }
+
+    const matcher = ignore();
+
+    for (const file of ignoreFiles) {
+        if (!existsSync(file)) { continue; }
+
+        try {
+            matcher.add(readFileSync(file, "utf8"));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            process.stderr.write(`secret-scanner: failed to read ignore file ${file}: ${message}\n`);
+        }
     }
 
-    const raw = (await binding.scanFiles(files, resolved)) as Finding[];
-    const filtered = applyRuleFilter(raw, options);
+    if (patterns.length > 0) { matcher.add(patterns); }
 
-    return applySuppressions(filtered, options, files);
+    return matcher;
+};
+
+const filterIgnoredFiles = (files: string[], matcher: IgnoreMatcher | undefined, cwd: string): string[] => {
+    if (!matcher) { return files; }
+
+    return files.filter((file) => {
+        const abs = isAbsolute(file) ? file : resolvePath(cwd, file);
+        const rel = relative(cwd, abs);
+
+        if (rel === "" || rel.startsWith("..")) { return true; }
+
+        return !matcher.ignores(rel);
+    });
+};
+
+/** Gitleaks-compatible fingerprint: `<file>:<ruleID>:<startLine>`. */
+export const fingerprint = (f: Finding): string => `${f.file}:${f.ruleId}:${f.startLine}`;
+
+const loadBaselineSet = async (baselinePath: string | undefined): Promise<Set<string>> => {
+    if (!baselinePath || !existsSync(baselinePath)) { return new Set(); }
+
+    const raw = await readFile(baselinePath, "utf8");
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(raw);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`secret-scanner: ignoring malformed baseline ${baselinePath}: ${message}\n`);
+        return new Set();
+    }
+
+    if (!Array.isArray(parsed)) {
+        process.stderr.write(`secret-scanner: baseline ${baselinePath} must be an array of findings; ignoring\n`);
+        return new Set();
+    }
+
+    const isFinding = (f: unknown): f is Finding => {
+        if (typeof f !== "object" || f === null) { return false; }
+        const candidate = f as Finding;
+        return typeof candidate.ruleId === "string" && typeof candidate.file === "string" && typeof candidate.startLine === "number";
+    };
+
+    return new Set(parsed.filter(isFinding).map((f) => fingerprint(f)));
+};
+
+const applyRuleFilter = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
+    const only = options?.rules?.only && options.rules.only.length > 0 ? new Set(options.rules.only) : undefined;
+    const disable = options?.rules?.disable && options.rules.disable.length > 0 ? new Set(options.rules.disable) : undefined;
+
+    if (!only && !disable) { return findings; }
+
+    return findings.filter((f) => {
+        if (only && !only.has(f.ruleId)) { return false; }
+        if (disable?.has(f.ruleId)) { return false; }
+        return true;
+    });
+};
+
+const applySuppressions = async (findings: Finding[], options: ScanOptions | undefined): Promise<Finding[]> => {
+    const baseline = await loadBaselineSet(options?.baseline?.path);
+    if (baseline.size === 0) { return findings; }
+    return findings.filter((f) => !baseline.has(fingerprint(f)));
 };
 
 /** Return any rules from the given config that failed to compile, with the reason. */
 export const inspectRuleset = async (options?: ScanOptions): Promise<SkippedRule[]> => {
-    const resolved = await resolveOptions(options);
-
+    const resolved = toNativeOptions(options);
     return binding.inspectRuleset(resolved) as SkippedRule[];
 };
 
-const applyRuleFilter = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
-    const only = options?.onlyRules && options.onlyRules.length > 0 ? new Set(options.onlyRules) : undefined;
-    const disable = options?.disableRules && options.disableRules.length > 0 ? new Set(options.disableRules) : undefined;
-
-    if (!only && !disable) return findings;
-
-    return findings.filter((f) => {
-        if (only && !only.has(f.ruleId)) return false;
-
-        if (disable?.has(f.ruleId)) return false;
-
-        return true;
-    });
+/** Return metadata for every compiled rule in the effective config. */
+export const listRules = async (options?: ScanOptions): Promise<RuleInfo[]> => {
+    const resolved = toNativeOptions(options);
+    return binding.listRules(resolved) as RuleInfo[];
 };
 
 let warnedOnce = false;
 
 const warnOnSkippedRules = async (resolved: Native.ScanOptions): Promise<void> => {
-    if (warnedOnce) return;
-
+    if (warnedOnce) { return; }
     warnedOnce = true;
 
     try {
         const skipped = binding.inspectRuleset(resolved) as SkippedRule[];
-
         if (skipped.length > 0) {
-            process.stderr.write(`secret-scanner: ${skipped.length} rule(s) skipped due to invalid regex:\n`);
-
+            process.stderr.write(`secret-scanner: ${String(skipped.length)} rule(s) skipped due to invalid regex:\n`);
             for (const s of skipped.slice(0, 10)) {
                 process.stderr.write(`  - ${s.ruleId}: ${s.reason}\n`);
             }
-
             if (skipped.length > 10) {
-                process.stderr.write(`  ... and ${skipped.length - 10} more\n`);
+                process.stderr.write(`  ... and ${String(skipped.length - 10)} more\n`);
             }
         }
     } catch {
-        // Validation is best-effort; don't break the scan on a diagnostics failure.
+        // Diagnostics are best-effort; don't break the scan on a failure here.
     }
 };
 
 /** Scan the given paths for secrets. Runs the detector on a Rust thread pool. */
 export const scan = async (paths: string[], options?: ScanOptions): Promise<Finding[]> => {
-    const resolved = await resolveOptions(options);
-
-    if (options?.warnOnSkippedRules) {
-        await warnOnSkippedRules(resolved);
-    }
-
+    const resolved = toNativeOptions(options);
+    if (options?.verbose) { await warnOnSkippedRules(resolved); }
     const raw = (await binding.scan(paths, resolved)) as Finding[];
     const filtered = applyRuleFilter(raw, options);
-
-    return applySuppressions(filtered, options, paths);
+    return applySuppressions(filtered, options);
 };
 
 /**
- * Scan an in-memory buffer as if it lived at `file`. Useful for editor integrations.
- * Unlike `scan()`, this does not auto-discover a `.gitleaksignore` from the filesystem;
- * pass one explicitly via `options.ignorePath` or `options.ignoreFingerprints` if you need it.
+ * Scan a fixed list of files (e.g. output of `git diff --name-only`). Bypasses the
+ * native walker, so `walk.ignore` / `walk.ignoreFiles` are honored here in JS via the
+ * `ignore` package.
  */
-export const scanString = async (content: string, file: string, options?: ScanOptions): Promise<Finding[]> => {
-    const resolved = await resolveOptions(options);
-    const raw = binding.scanTextSync(content, file, resolved) as Finding[];
-    const filtered = applyRuleFilter(raw, options);
+export const scanFiles = async (files: string[], options?: ScanOptions): Promise<Finding[]> => {
+    const resolved = toNativeOptions(options);
+    if (options?.verbose) { await warnOnSkippedRules(resolved); }
 
-    // Pass empty paths so `.gitleaksignore` auto-discovery does not sniff the caller's cwd.
-    return applySuppressions(filtered, options, []);
+    const matcher = buildIgnoreMatcher(options);
+    const filteredFiles = filterIgnoredFiles(files, matcher, process.cwd());
+
+    const raw = (await binding.scanFiles(filteredFiles, resolved)) as Finding[];
+    const filtered = applyRuleFilter(raw, options);
+    return applySuppressions(filtered, options);
 };
 
-/** Path to the bundled gitleaks.toml. Exposed for tooling that wants to reuse or extend it. */
-export { bundledConfigPath };
+/** Scan an in-memory buffer as if it lived at `file`. Useful for editor integrations. */
+export const scanString = async (content: string, file: string, options?: ScanOptions): Promise<Finding[]> => {
+    const resolved = toNativeOptions(options);
+    const raw = binding.scanTextSync(content, file, resolved) as Finding[];
+    const filtered = applyRuleFilter(raw, options);
+    return applySuppressions(filtered, options);
+};
+
+export { bundledConfigPath, type GitleaksConfig } from "./config-loader";

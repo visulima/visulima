@@ -30,23 +30,16 @@ describe("native-binding", () => {
         expectTypeOf(nativeMod.scanTextSync).toBeFunction();
     });
 
-    it("detects a hard-coded AWS key via scanTextSync", async () => {
+    it("detects a hard-coded GitHub token via scanString", async () => {
         expect.assertions(1);
 
         if (!nativeBinaryPresent) {
             return;
         }
 
-        const nativeMod = await import("../index.js");
-        const { readFile } = await import("node:fs/promises");
-        const { dirname, resolve } = await import("node:path");
-        const { fileURLToPath } = await import("node:url");
-        const here = dirname(fileURLToPath(import.meta.url));
-        const configToml = await readFile(resolve(here, "..", "assets", "gitleaks.toml"), "utf8");
-
+        const api = await import("../src/index.js");
         const content = ["# config", 'github_token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"'].join("\n");
-
-        const findings = nativeMod.scanTextSync(content, "fake.env", { configToml });
+        const findings = await api.scanString(content, "fake.env");
 
         expect(findings.length).toBeGreaterThan(0);
     });

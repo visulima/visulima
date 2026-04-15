@@ -10,7 +10,9 @@ export default createConfig(
             "__fixtures__",
             "__docs__",
             "assets",
+            "docs/**/*.md",
             "index.js",
+            "index.d.ts",
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
@@ -27,60 +29,64 @@ export default createConfig(
     },
     {
         rules: {
+            // Prettier owns formatting — these stylistic rules conflict with it.
             "@stylistic/max-statements-per-line": "off",
             "@stylistic/no-extra-parens": "off",
             "@stylistic/quotes": "off",
-            "@typescript-eslint/no-misused-promises": "off",
+            // Vitest assertion patterns like `findings[0]!.ruleId` are idiomatic.
             "@typescript-eslint/no-non-null-assertion": "off",
-            "@typescript-eslint/no-shadow": "off",
+
+            // The NAPI binding surface returns `unknown`; casting through
+            // `as unknown as Native.ScanOptions["config"]` is deliberate.
             "@typescript-eslint/no-unnecessary-condition": "off",
+
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-return": "off",
-            "@typescript-eslint/no-use-before-define": "off",
-            "@typescript-eslint/prefer-nullish-coalescing": "off",
-            "@typescript-eslint/prefer-promise-reject-errors": "off",
+            // Some public-API functions return `Promise<T>` for API consistency even when
+            // the native call underneath is synchronous. The `async` marker keeps the
+            // signature uniform across `scan`/`scanFiles`/`scanString`/`inspectRuleset`.
             "@typescript-eslint/require-await": "off",
+
+            // We interpolate numbers (counts, line numbers) into template strings freely;
+            // wrapping each in `String(...)` is pure noise.
             "@typescript-eslint/restrict-template-expressions": "off",
+
             "antfu/if-newline": "off",
-            "e18e/prefer-static-regex": "off",
+
+            // Export positions are interleaved with types/helpers for readability;
+            // forcing every export to the bottom hurts our layout.
             "import/exports-last": "off",
+
+            // We `import type * as Native from "../index.js"` for the NAPI surface.
             "import/no-namespace": "off",
             "import/prefer-default-export": "off",
-            "jsdoc/check-indentation": "off",
-            "jsdoc/check-param-names": "off",
-            "jsdoc/escape-inline-tags": "off",
-            "jsdoc/match-description": "off",
-            "no-confusing-arrow": "off",
-            "no-for-of-array/no-for-of-array": "off",
-            "no-param-reassign": "off",
-            "no-plusplus": "off",
-            "promise/param-names": "off",
-            "sonarjs/cognitive-complexity": "off",
-            "sonarjs/function-return-type": "off",
-            "sonarjs/no-alphabetical-sort": "off",
-            "sonarjs/no-misleading-array-reverse": "off",
-            "sonarjs/no-nested-conditional": "off",
-            "sonarjs/no-nested-functions": "off",
+
+            // `execFileSync("git", ...)` legitimately relies on PATH; the rule is
+            // a lint for shell-like paths, not for a binary we expect to be installed.
             "sonarjs/no-os-command-from-path": "off",
-            "sonarjs/no-undefined-argument": "off",
-            "sonarjs/publicly-writable-directories": "off",
-            "unicorn/no-abusive-eslint-disable": "off",
-            "unicorn/no-array-callback-reference": "off",
-            "unicorn/no-array-sort": "off",
-            "unicorn/no-null": "off",
+
+            // `tmpDir`, `cacheDir`, `nativeMod` etc. are clear in context and used
+            // consistently across tests; the unicorn rename suggestions are churny.
             "unicorn/prevent-abbreviations": "off",
-            "vitest/no-conditional-expect": "off",
         },
     },
     {
         files: ["__tests__/**/*"],
         rules: {
+            // Tiny inline regexes in test assertions aren't worth module-scoping.
+            "e18e/prefer-static-regex": "off",
+            // Random-looking strings in fixtures trip the built-in secret detectors.
             "no-secrets/no-secrets": "off",
+
             "sonarjs/no-hardcoded-secrets": "off",
+            // Tests guard on `if (!api) return;` before asserting when the native binding
+            // isn't compiled locally. Both rules fight that pattern.
+            "vitest/no-conditional-expect": "off",
             "vitest/no-conditional-in-test": "off",
+
             "vitest/require-top-level-describe": "off",
         },
     },
