@@ -74,7 +74,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
 
         if (meta.message !== undefined) {
             // eslint-disable-next-line no-param-reassign
-            meta.message = this.#format(formatter, meta.message, meta.context ?? []);
+            meta.message = this.#format(formatter, meta.message, meta.context ?? []) as typeof meta.message;
         }
 
         return meta;

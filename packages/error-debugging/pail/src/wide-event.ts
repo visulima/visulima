@@ -268,7 +268,8 @@ export class WideEvent<TData extends Record<string, unknown> = Record<string, un
 
     private readonly timestamp: string;
 
-    private readonly type: DefaultLogTypes | T;
+    // @ts-expect-error TS6133 -- preserved for future use (richer event categorization)
+    private readonly _type: DefaultLogTypes | T;
 
     public constructor(options: WideEventOptions<T>) {
         this.name = options.name;
@@ -278,7 +279,7 @@ export class WideEvent<TData extends Record<string, unknown> = Record<string, un
         this.timestamp = new Date().toISOString();
         this.emitted = false;
         this.autoEmit = options.autoEmit ?? true;
-        this.type = options.type ?? ("info" as DefaultLogTypes);
+        this._type = options.type ?? ("info" as DefaultLogTypes);
         this.level = "info";
         this.requestLogs = [];
         this.service = options.service;

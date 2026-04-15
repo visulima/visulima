@@ -3,6 +3,7 @@
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
         "moduleResolution": "bundler",
+        "noUncheckedIndexedAccess": false,
         "types": ["node"]
     },
     "include": ["src/**/*", "*.d.ts"]

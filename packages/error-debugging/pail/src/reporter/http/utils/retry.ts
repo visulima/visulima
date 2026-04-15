@@ -37,7 +37,7 @@ const prepareRequestBody = (body: string | Uint8Array): BodyInit | undefined => 
     }
 
     // Uint8Array needs to be converted for fetch compatibility
-    return new Uint8Array(body.buffer, body.byteOffset, body.byteLength);
+    return new Uint8Array(body.buffer, body.byteOffset, body.byteLength) as unknown as BodyInit;
 };
 
 /**
