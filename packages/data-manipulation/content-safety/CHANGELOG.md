@@ -1,3 +1,9 @@
+## @visulima/content-safety [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.5...@visulima/content-safety@1.0.0-alpha.6) (2026-04-15)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+
 ## @visulima/content-safety [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.4...@visulima/content-safety@1.0.0-alpha.5) (2026-04-08)
 
 ### Bug Fixes
