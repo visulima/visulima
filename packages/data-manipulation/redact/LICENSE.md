@@ -23,14 +23,11 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/redact artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## dot-prop
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/dot-prop
