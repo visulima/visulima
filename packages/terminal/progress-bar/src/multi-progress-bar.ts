@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, max-classes-per-file */
+/* eslint-disable max-classes-per-file */
 import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import { ProgressBar } from "./progress-bar";
