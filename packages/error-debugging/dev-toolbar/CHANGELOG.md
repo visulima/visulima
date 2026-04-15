@@ -1,3 +1,11 @@
+## @visulima/dev-toolbar [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.8...@visulima/dev-toolbar@1.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **dev-toolbar:** add missing DOM property types and tighten getOptionValue fallback ([55326d0](https://github.com/visulima/visulima/commit/55326d02b173211608aefa994aa0e5f54705120d))
+* **dev-toolbar:** replace bogus .toBe(true) assertions with proper matchers ([e672ca4](https://github.com/visulima/visulima/commit/e672ca459bf8d3e9141e277755bc35f2b59dac07))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.7...@visulima/dev-toolbar@1.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
