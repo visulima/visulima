@@ -179,11 +179,11 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
                 </Text>
             </Box>
 
-            {quitDialogVisible && (
-                <QuitDialog
-                    message={`${state.checkedEntries.size} optimization${state.checkedEntries.size === 1 ? "" : "s"} selected but not applied. Quit?`}
-                />
-            )}
+            <QuitDialog
+                autoExitSeconds={3}
+                onCancel={() => setQuitDialogVisible(false)}
+                visible={quitDialogVisible}
+            />
         </Box>
     );
 };

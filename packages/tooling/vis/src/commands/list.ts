@@ -1,7 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
 import { filterProjectsByQuery } from "../selectors";
-import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } from "../workspace";
+import { discoverWorkspace, type VisProjectConfiguration } from "../workspace";
 
 const list: Command = {
     group: "Workspace",

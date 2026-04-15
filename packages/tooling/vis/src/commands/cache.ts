@@ -62,10 +62,10 @@ const sumDirectorySize = async (directory: string): Promise<number> => {
 const collectCacheEntries = async (cacheDirectory: string): Promise<CacheEntry[]> => {
     const entries: CacheEntry[] = [];
 
-    let dirents: Awaited<ReturnType<typeof readdir>>;
+    let dirents: string[];
 
     try {
-        dirents = await readdir(cacheDirectory);
+        dirents = (await readdir(cacheDirectory)) as unknown as string[];
     } catch {
         return [];
     }

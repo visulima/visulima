@@ -283,10 +283,10 @@ const add: Command = {
                 const corrected = result.packages[i];
 
                 if (corrected !== p.name) {
-                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected ?? "";
                 }
 
-                return packages[i];
+                return packages[i] ?? "";
             });
         }
 

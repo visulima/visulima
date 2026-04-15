@@ -157,6 +157,10 @@ const installDependencies = (
             lockfileOnly: false,
             noOptional: false,
             offline: preferOffline,
+            prod: false,
+            recursive: false,
+            silent: false,
+            workspaceRoot: false,
         },
         projectDir,
         logger,
@@ -290,7 +294,7 @@ const create: Command = {
 
         let templateInput: string | undefined;
         let projectName: string | undefined;
-        let targetDir: string;
+        let targetDir: string | undefined;
         let editor: "vscode" | undefined = createConfig?.defaultEditor;
         let gitInit = createConfig?.gitInit ?? false;
         let extraArgs: string[] = [];

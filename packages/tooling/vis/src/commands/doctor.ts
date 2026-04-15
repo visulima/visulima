@@ -65,6 +65,7 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
         exclude: [],
         ignore: [],
         include: [],
+        includeLocked: false,
         includePrerelease: false,
         security: true,
         target: "latest",
@@ -153,7 +154,7 @@ const icon = (ok: boolean): string => (ok ? green("\u2713") : red("\u2717"));
 const warnIcon = yellow("\u26A0");
 
 const displayResults = (results: DoctorResults): void => {
-    const { duplicates, installedCount, optimizations, outdated, socketIssues, vulnCount, workspaceCount } = results;
+    const { duplicates, installedCount, optimizations, outdated, socketIssues, vulnCount } = results;
 
     info("");
 

@@ -66,7 +66,7 @@ const parsePackageArgument = (argument: string): { name: string; versionSpec: st
         return { name: argument, versionSpec: undefined };
     }
 
-    return { name: match[1], versionSpec: match[2] };
+    return { name: match[1] ?? argument, versionSpec: match[2] };
 };
 
 export { errorMessage, parsePackageArgument, toStringArray };

@@ -620,10 +620,10 @@ const update: Command = {
                     const corrected = result.packages[i];
 
                     if (corrected !== p.name) {
-                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected ?? "";
                     }
 
-                    return argument[i];
+                    return argument[i] ?? "";
                 });
             } else {
                 // No explicit args: scan package.json deps for typosquats
