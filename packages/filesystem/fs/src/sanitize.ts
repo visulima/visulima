@@ -5,7 +5,7 @@ const FALLBACK_NAME = "unnamed";
 const MAX_LENGTH = 128;
 
 const REPLACEMENT_CHARACTERS: Record<string, string> = {
-    "\"": "ˮ", // 0x02EE - MODIFIER LETTER DOUBLE APOSTROPHE
+    '"': "ˮ", // 0x02EE - MODIFIER LETTER DOUBLE APOSTROPHE
     "*": "⁎", // 0x204E - LOW ASTERISK
     "/": "⁄", // 0x2044 - FRACTION SLASH
     ":": "꞉", // 0xA789 - MODIFIER LETTER COLON
@@ -306,8 +306,8 @@ export const sanitize = (name: string, options?: Partial<SanitizeOptions>): stri
     }
 
     // Replace forbidden characters based on filesystem type
-    sanitized
-        = fileSystemType === "win32" || fileSystemType === "fat32"
+    sanitized =
+        fileSystemType === "win32" || fileSystemType === "fat32"
             ? sanitized.replaceAll(WINDOWS_FORBIDDEN_CHARS_REGEX, (char) => REPLACEMENT_CHARACTERS[char] ?? "")
             : sanitized.replaceAll(UNIX_FORBIDDEN_CHARS_REGEX, REPLACEMENT_CHARACTERS["/"] ?? "");
 

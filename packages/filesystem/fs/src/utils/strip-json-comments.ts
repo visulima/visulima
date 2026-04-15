@@ -52,7 +52,7 @@ const stripJsonComments: (jsonString: string, options?: { whitespace?: boolean }
     // in the replacer function.
     jsonString.replace(INTERNAL_STRIP_JSON_REGEX, (match) => {
         // Skip strings & broken block comments:
-        if (match.startsWith("\"") || (match[1] === "*" && !match.endsWith("*/"))) {
+        if (match.startsWith('"') || (match[1] === "*" && !match.endsWith("*/"))) {
             return match;
         }
 
