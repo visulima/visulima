@@ -44,6 +44,7 @@ export const isPackageInWorkspace = (workspacePath: string, packagePath: string,
                 return normalizedRelativePath !== "." && !normalizedRelativePath.includes("/");
             }
 
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean ||, not a nullable value
             return normalizedRelativePath.startsWith(`${prefix}/`) || normalizedRelativePath === prefix;
         }
 

@@ -1,3 +1,5 @@
+/* eslint-disable import/exports-last, @typescript-eslint/no-use-before-define, sonarjs/cognitive-complexity, sonarjs/use-type-alias, jsdoc/check-indentation */
+
 /**
  * Lockfile parser covering all four mainstream JS package managers.
  *
@@ -19,7 +21,7 @@
  * - **bun** (`bun.lock`): `[versionKey, registryUrl, metadata, integrity]`
  *   tuples, JSON with trailing commas. ✅
  *
- * The `sha{256,384,512}-<base64>` SRI values are decoded once here into
+ * The `sha{256,384,512}-&lt;base64>` SRI values are decoded once here into
  * `{ algorithm, hex }` pairs.
  */
 
@@ -93,15 +95,30 @@ const MAX_SRI_LENGTH = 1024;
 // characters outside the alphabet, so a garbage payload like
 // `sha512-abc!def` would decode to the bytes of `abcdef` — we'd emit a
 // hash that doesn't match the lockfile content. Validate up front.
-const BASE64_PAYLOAD = /^[A-Za-z0-9+/]+={0,2}$/;
+const BASE64_PAYLOAD = /^[A-Z0-9+/]+={0,2}$/i;
+
+// eslint-disable-next-line sonarjs/slow-regex
+const NPM_NODE_MODULES_PATH = /.*node_modules\/((?:@[^/]+\/)?[^/]+)$/;
+const QUOTE_PREFIX = /^['"]/;
+const QUOTE_SUFFIX = /['"]$/;
+const PNPM_SECTION_HEADER = /^[a-z][a-zA-Z0-9]*:\s*$/m;
+const PNPM_INTEGRITY = /resolution:\s*\{[^}]*integrity:\s*([^,}\s]+)/;
+
+const YARN_BLOCK =
+    // eslint-disable-next-line sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking
+    /^["']?((?:@[^/@"']+\/)?[^@"'\n]+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n((?:[\t ][^\n]*\n?)+)/gm;
+// eslint-disable-next-line sonarjs/slow-regex
+const YARN_VERSION = /^\s+version:?\s+"?([^"\n]+)"?/m;
+// eslint-disable-next-line sonarjs/slow-regex
+const YARN_INTEGRITY = /^\s+integrity[\s:]+"?([^"\s]+)"?/m;
 
 /**
- * Decodes a Subresource Integrity string (`sha512-<base64>`) into a
+ * Decodes a Subresource Integrity string (`sha512-&lt;base64>`) into a
  * `{ algorithm, hex }` pair. Returns `undefined` if the string is
  * malformed, oversized, or uses an unsupported algorithm.
- * @param sri Full SRI string, e.g. `sha512-<base64>`.
+ * @param sri Full SRI string, e.g. `sha512-&lt;base64>`.
  * @returns Decoded algorithm + hex digest, or `undefined` when the
- *          input can't be parsed.
+ * input can't be parsed.
  */
 export const decodeSriIntegrity = (sri: string): LockFileIntegrity | undefined => {
     if (sri.length > MAX_SRI_LENGTH) {
@@ -161,6 +178,7 @@ const copyDepMap = (
     source: Record<string, string[]> | undefined,
 ): void => {
     if (source && Object.keys(source).length > 0) {
+        // eslint-disable-next-line no-param-reassign
         target[field] = { ...source };
     }
 };
@@ -176,7 +194,7 @@ interface NpmPackageManifest {
 
 /**
  * Lifts a single-resolution dep-map from a package.json-shaped source
- * (`Record<string, string>`) into our array-valued shape. Used by npm,
+ * (`Record&lt;string, string>`) into our array-valued shape. Used by npm,
  * yarn v1, and bun — all of which record one resolution per name per
  * parent.
  */
@@ -220,8 +238,7 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
             continue;
         }
 
-        // eslint-disable-next-line sonarjs/slow-regex
-        const match = /.*node_modules\/((?:@[^/]+\/)?[^/]+)$/.exec(path);
+        const match = NPM_NODE_MODULES_PATH.exec(path); // regex match
 
         if (!match?.[1]) {
             continue;
@@ -271,7 +288,7 @@ const splitPnpmPackageKey = (raw: string): PnpmPackageKey | undefined => {
         key = key.slice(1);
     }
 
-    key = key.replace(/^['"]/, "").replace(/['"]$/, "");
+    key = key.replace(QUOTE_PREFIX, "").replace(QUOTE_SUFFIX, "");
 
     // Drop peer disambiguators like `(react@18.0.0)`.
     const parenIndex = key.indexOf("(");
@@ -303,7 +320,7 @@ const splitPnpmPackageKey = (raw: string): PnpmPackageKey | undefined => {
  * trailing `packagesExtra:` key won't false-match.
  */
 const sliceTopLevelSection = (content: string, section: string): string | undefined => {
-    const header = new RegExp(`^${section}:\\s*$`, "m");
+    const header = new RegExp(String.raw`^${section}:\s*$`, "m");
     const start = header.exec(content);
 
     if (!start) {
@@ -311,7 +328,7 @@ const sliceTopLevelSection = (content: string, section: string): string | undefi
     }
 
     const after = start.index + start[0].length;
-    const next = /^[a-z][a-zA-Z0-9]*:\s*$/m.exec(content.slice(after));
+    const next = PNPM_SECTION_HEADER.exec(content.slice(after));
 
     return content.slice(after, next ? after + next.index : content.length);
 };
@@ -353,8 +370,8 @@ const parsePnpmSnapshotEdges = (content: string): Map<string, SnapshotDepEdges> 
 
     // Snapshot entries can be empty (`foo@1.0.0: {}`) or indented. We only
     // care about indented bodies — empty bodies have no deps to extract.
-    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
-    const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4,}[^\n]*\n?)+)/gm;
+
+    const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4}[^\n]*\n?)+)/gm;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign
@@ -422,8 +439,7 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
 
     const snapshotEdges = parsePnpmSnapshotEdges(content);
 
-    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
-    const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4,}[^\n]*\n?)+)/gm;
+    const entryRegex = /^ {2}(['"]?[^\s:][^:\n]*?['"]?):\s*\n((?: {4}[^\n]*\n?)+)/gm;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign
@@ -435,8 +451,8 @@ export const parsePnpmLockFile = (content: string): LockFileEntry[] => {
         }
 
         const body = match[2] as string;
-        // eslint-disable-next-line sonarjs/slow-regex
-        const integrityMatch = /resolution:\s*\{[^}]*integrity:\s*([^,}\s]+)/m.exec(body);
+
+        const integrityMatch = PNPM_INTEGRITY.exec(body); // regex match
 
         const lockEntry: LockFileEntry = { name: keyValue.name, version: keyValue.version };
 
@@ -478,7 +494,7 @@ const extractPnpmDependencyMap = (
     // depth, and its entries are indented 6 spaces. We match the header,
     // capture the block that follows, and stop at the next section header
     // or a line with less indentation.
-    const sectionRegex = new RegExp(`^ {4}${section}:\\s*\\n((?: {6,}[^\\n]*\\n?)+)`, "m");
+    const sectionRegex = new RegExp(String.raw`^ {4}${section}:\s*\n((?: {6,}[^\n]*\n?)+)`, "m");
     const sectionMatch = sectionRegex.exec(body);
 
     if (!sectionMatch?.[1]) {
@@ -489,17 +505,17 @@ const extractPnpmDependencyMap = (
     // Entries: `      name: version` or `      '@scope/name': version`.
     // Version can be a plain semver, a dist-tag reference, or carry a peer
     // disambiguator like `1.2.3(peer@4.0.0)` — we keep the base version.
-    // eslint-disable-next-line sonarjs/slow-regex
-    const entryRegex = /^ {6}(['"]?[^\s:]+['"]?):\s*([^\n]+)/gm;
+
+    const entryRegex = /^ {6}([^\s:]+):\s*([^\n]+)/gm;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign
     while ((match = entryRegex.exec(sectionMatch[1]) ?? undefined) !== undefined) {
-        const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
+        const name = (match[1] as string).replace(QUOTE_PREFIX, "").replace(QUOTE_SUFFIX, "");
         let version = (match[2] as string).trim();
 
         // Strip quoting and any peer disambiguator.
-        version = version.replace(/^['"]/, "").replace(/['"]$/, "");
+        version = version.replace(QUOTE_PREFIX, "").replace(QUOTE_SUFFIX, "");
 
         const parenIndex = version.indexOf("(");
 
@@ -535,29 +551,28 @@ export const parseYarnLockFile = (content: string): LockFileEntry[] => {
     const result: LockFileEntry[] = [];
     const seen = new Set<string>();
 
-    /* eslint-disable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
-    const entryRegex
-        = /^["']?((?:@[^/@"']+\/)?[^@"'\n]+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n((?:[\t ]+[^\n]*\n?)+)/gm;
-    /* eslint-enable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
+    const entryRegex = YARN_BLOCK;
+
+    entryRegex.lastIndex = 0;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign
     while ((match = entryRegex.exec(content) ?? undefined) !== undefined) {
-        const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
+        const name = (match[1] as string).replace(QUOTE_PREFIX, "").replace(QUOTE_SUFFIX, "");
 
         if (!name) {
             continue;
         }
 
         const body = match[2] as string;
-        const versionMatch = /^\s+version:?\s+"?([^"\n]+)"?/m.exec(body);
+        const versionMatch = YARN_VERSION.exec(body); // regex match
 
         if (!versionMatch?.[1]) {
             continue;
         }
 
         const lockEntry: LockFileEntry = { name, version: versionMatch[1].trim() };
-        const integrityMatch = /^\s+integrity[\s:]+"?([^"\s]+)"?/m.exec(body);
+        const integrityMatch = YARN_INTEGRITY.exec(body); // regex match
 
         if (integrityMatch?.[1]) {
             const integrity = decodeSriIntegrity(integrityMatch[1]);
@@ -599,7 +614,7 @@ const extractYarnDependencyMap = (
     body: string,
     section: "dependencies" | "optionalDependencies" | "peerDependencies",
 ): Record<string, string[]> | undefined => {
-    const sectionRegex = new RegExp(`^ {2}${section}:\\s*\\n((?: {4,}[^\\n]*\\n?)+)`, "m");
+    const sectionRegex = new RegExp(String.raw`^ {2}${section}:\s*\n((?: {4,}[^\n]*\n?)+)`, "m");
     const sectionMatch = sectionRegex.exec(body);
 
     if (!sectionMatch?.[1]) {
@@ -611,13 +626,13 @@ const extractYarnDependencyMap = (
     //   - optional quotes around the key
     //   - optional colon + whitespace between key and value
     //   - required quoted value
-    // eslint-disable-next-line sonarjs/slow-regex
-    const entryRegex = /^ {4}(['"]?[^\s:'"]+['"]?)\s*:?\s*['"]([^'"\n]+)['"]/gm;
+
+    const entryRegex = /^ {4}(['"]?[^\s:'"]+['"]?)\s*(?::\s*)?['"]([^'"\n]+)['"]/gm;
     let match: RegExpExecArray | undefined;
 
     // eslint-disable-next-line no-cond-assign
     while ((match = entryRegex.exec(sectionMatch[1]) ?? undefined) !== undefined) {
-        const name = (match[1] as string).replace(/^['"]/, "").replace(/['"]$/, "");
+        const name = (match[1] as string).replace(QUOTE_PREFIX, "").replace(QUOTE_SUFFIX, "");
         const version = match[2] as string;
 
         if (name && version) {
@@ -759,7 +774,7 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
  * array if the content is malformed or doesn't contain any package
  * entries.
  * @param content Raw text of the lockfile.
- * @param type   Which parser to dispatch to.
+ * @param type Which parser to dispatch to.
  * @returns One {@link LockFileEntry} per distinct `name@version`.
  */
 export const parseLockFileContent = (content: string, type: LockFileType): LockFileEntry[] => {
@@ -789,15 +804,14 @@ const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock",
  * it, and returns the parsed entries alongside the lockfile type and
  * absolute path.
  * @param cwd Directory to start the search from. Defaults to
- *            `process.cwd()` (delegated to `findUp`).
+ * `process.cwd()` (delegated to `findUp`).
  * @returns The parsed result, keyed by the discovered lockfile path.
  * @throws If no supported lockfile can be found above `cwd`.
  */
 export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseResult> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- findUp types unresolvable from bundled workspace package
     const path: string | undefined = await findUp(LOCKFILE_CANDIDATES, {
         type: "file",
-        ...cwd && { cwd },
+        ...(cwd && { cwd }),
     });
 
     if (!path) {
@@ -822,10 +836,9 @@ export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseRe
  * @throws If no supported lockfile can be found above `cwd`.
  */
 export const parseLockFileSync = (cwd?: URL | string): LockFileParseResult => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- findUpSync types unresolvable from bundled workspace package
     const path: string | undefined = findUpSync(LOCKFILE_CANDIDATES, {
         type: "file",
-        ...cwd && { cwd },
+        ...(cwd && { cwd }),
     });
 
     if (!path) {

@@ -23,11 +23,24 @@ export default createConfig(
         },
     },
     {
-        files: ["./__tests__/**"],
+        // External dep types (@visulima/fs, @visulima/path, js-yaml, @pnpm/*) unresolvable by typescript-eslint
+        files: ["src/**/*.ts"],
         rules: {
-            // External dep types (@visulima/fs, @visulima/path) unresolvable by typescript-eslint
+            "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+        },
+    },
+    {
+        files: ["./__tests__/**"],
+        rules: {
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/restrict-template-expressions": "off",
         },
     },
     {

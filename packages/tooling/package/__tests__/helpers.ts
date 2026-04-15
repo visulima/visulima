@@ -6,6 +6,7 @@ const TRAILING_NEWLINE_REGEX = /\n$/;
  * Escape the slash `\` in ESC-symbol.
  * Use it to show by an error the received ESC sequence string in console output.
  */
+// eslint-disable-next-line no-control-regex -- ANSI escape sequences intentionally include U+001B
 export const esc = (string_: string): string => string_.replaceAll(/\u001B\[[0-9;]*m/g, "");
 
 /**

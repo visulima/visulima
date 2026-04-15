@@ -17,6 +17,8 @@ import {
     parseYarnLockFile,
 } from "../../src/lockfile";
 
+const NO_LOCKFILE_ERROR = /Could not find a supported lock file/;
+
 /**
  * Lockfile fixtures are vendored from lockparse
  * (https://github.com/43081j/lockparse, MIT) so our parsers are
@@ -93,7 +95,7 @@ describe(parseNpmLockFile, () => {
 
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
+        expect(result[0]?.integrity).toStrictEqual({ algorithm: "sha512", hex: "68656c6c6f" });
     });
 
     it("should keep distinct name@version pairs (hoisted + nested deduped copies collapse)", () => {
@@ -145,15 +147,15 @@ describe(parseNpmLockFile, () => {
 
         const foo = parseNpmLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ bar: ["^1.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
-        expect(foo?.optionalDependencies).toEqual({ fsevents: ["^2"] });
+        expect(foo?.dependencies).toStrictEqual({ bar: ["^1.0.0"] });
+        expect(foo?.peerDependencies).toStrictEqual({ react: ["^18"] });
+        expect(foo?.optionalDependencies).toStrictEqual({ fsevents: ["^2"] });
     });
 
     it("should return an empty list for invalid JSON", () => {
         expect.assertions(1);
 
-        expect(parseNpmLockFile("not json")).toEqual([]);
+        expect(parseNpmLockFile("not json")).toStrictEqual([]);
     });
 });
 
@@ -178,7 +180,7 @@ packages:
         const result = parsePnpmLockFile(content);
 
         expect(result).toHaveLength(2);
-        expect(result.map((entry) => entry.name).sort()).toEqual(["@visulima/path", "lodash"]);
+        expect(result.map((entry) => entry.name).toSorted((a, b) => a.localeCompare(b))).toStrictEqual(["@visulima/path", "lodash"]);
     });
 
     it("should skip workspace and link references", () => {
@@ -190,7 +192,7 @@ packages:
     resolution: {directory: ../lodash, type: directory}
 `;
 
-        expect(parsePnpmLockFile(content)).toEqual([]);
+        expect(parsePnpmLockFile(content)).toStrictEqual([]);
     });
 
     it("should parse the vendored lockparse pnpm-lock.yaml fixture", () => {
@@ -238,7 +240,7 @@ snapshots:
         // Peer suffixes dropped from both the snapshot key and the dep values;
         // each value is wrapped in an array so multi-variant resolutions can
         // coexist (this entry has only one variant, so arrays are singletons).
-        expect(anthropic?.dependencies).toEqual({
+        expect(anthropic?.dependencies).toStrictEqual({
             "@ai-sdk/provider-utils": ["4.0.23"],
             zod: ["4.3.6"],
         });
@@ -271,7 +273,7 @@ snapshots:
 
         const reactDom = parsePnpmLockFile(content).find((entry) => entry.name === "react-dom");
 
-        expect(reactDom?.dependencies).toEqual({
+        expect(reactDom?.dependencies).toStrictEqual({
             "loose-envify": ["1.4.0"],
             // Both peer-variant `react` resolutions preserved, insertion order.
             react: ["18.0.0", "17.0.2"],
@@ -296,8 +298,8 @@ snapshots:
         const foo = parsePnpmLockFile(content).find((entry) => entry.name === "foo");
 
         // Peer disambiguator `(react@18.0.0)` stripped from the resolved version.
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["1.0.0"], bar: ["2.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: [">=17"] });
+        expect(foo?.dependencies).toStrictEqual({ "@scope/baz": ["1.0.0"], bar: ["2.0.0"] });
+        expect(foo?.peerDependencies).toStrictEqual({ react: [">=17"] });
     });
 });
 
@@ -316,7 +318,7 @@ describe(parseYarnLockFile, () => {
 
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
+        expect(result[0]?.integrity).toStrictEqual({ algorithm: "sha512", hex: "68656c6c6f" });
     });
 
     it("should parse the vendored lockparse yarn.lock (Berry) fixture", () => {
@@ -346,7 +348,7 @@ describe(parseYarnLockFile, () => {
 
         const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["^1.0.0"], bar: ["^2.0.0"] });
+        expect(foo?.dependencies).toStrictEqual({ "@scope/baz": ["^1.0.0"], bar: ["^2.0.0"] });
     });
 
     it("should capture a yarn Berry entry's dependencies with colon-separated 'npm:' specifiers", () => {
@@ -365,7 +367,7 @@ describe(parseYarnLockFile, () => {
 
         const foo = parseYarnLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ "@scope/baz": ["npm:^1.0.0"], bar: ["npm:^2.0.0"] });
+        expect(foo?.dependencies).toStrictEqual({ "@scope/baz": ["npm:^1.0.0"], bar: ["npm:^2.0.0"] });
     });
 
     it("should leave Yarn Berry entries without integrity (XXH64 isn't supported)", () => {
@@ -408,7 +410,7 @@ describe(parseBunLockFile, () => {
 
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({ name: "lodash", version: "4.17.21" });
-        expect(result[0]?.integrity).toEqual({ algorithm: "sha512", hex: "68656c6c6f" });
+        expect(result[0]?.integrity).toStrictEqual({ algorithm: "sha512", hex: "68656c6c6f" });
     });
 
     it("should tolerate trailing commas (Bun emits them)", () => {
@@ -436,7 +438,7 @@ describe(parseBunLockFile, () => {
   },
 }`;
 
-        expect(parseBunLockFile(content)).toEqual([]);
+        expect(parseBunLockFile(content)).toStrictEqual([]);
     });
 
     it("should parse the vendored lockparse bun.lock fixture", () => {
@@ -478,14 +480,14 @@ describe(parseBunLockFile, () => {
 
         const foo = parseBunLockFile(content).find((entry) => entry.name === "foo");
 
-        expect(foo?.dependencies).toEqual({ bar: ["^2.0.0"] });
-        expect(foo?.peerDependencies).toEqual({ react: ["^18"] });
+        expect(foo?.dependencies).toStrictEqual({ bar: ["^2.0.0"] });
+        expect(foo?.peerDependencies).toStrictEqual({ react: ["^18"] });
     });
 
     it("should return an empty list for invalid JSON", () => {
         expect.assertions(1);
 
-        expect(parseBunLockFile("{invalidJson: true")).toEqual([]);
+        expect(parseBunLockFile("{invalidJson: true")).toStrictEqual([]);
     });
 });
 
@@ -605,10 +607,10 @@ describe("parseLockFile / parseLockFileSync", () => {
     it("should throw when no supported lock file exists", async () => {
         expect.assertions(1);
 
-        const isolated = join(tmpdir(), `no-lockfile-${Date.now()}`);
+        const isolated = join(tmpdir(), `no-lockfile-${String(Date.now())}`);
 
         ensureDirSync(isolated);
 
-        await expect(parseLockFile(isolated)).rejects.toThrow(/Could not find a supported lock file/);
+        await expect(parseLockFile(isolated)).rejects.toThrow(NO_LOCKFILE_ERROR);
     });
 });
