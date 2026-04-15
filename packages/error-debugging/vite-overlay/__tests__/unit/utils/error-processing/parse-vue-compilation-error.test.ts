@@ -21,7 +21,7 @@ src/components/HelloWorld.vue
             expect(result).toStrictEqual({
                 column: 2,
                 line: 4,
-                message: "[vue/compiler-sfc] Unexpected token, expected \",\" (4:2)",
+                message: '[vue/compiler-sfc] Unexpected token, expected "," (4:2)',
                 originalFilePath: "src/components/HelloWorld.vue",
             });
         });
