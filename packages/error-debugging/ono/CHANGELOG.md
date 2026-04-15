@@ -1,3 +1,16 @@
+## @visulima/ono [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.10...@visulima/ono@2.0.0-alpha.11) (2026-04-15)
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **ono:** resolve eslint and formatting issues ([3113c1f](https://github.com/visulima/visulima/commit/3113c1fbd668a0f99016f8f590977b033d19aa96))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.9
+* **@visulima/path:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/ono [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.9...@visulima/ono@2.0.0-alpha.10) (2026-04-09)
 
 ## @visulima/ono [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.8...@visulima/ono@2.0.0-alpha.9) (2026-04-08)
