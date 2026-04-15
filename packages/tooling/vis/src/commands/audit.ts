@@ -2,8 +2,9 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
+import type { LockFileType } from "@visulima/package";
+import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
-import { parse as parseLockfile } from "lockparse";
 
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
@@ -125,7 +126,7 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
 
 // ── Duplicate dependency detection ──────────────────────────────────
 
-const LOCKFILE_NAMES: Record<string, { file: string; type: string }> = {
+const LOCKFILE_NAMES: Record<string, { file: string; type: LockFileType }> = {
     bun: { file: "bun.lock", type: "bun" },
     npm: { file: "package-lock.json", type: "npm" },
     pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },
@@ -133,10 +134,10 @@ const LOCKFILE_NAMES: Record<string, { file: string; type: string }> = {
 };
 
 /**
- * Finds packages with multiple installed versions by parsing the lockfile
- * via `lockparse`. Passes `package.json` for accuracy (especially yarn).
+ * Finds packages with multiple installed versions by parsing the
+ * workspace lockfile via `@visulima/package`.
  */
-const findDuplicateDependencies = async (workspaceRoot: string, pmName: string): Promise<DuplicatePackage[]> => {
+const findDuplicateDependencies = (workspaceRoot: string, pmName: string): DuplicatePackage[] => {
     const lockInfo = LOCKFILE_NAMES[pmName];
 
     if (!lockInfo) {
@@ -144,7 +145,6 @@ const findDuplicateDependencies = async (workspaceRoot: string, pmName: string):
     }
 
     let lockContent: string;
-    let packageJson: Record<string, unknown> | undefined;
 
     try {
         lockContent = readFileSync(join(workspaceRoot, lockInfo.file), "utf8");
@@ -152,36 +152,20 @@ const findDuplicateDependencies = async (workspaceRoot: string, pmName: string):
         return [];
     }
 
-    try {
-        packageJson = JSON.parse(readFileSync(join(workspaceRoot, "package.json"), "utf8")) as Record<string, unknown>;
-    } catch {
-        // package.json optional for lockfile parsing
-    }
+    const entries = parseLockFileContent(lockContent, lockInfo.type);
 
-    let lockfile: { packages: { name: string; version: string }[] };
-
-    try {
-        lockfile = (await parseLockfile(lockContent, lockInfo.type, packageJson)) as typeof lockfile;
-    } catch {
-        return [];
-    }
-
-    if (!lockfile?.packages) {
+    if (entries.length === 0) {
         return [];
     }
 
     const versionMap = new Map<string, Set<string>>();
 
-    for (const pkg of lockfile.packages) {
-        if (!pkg.name || !pkg.version) {
-            continue;
+    for (const entry of entries) {
+        if (!versionMap.has(entry.name)) {
+            versionMap.set(entry.name, new Set());
         }
 
-        if (!versionMap.has(pkg.name)) {
-            versionMap.set(pkg.name, new Set());
-        }
-
-        versionMap.get(pkg.name)!.add(pkg.version);
+        versionMap.get(entry.name)!.add(entry.version);
     }
 
     const duplicates: DuplicatePackage[] = [];
@@ -191,10 +175,7 @@ const findDuplicateDependencies = async (workspaceRoot: string, pmName: string):
             continue;
         }
 
-        duplicates.push({
-            name,
-            versions: [...versions],
-        });
+        duplicates.push({ name, versions: [...versions] });
     }
 
     return duplicates.sort((a, b) => a.name.localeCompare(b.name));
@@ -292,10 +273,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     const socketOptions = buildSocketOptions(socketConfig);
 
-    const [vulnMap, socketReports, duplicates] = await Promise.all([
+    // findDuplicateDependencies is synchronous — hoist it outside Promise.all
+    // so the async fan-out only contains genuine async work.
+    const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
+
+    const [vulnMap, socketReports] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
         socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : Promise.resolve(new Map<string, PackageReportData>()),
-        findDuplicateDependencies(workspaceRoot, pm.name),
     ]);
 
     // 3. Build audit entries
