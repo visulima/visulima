@@ -1,3 +1,17 @@
+## @visulima/health-check [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.7...@visulima/health-check@4.0.0-alpha.8) (2026-04-15)
+
+### Bug Fixes
+
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* **health-check:** add node types for process/http/assert globals ([39f503f](https://github.com/visulima/visulima/commit/39f503fdce923a892d015552b377f0bf59f7468c))
+
+### Miscellaneous Chores
+
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **health-check:** add tsconfig.eslint.json for type-aware linting ([be743c8](https://github.com/visulima/visulima/commit/be743c8682f5ff1fc56dfda2856d9a434cd52dd2))
+* **health-check:** apply prettier formatting ([2069a83](https://github.com/visulima/visulima/commit/2069a8375ff28d692045381abdcc6454a1f60a27))
+* **health-check:** migrate .prettierrc.cjs to prettier.config.js ([c593760](https://github.com/visulima/visulima/commit/c5937606ae0226d58c114aad77261c266a720995))
+
 ## @visulima/health-check [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.6...@visulima/health-check@4.0.0-alpha.7) (2026-03-26)
 
 ### Features
