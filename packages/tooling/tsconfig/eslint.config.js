@@ -24,6 +24,7 @@ export default createConfig(
     {
         files: ["./__tests__/**"],
         rules: {
+            "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/require-await": "off",
@@ -59,7 +60,11 @@ export default createConfig(
         // External dependency types not resolvable by ESLint's type checker
         files: ["./src/read-tsconfig.ts"],
         rules: {
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/restrict-template-expressions": "off",
         },
     },
     {
@@ -69,6 +74,7 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-argument": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
         },
     },
     {
