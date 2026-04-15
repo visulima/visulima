@@ -139,8 +139,8 @@ async function baseHandler<
                             pagination: config.pagination,
                             query: {
                                 ...parameters.query,
-                                limit: parsedQuery.limit ? Number(parsedQuery.limit) : undefined,
-                                page: parsedQuery.page ? Number(parsedQuery.page) : undefined,
+                                limit: parsedQuery.limit ?? undefined,
+                                page: parsedQuery.page ?? undefined,
                             },
                         });
                         break;
