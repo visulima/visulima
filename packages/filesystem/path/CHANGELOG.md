@@ -1,3 +1,11 @@
+## @visulima/path [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.8...@visulima/path@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **filesystem:** resolve eslint issues in fs, path, and find-cache-dir ([59ad5e3](https://github.com/visulima/visulima/commit/59ad5e3051e92365eb8b1fdd73d4f4fd1f4bb547))
+* **path:** cast path module to Path type via unknown ([03954b4](https://github.com/visulima/visulima/commit/03954b4ae624724dc20ffde1f88cabe0e898e69d))
+* **path:** resolve eslint and formatting issues ([cf04504](https://github.com/visulima/visulima/commit/cf0450412b448bf2c1a6ed19637510555028a80e))
+
 ## @visulima/path [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.7...@visulima/path@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
