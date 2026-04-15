@@ -112,11 +112,11 @@ catalogs:
       version: 25.0.3
   dev:
     '@anolilab/semantic-release-pnpm':
-      specifier: ^8.1.0
-      version: 8.1.0
+      specifier: ^8.1.1
+      version: 8.1.1
     '@anolilab/semantic-release-preset':
-      specifier: ^13.4.1
-      version: 13.4.1
+      specifier: ^13.4.2
+      version: 13.4.2
     '@arethetypeswrong/cli':
       specifier: ^0.18.2
       version: 0.18.2
@@ -2362,10 +2362,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 4.2.3(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)
@@ -2616,10 +2616,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -2704,10 +2704,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 4.2.3(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)
@@ -2834,10 +2834,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -2958,10 +2958,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@types/cli-progress':
         specifier: catalog:types
         version: 3.11.6
@@ -3036,10 +3036,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3099,10 +3099,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3165,10 +3165,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3231,10 +3231,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3350,10 +3350,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3437,10 +3437,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3518,10 +3518,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3588,10 +3588,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3670,10 +3670,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3767,10 +3767,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3926,10 +3926,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4014,10 +4014,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4169,10 +4169,10 @@ importers:
         version: 27.0.1(4c2e0f4feddafd13043670e5aeef2f4c)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4678,10 +4678,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4769,10 +4769,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4874,10 +4874,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5011,7 +5011,7 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5181,10 +5181,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5385,10 +5385,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5470,10 +5470,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5989,10 +5989,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6071,10 +6071,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6199,10 +6199,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6308,10 +6308,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6470,10 +6470,10 @@ importers:
         version: 27.0.1(e7182689621a1c5da7bcf9344bba170e)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7373,10 +7373,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7466,10 +7466,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7569,10 +7569,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7759,10 +7759,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@rushstack/eslint-plugin-security':
         specifier: catalog:lint
         version: 0.14.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)
@@ -7940,10 +7940,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8064,10 +8064,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8121,10 +8121,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8196,10 +8196,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8260,10 +8260,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8327,10 +8327,10 @@ importers:
         version: 27.0.1(6e2cbaa0dd85f0bca52423d91bb9e31f)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8396,10 +8396,10 @@ importers:
         version: 10.0.0(prettier@3.8.1)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8568,10 +8568,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8768,10 +8768,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8853,10 +8853,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8962,10 +8962,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9040,10 +9040,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9166,10 +9166,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9298,10 +9298,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9477,10 +9477,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
+        version: 13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9919,16 +9919,16 @@ packages:
     resolution: {integrity: sha512-xBCaHQ/P4KFD5e4uK/o7IY8uNzNf7cYbTP+LglmvIFCMv+eQD041r45BAtV5HYkkprsqmRlxGVQxiHoWshb2iA==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
-  '@anolilab/semantic-release-pnpm@8.1.0':
-    resolution: {integrity: sha512-aBh1qMZ04tnbZUBLxJpTcutI54U9lO38vfoslhHs+VJWVBbVg6vMx/qEinV78KTA9EIoIAXdMAWH+6xqwOAbaA==}
+  '@anolilab/semantic-release-pnpm@8.1.1':
+    resolution: {integrity: sha512-TqYkqvw5fB/WEX3oM6dTCDlMnuo7tLwyi8spTVSNfz4J674Edhcl1cb9cxqNDmNzt8jT57yT+GX+qJXmuy45TA==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
-  '@anolilab/semantic-release-preset@13.4.1':
-    resolution: {integrity: sha512-sC396TfvFcxEL5dAT0mS2hhRTRE69KXeU4tF6yKElKMfu3W2c+gPjoOWOsTxWubZqG8GGVSa0DQKdWMjcvxjnQ==}
+  '@anolilab/semantic-release-preset@13.4.2':
+    resolution: {integrity: sha512-yE4/EOXjwqO1it0H8Gj+BEX+JlPSEG3mTz3PUGnPUIBRi7tFlI9VkGeMVfQSdFGD5i7NIF4Gee5jVMuT2Y+LSw==}
     engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
     peerDependencies:
-      '@anolilab/semantic-release-pnpm': 8.1.0
+      '@anolilab/semantic-release-pnpm': 8.1.1
       '@semantic-release/npm': 13.1.5
       semantic-release: 25.0.3
       semantic-release-yarn: ^3.0.2
@@ -33450,7 +33450,7 @@ snapshots:
     transitivePeerDependencies:
       - yaml
 
-  '@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3)':
+  '@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3)':
     dependencies:
       '@actions/core': 3.0.0
       '@anolilab/rc': 4.0.1(yaml@2.8.3)
@@ -33470,7 +33470,7 @@ snapshots:
       - supports-color
       - yaml
 
-  '@anolilab/semantic-release-preset@13.4.1(@anolilab/semantic-release-pnpm@8.1.0(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)':
+  '@anolilab/semantic-release-preset@13.4.2(@anolilab/semantic-release-pnpm@8.1.1(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.2)))(semantic-release@25.0.3(typescript@6.0.2))(yaml@2.8.3)':
     dependencies:
       '@anolilab/semantic-release-clean-package-json': 5.5.0(yaml@2.8.3)
       '@semantic-release/changelog': 6.0.3(semantic-release@25.0.3(typescript@6.0.2))
@@ -33482,7 +33482,7 @@ snapshots:
       conventional-changelog-conventionalcommits: 9.3.1
       semantic-release: 25.0.3(typescript@6.0.2)
     optionalDependencies:
-      '@anolilab/semantic-release-pnpm': 8.1.0(@types/node@25.6.0)(yaml@2.8.3)
+      '@anolilab/semantic-release-pnpm': 8.1.1(@types/node@25.6.0)(yaml@2.8.3)
       '@semantic-release/npm': 13.1.5(semantic-release@25.0.3(typescript@6.0.2))
     transitivePeerDependencies:
       - supports-color
@@ -48360,7 +48360,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.0(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.2.0(jiti@2.6.1))
@@ -59163,7 +59163,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.0(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.2.0(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.2.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
