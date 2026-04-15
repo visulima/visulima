@@ -57,10 +57,8 @@ const urlToAbsolutePath = (url: string, rootPath: string): string => {
 
     path = path.replaceAll(FS_PATH_PATTERN, PATH_SEPARATOR);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const absolutePath = resolve(rootPath, path.startsWith(PATH_SEPARATOR) ? path.slice(1) : path);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return absolutePath;
 };
 
@@ -93,20 +91,20 @@ const isValidStackFrame: StackFrameValidator = (line: string): boolean => {
         return false;
     }
 
-    const hasFileReference =
-        [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
+    const hasFileReference
+        = [...SUPPORTED_EXTENSIONS].some((extension) => trimmed.includes(extension)) || [...VALID_STACK_KEYWORDS].some((keyword) => trimmed.includes(keyword));
 
     if (!hasFileReference) {
         return false;
     }
 
-    const hasLocationInfo =
-        LOC_WITH_PARENS_COLON2_RE.test(trimmed) ||
-        LOC_WITH_PARENS_COLON1_RE.test(trimmed) ||
-        LOC_NO_PARENS_COLON2_RE.test(trimmed) ||
-        LOC_NO_PARENS_COLON1_RE.test(trimmed) ||
-        trimmed.includes("native") ||
-        trimmed.includes("<unknown>");
+    const hasLocationInfo
+        = LOC_WITH_PARENS_COLON2_RE.test(trimmed)
+            || LOC_WITH_PARENS_COLON1_RE.test(trimmed)
+            || LOC_NO_PARENS_COLON2_RE.test(trimmed)
+            || LOC_NO_PARENS_COLON1_RE.test(trimmed)
+            || trimmed.includes("native")
+            || trimmed.includes("<unknown>");
 
     return hasLocationInfo;
 };

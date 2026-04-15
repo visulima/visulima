@@ -37,7 +37,6 @@ export default createConfig(
             "@typescript-eslint/no-explicit-any": "off",
             "no-secrets/no-secrets": "off",
             "unicorn/no-null": "off",
-            "vitest/prefer-expect-assertions": "off",
             "vitest/require-mock-type-parameters": "off",
         },
     },
