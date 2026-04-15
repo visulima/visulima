@@ -1,3 +1,10 @@
+## @visulima/fmt [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.8...@visulima/fmt@2.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **fmt:** export CssObject type and type previousCss explicitly ([e1e7e53](https://github.com/visulima/visulima/commit/e1e7e5357c9920945d3cbe49f073291f1f104208))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
 ## @visulima/fmt [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.7...@visulima/fmt@2.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
