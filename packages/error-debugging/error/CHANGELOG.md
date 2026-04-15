@@ -1,3 +1,17 @@
+## @visulima/error [6.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.8...@visulima/error@6.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and formatting issues ([7d0ada8](https://github.com/visulima/visulima/commit/7d0ada8787bf624df5a7d504448a4d1b69165aba))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **error:** resolve eslint and formatting issues ([703a2cf](https://github.com/visulima/visulima/commit/703a2cf03aef83b13cee952666eb6413b69ee1e3))
+* **error:** resolve eslint and formatting issues ([c28a1ce](https://github.com/visulima/visulima/commit/c28a1ce7aab333981723520ea78ff823003dd64c))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.9
+
 ## @visulima/error [6.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.7...@visulima/error@6.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
