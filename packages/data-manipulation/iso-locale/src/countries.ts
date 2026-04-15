@@ -290,4 +290,4 @@ export const searchCountries = (query: string): Country[] => {
 };
 
 // Export all at the end
-export const all: Country[] = allCountries;
+export const all: Country[] = allCountries as unknown as Country[];
