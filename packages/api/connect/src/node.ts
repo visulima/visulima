@@ -85,8 +85,8 @@ export class NodeRouter<
     private router = new Router<RequestHandler<Request, Response>>();
 
     public constructor(options: HandlerOptions<RoutesExtendedRequestHandler<Request, Response, Response, Route<Nextable<FunctionLike>>[]>> = {}) {
-        this.onNoMatch = options.onNoMatch ?? onNoMatch;
-        this.onError = options.onError ?? onError;
+        this.onNoMatch = options.onNoMatch ?? (onNoMatch as unknown as typeof this.onNoMatch);
+        this.onError = options.onError ?? (onError as unknown as typeof this.onError);
     }
 
     public clone(): NodeRouter<Request, Response, Schema> {
