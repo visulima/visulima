@@ -1443,7 +1443,7 @@ const readOutdatedCache = (workspaceRoot: string, hash: string): CheckOutdatedRe
     }
 
     try {
-        const cache = readJsonSync(cachePath) as OutdatedCache;
+        const cache = readJsonSync(cachePath) as unknown as OutdatedCache;
 
         if (cache.hash === hash && Date.now() - cache.timestamp < OUTDATED_CACHE_TTL_MS) {
             return cache.result;

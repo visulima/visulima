@@ -111,7 +111,7 @@ const readConfigCache = (cachePath: string, hash: string): VisConfig | undefined
     }
 
     try {
-        const cache = readJsonSync(cachePath) as ConfigCache;
+        const cache = readJsonSync(cachePath) as unknown as ConfigCache;
 
         if (cache.hash === hash) {
             return cache.config;
