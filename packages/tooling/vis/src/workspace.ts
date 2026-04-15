@@ -14,13 +14,14 @@ import type {
 } from "@visulima/task-runner";
 import type { Configuration as StagedConfig } from "lint-staged";
 
-import { applyPreset, defaultCacheForType, type VisTargetConfiguration } from "./target-options";
+import type { VisTargetConfiguration } from "./target-options";
+import { applyPreset, defaultCacheForType } from "./target-options";
 
 export interface CodeownersConfig {
-    /** Sort order for generated entries — mirrors moon's `orderBy`. */
-    orderBy?: "file-source" | "project-id";
     /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
     globalPaths?: Record<string, string[]>;
+    /** Sort order for generated entries — mirrors moon's `orderBy`. */
+    orderBy?: "file-source" | "project-id";
     /** Provider determines whether `channel` is emitted (GitHub supports it via comment). */
     provider?: "bitbucket" | "github" | "gitlab" | "other";
 }
@@ -40,12 +41,12 @@ interface PackageJson {
  * Mirrors moon's `owners` shape so migrations can round-trip cleanly.
  */
 export interface OwnersEntry {
-    /** File/glob pattern relative to the project root. */
-    path: string;
-    /** Owner handles (e.g. `@visulima/core-team`). */
-    owners: string[];
     /** Optional notification channel (e.g. Slack, Teams). */
     channel?: string;
+    /** Owner handles (e.g. `@visulima/core-team`). */
+    owners: string[];
+    /** File/glob pattern relative to the project root. */
+    path: string;
 }
 
 /**
@@ -54,32 +55,32 @@ export interface OwnersEntry {
  * parsed to include targets, owners, and layer/stack classification.
  */
 export interface ProjectJson {
-    /** Vis-style target definitions (merged on top of package.json scripts). */
-    targets?: Record<string, VisTargetConfiguration>;
-    /** Project type — library or application. */
-    projectType?: "application" | "library";
-    /** Source root, used for display and language inference. */
-    sourceRoot?: string;
-    /** Filterable tags. */
-    tags?: string[];
-    /** Project layer, used for constraint inheritance and query filtering. */
-    layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
-    /** Tech stack. */
-    stack?: "backend" | "data" | "frontend" | "infrastructure" | "systems";
+    /** Implicit dependencies on other projects. */
+    implicitDependencies?: string[];
     /** Primary language — informational and query-able. */
     language?: string;
+    /** Project layer, used for constraint inheritance and query filtering. */
+    layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
     /** Code owners for paths inside this project. */
     owners?: OwnersEntry[];
     /** Project-level metadata. */
     project?: {
-        title?: string;
-        description?: string;
         channel?: string;
-        owner?: string;
+        description?: string;
         maintainers?: string[];
+        owner?: string;
+        title?: string;
     };
-    /** Implicit dependencies on other projects. */
-    implicitDependencies?: string[];
+    /** Project type — library or application. */
+    projectType?: "application" | "library";
+    /** Source root, used for display and language inference. */
+    sourceRoot?: string;
+    /** Tech stack. */
+    stack?: "backend" | "data" | "frontend" | "infrastructure" | "systems";
+    /** Filterable tags. */
+    tags?: string[];
+    /** Vis-style target definitions (merged on top of package.json scripts). */
+    targets?: Record<string, VisTargetConfiguration>;
 }
 
 /**
@@ -87,16 +88,16 @@ export interface ProjectJson {
  * All listed constraints must match for the block to apply.
  */
 export interface TaskDefaultsScope {
-    /** Match projects tagged with any of these tags. */
-    tags?: string[];
-    /** Match on project type. */
-    projectType?: "application" | "library";
-    /** Match on project layer. */
-    layer?: ProjectJson["layer"] | ProjectJson["layer"][];
-    /** Match on project stack. */
-    stack?: ProjectJson["stack"] | ProjectJson["stack"][];
     /** Match on primary language. */
     language?: string | string[];
+    /** Match on project layer. */
+    layer?: ProjectJson["layer"] | ProjectJson["layer"][];
+    /** Match on project type. */
+    projectType?: "application" | "library";
+    /** Match on project stack. */
+    stack?: ProjectJson["stack"] | ProjectJson["stack"][];
+    /** Match projects tagged with any of these tags. */
+    tags?: string[];
 }
 
 /**
@@ -207,8 +208,72 @@ interface VisConfig {
          */
         templates?: Record<string, string>;
     };
+
+    /**
+     * Named file-group patterns, reusable from target `inputs` via the
+     * `@filegroup:&lt;name>` token. File groups are resolved relative to each
+     * project root at discovery time.
+     * @example
+     * ```
+     * fileGroups: {
+     *   sources: ["src/**\/*.ts", "!src/**\/*.test.ts"],
+     *   tests: ["**\/*.test.ts"],
+     * }
+     * ```
+     */
+    fileGroups?: Record<string, string[]>;
+
+    /**
+     * Named input patterns inherited by every project target. Equivalent
+     * to task-runner's `namedInputs` but configurable from the vis config.
+     */
+    namedInputs?: NamedInputs;
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
+
+    /**
+     * Default options for `vis secrets`. CLI flags always take precedence;
+     * this block provides workspace-wide defaults so teams can commit config
+     * once and every invocation picks it up.
+     */
+    secrets?: {
+        /** Path to a baseline JSON of previously-triaged findings. */
+        baselinePath?: string;
+        /** Inline rule overrides. Wins over `configPath` when both are set. */
+        config?: {
+            allowlist?: unknown;
+            allowlists?: unknown[];
+            description?: string;
+            rules?: unknown[];
+            title?: string;
+        };
+        /** Path to a JSON config file (gitleaks-compatible shape). */
+        configPath?: string;
+        /** Drop findings whose ruleId matches. */
+        disableRules?: string[];
+        /**
+         * Extra gitignore-syntax patterns (negation, directory markers, leading `/`,
+         * etc. — exactly like `.gitignore` lines). Applied on top of `.gitignore`.
+         */
+        extraIgnores?: string[];
+        /**
+         * Paths to additional `.gitignore`-syntax files (e.g. `.secretsignore`) the
+         * scanner should honor alongside `.gitignore` / `.git/info/exclude`.
+         */
+        ignoreFiles?: string[];
+        /** Set `false` to skip merging the bundled gitleaks ruleset. Default: `true`. */
+        includeBundled?: boolean;
+        /** Include hidden (dotfile) entries. Default: `false`. */
+        includeHidden?: boolean;
+        /** Max file size in bytes. Default 10 MiB. */
+        maxFileSize?: number;
+        /** Only report findings whose ruleId matches. */
+        onlyRules?: string[];
+        /** Redact secret values in output. */
+        redact?: boolean;
+        /** Respect `.gitignore`. Default: `true`. */
+        respectGitignore?: boolean;
+    };
 
     /**
      * Supply chain security settings.
@@ -374,6 +439,7 @@ interface VisConfig {
          */
         typosquatAllowlist?: string[];
     };
+
     /** sort-package-json command defaults */
     sortPackageJson?: {
         /** Alphabetize script commands (default: false) */
@@ -391,28 +457,9 @@ interface VisConfig {
      * - A top-level generate-task function
      */
     staged?: StagedConfig;
+
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<VisTargetConfiguration>>;
-
-    /**
-     * Named file-group patterns, reusable from target `inputs` via the
-     * `@filegroup:<name>` token. File groups are resolved relative to each
-     * project root at discovery time.
-     * @example
-     * ```
-     * fileGroups: {
-     *   sources: ["src/**\/*.ts", "!src/**\/*.test.ts"],
-     *   tests: ["**\/*.test.ts"],
-     * }
-     * ```
-     */
-    fileGroups?: Record<string, string[]>;
-
-    /**
-     * Named input patterns inherited by every project target. Equivalent
-     * to task-runner's `namedInputs` but configurable from the vis config.
-     */
-    namedInputs?: NamedInputs;
 
     /**
      * Cascading task-default blocks. Each block may scope its targets to a
@@ -677,7 +724,7 @@ const scopeMatches = (scope: TaskDefaultsScope | undefined, projectJson: Project
     }
 
     if (scope.tags && scope.tags.length > 0) {
-        const projectTags = new Set(projectJson?.tags ?? []);
+        const projectTags = new Set(projectJson?.tags);
         const hasOverlap = scope.tags.some((tag) => projectTags.has(tag));
 
         if (!hasOverlap) {
@@ -742,7 +789,7 @@ const collectTargetDefaults = (
 };
 
 /**
- * Resolves `@filegroup:<name>` tokens in an inputs array into their
+ * Resolves `@filegroup:&lt;name>` tokens in an inputs array into their
  * concrete patterns defined at the workspace level.
  */
 const resolveFileGroupInputs = (
@@ -846,16 +893,16 @@ const createTargetsFromScripts = (
  * the task-runner `ProjectConfiguration`.
  */
 export interface VisProjectConfiguration extends ProjectConfiguration {
-    /** Owners entries declared in project.json. */
-    owners?: OwnersEntry[];
-    /** Project layer classification (matches moon's layer hierarchy). */
-    layer?: ProjectJson["layer"];
-    /** Project stack classification. */
-    stack?: ProjectJson["stack"];
     /** Primary language identifier. */
     language?: string;
+    /** Project layer classification (matches moon's layer hierarchy). */
+    layer?: ProjectJson["layer"];
+    /** Owners entries declared in project.json. */
+    owners?: OwnersEntry[];
     /** Human-readable metadata block. */
     project?: ProjectJson["project"];
+    /** Project stack classification. */
+    stack?: ProjectJson["stack"];
     /** Raw targets with vis-specific options retained. */
     targets?: Record<string, TargetConfiguration>;
 }
@@ -925,7 +972,7 @@ const discoverWorkspace = (
         const sanitizedTargets: Record<string, TargetConfiguration> = {};
 
         for (const [targetName, target] of Object.entries(visTargets)) {
-            const { preset: _preset, type: _type, options, ...rest } = target;
+            const { options, preset: _preset, type: _type, ...rest } = target;
 
             sanitizedTargets[targetName] = {
                 ...rest,

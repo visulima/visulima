@@ -154,7 +154,6 @@ const executeUninstall = (hooksDirectory: string, logger: { info: (message: stri
 };
 
 const hook: Command = {
-    group: "Scaffold & Config",
     argument: {
         description: "Action to perform: install, uninstall, migrate, or add <target>",
         name: "action",
@@ -181,6 +180,11 @@ const hook: Command = {
         const hooksDirectory = (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
 
         switch (action) {
+            case "add": {
+                executeAdd(argument[1] as string | undefined, hooksDirectory, logger);
+                break;
+            }
+
             case "install": {
                 await executeInstall(hooksDirectory, logger);
                 break;
@@ -196,16 +200,12 @@ const hook: Command = {
                 break;
             }
 
-            case "add": {
-                executeAdd(argument[1] as string | undefined, hooksDirectory, logger);
-                break;
-            }
-
             default: {
                 throw new Error(`Unknown action "${action}". Use "install", "uninstall", "migrate", or "add <target>".`);
             }
         }
     },
+    group: "Scaffold & Config",
     name: "hook",
     options: [
         {

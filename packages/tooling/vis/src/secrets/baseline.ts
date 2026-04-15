@@ -1,11 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+import { isAbsolute, relative } from "@visulima/path";
 import type { Finding } from "@visulima/secret-scanner";
 import { fingerprint } from "@visulima/secret-scanner";
-import { isAbsolute, relative } from "@visulima/path";
 
 const toRelative = (file: string, root: string): string => {
-    if (!isAbsolute(file)) return file;
+    if (!isAbsolute(file)) {
+        return file;
+    }
 
     const rel = relative(root, file);
 
@@ -20,7 +22,9 @@ export const toRelativeFinding = (f: Finding, root: string): Finding => {
 };
 
 const readBaseline = (baselinePath: string): Finding[] => {
-    if (!existsSync(baselinePath)) return [];
+    if (!existsSync(baselinePath)) {
+        return [];
+    }
 
     try {
         const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as unknown;
@@ -32,8 +36,8 @@ const readBaseline = (baselinePath: string): Finding[] => {
 };
 
 export interface BaselineDiff {
-    resolved: Finding[];
     fresh: Finding[];
+    resolved: Finding[];
     surviving: Finding[];
 }
 
@@ -70,12 +74,15 @@ export const writeBaseline = (findings: Finding[], baselinePath: string, root: s
     } else {
         const existing = readBaseline(baselinePath).map((f) => toRelativeFinding(f, root));
         const seen = new Set<string>();
+
         final = [];
 
         for (const f of [...existing, ...incoming]) {
             const key = fingerprint(f);
 
-            if (seen.has(key)) continue;
+            if (seen.has(key)) {
+                continue;
+            }
 
             seen.add(key);
             final.push(f);

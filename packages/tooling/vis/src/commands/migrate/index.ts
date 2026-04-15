@@ -48,9 +48,17 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
         for (const [name, bucket] of perMigrationEntries) {
             const parts: string[] = [];
 
-            if (bucket.removedConfigCount > 0) parts.push(`${String(bucket.removedConfigCount)} config(s) removed`);
-            if (bucket.removedPackageCount > 0) parts.push(`${String(bucket.removedPackageCount)} package(s) removed`);
-            if (bucket.rewrittenScriptCount > 0) parts.push(`${String(bucket.rewrittenScriptCount)} script(s) rewritten`);
+            if (bucket.removedConfigCount > 0) {
+                parts.push(`${String(bucket.removedConfigCount)} config(s) removed`);
+            }
+
+            if (bucket.removedPackageCount > 0) {
+                parts.push(`${String(bucket.removedPackageCount)} package(s) removed`);
+            }
+
+            if (bucket.rewrittenScriptCount > 0) {
+                parts.push(`${String(bucket.rewrittenScriptCount)} script(s) rewritten`);
+            }
 
             logger.info(`  ${name}: ${parts.join(", ") || "no changes"}`);
         }
@@ -64,6 +72,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
     if (report.warnings.length > 0) {
         logger.info("");
         logger.warn("Warnings:");
+
         for (const warning of report.warnings) {
             logger.warn(`  - ${warning}`);
         }
@@ -72,6 +81,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
     if (report.manualSteps.length > 0) {
         logger.info("");
         logger.info("Manual steps required:");
+
         for (const step of report.manualSteps) {
             logger.info(`  - ${step}`);
         }
@@ -108,9 +118,11 @@ const migrate: Command = {
 
         if (action === "verify") {
             const issues = verifyMigration(root, logger);
+
             if (issues.length > 0) {
                 process.exitCode = 1;
             }
+
             return;
         }
 
@@ -118,8 +130,10 @@ const migrate: Command = {
             logger.info("Running in dry-run mode — no changes will be made.\n");
         } else if (!yes && action !== "all") {
             const confirmed = await confirm(`This will edit files, scripts, and hooks for "${action}". Backups (.bak) will be created. Continue?`);
+
             if (!confirmed) {
                 logger.info("Aborted.");
+
                 return;
             }
         }

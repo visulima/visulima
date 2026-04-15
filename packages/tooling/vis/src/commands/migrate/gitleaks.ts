@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
@@ -220,6 +220,103 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     }
 };
 
+const FINGERPRINT_LINE_RE = /^([^:#][^:]*):([^:]+):(\d+)$/;
+
+interface FingerprintFinding {
+    description: string;
+    endColumn: number;
+    endLine: number;
+    entropy: number;
+    file: string;
+    match: string;
+    ruleId: string;
+    secret: string;
+    startColumn: number;
+    startLine: number;
+    tags: string[];
+}
+
+const fingerprintToBaselineEntry = (line: string): FingerprintFinding | undefined => {
+    const match = FINGERPRINT_LINE_RE.exec(line.trim());
+
+    if (!match) {
+        return undefined;
+    }
+
+    const [, file, ruleId, startLineStr] = match;
+    const startLine = Number.parseInt(startLineStr ?? "0", 10);
+
+    return {
+        description: "",
+        endColumn: 0,
+        endLine: startLine,
+        entropy: 0,
+        file: file ?? "",
+        match: "",
+        ruleId: ruleId ?? "",
+        secret: "",
+        startColumn: 0,
+        startLine,
+        tags: [],
+    };
+};
+
+/**
+ * Convert a `.gitleaksignore` file (one fingerprint per line) to entries in the
+ * `.secrets-baseline.json` used by vis secrets. We merge rather than replace so
+ * users with an existing baseline don't lose prior triage decisions.
+ */
+const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
+    const source = detectGitleaksIgnore(root);
+
+    if (!source) {
+        return;
+    }
+
+    const lines = readFileSync(source, "utf8")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith("#"));
+
+    const entries = lines.map((line) => fingerprintToBaselineEntry(line)).filter((entry): entry is FingerprintFinding => entry !== undefined);
+
+    if (entries.length === 0) {
+        addMigrationWarning(report, `${source} contained no recognisable fingerprint lines — deleting it.`);
+    }
+
+    const baselinePath = join(root, ".secrets-baseline.json");
+    const existing = existsSync(baselinePath) ? (readJsonFile<FingerprintFinding[]>(baselinePath) ?? []) : [];
+    const seen = new Set(existing.map((f) => `${f.file}:${f.ruleId}:${String(f.startLine)}`));
+    const merged = [...existing];
+
+    for (const entry of entries) {
+        const key = `${entry.file}:${entry.ruleId}:${String(entry.startLine)}`;
+
+        if (!seen.has(key)) {
+            seen.add(key);
+            merged.push(entry);
+        }
+    }
+
+    if (dryRun) {
+        logger.info(`[dry-run] Would merge ${String(entries.length)} .gitleaksignore fingerprint(s) into ${baselinePath}, then delete ${source}.`);
+
+        return;
+    }
+
+    backupFile(source, report);
+
+    if (existsSync(baselinePath)) {
+        backupFile(baselinePath, report);
+    }
+
+    writeFileSync(baselinePath, `${JSON.stringify(merged, null, 4)}\n`);
+    unlinkSync(source);
+
+    logger.info(`Merged ${String(entries.length)} fingerprint(s) from ${source} into ${baselinePath}; removed .gitleaksignore.`);
+    bumpPerMigration(report, "gitleaks", "rewrittenScriptCount", entries.length);
+};
+
 const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const configPath = detectGitleaksConfig(root);
     const ignorePath = detectGitleaksIgnore(root);
@@ -239,7 +336,7 @@ const migrateGitleaks = (root: string, options: { dryRun: boolean; silent?: bool
     }
 
     if (ignorePath) {
-        logger.info(`Keeping ${ignorePath} as-is (same fingerprint format).`);
+        migrateIgnoreFile(root, options.dryRun, logger, report);
     }
 
     migrateBaseline(root, options.dryRun, logger, report);

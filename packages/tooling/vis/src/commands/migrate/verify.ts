@@ -5,9 +5,9 @@ import { join } from "@visulima/path";
 import type { MigrateLogger } from "./types";
 
 export interface VerificationIssue {
+    detail: string;
     kind: "config" | "script" | "hook" | "devDep";
     location: string;
-    detail: string;
 }
 
 const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
@@ -29,7 +29,9 @@ interface PackageJson {
 const scanPackageJson = (root: string): VerificationIssue[] => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) return [];
+    if (!existsSync(packageJsonPath)) {
+        return [];
+    }
 
     let pkg: PackageJson;
 
@@ -43,7 +45,9 @@ const scanPackageJson = (root: string): VerificationIssue[] => {
 
     if (pkg.scripts) {
         for (const [name, value] of Object.entries(pkg.scripts)) {
-            if (typeof value !== "string") continue;
+            if (typeof value !== "string") {
+                continue;
+            }
 
             if (/\bgitleaks\b/.test(value)) {
                 issues.push({ detail: `Script "${name}" still invokes gitleaks: ${value}`, kind: "script", location: "package.json" });
@@ -76,7 +80,9 @@ const scanHooks = (root: string): VerificationIssue[] => {
     for (const rel of HOOK_CANDIDATES) {
         const abs = join(root, rel);
 
-        if (!existsSync(abs)) continue;
+        if (!existsSync(abs)) {
+            continue;
+        }
 
         const content = readFileSync(abs, "utf8");
 

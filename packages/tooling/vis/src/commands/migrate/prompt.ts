@@ -1,5 +1,5 @@
-import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
+import { createInterface } from "node:readline/promises";
 
 /** Prompt the user on stdin; returns true on y/yes (empty defaults to yes). */
 export const confirm = async (question: string): Promise<boolean> => {
@@ -13,7 +13,9 @@ export const confirm = async (question: string): Promise<boolean> => {
     try {
         const answer = (await rl.question(`${question} [Y/n] `)).trim().toLowerCase();
 
-        if (answer === "" || answer === "y" || answer === "yes") return true;
+        if (answer === "" || answer === "y" || answer === "yes") {
+            return true;
+        }
 
         return false;
     } finally {

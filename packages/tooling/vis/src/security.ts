@@ -409,7 +409,9 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                     result.extraArgs.push("--ignore-scripts");
 
                     for (const [pattern, allowed] of Object.entries(allowBuilds)) {
-                        if (allowed) result.postInstallPackages.push(pattern);
+                        if (allowed) {
+                            result.postInstallPackages.push(pattern);
+                        }
                     }
                 }
             }
@@ -630,7 +632,9 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
         const pkgDir = join(nodeModulesPath, pkg);
         const pkgJsonPath = join(pkgDir, "package.json");
 
-        if (!existsSync(pkgJsonPath)) continue;
+        if (!existsSync(pkgJsonPath)) {
+            continue;
+        }
 
         try {
             const scripts = JSON.parse(readFileSync(pkgJsonPath, "utf8")).scripts ?? {};
