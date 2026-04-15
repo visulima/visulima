@@ -67,7 +67,7 @@ describe("utils", () => {
                         "~": "/root",
                         "~assets": "/root/some/dir",
                     }),
-                ).toMatchInlineSnapshot("\"/root/some/dir/smth.jpg\"");
+                ).toMatchInlineSnapshot('"/root/some/dir/smth.jpg"');
             });
 
             it("should let the input unchanged", () => {
@@ -100,7 +100,7 @@ describe("utils", () => {
                         "~": "/root",
                         "~assets": "/root/some/assets",
                     }),
-                ).toMatchInlineSnapshot("\"~assets/smth.jpg\"");
+                ).toMatchInlineSnapshot('"~assets/smth.jpg"');
             });
 
             it("unchanged", () => {
