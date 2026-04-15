@@ -43,7 +43,7 @@ export interface CompareSimilarityOptions {
  * assert.deepStrictEqual(sortedWords, ["help", "hi", "hello"]);
  * ```
  */
-export const compareSimilarity = (givenWord: string, options?: CompareSimilarityOptions): ((a: string, b: string) => number) => {
+export const compareSimilarity = (givenWord: string, options?: CompareSimilarityOptions): (a: string, b: string) => number => {
     const { compareFn: compareFunction = levenshteinDistance } = { ...options };
 
     if (options?.caseSensitive) {

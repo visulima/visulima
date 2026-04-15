@@ -128,7 +128,7 @@ const templateCache = new WeakMap<TemplateStringsArray, string[]>();
 
 const createInstance = (options: Options): Outdent => {
     const enableCache = options.cache !== false;
-    const cache = enableCache ? (options.cacheStore ?? templateCache) : undefined;
+    const cache = enableCache ? options.cacheStore ?? templateCache : undefined;
     const hasNewlineOption = options.newline !== undefined;
 
     // Define the actual outdent function returned by the factory
@@ -170,10 +170,10 @@ const createInstance = (options: Options): Outdent => {
             // Special case: indentation level set by the first interpolated value (if it's also outdent)
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const firstValueIsOutdent = values[0] === outdent || values[0] === defaultOutdent;
-            const firstInterpolatedValueSetsIndentationLevel =
-                firstValueIsOutdent &&
-                RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string) &&
-                RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
+            const firstInterpolatedValueSetsIndentationLevel
+                = firstValueIsOutdent
+                    && RE_ONLY_WHITESPACE_WITH_AT_LEAST_ONE_NEWLINE.test(strings[0] as string)
+                    && RE_STARTS_WITH_NEWLINE_OR_IS_EMPTY.test(strings[1] as string);
 
             let renderedArray: string[] | undefined;
 
