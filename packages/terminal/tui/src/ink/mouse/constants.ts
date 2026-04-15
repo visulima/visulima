@@ -17,7 +17,20 @@ import {
     enableX10Mouse,
 } from "@visulima/ansi";
 
-const ANSI_CODES = {
+type AnsiCodeKey =
+    | "alternateScroll"
+    | "mouseButton"
+    | "mouseDrag"
+    | "mouseFocus"
+    | "mouseHighlight"
+    | "mouseMotion"
+    | "mouseMotionOthers"
+    | "mousePixelMode"
+    | "mouseSGR"
+    | "mouseUtf8"
+    | "mouseX10";
+
+const ANSI_CODES: Record<AnsiCodeKey, { off: string; on: string }> = {
     // SET_ALTERNATE_SCROLL — no dedicated helper in @visulima/ansi
     alternateScroll: { off: "\u001B[?1007l", on: "\u001B[?1007h" },
 
@@ -50,7 +63,7 @@ const ANSI_CODES = {
 
     // SET_X10_MOUSE
     mouseX10: { off: disableX10Mouse, on: enableX10Mouse },
-} as const satisfies Record<string, { off: string; on: string }>;
+};
 
 /**
  * Unified SGR 1006 mouse sequence pattern.
