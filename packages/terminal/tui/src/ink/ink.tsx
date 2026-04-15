@@ -712,8 +712,9 @@ export default class Ink {
             applyStyles(node.yogaNode, node.style);
 
             while (node.yogaNode.getChildCount() > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- yoga-layout's untyped Node API
-                node.yogaNode.getChild(0).remove();
+                // yoga-layout's Node type lacks `.remove()` but runtime has it.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                (node.yogaNode.getChild(0) as unknown as { remove: () => void }).remove();
             }
 
             let yogaIndex = 0;
