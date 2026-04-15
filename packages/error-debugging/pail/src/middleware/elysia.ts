@@ -101,7 +101,7 @@ export const pailPlugin = <T extends string = string>(app: PailElysiaInstance, o
 
             return { log: result.logger };
         })
-        .onAfterHandle({ as: "global" }, async ({ request, set }: { request: Request; set: { status?: number } }) => {
+        .onAfterHandle({ as: "global" }, ({ request, set }: { request: Request; set: { status?: number } }) => {
             const state = requestState.get(request);
 
             if (!state?.skipped && state && !emitted.has(request)) {
@@ -110,7 +110,7 @@ export const pailPlugin = <T extends string = string>(app: PailElysiaInstance, o
                 activeLoggers.delete(state.logger);
             }
         })
-        .onError({ as: "global" }, async ({ error, request }: { error: Error; request: Request }) => {
+        .onError({ as: "global" }, ({ error, request }: { error: Error; request: Request }) => {
             const state = requestState.get(request);
 
             if (!state?.skipped && state && !emitted.has(request)) {

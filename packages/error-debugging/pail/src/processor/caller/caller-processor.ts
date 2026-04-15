@@ -15,13 +15,13 @@ declare global {
             /** File information where the log was called from */
             file:
                 | {
-                      /** Column number in the source file */
-                      column: number | undefined;
-                      /** Line number in the source file */
-                      line: number | undefined;
-                      /** Name/path of the source file */
-                      name: string | undefined;
-                  }
+                    /** Column number in the source file */
+                    column: number | undefined;
+                    /** Line number in the source file */
+                    line: number | undefined;
+                    /** Name/path of the source file */
+                    name: string | undefined;
+                }
                 | undefined;
         }
     }

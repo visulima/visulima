@@ -41,9 +41,9 @@ interface PailFastifyReply {
  * A Fastify-like instance that supports the hook registration API.
  */
 interface PailFastifyInstance {
-    addHook: ((name: "onError", hook: (request: PailFastifyRequest, reply: PailFastifyReply, error: Error) => Promise<void>) => void) &
-        ((name: "onRequest", hook: (request: PailFastifyRequest, reply: PailFastifyReply, done: () => void) => void) => void) &
-        ((name: "onResponse", hook: (request: PailFastifyRequest, reply: PailFastifyReply) => Promise<void>) => void);
+    addHook: ((name: "onError", hook: (request: PailFastifyRequest, reply: PailFastifyReply, error: Error) => Promise<void>) => void)
+        & ((name: "onRequest", hook: (request: PailFastifyRequest, reply: PailFastifyReply, done: () => void) => void) => void)
+        & ((name: "onResponse", hook: (request: PailFastifyRequest, reply: PailFastifyReply) => Promise<void>) => void);
 }
 
 const loggerStorage = createLoggerStorage("Fastify middleware context. Make sure pail plugin is registered before your route handlers.");
@@ -123,7 +123,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
         });
     });
 
-    fastify.addHook("onResponse", async (request: PailFastifyRequest, reply: PailFastifyReply) => {
+    fastify.addHook("onResponse", (request: PailFastifyRequest, reply: PailFastifyReply) => {
         const state = requestState.get(request);
 
         if (!state || emitted.has(request)) {
@@ -134,7 +134,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
         state.finish({ status: reply.statusCode });
     });
 
-    fastify.addHook("onError", async (request: PailFastifyRequest, _reply: PailFastifyReply, error: Error) => {
+    fastify.addHook("onError", (request: PailFastifyRequest, _reply: PailFastifyReply, error: Error) => {
         const state = requestState.get(request);
 
         if (!state || emitted.has(request)) {

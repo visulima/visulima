@@ -111,12 +111,12 @@ export class OpenTelemetryProcessor<L extends string = string> implements Proces
 
         const traceData = this.#traceFieldName
             ? {
-                  [this.#traceFieldName]: fields,
-              }
+                [this.#traceFieldName]: fields,
+            }
             : fields;
 
         // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unsafe-assignment -- meta.context is typed as any[]
-        meta.context = [...(meta.context ?? []), traceData];
+        meta.context = [...meta.context ?? [], traceData];
 
         return meta;
     }
