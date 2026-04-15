@@ -8,7 +8,7 @@ import { exitProcess, onProcessEvent } from "./runtime-process";
  * @param logger Console-like logger instance for error reporting
  * @returns Cleanup function to remove event listeners
  */
-const registerExceptionHandler = (logger: Console): () => void => {
+const registerExceptionHandler = (logger: Console): (() => void) => {
     // we want to see real exceptions with backtraces and stuff
     const uncaughtExceptionHandler = (error: Error) => {
         logger.error(`Uncaught exception: ${error.message || error}`);
