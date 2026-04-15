@@ -47,11 +47,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/error
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -78,14 +81,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/error artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## is-plain-obj
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/is-plain-obj
@@ -142,11 +146,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/command-line-args artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## @visulima/error
+
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -173,14 +180,15 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
->
->
 > # Licenses of bundled dependencies
+>
 > The published @visulima/error artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
+>
 > ## is-plain-obj
+>
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/is-plain-obj
