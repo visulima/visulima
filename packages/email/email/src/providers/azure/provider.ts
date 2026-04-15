@@ -31,17 +31,17 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
 
     const endpoint = config.endpoint ?? `https://${config.region}.communication.azure.com`;
 
-    const options: Pick<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken"> &
-        Required<Omit<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">> & { endpoint: string } = {
-        debug: config.debug ?? false,
-        endpoint,
-        region: config.region,
-        retries: config.retries ?? DEFAULT_RETRIES,
-        timeout: config.timeout ?? DEFAULT_TIMEOUT,
-        ...(config.connectionString && { connectionString: config.connectionString }),
-        ...(config.accessToken && { accessToken: config.accessToken }),
-        ...(config.logger && { logger: config.logger }),
-    };
+    const options: Pick<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">
+        & Required<Omit<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">> & { endpoint: string } = {
+            debug: config.debug ?? false,
+            endpoint,
+            region: config.region,
+            retries: config.retries ?? DEFAULT_RETRIES,
+            timeout: config.timeout ?? DEFAULT_TIMEOUT,
+            ...config.connectionString && { connectionString: config.connectionString },
+            ...config.accessToken && { accessToken: config.accessToken },
+            ...config.logger && { logger: config.logger },
+        };
 
     const providerState = new ProviderState();
     const logger = createProviderLogger(PROVIDER_NAME, config.logger);
@@ -138,7 +138,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
          */
         async initialize(): Promise<void> {
             await providerState.ensureInitialized(async () => {
-                if (!(await this.isAvailable())) {
+                if (!await this.isAvailable()) {
                     throw new EmailError(PROVIDER_NAME, "Azure Communication Services API not available or invalid credentials");
                 }
 
@@ -322,8 +322,8 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                                     content = attachment.content.toString("base64");
                                 }
                             } else if (attachment.raw) {
-                                content =
-                                    typeof attachment.raw === "string"
+                                content
+                                    = typeof attachment.raw === "string"
                                         ? Buffer.from(attachment.raw, "utf8").toString("base64")
                                         : attachment.raw.toString("base64");
                             } else {
