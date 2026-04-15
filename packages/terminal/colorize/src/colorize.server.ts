@@ -27,8 +27,8 @@ const wrapText = (
         return "";
     }
 
-    let string
-        = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
+    let string =
+        (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
             ? String(strings as number | string)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
