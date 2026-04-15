@@ -1,3 +1,11 @@
+## @visulima/bytes [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.8...@visulima/bytes@3.0.0-alpha.9) (2026-04-15)
+
+### Bug Fixes
+
+* **bytes:** resolve eslint and formatting issues ([26422b2](https://github.com/visulima/visulima/commit/26422b27e876c64bb37183b24c69fc9f8591716f))
+* **data-manipulation:** resolve eslint and formatting issues ([3687b65](https://github.com/visulima/visulima/commit/3687b65d804abe316fad8c3a02ec659bf303332e))
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+
 ## @visulima/bytes [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.7...@visulima/bytes@3.0.0-alpha.8) (2026-04-08)
 
 ### Bug Fixes
