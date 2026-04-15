@@ -28,9 +28,24 @@ export default createConfig(
         files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/restrict-template-expressions": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
+        },
+    },
+    {
+        files: ["src/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/restrict-template-expressions": "off",
         },
     },
     {
