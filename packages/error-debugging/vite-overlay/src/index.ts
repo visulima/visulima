@@ -569,7 +569,7 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
                     (plugin as Plugin).name === "vite:react-refresh" ||
                     (plugin as Plugin).name === "vite:react-babel" ||
                     (plugin as Plugin).name === "@vitejs/plugin-react" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("react")) ||
+                    (typeof plugin === "function" && (plugin as unknown as Plugin).name?.includes("react")) ||
                     ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
         );
 
@@ -588,7 +588,7 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
                 ((vuePluginName && (plugin as Plugin).name === vuePluginName) ||
                     (plugin as Plugin).name === "vite:vue" ||
                     (plugin as Plugin).name === "@vitejs/plugin-vue" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue")) ||
+                    (typeof plugin === "function" && (plugin as unknown as Plugin).name?.includes("vue")) ||
                     ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
         );
 
