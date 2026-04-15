@@ -228,7 +228,9 @@ class PerformanceMonitor {
         const entries = performance.getEntriesByType("navigation");
 
         if (entries.length > 0 && entries[0]) {
-            this.vitals.ttfb = Math.round(entries[0].responseStart - entries[0].requestStart);
+            const navEntry = entries[0];
+
+            this.vitals.ttfb = Math.round(navEntry.responseStart - navEntry.requestStart);
             this.emit();
         }
     }

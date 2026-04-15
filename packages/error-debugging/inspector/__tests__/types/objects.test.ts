@@ -269,7 +269,7 @@ describe("object prototype", () => {
         // eslint-disable-next-line func-style
         function Foo() {}
 
-        const object = new Foo();
+        const object = new (Foo as any)();
 
         expect(inspect(object)).toBe("Foo {}");
     });

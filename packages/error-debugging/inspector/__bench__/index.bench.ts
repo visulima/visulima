@@ -10,7 +10,9 @@ const mapObjectReferenceA = {};
 const mapObjectReferenceB = {};
 
 // eslint-disable-next-line func-style
-function getArguments() {
+function getArguments(...args: unknown[]) {
+    args;
+
     return arguments; // eslint-disable-line prefer-rest-params
 }
 

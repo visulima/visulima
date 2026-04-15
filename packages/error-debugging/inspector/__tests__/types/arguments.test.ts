@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { inspect } from "../../src";
 
 // eslint-disable-next-line func-style,@typescript-eslint/naming-convention,no-underscore-dangle
-function arguments_() {
+function arguments_(...args: unknown[]) {
+    args;
+
     // eslint-disable-next-line prefer-rest-params
     return arguments;
 }

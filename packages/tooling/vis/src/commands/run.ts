@@ -1,5 +1,5 @@
 import type { Command } from "@visulima/cerebro";
-import type { ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
+import type { ConcurrentCommandInput, ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
 import {
     createTaskGraph,
     defaultTaskRunner,
@@ -89,7 +89,7 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
         return;
     }
 
-    await runConcurrently(commands, { killOthers: ["failure"] });
+    await runConcurrently(commands as ConcurrentCommandInput[], { killOthers: ["failure"] });
 };
 
 /**
@@ -522,7 +522,7 @@ const run: Command = {
 
         const taskGraph = createTaskGraph(initialTasks, {
             projectGraph,
-            targetDefaults: config.targetDefaults,
+            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<import("@visulima/task-runner").TargetConfiguration>>,
             workspace,
         });
 

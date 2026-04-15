@@ -7,8 +7,12 @@ import h from "./utils/h";
 describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
     beforeEach(() => {
         if (typeof HTMLElement !== "function") {
-            class Text {
-                public constructor(data) {
+            class MockText {
+                public wholeText: string;
+
+                public data: string;
+
+                public constructor(data: string) {
                     this.wholeText = data;
                     this.data = data;
                 }
@@ -23,7 +27,13 @@ describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
                 }
             }
 
-            class HTMLElement {
+            class MockHTMLElement {
+                public tagName: string;
+
+                public attributes: Record<string, unknown>;
+
+                public children: unknown[];
+
                 public constructor(tagName: string) {
                     this.tagName = tagName.toUpperCase();
                     this.attributes = {};
@@ -35,7 +45,7 @@ describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
                     return 1;
                 }
 
-                public appendChild(element) {
+                public appendChild(element: MockHTMLElement) {
                     this.children.push(element);
                 }
 
@@ -56,10 +66,10 @@ describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
                 globalThis.document = {} as any;
             }
 
-            globalThis.document.createElement = (tagName) => new HTMLElement(tagName);
-            globalThis.document.createTextNode = (data) => new Text(data);
-            globalThis.HTMLElement = HTMLElement;
-            globalThis.Text = Text;
+            globalThis.document.createElement = ((tagName: string) => new MockHTMLElement(tagName)) as typeof document.createElement;
+            globalThis.document.createTextNode = ((data: string) => new MockText(data)) as unknown as typeof document.createTextNode;
+            globalThis.HTMLElement = MockHTMLElement as unknown as typeof HTMLElement;
+            globalThis.Text = MockText as unknown as typeof Text;
         }
     });
 
@@ -175,7 +185,7 @@ describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
 
             const nodes = [h("span"), h("h1")];
 
-            nodes[Symbol.toStringTag] = "HTMLCollection";
+            (nodes as unknown as Record<symbol, string>)[Symbol.toStringTag] = "HTMLCollection";
 
             expect(inspect(nodes)).to.equal("<span></span>\n<h1></h1>");
         });
@@ -188,7 +198,7 @@ describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
             const nodes = [h("h1"), document.createTextNode("bar")];
 
             // Becuase we can't create a `NodeList in node
-            nodes[Symbol.toStringTag] = "NodeList";
+            (nodes as unknown as Record<symbol, string>)[Symbol.toStringTag] = "NodeList";
 
             expect(inspect(nodes)).to.equal("<h1></h1>\n'bar'");
         });
