@@ -12,14 +12,12 @@ const packagesDir = join(__dirname, "..", "packages");
 /**
  * Checks if a path contains a glob pattern
  */
-function isGlobPattern(path) {
-    return path.includes("*");
-}
+const isGlobPattern = (path) => path.includes("*");
 
 /**
  * Converts a dist glob pattern to a src glob pattern
  */
-function convertGlobPattern(distPath) {
+const convertGlobPattern = (distPath) => {
     // Convert dist path to src path
     let srcPath = distPath.replace(/^\.\/dist\//, "./src/");
 
@@ -30,24 +28,20 @@ function convertGlobPattern(distPath) {
     srcPath = srcPath.replace(/\.d\.cts$/, ".cts");
 
     return srcPath;
-}
+};
 
 /**
  * Escapes all regular expression meta-characters in a string, except for *
  * This ensures that special regex characters are treated as literals
  * The * character is left unescaped so it can be converted to .* for glob matching
  */
-function escapeRegex(str) {
-    // Escape all regex meta-characters except *: \ ^ $ . | ? + ( ) [ ] { }
-    // Backslash must be escaped first since it's used in other escapes
-    return str.replace(/[\\^$.+?()[\]{}|]/g, "\\$&");
-}
+const escapeRegex = (str) => str.replace(/[\\^$.+?()[\]{}|]/g, "\\$&");
 
 /**
  * Expands a glob pattern export into individual file exports
  * Example: "./language/*": "./src/language/*.ts" -> { "./language/en": "./src/language/en.ts", ... }
  */
-function expandGlobExport(exportKey, globPath, packageDir) {
+const expandGlobExport = (exportKey, globPath, packageDir) => {
     // Extract directory and file pattern from glob
     // Pattern: "./src/language/*.ts" -> dir: "./src/language", pattern: "*.ts"
     const globMatch = globPath.match(/^(.+)\/([^/]*\*[^/]*)$/);
@@ -87,12 +81,17 @@ function expandGlobExport(exportKey, globPath, packageDir) {
     }
 
     return expandedExports;
-}
+};
+
+/**
+ * Checks if a file exists
+ */
+const fileExists = (filePath) => existsSync(filePath);
 
 /**
  * Finds the actual source file for a dist path
  */
-function findSourceFile(distPath, packageDir) {
+const findSourceFile = (distPath, packageDir) => {
     // Handle glob patterns
     if (isGlobPattern(distPath)) {
         return convertGlobPattern(distPath);
@@ -114,14 +113,14 @@ function findSourceFile(distPath, packageDir) {
 
     // If no source file found, return the dist path as fallback
     return distPath;
-}
+};
 
 /**
  * Converts package.json exports to jsr.json exports format
  * Maps dist paths to src paths for TypeScript source files
  * Expands glob patterns into individual exports (JSR doesn't support globs)
  */
-function convertExports(packageExports, packageDir) {
+const convertExports = (packageExports, packageDir) => {
     if (typeof packageExports === "string") {
         // Single export - find source file
         return findSourceFile(packageExports, packageDir);
@@ -183,12 +182,12 @@ function convertExports(packageExports, packageDir) {
     }
 
     return undefined;
-}
+};
 
 /**
  * Gets the main entry point from package.json exports
  */
-function getMainExport(packageExports) {
+const getMainExport = (packageExports) => {
     if (typeof packageExports === "string") {
         return packageExports;
     }
@@ -219,43 +218,36 @@ function getMainExport(packageExports) {
     }
 
     return undefined;
-}
-
-/**
- * Checks if a file exists
- */
-function fileExists(filePath) {
-    return existsSync(filePath);
-}
+};
 
 /**
  * Validates that a package name follows JSR naming conventions
  */
-function validatePackageName(name) {
+const validatePackageName = (name) => {
     // JSR requires scoped packages: @scope/package-name
     if (!name || typeof name !== "string") {
         return false;
     }
     // Must start with @ and contain a /
     return name.startsWith("@") && name.includes("/") && name.split("/").length === 2;
-}
+};
 
 /**
  * Validates that a version follows Semantic Versioning
  */
-function validateVersion(version) {
+const validateVersion = (version) => {
     if (!version || typeof version !== "string") {
         return false;
     }
     // Basic SemVer pattern: major.minor.patch[-prerelease][+build]
     const semverPattern = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
     return semverPattern.test(version);
-}
+};
 
 /**
  * Validates that exports are properly formatted
  */
-function validateExports(exports) {
+const validateExports = (exports) => {
     if (!exports) {
         return false;
     }
@@ -281,12 +273,12 @@ function validateExports(exports) {
     }
 
     return false;
-}
+};
 
 /**
  * Generates jsr.json for a package
  */
-async function generateJsrConfig(packageDir) {
+const generateJsrConfig = async (packageDir) => {
     const packageJsonPath = join(packageDir, "package.json");
     const jsrJsonPath = join(packageDir, "jsr.json");
 
@@ -392,13 +384,40 @@ async function generateJsrConfig(packageDir) {
 
     console.log(`✅ Created jsr.json for ${name}`);
     return true;
-}
+};
+
+/**
+ * Recursively finds all package directories (directories containing package.json).
+ * Stops descending once a package.json is found so nested platform packages
+ * (e.g. task-runner/npm/*) are not processed individually.
+ */
+const findPackageDirs = (dir, packageDirs = []) => {
+    const entries = readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        if (!entry.isDirectory()) {
+            continue;
+        }
+
+        if (entry.name.startsWith("__") || entry.name === "examples" || entry.name === "node_modules") {
+            continue;
+        }
+
+        const fullPath = join(dir, entry.name);
+
+        if (existsSync(join(fullPath, "package.json"))) {
+            packageDirs.push(fullPath);
+        } else {
+            findPackageDirs(fullPath, packageDirs);
+        }
+    }
+
+    return packageDirs;
+};
 
 // Main execution
 (async () => {
-    const packageDirs = readdirSync(packagesDir, { withFileTypes: true })
-        .filter((dirent) => dirent.isDirectory())
-        .map((dirent) => join(packagesDir, dirent.name));
+    const packageDirs = findPackageDirs(packagesDir);
 
     let successCount = 0;
     let failCount = 0;

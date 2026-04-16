@@ -27,7 +27,7 @@ const EXCLUDED_DIRS = new Set(["node_modules", ".git", "dist", "build", ".next",
  * @param {string} baseDir - Base directory (packages/)
  * @param {Array<string>} foundPackages - Array to collect found package paths
  */
-function findPackages(dir, baseDir, foundPackages = []) {
+const findPackages = (dir, baseDir, foundPackages = []) => {
     try {
         const entries = readdirSync(dir);
 
@@ -58,12 +58,12 @@ function findPackages(dir, baseDir, foundPackages = []) {
     }
 
     return foundPackages;
-}
+};
 
 /**
  * @returns {Array<LabelerPair>} Pairs of package labels and their corresponding paths
  */
-function readPairsFromFs() {
+const readPairsFromFs = () => {
     const packagesDir = resolve("packages");
 
     if (!existsSync(packagesDir)) {
@@ -116,16 +116,14 @@ function readPairsFromFs() {
     pairs.sort((a, b) => a[0].localeCompare(b[0]));
 
     return pairs;
-}
+};
 
 /**
  * @param {Array<LabelerPair>} pairs
  * @returns {Promise<string>} YAML string for the labeler config
  */
-async function generateLabelerYaml(pairs) {
-    function s(n = 1) {
-        return " ".repeat(n);
-    }
+const generateLabelerYaml = async (pairs) => {
+    const s = (n = 1) => " ".repeat(n);
 
     // Convert the pairs into valid yaml
     const formattedPairs = pairs
@@ -156,9 +154,9 @@ async function generateLabelerYaml(pairs) {
     });
 
     return formattedStr;
-}
+};
 
-async function run() {
+const run = async () => {
     console.info("Generating labeler config...");
 
     // Generate the pairs of package labels and their corresponding paths
@@ -177,8 +175,7 @@ async function run() {
     });
 
     console.info(`Generated labeler config at \`${configPath}\`!`);
-    return;
-}
+};
 
 try {
     run().then(() => {
