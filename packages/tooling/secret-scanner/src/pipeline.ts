@@ -13,11 +13,56 @@
 import { loadBaselineSet } from "./baseline";
 import { checkChecksum } from "./checksum";
 import { fingerprint, legacyFingerprint } from "./fingerprint";
+import { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
 import type { PreparedScan, RuleMeta } from "./prepare-scan";
 import type { Finding, ScanOptions } from "./types";
 import { PerHostLimiter, validateFinding } from "./validator";
 
 const VALIDATOR_CONCURRENCY = 8;
+
+/**
+ * Drop findings the heuristic false-positive suite flags (detect-secrets
+ * parity). Each heuristic is individually toggleable via
+ * `config.heuristics.*`; all default to `true`. Runs *before* checksum /
+ * validation so the cheap filters short-circuit the expensive stages.
+ *
+ * Heuristics:
+ * - `lockFile` — skip findings in Cargo.lock / yarn.lock / …
+ * - `sequentialString` — skip `abcdefgh`, `12345678`, `AAAAAAAA`
+ * - `potentialUuid` — skip standard UUID-shaped secrets
+ * - `notAlphanumericString` — skip `*****` / `------` / `//////`
+ */
+const applyHeuristicFilters = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
+    const heuristics = options?.config?.heuristics;
+    const skipLockFile = heuristics?.lockFile !== false;
+    const skipSequential = heuristics?.sequentialString !== false;
+    const skipUuid = heuristics?.potentialUuid !== false;
+    const skipNonAlnum = heuristics?.notAlphanumericString !== false;
+
+    if (!skipLockFile && !skipSequential && !skipUuid && !skipNonAlnum) {
+        return findings;
+    }
+
+    return findings.filter((finding) => {
+        if (skipLockFile && isLockFile(finding.file)) {
+            return false;
+        }
+
+        if (skipSequential && isSequentialString(finding.secret)) {
+            return false;
+        }
+
+        if (skipUuid && isPotentialUuid(finding.secret)) {
+            return false;
+        }
+
+        if (skipNonAlnum && isNotAlphanumericString(finding.secret)) {
+            return false;
+        }
+
+        return true;
+    });
+};
 
 const applyRuleFilter = (findings: Finding[], includeIds: string[] | undefined, excludeIds: string[] | undefined): Finding[] => {
     const hasInclude = includeIds && includeIds.length > 0;
@@ -216,7 +261,8 @@ const applySuppressions = async (findings: Finding[], options: ScanOptions | und
  */
 export const postProcess = async (raw: Finding[], prepared: PreparedScan, options: ScanOptions | undefined): Promise<Finding[]> => {
     const filtered = applyRuleFilter(raw, prepared.includeIds, prepared.excludeIds);
-    const checksumed = applyChecksumFilter(filtered, prepared.ruleMeta);
+    const heuristicsFiltered = applyHeuristicFilters(filtered, options);
+    const checksumed = applyChecksumFilter(heuristicsFiltered, prepared.ruleMeta);
     const validated = await applyValidation(checksumed, options, prepared.ruleMeta);
     const verifiedOnly = applyOnlyVerified(validated, options);
 

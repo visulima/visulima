@@ -64,7 +64,9 @@ Production-grade secret and credential scanner for Node.js. Written in Rust, del
 
 - **Respects `.gitignore` / `.ignore`** out of the box; layer extra gitignore-syntax filters via `walk.excludePatterns` / `walk.excludeFromFiles`.
 - **Baseline JSON** with content-hash fingerprints (SHA-256 over `secret + ruleId + file`, truncated to 16 hex) — survives line shifts. Legacy `file:rule:line` baselines still suppress on read.
-- **Inline + block suppression** — `gitleaks:allow`, `gitleaks:allow-start` / `-end`, and the equivalent `secret-scanner:` markers.
+- **Inline + block + next-line suppression** — `gitleaks:allow`, `gitleaks:allow-start` / `-end`, `secret-scanner:` equivalents, plus detect-secrets `pragma: allowlist secret` / `pragma: allowlist nextline secret` for YAML and PEM bodies.
+- **Heuristic false-positive suite** — lock-file skip, UUID / sequential / non-alphanumeric drops. All on by default, individually toggleable via `config.heuristics.*`.
+- **YAML block-scalar transformer** — opt-in helper (`transformYamlBlockScalars`) that collapses `|` / `>` scalars into single-line proxies before scanning so multi-line secrets stop hiding.
 - **Deterministic output** — stable sort on file + line + column + rule id.
 - **Codepoint-based column math** for editor / LSP consumers.
 - **gitleaks-compatible JSON config** at runtime. Author rules in TOML if you prefer; convert once at build time. No TOML parser in the runtime dep graph.
@@ -97,7 +99,19 @@ The right prebuilt native binary is pulled in automatically via `optionalDepende
 ## Usage
 
 ```ts
-import { scan, scanFiles, scanString, listRules, inspectRuleset, fingerprint } from "@visulima/secret-scanner";
+import {
+    scan,
+    scanFiles,
+    scanString,
+    listRules,
+    inspectRuleset,
+    fingerprint,
+    transformYamlBlockScalars,
+    isLockFile,
+    isPotentialUuid,
+    isSequentialString,
+    isNotAlphanumericString,
+} from "@visulima/secret-scanner";
 
 // 1) Scan directories (respects .gitignore)
 const findings = await scan([process.cwd()], { redact: true });
@@ -141,12 +155,12 @@ for (const f of findings) console.log(fingerprint(f));
 
 ### Ruleset
 
-| Source                 | Rules     | License    | Default state                                                            |
-| ---------------------- | --------- | ---------- | ------------------------------------------------------------------------ |
-| gitleaks               | 222       | MIT        | enabled                                                                  |
-| MongoDB Kingfisher     | 825       | Apache-2.0 | enabled                                                                  |
-| Visulima preset bundle | 11        | MIT        | **disabled** — enable with `rules.enable: ["tag:preset:<name>"]`         |
-| **Total**              | **1,058** |            | 1,047 active by default                                                  |
+| Source                 | Rules     | License    | Default state                                                    |
+| ---------------------- | --------- | ---------- | ---------------------------------------------------------------- |
+| gitleaks               | 222       | MIT        | enabled                                                          |
+| MongoDB Kingfisher     | 825       | Apache-2.0 | enabled                                                          |
+| Visulima preset bundle | 11        | MIT        | **disabled** — enable with `rules.enable: ["tag:preset:<name>"]` |
+| **Total**              | **1,058** |            | 1,047 active by default                                          |
 
 The Kingfisher import is regenerated from the pinned upstream commit in `scripts/kingfisher.ref` via `pnpm run build:rules`. Eleven Kingfisher rules with `pattern_requirements.checksum:` are skipped during import (their loose patterns aren't meaningful without CRC verification — see `data/kingfisher.skipped.log`); their `dependsOnRule` metadata is preserved everywhere else for future multi-token chaining.
 
@@ -154,13 +168,14 @@ The opt-in HTTP validator handles 493 of Kingfisher's 510 validation-carrying ru
 
 ### Suppression
 
-Three ways — all compatible with gitleaks' formats where they overlap:
+Four markers plus a baseline file — all markers match **case-insensitively** and work regardless of the host-language comment syntax (`#`, `//`, `/* */`, `--`, `<!-- -->`, …) because the scanner looks for the marker text itself, not the delimiters.
 
-**Inline comment** (same line)
+**Inline comment** (same line as the secret)
 
 ```ts
 const token = "ghp_..."; // gitleaks:allow
-const other = "ghp_..."; # secret-scanner:allow
+const other = "ghp_..."; // secret-scanner:allow
+const third = "ghp_..."; // pragma: allowlist secret   # detect-secrets compat
 ```
 
 **Block region** (suppresses everything between markers)
@@ -173,11 +188,63 @@ const testFixtures = {
 // gitleaks:allow-end
 ```
 
+**Previous-line marker** (suppresses a finding on the line immediately below — useful for YAML block scalars and PEM bodies where an inline comment on the secret line isn't possible)
+
+```yaml
+# pragma: allowlist nextline secret
+token: |
+    <multi-line secret body here>
+```
+
 **Baseline JSON**
 
 - Array of `Finding` objects (same shape `scan()` returns). Pass via `baseline: "./path.json"`. Findings whose content-hash fingerprint (SHA-256 over `secret + ruleId + file`, truncated to 16 hex chars) matches an entry in the baseline are suppressed. Line-shift tolerant; the legacy `file:ruleID:startLine` format continues to suppress correctly without a migration.
 - `rules.include` / `rules.exclude` arrays for rule-id level filtering.
 - Use `.gitignore` to exclude paths from scanning (respected by the walker), or `walk.excludePatterns` / `walk.excludeFromFiles` for extra gitignore-syntax filters.
+
+### Heuristic false-positive filters
+
+Four post-detection heuristics run by default on every scan, dropping high-confidence placeholders before findings are returned. Each is individually toggleable via `config.heuristics.<name>: false` — turn one off if you need the raw match set (e.g. scanning a known-bad fixture intentionally containing UUID-shaped tokens).
+
+| Key                     | Default | Drops findings where …                                                                                             |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| `lockFile`              | `true`  | file basename is a known lock file (28 entries: `yarn.lock`, `pnpm-lock.yaml`, `Cargo.lock`, `go.sum`, `flake.lock`, `gradle.lockfile`, `.terraform.lock.hcl`, …) |
+| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence or a single repeating character (`abcdefgh`, `12345678`, `AAAAAAAA`)                                  |
+| `potentialUuid`         | `true`  | the secret matches the canonical 8-4-4-4-12 UUID shape — almost always an object identifier, not a credential                                                     |
+| `notAlphanumericString` | `true`  | the secret contains zero ASCII alphanumerics (`*****`, `------`, `//////`)                                                                                        |
+
+```ts
+// Keep UUID-shaped findings (e.g. auditing a system that uses UUIDs as API keys).
+const findings = await scan([process.cwd()], {
+    config: { heuristics: { potentialUuid: false } },
+});
+```
+
+The filters are ported from [detect-secrets](https://github.com/Yelp/detect-secrets) for parity with teams migrating over.
+
+### YAML block-scalar transformer (opt-in)
+
+YAML `|` / `>` block scalars hide secrets across multiple lines — a credential written as
+
+```yaml
+token: |
+    <first half>
+    <second half>
+```
+
+never appears as a single string in the scanner's view, so detectors that expect a contiguous token miss it. The `transformYamlBlockScalars` helper collapses block scalars into single-line `key: "value"` proxies while preserving line numbers so findings still report against the original file:
+
+```ts
+import { readFile } from "node:fs/promises";
+import { scanString, transformYamlBlockScalars } from "@visulima/secret-scanner";
+
+const yaml = await readFile("config.yaml", "utf8");
+const findings = await scanString(transformYamlBlockScalars(yaml), "config.yaml");
+// Findings' startLine / endLine map back to the original file because the
+// transformer pads blank lines for every consumed block-scalar body line.
+```
+
+Scope: handles `key: |` and `key: >` at any indent level, including quoted keys. Sequence-element scalars (`- |`) and flow mappings are left alone — small hit rate, large edge-case surface.
 
 ### API
 
@@ -191,10 +258,23 @@ interface ScanOptions {
     config?: {
         /** Layer the user's rules on top of the bundled ruleset. Default: true. */
         extendBundled?: boolean;
+        /** Post-detection heuristic filters (detect-secrets parity). All default to `true`. */
+        heuristics?: {
+            lockFile?: boolean;
+            notAlphanumericString?: boolean;
+            potentialUuid?: boolean;
+            sequentialString?: boolean;
+        };
         /** Pre-parsed gitleaks-shaped object. Fastest path — zero file IO. */
         inline?: GitleaksConfig;
+        /** Drop rules whose declared `confidence` is below this floor. */
+        minConfidence?: "high" | "low" | "medium";
+        /** With `validate: true`, keep only `validation === "verified"` findings. */
+        onlyVerified?: boolean;
         /** Path to a JSON file (gitleaks-compatible shape). */
         path?: string;
+        /** Opt in to HTTP / transport validators. WARNING: sends candidates to the provider. */
+        validate?: boolean;
     };
 
     /** Mask `match` / `secret` strings in every finding. */
@@ -265,6 +345,16 @@ declare function listRules(options?: ScanOptions): Promise<RuleInfo[]>;
 declare function inspectRuleset(options?: ScanOptions): Promise<SkippedRule[]>;
 declare function fingerprint(f: Finding): string;
 declare const bundledConfigPath: string;
+
+// Heuristic helpers — the same predicates the pipeline applies. Exported so
+// custom pre-filters (editor plugins, CI gates) can reuse the logic.
+declare function isLockFile(path: string): boolean;
+declare function isSequentialString(secret: string): boolean;
+declare function isPotentialUuid(secret: string): boolean;
+declare function isNotAlphanumericString(secret: string): boolean;
+
+// Opt-in YAML block-scalar collapser for multi-line secret detection.
+declare function transformYamlBlockScalars(content: string): string;
 ```
 
 ### Parity testing vs. upstream gitleaks

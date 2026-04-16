@@ -106,5 +106,7 @@ export const scanString = async (content: string, file: string, options?: ScanOp
 
 export { bundledConfigPath, type GitleaksConfig } from "./config-loader";
 export { fingerprint, legacyFingerprint } from "./fingerprint";
+export { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
+export { transformYamlBlockScalars } from "./transformers/yaml";
 export type { ValidatorReport } from "./transports";
 export type { Confidence, Finding, RuleInfo, ScanOptions, SkippedRule, ValidationStatus } from "./types";

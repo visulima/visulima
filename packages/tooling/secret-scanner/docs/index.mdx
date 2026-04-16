@@ -18,7 +18,10 @@ Use it as a library, through the [`vis secrets`](../vis/index.mdx) CLI, or as a 
 - **Aho-Corasick keyword prefilter** — candidate rules are shortlisted in a single DFA pass before any per-rule regex runs.
 - **Parallel file scanning** via `rayon`, memory-mapped zero-copy reads above 1 MiB.
 - **Respects `.gitignore` / `.ignore`** out of the box, plus scanner-specific `walk.excludePatterns` / `walk.excludeFromFiles` for `.secretsignore`-style files.
-- **Baseline JSON** (the sole fingerprint store) with merge + diff, inline (`gitleaks:allow`) and block (`gitleaks:allow-start` / `-end`) suppression markers. Also accepts `secret-scanner:allow`.
+- **Baseline JSON** with content-hash fingerprints (SHA-256 over `secret + ruleId + file`, truncated to 16 hex) — survives line shifts. Legacy `file:rule:line` baselines still suppress on read.
+- **Inline + block + next-line suppression** — `gitleaks:allow`, `gitleaks:allow-start` / `-end`, `secret-scanner:` equivalents, plus detect-secrets `pragma: allowlist secret` / `pragma: allowlist nextline secret` for YAML and PEM bodies.
+- **Heuristic false-positive suite** — lock-file skip, UUID / sequential / non-alphanumeric drops. On by default, individually toggleable via `config.heuristics.*`.
+- **YAML block-scalar transformer** — opt-in helper (`transformYamlBlockScalars`) that collapses multi-line `|` / `>` scalars into single-line proxies so secrets split across lines become detectable.
 - **Deterministic output order** across runs — stable sort on file + line + column + rule id.
 - **Findings deduplication** — identical findings collapse; rule priority resolves span overlaps (specific rules beat `generic-api-key`).
 - **Targeted allowlists** via gitleaks' `targetRules` schema (#1919).
@@ -30,7 +33,15 @@ Use it as a library, through the [`vis secrets`](../vis/index.mdx) CLI, or as a 
 ## Quick Start
 
 ```typescript
-import { scan, scanFiles, scanString, listRules, inspectRuleset, fingerprint } from "@visulima/secret-scanner";
+import {
+    scan,
+    scanFiles,
+    scanString,
+    listRules,
+    inspectRuleset,
+    fingerprint,
+    transformYamlBlockScalars,
+} from "@visulima/secret-scanner";
 
 // Scan a directory (respects .gitignore)
 const findings = await scan([process.cwd()], { redact: true });
@@ -41,6 +52,9 @@ const staged = await scanFiles(["src/app.ts", "src/db.ts"]);
 // Scan an in-memory buffer
 const inline = await scanString('aws_secret = "AKIA..."', "config.env");
 
+// Collapse YAML block scalars first so multi-line secrets are detectable
+const yamlFindings = await scanString(transformYamlBlockScalars(yamlSource), "config.yaml");
+
 // List every bundled rule
 const rules = await listRules();
 
@@ -50,7 +64,10 @@ const skipped = await inspectRuleset({ config: { path: "./leaks.json" } });
 // Additively enable the bundled weak-passwords opt-in group (defaults still fire)
 const weak = await scan([process.cwd()], { rules: { enable: ["tag:preset:weak-passwords"] } });
 
-// Compute a gitleaks-compatible fingerprint (`file:ruleID:startLine`)
+// Keep UUID-shaped findings (heuristic filters default to on; toggle individually)
+const audit = await scan([process.cwd()], { config: { heuristics: { potentialUuid: false } } });
+
+// Compute a content-hash fingerprint — stable across line shifts
 for (const f of findings) console.log(fingerprint(f));
 ```
 

@@ -388,10 +388,19 @@ fn emit_match(
     let (sl, sc, el, ec) = offset_to_line_col(offsets_ref, span.match_start, span.match_end, text_ref);
     let line = line_slice(text_ref, offsets_ref, sl);
 
-    // Inline allow-comment (same line) or block allow-region
-    // (gitleaks:allow-start ... gitleaks:allow-end).
+    // Inline allow-comment (same line), block allow-region
+    // (gitleaks:allow-start ... gitleaks:allow-end), or detect-secrets-style
+    // `pragma: allowlist nextline secret` on the line preceding the match.
     if has_allow_comment(line) || is_in_allow_region(allow_regions, span.match_start) {
         return;
+    }
+
+    if sl > 1 {
+        let previous = line_slice(text_ref, offsets_ref, sl - 1);
+
+        if has_nextline_pragma(previous) {
+            return;
+        }
     }
 
     // Allowlist (rule + global) — respects per-allowlist `targetRules` via the rule id.
@@ -423,17 +432,39 @@ fn emit_match(
 }
 
 /// Returns true if the line contains a recognised inline allow-comment.
-/// Matching is case-insensitive. We accept `gitleaks:allow` (upstream compat)
-/// and `secret-scanner:allow` (our own). Both work regardless of the comment
-/// syntax used by the host language (`#`, `//`, `/* */`, `--`, etc.).
+/// Matching is case-insensitive. We accept `gitleaks:allow` (upstream compat),
+/// `secret-scanner:allow` (our own), and `pragma: allowlist secret`
+/// (detect-secrets compat). All three work regardless of the comment syntax
+/// used by the host language (`#`, `//`, `/* */`, `--`, `<!-- -->`, …) — we
+/// look for the marker text itself, not the comment delimiters.
 fn has_allow_comment(line: &str) -> bool {
-    const MARKERS: [&str; 2] = ["gitleaks:allow", "secret-scanner:allow"];
-    // Avoid the lowercase allocation when the line is short and definitely can't match.
+    const MARKERS: [&str; 3] = ["gitleaks:allow", "secret-scanner:allow", "pragma: allowlist secret"];
+    // Shortest marker bounds the cheap-path length check.
     if line.len() < "gitleaks:allow".len() {
         return false;
     }
     let lc = line.to_ascii_lowercase();
     MARKERS.iter().any(|m| lc.contains(m))
+}
+
+/// Returns true when the line carries a `pragma: allowlist nextline secret`
+/// marker (detect-secrets compat) — the scanner checks this on the line
+/// *before* a potential match, suppressing findings on the line below.
+/// Useful for multi-line block-scalar cases where an inline comment on the
+/// secret line itself is awkward (YAML) or impossible (PEM body).
+///
+/// Cheap pre-check: scan the raw bytes for `p`/`P` before paying the
+/// `to_ascii_lowercase()` allocation. The vast majority of source lines
+/// contain neither, so the allocation only fires on ~1% of lookups.
+fn has_nextline_pragma(line: &str) -> bool {
+    const MARKER: &str = "pragma: allowlist nextline secret";
+    if line.len() < MARKER.len() {
+        return false;
+    }
+    if !line.bytes().any(|b| b == b'p' || b == b'P') {
+        return false;
+    }
+    line.to_ascii_lowercase().contains(MARKER)
 }
 
 fn is_allowlisted(lists: &[CompiledAllowlist], rule_id: &str, path: &str, m: &str, secret: &str, line: &str) -> bool {
@@ -591,6 +622,24 @@ mod tests {
         assert!(!has_allow_comment("normal line"));
         assert!(!has_allow_comment("// just a comment"));
         assert!(!has_allow_comment("allow")); // too short
+    }
+
+    #[test]
+    fn allow_comment_pragma() {
+        // detect-secrets compat — same-line marker across comment syntaxes.
+        assert!(has_allow_comment("token = \"abc123\"  # pragma: allowlist secret"));
+        assert!(has_allow_comment("let x = \"...\"; // PRAGMA: ALLOWLIST SECRET"));
+        assert!(has_allow_comment("/* pragma: allowlist secret */ const k = \"…\";"));
+        assert!(!has_allow_comment("token = \"abc\" # pragma: allow"));
+    }
+
+    #[test]
+    fn nextline_pragma_suppresses_following_line() {
+        assert!(has_nextline_pragma("# pragma: allowlist nextline secret"));
+        assert!(has_nextline_pragma("// PRAGMA: ALLOWLIST NEXTLINE SECRET"));
+        assert!(!has_nextline_pragma("# pragma: allowlist secret"));
+        assert!(!has_nextline_pragma("normal comment"));
+        assert!(!has_nextline_pragma("")); // empty line
     }
 
     #[test]

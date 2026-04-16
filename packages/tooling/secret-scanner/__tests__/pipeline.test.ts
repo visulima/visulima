@@ -232,6 +232,73 @@ describe("postProcess — onlyVerified", () => {
     });
 });
 
+describe("postProcess — heuristic filters", () => {
+    it("drops findings in lock files by default", async () => {
+        expect.assertions(1);
+
+        const findings = [
+            sampleFinding({ file: "packages/foo/yarn.lock", ruleId: "generic-api-key" }),
+            sampleFinding({ file: "src/app.ts", ruleId: "generic-api-key" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), undefined);
+
+        expect(out.map((f) => f.file)).toStrictEqual(["src/app.ts"]);
+    });
+
+    it("drops findings whose secret looks like a UUID by default", async () => {
+        expect.assertions(1);
+
+        const findings = [
+            sampleFinding({ ruleId: "a", secret: "123e4567-e89b-12d3-a456-426614174000" }),
+            sampleFinding({ ruleId: "b", secret: "AKIAIOSFODNN7EXAMPLE" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), undefined);
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["b"]);
+    });
+
+    it("drops sequential-string and non-alphanumeric secrets by default", async () => {
+        expect.assertions(1);
+
+        const findings = [
+            sampleFinding({ ruleId: "seq", secret: "abcdefgh" }),
+            sampleFinding({ ruleId: "mask", secret: "******" }),
+            sampleFinding({ ruleId: "real", secret: "ghp_abcdef1234567890" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), undefined);
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["real"]);
+    });
+
+    it("honours `heuristics.<name>: false` to disable individual heuristics", async () => {
+        expect.assertions(1);
+
+        const findings = [
+            sampleFinding({ ruleId: "uuid", secret: "123e4567-e89b-12d3-a456-426614174000" }),
+            sampleFinding({ ruleId: "real", secret: "ghp_abcdef1234567890" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), {
+            config: { heuristics: { potentialUuid: false } },
+        });
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["uuid", "real"]);
+    });
+
+    it("retains lock-file findings when `heuristics.lockFile: false`", async () => {
+        expect.assertions(1);
+
+        const findings = [
+            sampleFinding({ file: "packages/foo/yarn.lock", ruleId: "a" }),
+            sampleFinding({ file: "pnpm-lock.yaml", ruleId: "b" }),
+        ];
+        const out = await postProcess(findings, preparedScan(), {
+            config: { heuristics: { lockFile: false } },
+        });
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["a", "b"]);
+    });
+});
+
 describe("postProcess — suppressions", () => {
     it("drops findings whose content-hash or legacy fingerprint is in the baseline", async () => {
         expect.assertions(1);
