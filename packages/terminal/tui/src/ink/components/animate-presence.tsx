@@ -24,14 +24,35 @@ type Slot = {
     readonly show: boolean;
 };
 
+/**
+ * Normalize a ReactElement's `key` to a string (or `undefined` when the
+ * caller forgot to set one). AnimatePresence ignores children without a key
+ * because tracking identity across renders requires it.
+ */
 const getKey = (element: ReactElement): string | undefined => {
     const key = element.key;
 
     return key == null ? undefined : String(key);
 };
 
-const isAnimatable = (element: ReactElement): element is ReactElement<AnimatableProps> =>
-    typeof element.props === "object" && element.props !== null && "show" in element.props;
+/**
+ * Type-guard used to narrow a child to something AnimatePresence can drive.
+ * Matches two cases:
+ * 1. The element's component type carries a static `isAnimatable = true`
+ *    marker (this is how built-in `<Transition />` is recognized — consumers
+ *    can opt in their own wrappers the same way).
+ * 2. The element's props object already declares a `show` key, letting
+ *    inline components participate without a marker.
+ */
+const isAnimatable = (element: ReactElement): element is ReactElement<AnimatableProps> => {
+    const type = element.type as { isAnimatable?: boolean } | undefined;
+
+    if (type?.isAnimatable === true) {
+        return true;
+    }
+
+    return typeof element.props === "object" && element.props !== null && "show" in element.props;
+};
 
 /**
  * Orchestrates enter / exit animations for keyed children. Wrap a dynamic

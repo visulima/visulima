@@ -250,3 +250,11 @@ export default function Transition({
 
     return renderer(progress, children, distance);
 }
+
+/**
+ * Static marker used by `AnimatePresence` to recognize Transition children
+ * even when the consumer hasn't explicitly passed a `show` prop. Consumers
+ * can apply the same marker to their own wrappers (`MyWrapper.isAnimatable
+ * = true`) to opt them into animation orchestration.
+ */
+Transition.isAnimatable = true as const;

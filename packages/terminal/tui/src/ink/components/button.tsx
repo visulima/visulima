@@ -47,6 +47,13 @@ export type Props = {
 
 const BORDER_STYLE = "round" as const;
 
+/**
+ * Pick the label color for a Button based on its variant, focus state, and
+ * disabled state. Returns `undefined` when the default terminal color should
+ * be used (disabled, or an unfocused non-primary button). The focused primary
+ * variant uses `"black"` so the label is readable against the filled accent
+ * background; every other focused variant just echoes `accentColor`.
+ */
 const resolveTextColor = (
     variant: ButtonVariant,
     isFocused: boolean,
@@ -123,7 +130,13 @@ export default function Button({
             return isFocused ? accentColor : "gray";
         }
 
-        // primary / secondary — accent when focused, neutral when not
+        if (variant === "secondary") {
+            // Secondary keeps the accent-colored border always; focus is
+            // conveyed by the bold label alone.
+            return accentColor;
+        }
+
+        // primary (and any future variants) — accent border when focused.
         return isFocused ? accentColor : undefined;
     })();
     const fillBackground = variant === "primary" && isFocused ? accentColor : undefined;

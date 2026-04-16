@@ -206,16 +206,14 @@ export default function LineChart({
             />
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
-                    {series.map((input, index) => {
-                        const color = pickSeriesColor(input, index, palette);
-
-                        return (
-                            <Box gap={1} key={input.label ?? index}>
-                                <Text color={color}>●</Text>
-                                <Text>{input.label ?? `Series ${index + 1}`}</Text>
-                            </Box>
-                        );
-                    })}
+                    {config.seriesList.map(({ color, series: input }, index) => (
+                        // Composite key: series index plus label so two
+                        // series sharing a label don't collide.
+                        <Box gap={1} key={`${index}:${input.label ?? ""}`}>
+                            <Text color={color}>●</Text>
+                            <Text>{input.label ?? `Series ${index + 1}`}</Text>
+                        </Box>
+                    ))}
                 </Box>
             ) : undefined}
         </Box>

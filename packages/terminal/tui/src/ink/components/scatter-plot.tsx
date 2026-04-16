@@ -79,7 +79,9 @@ export default function ScatterPlot({
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (
-                        <Box gap={1} key={input.label ?? index}>
+                        // Composite key: series index plus label so two
+                        // series sharing a label don't collide.
+                        <Box gap={1} key={`${index}:${input.label ?? ""}`}>
                             <Text color={color}>●</Text>
                             <Text>{input.label ?? `Series ${index + 1}`}</Text>
                         </Box>
