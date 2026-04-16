@@ -1,9 +1,3 @@
-import type { Handler as CreateHandler } from "./handler/create";
-import type { Handler as DeleteHandler } from "./handler/delete";
-import type { Handler as ListHandler } from "./handler/list";
-import type { Handler as GetHandler } from "./handler/read";
-import type { Handler as UpdateHandler } from "./handler/update";
-
 export enum RouteType {
     CREATE = "CREATE",
     DELETE = "DELETE",
@@ -22,6 +16,41 @@ export interface ModelOption {
 export type ModelsOptions<M extends string = string> = {
     [key in M]?: ModelOption;
 };
+
+export type CreateHandler = <T, Q, Request>(
+    parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export type DeleteHandler = <T, Q>(
+    parameters: UniqueResourceHandlerParameters<T, Q>,
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export type GetHandler = <T, Q>(
+    parameters: UniqueResourceHandlerParameters<T, Q>,
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export type ListHandler = <T, Q extends ParsedQueryParameters>(
+    parameters: HandlerParameters<T, Q> & { pagination: PaginationConfig },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
+
+export type UpdateHandler = <T, Q, Request>(
+    parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
+) => Promise<{
+    data: any;
+    status: number;
+}>;
 
 export interface HandlerOptions<M extends string = string> {
     exposeStrategy?: "all" | "none";

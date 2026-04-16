@@ -2,6 +2,9 @@ import type { BaseStorage } from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
 import type BaseTransformer from "./base-transformer";
+import type { BaseTransformerConfig } from "./transformer-config";
+
+export type { BaseTransformerConfig } from "./transformer-config";
 
 /**
  * Supported image formats for transformation
@@ -795,22 +798,6 @@ export interface MediaTransformQuery {
     withoutEnlargement?: boolean;
     /** Whether to avoid reducing larger images */
     withoutReduction?: boolean;
-}
-
-/**
- * Base transformer configuration with common properties
- */
-export interface BaseTransformerConfig {
-    /** Cache instance to use for caching */
-    cache?: Cache;
-    /** Cache TTL in seconds */
-    cacheTtl?: number;
-    /** Logger instance */
-    logger?: Console;
-    /** Maximum number of cached items */
-    maxCacheSize?: number;
-    /** Supported input formats */
-    supportedFormats?: string[] | undefined;
 }
 
 /**
