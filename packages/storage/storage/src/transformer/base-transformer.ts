@@ -6,7 +6,7 @@ import type { BaseStorage } from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
-import type { BaseTransformerConfig } from "./types";
+import type { BaseTransformerConfig } from "./transformer-config";
 
 /**
  * Abstract base class for all media transformers.

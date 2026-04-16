@@ -1,8 +1,8 @@
 import createHttpError from "http-errors";
 
-import type { UniqueResourceHandlerParameters } from "../types";
+import type { UpdateHandler } from "../types";
 
-const updateHandler: Handler = async ({ adapter, query, request, resourceId, resourceName }) => {
+const updateHandler: UpdateHandler = async ({ adapter, query, request, resourceId, resourceName }) => {
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     if (typeof resource === "object") {
@@ -16,12 +16,5 @@ const updateHandler: Handler = async ({ adapter, query, request, resourceId, res
 
     throw createHttpError(404, `${resourceName} ${resourceId} not found`);
 };
-
-export type Handler = <T, Q, Request>(
-    parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
-) => Promise<{
-    data: any;
-    status: number;
-}>;
 
 export default updateHandler;

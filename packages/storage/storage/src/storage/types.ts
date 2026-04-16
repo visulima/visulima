@@ -3,15 +3,11 @@ import type { Readable } from "node:stream";
 import type { Cache } from "../utils/cache";
 import type { RetryConfig } from "../utils/retry";
 import type { HttpError, HttpErrorBody, Metrics, Validation } from "../utils/types";
-import type { LocalMetaStorageOptions } from "./local/local-meta-storage";
+import type { LocalMetaStorageOptions } from "./meta-storage-options";
 import type MetaStorage from "./meta-storage";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";
 
-export interface MetaStorageOptions {
-    logger?: Console;
-    prefix?: string;
-    suffix?: string;
-}
+export type { MetaStorageOptions } from "./meta-storage-options";
 
 export type OnCreate<TFile extends File = File> = (file: TFile) => Promise<void> | void;
 
