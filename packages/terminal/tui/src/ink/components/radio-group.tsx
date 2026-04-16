@@ -85,8 +85,8 @@ const initialFocusIndex = (options: ReadonlyArray<RadioOption>, selectedValue: s
 
 /**
  * Single-choice radio group with keyboard navigation. By default, navigation
- * commits selection (Storm parity); set `commitOnNavigate={false}` to require
- * an explicit Space/Enter commit.
+ * commits selection; set `commitOnNavigate={false}` to require an explicit
+ * Space/Enter commit.
  */
 export default function RadioGroup({
     accentColor = "blue",
