@@ -137,6 +137,10 @@ const firstEnabledIndex = (rows: ReadonlyArray<FlatRow>): number => {
 /**
  * Dropdown / context menu with optional sections and disabled items.
  * Keyboard: ↑/↓ (or j/k) to navigate, Enter to select, Esc to cancel.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the menu, optionally wrapped in a
+ * rounded border when `bordered` is true.
  */
 export default function Menu({
     accentColor = "blue",

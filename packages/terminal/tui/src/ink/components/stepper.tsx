@@ -72,6 +72,9 @@ const resolveStatus = (step: StepperStep, index: number, activeIndex: number): S
 
 /**
  * Step indicator for multi-stage flows.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the steps horizontally or vertically.
  */
 export default function Stepper({
     accentColor = "blue",

@@ -70,6 +70,9 @@ const resolveTextColor = (
 
 /**
  * Focusable button. Triggers `onPress` on Enter / Space.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the button (bordered or ghost variant).
  */
 export default function Button({
     accentColor = "blue",

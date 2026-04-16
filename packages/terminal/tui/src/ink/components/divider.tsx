@@ -77,8 +77,11 @@ export default function Divider({
     }
 
     // Repeat long enough to fill the widest reasonable viewport; Yoga + Text
-    // `truncate` wrapping will clip the excess.
-    const fillLength = length ?? Math.max(columns, 1);
+    // `truncate` wrapping will clip the excess. Cap the allocation so a
+    // multi-thousand-column terminal (or a pathological `length` prop) can't
+    // blow up the string size.
+    const MAX_FILL = 500;
+    const fillLength = Math.min(MAX_FILL, length ?? Math.max(columns, 1));
 
     if (label === undefined) {
         return (

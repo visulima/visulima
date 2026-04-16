@@ -46,6 +46,9 @@ export type Props = {
  * Read-only presentational option list. Like `SelectInput` but without focus,
  * input handling, or scrolling — just a styled list of rows. Useful inside
  * modals, sidebars, or summary panels.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the list; bordered when requested.
  */
 export default function OptionList({
     accentColor = "blue",

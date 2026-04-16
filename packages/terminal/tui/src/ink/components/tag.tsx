@@ -34,6 +34,9 @@ export type Props = {
 
 /**
  * Render a short pill-shaped label.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the tag in the requested variant.
  */
 export default function Tag({ children, color = "blue", icon, variant = "subtle" }: Props): ReactElement {
     if (variant === "outline") {

@@ -123,6 +123,13 @@ const normalizeStep = (step: KeyChordStep): string => step.trim().toLowerCase();
  * Invoke `callback` when the user types the given sequence of keys in order
  * (like Vim's `g d` or Emacs's `C-x C-s`). The chord resets automatically
  * after `resetAfter` ms of silence.
+ *
+ * @param sequence Ordered list of chord steps. Each step is compared against
+ * a canonical key token (e.g. `"g"`, `"space"`, `"ctrl+s"`).
+ * @param callback Invoked exactly once per successful chord match. Latest
+ * reference is captured in a ref.
+ * @param options Optional `isActive` flag and `resetAfter` silence timeout.
+ * @returns `void` — chord detection is wired up via `useInput` internally.
  */
 const useKeyChord = (sequence: ReadonlyArray<KeyChordStep>, callback: () => void, options?: UseKeyChordOptions): void => {
     const { isActive = true, resetAfter = 1000 } = options ?? {};

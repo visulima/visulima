@@ -55,6 +55,10 @@ export type Props = {
 
 /**
  * Focusable on/off switch. Toggles with Space or Enter.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering two labeled segments plus an optional
+ * trailing label.
  */
 export default function Switch({
     accentColor = "green",

@@ -151,6 +151,10 @@ const buildWeeks = (year: number, month: number, firstDayOfWeek: 0 | 1): Readonl
 /**
  * Month-grid date picker. Arrow keys move focus by one day, page up/down move
  * by month. Enter submits; Space or Enter selects.
+ *
+ * @param props - See {@link Props}.
+ * @returns A bordered `ReactElement` containing the month header, weekday
+ * labels, and the day grid.
  */
 export default function Calendar({
     accentColor = "blue",

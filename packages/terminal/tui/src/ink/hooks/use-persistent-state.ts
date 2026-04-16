@@ -134,6 +134,18 @@ const readInitial = <T>(storage: PersistentStorage, key: string, fallback: T): T
  * `useState` that persists its value through the configured `storage`
  * backend (file on disk by default). Behaves identically to `useState` at
  * the call-site; the writes happen synchronously after each update.
+ *
+ * **Lifecycle note:** the storage backend (resolved from `options.storage`
+ * or a fresh `createFileStorage(namespace)`) is captured once on mount and
+ * never replaced. Mutating `options.storage` on subsequent renders has no
+ * effect — remount the hook (e.g. via a `key` prop) if you need to swap
+ * backends at runtime.
+ *
+ * @param key Unique identifier within the backend namespace.
+ * @param initialValue Value used when the backend has no entry for `key`.
+ * @param options Optional storage backend + namespace overrides.
+ * @returns A `[value, setValue]` tuple. Writes flush synchronously after
+ * the React state update.
  */
 const usePersistentState = <T>(
     key: string,

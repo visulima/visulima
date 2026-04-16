@@ -57,6 +57,9 @@ const DEFAULT_WIDTHS = [1, 0.85, 0.6] as const;
 /**
  * Skeleton loading indicator. Renders a stack of solid blocks whose widths
  * vary to mimic text placeholders. Pair with `async` data fetching.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the skeleton rows.
  */
 export default function Placeholder({
     animated = true,

@@ -62,6 +62,24 @@ const formatDuration = (ms: number): string => {
     return `${(ms / 1000).toFixed(2)}s`;
 };
 
+/**
+ * Resolve the header icon for a given status. `running` returns a live
+ * Spinner; every other value maps to a static glyph.
+ */
+const resolveStatusIcon = (status: CommandStatus): ReactNode => {
+    if (status === "running") {
+        return <Spinner type="dots" />;
+    }
+
+    const ICONS: Record<Exclude<CommandStatus, "running">, string> = {
+        error: "✖",
+        idle: "$",
+        success: "✔",
+    };
+
+    return ICONS[status];
+};
+
 const truncateOutput = (output: string, maxRows: number): string => {
     if (!Number.isFinite(maxRows)) {
         return output;
@@ -93,14 +111,7 @@ export default function CommandBlock({
     status = "idle",
 }: Props): ReactElement {
     const color = STATUS_COLOR[status];
-
-    const statusIcon = status === "running"
-        ? <Spinner type="dots" />
-        : status === "success"
-            ? "✔"
-            : status === "error"
-                ? "✖"
-                : "$";
+    const statusIcon = resolveStatusIcon(status);
 
     const trailing: Array<ReactNode> = [];
 

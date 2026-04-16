@@ -7,6 +7,7 @@ import type { LiteralUnion } from "type-fest";
 import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
+import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import type { LineSeries } from "./line-chart";
 import { drawSeriesOnCanvas } from "./line-chart";
 import Text from "./text";
@@ -24,33 +25,14 @@ export type Props = {
     readonly width?: number;
 };
 
-const DEFAULT_PALETTE: ReadonlyArray<LiteralUnion<AnsiColors, string>> = [
-    "cyan",
-    "magenta",
-    "yellow",
-    "green",
-    "blue",
-    "red",
-];
-
-type Point = { readonly x: number; readonly y: number };
-
-const toPoints = (data: LineSeries["data"]): ReadonlyArray<Point> => {
-    if (data.length === 0) {
-        return [];
-    }
-
-    return typeof data[0] === "number"
-        ? (data as ReadonlyArray<number>).map((y, x) => ({ x, y }))
-        : (data as ReadonlyArray<Point>);
-};
-
-const colorFor = (series: LineSeries, index: number, palette: ReadonlyArray<LiteralUnion<AnsiColors, string>>): LiteralUnion<AnsiColors, string> =>
-    series.color ?? palette[index % palette.length] ?? "cyan";
+const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
 
 /**
  * Scatter plot rendered on a braille pixel grid. Each sample lights one
  * sub-cell pixel; overlapping points merge into denser braille glyphs.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` containing the plot and an optional legend.
  */
 export default function ScatterPlot({
     axisColor = "gray",
@@ -66,7 +48,7 @@ export default function ScatterPlot({
 }: Props): ReactElement {
     const config = useMemo(() => {
         const seriesList = series.map((input, index) => ({
-            color: colorFor(input, index, palette),
+            color: pickSeriesColor(input, index, palette),
             points: toPoints(input.data),
             series: input,
         }));

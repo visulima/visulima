@@ -154,6 +154,15 @@ const resolvePhase = (show: boolean, progress: number): TransitionPhase => {
  * Animate a child's entry and exit using a TUI-friendly preset. Drive via
  * `show`; the component toggles between enter and exit, fires `onExit` once
  * the exit animation completes.
+ *
+ * **Fade preset note:** `dimColor` is only applied when the child is a plain
+ * string. Non-string children (Box trees, other components) pass through
+ * untouched during the transition — wrap them in `<Text>` if you need the
+ * fade effect.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the transitioning child, or `null`
+ * once a hidden transition has fully completed.
  */
 export default function Transition({
     children,

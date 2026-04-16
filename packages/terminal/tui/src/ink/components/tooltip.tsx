@@ -39,25 +39,11 @@ export type Props = {
     readonly placement?: TooltipPlacement;
 };
 
-const placementStyle = (placement: TooltipPlacement): { flexDirection: "column" | "row"; orderFirst: boolean } => {
-    switch (placement) {
-        case "bottom": {
-            return { flexDirection: "column", orderFirst: false };
-        }
-
-        case "left": {
-            return { flexDirection: "row", orderFirst: true };
-        }
-
-        case "top": {
-            return { flexDirection: "column", orderFirst: true };
-        }
-
-        case "right":
-        default: {
-            return { flexDirection: "row", orderFirst: false };
-        }
-    }
+const PLACEMENT_STYLE: Record<TooltipPlacement, { flexDirection: "column" | "row"; orderFirst: boolean }> = {
+    bottom: { flexDirection: "column", orderFirst: false },
+    left: { flexDirection: "row", orderFirst: true },
+    right: { flexDirection: "row", orderFirst: false },
+    top: { flexDirection: "column", orderFirst: true },
 };
 
 /**
@@ -72,7 +58,7 @@ export default function Tooltip({
     isVisible = true,
     placement = "right",
 }: Props): ReactElement {
-    const { flexDirection, orderFirst } = placementStyle(placement);
+    const { flexDirection, orderFirst } = PLACEMENT_STYLE[placement];
 
     const tooltip = !isVisible ? undefined : (
         <Box borderColor={color} borderStyle="round" flexShrink={0} marginLeft={placement === "right" ? 1 : 0} marginRight={placement === "left" ? 1 : 0} paddingX={1}>

@@ -99,6 +99,10 @@ const formatParamValue = (value: unknown): string => {
 /**
  * Three-way approval prompt for tool calls. Resolves via `onDecision`:
  * `y` / Enter → allow-once, `a` → allow-always, `n` / Esc → deny.
+ *
+ * @param props - See {@link Props}.
+ * @returns A bordered `ReactElement` containing the risk banner, params
+ * preview, optional body, and the prompt line.
  */
 export default function ApprovalPrompt({
     accentColor,

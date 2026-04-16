@@ -155,6 +155,9 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
 /**
  * Renders a tree of operations with per-node status. Perfect for agent
  * progress panels (reading → editing → running tests → done).
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the nested tree of operation rows.
  */
 export default function OperationTree({ nodes, showSpinner = true }: Props): ReactElement {
     return (

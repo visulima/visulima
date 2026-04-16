@@ -146,16 +146,23 @@ export default function Gauge({
     const range = max - min || 1;
     const ratio = (clampedValue - min) / range;
 
-    const activeThreshold = useMemo(() => {
+    // Sort once per threshold change; reused by both the active-threshold
+    // lookup and the draw loop below.
+    const sortedThresholds = useMemo(() => {
         if (thresholds === undefined || thresholds.length === 0) {
             return undefined;
         }
 
-        // Build a sorted copy once per threshold change.
-        const sorted = [...thresholds].sort((a, b) => a.max - b.max);
+        return [...thresholds].sort((a, b) => a.max - b.max);
+    }, [thresholds]);
 
-        return thresholdAtRatio(sorted, min, max, ratio);
-    }, [thresholds, min, max, ratio]);
+    const activeThreshold = useMemo(() => {
+        if (sortedThresholds === undefined) {
+            return undefined;
+        }
+
+        return thresholdAtRatio(sortedThresholds, min, max, ratio);
+    }, [sortedThresholds, min, max, ratio]);
 
     const readout = formatValue(clampedValue);
 
@@ -174,9 +181,6 @@ export default function Gauge({
                     const rx = pixelWidth / 2 - 1;
                     const ry = pixelHeight - 1;
                     const radius = Math.max(1, Math.min(rx, ry));
-                    const sortedThresholds = thresholds && thresholds.length > 0
-                        ? [...thresholds].sort((a, b) => a.max - b.max)
-                        : undefined;
 
                     // One braille grid per color so different segments keep
                     // their colors cleanly (each flush paints its own color).

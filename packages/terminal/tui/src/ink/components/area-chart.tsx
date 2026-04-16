@@ -8,6 +8,7 @@ import { createBrailleGrid } from "../canvas/braille";
 import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
+import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import type { LineSeries } from "./line-chart";
 import { projectPoint } from "./line-chart";
 import Text from "./text";
@@ -66,39 +67,13 @@ export type Props = {
     readonly width?: number;
 };
 
-const DEFAULT_PALETTE: ReadonlyArray<LiteralUnion<AnsiColors, string>> = [
-    "cyan",
-    "magenta",
-    "yellow",
-    "green",
-    "blue",
-    "red",
-];
+const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
 
 const FILL_GLYPH: Record<Required<Props>["fillDensity"], string> = {
     heavy: "▓",
     light: "░",
     medium: "▒",
 };
-
-type Point = { readonly x: number; readonly y: number };
-
-const toPoints = (data: LineSeries["data"]): ReadonlyArray<Point> => {
-    if (data.length === 0) {
-        return [];
-    }
-
-    const first = data[0];
-
-    if (typeof first === "number") {
-        return (data as ReadonlyArray<number>).map((y, x) => ({ x, y }));
-    }
-
-    return data as ReadonlyArray<Point>;
-};
-
-const colorFor = (series: LineSeries, index: number, palette: ReadonlyArray<LiteralUnion<AnsiColors, string>>): LiteralUnion<AnsiColors, string> =>
-    series.color ?? palette[index % palette.length] ?? "cyan";
 
 /**
  * Area chart: line chart with the area between the line and the baseline
@@ -117,7 +92,7 @@ export default function AreaChart({
 }: Props): ReactElement {
     const prepared = useMemo(() => {
         const list = series.map((input, index) => ({
-            color: colorFor(input, index, palette),
+            color: pickSeriesColor(input, index, palette),
             points: toPoints(input.data),
             series: input,
         }));
@@ -184,15 +159,15 @@ export default function AreaChart({
                         for (let cellX = 0; cellX < ctx.width; cellX += 1) {
                             // Find the data point that projects into this column.
                             // Linear scan is fine for reasonable point counts;
-                            // larger datasets should pre-resample.
+                            // larger datasets should pre-resample. One
+                            // projection per point — reuse px AND py.
                             let sampleY: number | undefined;
 
                             for (const point of points) {
-                                const { px } = projectPoint(point, config, pixelWidth, pixelHeight);
+                                const { px, py } = projectPoint(point, config, pixelWidth, pixelHeight);
                                 const candidateCellX = Math.floor(px / 2);
 
                                 if (candidateCellX === cellX) {
-                                    const { py } = projectPoint(point, config, pixelWidth, pixelHeight);
                                     const candidateCellY = Math.floor(py / 4);
 
                                     if (sampleY === undefined || candidateCellY < sampleY) {
@@ -244,7 +219,7 @@ export default function AreaChart({
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {series.map((input, index) => {
-                        const color = colorFor(input, index, palette);
+                        const color = pickSeriesColor(input, index, palette);
 
                         return (
                             <Box gap={1} key={input.label ?? index}>

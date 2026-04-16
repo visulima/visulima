@@ -8,6 +8,8 @@ import { createBrailleGrid } from "../canvas/braille";
 import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
+import type { Point } from "./chart-utils";
+import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import Text from "./text";
 
 export type LineSeries = {
@@ -75,30 +77,7 @@ export type LineChartProps = {
     readonly width?: number;
 };
 
-const DEFAULT_PALETTE: ReadonlyArray<LiteralUnion<AnsiColors, string>> = [
-    "cyan",
-    "magenta",
-    "yellow",
-    "green",
-    "blue",
-    "red",
-];
-
-type Point = { readonly x: number; readonly y: number };
-
-const toPoints = (data: LineSeries["data"]): ReadonlyArray<Point> => {
-    if (data.length === 0) {
-        return [];
-    }
-
-    const first = data[0];
-
-    if (typeof first === "number") {
-        return (data as ReadonlyArray<number>).map((y, x) => ({ x, y }));
-    }
-
-    return data as ReadonlyArray<Point>;
-};
+const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
 
 type Extent = { max: number; min: number };
 
@@ -115,9 +94,6 @@ const extendExtent = (extent: Extent, points: ReadonlyArray<Point>, axis: "x" | 
         }
     }
 };
-
-const pickColor = (series: LineSeries, index: number, palette: ReadonlyArray<LiteralUnion<AnsiColors, string>>): LiteralUnion<AnsiColors, string> =>
-    series.color ?? palette[index % palette.length] ?? "cyan";
 
 type RenderConfig = {
     readonly axisColor: LiteralUnion<AnsiColors, string>;
@@ -216,7 +192,7 @@ export default function LineChart({
 }: LineChartProps): ReactElement {
     const config = useMemo<RenderConfig>(() => {
         const seriesList = series.map((input, index) => ({
-            color: pickColor(input, index, palette),
+            color: pickSeriesColor(input, index, palette),
             points: toPoints(input.data),
             series: input,
         }));
@@ -253,7 +229,7 @@ export default function LineChart({
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {series.map((input, index) => {
-                        const color = pickColor(input, index, palette);
+                        const color = pickSeriesColor(input, index, palette);
 
                         return (
                             <Box gap={1} key={input.label ?? index}>

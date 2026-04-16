@@ -63,6 +63,9 @@ export type Props = {
 /**
  * Keyboard-navigable accordion. Use arrow keys to move between panels and
  * Enter / Space to toggle.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering the accordion column.
  */
 export default function Accordion({
     accentColor = "blue",

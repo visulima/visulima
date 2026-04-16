@@ -115,6 +115,9 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
 /**
  * Histogram built on top of BarChart. Bins the raw values (via explicit
  * thresholds or equal-width bins) and hands the counts off to BarChart.
+ *
+ * @param props - See {@link Props}.
+ * @returns A `ReactElement` rendering a BarChart of bucket counts.
  */
 export default function Histogram({
     bins = 10,
