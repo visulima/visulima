@@ -1,8 +1,47 @@
+import delay from "delay";
 import React from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MessageBubble, StreamingText, Text } from "../../src/ink/index";
+import {
+    ApprovalPrompt,
+    BlinkDot,
+    CommandBlock,
+    MessageBubble,
+    ModelBadge,
+    OperationTree,
+    ShimmerText,
+    StatusLine,
+    StreamingText,
+    Text,
+    render,
+} from "../../src/ink/index";
+import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
+import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
+
+let currentUnmount: (() => void) | undefined;
+
+const mount = (jsx: React.JSX.Element) => {
+    const stdout = createStdout();
+    const stdin = createStdin();
+    const { unmount } = render(jsx, { debug: true, stdin, stdout });
+
+    currentUnmount = unmount;
+
+    const getOutput = () => {
+        const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
+
+        return (calls.at(-1)?.[0] ?? "") as string;
+    };
+
+    return { getOutput, stdin };
+};
+
+afterEach(async () => {
+    currentUnmount?.();
+    currentUnmount = undefined;
+    await delay(10);
+});
 
 describe(MessageBubble, () => {
     it("should render body content", () => {
@@ -43,9 +82,7 @@ describe(StreamingText, () => {
 
         const output = renderToString(<StreamingText interval={10} text="Hello" />);
 
-        // On the first paint the streamed text has not been revealed yet
         expect(output).not.toContain("Hello");
-        // But the cursor should be visible
         expect(output).toContain("▊");
     });
 
@@ -55,5 +92,266 @@ describe(StreamingText, () => {
         const output = renderToString(<StreamingText cursor="█" interval={10} text="Hi" />);
 
         expect(output).toContain("█");
+    });
+});
+
+describe(OperationTree, () => {
+    it("should render nodes with their status icons", () => {
+        expect.assertions(3);
+
+        const output = renderToString(
+            <OperationTree
+                nodes={[
+                    { id: "1", label: "Reading auth.ts", status: "completed" },
+                    { id: "2", label: "Editing code", status: "running" },
+                    { id: "3", label: "Running tests", status: "pending" },
+                ]}
+                showSpinner={false}
+            />,
+        );
+
+        expect(output).toContain("Reading auth.ts");
+        expect(output).toContain("✔");
+        expect(output).toContain("○");
+    });
+
+    it("should render nested children with indentation", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <OperationTree
+                nodes={[
+                    {
+                        children: [
+                            { id: "1a", label: "Child A", status: "completed" },
+                            { id: "1b", label: "Child B", status: "completed" },
+                        ],
+                        id: "1",
+                        label: "Parent",
+                        status: "completed",
+                    },
+                ]}
+                showSpinner={false}
+            />,
+        );
+
+        expect(output).toContain("Child A");
+        expect(output).toContain("├─");
+    });
+
+    it("should render durations for nodes that provide them", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <OperationTree
+                nodes={[{ durationMs: 120, id: "1", label: "Fast", status: "completed" }]}
+                showSpinner={false}
+            />,
+        );
+
+        expect(output).toContain("120ms");
+    });
+});
+
+describe(ApprovalPrompt, () => {
+    it("should render tool, risk label, params and prompt", async () => {
+        expect.assertions(4);
+
+        const { getOutput } = mount(
+            <ApprovalPrompt
+                onDecision={vi.fn()}
+                params={{ path: "auth.ts" }}
+                risk="medium"
+                tool="writeFile"
+            />,
+        );
+
+        await delay(20);
+        const output = getOutput();
+
+        expect(output).toContain("writeFile");
+        expect(output).toContain("MEDIUM RISK");
+        expect(output).toContain("path=");
+        expect(output).toContain("Allow?");
+    });
+
+    it("should resolve to allow-once on y or Enter", async () => {
+        expect.assertions(1);
+
+        const onDecision = vi.fn();
+        const { stdin } = mount(
+            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
+        );
+
+        await delay(20);
+        emitReadable(stdin, "y");
+        await delay(40);
+
+        expect(onDecision).toHaveBeenCalledWith("allow-once");
+    });
+
+    it("should resolve to allow-always on a", async () => {
+        expect.assertions(1);
+
+        const onDecision = vi.fn();
+        const { stdin } = mount(
+            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
+        );
+
+        await delay(20);
+        emitReadable(stdin, "a");
+        await delay(40);
+
+        expect(onDecision).toHaveBeenCalledWith("allow-always");
+    });
+
+    it("should resolve to deny on n", async () => {
+        expect.assertions(1);
+
+        const onDecision = vi.fn();
+        const { stdin } = mount(
+            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
+        );
+
+        await delay(20);
+        emitReadable(stdin, "n");
+        await delay(40);
+
+        expect(onDecision).toHaveBeenCalledWith("deny");
+    });
+});
+
+describe(CommandBlock, () => {
+    it("should render the command in the header", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<CommandBlock command="git status" status="running" />);
+
+        expect(output).toContain("git status");
+    });
+
+    it("should render output with success marker", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <CommandBlock
+                command="echo hi"
+                exitCode={0}
+                output="hi"
+                status="success"
+            />,
+        );
+
+        expect(output).toContain("hi");
+        expect(output).toContain("✔");
+    });
+
+    it("should render exit code in red on error", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <CommandBlock command="false" exitCode={1} status="error" />,
+        );
+
+        expect(output).toContain("exit");
+        expect(output).toContain("1");
+    });
+
+    it("should truncate output beyond maxOutputRows", () => {
+        expect.assertions(1);
+
+        const lines = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join("\n");
+        const output = renderToString(
+            <CommandBlock command="seq 20" maxOutputRows={5} output={lines} status="success" />,
+        );
+
+        expect(output).toContain("more line");
+    });
+});
+
+describe(ShimmerText, () => {
+    it("should render the text content", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<ShimmerText interval={100} text="Generating" />);
+
+        expect(output).toContain("Generating");
+    });
+
+    it("should render nothing extra for empty text", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<ShimmerText text="" />);
+
+        expect(output).toBe("");
+    });
+});
+
+describe(ModelBadge, () => {
+    it("should render the model name", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<ModelBadge model="claude-opus-4" />);
+
+        expect(output).toContain("claude-opus-4");
+    });
+
+    it("should include the provider when given", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <ModelBadge model="claude-opus-4" provider="anthropic" />,
+        );
+
+        expect(output).toContain("anthropic");
+        expect(output).toContain("claude-opus-4");
+    });
+
+    it("should render outline variant with a border", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <ModelBadge model="claude-opus-4" variant="outline" />,
+        );
+
+        expect(output).toContain("claude-opus-4");
+        expect(output).toMatch(/[╭╮╯╰]/);
+    });
+});
+
+describe(BlinkDot, () => {
+    it("should render a dot character on first paint", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<BlinkDot />);
+
+        expect(output).toContain("●");
+    });
+
+    it("should respect a custom character", () => {
+        expect.assertions(1);
+
+        const output = renderToString(<BlinkDot character="◉" isActive={false} />);
+
+        expect(output).toContain("◉");
+    });
+});
+
+describe(StatusLine, () => {
+    it("should render left, center, and right slots", () => {
+        expect.assertions(3);
+
+        const output = renderToString(
+            <StatusLine
+                center="center-slot"
+                left="left-slot"
+                right="right-slot"
+            />,
+            { columns: 60 },
+        );
+
+        expect(output).toContain("left-slot");
+        expect(output).toContain("center-slot");
+        expect(output).toContain("right-slot");
     });
 });

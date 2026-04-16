@@ -14,11 +14,15 @@ export type { AccordionItem, Props as AccordionProps } from "./components/accord
 export { default as Accordion } from "./components/accordion";
 export type { Props as AlertProps, AlertVariant } from "./components/alert";
 export { default as Alert } from "./components/alert";
+export type { ApprovalDecision, ApprovalRisk, Props as ApprovalPromptProps } from "./components/approval-prompt";
+export { default as ApprovalPrompt } from "./components/approval-prompt";
 export type { Props as AppProps } from "./components/app-context";
 export type { Props as BadgeProps } from "./components/badge";
 export { default as Badge } from "./components/badge";
 export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/big-text";
 export { default as BigText } from "./components/big-text";
+export type { Props as BlinkDotProps } from "./components/blink-dot";
+export { default as BlinkDot } from "./components/blink-dot";
 export type { Props as BoxProps } from "./components/box";
 export { default as Box } from "./components/box";
 export type { BreadcrumbItem, Props as BreadcrumbProps } from "./components/breadcrumb";
@@ -33,6 +37,8 @@ export type { Props as CodeProps } from "./components/code";
 export { default as Code } from "./components/code";
 export type { Props as CollapsibleProps } from "./components/collapsible";
 export { default as Collapsible } from "./components/collapsible";
+export type { CommandStatus, Props as CommandBlockProps } from "./components/command-block";
+export { default as CommandBlock } from "./components/command-block";
 export type { Props as ConfirmInputProps } from "./components/confirm-input";
 export { default as ConfirmInput } from "./components/confirm-input";
 export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./components/console-overlay";
@@ -67,10 +73,14 @@ export type { Props as MaskedInputProps } from "./components/masked-input";
 export { default as MaskedInput } from "./components/masked-input";
 export type { MessageRole, Props as MessageBubbleProps } from "./components/message-bubble";
 export { default as MessageBubble } from "./components/message-bubble";
+export type { Props as ModelBadgeProps } from "./components/model-badge";
+export { default as ModelBadge } from "./components/model-badge";
 export type { MultiSelectOption, Props as MultiSelectProps } from "./components/multi-select";
 export { default as MultiSelect } from "./components/multi-select";
 export type { Props as NewlineProps } from "./components/newline";
 export { default as Newline } from "./components/newline";
+export type { OperationNode, OperationStatus, Props as OperationTreeProps } from "./components/operation-tree";
+export { default as OperationTree } from "./components/operation-tree";
 export type { OrderedListEntry, Props as OrderedListProps } from "./components/ordered-list";
 export { default as OrderedList } from "./components/ordered-list";
 export type { PageMeta, Props as PaginatorProps } from "./components/paginator";
@@ -97,6 +107,8 @@ export type {
 export { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "./components/scroll";
 export type { Props as SearchInputProps } from "./components/search-input";
 export { default as SearchInput } from "./components/search-input";
+export type { Props as ShimmerTextProps } from "./components/shimmer-text";
+export { default as ShimmerText } from "./components/shimmer-text";
 export type {
     SelectInputEntry,
     Item as SelectInputItemType,
@@ -119,6 +131,8 @@ export type { Props as StaticProps } from "./components/static";
 export { default as Static } from "./components/static";
 export type { Props as StaticRenderProps } from "./components/static-render";
 export { default as StaticRender } from "./components/static-render";
+export type { Props as StatusLineProps } from "./components/status-line";
+export { default as StatusLine } from "./components/status-line";
 export type { Props as StatusMessageProps, StatusMessageVariant } from "./components/status-message";
 export { default as StatusMessage } from "./components/status-message";
 export type { Props as StepperProps, StepperStep, StepStatus } from "./components/stepper";
