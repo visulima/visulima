@@ -1,0 +1,141 @@
+import { useCallback } from "react";
+
+import type { Key } from "./use-input";
+import useInput from "./use-input";
+
+export type HotkeyDescriptor = {
+    /**
+     * Whether Ctrl must be held.
+     */
+    readonly ctrl?: boolean;
+
+    /**
+     * Character(s) to match after modifiers, e.g. `"s"`, `"?"`, `"k"`.
+     * Ignored if `name` is set.
+     */
+    readonly input?: string;
+
+    /**
+     * Whether Meta must be held.
+     */
+    readonly meta?: boolean;
+
+    /**
+     * Named special key, e.g. `"escape"`, `"return"`, `"tab"`, `"upArrow"`.
+     */
+    readonly name?: keyof Key;
+
+    /**
+     * Whether Shift must be held.
+     */
+    readonly shift?: boolean;
+};
+
+export type UseHotkeyOptions = {
+    /**
+     * Disable the binding while keeping the component rendered.
+     * @default true
+     */
+    readonly isActive?: boolean;
+};
+
+const NAMED_KEYS = new Set<keyof Key>([
+    "backspace",
+    "delete",
+    "downArrow",
+    "end",
+    "escape",
+    "home",
+    "leftArrow",
+    "pageDown",
+    "pageUp",
+    "return",
+    "rightArrow",
+    "tab",
+    "upArrow",
+]);
+
+/**
+ * Parse a short string hotkey like `"ctrl+s"`, `"shift+tab"`, `"?"`, `"escape"`.
+ */
+const parseShortcut = (shortcut: string): HotkeyDescriptor => {
+    const parts = shortcut.split("+").map((part) => part.trim()).filter((part) => part.length > 0);
+    const descriptor: { ctrl?: boolean; input?: string; meta?: boolean; name?: keyof Key; shift?: boolean } = {};
+
+    for (const part of parts) {
+        const lower = part.toLowerCase();
+
+        if (lower === "ctrl" || lower === "control") {
+            descriptor.ctrl = true;
+        } else if (lower === "shift") {
+            descriptor.shift = true;
+        } else if (lower === "meta" || lower === "cmd" || lower === "alt") {
+            descriptor.meta = true;
+        } else if (NAMED_KEYS.has(lower as keyof Key)) {
+            descriptor.name = lower as keyof Key;
+        } else if (lower === "enter") {
+            descriptor.name = "return";
+        } else if (lower === "esc") {
+            descriptor.name = "escape";
+        } else if (lower === "up") {
+            descriptor.name = "upArrow";
+        } else if (lower === "down") {
+            descriptor.name = "downArrow";
+        } else if (lower === "left") {
+            descriptor.name = "leftArrow";
+        } else if (lower === "right") {
+            descriptor.name = "rightArrow";
+        } else {
+            descriptor.input = part;
+        }
+    }
+
+    return descriptor;
+};
+
+const matches = (descriptor: HotkeyDescriptor, input: string, key: Key): boolean => {
+    if (descriptor.ctrl !== undefined && descriptor.ctrl !== key.ctrl) {
+        return false;
+    }
+
+    if (descriptor.shift !== undefined && descriptor.shift !== key.shift) {
+        return false;
+    }
+
+    if (descriptor.meta !== undefined && descriptor.meta !== key.meta) {
+        return false;
+    }
+
+    if (descriptor.name !== undefined) {
+        return Boolean(key[descriptor.name]);
+    }
+
+    if (descriptor.input !== undefined) {
+        return input === descriptor.input;
+    }
+
+    return false;
+};
+
+/**
+ * Bind a keyboard shortcut to a callback. Accepts either a short string
+ * (`"ctrl+s"`, `"?"`, `"escape"`) or a structured descriptor.
+ */
+const useHotkey = (shortcut: HotkeyDescriptor | string, callback: () => void, options?: UseHotkeyOptions): void => {
+    const descriptor = typeof shortcut === "string" ? parseShortcut(shortcut) : shortcut;
+
+    useInput(
+        useCallback(
+            (input, key) => {
+                if (matches(descriptor, input, key)) {
+                    callback();
+                }
+            },
+            // eslint-disable-next-line react-hooks/exhaustive-deps -- descriptor is re-parsed per render; shortcut is the stable source of truth
+            [shortcut, callback],
+        ),
+        { isActive: options?.isActive ?? true },
+    );
+};
+
+export default useHotkey;

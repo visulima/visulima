@@ -228,11 +228,19 @@ export type {
     ValidationResult,
 } from "./hooks/use-form";
 export { default as useForm } from "./hooks/use-form";
+export type { HotkeyDescriptor, UseHotkeyOptions } from "./hooks/use-hotkey";
+export { default as useHotkey } from "./hooks/use-hotkey";
 export type { Key } from "./hooks/use-input";
 export { default as useInput } from "./hooks/use-input";
+export type { UseIntervalOptions } from "./hooks/use-interval";
+export { default as useInterval } from "./hooks/use-interval";
 export { default as useIsScreenReaderEnabled } from "./hooks/use-is-screen-reader-enabled";
+export type { KeyChordStep, UseKeyChordOptions } from "./hooks/use-key-chord";
+export { default as useKeyChord } from "./hooks/use-key-chord";
 export type { KeyBinding, KeyBindingHandler } from "./hooks/use-key-bindings";
 export { default as useKeyBindings } from "./hooks/use-key-bindings";
+export type { PersistentStorage, UsePersistentStateOptions } from "./hooks/use-persistent-state";
+export { createFileStorage, createMemoryStorage, default as usePersistentState } from "./hooks/use-persistent-state";
 export type { LinkedScrollGroup, UseLinkedScrollReturn } from "./hooks/use-linked-scroll";
 export { default as createLinkedScrollGroup } from "./hooks/use-linked-scroll";
 export { default as usePaste } from "./hooks/use-paste";
@@ -251,6 +259,8 @@ export type { CursorPosition as TextBufferCursorPosition, TextBufferState, UseTe
 export { default as useTextBuffer } from "./hooks/use-text-buffer";
 export type { UseTextSelectionOptions, UseTextSelectionResult } from "./hooks/use-text-selection";
 export { default as useTextSelection } from "./hooks/use-text-selection";
+export type { UseTimeoutOptions, UseTimeoutResult } from "./hooks/use-timeout";
+export { default as useTimeout } from "./hooks/use-timeout";
 export type { UseTimerOptions, UseTimerResult } from "./hooks/use-timer";
 export { default as useTimer } from "./hooks/use-timer";
 export type { WindowSize } from "./hooks/use-window-size";
