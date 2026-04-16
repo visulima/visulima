@@ -43,6 +43,35 @@ export interface ScanOptions {
     config?: {
         /** Layer the user's rules on top of the bundled gitleaks ruleset. Default: `true`. */
         extendBundled?: boolean;
+
+        /**
+         * Post-detection heuristic false-positive filters (detect-secrets
+         * parity). Every heuristic defaults to `true`; set the individual
+         * key to `false` to disable. The filters are intentionally
+         * conservative — they drop high-confidence placeholders only.
+         */
+        heuristics?: {
+            /**
+             * Skip findings in well-known lock files (yarn.lock, Cargo.lock,
+             * package-lock.json, Gemfile.lock, …). Basename-matched.
+             */
+            lockFile?: boolean;
+
+            /**
+             * Drop findings whose secret contains **no** alphanumeric
+             * characters (`*****`, `------`).
+             */
+            notAlphanumericString?: boolean;
+
+            /** Drop findings whose secret has UUID-8-4-4-4-12 shape. */
+            potentialUuid?: boolean;
+
+            /**
+             * Drop findings whose secret is a substring of a standard
+             * character sequence (`abcdefgh`, `12345678`, `AAAAAAAA`).
+             */
+            sequentialString?: boolean;
+        };
         /** Pre-parsed gitleaks-shaped object. Fastest path — zero file IO. */
         inline?: GitleaksConfig;
 
