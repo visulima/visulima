@@ -2,7 +2,6 @@
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import useAnimation from "../hooks/use-animation";
 import Box from "./box";
 import Text from "./text";
 
@@ -169,45 +168,68 @@ export default function Transition({
     const targetRef = useRef<0 | 1>(show ? 1 : 0);
     const startRef = useRef<number>(Date.now());
     const startProgressRef = useRef<number>(show ? 1 : 0);
+    const completedRef = useRef<boolean>(!show);
     const onExitRef = useRef(onExit);
 
     onExitRef.current = onExit;
 
-    // Restart animation whenever `show` flips.
+    // Restart animation whenever `show` flips. The `animationKey` state forces
+    // the interval-owning effect to re-fire without depending on `progress`.
+    const [animationKey, setAnimationKey] = useState<number>(0);
+
     useEffect(() => {
-        targetRef.current = show ? 1 : 0;
+        const target = show ? 1 : 0;
+
+        if (targetRef.current === target) {
+            return;
+        }
+
+        targetRef.current = target;
         startRef.current = Date.now();
         startProgressRef.current = progress;
+        completedRef.current = false;
+        setAnimationKey((previous) => previous + 1);
+        // `progress` is intentionally excluded — it would retrigger the
+        // animation on every tick. We snapshot it once when `show` flips.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show]);
 
-    const isAnimating = progress !== targetRef.current;
-
-    useAnimation({ interval: tickInterval, isActive: isAnimating });
-
+    // Single interval owner. Runs while the animation is in progress and
+    // tears itself down once we reach the target. Crucially does NOT depend
+    // on `progress`, so each tick's setState does not rebuild the timer.
     useEffect(() => {
-        if (!isAnimating) {
-            if (progress <= 0 && targetRef.current === 0) {
+        const target = targetRef.current;
+
+        if (startProgressRef.current === target) {
+            if (target === 0 && !completedRef.current) {
+                completedRef.current = true;
                 onExitRef.current?.();
             }
 
             return undefined;
         }
 
-        const tick = () => {
+        const id = setInterval(() => {
             const elapsed = Date.now() - startRef.current;
             const ratio = duration <= 0 ? 1 : Math.min(1, elapsed / duration);
-            const next = startProgressRef.current + (targetRef.current - startProgressRef.current) * ratio;
+            const next = startProgressRef.current + (target - startProgressRef.current) * ratio;
 
             setProgress(next);
-        };
 
-        const id = setInterval(tick, tickInterval);
+            if (ratio >= 1) {
+                clearInterval(id);
+
+                if (target === 0 && !completedRef.current) {
+                    completedRef.current = true;
+                    onExitRef.current?.();
+                }
+            }
+        }, tickInterval);
 
         return () => {
             clearInterval(id);
         };
-    }, [isAnimating, duration, tickInterval, progress]);
+    }, [animationKey, duration, tickInterval]);
 
     const phase = resolvePhase(show, progress);
 

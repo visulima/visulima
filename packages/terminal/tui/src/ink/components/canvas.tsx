@@ -36,8 +36,8 @@ export type Props = {
 };
 
 type RowCache = {
-    readonly lines: Array<string>;
-    readonly version: unknown;
+    lines: Array<string>;
+    hasRendered: boolean;
 };
 
 /**
@@ -56,7 +56,7 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
     // Reallocate the buffer whenever dimensions change.
     if (!bufferRef.current || bufferRef.current.width !== width || bufferRef.current.height !== height) {
         bufferRef.current = createCanvasBuffer(width, height);
-        rowCacheRef.current = { lines: Array.from({ length: height }, () => ""), version: undefined };
+        rowCacheRef.current = { hasRendered: false, lines: Array.from({ length: height }, () => "") };
     }
 
     const buffer = bufferRef.current;
@@ -65,20 +65,20 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
     const rows = useMemo(() => {
         draw(buffer.context);
 
-        const output = cache.lines;
-
         for (let row = 0; row < buffer.height; row += 1) {
-            if (buffer.dirty[row] === 0 && cache.version !== undefined) {
+            if (cache.hasRendered && buffer.dirty[row] === 0) {
                 continue;
             }
 
-            output[row] = serializeRow(buffer, row);
+            cache.lines[row] = serializeRow(buffer, row);
             buffer.dirty[row] = 0;
         }
 
-        cache.lines = output;
+        cache.hasRendered = true;
 
-        return output.slice();
+        // Return a new array identity so React sees a fresh reference; the
+        // inner strings remain referentially stable for unchanged rows.
+        return cache.lines.slice();
         // eslint-disable-next-line react-hooks/exhaustive-deps -- version is the invalidation key; buffer dimensions trigger reallocation above
     }, [version, width, height]);
 

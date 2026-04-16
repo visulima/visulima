@@ -1,0 +1,101 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/**
+ * ai-widgets.tsx — OperationTree, MessageBubble, StreamingText, ApprovalPrompt,
+ * CommandBlock, ShimmerText, ModelBadge, BlinkDot, StatusLine
+ *
+ * Controls:
+ *   y / a / n   respond to the approval prompt
+ *   Esc         quit
+ *
+ * Run: node --import @oxc-node/core/register examples/ai-widgets.tsx
+ */
+import {
+    ApprovalPrompt,
+    BlinkDot,
+    Box,
+    CommandBlock,
+    MessageBubble,
+    ModelBadge,
+    OperationTree,
+    render,
+    ShimmerText,
+    StatusLine,
+    StreamingText,
+    Text,
+    useApp,
+    useInput,
+} from "@visulima/tui";
+import React, { useState } from "react";
+
+const App = () => {
+    const { exit } = useApp();
+    const [decision, setDecision] = useState<string | undefined>();
+
+    useInput((_input, key) => {
+        if (key.escape) {
+            exit();
+        }
+    });
+
+    return (
+        <Box flexDirection="column" gap={1} padding={1}>
+            <Box gap={2}>
+                <BlinkDot />
+                <Text bold>AI agent demo</Text>
+                <ModelBadge icon="◈" model="claude-opus-4" provider="anthropic" />
+            </Box>
+            <MessageBubble label="Claude" meta="12:34" role="assistant">
+                <StreamingText text="I'll refactor your auth handler now." />
+            </MessageBubble>
+            <OperationTree
+                nodes={[
+                    {
+                        children: [
+                            { durationMs: 42, id: "1a", label: "Reading src/auth.ts", status: "completed" },
+                            { durationMs: 120, id: "1b", label: "Reading src/session.ts", status: "completed" },
+                        ],
+                        id: "1",
+                        label: "Inspecting codebase",
+                        status: "completed",
+                    },
+                    {
+                        details: "applying 3 edits…",
+                        id: "2",
+                        label: "Refactoring auth handler",
+                        status: "running",
+                    },
+                    { id: "3", label: "Run tests", status: "pending" },
+                ]}
+            />
+            <CommandBlock
+                command="pnpm test"
+                exitCode={0}
+                output={"PASS  auth.test.ts\n  ✓ validates token (14ms)\n  ✓ rejects expired (8ms)"}
+                status="success"
+            />
+            <ShimmerText text="Generating response…" />
+            {decision === undefined ? (
+                <ApprovalPrompt
+                    description="Claude wants to modify auth.ts"
+                    onDecision={setDecision}
+                    params={{ diff: "+ 12 / - 3", path: "src/auth.ts" }}
+                    risk="medium"
+                    tool="writeFile"
+                />
+            ) : (
+                <Text color="green">
+                    decision:
+                    {" "}
+                    {decision}
+                </Text>
+            )}
+            <StatusLine
+                center={<Text dimColor>Esc to quit</Text>}
+                left={<Text>tokens: 1.2k / 200k</Text>}
+                right={<Text dimColor>cost: $0.003</Text>}
+            />
+        </Box>
+    );
+};
+
+render(<App />);

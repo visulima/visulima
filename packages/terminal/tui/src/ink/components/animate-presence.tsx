@@ -90,16 +90,27 @@ export default function AnimatePresence({ children }: Props): ReactElement {
         setSlots((previous) => {
             const next: Slot[] = [];
             const seen = new Set<string>();
+            let changed = false;
 
             for (const slot of previous) {
                 if (incoming.has(slot.key)) {
+                    const nextElement = incoming.get(slot.key)!;
+
+                    if (!slot.show || slot.element !== nextElement) {
+                        changed = true;
+                    }
+
                     next.push({
-                        element: incoming.get(slot.key)!,
+                        element: nextElement,
                         key: slot.key,
                         show: true,
                     });
                     seen.add(slot.key);
                 } else {
+                    if (slot.show) {
+                        changed = true;
+                    }
+
                     // Removed in the incoming render; keep rendering with show=false.
                     next.push({ ...slot, show: false });
                 }
@@ -107,11 +118,16 @@ export default function AnimatePresence({ children }: Props): ReactElement {
 
             for (const [key, element] of incoming) {
                 if (!seen.has(key)) {
+                    changed = true;
                     next.push({ element, key, show: true });
                 }
             }
 
-            return next;
+            // React bails out of the update if we return the same reference,
+            // preventing an infinite effect/setState loop when `children` gets
+            // a fresh JSX identity each parent render but is functionally
+            // unchanged.
+            return changed ? next : previous;
         });
     }, [children]);
 
