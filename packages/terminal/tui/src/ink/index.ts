@@ -23,6 +23,8 @@ export type { Props as BadgeProps } from "./components/badge";
 export { default as Badge } from "./components/badge";
 export type { BarDatum, Props as BarChartProps } from "./components/bar-chart";
 export { default as BarChart } from "./components/bar-chart";
+export type { Props as AreaChartProps } from "./components/area-chart";
+export { default as AreaChart } from "./components/area-chart";
 export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/big-text";
 export { default as BigText } from "./components/big-text";
 export type { Props as BlinkDotProps } from "./components/blink-dot";
@@ -77,10 +79,16 @@ export type { GradientColors, GradientName, Props as GradientProps } from "./com
 export { default as Gradient } from "./components/gradient";
 export type { HeadingLevel, Props as HeadingProps } from "./components/heading";
 export { default as Heading } from "./components/heading";
+export type { HeatmapProps } from "./components/heatmap";
+export { default as Heatmap } from "./components/heatmap";
+export type { Props as HistogramProps } from "./components/histogram";
+export { default as Histogram } from "./components/histogram";
 export type { Props as HelpProps } from "./components/help";
 export { default as Help } from "./components/help";
 export type { Props as KbdProps } from "./components/kbd";
 export { default as Kbd } from "./components/kbd";
+export type { LineChartProps, LineSeries } from "./components/line-chart";
+export { default as LineChart } from "./components/line-chart";
 export type { Props as LinkProps } from "./components/link";
 export { default as Link } from "./components/link";
 export type { Props as LoadingIndicatorProps } from "./components/loading-indicator";
@@ -129,6 +137,8 @@ export type {
     ScrollViewRef,
 } from "./components/scroll";
 export { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "./components/scroll";
+export type { Props as ScatterPlotProps } from "./components/scatter-plot";
+export { default as ScatterPlot } from "./components/scatter-plot";
 export type { Props as SearchInputProps } from "./components/search-input";
 export { default as SearchInput } from "./components/search-input";
 export type { Props as ShimmerTextProps } from "./components/shimmer-text";
