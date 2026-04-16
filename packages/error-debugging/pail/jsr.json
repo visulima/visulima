@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "3.2.2",
+    "version": "4.0.0-alpha.10",
     "exports": {
         ".": "./src/index.server.ts",
         "./browser": "./src/index.browser.ts",
@@ -9,6 +9,9 @@
         "./processor/message-formatter": "./src/processor/message-formatter-processor.ts",
         "./processor/caller": "./src/processor/caller/caller-processor.ts",
         "./processor/opentelemetry": "./src/processor/opentelemetry-processor.ts",
+        "./processor/sampling": "./src/processor/sampling-processor.ts",
+        "./processor/environment": "./src/processor/environment-processor.ts",
+        "./error": "./src/error.ts",
         "./reporter/file": "./src/reporter/file/json-file-reporter.ts",
         "./server/reporter/json": "./src/reporter/json/index.ts",
         "./browser/reporter/json": "./src/reporter/json/index.browser.ts",
@@ -19,9 +22,13 @@
         "./reporter/simple": "./src/reporter/simple/simple-reporter.server.ts",
         "./reporter/abstract-http": "./src/reporter/http/abstract-http-reporter.ts",
         "./reporter/http": "./src/reporter/http/http-reporter.ts",
-        "./progress-bar": "./src/progress-bar.ts",
-        "./spinner": "./src/spinner.ts",
-        "./interactive": "./src/interactive/index.ts",
-        "./object-tree": "./src/object-tree.ts"
+        "./object-tree": "./src/object-tree.ts",
+        "./wide-event": "./src/wide-event.ts",
+        "./middleware/express": "./src/middleware/express.ts",
+        "./middleware/fastify": "./src/middleware/fastify.ts",
+        "./middleware/hono": "./src/middleware/hono.ts",
+        "./middleware/elysia": "./src/middleware/elysia.ts",
+        "./middleware/sveltekit": "./src/middleware/sveltekit.ts",
+        "./middleware/next": "./src/middleware/next/handler.ts"
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@visulima/health-check",
-    "version": "3.0.5",
+    "version": "4.0.0-alpha.8",
     "exports": {
         ".": "./src/index.ts"
     }
