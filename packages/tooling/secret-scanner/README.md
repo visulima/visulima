@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI</h3>
+<h3 align="center">Native secret &amp; credential scanner for Node.js — 1,058 rules, live validation, gitleaks-compatible</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -34,17 +34,40 @@
 
 ---
 
-Fast secret and credential scanner for Node.js — a Rust port of the [gitleaks](https://github.com/gitleaks/gitleaks) detection engine, exposed through NAPI.
+Production-grade secret and credential scanner for Node.js. Written in Rust, delivered as a NAPI module, and shipped with **1,058 bundled rules** — the union of [gitleaks](https://github.com/gitleaks/gitleaks)' default ruleset (MIT, 222 rules), MongoDB [Kingfisher](https://github.com/mongodb/kingfisher) (Apache-2.0, 825 rules), and 11 opt-in Visulima detectors. Plug it into pre-commit hooks, CI gates, editor extensions, or library code without shelling out to a Go binary.
 
-- Bundles the default gitleaks ruleset (222 rules, MIT) plus 825 rules from MongoDB Kingfisher (Apache-2.0)
-- Opt-in rule groups tagged `preset:<name>` — ships `weak-passwords` (low-entropy credentials) and `password-manager` (committed vault exports) disabled by default, enable via `rules.include: ["tag:preset:<name>"]`
-- PCRE-compatible `fancy-regex` engine + Aho–Corasick keyword prefilter
-- Parallel file scanning via `rayon`, memory-mapped zero-copy reads for large files
-- Respects `.gitignore` / `.ignore` out of the box; extra gitignore-syntax filters via `walk.excludePatterns` / `walk.excludeFromFiles`
-- Deterministic output order across runs
-- Baseline JSON (fingerprint suppression), inline (`gitleaks:allow`) and block (`gitleaks:allow-start` / `gitleaks:allow-end`) suppression
-- Also accepts `secret-scanner:allow` / `-start` / `-end` markers
-- JSON config at runtime (gitleaks-compatible shape). Author rules in TOML, convert once at build time.
+### Detection
+
+- **1,058 rules** covering 350+ providers — gitleaks compatibility for established detectors, Kingfisher for breadth, Visulima opt-ins (`preset:weak-passwords`, `preset:password-manager`) for niches the upstreams don't cover.
+- **Confidence floors** — drop low/medium-confidence rules with `config.minConfidence`. Rules without a declared confidence resolve to `"low"` so the floor behaves as expected in CI.
+- **Pattern requirements & stopword filters** — Kingfisher-style `minLength`, `minDigits`, and `ignoreIfContains` reject documentation placeholders (`EXAMPLE`, `YOUR_KEY_HERE`) before entropy is even computed.
+- **Rule priority + dedup** — overlapping matches collapse to the most specific rule; the rest are surfaced on `Finding.alternateMatches`.
+- **Source provenance** — every finding carries `source: "gitleaks" | "kingfisher" | "visulima" | <user>` so reporters and baselines can route appropriately.
+
+### Live validation (opt-in)
+
+- **HTTP validators** for ~493 Kingfisher rules — `StatusMatch`, `WordMatch`, `JsonValid`, and `HeaderMatch` matchers run against the provider's API. Liquid-lite templating (`{{ TOKEN }}`, filters `downcase`/`upcase`/`b64enc`/`b64dec`) builds the request.
+- **Cross-rule chaining** — `dependsOnRule` pairs related secrets (AWS AKID + secret, OAuth id + secret, 106 rules total) before validation.
+- **Offline checks** — JWT formal-validity and CRC32 checksum filters short-circuit before the network is touched.
+- **Per-host rate limiting** under a global concurrency cap; `Retry-After` honoured on 429 / 503.
+- `config.onlyVerified: true` filters to provider-confirmed leaks for hard CI gating.
+
+### Performance
+
+- **PCRE-capable `fancy-regex`** for lookarounds; falls back to byte-level `regex` when a pattern doesn't need them.
+- **Aho-Corasick keyword prefilter** + `regex::bytes::RegexSet` shortlists candidate rules in a single DFA pass.
+- **Per-rule lookback windows** (±4 KiB around each keyword hit) keep `captures_iter` off the rest of the file.
+- **`rayon` parallel scanning**, memory-mapped zero-copy reads above 1 MiB.
+- ~11 ms per 550 KB file with the full ruleset active. Compiled rulesets cached in-process.
+
+### Workflow
+
+- **Respects `.gitignore` / `.ignore`** out of the box; layer extra gitignore-syntax filters via `walk.excludePatterns` / `walk.excludeFromFiles`.
+- **Baseline JSON** with content-hash fingerprints (SHA-256 over `secret + ruleId + file`, truncated to 16 hex) — survives line shifts. Legacy `file:rule:line` baselines still suppress on read.
+- **Inline + block suppression** — `gitleaks:allow`, `gitleaks:allow-start` / `-end`, and the equivalent `secret-scanner:` markers.
+- **Deterministic output** — stable sort on file + line + column + rule id.
+- **Codepoint-based column math** for editor / LSP consumers.
+- **gitleaks-compatible JSON config** at runtime. Author rules in TOML if you prefer; convert once at build time. No TOML parser in the runtime dep graph.
 
 ## Install
 
@@ -109,7 +132,7 @@ const highOnly = await scan([process.cwd()], { config: { minConfidence: "high" }
 //    WARNING: sends candidate secrets to the provider — only enable on owned repos.
 const verified = await scan([process.cwd()], { config: { validate: true, onlyVerified: true } });
 
-// 7) Content-hash fingerprint — stable across line shifts in the source file.
+// 9) Content-hash fingerprint — stable across line shifts in the source file.
 //    Hashes `(secret, ruleId, file)`, so edits that move a secret up or down
 //    don't invalidate the baseline entry. Legacy line-based baselines
 //    (`file:ruleID:startLine`) are still accepted on read.
@@ -118,38 +141,16 @@ for (const f of findings) console.log(fingerprint(f));
 
 ### Ruleset
 
-A single bundled ruleset ships: **1,058 rules** — the union of upstream
-gitleaks (MIT, 222 rules), MongoDB Kingfisher (Apache-2.0, 825 rules), and
-11 opt-in preset rules tagged `preset:weak-passwords` and
-`preset:password-manager` (`defaultEnabled: false` — enable via
-`rules.enable: ["tag:preset:<name>"]`). The native detector layers a
-`regex::bytes::RegexSet` prefilter + compiled-ruleset cache on top of the
-aho-corasick keyword filter, so scan cost stays in the low single-digit
-milliseconds per file.
+| Source                 | Rules     | License    | Default state                                                            |
+| ---------------------- | --------- | ---------- | ------------------------------------------------------------------------ |
+| gitleaks               | 222       | MIT        | enabled                                                                  |
+| MongoDB Kingfisher     | 825       | Apache-2.0 | enabled                                                                  |
+| Visulima preset bundle | 11        | MIT        | **disabled** — enable with `rules.enable: ["tag:preset:<name>"]`         |
+| **Total**              | **1,058** |            | 1,047 active by default                                                  |
 
-Kingfisher rules carry two extra hooks:
+The Kingfisher import is regenerated from the pinned upstream commit in `scripts/kingfisher.ref` via `pnpm run build:rules`. Eleven Kingfisher rules with `pattern_requirements.checksum:` are skipped during import (their loose patterns aren't meaningful without CRC verification — see `data/kingfisher.skipped.log`); their `dependsOnRule` metadata is preserved everywhere else for future multi-token chaining.
 
-- `patternRequirements` — `minDigits`, `minLength`, and a case-insensitive `ignoreIfContains`
-  list that drops documentation placeholders (`EXAMPLE`, `TEST`, `YOUR_KEY_HERE`).
-- `confidence` — `"low" | "medium" | "high"`. Filter at load time with
-  `config.minConfidence` / `--min-confidence`.
-
-`Finding.source`, `Finding.confidence`, and `Finding.alternateMatches` are populated on
-every emitted finding so reporters and baselines can distinguish between overlapping rules.
-
-Kingfisher's `validation:` blocks are consumed by the opt-in HTTP validator
-(`config.validate: true` / `--validate`). The validator handles `type: Http`
-rules with `StatusMatch` or `WordMatch` response matchers — ~493 of the 510
-validation-carrying rules qualify. Other types (`AWS`, `GCP`, `MongoDB`,
-`Postgres`, `Jdbc`, `JWT`, `Grpc`, `Raw`, and the few JSON / XML / Header
-matchers) populate `finding.validation = "skipped"`. Templates support `{{ TOKEN }}`
-plus the filters `downcase`, `upcase`, `b64enc`, `b64dec` — enough to construct
-the HTTP request that every StatusMatch/WordMatch-based rule needs.
-`depends_on_rule:` blocks are preserved on every rule for future multi-token
-validation. Rules with `pattern_requirements.checksum:` (11 upstream) are still
-skipped during import — those need crc verification before their loose pattern
-is meaningful. See `data/kingfisher.skipped.log`. The upstream reference is
-pinned in `scripts/kingfisher.ref`; regenerate with `pnpm run build:rules`.
+The opt-in HTTP validator handles 493 of Kingfisher's 510 validation-carrying rules. Native validators (`AWS`, `GCP`, `MongoDB`, `Postgres`, `Jdbc`, `Grpc`, `Raw`) and a handful of JSON / XML matchers populate `finding.validation = "skipped"` — they belong in plugin packages rather than the core, since each adds a provider SDK for ≤2 rules.
 
 ### Suppression
 
@@ -280,8 +281,9 @@ The test is skipped in normal `pnpm test` runs unless `SECRET_SCANNER_PARITY=1` 
 ## Related
 
 - [`@visulima/vis`](https://visulima.com/packages/vis) — ships `vis secrets`, a friendly CLI built on top of this package, plus `vis migrate gitleaks` / `vis migrate secretlint` migrations.
-- [gitleaks](https://github.com/gitleaks/gitleaks) — upstream detection engine we vendor the ruleset from.
-- [secretlint](https://github.com/secretlint/secretlint) — plugin-based alternative we can migrate users away from.
+- [gitleaks](https://github.com/gitleaks/gitleaks) — upstream rule source #1; we vendor the default ruleset and stay config-compatible.
+- [MongoDB Kingfisher](https://github.com/mongodb/kingfisher) — upstream rule source #2; we import the catalog plus the validator metadata.
+- [secretlint](https://github.com/secretlint/secretlint) — plugin-based alternative; `vis migrate secretlint` ports configs over.
 
 ## Supported Node.js Versions
 
@@ -298,7 +300,8 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
-- The [gitleaks](https://github.com/gitleaks/gitleaks) project (MIT, © 2019 Zachary Rice) — we vendor the default ruleset. See [`LICENSE-GITLEAKS.md`](./LICENSE-GITLEAKS.md).
+- The [gitleaks](https://github.com/gitleaks/gitleaks) project (MIT, © 2019 Zachary Rice) — we vendor the default ruleset. See [`data/LICENSE-GITLEAKS`](./data/LICENSE-GITLEAKS).
+- The [MongoDB Kingfisher](https://github.com/mongodb/kingfisher) project (Apache-2.0, © MongoDB, Inc.) — we import the rule catalog and validator metadata. See [`data/LICENSE-KINGFISHER`](./data/LICENSE-KINGFISHER) and [`data/NOTICE-KINGFISHER`](./data/NOTICE-KINGFISHER).
 
 ## Made with ❤️ at Anolilab
 
