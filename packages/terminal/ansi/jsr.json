@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ansi",
-    "version": "3.0.5",
+    "version": "4.0.0-alpha.9",
     "exports": {
         ".": "./src/index.ts",
         "./alternative-screen": "./src/alternative-screen.ts",

@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error-handler",
-    "version": "1.0.13",
+    "version": "2.0.0-alpha.11",
     "exports": {
         ".": "./src/index.ts",
         "./handler/cli": "./src/handler/cli-handler.ts",
