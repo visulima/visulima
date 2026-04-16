@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Native secret &amp; credential scanner for Node.js — 1,058 rules, live validation, gitleaks-compatible</h3>
+<h3 align="center">Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
