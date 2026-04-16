@@ -10,13 +10,13 @@ describe(buildCodeownersLines, () => {
 
         const workspace: WorkspaceConfiguration = {
             projects: {
-                "pkg-b": {
-                    owners: [{ owners: ["@team-b"], path: "src/**" }],
-                    root: "packages/pkg-b",
-                } as VisProjectConfiguration,
                 "pkg-a": {
                     owners: [{ owners: ["@team-a"], path: "src/**" }],
                     root: "packages/pkg-a",
+                } as VisProjectConfiguration,
+                "pkg-b": {
+                    owners: [{ owners: ["@team-b"], path: "src/**" }],
+                    root: "packages/pkg-b",
                 } as VisProjectConfiguration,
             },
         };
@@ -35,16 +35,16 @@ describe(buildCodeownersLines, () => {
 
         const workspace: WorkspaceConfiguration = {
             projects: {
-                "z-project": {
-                    owners: [{ owners: ["@z-team"], path: "lib/**" }],
-                    root: "packages/z-project",
-                } as VisProjectConfiguration,
                 "a-project": {
                     owners: [
                         { owners: ["@a-team"], path: "tests/**" },
                         { owners: ["@a-team"], path: "src/**" },
                     ],
                     root: "packages/a-project",
+                } as VisProjectConfiguration,
+                "z-project": {
+                    owners: [{ owners: ["@z-team"], path: "lib/**" }],
+                    root: "packages/z-project",
                 } as VisProjectConfiguration,
             },
         };

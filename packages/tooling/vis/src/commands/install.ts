@@ -9,7 +9,6 @@ import { scanDepsForTyposquats } from "../typosquats";
 import { toStringArray } from "../utils";
 
 const install: Command = {
-    group: "Dependencies",
     alias: "i",
     description: "Install dependencies using the detected package manager",
     examples: [
@@ -80,6 +79,7 @@ const install: Command = {
             process.exitCode = code;
         }
     },
+    group: "Dependencies",
     name: "install",
     options: [
         { alias: "P", defaultValue: false, description: "Skip devDependencies", name: "prod", type: Boolean },

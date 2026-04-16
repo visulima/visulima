@@ -18,6 +18,10 @@ export default createConfig(
             "examples",
             "index.js",
             "scripts",
+            // Exclude markdown files — the markdown plugin extracts fenced code
+            // blocks into virtual `<file>.md/<n>_<m>.ts` paths that aren't in
+            // tsconfig.eslint.json, which turns every snippet into a parse error.
+            "**/*.md",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",
@@ -31,7 +35,6 @@ export default createConfig(
             // Extra parens are sometimes needed for clarity
             "@stylistic/no-extra-parens": "off",
             "@stylistic/quotes": "off",
-            "antfu/if-newline": "off",
             // Explicit member accessibility not required for internal CLI code
             "@typescript-eslint/explicit-member-accessibility": "off",
             // Explicit module boundary types not required
@@ -70,6 +73,7 @@ export default createConfig(
             "@typescript-eslint/restrict-plus-operands": "off",
             // Template expressions use dynamic values throughout CLI output
             "@typescript-eslint/restrict-template-expressions": "off",
+            "antfu/if-newline": "off",
             // class-methods-use-this
             "class-methods-use-this": "off",
             // Default case not required in CLI switch statements
@@ -114,8 +118,15 @@ export default createConfig(
             "no-plusplus": "off",
             // Secrets detection false positives in CLI code
             "no-secrets/no-secrets": "off",
+            // CLI help strings and SBOM hex fixtures legitimately contain `${…}`-shaped
+            // literals (shell templates, placeholder tokens, example purls). They're
+            // not template-literal mistakes.
+            "no-template-curly-in-string": "off",
             // Underscore-prefixed variables used for unused params
             "no-underscore-dangle": "off",
+            // Dead assignments are handled by TS; false-positive prone in CLI patterns
+            // where we assign for the side-effect of capturing the discriminant.
+            "no-useless-assignment": "off",
             // No useless concat
             "no-useless-concat": "off",
             // No void
@@ -147,6 +158,11 @@ export default createConfig(
             "sonarjs/no-dead-store": "off",
             // Empty collection
             "sonarjs/no-empty-collection": "off",
+            // Duplicate helpers across commands are deliberate: each CLI command
+            // owns its own copy so refactors don't ripple unexpectedly.
+            "sonarjs/no-identical-functions": "off",
+            // Reverse/sort in place is idiomatic CLI code.
+            "sonarjs/no-misleading-array-reverse": "off",
             // Nested conditionals are acceptable in command handlers
             "sonarjs/no-nested-conditional": "off",
             // OS command from path is expected in CLI tool
@@ -163,6 +179,8 @@ export default createConfig(
             "sonarjs/prefer-single-boolean-return": "off",
             // Pseudo random is acceptable in CLI
             "sonarjs/pseudo-random": "off",
+            // tmpdir() paths in CLI code are fine — we don't run as root.
+            "sonarjs/publicly-writable-directories": "off",
             // Slow regex patterns are acceptable in CLI (not hot-path)
             "sonarjs/slow-regex": "off",
             // Void use
@@ -211,6 +229,12 @@ export default createConfig(
         rules: {
             "react-hooks/exhaustive-deps": "off",
             "react-perf/jsx-no-new-function-as-prop": "off",
+            // Inline `{…}` props are common in TUI layouts where re-creating the
+            // object per render is cheap relative to other work.
+            "react-perf/jsx-no-new-object-as-prop": "off",
+            // Vis TUI components aren't hot-reloaded — Fast-Refresh constraints
+            // don't apply.
+            "react-refresh/only-export-components": "off",
             "react-x/no-array-index-key": "off",
             "react-x/set-state-in-effect": "off",
             "react-you-might-not-need-an-effect/no-adjust-state-on-prop-change": "off",
@@ -225,6 +249,14 @@ export default createConfig(
         files: ["scripts/**/*.ts"],
         rules: {
             "import/no-extraneous-dependencies": "off",
+        },
+    },
+    {
+        // JSON schemas / fixtures carry high-entropy SBOM sample hashes
+        // (`gitoid:blob:sha256:…`) and identifier strings. They're not secrets.
+        files: ["**/*.json"],
+        rules: {
+            "no-secrets/no-secrets": "off",
         },
     },
 );

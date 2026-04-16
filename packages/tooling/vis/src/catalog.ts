@@ -28,7 +28,7 @@ const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
 const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
-const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "resolutions", "pnpm.overrides"]);
+const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "pnpm.overrides", "resolutions"]);
 
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
@@ -621,13 +621,13 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
 
         return !!(
-            pkg.dependencies ||
-            pkg.devDependencies ||
-            pkg.peerDependencies ||
-            pkg.optionalDependencies ||
-            pkg.overrides ||
-            pkg.resolutions ||
-            getNestedField(pkg, "pnpm.overrides")
+            pkg.dependencies
+            || pkg.devDependencies
+            || pkg.peerDependencies
+            || pkg.optionalDependencies
+            || pkg.overrides
+            || pkg.resolutions
+            || getNestedField(pkg, "pnpm.overrides")
         );
     } catch {
         return false;
@@ -1025,7 +1025,19 @@ const resolvePackageTarget = (packageName: string, globalTarget: UpdateTarget, p
         return globalTarget;
     }
 
+    // Exact matches beat regex / glob patterns so users can override a broad
+    // rule for one specific package without worrying about entry ordering.
+    const exact = packageMode[packageName];
+
+    if (exact !== undefined) {
+        return exact;
+    }
+
     for (const [pattern, target] of Object.entries(packageMode)) {
+        if (pattern === packageName) {
+            continue;
+        }
+
         if (pattern.startsWith("/") && pattern.endsWith("/")) {
             let regex = packageModeRegexCache.get(pattern);
 
@@ -1037,7 +1049,7 @@ const resolvePackageTarget = (packageName: string, globalTarget: UpdateTarget, p
             if (regex.test(packageName)) {
                 return target;
             }
-        } else if (pattern === packageName || matchesPattern(packageName, pattern)) {
+        } else if (matchesPattern(packageName, pattern)) {
             return target;
         }
     }
@@ -1086,7 +1098,7 @@ const filterCandidates = (
     constraint?: (parsed: ParsedVersion) => boolean,
 ): string | undefined => {
     const best = versions
-        .map((v) => ({ parsed: parseVersion(v), raw: v }))
+        .map((v) => { return { parsed: parseVersion(v), raw: v }; })
         .filter((v): v is { parsed: ParsedVersion; raw: string } => {
             if (!v.parsed) {
                 return false;
@@ -1151,8 +1163,8 @@ const findTargetVersion = (
     }
 
     // For minor/patch, find highest constrained version
-    const constraint =
-        target === "patch"
+    const constraint
+        = target === "patch"
             ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
             : (p: ParsedVersion): boolean => p.major === current.major;
 

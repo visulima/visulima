@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -18,7 +18,7 @@ describe("devcontainer-io", () => {
         rmSync(tempDir, { force: true, recursive: true });
     });
 
-    describe("readDevcontainerJson", () => {
+    describe(readDevcontainerJson, () => {
         it("should return null when file does not exist", () => {
             expect.assertions(1);
 
@@ -79,7 +79,7 @@ describe("devcontainer-io", () => {
         });
     });
 
-    describe("writeDevcontainerJson", () => {
+    describe(writeDevcontainerJson, () => {
         it("should create .devcontainer directory and write file", () => {
             expect.assertions(2);
 

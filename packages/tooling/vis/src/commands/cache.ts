@@ -35,10 +35,8 @@ const sumDirectorySize = async (directory: string): Promise<number> => {
             const full = join(directory, entry.name);
 
             if (entry.isDirectory()) {
-                // eslint-disable-next-line no-await-in-loop
                 total += await sumDirectorySize(full);
             } else if (entry.isFile()) {
-                // eslint-disable-next-line no-await-in-loop
                 const s = await stat(full);
 
                 total += s.size;
@@ -54,10 +52,9 @@ const sumDirectorySize = async (directory: string): Promise<number> => {
 /**
  * Reads the cache directory and returns one entry per cached task hash.
  * Skips any file/directory starting with `.` (index files, temp dirs).
- *
- * @param cacheDirectory - Absolute path to the cache root directory.
+ * @param cacheDirectory Absolute path to the cache root directory.
  * @returns Array of cache entries sorted newest-first by modification time.
- *          Returns an empty array when the directory does not exist or is empty.
+ * Returns an empty array when the directory does not exist or is empty.
  */
 const collectCacheEntries = async (cacheDirectory: string): Promise<CacheEntry[]> => {
     const entries: CacheEntry[] = [];
@@ -78,14 +75,12 @@ const collectCacheEntries = async (cacheDirectory: string): Promise<CacheEntry[]
         const fullPath = join(cacheDirectory, name);
 
         try {
-            // eslint-disable-next-line no-await-in-loop
             const s = await stat(fullPath);
 
             if (!s.isDirectory()) {
                 continue;
             }
 
-            // eslint-disable-next-line no-await-in-loop
             const sizeBytes = await sumDirectorySize(fullPath);
 
             entries.push({
@@ -109,9 +104,8 @@ const collectCacheEntries = async (cacheDirectory: string): Promise<CacheEntry[]
  * Formats the difference between `now` and `mtimeMs` as a short age string:
  * "3m", "2h", "4d". The caller passes a shared `now` so rows in the same
  * listing use a consistent baseline.
- *
- * @param mtimeMs - File modification time in milliseconds since epoch.
- * @param now - Reference timestamp in milliseconds since epoch. Defaults to `Date.now()`.
+ * @param mtimeMs File modification time in milliseconds since epoch.
+ * @param now Reference timestamp in milliseconds since epoch. Defaults to `Date.now()`.
  * @returns A compact age string such as `"5s"`, `"10m"`, `"2h"`, or `"3d"`.
  */
 const formatAge = (mtimeMs: number, now: number = Date.now()): string => {
@@ -150,10 +144,9 @@ const confirmPrompt = (question: string): Promise<boolean> =>
 
 /**
  * `list` subcommand — prints a table of cached task entries.
- *
- * @param cacheDirectory - Absolute path to the cache directory to enumerate.
- * @param format - Output format: `"table"` for a human-readable table, `"json"` for machine-readable JSON.
- * @param logger - Console instance used for non-prefixed table rows.
+ * @param cacheDirectory Absolute path to the cache directory to enumerate.
+ * @param format Output format: `"table"` for a human-readable table, `"json"` for machine-readable JSON.
+ * @param logger Console instance used for non-prefixed table rows.
  * @returns Resolves when output has been written.
  */
 const runList = async (cacheDirectory: string, format: string, logger: Console): Promise<void> => {
@@ -192,12 +185,14 @@ const runList = async (cacheDirectory: string, format: string, logger: Console):
             `${JSON.stringify(
                 {
                     directory: cacheDirectory,
-                    entries: entries.map((entry) => ({
-                        ageMs: now - entry.mtimeMs,
-                        hash: entry.hash,
-                        mtimeIso: new Date(entry.mtimeMs).toISOString(),
-                        sizeBytes: entry.sizeBytes,
-                    })),
+                    entries: entries.map((entry) => {
+                        return {
+                            ageMs: now - entry.mtimeMs,
+                            hash: entry.hash,
+                            mtimeIso: new Date(entry.mtimeMs).toISOString(),
+                            sizeBytes: entry.sizeBytes,
+                        };
+                    }),
                     totalBytes,
                     totalCount: entries.length,
                 },
@@ -216,11 +211,13 @@ const runList = async (cacheDirectory: string, format: string, logger: Console):
     // Plain text table without pulling in the TUI renderer — keeps startup
     // fast and avoids React for a simple listing.
     const renderedAt = Date.now();
-    const rows = entries.map((entry) => ({
-        age: formatAge(entry.mtimeMs, renderedAt),
-        hash: entry.hash.slice(0, 12),
-        size: formatBytes(entry.sizeBytes, { decimals: 1, space: false }),
-    }));
+    const rows = entries.map((entry) => {
+        return {
+            age: formatAge(entry.mtimeMs, renderedAt),
+            hash: entry.hash.slice(0, 12),
+            size: formatBytes(entry.sizeBytes, { decimals: 1, space: false }),
+        };
+    });
 
     const hashWidth = Math.max(4, ...rows.map((r) => r.hash.length));
     const sizeWidth = Math.max(4, ...rows.map((r) => r.size.length));
@@ -245,10 +242,9 @@ const runList = async (cacheDirectory: string, format: string, logger: Console):
  * The prompt is skipped in non-TTY / CI contexts and when `--force` is set.
  *
  * Refuses outright when `cacheDirectory` resolves to the workspace root.
- *
- * @param cacheDirectory - Absolute path to the cache directory to remove.
- * @param workspaceRoot - Absolute path to the workspace root (used for containment checks and `Cache` construction).
- * @param options - `dryRun` previews without deleting; `force` skips the out-of-workspace confirmation prompt.
+ * @param cacheDirectory Absolute path to the cache directory to remove.
+ * @param workspaceRoot Absolute path to the workspace root (used for containment checks and `Cache` construction).
+ * @param options `dryRun` previews without deleting; `force` skips the out-of-workspace confirmation prompt.
  * @returns Resolves when the operation completes (or is skipped / aborted).
  */
 const runClean = async (cacheDirectory: string, workspaceRoot: string, options: { dryRun: boolean; force: boolean }): Promise<void> => {
@@ -263,8 +259,8 @@ const runClean = async (cacheDirectory: string, workspaceRoot: string, options: 
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         info(
-            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} ` +
-                `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
+            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
+            + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
 
         return;
@@ -333,11 +329,10 @@ const runClean = async (cacheDirectory: string, workspaceRoot: string, options: 
  * malformed values produce a friendly CLI error instead of a stack trace
  * from inside `Cache`. The before/after count is a best-effort estimate —
  * a concurrent `vis run` could skew it, but the cache state remains correct.
- *
- * @param cacheDirectory - Absolute path to the cache directory to prune.
- * @param workspaceRoot - Absolute path to the workspace root (passed to the `Cache` constructor).
- * @param options - `maxCacheAgeDays` evicts entries older than N days; `maxCacheSize` (e.g. `"500MB"`)
- *                  evicts oldest entries until the total size is under the limit.
+ * @param cacheDirectory Absolute path to the cache directory to prune.
+ * @param workspaceRoot Absolute path to the workspace root (passed to the `Cache` constructor).
+ * @param options `maxCacheAgeDays` evicts entries older than N days; `maxCacheSize` (e.g. `"500MB"`)
+ * evicts oldest entries until the total size is under the limit.
  * @returns Resolves when pruning completes or is skipped.
  */
 const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: { maxCacheAgeDays?: number; maxCacheSize?: string }): Promise<void> => {
@@ -347,13 +342,11 @@ const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: 
         return;
     }
 
-    if (options.maxCacheAgeDays !== undefined) {
-        if (!Number.isFinite(options.maxCacheAgeDays) || options.maxCacheAgeDays < 0) {
-            failure(`Invalid --max-age-days value: expected a finite number >= 0, got ${String(options.maxCacheAgeDays)}`);
-            process.exitCode = 1;
+    if (options.maxCacheAgeDays !== undefined && (!Number.isFinite(options.maxCacheAgeDays) || options.maxCacheAgeDays < 0)) {
+        failure(`Invalid --max-age-days value: expected a finite number >= 0, got ${String(options.maxCacheAgeDays)}`);
+        process.exitCode = 1;
 
-            return;
-        }
+        return;
     }
 
     if (options.maxCacheSize !== undefined) {
@@ -376,7 +369,7 @@ const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: 
         }
     }
 
-    const maxCacheAge = options.maxCacheAgeDays !== undefined ? options.maxCacheAgeDays * 24 * 60 * 60 * 1000 : undefined;
+    const maxCacheAge = options.maxCacheAgeDays === undefined ? undefined : options.maxCacheAgeDays * 24 * 60 * 60 * 1000;
 
     const before = await collectCacheEntries(cacheDirectory);
     const beforeBytes = before.reduce((sum, entry) => sum + entry.sizeBytes, 0);
@@ -408,9 +401,8 @@ const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: 
 /**
  * `size` subcommand — prints the cache directory's on-disk footprint without
  * the per-entry table.
- *
- * @param cacheDirectory - Absolute path to the cache directory to measure.
- * @param format - `"table"` for human-readable output, `"json"` for machine-readable JSON.
+ * @param cacheDirectory Absolute path to the cache directory to measure.
+ * @param format `"table"` for human-readable output, `"json"` for machine-readable JSON.
  * @returns Resolves when output has been written.
  */
 const runSize = async (cacheDirectory: string, format: string): Promise<void> => {
@@ -448,7 +440,6 @@ const runSize = async (cacheDirectory: string, format: string): Promise<void> =>
 };
 
 const cache: Command = {
-    group: "Workspace",
     argument: {
         description: "Action to perform: list, clean, prune, or size",
         name: "action",
@@ -507,6 +498,7 @@ const cache: Command = {
             }
         }
     },
+    group: "Workspace",
     name: "cache",
     options: [
         {

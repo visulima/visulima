@@ -9,15 +9,15 @@ import { join } from "@visulima/path";
  * switch runtimes for this workspace.
  */
 export interface RuntimeFinding {
-    kind: "node" | "packageManager";
-    severity: "error" | "warning";
-    message: string;
-    expected: string;
     actual: string;
+    expected: string;
+    kind: "node" | "packageManager";
+    message: string;
+    severity: "error" | "warning";
 }
 
 interface RootPackageJson {
-    engines?: { node?: string; npm?: string; pnpm?: string; yarn?: string; bun?: string };
+    engines?: { bun?: string; node?: string; npm?: string; pnpm?: string; yarn?: string };
     packageManager?: string;
 }
 
@@ -68,7 +68,7 @@ const compareVersions = (a: string, b: string): number => {
 
 /**
  * Evaluates a minimal subset of semver ranges: `>=X`, `X.Y`, `X.Y.Z`,
- * and compound `>=X <Y`. Returns true if `actual` satisfies the range.
+ * and compound `>=X &lt;Y`. Returns true if `actual` satisfies the range.
  * Falls back to "true" for unrecognised syntax rather than false so we
  * don't spam warnings on exotic ranges.
  */
@@ -102,8 +102,8 @@ export const satisfiesRange = (actual: string, range: string): boolean => {
             const actualParts = actual.split(".");
             const clauseParts = clause.split(".");
 
-            for (let i = 0; i < clauseParts.length; i++) {
-                if (clauseParts[i] !== actualParts[i]) {
+            for (const [i, clausePart] of clauseParts.entries()) {
+                if (clausePart !== actualParts[i]) {
                     return false;
                 }
             }
@@ -116,8 +116,7 @@ export const satisfiesRange = (actual: string, range: string): boolean => {
 /**
  * Checks `engines.node`, `.nvmrc`, `.node-version`, and `packageManager`
  * against the running process.
- *
- * @param workspaceRoot - Absolute path to the workspace root.
+ * @param workspaceRoot Absolute path to the workspace root.
  * @returns Findings; an empty array means everything matches.
  */
 export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] => {
@@ -177,7 +176,7 @@ export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] =>
         if (detectedName && expectedName && detectedName !== expectedName) {
             findings.push({
                 actual: detectedName,
-                expected: expectedName!,
+                expected: expectedName,
                 kind: "packageManager",
                 message: `package.json packageManager pins ${rootPkg.packageManager} but the current invocation is ${detectedFromUserAgent}. Install the correct package manager.`,
                 severity: "error",

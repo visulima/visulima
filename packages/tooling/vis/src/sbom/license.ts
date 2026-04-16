@@ -1,4 +1,4 @@
-import type { LicenseChoice } from "./types";
+import type { LicenseChoice, NamedLicense } from "./types";
 
 /**
  * Minimal SPDX-licence normaliser for SBOM generation.
@@ -31,9 +31,9 @@ const KNOWN_SPDX_IDS = new Set<string>([
     "BSD-2-Clause",
     "BSD-3-Clause",
     "BSL-1.0",
+    "CC0-1.0",
     "CC-BY-3.0",
     "CC-BY-4.0",
-    "CC0-1.0",
     "CDDL-1.0",
     "CDDL-1.1",
     "EPL-1.0",
@@ -60,8 +60,8 @@ const KNOWN_SPDX_IDS = new Set<string>([
 
 /** Common misspellings that map to a canonical SPDX ID. */
 const SPDX_ALIASES: Record<string, string> = {
-    "apache 2.0": "Apache-2.0",
     apache2: "Apache-2.0",
+    "apache 2.0": "Apache-2.0",
     bsd: "BSD-3-Clause",
     "bsd-2": "BSD-2-Clause",
     "bsd-3": "BSD-3-Clause",

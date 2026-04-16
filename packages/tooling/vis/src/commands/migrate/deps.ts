@@ -1,11 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-import { backupFile } from "./backup";
-
 import { join } from "@visulima/path";
 
 import type { VisConfig } from "../../workspace";
 import { discoverWorkspace } from "../../workspace";
+import { backupFile } from "./backup";
 import { cleanHuskyFromScript, REPLACED_PACKAGES } from "./constants";
 import { editJsonFile } from "./json";
 import type { MigrationReport, PackageManagerType } from "./types";

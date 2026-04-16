@@ -816,8 +816,8 @@ describe(resolvePackageTarget, () => {
 
         expect(
             resolvePackageTarget("typescript", "latest", {
-                typescript: "minor",
                 "/^type/": "patch",
+                typescript: "minor",
             }),
         ).toBe("minor");
     });
@@ -1021,7 +1021,7 @@ describe("depFields option", () => {
             JSON.stringify({
                 dependencies: { react: "^18.0.0" },
                 name: "app",
-                overrides: { "react-dom": "$react", lodash: "^4.17.21" },
+                overrides: { lodash: "^4.17.21", "react-dom": "$react" },
             }),
         );
 

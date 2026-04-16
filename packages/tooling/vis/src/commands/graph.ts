@@ -449,7 +449,6 @@ nodes.forEach(n => {
 // ── Command ─────────────────────────────────────────────────────────
 
 const graph: Command = {
-    group: "Workspace",
     description: "Visualize the project dependency graph",
     examples: [
         ["vis graph", "Show colored dependency graph (TUI in TTY, ASCII otherwise)"],
@@ -536,6 +535,7 @@ const graph: Command = {
             logger.info(output);
         }
     },
+    group: "Workspace",
     name: "graph",
     options: [
         {

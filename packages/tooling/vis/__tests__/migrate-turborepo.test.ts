@@ -34,11 +34,11 @@ describe(migrateTurborepo, () => {
         writeFileSync(
             join(tmpDir, "turbo.json"),
             JSON.stringify({
+                globalDependencies: ["tsconfig.json"],
                 tasks: {
-                    build: { dependsOn: ["^build"], outputs: ["dist/**"], cache: true },
+                    build: { cache: true, dependsOn: ["^build"], outputs: ["dist/**"] },
                     test: { dependsOn: ["build"], persistent: false },
                 },
-                globalDependencies: ["tsconfig.json"],
             }),
         );
 

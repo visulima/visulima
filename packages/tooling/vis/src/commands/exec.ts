@@ -4,7 +4,6 @@ import { detectPm, runExec } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const exec: Command = {
-    group: "Run & Execute",
     argument: {
         description: "Command to execute followed by arguments",
         name: "command",
@@ -48,6 +47,7 @@ const exec: Command = {
             process.exitCode = code;
         }
     },
+    group: "Run & Execute",
     name: "exec",
     options: [
         { alias: "c", defaultValue: false, description: "Execute within shell environment", name: "shell-mode", type: Boolean },

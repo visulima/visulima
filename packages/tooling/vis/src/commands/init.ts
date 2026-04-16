@@ -185,13 +185,13 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             }
 
             // Only write the fallback config if no migration produced one.
-            if (!existsSync(configPath)) {
+            if (existsSync(configPath)) {
+                success(`Migrated config written to ${configPath}`);
+            } else {
                 const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
                 writeFileSync(configPath, content);
                 success(`Created ${configPath}`);
-            } else {
-                success(`Migrated config written to ${configPath}`);
             }
 
             note("  Run 'vis doctor' to see your project's full health status.");
@@ -268,7 +268,6 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
  * In non-interactive mode (CI, piped), creates a minimal config with secure defaults.
  */
 const init: Command = {
-    group: "Scaffold & Config",
     description: "Initialize vis.config.ts with best-practice security defaults",
     examples: [
         ["vis init", "Interactive setup wizard"],
@@ -298,6 +297,7 @@ const init: Command = {
             runStaticInit(cwd, pm, options, configPath);
         }
     },
+    group: "Scaffold & Config",
     name: "init",
     options: [
         { defaultValue: false, description: "Overwrite existing config file", name: "force", type: Boolean },

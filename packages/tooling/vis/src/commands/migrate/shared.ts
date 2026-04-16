@@ -7,23 +7,19 @@ import type { MigrateLogger, MigrationReport } from "./types";
 /**
  * Serialises a config object to a pretty-printed TypeScript string with
  * unquoted keys (idiomatic TS style).
- *
- * @param obj - The configuration object to serialise.
+ * @param obj The configuration object to serialise.
  * @returns A JSON string with keys unquoted for TS readability.
  */
-export const serializeConfigObject = (obj: Record<string, unknown>): string => {
-    return JSON.stringify(obj, null, 4).replaceAll(/"(\w+)":/g, "$1:");
-};
+export const serializeConfigObject = (obj: Record<string, unknown>): string => JSON.stringify(obj, null, 4).replaceAll(/"(\w+)":/g, "$1:");
 
 /**
  * Writes (or previews) a rendered `vis.config.ts`. Guards against
  * overwriting an existing file and logs the outcome.
- *
- * @param workspaceRoot - Absolute workspace root path.
- * @param rendered - The full file content to write.
- * @param options - Migration options (`dryRun` controls preview mode).
- * @param logger - Logger for user feedback.
- * @param report - Migration report to append warnings to.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param rendered The full file content to write.
+ * @param options Migration options (`dryRun` controls preview mode).
+ * @param logger Logger for user feedback.
+ * @param report Migration report to append warnings to.
  * @returns `true` if written (or previewed in dry-run), `false` if skipped.
  */
 export const writeVisConfig = (
@@ -56,9 +52,8 @@ export const writeVisConfig = (
 
 /**
  * Reads and parses a JSON config file from the workspace root.
- *
- * @param workspaceRoot - Absolute workspace root path.
- * @param fileName - File name relative to the workspace root.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param fileName File name relative to the workspace root.
  * @returns The parsed object, or `undefined` if the file doesn't exist.
  * @throws On JSON parse errors.
  */

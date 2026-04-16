@@ -14,7 +14,7 @@ const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>
     return { projects: full } as WorkspaceConfiguration;
 };
 
-describe("parseTargetSelector", () => {
+describe(parseTargetSelector, () => {
     it("should parse `:build` as kind all with target build", () => {
         expect.assertions(2);
 
@@ -68,7 +68,7 @@ describe("parseTargetSelector", () => {
     });
 });
 
-describe("parseQuery", () => {
+describe(parseQuery, () => {
     it("should parse a single clause with default && operator", () => {
         expect.assertions(3);
 
@@ -117,7 +117,7 @@ describe("parseQuery", () => {
     });
 });
 
-describe("filterProjectsByQuery", () => {
+describe(filterProjectsByQuery, () => {
     const workspace = makeWorkspace({
         "app-backend": { language: "go", tags: ["backend"] },
         "app-frontend": { language: "typescript", tags: ["frontend"] },
@@ -156,7 +156,7 @@ describe("filterProjectsByQuery", () => {
     });
 });
 
-describe("resolveSelector", () => {
+describe(resolveSelector, () => {
     const workspace = makeWorkspace({
         "app-backend": { root: "packages/app-backend", tags: ["backend"] },
         "app-frontend": { root: "packages/app-frontend", tags: ["frontend"] },

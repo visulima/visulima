@@ -50,7 +50,6 @@ const detectCiRefs = (): { base: string; head: string } => {
  * from common CI provider environment variables.
  */
 const ci: Command = {
-    group: "Run & Execute",
     argument: {
         description: "Comma-separated list of targets to run (e.g., lint,test,build)",
         name: "targets",
@@ -87,14 +86,14 @@ const ci: Command = {
         const base = (options.base as string | undefined) ?? defaultBase;
         const head = (options.head as string | undefined) ?? defaultHead;
 
-        if (options.install !== false) {
+        if (options.install === false) {
+            logger.info("▸ Skipping install (--no-install)");
+        } else {
             logger.info("▸ Installing dependencies");
 
             await runtime.runCommand("install", {
                 argv: ["--frozen-lockfile"],
             });
-        } else {
-            logger.info("▸ Skipping install (--no-install)");
         }
 
         for (const target of targets) {
@@ -125,6 +124,7 @@ const ci: Command = {
 
         logger.info("▸ CI pipeline complete");
     },
+    group: "Run & Execute",
     name: "ci",
     options: [
         {

@@ -24,7 +24,6 @@ import { buildProjectGraph, discoverWorkspace } from "../workspace";
  * ```
  */
 const docker: Command = {
-    group: "Workspace",
     argument: {
         description: "Docker subcommand: scaffold | prune",
         name: "subcommand",
@@ -104,6 +103,7 @@ const docker: Command = {
 
         throw new Error(`Unknown subcommand: "${subcommand}". Expected scaffold or prune.`);
     },
+    group: "Workspace",
     name: "docker",
     options: [
         {

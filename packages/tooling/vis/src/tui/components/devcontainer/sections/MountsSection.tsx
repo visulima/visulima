@@ -41,11 +41,15 @@ const MountsSection = ({
         <Box flexDirection="column" paddingX={1}>
             <Box flexShrink={0} gap={1} paddingX={1}>
                 <Text bold color="cyan">
-                    {mounts.length} mounts
+                    {mounts.length}
+                    {' '}
+                    mounts
                 </Text>
                 {detectedPm && (
                     <Text dimColor>
-                        — detected: <Text color="white">{detectedPm}</Text>
+                        — detected:
+                        {' '}
+                        <Text color="white">{detectedPm}</Text>
                     </Text>
                 )}
             </Box>
@@ -59,10 +63,12 @@ const MountsSection = ({
                         </Text>
                         <Text dimColor>
                             {" "}
-                            — press{" "}
+                            — press
+                            {" "}
                             <Text bold color="white">
                                 A
-                            </Text>{" "}
+                            </Text>
+                            {" "}
                             to add all
                         </Text>
                     </Box>
@@ -102,7 +108,8 @@ const MountsSection = ({
             {!addingMount && (
                 <Box flexShrink={0}>
                     <Text color={fieldIndex === mounts.length ? "cyan" : "gray"} inverse={fieldIndex === mounts.length}>
-                        {"   "}+ Add mount...
+                        {"   "}
+                        + Add mount...
                     </Text>
                 </Box>
             )}
@@ -118,7 +125,8 @@ const MountsSection = ({
                     <Box flexShrink={0}>
                         <Box width={12}>
                             <Text bold={mountPhase === "source"} color={mountPhase === "source" ? "cyan" : "white"}>
-                                {mountPhase === "source" ? "\u276f " : "  "}Source:
+                                {mountPhase === "source" ? "\u276F " : "  "}
+                                Source:
                             </Text>
                         </Box>
                         <Text color={mountSource ? "yellow" : "gray"}>
@@ -128,7 +136,8 @@ const MountsSection = ({
                     <Box flexShrink={0}>
                         <Box width={12}>
                             <Text bold={mountPhase === "target"} color={mountPhase === "target" ? "cyan" : "white"}>
-                                {mountPhase === "target" ? "\u276f " : "  "}Target:
+                                {mountPhase === "target" ? "\u276F " : "  "}
+                                Target:
                             </Text>
                         </Box>
                         <Text color={mountTarget ? "yellow" : "gray"}>{mountTarget || (mountPhase === "target" ? "_" : "/container/path")}</Text>
@@ -136,26 +145,29 @@ const MountsSection = ({
                     <Box flexShrink={0}>
                         <Box width={12}>
                             <Text bold={mountPhase === "type"} color={mountPhase === "type" ? "cyan" : "white"}>
-                                {mountPhase === "type" ? "\u276f " : "  "}Type:
+                                {mountPhase === "type" ? "\u276F " : "  "}
+                                Type:
                             </Text>
                         </Box>
-                        {mountPhase === "type" ? (
-                            <Text>
-                                <Text bold={mountType === "volume"} color={mountType === "volume" ? "cyan" : "gray"}>
-                                    [1] volume
+                        {mountPhase === "type"
+                            ? (
+                                <Text>
+                                    <Text bold={mountType === "volume"} color={mountType === "volume" ? "cyan" : "gray"}>
+                                        [1] volume
+                                    </Text>
+                                    {"  "}
+                                    <Text bold={mountType === "bind"} color={mountType === "bind" ? "cyan" : "gray"}>
+                                        [2] bind
+                                    </Text>
+                                    {"  "}
+                                    <Text bold={mountType === "tmpfs"} color={mountType === "tmpfs" ? "cyan" : "gray"}>
+                                        [3] tmpfs
+                                    </Text>
                                 </Text>
-                                {"  "}
-                                <Text bold={mountType === "bind"} color={mountType === "bind" ? "cyan" : "gray"}>
-                                    [2] bind
-                                </Text>
-                                {"  "}
-                                <Text bold={mountType === "tmpfs"} color={mountType === "tmpfs" ? "cyan" : "gray"}>
-                                    [3] tmpfs
-                                </Text>
-                            </Text>
-                        ) : (
-                            <Text color="gray">{mountType}</Text>
-                        )}
+                            )
+                            : (
+                                <Text color="gray">{mountType}</Text>
+                            )}
                     </Box>
                     <Box flexShrink={0} marginTop={1}>
                         <Text dimColor wrap="truncate">

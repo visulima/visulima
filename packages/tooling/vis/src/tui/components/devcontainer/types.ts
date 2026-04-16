@@ -32,16 +32,16 @@ export interface DevcontainerConfig {
     };
     dockerComposeFile?: string | string[];
     features?: Record<string, Record<string, unknown> | string>;
-    forwardPorts?: Array<number | string>;
+    forwardPorts?: (number | string)[];
     image?: string;
-    mounts?: Array<MountEntry | string>;
+    mounts?: (MountEntry | string)[];
     name?: string;
     onCreateCommand?: string | string[];
     overrideCommand?: boolean;
+    portsAttributes?: Record<string, PortAttributes>;
     postAttachCommand?: string | string[];
     postCreateCommand?: string | string[];
     postStartCommand?: string | string[];
-    portsAttributes?: Record<string, PortAttributes>;
     privileged?: boolean;
     remoteEnv?: Record<string, string>;
     remoteUser?: string;
@@ -57,4 +57,4 @@ export interface DevcontainerConfig {
 
 export type SectionId = "compose" | "environment" | "extensions" | "features" | "general" | "lifecycle" | "mounts" | "ports";
 
-export const SECTION_ORDER: readonly SectionId[] = ["general", "features", "ports", "lifecycle", "extensions", "environment", "mounts", "compose"] as const;
+export const SECTION_ORDER: ReadonlyArray<SectionId> = ["general", "features", "ports", "lifecycle", "extensions", "environment", "mounts", "compose"] as const;

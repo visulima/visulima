@@ -20,17 +20,17 @@ describe(formatTimingSummary, () => {
                 },
             ],
             [
-                "app-b:build",
-                {
-                    status: "success",
-                    task: { id: "app-b:build", outputs: [], overrides: {}, target: { project: "app-b", target: "build" } },
-                },
-            ],
-            [
                 "app-a:test",
                 {
                     status: "local-cache",
                     task: { id: "app-a:test", outputs: [], overrides: {}, target: { project: "app-a", target: "test" } },
+                },
+            ],
+            [
+                "app-b:build",
+                {
+                    status: "success",
+                    task: { id: "app-b:build", outputs: [], overrides: {}, target: { project: "app-b", target: "build" } },
                 },
             ],
             [

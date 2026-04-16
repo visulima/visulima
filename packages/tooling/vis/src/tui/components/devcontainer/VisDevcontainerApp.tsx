@@ -25,7 +25,7 @@ const MIN_VIEWPORT_HEIGHT = 15;
 const MIN_SPLIT_WIDTH = 120;
 
 // Tabs without the "preview" section (it's always visible as a side panel)
-const EDITOR_SECTIONS: readonly { description: string; id: SectionId; label: string }[] = [
+const EDITOR_SECTIONS: ReadonlyArray<{ description: string; id: SectionId; label: string }> = [
     { description: "Container name, base image, workspace folder, and user", id: "general", label: "General" },
     { description: "Installable tools and runtimes (Node, Python, Docker, etc.)", id: "features", label: "Features" },
     { description: "Ports to forward from the container to your host", id: "ports", label: "Ports" },
@@ -40,36 +40,36 @@ const EDITOR_SECTIONS: readonly { description: string; id: SectionId; label: str
 
 const getFieldCount = (section: SectionId, config: DevcontainerConfig, featureSearch: string, extensionSearch: string): number => {
     switch (section) {
-        case "general": {
-            return GENERAL_FIELD_COUNT;
-        }
-
-        case "features": {
-            return filterFeatures(featureSearch).length;
-        }
-
-        case "ports": {
-            return (config.forwardPorts?.length ?? 0) + 1;
-        }
-
-        case "lifecycle": {
-            return LIFECYCLE_FIELD_COUNT;
-        }
-
-        case "extensions": {
-            return filterExtensions(extensionSearch).length;
+        case "compose": {
+            return COMPOSE_FIELD_COUNT;
         }
 
         case "environment": {
             return getEnvFieldCount(config);
         }
 
+        case "extensions": {
+            return filterExtensions(extensionSearch).length;
+        }
+
+        case "features": {
+            return filterFeatures(featureSearch).length;
+        }
+
+        case "general": {
+            return GENERAL_FIELD_COUNT;
+        }
+
+        case "lifecycle": {
+            return LIFECYCLE_FIELD_COUNT;
+        }
+
         case "mounts": {
             return (config.mounts?.length ?? 0) + 1;
         }
 
-        case "compose": {
-            return COMPOSE_FIELD_COUNT;
+        case "ports": {
+            return (config.forwardPorts?.length ?? 0) + 1;
         }
 
         default: {
@@ -170,6 +170,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
         if (!validation.valid) {
             const firstError = validation.errors[0];
+
             setSaveMessage(firstError ? `Error: ${firstError.message}` : "Validation failed");
 
             if (saveTimerRef.current) {
@@ -189,6 +190,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         store.markClean();
 
         const warningCount = validation.warnings.length;
+
         setSaveMessage(warningCount > 0 ? `Saved! (${String(warningCount)} warning${warningCount > 1 ? "s" : ""})` : "Saved!");
 
         if (saveTimerRef.current) {
@@ -351,12 +353,23 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
             // In type phase, use 1/2/3 to pick type
             if (mountPhase === "type") {
-                if (input === "1") {
-                    setMountType("volume");
-                } else if (input === "2") {
-                    setMountType("bind");
-                } else if (input === "3") {
-                    setMountType("tmpfs");
+                switch (input) {
+                    case "1": {
+                        setMountType("volume");
+
+                        break;
+                    }
+                    case "2": {
+                        setMountType("bind");
+
+                        break;
+                    }
+                    case "3": {
+                        setMountType("tmpfs");
+
+                        break;
+                    }
+                // No default
                 }
 
                 return;
@@ -566,42 +579,58 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
             // Enter to edit field or start add flow
             if (key.return) {
-                if (state.section === "general" || state.section === "lifecycle" || state.section === "compose") {
-                    store.setFieldEditing(true);
-                } else if (state.section === "ports") {
-                    const ports = state.config.forwardPorts ?? [];
+                switch (state.section) {
+                    case "compose":
+                    case "general":
+                    case "lifecycle": {
+                        store.setFieldEditing(true);
 
-                    if (state.fieldIndex === ports.length) {
-                        setAddingPort(true);
-                        setAddPortValue("");
+                        break;
                     }
-                } else if (state.section === "environment") {
+                    case "environment": {
                     // Enter on "+" add rows triggers add flow
-                    const containerCount = Object.keys(state.config.containerEnv ?? {}).length;
-                    const containerAddIndex = containerCount;
-                    const remoteAddIndex = containerCount + 1 + Object.keys(state.config.remoteEnv ?? {}).length;
+                        const containerCount = Object.keys(state.config.containerEnv ?? {}).length;
+                        const containerAddIndex = containerCount;
+                        const remoteAddIndex = containerCount + 1 + Object.keys(state.config.remoteEnv ?? {}).length;
 
-                    if (state.fieldIndex === containerAddIndex) {
-                        setAddingEnv("container");
-                        setAddEnvKey("");
-                        setAddEnvValue("");
-                        setAddEnvPhase("key");
-                    } else if (state.fieldIndex === remoteAddIndex) {
-                        setAddingEnv("remote");
-                        setAddEnvKey("");
-                        setAddEnvValue("");
-                        setAddEnvPhase("key");
-                    }
-                } else if (state.section === "mounts") {
-                    const mounts = state.config.mounts ?? [];
+                        if (state.fieldIndex === containerAddIndex) {
+                            setAddingEnv("container");
+                            setAddEnvKey("");
+                            setAddEnvValue("");
+                            setAddEnvPhase("key");
+                        } else if (state.fieldIndex === remoteAddIndex) {
+                            setAddingEnv("remote");
+                            setAddEnvKey("");
+                            setAddEnvValue("");
+                            setAddEnvPhase("key");
+                        }
 
-                    if (state.fieldIndex === mounts.length) {
-                        setAddingMount(true);
-                        setMountSource("");
-                        setMountTarget("");
-                        setMountType("volume");
-                        setMountPhase("source");
+                        break;
                     }
+                    case "mounts": {
+                        const mounts = state.config.mounts ?? [];
+
+                        if (state.fieldIndex === mounts.length) {
+                            setAddingMount(true);
+                            setMountSource("");
+                            setMountTarget("");
+                            setMountType("volume");
+                            setMountPhase("source");
+                        }
+
+                        break;
+                    }
+                    case "ports": {
+                        const ports = state.config.forwardPorts ?? [];
+
+                        if (state.fieldIndex === ports.length) {
+                            setAddingPort(true);
+                            setAddPortValue("");
+                        }
+
+                        break;
+                    }
+                // No default
                 }
 
                 return;
@@ -609,30 +638,41 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
             // Space to toggle (features, extensions, general booleans)
             if (input === " ") {
-                if (state.section === "general") {
+                switch (state.section) {
+                    case "extensions": {
+                        const catalog = filterExtensions(state.extensionSearch);
+                        const ext = catalog[state.fieldIndex];
+
+                        if (ext) {
+                            store.toggleExtension(ext.id);
+                        }
+
+                        break;
+                    }
+                    case "features": {
+                        const catalog = filterFeatures(state.featureSearch);
+                        const feature = catalog[state.fieldIndex];
+
+                        if (feature) {
+                            store.toggleFeature(feature.id);
+                        }
+
+                        break;
+                    }
+                    case "general": {
                     // Boolean fields start after string fields
-                    const stringFieldCount = GENERAL_FIELD_COUNT - GENERAL_BOOLEAN_FIELDS.length;
-                    const boolIndex = state.fieldIndex - stringFieldCount;
+                        const stringFieldCount = GENERAL_FIELD_COUNT - GENERAL_BOOLEAN_FIELDS.length;
+                        const boolIndex = state.fieldIndex - stringFieldCount;
 
-                    if (boolIndex >= 0 && boolIndex < GENERAL_BOOLEAN_FIELDS.length) {
-                        const field = GENERAL_BOOLEAN_FIELDS[boolIndex] as keyof DevcontainerConfig;
+                        if (boolIndex >= 0 && boolIndex < GENERAL_BOOLEAN_FIELDS.length) {
+                            const field = GENERAL_BOOLEAN_FIELDS[boolIndex] as keyof DevcontainerConfig;
 
-                        store.updateConfig({ [field]: !state.config[field] });
+                            store.updateConfig({ [field]: !state.config[field] });
+                        }
+
+                        break;
                     }
-                } else if (state.section === "features") {
-                    const catalog = filterFeatures(state.featureSearch);
-                    const feature = catalog[state.fieldIndex];
-
-                    if (feature) {
-                        store.toggleFeature(feature.id);
-                    }
-                } else if (state.section === "extensions") {
-                    const catalog = filterExtensions(state.extensionSearch);
-                    const ext = catalog[state.fieldIndex];
-
-                    if (ext) {
-                        store.toggleExtension(ext.id);
-                    }
+                // No default
                 }
 
                 return;
@@ -677,61 +717,78 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
             // Delete item
             if (input === "d") {
-                if (state.section === "ports") {
-                    const ports = state.config.forwardPorts ?? [];
+                switch (state.section) {
+                    case "environment": {
+                        const containerKeys = Object.keys(state.config.containerEnv ?? {});
+                        const remoteKeys = Object.keys(state.config.remoteEnv ?? {});
 
-                    if (state.fieldIndex < ports.length) {
-                        store.removePort(state.fieldIndex);
+                        if (state.fieldIndex < containerKeys.length) {
+                            store.removeEnvVar("container", containerKeys[state.fieldIndex] as string);
 
-                        const newCount = ports.length - 1;
-
-                        if (state.fieldIndex >= newCount && newCount > 0) {
-                            store.setFieldIndex(newCount - 1);
-                        }
-                    }
-                } else if (state.section === "mounts") {
-                    const mounts = state.config.mounts ?? [];
-
-                    if (state.fieldIndex < mounts.length) {
-                        store.removeMount(state.fieldIndex);
-
-                        const newCount = mounts.length - 1;
-
-                        if (state.fieldIndex >= newCount && newCount > 0) {
-                            store.setFieldIndex(newCount - 1);
-                        }
-                    }
-                } else if (state.section === "environment") {
-                    const containerKeys = Object.keys(state.config.containerEnv ?? {});
-                    const remoteKeys = Object.keys(state.config.remoteEnv ?? {});
-
-                    if (state.fieldIndex < containerKeys.length) {
-                        store.removeEnvVar("container", containerKeys[state.fieldIndex] as string);
-
-                        // Clamp fieldIndex
-                        if (containerKeys.length === 1) {
+                            // Clamp fieldIndex
+                            if (containerKeys.length === 1) {
                             // Deleted last container entry, stay at the add row
-                        } else if (state.fieldIndex >= containerKeys.length - 1) {
-                            store.setFieldIndex(containerKeys.length - 2);
-                        }
-                    } else {
-                        const remoteIndex = state.fieldIndex - containerKeys.length - 1;
+                            } else if (state.fieldIndex >= containerKeys.length - 1) {
+                                store.setFieldIndex(containerKeys.length - 2);
+                            }
+                        } else {
+                            const remoteIndex = state.fieldIndex - containerKeys.length - 1;
 
-                        if (remoteIndex >= 0 && remoteIndex < remoteKeys.length) {
-                            store.removeEnvVar("remote", remoteKeys[remoteIndex] as string);
+                            if (remoteIndex >= 0 && remoteIndex < remoteKeys.length) {
+                                store.removeEnvVar("remote", remoteKeys[remoteIndex] as string);
 
-                            if (remoteKeys.length === 1) {
+                                if (remoteKeys.length === 1) {
                                 // Deleted last remote entry, stay at remote add row
-                            } else if (remoteIndex >= remoteKeys.length - 1) {
-                                store.setFieldIndex(state.fieldIndex - 1);
+                                } else if (remoteIndex >= remoteKeys.length - 1) {
+                                    store.setFieldIndex(state.fieldIndex - 1);
+                                }
                             }
                         }
+
+                        break;
                     }
+                    case "mounts": {
+                        const mounts = state.config.mounts ?? [];
+
+                        if (state.fieldIndex < mounts.length) {
+                            store.removeMount(state.fieldIndex);
+
+                            const newCount = mounts.length - 1;
+
+                            if (state.fieldIndex >= newCount && newCount > 0) {
+                                store.setFieldIndex(newCount - 1);
+                            }
+                        }
+
+                        break;
+                    }
+                    case "ports": {
+                        const ports = state.config.forwardPorts ?? [];
+
+                        if (state.fieldIndex < ports.length) {
+                            store.removePort(state.fieldIndex);
+
+                            const newCount = ports.length - 1;
+
+                            if (state.fieldIndex >= newCount && newCount > 0) {
+                                store.setFieldIndex(newCount - 1);
+                            }
+                        }
+
+                        break;
+                    }
+                // No default
                 }
             }
         },
         { isActive: !state.showTemplateSelector && !addingPort && addingEnv === null && !addingMount },
     );
+
+    // ── Hooks must run before any conditional early-return ─────────
+    // `useMemo` for the JSON preview must precede the size-check / template-
+    // selector guards below, otherwise React's rules-of-hooks fires because
+    // the hook call order varies across renders.
+    const jsonPreview = useMemo(() => store.getJsonPreview(), [state.config]);
 
     // ── Size check ──────────────────────────────────────────────────
 
@@ -739,7 +796,15 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small ({columns}x{rows}), need {MIN_VIEWPORT_WIDTH}x{MIN_VIEWPORT_HEIGHT}
+                    Terminal too small (
+                    {columns}
+                    x
+                    {rows}
+                    ), need
+                    {' '}
+                    {MIN_VIEWPORT_WIDTH}
+                    x
+                    {MIN_VIEWPORT_HEIGHT}
                 </Text>
             </Box>
         );
@@ -762,9 +827,13 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         return (
                             <Box key={template.id}>
                                 <Text color={isSelected ? "cyan" : undefined} inverse={isSelected}>
-                                    {isSelected ? " \u276f " : "   "}
+                                    {isSelected ? " \u276F " : "   "}
                                     <Text bold={isSelected}>{template.name}</Text>
-                                    <Text dimColor> - {template.description}</Text>
+                                    <Text dimColor>
+                                        {' '}
+                                        -
+                                        {template.description}
+                                    </Text>
                                 </Text>
                             </Box>
                         );
@@ -773,17 +842,20 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         <Text dimColor>
                             <Text bold color="white">
                                 {"\u2191\u2193"}
-                            </Text>{" "}
+                            </Text>
+                            {" "}
                             navigate
                             {"  "}
                             <Text bold color="white">
                                 Enter
-                            </Text>{" "}
+                            </Text>
+                            {" "}
                             select
                             {"  "}
                             <Text bold color="white">
                                 Esc
-                            </Text>{" "}
+                            </Text>
+                            {" "}
                             blank
                         </Text>
                     </Box>
@@ -797,15 +869,67 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
     let sectionContent: React.JSX.Element;
 
     switch (state.section) {
-        case "general": {
+        case "compose": {
             sectionContent = (
-                <GeneralSection
+                <DockerComposeSection
                     config={state.config}
                     fieldEditing={state.fieldEditing}
                     fieldIndex={state.fieldIndex}
                     onUpdate={(partial) => {
                         store.updateConfig(partial);
                     }}
+                />
+            );
+            break;
+        }
+
+        case "environment": {
+            sectionContent = (
+                <Box flexDirection="column">
+                    <EnvironmentSection config={state.config} fieldIndex={state.fieldIndex} />
+                    {addingEnv !== null && (
+                        <Box marginTop={1} paddingX={1}>
+                            <Text color="cyan">
+                                Add
+                                {' '}
+                                {addingEnv}
+                                {' '}
+                                env:
+                                {" "}
+                                {addEnvPhase === "key"
+                                    ? (
+                                        <Text>
+                                            key=
+                                            <Text color="yellow">{addEnvKey || "_"}</Text>
+                                            {' '}
+                                            (Enter to set value)
+                                        </Text>
+                                    )
+                                    : (
+                                        <Text>
+                                            {addEnvKey}
+                                            =
+                                            <Text color="yellow">{addEnvValue || "_"}</Text>
+                                            {' '}
+                                            (Enter to confirm, Esc to cancel)
+                                        </Text>
+                                    )}
+                            </Text>
+                        </Box>
+                    )}
+                </Box>
+            );
+            break;
+        }
+
+        case "extensions": {
+            sectionContent = (
+                <ExtensionsSection
+                    config={state.config}
+                    fieldIndex={state.fieldIndex}
+                    scrollOffset={listScrollOffset}
+                    searchText={state.extensionSearch}
+                    viewportHeight={listViewportHeight}
                 />
             );
             break;
@@ -824,8 +948,17 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
             break;
         }
 
-        case "ports": {
-            sectionContent = <PortsSection addingPort={addingPort} addPortValue={addPortValue} config={state.config} fieldIndex={state.fieldIndex} />;
+        case "general": {
+            sectionContent = (
+                <GeneralSection
+                    config={state.config}
+                    fieldEditing={state.fieldEditing}
+                    fieldIndex={state.fieldIndex}
+                    onUpdate={(partial) => {
+                        store.updateConfig(partial);
+                    }}
+                />
+            );
             break;
         }
 
@@ -839,44 +972,6 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         store.setLifecycleCommand(hook, command);
                     }}
                 />
-            );
-            break;
-        }
-
-        case "extensions": {
-            sectionContent = (
-                <ExtensionsSection
-                    config={state.config}
-                    fieldIndex={state.fieldIndex}
-                    scrollOffset={listScrollOffset}
-                    searchText={state.extensionSearch}
-                    viewportHeight={listViewportHeight}
-                />
-            );
-            break;
-        }
-
-        case "environment": {
-            sectionContent = (
-                <Box flexDirection="column">
-                    <EnvironmentSection config={state.config} fieldIndex={state.fieldIndex} />
-                    {addingEnv !== null && (
-                        <Box marginTop={1} paddingX={1}>
-                            <Text color="cyan">
-                                Add {addingEnv} env:{" "}
-                                {addEnvPhase === "key" ? (
-                                    <Text>
-                                        key=<Text color="yellow">{addEnvKey || "_"}</Text> (Enter to set value)
-                                    </Text>
-                                ) : (
-                                    <Text>
-                                        {addEnvKey}=<Text color="yellow">{addEnvValue || "_"}</Text> (Enter to confirm, Esc to cancel)
-                                    </Text>
-                                )}
-                            </Text>
-                        </Box>
-                    )}
-                </Box>
             );
             break;
         }
@@ -898,17 +993,8 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
             break;
         }
 
-        case "compose": {
-            sectionContent = (
-                <DockerComposeSection
-                    config={state.config}
-                    fieldEditing={state.fieldEditing}
-                    fieldIndex={state.fieldIndex}
-                    onUpdate={(partial) => {
-                        store.updateConfig(partial);
-                    }}
-                />
-            );
+        case "ports": {
+            sectionContent = <PortsSection addingPort={addingPort} addPortValue={addPortValue} config={state.config} fieldIndex={state.fieldIndex} />;
             break;
         }
 
@@ -976,7 +1062,12 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 </Box>
             </Box>
             <Box paddingX={1}>
-                {saveMessage && <Text color={saveMessage.startsWith("Error") ? "red" : "green"}>{saveMessage} </Text>}
+                {saveMessage && (
+                    <Text color={saveMessage.startsWith("Error") ? "red" : "green"}>
+                        {saveMessage}
+                        {' '}
+                    </Text>
+                )}
                 {state.isDirty && <Text color="yellow">[modified]</Text>}
                 {!state.isDirty && !saveMessage && <Text dimColor>[saved]</Text>}
             </Box>
@@ -987,22 +1078,25 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     const helpPopup = (
         <Dialog
-            footer={
+            footer={(
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>{" "}
-                    scroll{" "}
+                    </Text>
+                    {" "}
+                    scroll
+                    {" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>{" "}
+                    </Text>
+                    {" "}
                     close
                 </Text>
-            }
+            )}
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -1132,9 +1226,8 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
     );
 
     // ── Preview panel (always visible) ──────────────────────────────
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only recompute when config changes
-    const jsonPreview = useMemo(() => store.getJsonPreview(), [state.config]);
+    // `jsonPreview` is computed at the top of the component; see the note near
+    // the initial hook block about rules-of-hooks.
 
     const previewPanel = (
         <PreviewPanel
@@ -1160,7 +1253,11 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text wrap="truncate">{state.mode === "create" ? "Create" : "Edit"} devcontainer</Text>
+                <Text wrap="truncate">
+                    {state.mode === "create" ? "Create" : "Edit"}
+                    {' '}
+                    devcontainer
+                </Text>
             </Box>
 
             {/* Tab bar */}

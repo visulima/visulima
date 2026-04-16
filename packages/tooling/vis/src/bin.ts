@@ -1,4 +1,5 @@
 import { createCerebro } from "@visulima/cerebro";
+import completionCommand from "@visulima/cerebro/command/completion";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
@@ -49,8 +50,6 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
-import completionCommand from "@visulima/cerebro/command/completion";
-
 import { injectVersion, setTerminalTitle } from "./output";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";

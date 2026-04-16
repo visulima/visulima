@@ -9,7 +9,7 @@ const baseConfig: DevcontainerConfig = {
     name: "Test",
 };
 
-describe("DevcontainerStore", () => {
+describe(DevcontainerStore, () => {
     describe("constructor", () => {
         it("should initialize in create mode when config is null", () => {
             expect.assertions(2);

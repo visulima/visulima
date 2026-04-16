@@ -4,12 +4,14 @@ import { detectPm } from "../src/pm-runner";
 
 describe(detectPm, () => {
     it("should detect a valid package manager for the workspace", () => {
-        expect.assertions(2);
+        // `expectTypeOf` is compile-time only; only `expect()` counts toward assertion totals.
+        expect.assertions(1);
 
         const pm = detectPm(process.cwd());
 
         expect(["pnpm", "npm", "yarn", "bun"]).toContain(pm.name);
-        expect(typeof pm.version).toBe("string");
+
+        expectTypeOf(pm.version).toBeString();
     });
 
     it("should detect pnpm for this monorepo", () => {
