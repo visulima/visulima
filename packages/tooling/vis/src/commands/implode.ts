@@ -45,7 +45,6 @@ const cleanShellProfiles = (logger: Console): string[] => {
 };
 
 const implode: Command = {
-    group: "System",
     description: "Remove vis from the system (self-uninstall)",
     examples: [
         ["vis implode", "Interactive uninstall"],
@@ -103,6 +102,7 @@ const implode: Command = {
 
         logger.info("\u2713 vis has been uninstalled.");
     },
+    group: "System",
     name: "implode",
     options: [{ alias: "y", defaultValue: false, description: "Skip confirmation prompt", name: "yes", type: Boolean }],
 };

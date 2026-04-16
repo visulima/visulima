@@ -4,7 +4,6 @@ import { detectPm, runRemove } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const remove: Command = {
-    group: "Dependencies",
     alias: ["rm", "un", "uninstall"],
     argument: {
         description: "Packages to remove",
@@ -46,6 +45,7 @@ const remove: Command = {
             process.exitCode = code;
         }
     },
+    group: "Dependencies",
     name: "remove",
     options: [
         { alias: "D", defaultValue: false, description: "Remove from devDependencies", name: "save-dev", type: Boolean },

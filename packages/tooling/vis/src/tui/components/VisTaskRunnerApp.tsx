@@ -3,10 +3,10 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import type { StdinEntry } from "../types";
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";
+import type { StdinEntry } from "../types";
 import OutputPanel from "./OutputPanel";
 import QuitDialog from "./QuitDialog";
 import TaskListPanel from "./TaskListPanel";
@@ -187,7 +187,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         const panelRows = Math.max(1, rows - 4);
 
         stdinRegistry.get(outputTaskId)?.resize?.(panelCols, panelRows);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [columns, rows, state.viewMode, outputTaskId]);
 
     // ── Keyboard handling (interactive mode — raw passthrough to PTY) ──
@@ -219,27 +218,27 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             if (key.return) {
                 entry.write("\r");
             } else if (key.upArrow) {
-                entry.write("\x1b[A");
+                entry.write("\u001B[A");
             } else if (key.downArrow) {
-                entry.write("\x1b[B");
+                entry.write("\u001B[B");
             } else if (key.rightArrow) {
-                entry.write("\x1b[C");
+                entry.write("\u001B[C");
             } else if (key.leftArrow) {
-                entry.write("\x1b[D");
+                entry.write("\u001B[D");
             } else if (key.backspace) {
-                entry.write("\x7f");
+                entry.write("\u007F");
             } else if (key.delete) {
-                entry.write("\x1b[3~");
+                entry.write("\u001B[3~");
             } else if (key.tab) {
                 entry.write("\t");
             } else if (key.home) {
-                entry.write("\x1b[H");
+                entry.write("\u001B[H");
             } else if (key.end) {
-                entry.write("\x1b[F");
+                entry.write("\u001B[F");
             } else if (key.pageUp) {
-                entry.write("\x1b[5~");
+                entry.write("\u001B[5~");
             } else if (key.pageDown) {
-                entry.write("\x1b[6~");
+                entry.write("\u001B[6~");
             } else if (key.ctrl && input) {
                 // Ctrl+letter → raw control character (Ctrl+A = 0x01, etc.)
                 const code = input.toUpperCase().codePointAt(0);
@@ -587,8 +586,15 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small ({columns}x{rows}
-                    ). Minimum: {MIN_VIEWPORT_WIDTH}x{MIN_VIEWPORT_HEIGHT}
+                    Terminal too small (
+                    {columns}
+                    x
+                    {rows}
+                    ). Minimum:
+                    {' '}
+                    {MIN_VIEWPORT_WIDTH}
+                    x
+                    {MIN_VIEWPORT_HEIGHT}
                 </Text>
             </Box>
         );
@@ -600,21 +606,37 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
         <Box gap={1}>
             {state.succeeded > 0 && (
                 <Text bold color="green">
-                    {"\u2713"} {state.succeeded}
+                    {"\u2713"}
+                    {' '}
+                    {state.succeeded}
                 </Text>
             )}
             {state.failed > 0 && (
                 <Text bold color="red">
-                    {"\u2717"} {state.failed}
+                    {"\u2717"}
+                    {' '}
+                    {state.failed}
                 </Text>
             )}
             {runningCount > 0 && (
                 <Text color="cyan">
-                    {"\u25F7"} {runningCount}
+                    {"\u25F7"}
+                    {' '}
+                    {runningCount}
                 </Text>
             )}
-            <Text dimColor>{state.rows.length} total</Text>
-            {state.statusFilter !== "all" && <Text color="yellow">[{state.statusFilter}]</Text>}
+            <Text dimColor>
+                {state.rows.length}
+                {' '}
+                total
+            </Text>
+            {state.statusFilter !== "all" && (
+                <Text color="yellow">
+                    [
+                    {state.statusFilter}
+                    ]
+                </Text>
+            )}
         </Box>
     );
 
@@ -644,13 +666,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(outputTask?.status === "running"
                 ? [
-                      <Box gap={1} key="i">
-                          <Text bold color="white">
-                              i
-                          </Text>
-                          <Text dimColor>INPUT</Text>
-                      </Box>,
-                  ]
+                    <Box gap={1} key="i">
+                        <Text bold color="white">
+                            i
+                        </Text>
+                        <Text dimColor>INPUT</Text>
+                    </Box>,
+                ]
                 : []),
             <Box gap={1} key="q">
                 <Text bold color="white">
@@ -677,13 +699,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(canRetry
                 ? [
-                      <Box gap={1} key="R">
-                          <Text bold color="white">
-                              R
-                          </Text>
-                          <Text dimColor>RETRY</Text>
-                      </Box>,
-                  ]
+                    <Box gap={1} key="R">
+                        <Text bold color="white">
+                            R
+                        </Text>
+                        <Text dimColor>RETRY</Text>
+                    </Box>,
+                ]
                 : []),
             <Box gap={1} key="?">
                 <Text bold color="white">
@@ -732,13 +754,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(outputTask?.status === "running"
                 ? [
-                      <Box gap={1} key="i">
-                          <Text bold color="white">
-                              i
-                          </Text>
-                          <Text dimColor>INPUT</Text>
-                      </Box>,
-                  ]
+                    <Box gap={1} key="i">
+                        <Text bold color="white">
+                            i
+                        </Text>
+                        <Text dimColor>INPUT</Text>
+                    </Box>,
+                ]
                 : []),
             <Box gap={1} key="enter">
                 <Text bold color="white">
@@ -799,13 +821,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
             </Box>,
             ...(state.viewMode === "split"
                 ? [
-                      <Box gap={1} key="tab">
-                          <Text bold color="white">
-                              Tab
-                          </Text>
-                          <Text dimColor>PANEL</Text>
-                      </Box>,
-                  ]
+                    <Box gap={1} key="tab">
+                        <Text bold color="white">
+                            Tab
+                        </Text>
+                        <Text dimColor>PANEL</Text>
+                    </Box>,
+                ]
                 : []),
         ];
     }
@@ -826,22 +848,25 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
     const helpPopup = (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={
+            footer={(
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>{" "}
-                    scroll{" "}
+                    </Text>
+                    {" "}
+                    scroll
+                    {" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>{" "}
+                    </Text>
+                    {" "}
                     close
                 </Text>
-            }
+            )}
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -911,7 +936,15 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                     </Text>
                     <Text dimColor>
                         {" "}
-                        List {"\u2192"} Split {"\u2192"} Fullscreen
+                        List
+                        {' '}
+                        {"\u2192"}
+                        {' '}
+                        Split
+                        {' '}
+                        {"\u2192"}
+                        {' '}
+                        Fullscreen
                     </Text>
                 </Text>
                 <Text>
@@ -921,7 +954,15 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
                     </Text>
                     <Text dimColor>
                         {" "}
-                        Fullscreen {"\u2192"} Split {"\u2192"} List
+                        Fullscreen
+                        {' '}
+                        {"\u2192"}
+                        {' '}
+                        Split
+                        {' '}
+                        {"\u2192"}
+                        {' '}
+                        List
                     </Text>
                 </Text>
             </Box>

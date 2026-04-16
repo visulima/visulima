@@ -8,19 +8,19 @@ import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-hel
 import { assertValidBom } from "./validator";
 
 interface FixtureInput {
+    lockfile?: string;
+    projects: {
+        dependencies?: Record<string, string>;
+        description?: string;
+        devDependencies?: Record<string, string>;
+        homepage?: string;
+        license?: string;
+        name: string;
+        type?: "application" | "library";
+        version: string;
+    }[];
     rootName?: string;
     rootVersion?: string;
-    projects: {
-        name: string;
-        version: string;
-        type?: "application" | "library";
-        dependencies?: Record<string, string>;
-        devDependencies?: Record<string, string>;
-        license?: string;
-        description?: string;
-        homepage?: string;
-    }[];
-    lockfile?: string;
 }
 
 /**

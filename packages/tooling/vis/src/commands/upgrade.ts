@@ -3,7 +3,6 @@ import { execSync, spawnSync } from "node:child_process";
 import type { Command } from "@visulima/cerebro";
 
 const upgrade: Command = {
-    group: "System",
     argument: {
         description: "Target version (defaults to latest)",
         name: "version",
@@ -70,6 +69,7 @@ const upgrade: Command = {
 
         logger.info(`\n\u2713 Updated @visulima/vis from ${currentVersion} \u2192 ${latestVersion}`);
     },
+    group: "System",
     name: "self-update",
     options: [
         { defaultValue: false, description: "Check for updates without installing", name: "check", type: Boolean },

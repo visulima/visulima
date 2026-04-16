@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import type { CycloneDxBom } from "../../src/sbom/types";
-
 import { validateBom } from "./validator";
 
 /**
@@ -9,60 +8,62 @@ import { validateBom } from "./validator";
  * root metadata, one workspace project as the root component, a single
  * external dependency with a licence + hash, and the dependency edge.
  */
-const buildFixtureBom = (): CycloneDxBom => ({
-    $schema: "http://cyclonedx.org/schema/bom-1.6.schema.json",
-    bomFormat: "CycloneDX",
-    components: [
-        {
-            "bom-ref": "pkg:npm/lodash@4.17.21",
-            hashes: [
-                {
-                    alg: "SHA-512",
-                    content: "c".repeat(128),
-                },
-            ],
-            licenses: [{ license: { id: "MIT" } }],
-            name: "lodash",
-            purl: "pkg:npm/lodash@4.17.21",
-            scope: "required",
-            type: "library",
-            version: "4.17.21",
+const buildFixtureBom = (): CycloneDxBom => {
+    return {
+        $schema: "http://cyclonedx.org/schema/bom-1.6.schema.json",
+        bomFormat: "CycloneDX",
+        components: [
+            {
+                "bom-ref": "pkg:npm/lodash@4.17.21",
+                hashes: [
+                    {
+                        alg: "SHA-512",
+                        content: "c".repeat(128),
+                    },
+                ],
+                licenses: [{ license: { id: "MIT" } }],
+                name: "lodash",
+                purl: "pkg:npm/lodash@4.17.21",
+                scope: "required",
+                type: "library",
+                version: "4.17.21",
+            },
+        ],
+        dependencies: [
+            {
+                dependsOn: ["pkg:npm/lodash@4.17.21"],
+                ref: "pkg:npm/my-app@1.0.0",
+            },
+            {
+                ref: "pkg:npm/lodash@4.17.21",
+            },
+        ],
+        metadata: {
+            component: {
+                "bom-ref": "pkg:npm/my-app@1.0.0",
+                name: "my-app",
+                purl: "pkg:npm/my-app@1.0.0",
+                type: "application",
+                version: "1.0.0",
+            },
+            timestamp: "2026-04-13T00:00:00Z",
+            tools: {
+                components: [
+                    {
+                        name: "@visulima/vis",
+                        type: "application",
+                        version: "1.0.0",
+                    },
+                ],
+            },
         },
-    ],
-    dependencies: [
-        {
-            dependsOn: ["pkg:npm/lodash@4.17.21"],
-            ref: "pkg:npm/my-app@1.0.0",
-        },
-        {
-            ref: "pkg:npm/lodash@4.17.21",
-        },
-    ],
-    metadata: {
-        component: {
-            "bom-ref": "pkg:npm/my-app@1.0.0",
-            name: "my-app",
-            purl: "pkg:npm/my-app@1.0.0",
-            type: "application",
-            version: "1.0.0",
-        },
-        timestamp: "2026-04-13T00:00:00Z",
-        tools: {
-            components: [
-                {
-                    name: "@visulima/vis",
-                    type: "application",
-                    version: "1.0.0",
-                },
-            ],
-        },
-    },
-    serialNumber: "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-    specVersion: "1.6",
-    version: 1,
-});
+        serialNumber: "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+        specVersion: "1.6",
+        version: 1,
+    };
+};
 
-describe("CycloneDX 1.6 schema conformance", () => {
+describe("cycloneDX 1.6 schema conformance", () => {
     it("should accept a minimal BOM with a single component", () => {
         expect.assertions(1);
 

@@ -72,12 +72,14 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
     };
 
     // Run all scans in parallel
-    const [outdatedResult, installed, duplicates, e18eEntries, socketEntries] = await Promise.all([
+    // `findDuplicateDependencies` is synchronous — hoist it out of Promise.all
+    // so `await Promise.all` doesn't flag it (await-thenable).
+    const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
+    const [outdatedResult, installed, e18eEntries, socketEntries] = await Promise.all([
         catalogs.size > 0
             ? checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks)
             : Promise.resolve({ failed: [], ignored: [], outdated: [] }),
         Promise.resolve(scanInstalledPackages(workspaceRoot)),
-        findDuplicateDependencies(workspaceRoot, pm.name),
         Promise.resolve(buildE18eEntries(allDeps)),
         Promise.resolve(buildSocketEntries(allDeps, lockText, pm, false)),
     ]);
@@ -348,7 +350,6 @@ const displayActions = (results: DoctorResults): void => {
  * ```
  */
 const doctor: Command = {
-    group: "Security & Health",
     description: "Run a full project health check (outdated, security, duplicates, optimizations)",
     examples: [
         ["vis doctor", "Full project health check"],
@@ -529,6 +530,7 @@ const doctor: Command = {
             }
         }
     },
+    group: "Security & Health",
     name: "doctor",
     options: [
         { description: "Output format: table or json (default: table)", name: "format", type: String },

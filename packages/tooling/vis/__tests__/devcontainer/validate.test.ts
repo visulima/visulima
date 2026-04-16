@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { DevcontainerConfig } from "../../src/tui/components/devcontainer/types";
 import { validateConfig } from "../../src/tui/components/devcontainer/validate";
 
-describe("validateConfig", () => {
+describe(validateConfig, () => {
     describe("errors", () => {
         it("should require image, build, or dockerComposeFile", () => {
             expect.assertions(2);
@@ -76,7 +76,7 @@ describe("validateConfig", () => {
             });
 
             expect(result.valid).toBe(false);
-            expect(result.errors.length).toBe(2);
+            expect(result.errors).toHaveLength(2);
         });
 
         it("should accept valid port numbers", () => {
@@ -88,7 +88,7 @@ describe("validateConfig", () => {
                 name: "test",
             });
 
-            expect(result.errors.filter((e) => e.field === "forwardPorts").length).toBe(0);
+            expect(result.errors.filter((e) => e.field === "forwardPorts")).toHaveLength(0);
         });
     });
 
@@ -126,7 +126,7 @@ describe("validateConfig", () => {
                 privileged: false,
             });
 
-            expect(result.warnings.filter((w) => w.field === "privileged").length).toBe(0);
+            expect(result.warnings.filter((w) => w.field === "privileged")).toHaveLength(0);
         });
     });
 
@@ -164,7 +164,7 @@ describe("validateConfig", () => {
                 name: "test",
             });
 
-            expect(result.suggestions.filter((s) => s.field === "features").length).toBe(0);
+            expect(result.suggestions.filter((s) => s.field === "features")).toHaveLength(0);
         });
 
         it("should not suggest extensions when extensions are present", () => {
@@ -176,7 +176,7 @@ describe("validateConfig", () => {
                 name: "test",
             });
 
-            expect(result.suggestions.filter((s) => s.field === "extensions").length).toBe(0);
+            expect(result.suggestions.filter((s) => s.field === "extensions")).toHaveLength(0);
         });
     });
 

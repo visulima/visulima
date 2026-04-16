@@ -9,12 +9,12 @@ export type { CodeownersConfig } from "./workspace";
  * object so callers can post-process (e.g. append sub-sections).
  */
 export interface CodeownersLine {
-    /** Effective path glob (workspace-root-relative). */
-    path: string;
-    /** Owner handles, space-separated by the writer. */
-    owners: string[];
     /** Optional notification channel (added as a trailing comment). */
     channel?: string;
+    /** Owner handles, space-separated by the writer. */
+    owners: string[];
+    /** Effective path glob (workspace-root-relative). */
+    path: string;
     /** Source project name — used for `order-by=project-id` sorting. */
     projectId?: string;
 }
@@ -83,9 +83,8 @@ const HEADER_LINES = [
 
 /**
  * Serialises {@link CodeownersLine}s to a valid CODEOWNERS file string.
- *
- * @param lines - Resolved CODEOWNERS lines.
- * @param _provider - Reserved for future provider-specific formatting (e.g. Bitbucket syntax).
+ * @param lines Resolved CODEOWNERS lines.
+ * @param _provider Reserved for future provider-specific formatting (e.g. Bitbucket syntax).
  * @returns The full CODEOWNERS file content with header and trailing newline.
  */
 export const renderCodeowners = (lines: CodeownersLine[], _provider: CodeownersConfig["provider"] = "github"): string => {

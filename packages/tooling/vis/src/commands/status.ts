@@ -12,7 +12,6 @@ import { buildProjectGraph, discoverWorkspace } from "../workspace";
 const icon = (ok: boolean): string => (ok ? green("\u2713") : red("\u2717"));
 
 const status: Command = {
-    group: "Workspace",
     description: "Show a workspace health dashboard at a glance",
     examples: [
         ["vis status", "Full status overview"],
@@ -105,6 +104,7 @@ const status: Command = {
 
         logger.info("");
     },
+    group: "Workspace",
     name: "status",
     options: [
         {

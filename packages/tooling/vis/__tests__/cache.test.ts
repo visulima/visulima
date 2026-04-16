@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { collectCacheEntries, formatAge, runClean, runPrune } from "../src/commands/cache";
 
-describe("formatAge", () => {
+describe(formatAge, () => {
     it("returns seconds for sub-minute ages", () => {
         expect.assertions(1);
 
@@ -53,7 +53,7 @@ describe("formatAge", () => {
     });
 });
 
-describe("collectCacheEntries", () => {
+describe(collectCacheEntries, () => {
     let cacheDirectory: string;
 
     beforeEach(() => {
@@ -145,7 +145,7 @@ const writeCacheEntry = (cacheDirectory: string, hash: string, options: { mtime?
     }
 };
 
-describe("runClean", () => {
+describe(runClean, () => {
     let workspaceRoot: string;
     let cacheDirectory: string;
 
@@ -257,7 +257,7 @@ describe("runClean", () => {
     });
 });
 
-describe("runPrune", () => {
+describe(runPrune, () => {
     let workspaceRoot: string;
     let cacheDirectory: string;
 

@@ -94,7 +94,7 @@ export const FEATURE_MOUNTS: { featureMatch: string; mounts: MountEntry[] }[] = 
 export const getSuggestedMounts = (
     pm: PackageManager | null,
     enabledFeatures: Record<string, Record<string, unknown> | string>,
-    currentMounts: Array<MountEntry | string>,
+    currentMounts: (MountEntry | string)[],
 ): MountEntry[] => {
     const suggestions: MountEntry[] = [];
     const existingTargets = new Set(currentMounts.map((m) => (typeof m === "string" ? m : m.target)));

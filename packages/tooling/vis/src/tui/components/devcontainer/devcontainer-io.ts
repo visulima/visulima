@@ -46,5 +46,5 @@ export const writeDevcontainerJson = (workspaceRoot: string, config: Devcontaine
     const filePath = outputPath ?? join(dir, "devcontainer.json");
 
     mkdirSync(dir, { recursive: true });
-    writeFileSync(filePath, JSON.stringify(config, null, 2) + "\n", "utf8");
+    writeFileSync(filePath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 };

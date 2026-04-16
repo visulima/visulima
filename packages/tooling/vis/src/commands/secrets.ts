@@ -21,11 +21,10 @@ interface SecretsFlags {
     concurrency?: number;
     config?: string;
     dryRun?: boolean;
-    exclude?: RepeatableString;
     enableRule?: RepeatableString;
+    exclude?: RepeatableString;
     excludeFrom?: RepeatableString;
     excludeRule?: RepeatableString;
-    noExtendBundled?: boolean;
     format?: ReportFormat;
     includeHidden?: boolean;
     includeRule?: RepeatableString;
@@ -34,6 +33,7 @@ interface SecretsFlags {
     listValidators?: boolean;
     maxSize?: number;
     minConfidence?: string;
+    noExtendBundled?: boolean;
     noGitignore?: boolean;
     onlyVerified?: boolean;
     quiet?: boolean;

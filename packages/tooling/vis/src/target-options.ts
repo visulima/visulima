@@ -49,7 +49,7 @@ export type TargetOsType = "linux" | "macos" | "windows";
 export interface VisTargetOptions {
     /**
      * How to forward affected files to the task process.
-     * Only used when invoked via `vis affected <target>`.
+     * Only used when invoked via `vis affected &lt;target>`.
      * @default false
      */
     affectedFiles?: AffectedFilesMode;
@@ -61,19 +61,19 @@ export interface VisTargetOptions {
     envFile?: string;
 
     /**
-     * When true, the task is hidden from CLI listings and can only be invoked
-     * as a dependency of another task.
-     * @default false
-     */
-    internal?: boolean;
-
-    /**
      * When true, the task is serialized with respect to parallel execution
      * and must be run on the main process (claims stdin). Used for commands
      * that read from the terminal.
      * @default false
      */
     interactive?: boolean;
+
+    /**
+     * When true, the task is hidden from CLI listings and can only be invoked
+     * as a dependency of another task.
+     * @default false
+     */
+    internal?: boolean;
 
     /**
      * Serializes all tasks that share the same mutex name. Useful for tasks
@@ -116,17 +116,17 @@ export interface VisTargetOptions {
     retryDelay?: number | "exponential";
 
     /**
-     * Controls whether the task runs in CI environments.
-     * @default true
-     */
-    runInCI?: RunInCI;
-
-    /**
      * When true, the command executes with the workspace root as CWD
      * instead of the project root.
      * @default false
      */
     runFromWorkspaceRoot?: boolean;
+
+    /**
+     * Controls whether the task runs in CI environments.
+     * @default true
+     */
+    runInCI?: RunInCI;
 
     /**
      * Per-target shell override. When set, the command runs through this
@@ -156,6 +156,7 @@ export interface VisTargetConfiguration extends Omit<TargetConfiguration, "optio
     options?: VisTargetOptions;
     /** Preset applied before user-specified options. */
     preset?: TargetPreset;
+
     /**
      * Semantic task type. Affects caching defaults and CI filtering.
      * @default "test"

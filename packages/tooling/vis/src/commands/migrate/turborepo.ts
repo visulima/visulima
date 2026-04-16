@@ -1,5 +1,5 @@
-import type { MigrateLogger, MigrationReport } from "./types";
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
+import type { MigrateLogger, MigrationReport } from "./types";
 
 interface TurboJson {
     extends?: string[];
@@ -7,13 +7,13 @@ interface TurboJson {
     globalEnv?: string[];
     globalPassThroughEnv?: string[];
     pipeline?: Record<string, TurboTask>;
-    tasks?: Record<string, TurboTask>;
     remoteCache?: {
+        apiUrl?: string;
         enabled?: boolean;
         signature?: boolean;
         teamId?: string;
-        apiUrl?: string;
     };
+    tasks?: Record<string, TurboTask>;
     ui?: "stream" | "tui";
 }
 
@@ -22,28 +22,26 @@ interface TurboTask {
     dependsOn?: string[];
     env?: string[];
     inputs?: string[];
-    outputs?: string[];
-    persistent?: boolean;
     interactive?: boolean;
     outputLogs?: "errors-only" | "full" | "hash-only" | "new-only" | "none";
+    outputs?: string[];
     passThroughEnv?: string[];
+    persistent?: boolean;
 }
 
-const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] => {
-    return deps.map((dep) => {
-        if (dep.startsWith("^")) {
-            return { dependencies: true, target: dep.slice(1) };
-        }
+const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] => deps.map((dep) => {
+    if (dep.startsWith("^")) {
+        return { dependencies: true, target: dep.slice(1) };
+    }
 
-        if (dep.includes("#")) {
-            const [project, target] = dep.split("#");
+    if (dep.includes("#")) {
+        const [project, target] = dep.split("#");
 
-            return { projects: project, target: target! };
-        }
+        return { projects: project, target: target! };
+    }
 
-        return dep;
-    });
-};
+    return dep;
+});
 
 const renderVisConfig = (turbo: TurboJson): string => {
     const tasks = turbo.tasks ?? turbo.pipeline ?? {};
@@ -137,11 +135,10 @@ const renderVisConfig = (turbo: TurboJson): string => {
 
 /**
  * Translates a `turbo.json` into a `vis.config.ts`.
- *
- * @param workspaceRoot - Absolute workspace root path.
- * @param options - Migration options.
- * @param logger - Logger for user feedback.
- * @param report - Migration report to append manual steps and warnings.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param options Migration options.
+ * @param logger Logger for user feedback.
+ * @param report Migration report to append manual steps and warnings.
  */
 export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const turbo = readJsonConfig<TurboJson>(workspaceRoot, "turbo.json");

@@ -13,13 +13,10 @@
  *   failure, returns the document typed as `CycloneDxBom` on success.
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies -- ajv is a devDependency; this file only runs under vitest
 import Ajv from "ajv";
-// eslint-disable-next-line import/no-extraneous-dependencies -- ajv-formats is a devDependency; this file only runs under vitest
 import addFormats from "ajv-formats";
 
 import type { CycloneDxBom } from "../../src/sbom/types";
-
 import bomSchema from "./schemas/bom-1.6.schema.json" with { type: "json" };
 import jsfSchema from "./schemas/jsf-0.82.schema.json" with { type: "json" };
 import spdxSchema from "./schemas/spdx.schema.json" with { type: "json" };
@@ -92,21 +89,22 @@ const compileBomValidator = (): CompiledValidator => {
 
 /**
  * Validates a CycloneDX BOM document against the vendored 1.6 JSON schema.
- *
- * @param bom - The BOM document to validate. Typed as `unknown` so callers
- *              can pass the raw output of their generator without first
- *              upcasting — a failed validation is exactly what catches a type
- *              drift bug.
+ * @param bom The BOM document to validate. Typed as `unknown` so callers
+ * can pass the raw output of their generator without first
+ * upcasting — a failed validation is exactly what catches a type
+ * drift bug.
  */
 export const validateBom = (bom: unknown): ValidationResult => {
     const validator = compileBomValidator();
     const valid = validator(bom);
 
     return {
-        errors: (validator.errors ?? []).map((error) => ({
-            instancePath: error.instancePath,
-            message: error.message ?? "(no message)",
-        })),
+        errors: (validator.errors ?? []).map((error) => {
+            return {
+                instancePath: error.instancePath,
+                message: error.message ?? "(no message)",
+            };
+        }),
         valid,
     };
 };

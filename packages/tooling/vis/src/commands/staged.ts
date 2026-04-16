@@ -43,7 +43,6 @@ const mapOptions = (options: Record<string, unknown>, lintStagedOptions: Record<
 };
 
 const staged: Command = {
-    group: "Run & Execute",
     description: "Run linters on staged files using config from vis.config.ts",
     examples: [
         ["vis staged", "Run staged linters"],
@@ -57,12 +56,12 @@ const staged: Command = {
 
         if (!stagedConfig) {
             throw new Error(
-                'No "staged" config found in vis.config.ts. Please add a staged config:\n\n' +
-                    "  // vis.config.ts\n" +
-                    '  import { defineConfig } from "@visulima/vis/config";\n\n' +
-                    "  export default defineConfig({\n" +
-                    "    staged: { '*': 'vis check --fix' },\n" +
-                    "  });",
+                'No "staged" config found in vis.config.ts. Please add a staged config:\n\n'
+                + "  // vis.config.ts\n"
+                + '  import { defineConfig } from "@visulima/vis/config";\n\n'
+                + "  export default defineConfig({\n"
+                + "    staged: { '*': 'vis check --fix' },\n"
+                + "  });",
             );
         }
 
@@ -87,6 +86,7 @@ const staged: Command = {
 
         process.exit(success ? 0 : 1);
     },
+    group: "Run & Execute",
     name: "staged",
     options: [
         {

@@ -260,7 +260,8 @@ describe(generateVariants, () => {
 
     describe("edge cases", () => {
         it("should never include the original name in variants", () => {
-            expect.assertions(1);
+            // 5 names × 1 assertion each = 5
+            expect.assertions(5);
 
             for (const name of ["lodash", "react", "express", "body-parser", "@scope/pkg"]) {
                 expect(generateVariants(name).has(name)).toBe(false);
@@ -315,8 +316,8 @@ describe(checkTyposquat, () => {
     });
 
     it("should detect multiple different blocklisted entries", () => {
-        // Test several known entries from the JSON
-        expect.assertions(2);
+        // 5 cases × 2 assertions each = 10
+        expect.assertions(10);
 
         const cases: [string, string][] = [
             ["loash", "lodash"],
@@ -387,8 +388,8 @@ describe(checkTyposquat, () => {
     });
 
     it("should detect all known blocklist entries in the JSON", () => {
-        // Verify a sampling of entries across different packages
-        expect.assertions(3);
+        // 6 samples × 3 assertions each = 18
+        expect.assertions(18);
 
         const samples: [string, string][] = [
             ["axxios", "axios"],
@@ -605,7 +606,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should handle case-insensitive answers", async () => {
-        expect.assertions(2);
+        // 4 answers × 2 assertions each = 8
+        expect.assertions(8);
 
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
 

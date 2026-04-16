@@ -59,7 +59,7 @@ const isSafePackageName = (name: string): boolean => {
         // Scoped: exactly one `/` permitted, between the scope and the name.
         const slashIndex = name.indexOf("/");
 
-        return slashIndex > 1 && name.indexOf("/", slashIndex + 1) === -1;
+        return slashIndex > 1 && !name.includes("/", slashIndex + 1);
     }
 
     return !name.includes("/");
@@ -124,7 +124,7 @@ const readHoistedCopy = (workspaceRoot: string, name: string, version: string): 
 /**
  * Looks up the installed `package.json` for a specific `name@version`.
  * Tries pnpm's virtual store first (exact match by construction), then
- * falls back to the hoisted `node_modules/<name>/package.json` if its
+ * falls back to the hoisted `node_modules/&lt;name>/package.json` if its
  * version matches.
  *
  * Returns `undefined` if nothing on disk matches the requested version,

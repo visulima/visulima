@@ -1,5 +1,5 @@
-import { watch } from "node:fs";
 import type { FSWatcher } from "node:fs";
+import { watch } from "node:fs";
 
 /**
  * Debounced multi-directory file watcher. Watches one or more project
@@ -33,8 +33,7 @@ const shouldIgnore = (path: string): boolean => {
 /**
  * Starts recursive file watchers on the given paths and invokes
  * {@link WatchOptions.onChange} after a debounce window.
- *
- * @param options - Watcher configuration.
+ * @param options Watcher configuration.
  * @returns A handle to close all watchers.
  */
 export const startWatcher = (options: WatchOptions): WatchHandle => {
@@ -54,7 +53,7 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
             return;
         }
 
-        Promise.resolve(onChange(changes)).catch((error) => {
+        Promise.resolve(onChange(changes)).catch((error: unknown) => {
             console.error("[vis watch] onChange handler failed:", error);
         });
     };

@@ -19,7 +19,7 @@ describe("features catalog", () => {
     it("should have valid categories for all entries", () => {
         expect.assertions(1);
 
-        const validCategories = new Set(["language", "tool", "cloud", "database", "other"]);
+        const validCategories = new Set(["cloud", "database", "language", "other", "tool"]);
         const invalid = FEATURE_CATALOG.filter((f) => !validCategories.has(f.category));
 
         expect(invalid).toHaveLength(0);
@@ -71,7 +71,7 @@ describe("extensions catalog", () => {
     it("should have valid categories for all entries", () => {
         expect.assertions(1);
 
-        const validCategories = new Set(["linting", "formatting", "language", "git", "testing", "debugging", "other"]);
+        const validCategories = new Set(["debugging", "formatting", "git", "language", "linting", "other", "testing"]);
         const invalid = EXTENSION_CATALOG.filter((e) => !validCategories.has(e.category));
 
         expect(invalid).toHaveLength(0);
@@ -128,7 +128,7 @@ describe("templates", () => {
     });
 });
 
-describe("filterFeatures", () => {
+describe(filterFeatures, () => {
     it("should return all features with empty search", () => {
         expect.assertions(1);
 
@@ -170,7 +170,7 @@ describe("filterFeatures", () => {
     });
 });
 
-describe("filterExtensions", () => {
+describe(filterExtensions, () => {
     it("should return all extensions with empty search", () => {
         expect.assertions(1);
 
@@ -223,7 +223,7 @@ describe("mount suggestions", () => {
     it("should not suggest mounts that already exist", () => {
         expect.assertions(1);
 
-        const existingMounts = PM_MOUNTS.pnpm.map((m) => ({ ...m }));
+        const existingMounts = PM_MOUNTS.pnpm.map((m) => { return { ...m }; });
         const mounts = getSuggestedMounts("pnpm", {}, existingMounts);
 
         expect(mounts).toHaveLength(0);

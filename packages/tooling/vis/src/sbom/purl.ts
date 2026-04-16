@@ -23,7 +23,7 @@
  * spec, so we never need the multi-byte UTF-8 path.
  */
 const encodeSegment = (input: string): string =>
-    input.replaceAll(/[^A-Za-z0-9._~-]/g, (char) => {
+    input.replaceAll(/[^\w.~-]/g, (char) => {
         const codePoint = char.codePointAt(0) ?? 0;
 
         return `%${codePoint.toString(16).toUpperCase().padStart(2, "0")}`;
@@ -31,9 +31,8 @@ const encodeSegment = (input: string): string =>
 
 /**
  * Builds a `pkg:npm/…` Package URL from an npm package name + version.
- *
- * @param packageName - The npm package name, scoped or unscoped.
- * @param version - The resolved exact version.
+ * @param packageName The npm package name, scoped or unscoped.
+ * @param version The resolved exact version.
  * @returns A well-formed PURL string.
  */
 export const toNpmPurl = (packageName: string, version: string): string => {

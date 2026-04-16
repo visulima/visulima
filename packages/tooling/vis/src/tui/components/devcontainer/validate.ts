@@ -49,14 +49,14 @@ export const validateConfig = (config: DevcontainerConfig): ValidationResult => 
 
     // Ports validation
     if (config.forwardPorts) {
-        if (!Array.isArray(config.forwardPorts)) {
-            errors.push({ field: "forwardPorts", message: '"forwardPorts" must be an array' });
-        } else {
+        if (Array.isArray(config.forwardPorts)) {
             for (const [index, port] of config.forwardPorts.entries()) {
                 if (typeof port === "number" && (port < 1 || port > 65_535)) {
                     errors.push({ field: "forwardPorts", message: `Invalid port ${String(port)} at index ${String(index)}` });
                 }
             }
+        } else {
+            errors.push({ field: "forwardPorts", message: '"forwardPorts" must be an array' });
         }
     }
 

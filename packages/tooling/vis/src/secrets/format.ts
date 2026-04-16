@@ -43,12 +43,12 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
     const color = useColor
         ? { cyan, dim, green, red, yellow }
         : {
-              cyan: (s: string) => s,
-              dim: (s: string) => s,
-              green: (s: string) => s,
-              red: (s: string) => s,
-              yellow: (s: string) => s,
-          };
+            cyan: (s: string) => s,
+            dim: (s: string) => s,
+            green: (s: string) => s,
+            red: (s: string) => s,
+            yellow: (s: string) => s,
+        };
     const lines: string[] = [];
     const byFile = groupByFile(findings);
 
@@ -64,7 +64,7 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
             // text output is self-describing (`kingfisher, medium`). Gitleaks rules
             // without an explicit confidence render their "low" default — call it
             // out rather than hiding it so users see the floor that's being applied.
-            const provenance = [f.source, f.confidence].filter((s): s is string => Boolean(s)).join(", ");
+            const provenance = [f.source, f.confidence].filter(Boolean).join(", ");
             const provenanceSuffix = provenance ? ` ${color.dim(`(${provenance})`)}` : "";
             const alternates = f.alternateMatches && f.alternateMatches.length > 0
                 ? ` ${color.dim(`also: ${f.alternateMatches.join(", ")}`)}`
@@ -73,14 +73,29 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
             // (validation is null by default). Successful verification is green, the
             // provider-rejected case is red, the network/timeout case is yellow.
             let validationBadge = "";
-            if (f.validation === "verified") {
-                validationBadge = ` ${color.green("✓ verified")}`;
-            } else if (f.validation === "rejected") {
-                validationBadge = ` ${color.red("✗ rejected")}`;
-            } else if (f.validation === "error") {
-                validationBadge = ` ${color.yellow("! error")}`;
-            } else if (f.validation === "skipped") {
-                validationBadge = ` ${color.dim("— unverifiable")}`;
+
+            switch (f.validation) {
+                case "error": {
+                    validationBadge = ` ${color.yellow("! error")}`;
+
+                    break;
+                }
+                case "rejected": {
+                    validationBadge = ` ${color.red("✗ rejected")}`;
+
+                    break;
+                }
+                case "skipped": {
+                    validationBadge = ` ${color.dim("— unverifiable")}`;
+
+                    break;
+                }
+                case "verified": {
+                    validationBadge = ` ${color.green("✓ verified")}`;
+
+                    break;
+                }
+            // No default
             }
 
             lines.push(

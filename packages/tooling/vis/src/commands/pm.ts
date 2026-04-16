@@ -3,7 +3,6 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runPmSubcommand } from "../pm-runner";
 
 const pm: Command = {
-    group: "System",
     argument: {
         description: "Subcommand and arguments (e.g., cache dir, publish --dry-run, list --depth 0)",
         name: "args",
@@ -37,6 +36,7 @@ const pm: Command = {
             process.exitCode = code;
         }
     },
+    group: "System",
     name: "pm",
 };
 

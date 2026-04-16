@@ -3,16 +3,15 @@ import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
+import { detectPm } from "../pm-runner";
 import type { PackageManager } from "../tui/components/devcontainer/catalogs/mount-suggestions";
 import { TEMPLATES } from "../tui/components/devcontainer/catalogs/templates";
 import { readDevcontainerJson, writeDevcontainerJson } from "../tui/components/devcontainer/devcontainer-io";
 import { DevcontainerStore } from "../tui/components/devcontainer/DevcontainerStore";
 import type { DevcontainerConfig } from "../tui/components/devcontainer/types";
 import VisDevcontainerApp from "../tui/components/devcontainer/VisDevcontainerApp";
-import { detectPm } from "../pm-runner";
 
 const devcontainer: Command = {
-    group: "Scaffold & Config",
     alias: "dc",
     description: "Create or update .devcontainer/devcontainer.json interactively",
     examples: [
@@ -115,6 +114,7 @@ const devcontainer: Command = {
             logger.info(`DevContainer config saved to ${target}`);
         }
     },
+    group: "Scaffold & Config",
     name: "devcontainer",
     options: [
         {

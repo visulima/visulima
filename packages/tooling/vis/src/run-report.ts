@@ -5,9 +5,8 @@ import type { TaskResults } from "@visulima/task-runner";
 
 /**
  * Formats a compact one-line timing summary for display after a run.
- *
- * @param results - Task execution results.
- * @param durationMs - Total wall-clock duration in milliseconds.
+ * @param results Task execution results.
+ * @param durationMs Total wall-clock duration in milliseconds.
  * @returns A formatted summary string, e.g. "3 succeeded · 1 cached · 0 failed · 2.4s"
  */
 export const formatTimingSummary = (results: TaskResults, durationMs: number): string => {
@@ -17,8 +16,8 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
 
     for (const [, result] of results) {
         switch (result.status) {
-            case "success": {
-                succeeded += 1;
+            case "failure": {
+                failed += 1;
                 break;
             }
 
@@ -29,13 +28,14 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
                 break;
             }
 
-            case "failure": {
-                failed += 1;
+            case "success": {
+                succeeded += 1;
                 break;
             }
 
-            default:
+            default: {
                 break;
+            }
         }
     }
 
@@ -68,9 +68,8 @@ interface HistoricalRun {
 /**
  * Loads durations from historical run summaries and computes the
  * average. Returns the comparison string or `undefined` if no history.
- *
- * @param workspaceRoot - Workspace root path.
- * @param currentDurationMs - Duration of the current run in ms.
+ * @param workspaceRoot Workspace root path.
+ * @param currentDurationMs Duration of the current run in ms.
  * @returns A human-readable comparison, e.g. "(1.2s faster than avg)" or `undefined`.
  */
 export const compareDuration = (workspaceRoot: string, currentDurationMs: number): string | undefined => {

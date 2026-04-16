@@ -81,7 +81,6 @@ const sortContents = (contents: string, sortScripts: boolean): string => {
 };
 
 const sortPackageJson: Command = {
-    group: "Workspace",
     description: "Sort package.json files across the workspace using the sort-package-json Rust crate",
     examples: [
         ["vis sort-package-json", "Sort all package.json files in the workspace"],
@@ -171,6 +170,7 @@ const sortPackageJson: Command = {
             process.exitCode = 1;
         }
     },
+    group: "Workspace",
     name: "sort-package-json",
     options: [
         {

@@ -22,10 +22,9 @@ import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
  * matter what `process.cwd()` happens to be when the command runs.
  *
  * Precedence: `optionsCacheDir` > `configCacheDir` > `{workspaceRoot}/{@link DEFAULT_CACHE_DIRECTORY_NAME}`.
- *
- * @param workspaceRoot - Absolute path to the workspace root directory.
- * @param optionsCacheDir - CLI `--cache-dir` value (may be relative or absolute). Takes highest priority.
- * @param configCacheDir - `taskRunnerOptions.cacheDirectory` from vis.config.ts (may be relative or absolute).
+ * @param workspaceRoot Absolute path to the workspace root directory.
+ * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute). Takes highest priority.
+ * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts (may be relative or absolute).
  * @returns The resolved absolute path to the cache directory.
  */
 const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | undefined, configCacheDir: string | undefined): string => {
@@ -50,11 +49,10 @@ const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | 
  *
  * Callers use this to decide whether a `rm -rf` on the cache directory is
  * safe without an extra confirmation prompt.
- *
- * @param cacheDirectory - Absolute path to the cache directory.
- * @param workspaceRoot - Absolute path to the workspace root directory.
+ * @param cacheDirectory Absolute path to the cache directory.
+ * @param workspaceRoot Absolute path to the workspace root directory.
  * @returns `true` when `cacheDirectory` is a proper descendant of `workspaceRoot`; `false` otherwise
- *          (including when the two paths are identical).
+ * (including when the two paths are identical).
  */
 const isCacheDirectoryInsideWorkspace = (cacheDirectory: string, workspaceRoot: string): boolean => {
     const rel = relative(workspaceRoot, cacheDirectory);
@@ -73,4 +71,6 @@ const isCacheDirectoryInsideWorkspace = (cacheDirectory: string, workspaceRoot: 
     return !(rel === ".." || rel.startsWith("../")) && !isAbsolute(rel);
 };
 
-export { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveCacheDirectory };
+export { isCacheDirectoryInsideWorkspace, resolveCacheDirectory };
+
+export { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";

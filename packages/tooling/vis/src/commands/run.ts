@@ -17,21 +17,21 @@ import { resolveCacheDirectory } from "../cache-directory";
 import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
 import { compareDuration, formatTimingSummary } from "../run-report";
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
+import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
+import type { VisTargetConfiguration, VisTargetOptions } from "../target-options";
 import {
     detectCurrentOs,
     loadEnvFile,
     matchesOs,
     resolveTargetShell,
     shouldRunInCI,
-    type VisTargetConfiguration,
-    type VisTargetOptions,
 } from "../target-options";
-import { collectAvailableTargets, formatTargetList, suggestTarget } from "../target-discovery";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import type { StdinEntry } from "../tui/types";
 import { startWatcher } from "../watch";
-import { buildProjectGraph, discoverWorkspace, type VisProjectConfiguration } from "../workspace";
+import type { VisProjectConfiguration } from "../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
@@ -71,8 +71,8 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv =
-                affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+            const affectedEnv
+                = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
 
@@ -151,7 +151,7 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
  * double quotes, single quotes prevent shell expansion of `$VAR`, `\n`,
  * and backticks.
  */
-const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", "'\\''")}'`;
+const singleQuoteEscape = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
 
 /** Builds the command args list for `affectedFiles` forwarding. */
 const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undefined, mode: VisTargetOptions["affectedFiles"]): string => {
@@ -325,7 +325,6 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Ta
 };
 
 const run: Command = {
-    group: "Run & Execute",
     argument: {
         description: "The target to run (e.g., build, test, lint)",
         name: "target",
@@ -400,7 +399,7 @@ const run: Command = {
         }
 
         const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
-        const target = selectorResult.target;
+        const { target } = selectorResult;
         let projectNames = selectorResult.projects;
 
         if (options.projects) {
@@ -604,8 +603,8 @@ const run: Command = {
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
                 mutexPool,
-                onOutput: (taskId, text) => store.addOutput(taskId, text),
-                onOutputReplace: (taskId, fullContent) => store.setOutput(taskId, fullContent),
+                onOutput: (taskId, text) => { store.addOutput(taskId, text); },
+                onOutputReplace: (taskId, fullContent) => { store.setOutput(taskId, fullContent); },
                 stdinRegistry,
                 workspaceRoot,
             });
@@ -845,6 +844,7 @@ const run: Command = {
             }
         }
     },
+    group: "Run & Execute",
     name: "run",
     options: [
         {

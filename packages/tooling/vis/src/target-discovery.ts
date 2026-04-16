@@ -2,8 +2,7 @@ import type { WorkspaceConfiguration } from "@visulima/task-runner";
 
 /**
  * Collects every unique target name across all projects in the workspace.
- *
- * @param workspace - The discovered workspace configuration.
+ * @param workspace The discovered workspace configuration.
  * @returns Sorted array of unique target names.
  */
 export const collectAvailableTargets = (workspace: WorkspaceConfiguration): string[] => {
@@ -53,10 +52,9 @@ const levenshtein = (a: string, b: string): number => {
 
 /**
  * Suggests the closest matching target name for a typo.
- *
- * @param input - The unknown target name the user typed.
- * @param available - Known target names.
- * @param maxDistance - Maximum edit distance to consider (default 3).
+ * @param input The unknown target name the user typed.
+ * @param available Known target names.
+ * @param maxDistance Maximum edit distance to consider (default 3).
  * @returns The best match, or `undefined` if nothing is close enough.
  */
 export const suggestTarget = (input: string, available: string[], maxDistance = 3): string | undefined => {
@@ -77,8 +75,7 @@ export const suggestTarget = (input: string, available: string[], maxDistance = 
 
 /**
  * Formats the available targets list for display.
- *
- * @param targets - Sorted target names.
+ * @param targets Sorted target names.
  * @returns Formatted string for CLI output.
  */
 export const formatTargetList = (targets: string[]): string => {

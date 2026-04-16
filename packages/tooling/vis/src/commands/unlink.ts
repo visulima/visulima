@@ -3,7 +3,6 @@ import type { Command } from "@visulima/cerebro";
 import { detectPm, runUnlink } from "../pm-runner";
 
 const unlink: Command = {
-    group: "Dependencies",
     argument: {
         description: "Packages to unlink (omit for current package)",
         name: "packages",
@@ -26,6 +25,7 @@ const unlink: Command = {
             process.exitCode = code;
         }
     },
+    group: "Dependencies",
     name: "unlink",
     options: [{ alias: "r", defaultValue: false, description: "Unlink in all workspace packages", name: "recursive", type: Boolean }],
 };

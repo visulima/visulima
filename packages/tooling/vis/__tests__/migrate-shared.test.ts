@@ -20,7 +20,7 @@ describe(serializeConfigObject, () => {
     it("should unquote simple keys", () => {
         expect.assertions(2);
 
-        const result = serializeConfigObject({ foo: "bar", baz: 42 });
+        const result = serializeConfigObject({ baz: 42, foo: "bar" });
 
         expect(result).toContain("foo:");
         expect(result).not.toContain('"foo":');

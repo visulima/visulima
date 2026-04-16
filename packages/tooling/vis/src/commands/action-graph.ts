@@ -66,12 +66,11 @@ const toJson = (roots: string[], dependencies: Record<string, string[]>, tasks: 
 };
 
 /**
- * `vis action-graph <selector>` — shows the execution plan that would
- * be produced by `vis run <selector>` without running anything. Matches
+ * `vis action-graph &lt;selector>` — shows the execution plan that would
+ * be produced by `vis run &lt;selector>` without running anything. Matches
  * moon's `moon action-graph`.
  */
 const actionGraph: Command = {
-    group: "Workspace",
     argument: {
         description: "Target selector (same syntax as `vis run`): `build`, `:build`, `~:test`, `#tag:lint`, …",
         name: "selector",
@@ -99,7 +98,7 @@ const actionGraph: Command = {
         const projectGraph = buildProjectGraph(wsRoot, workspace);
 
         const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), wsRoot);
-        const target = selectorResult.target;
+        const { target } = selectorResult;
         let projectNames = selectorResult.projects;
 
         if (options.query) {
@@ -109,7 +108,7 @@ const actionGraph: Command = {
         const candidates = projectNames.filter((name) => {
             const project = workspace.projects[name];
 
-            return project !== undefined && project.targets?.[target] !== undefined;
+            return project?.targets?.[target] !== undefined;
         });
 
         if (candidates.length === 0) {
@@ -155,6 +154,7 @@ const actionGraph: Command = {
             logger.info(line);
         }
     },
+    group: "Workspace",
     name: "action-graph",
     options: [
         {

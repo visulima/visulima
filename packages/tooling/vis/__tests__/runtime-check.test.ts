@@ -102,7 +102,6 @@ describe(checkRuntimeVersions, () => {
             expect(pmFinding!.actual).toBe("yarn");
         } finally {
             if (originalAgent === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete process.env["npm_config_user_agent"];
             } else {
                 process.env["npm_config_user_agent"] = originalAgent;
@@ -130,7 +129,6 @@ describe(checkRuntimeVersions, () => {
             expect(pmFinding!.actual).toBe("9.5.0");
         } finally {
             if (originalAgent === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete process.env["npm_config_user_agent"];
             } else {
                 process.env["npm_config_user_agent"] = originalAgent;

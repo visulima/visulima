@@ -1,7 +1,11 @@
-import type { MigrateLogger, MigrationReport } from "./types";
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
+import type { MigrateLogger, MigrationReport } from "./types";
 
 interface NxJson {
+    affected?: {
+        defaultBase?: string;
+    };
+    defaultBase?: string;
     namedInputs?: Record<string, (string | Record<string, unknown>)[]>;
     targetDefaults?: Record<
         string,
@@ -9,14 +13,10 @@ interface NxJson {
             cache?: boolean;
             dependsOn?: string[];
             inputs?: (string | Record<string, unknown>)[];
-            outputs?: string[];
             options?: Record<string, unknown>;
+            outputs?: string[];
         }
     >;
-    defaultBase?: string;
-    affected?: {
-        defaultBase?: string;
-    };
 }
 
 const renderVisConfig = (nx: NxJson): string => {
@@ -47,11 +47,10 @@ const renderVisConfig = (nx: NxJson): string => {
 /**
  * Translates an `nx.json` into a `vis.config.ts`. Per-project
  * `project.json` files are left untouched — vis reads them natively.
- *
- * @param workspaceRoot - Absolute workspace root path.
- * @param options - Migration options.
- * @param logger - Logger for user feedback.
- * @param report - Migration report to append manual steps and warnings.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param options Migration options.
+ * @param logger Logger for user feedback.
+ * @param report Migration report to append manual steps and warnings.
  */
 export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const nx = readJsonConfig<NxJson>(workspaceRoot, "nx.json");

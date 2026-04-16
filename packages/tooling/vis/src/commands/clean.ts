@@ -84,7 +84,6 @@ const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadEr
 };
 
 const clean: Command = {
-    group: "Workspace",
     description: "Remove node_modules from all workspace projects",
     examples: [
         ["vis clean", "Remove all node_modules directories"],
@@ -151,6 +150,7 @@ const clean: Command = {
             process.exitCode = 1;
         }
     },
+    group: "Workspace",
     name: "clean",
     options: [
         { alias: "l", defaultValue: false, description: "Also remove lockfiles (pnpm-lock.yaml, package-lock.json, etc.)", name: "lockfile", type: Boolean },

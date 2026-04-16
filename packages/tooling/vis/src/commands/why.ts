@@ -4,7 +4,6 @@ import { detectPm, runWhy } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const why: Command = {
-    group: "Dependencies",
     alias: "explain",
     argument: {
         description: "Package(s) to explain",
@@ -51,6 +50,7 @@ const why: Command = {
             process.exitCode = code;
         }
     },
+    group: "Dependencies",
     name: "why",
     options: [
         { defaultValue: false, description: "Output as JSON", name: "json", type: Boolean },

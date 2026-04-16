@@ -31,15 +31,14 @@ export const cleanupTemporaryDirectory = (path: string): void => {
  */
 export interface MockLogger {
     info: (message: string) => void;
-    warn: (message: string) => void;
     infoMessages: string[];
+    warn: (message: string) => void;
     warnMessages: string[];
 }
 
 /**
  * Creates a mock logger that captures every message. Useful for
  * asserting on logged output in migration / command tests.
- *
  * @returns A logger with `info`/`warn` methods plus message arrays.
  */
 export const createMockLogger = (): MockLogger => {

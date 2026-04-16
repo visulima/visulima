@@ -10,7 +10,7 @@ import { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveC
 // expectation strings too.
 const WS = resolve("/ws");
 
-describe("resolveCacheDirectory", () => {
+describe(resolveCacheDirectory, () => {
     it("prefers the CLI override when set", () => {
         expect.assertions(1);
 
@@ -60,7 +60,7 @@ describe("resolveCacheDirectory", () => {
     });
 });
 
-describe("isCacheDirectoryInsideWorkspace", () => {
+describe(isCacheDirectoryInsideWorkspace, () => {
     it("returns true for a direct child of the workspace", () => {
         expect.assertions(1);
         expect(isCacheDirectoryInsideWorkspace(resolve(WS, ".task-runner-cache"), WS)).toBe(true);
