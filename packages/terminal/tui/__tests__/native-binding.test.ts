@@ -19,13 +19,13 @@ async function loadBinding() {
 
 describe("native-binding", () => {
     it("should export Renderer constructor", async () => {
-        expect.assertions(1);
-
         const binding = await loadBinding();
 
         if (!binding) {
             return; // native addon not available (local dev without compiled .node)
         }
+
+        expect.assertions(1);
 
         expect(binding.Renderer).toBeDefined();
 
@@ -33,13 +33,13 @@ describe("native-binding", () => {
     });
 
     it("should export TerminalGuard constructor", async () => {
-        expect.assertions(1);
-
         const binding = await loadBinding();
 
         if (!binding) {
             return;
         }
+
+        expect.assertions(1);
 
         expect(binding.TerminalGuard).toBeDefined();
 
@@ -47,13 +47,13 @@ describe("native-binding", () => {
     });
 
     it("should export terminalSize function", async () => {
-        expect.assertions(1);
-
         const binding = await loadBinding();
 
         if (!binding) {
             return;
         }
+
+        expect.assertions(1);
 
         expect(binding.terminalSize).toBeDefined();
 
@@ -90,13 +90,13 @@ describe("native-binding", () => {
     });
 
     it("should create a Renderer instance", async () => {
-        expect.assertions(3);
-
         const binding = await loadBinding();
 
         if (!binding) {
             return;
         }
+
+        expect.assertions(3);
 
         const renderer = new binding.Renderer(80, 24);
 
