@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Terminal spinners with 109 animations</h3>
+<h3 align="center">Minimal terminal spinners</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
