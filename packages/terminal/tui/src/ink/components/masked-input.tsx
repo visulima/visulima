@@ -46,6 +46,28 @@ export type Props = {
     readonly token?: string;
 };
 
+type TokenIndex = {
+    readonly maskColumn: number;
+    readonly rawPosition: number;
+};
+
+/**
+ * Compute the mask column for every raw (editable) position.
+ */
+const buildTokenIndex = (mask: string, token: string): ReadonlyArray<TokenIndex> => {
+    const indices: TokenIndex[] = [];
+    let rawPosition = 0;
+
+    for (const [maskColumn, maskChar] of [...mask].entries()) {
+        if (maskChar === token) {
+            indices.push({ maskColumn, rawPosition });
+            rawPosition += 1;
+        }
+    }
+
+    return indices;
+};
+
 const formatValue = (raw: string, mask: string, token: string, placeholderChar: string): string => {
     let rawIndex = 0;
     let output = "";
@@ -68,25 +90,11 @@ const formatValue = (raw: string, mask: string, token: string, placeholderChar: 
     return output;
 };
 
-const cursorColumn = (raw: string, mask: string, token: string): number => {
-    let rawIndex = 0;
-
-    for (const [column, maskChar] of [...mask].entries()) {
-        if (maskChar === token) {
-            if (rawIndex === raw.length) {
-                return column;
-            }
-
-            rawIndex += 1;
-        }
-    }
-
-    return mask.length;
-};
-
 /**
  * Input with a fixed-width mask. The mask token (`#` by default) marks
  * positions where the user can type; every other character is preserved.
+ * Supports ←/→ to move within the mask, Home/End to jump, and
+ * Backspace/Delete to clear characters.
  */
 export default function MaskedInput({
     defaultValue = "",
@@ -97,8 +105,21 @@ export default function MaskedInput({
     placeholderChar = "_",
     token = "#",
 }: Props): ReactElement {
-    const maxLength = useMemo(() => [...mask].filter((c) => c === token).length, [mask, token]);
-    const [raw, setRaw] = useState<string>(defaultValue.slice(0, maxLength));
+    const tokenIndex = useMemo(() => buildTokenIndex(mask, token), [mask, token]);
+    const maxLength = tokenIndex.length;
+
+    const clampedDefault = defaultValue.slice(0, maxLength);
+    const [raw, setRaw] = useState<string>(clampedDefault);
+    const [cursor, setCursor] = useState<number>(clampedDefault.length);
+
+    const emit = useCallback(
+        (next: string, nextCursor: number) => {
+            setRaw(next);
+            setCursor(Math.max(0, Math.min(maxLength, nextCursor)));
+            onChange?.(next);
+        },
+        [maxLength, onChange],
+    );
 
     useInput(
         useCallback(
@@ -109,15 +130,50 @@ export default function MaskedInput({
                     return;
                 }
 
-                if (key.backspace || key.delete) {
-                    if (raw.length === 0) {
+                if (key.leftArrow) {
+                    setCursor((previous) => Math.max(0, previous - 1));
+
+                    return;
+                }
+
+                if (key.rightArrow) {
+                    setCursor((previous) => Math.min(raw.length, previous + 1));
+
+                    return;
+                }
+
+                if (key.home || (key.ctrl && input === "a")) {
+                    setCursor(0);
+
+                    return;
+                }
+
+                if (key.end || (key.ctrl && input === "e")) {
+                    setCursor(raw.length);
+
+                    return;
+                }
+
+                if (key.backspace) {
+                    if (cursor === 0) {
                         return;
                     }
 
-                    const next = raw.slice(0, -1);
+                    const next = raw.slice(0, cursor - 1) + raw.slice(cursor);
 
-                    setRaw(next);
-                    onChange?.(next);
+                    emit(next, cursor - 1);
+
+                    return;
+                }
+
+                if (key.delete) {
+                    if (cursor >= raw.length) {
+                        return;
+                    }
+
+                    const next = raw.slice(0, cursor) + raw.slice(cursor + 1);
+
+                    emit(next, cursor);
 
                     return;
                 }
@@ -126,21 +182,22 @@ export default function MaskedInput({
                     return;
                 }
 
-                const next = raw + input;
+                const next = raw.slice(0, cursor) + input + raw.slice(cursor);
 
-                setRaw(next);
-                onChange?.(next);
+                emit(next, cursor + 1);
             },
-            [raw, maxLength, onChange, onSubmit],
+            [raw, cursor, maxLength, emit, onSubmit],
         ),
         { isActive: !isDisabled },
     );
 
     const display = formatValue(raw, mask, token, placeholderChar);
-    const cursor = cursorColumn(raw, mask, token);
-    const before = display.slice(0, cursor);
-    const atCursor = display.charAt(cursor) || " ";
-    const after = display.slice(cursor + 1);
+    // Map the raw cursor position onto a mask column so the caret lands on
+    // an editable slot, even when the next character is a literal separator.
+    const cursorMaskColumn = tokenIndex[cursor]?.maskColumn ?? mask.length;
+    const before = display.slice(0, cursorMaskColumn);
+    const atCursor = display.charAt(cursorMaskColumn) || " ";
+    const after = display.slice(cursorMaskColumn + 1);
 
     return (
         <Box>

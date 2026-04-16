@@ -191,7 +191,7 @@ describe(RadioGroup, () => {
         expect(getOutput()).toContain("●");
     });
 
-    it("should emit onChange when navigating down", async () => {
+    it("should emit onChange when navigating down by default (commit-on-navigate)", async () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
@@ -200,6 +200,48 @@ describe(RadioGroup, () => {
         );
 
         emitReadable(stdin, "j");
+        await delay(50);
+
+        expect(onChange).toHaveBeenCalledWith("b");
+    });
+
+    it("should NOT emit onChange when navigating with commitOnNavigate={false}", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <RadioGroup
+                autoFocus
+                commitOnNavigate={false}
+                defaultValue="a"
+                onChange={onChange}
+                options={options}
+            />,
+        );
+
+        emitReadable(stdin, "j");
+        await delay(50);
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("should commit on Space when commitOnNavigate is false", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <RadioGroup
+                autoFocus
+                commitOnNavigate={false}
+                defaultValue="a"
+                onChange={onChange}
+                options={options}
+            />,
+        );
+
+        emitReadable(stdin, "j");
+        await delay(50);
+        emitReadable(stdin, " ");
         await delay(50);
 
         expect(onChange).toHaveBeenCalledWith("b");

@@ -94,4 +94,39 @@ describe(MaskedInput, () => {
 
         expect(onSubmit).toHaveBeenCalledWith("42");
     });
+
+    it("should support cursor navigation and mid-string editing", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <MaskedInput defaultValue="abc" mask="####" onChange={onChange} />,
+        );
+
+        // Cursor starts at end (position 3 between 'c' and slot).
+        // One left -> cursor 2 (between 'b' and 'c'). Backspace removes 'b'.
+        emitReadable(stdin, "\u001B[D");
+        await delay(30);
+        emitReadable(stdin, "\u007F"); // Backspace
+        await delay(50);
+
+        expect(onChange).toHaveBeenLastCalledWith("ac");
+    });
+
+    it("should insert characters at the current cursor position", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(
+            <MaskedInput defaultValue="ab" mask="####" onChange={onChange} />,
+        );
+
+        // Move cursor to the beginning and insert "Z" -> "Zab".
+        emitReadable(stdin, "\u001B[H"); // Home
+        await delay(30);
+        emitReadable(stdin, "Z");
+        await delay(50);
+
+        expect(onChange).toHaveBeenLastCalledWith("Zab");
+    });
 });

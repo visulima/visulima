@@ -18,16 +18,16 @@ export type Props = {
     readonly data: ReadonlyArray<number>;
 
     /**
-     * Optional fixed minimum for the vertical scale.
-     * When omitted the minimum data value is used.
-     */
-    readonly min?: number;
-
-    /**
      * Optional fixed maximum for the vertical scale.
      * When omitted the maximum data value is used.
      */
     readonly max?: number;
+
+    /**
+     * Optional fixed minimum for the vertical scale.
+     * When omitted the minimum data value is used.
+     */
+    readonly min?: number;
 };
 
 const GLYPHS = "▁▂▃▄▅▆▇█";
@@ -43,6 +43,34 @@ const resolveGlyph = (value: number, min: number, range: number): string => {
     return GLYPHS[index] as string;
 };
 
+type Extent = {
+    readonly max: number;
+    readonly min: number;
+};
+
+/**
+ * Walk `data` once to find the min/max, falling back to user-supplied bounds.
+ * Avoids `Math.min(...data)` which blows the call-stack on large arrays.
+ */
+const computeExtent = (data: ReadonlyArray<number>, minOverride: number | undefined, maxOverride: number | undefined): Extent => {
+    let min = minOverride ?? Number.POSITIVE_INFINITY;
+    let max = maxOverride ?? Number.NEGATIVE_INFINITY;
+
+    if (minOverride === undefined || maxOverride === undefined) {
+        for (const value of data) {
+            if (minOverride === undefined && value < min) {
+                min = value;
+            }
+
+            if (maxOverride === undefined && value > max) {
+                max = value;
+            }
+        }
+    }
+
+    return { max, min };
+};
+
 /**
  * Inline bar chart using Unicode block glyphs.
  */
@@ -52,8 +80,7 @@ export default function Sparkline({ color, data, max, min }: Props): ReactElemen
             return "";
         }
 
-        const lo = min ?? Math.min(...data);
-        const hi = max ?? Math.max(...data);
+        const { max: hi, min: lo } = computeExtent(data, min, max);
         const range = hi - lo;
 
         return data.map((value) => resolveGlyph(value, lo, range)).join("");

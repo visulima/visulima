@@ -25,25 +25,26 @@ export type Props = {
     readonly interval?: number;
 
     /**
-     * Called once the full text has been displayed.
+     * Called exactly once per `text` value, after the full text has been revealed.
      */
     readonly onComplete?: () => void;
-
-    /**
-     * Full text to stream into the output.
-     */
-    readonly text: string;
 
     /**
      * Whether to display the cursor after streaming completes.
      * @default false
      */
     readonly showCursorWhenDone?: boolean;
+
+    /**
+     * Full text to stream into the output.
+     */
+    readonly text: string;
 };
 
 /**
  * Typewriter animation that reveals text one character at a time.
- * Automatically resets and replays when `text` changes.
+ * Automatically resets and replays when `text` changes. `onComplete`
+ * fires exactly once per `text` value once it is fully revealed.
  */
 export default function StreamingText({
     color,
@@ -55,16 +56,21 @@ export default function StreamingText({
 }: Props): ReactElement {
     const [visibleLength, setVisibleLength] = useState<number>(0);
     const onCompleteRef = useRef(onComplete);
+    const hasCompletedRef = useRef<boolean>(false);
 
     onCompleteRef.current = onComplete;
 
     useEffect(() => {
         setVisibleLength(0);
+        hasCompletedRef.current = false;
     }, [text]);
 
     useEffect(() => {
         if (visibleLength >= text.length) {
-            onCompleteRef.current?.();
+            if (!hasCompletedRef.current) {
+                hasCompletedRef.current = true;
+                onCompleteRef.current?.();
+            }
 
             return undefined;
         }

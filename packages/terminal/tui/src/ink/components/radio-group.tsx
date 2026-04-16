@@ -29,6 +29,14 @@ export type Props = {
     readonly autoFocus?: boolean;
 
     /**
+     * When true, moving focus with arrow keys immediately updates the selected
+     * value (and fires `onChange`). When false, focus moves independently and
+     * selection commits only on Space or Enter.
+     * @default true
+     */
+    readonly commitOnNavigate?: boolean;
+
+    /**
      * Initial selected value when uncontrolled.
      */
     readonly defaultValue?: string;
@@ -65,12 +73,25 @@ export type Props = {
     readonly value?: string;
 };
 
+const initialFocusIndex = (options: ReadonlyArray<RadioOption>, selectedValue: string | undefined): number => {
+    if (selectedValue === undefined) {
+        return 0;
+    }
+
+    const index = options.findIndex((option) => option.value === selectedValue);
+
+    return index < 0 ? 0 : index;
+};
+
 /**
- * Single-choice radio group with keyboard navigation.
+ * Single-choice radio group with keyboard navigation. By default, navigation
+ * commits selection (Storm parity); set `commitOnNavigate={false}` to require
+ * an explicit Space/Enter commit.
  */
 export default function RadioGroup({
     accentColor = "blue",
     autoFocus = false,
+    commitOnNavigate = true,
     defaultValue,
     isDisabled = false,
     onChange,
@@ -82,15 +103,12 @@ export default function RadioGroup({
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
     const [internal, setInternal] = useState<string | undefined>(defaultValue ?? options[0]?.value);
     const current = value ?? internal;
-    const focusedIndex = Math.max(
-        0,
-        options.findIndex((option) => option.value === current),
-    );
+    const [focusedIndex, setFocusedIndex] = useState<number>(() => initialFocusIndex(options, current));
     const focusedIndexRef = useRef(focusedIndex);
 
     focusedIndexRef.current = focusedIndex;
 
-    const select = useCallback(
+    const commit = useCallback(
         (index: number) => {
             const target = options[index];
 
@@ -116,31 +134,70 @@ export default function RadioGroup({
 
                 const total = options.length;
 
-                if ((key.downArrow && orientation === "vertical") || (key.rightArrow && orientation === "horizontal") || input === "j") {
-                    select(Math.min(total - 1, focusedIndexRef.current + 1));
-                } else if ((key.upArrow && orientation === "vertical") || (key.leftArrow && orientation === "horizontal") || input === "k") {
-                    select(Math.max(0, focusedIndexRef.current - 1));
-                } else if (key.return && current !== undefined) {
-                    onSubmit?.(current);
+                const moveNext = (key.downArrow && orientation === "vertical") || (key.rightArrow && orientation === "horizontal") || input === "j";
+                const movePrev = (key.upArrow && orientation === "vertical") || (key.leftArrow && orientation === "horizontal") || input === "k";
+
+                if (moveNext) {
+                    const nextIndex = Math.min(total - 1, focusedIndexRef.current + 1);
+
+                    setFocusedIndex(nextIndex);
+
+                    if (commitOnNavigate) {
+                        commit(nextIndex);
+                    }
+
+                    return;
+                }
+
+                if (movePrev) {
+                    const nextIndex = Math.max(0, focusedIndexRef.current - 1);
+
+                    setFocusedIndex(nextIndex);
+
+                    if (commitOnNavigate) {
+                        commit(nextIndex);
+                    }
+
+                    return;
+                }
+
+                if (input === " ") {
+                    commit(focusedIndexRef.current);
+
+                    return;
+                }
+
+                if (key.return) {
+                    // Commit the focused option, then emit onSubmit with the new value.
+                    if (!commitOnNavigate) {
+                        commit(focusedIndexRef.current);
+                    }
+
+                    const submitValue = options[focusedIndexRef.current]?.value ?? current;
+
+                    if (submitValue !== undefined) {
+                        onSubmit?.(submitValue);
+                    }
                 }
             },
-            [isFocused, options.length, orientation, select, current, onSubmit],
+            [isFocused, options, orientation, commit, commitOnNavigate, current, onSubmit],
         ),
         { isActive: !isDisabled && isFocused },
     );
 
     return (
         <Box flexDirection={orientation === "vertical" ? "column" : "row"} gap={orientation === "vertical" ? 0 : 2}>
-            {options.map((option) => {
+            {options.map((option, index) => {
                 const isSelected = option.value === current;
-                const color = isSelected && isFocused ? accentColor : undefined;
+                const isItemFocused = isFocused && index === focusedIndex;
+                const color = (isSelected || isItemFocused) && isFocused ? accentColor : undefined;
 
                 return (
-                    <Box key={option.key ?? option.value} gap={1}>
+                    <Box gap={1} key={option.key ?? option.value}>
                         <Text color={color} dimColor={isDisabled}>
                             {isSelected ? "●" : "○"}
                         </Text>
-                        <Text color={color} dimColor={isDisabled}>
+                        <Text bold={isItemFocused} color={color} dimColor={isDisabled}>
                             {option.label}
                         </Text>
                         {option.description === undefined ? undefined : (

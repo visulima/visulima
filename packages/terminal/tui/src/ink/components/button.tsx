@@ -47,6 +47,27 @@ export type Props = {
 
 const BORDER_STYLE = "round" as const;
 
+const resolveTextColor = (
+    variant: ButtonVariant,
+    isFocused: boolean,
+    isDisabled: boolean,
+    accentColor: LiteralUnion<AnsiColors, string>,
+): LiteralUnion<AnsiColors, string> | undefined => {
+    if (isDisabled) {
+        return undefined;
+    }
+
+    if (variant === "primary" && isFocused) {
+        return "black";
+    }
+
+    if (isFocused) {
+        return accentColor;
+    }
+
+    return undefined;
+};
+
 /**
  * Focusable button. Triggers `onPress` on Enter / Space.
  */
@@ -78,13 +99,7 @@ export default function Button({
 
     const borderColor = isFocused ? accentColor : undefined;
     const fillBackground = variant === "primary" && isFocused ? accentColor : undefined;
-    const textColor = isDisabled
-        ? undefined
-        : variant === "primary" && isFocused
-            ? "black"
-            : isFocused
-                ? accentColor
-                : undefined;
+    const textColor = resolveTextColor(variant, isFocused, isDisabled, accentColor);
 
     if (variant === "ghost") {
         return (

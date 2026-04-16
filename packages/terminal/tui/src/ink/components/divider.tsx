@@ -3,6 +3,7 @@ import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement } from "react";
 import type { LiteralUnion } from "type-fest";
 
+import useWindowSize from "../hooks/use-window-size";
 import Box from "./box";
 import Text from "./text";
 
@@ -35,7 +36,7 @@ export type Props = {
 
     /**
      * Total length of the divider. When omitted, horizontal dividers stretch to
-     * fill the available space and vertical dividers require a length.
+     * fill the available space and vertical dividers default to one row.
      */
     readonly length?: number;
 
@@ -58,6 +59,7 @@ export default function Divider({
     length,
     orientation = "horizontal",
 }: Props): ReactElement {
+    const { columns } = useWindowSize();
     const char = character ?? (orientation === "horizontal" ? "─" : "│");
 
     if (orientation === "vertical") {
@@ -74,11 +76,15 @@ export default function Divider({
         );
     }
 
+    // Repeat long enough to fill the widest reasonable viewport; Yoga + Text
+    // `truncate` wrapping will clip the excess.
+    const fillLength = length ?? Math.max(columns, 1);
+
     if (label === undefined) {
         return (
             <Box flexGrow={length === undefined ? 1 : 0} width={length}>
                 <Text color={color} dimColor={dimColor} wrap="truncate">
-                    {char.repeat(length ?? 256)}
+                    {char.repeat(fillLength)}
                 </Text>
             </Box>
         );
@@ -90,7 +96,7 @@ export default function Divider({
         <Box flexGrow={length === undefined ? 1 : 0} width={length}>
             <Box flexGrow={1} flexShrink={1}>
                 <Text color={color} dimColor={dimColor} wrap="truncate">
-                    {char.repeat(256)}
+                    {char.repeat(fillLength)}
                 </Text>
             </Box>
             <Box flexShrink={0}>
@@ -102,7 +108,7 @@ export default function Divider({
             </Box>
             <Box flexGrow={1} flexShrink={1}>
                 <Text color={color} dimColor={dimColor} wrap="truncate">
-                    {char.repeat(256)}
+                    {char.repeat(fillLength)}
                 </Text>
             </Box>
         </Box>
