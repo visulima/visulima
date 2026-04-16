@@ -16,7 +16,7 @@ jobs:
         uses: "anolilab/workflows/.github/workflows/pnpm-lock-file-maintenance.yml@main"
         with:
             target-repo: "visulima/visulima"
-            node-version: "22.x"
+            node-version: "22"
             # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
             run-audit-fix: false
         secrets:

@@ -72,9 +72,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@lydell/node-pty": "catalog:dev",
         "@visulima/humanizer": "3.0.0-alpha.10",
-        "@visulima/path": "3.0.0-alpha.9",
-        "@lydell/node-pty": "catalog:dev"
+        "@visulima/path": "3.0.0-alpha.9"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -113,7 +113,7 @@
         "@visulima/task-runner-binding-win32-x64-msvc": "workspace:*"
     },
     "engines": {
-        "node": ">=22.13 <=25.x"
+        "node": "^22.14.0 || >=24.10.0"
     },
     "publishConfig": {
         "access": "public",

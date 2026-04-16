@@ -18,7 +18,7 @@
         "vis-native.darwin-arm64.node"
     ],
     "engines": {
-        "node": ">=20.19 <=25.x"
+        "node": "^22.14.0 || >=24.10.0"
     },
     "os": [
         "darwin"
