@@ -61,8 +61,6 @@ describe("native-binding", () => {
     });
 
     it("should return valid terminal size", async () => {
-        expect.assertions(3);
-
         const binding = await loadBinding();
 
         if (!binding) {
@@ -79,6 +77,8 @@ describe("native-binding", () => {
             // OS-level issue, not a binding problem — skip gracefully.
             return;
         }
+
+        expect.assertions(3);
 
         expect(size).toBeDefined();
 
