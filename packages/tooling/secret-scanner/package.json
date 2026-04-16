@@ -49,9 +49,10 @@
         "./package.json": "./package.json"
     },
     "files": [
-        "assets/gitleaks.json",
-        "assets/presets/*.json",
-        "assets/LICENSE-GITLEAKS",
+        "data/ruleset.json",
+        "data/LICENSE-GITLEAKS",
+        "data/LICENSE-KINGFISHER",
+        "data/NOTICE-KINGFISHER",
         "dist/**",
         "index.js",
         "README.md",
@@ -89,6 +90,9 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@aws-sdk/client-sts": "3.1030.0",
+        "@azure/storage-blob": "12.31.0",
+        "@grpc/grpc-js": "1.14.3",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
@@ -103,6 +107,10 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "google-auth-library": "10.6.2",
+        "mongodb": "7.1.1",
+        "mysql2": "3.22.0",
+        "pg": "8.20.0",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
@@ -110,7 +118,40 @@
         "semantic-release": "catalog:cli",
         "smol-toml": "^1.5.0",
         "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
+        "vitest": "catalog:test",
+        "yaml": "catalog:dev"
+    },
+    "peerDependencies": {
+        "@aws-sdk/client-sts": "*",
+        "@azure/storage-blob": "*",
+        "@grpc/grpc-js": "*",
+        "google-auth-library": "*",
+        "mongodb": "*",
+        "mysql2": "*",
+        "pg": "*"
+    },
+    "peerDependenciesMeta": {
+        "@aws-sdk/client-sts": {
+            "optional": true
+        },
+        "@azure/storage-blob": {
+            "optional": true
+        },
+        "@grpc/grpc-js": {
+            "optional": true
+        },
+        "google-auth-library": {
+            "optional": true
+        },
+        "mongodb": {
+            "optional": true
+        },
+        "mysql2": {
+            "optional": true
+        },
+        "pg": {
+            "optional": true
+        }
     },
     "optionalDependencies": {
         "@visulima/secret-scanner-binding-darwin-arm64": "workspace:*",

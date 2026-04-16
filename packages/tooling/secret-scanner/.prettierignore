@@ -9,8 +9,7 @@ coverage
 node_modules
 .eslintcache
 native/target
-assets/gitleaks.toml
-assets/LICENSE-GITLEAKS
+data/LICENSE-GITLEAKS
 
 **/tsconfig.json
 **/jsconfig.json

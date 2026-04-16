@@ -1,0 +1,152 @@
+---
+title: Opt-in rule groups & custom rules
+description: Bundled opt-in rule groups, custom rule authoring, and the false-positive patch file.
+---
+
+# Opt-in rule groups & custom rules
+
+## Bundled opt-in rule groups
+
+Some rule groups are noisy by design and ship **disabled by default** inside every bundled ruleset. Each rule in a group is tagged `preset:<name>` and carries `defaultEnabled: false`; enable a whole group with a `tag:preset:<name>` entry in `rules.include`.
+
+```typescript
+import { scan } from "@visulima/secret-scanner";
+
+// Additive: defaults still fire, plus weak-passwords findings on top
+const findings = await scan([process.cwd()], {
+    rules: { enable: ["tag:preset:weak-passwords"] },
+});
+
+// Whitelist: scan runs everything, output is restricted to password-manager findings
+const onlyVaults = await scan([process.cwd()], {
+    rules: { include: ["tag:preset:password-manager"] },
+});
+```
+
+Via the CLI:
+
+```bash
+vis secrets --enable-rule tag:preset:weak-passwords         # additive
+vis secrets --include-rule tag:preset:password-manager       # restrict output
+```
+
+Two groups ship today: `weak-passwords` and `password-manager`. Combine them by repeating the flag.
+
+### `weak-passwords`
+
+Low-entropy credential patterns commonly missed by `generic-api-key` (which ships with a 3.0 entropy floor). Adds a companion `low-entropy-api-key` rule at 2.0 entropy with a curated stopword list for obvious placeholder values (`changeme`, `example`, `your-*`, etc.).
+
+Use it when your codebase contains weakly-hashed DB credentials, short static tokens, or the like. Expect more noise than the defaults — pair with `--update-baseline` when first enabling it.
+
+### `password-manager`
+
+Detects committed password-manager export files — the kind of blast-radius leak a baseline can't quietly absorb.
+
+Covers:
+
+- **1Password** — `1PUX` export bundle, `1PIF` legacy export, CLI `OP_SESSION_*` session tokens
+- **Bitwarden** — unencrypted and encrypted JSON vault exports
+- **LastPass** — CSV exports (canonical header row)
+- **KeePass** — `.kdbx` binary databases (path filter) and XML exports
+- **Browser-native** — Chrome / Edge / Firefox password-manager CSV exports
+- **Path catch-all** — files like `passwords.csv`, `vault-export.json`, `credentials-backup.kdbx`
+
+Every rule has `priority: 5`, so these win over `generic-api-key` on any overlapping span. Because they're tagged `preset:password-manager` and default-disabled, they only fire when `rules.enable` (or `rules.include`) references `tag:preset:password-manager` or one of the individual rule ids.
+
+## Authoring a custom ruleset
+
+The runtime accepts gitleaks-compatible JSON. Author in TOML if you prefer the format, then convert once:
+
+```bash
+node -e 'import("smol-toml").then(m => process.stdout.write(JSON.stringify(m.parse(require("fs").readFileSync(0, "utf8")))))' < my-rules.toml > my-rules.json
+```
+
+Then reference it:
+
+```typescript
+await scan([process.cwd()], {
+    config: { path: "./my-rules.json" },
+});
+```
+
+Or inline:
+
+```typescript
+await scan([process.cwd()], {
+    config: {
+        inline: {
+            title: "internal",
+            rules: [
+                {
+                    id: "internal-api-key",
+                    description: "Internal API key format",
+                    regex: "int_[A-Za-z0-9]{32}",
+                    keywords: ["int_"],
+                    entropy: 3.0,
+                },
+            ],
+        },
+    },
+});
+```
+
+### Priority
+
+When two rules match the same byte span on the same line, the higher-priority wins. Default is `0`.
+
+```json
+{
+    "id": "my-specific-stripe-key",
+    "regex": "sk_live_[A-Za-z0-9]{24,34}",
+    "keywords": ["sk_live_"],
+    "priority": 10
+}
+```
+
+With `generic-api-key` at the default priority, this rule wins on every overlap.
+
+### Per-rule pre-processor
+
+Rules can rewrite the scan buffer before their regex runs — useful for normalising escape sequences or splitting tokens across template delimiters.
+
+```json
+{
+    "id": "joined-github-pat",
+    "regex": "ghp_[A-Za-z0-9]{36}",
+    "keywords": ["ghp_"],
+    "preRegexReplace": [{ "from": "\\\\\\n", "to": "" }]
+}
+```
+
+The pre-processor runs only for that rule; other rules see the original content.
+
+### Target-scoped allowlists
+
+The gitleaks `targetRules` schema field applies an allowlist to specific rules only:
+
+```json
+{
+    "allowlists": [
+        {
+            "description": "Placeholders we intentionally write in docs",
+            "targetRules": ["github-pat"],
+            "regexTarget": "secret",
+            "stopwords": ["ghp_example", "ghp_placeholder"]
+        }
+    ]
+}
+```
+
+With an empty `targetRules`, the allowlist applies to every rule (gitleaks' default).
+
+## False-positive patches
+
+The gitleaks ruleset is fetched from upstream at build time (pinned in `scripts/gitleaks.ref`). Additive improvements live in `data/gitleaks.patches.json` and are merged into `data/ruleset.json` during `pnpm run build:rules`. This keeps upstream re-syncs a single-ref bump while letting us tighten false positives without maintaining a fork.
+
+Current patches focus on `generic-api-key`:
+
+- **Placeholder stopwords** — `your-secret`, `changeme`, `replace-me`, `dummy-secret`, `xxxxxx`, etc.
+- **Template interpolation** — `${VAR}`, `{{ var }}`, `vault://`, `$env:`, `arn:aws:*`.
+- **Empty / whitespace RHS** — dropped unconditionally by the detector.
+
+See the [Configuration](./configuration.mdx#gitleaks-compatible-schema-extensions) page for the full schema.
