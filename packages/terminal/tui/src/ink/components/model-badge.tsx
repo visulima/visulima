@@ -47,16 +47,18 @@ export default function ModelBadge({
     variant = "solid",
 }: Props): ReactElement {
     const chip = (content: ReactNode): ReactElement => {
+        const renderedIcon = icon === undefined ? undefined : (
+            <>
+                {icon}
+                {" "}
+            </>
+        );
+
         if (variant === "outline") {
             return (
                 <Box borderColor={color} borderStyle="round" paddingX={1}>
                     <Text color={color}>
-                        {icon === undefined ? undefined : (
-                            <>
-                                {icon}
-                                {" "}
-                            </>
-                        )}
+                        {renderedIcon}
                         {content}
                     </Text>
                 </Box>
@@ -66,12 +68,7 @@ export default function ModelBadge({
         if (variant === "subtle") {
             return (
                 <Text color={color}>
-                    {icon === undefined ? undefined : (
-                        <>
-                            {icon}
-                            {" "}
-                        </>
-                    )}
+                    {renderedIcon}
                     {content}
                 </Text>
             );
@@ -80,12 +77,7 @@ export default function ModelBadge({
         return (
             <Text backgroundColor={color} color="black">
                 {" "}
-                {icon === undefined ? undefined : (
-                    <>
-                        {icon}
-                        {" "}
-                    </>
-                )}
+                {renderedIcon}
                 {content}
                 {" "}
             </Text>

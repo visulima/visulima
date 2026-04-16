@@ -80,6 +80,29 @@ const TONE_COLOR: Record<ConfirmTone, LiteralUnion<AnsiColors, string>> = {
     warning: "yellow",
 };
 
+type ButtonLabelProps = {
+    readonly color: LiteralUnion<AnsiColors, string>;
+    readonly isFocused: boolean;
+    readonly label: string;
+};
+
+/**
+ * Pill-shaped button rendered as the dialog's primary / secondary action.
+ * Lives at module scope so it isn't recreated on every dialog render.
+ */
+const ButtonLabel = ({ color, isFocused, label }: ButtonLabelProps): ReactElement => (
+    <Box
+        backgroundColor={isFocused ? color : undefined}
+        borderColor={isFocused ? color : undefined}
+        borderStyle="round"
+        paddingX={1}
+    >
+        <Text bold={isFocused} color={isFocused ? "black" : undefined}>
+            {label}
+        </Text>
+    </Box>
+);
+
 /**
  * Full-width modal-style confirm/cancel prompt. Unlike `ConfirmInput`, this
  * renders a visible two-button UI: ← / → to toggle focus, Enter to activate,
@@ -140,18 +163,6 @@ export default function ConfirmDialog({
         { isActive: !isDisabled && isFocused },
     );
 
-    const buttonLabel = (label: string, isFocusedButton: boolean): ReactElement => (
-        <Box
-            backgroundColor={isFocusedButton ? color : undefined}
-            borderColor={isFocusedButton ? color : undefined}
-            borderStyle="round"
-            paddingX={1}
-        >
-            <Text bold={isFocusedButton} color={isFocusedButton ? "black" : undefined}>
-                {label}
-            </Text>
-        </Box>
-    );
 
     return (
         <Box borderColor={color} borderStyle="round" flexDirection="column" paddingX={1} paddingY={1} width={width}>
@@ -166,8 +177,8 @@ export default function ConfirmDialog({
                 </Box>
             )}
             <Box gap={2} justifyContent="flex-end">
-                {buttonLabel(cancelLabel, focus === "cancel")}
-                {buttonLabel(confirmLabel, focus === "confirm")}
+                <ButtonLabel color={color} isFocused={focus === "cancel"} label={cancelLabel} />
+                <ButtonLabel color={color} isFocused={focus === "confirm"} label={confirmLabel} />
             </Box>
         </Box>
     );

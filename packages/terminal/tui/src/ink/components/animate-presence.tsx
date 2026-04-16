@@ -135,7 +135,11 @@ export default function AnimatePresence({ children }: Props): ReactElement {
         <Box flexDirection="column">
             {slots.map((slot) => {
                 if (!isAnimatable(slot.element)) {
-                    return slot.element;
+                    // Still clone so React sees the exact key we stored in
+                    // the slot (our reconciler and React's key-tracking now
+                    // agree even if the original element carried a different
+                    // one).
+                    return cloneElement(slot.element, { key: slot.key });
                 }
 
                 const originalOnExit = slot.element.props.onExit;

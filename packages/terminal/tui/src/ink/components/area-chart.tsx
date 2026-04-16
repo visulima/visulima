@@ -8,7 +8,7 @@ import { createBrailleGrid } from "../canvas/braille";
 import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
-import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
+import { computeExtents, DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import type { LineSeries } from "./line-chart";
 import { projectPoint } from "./line-chart";
 import Text from "./text";
@@ -97,37 +97,14 @@ export default function AreaChart({
             series: input,
         }));
 
-        let xMin = Infinity;
-        let xMax = -Infinity;
-        let yMin = Infinity;
-        let yMax = -Infinity;
-
-        for (const { points } of list) {
-            for (const point of points) {
-                if (point.x < xMin) {
-                    xMin = point.x;
-                }
-
-                if (point.x > xMax) {
-                    xMax = point.x;
-                }
-
-                if (point.y < yMin) {
-                    yMin = point.y;
-                }
-
-                if (point.y > yMax) {
-                    yMax = point.y;
-                }
-            }
-        }
+        const extents = computeExtents(list);
 
         return {
             list,
-            xMax: xMax === -Infinity ? 1 : xMax,
-            xMin: xMin === Infinity ? 0 : xMin,
-            yMax: maxY ?? (yMax === -Infinity ? 1 : yMax),
-            yMin: minY ?? (yMin === Infinity ? 0 : yMin),
+            xMax: extents.xMax === Number.NEGATIVE_INFINITY ? 1 : extents.xMax,
+            xMin: extents.xMin === Number.POSITIVE_INFINITY ? 0 : extents.xMin,
+            yMax: maxY ?? (extents.yMax === Number.NEGATIVE_INFINITY ? 1 : extents.yMax),
+            yMin: minY ?? (extents.yMin === Number.POSITIVE_INFINITY ? 0 : extents.yMin),
         };
     }, [series, palette, minY, maxY]);
 
@@ -213,7 +190,7 @@ export default function AreaChart({
                     }
                 }}
                 height={height}
-                version={[series, width, height, minY, maxY, fillDensity]}
+                version={[series, width, height, minY, maxY, fillDensity, axisColor, palette]}
                 width={width}
             />
             {showLegend ? (

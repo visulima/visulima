@@ -7,7 +7,7 @@ import type { LiteralUnion } from "type-fest";
 import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
-import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
+import { computeExtents, DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import type { LineSeries } from "./line-chart";
 import { drawSeriesOnCanvas } from "./line-chart";
 import Text from "./text";
@@ -53,39 +53,16 @@ export default function ScatterPlot({
             series: input,
         }));
 
-        let xMin = Infinity;
-        let xMax = -Infinity;
-        let yMin = Infinity;
-        let yMax = -Infinity;
-
-        for (const { points } of seriesList) {
-            for (const point of points) {
-                if (point.x < xMin) {
-                    xMin = point.x;
-                }
-
-                if (point.x > xMax) {
-                    xMax = point.x;
-                }
-
-                if (point.y < yMin) {
-                    yMin = point.y;
-                }
-
-                if (point.y > yMax) {
-                    yMax = point.y;
-                }
-            }
-        }
+        const extents = computeExtents(seriesList);
 
         return {
             axisColor,
             palette,
             seriesList,
-            xMax: maxX ?? (xMax === -Infinity ? 1 : xMax),
-            xMin: minX ?? (xMin === Infinity ? 0 : xMin),
-            yMax: maxY ?? (yMax === -Infinity ? 1 : yMax),
-            yMin: minY ?? (yMin === Infinity ? 0 : yMin),
+            xMax: maxX ?? (extents.xMax === Number.NEGATIVE_INFINITY ? 1 : extents.xMax),
+            xMin: minX ?? (extents.xMin === Number.POSITIVE_INFINITY ? 0 : extents.xMin),
+            yMax: maxY ?? (extents.yMax === Number.NEGATIVE_INFINITY ? 1 : extents.yMax),
+            yMin: minY ?? (extents.yMin === Number.POSITIVE_INFINITY ? 0 : extents.yMin),
         };
     }, [series, axisColor, palette, minX, maxX, minY, maxY]);
 
@@ -96,7 +73,7 @@ export default function ScatterPlot({
                     drawSeriesOnCanvas(ctx, "scatter", config);
                 }}
                 height={height}
-                version={[series, width, height, minX, maxX, minY, maxY]}
+                version={[series, width, height, minX, maxX, minY, maxY, axisColor, palette]}
                 width={width}
             />
             {showLegend ? (

@@ -82,11 +82,10 @@ export default function Placeholder({
             {Array.from({ length: rows }, (_, index) => {
                 const ratio = widths[index % widths.length] ?? 1;
                 const effectiveWidth = Math.max(1, Math.round(baseWidth * ratio));
-                const boxWidth = width === undefined ? effectiveWidth : effectiveWidth;
                 const fill = character.repeat(effectiveWidth);
 
                 return (
-                    <Box key={index} width={boxWidth}>
+                    <Box key={index} width={effectiveWidth}>
                         <Text color={color} dimColor={dim} wrap="truncate-end">
                             {fill}
                         </Text>

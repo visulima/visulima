@@ -64,3 +64,49 @@ export const pickSeriesColor = (
     palette: ReadonlyArray<LiteralUnion<AnsiColors, string>>,
 ): LiteralUnion<AnsiColors, string> =>
     series.color ?? palette[index % palette.length] ?? "cyan";
+
+export type Extents = {
+    readonly xMax: number;
+    readonly xMin: number;
+    readonly yMax: number;
+    readonly yMin: number;
+};
+
+/**
+ * Single-pass min/max scan for an arbitrary collection of series. Returns
+ * `Infinity` / `-Infinity` sentinels when no points are provided; callers
+ * should replace these with their chosen defaults before rendering.
+ *
+ * @param seriesList Iterable of series whose projected `points` need extents.
+ * @returns The `{xMin, xMax, yMin, yMax}` tuple across all input points.
+ */
+export const computeExtents = (
+    seriesList: Iterable<{ readonly points: ReadonlyArray<Point> }>,
+): Extents => {
+    let xMin = Number.POSITIVE_INFINITY;
+    let xMax = Number.NEGATIVE_INFINITY;
+    let yMin = Number.POSITIVE_INFINITY;
+    let yMax = Number.NEGATIVE_INFINITY;
+
+    for (const { points } of seriesList) {
+        for (const point of points) {
+            if (point.x < xMin) {
+                xMin = point.x;
+            }
+
+            if (point.x > xMax) {
+                xMax = point.x;
+            }
+
+            if (point.y < yMin) {
+                yMin = point.y;
+            }
+
+            if (point.y > yMax) {
+                yMax = point.y;
+            }
+        }
+    }
+
+    return { xMax, xMin, yMax, yMin };
+};

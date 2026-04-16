@@ -68,7 +68,7 @@ export default function Divider({
         return (
             <Box flexDirection="column" height={rows}>
                 {Array.from({ length: rows }, (_, index) => (
-                    <Text color={color} dimColor={dimColor} key={index}>
+                    <Text color={color} dimColor={dimColor} key={`divider-row-${index}`}>
                         {char}
                     </Text>
                 ))}

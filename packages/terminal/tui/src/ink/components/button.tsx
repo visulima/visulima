@@ -100,8 +100,6 @@ export default function Button({
         { isActive: !isDisabled && isFocused },
     );
 
-    const borderColor = isFocused ? accentColor : undefined;
-    const fillBackground = variant === "primary" && isFocused ? accentColor : undefined;
     const textColor = resolveTextColor(variant, isFocused, isDisabled, accentColor);
 
     if (variant === "ghost") {
@@ -114,6 +112,21 @@ export default function Button({
             </Box>
         );
     }
+
+    // Visual tokens per variant:
+    //
+    //   primary   → filled accent background + accent border (highlighted when focused)
+    //   secondary → transparent background + accent border always; bolder label on focus
+    //   outline   → transparent background + neutral border, accent-colored when focused
+    const borderColor = (() => {
+        if (variant === "outline") {
+            return isFocused ? accentColor : "gray";
+        }
+
+        // primary / secondary — accent when focused, neutral when not
+        return isFocused ? accentColor : undefined;
+    })();
+    const fillBackground = variant === "primary" && isFocused ? accentColor : undefined;
 
     return (
         <Box

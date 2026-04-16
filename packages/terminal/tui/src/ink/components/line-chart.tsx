@@ -9,7 +9,7 @@ import type { CanvasContext } from "../canvas/buffer";
 import Box from "./box";
 import Canvas from "./canvas";
 import type { Point } from "./chart-utils";
-import { DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
+import { computeExtents, DEFAULT_CHART_PALETTE, pickSeriesColor, toPoints } from "./chart-utils";
 import Text from "./text";
 
 export type LineSeries = {
@@ -78,22 +78,6 @@ export type LineChartProps = {
 };
 
 const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
-
-type Extent = { max: number; min: number };
-
-const extendExtent = (extent: Extent, points: ReadonlyArray<Point>, axis: "x" | "y"): void => {
-    for (const point of points) {
-        const value = axis === "x" ? point.x : point.y;
-
-        if (value < extent.min) {
-            extent.min = value;
-        }
-
-        if (value > extent.max) {
-            extent.max = value;
-        }
-    }
-};
 
 type RenderConfig = {
     readonly axisColor: LiteralUnion<AnsiColors, string>;
@@ -197,22 +181,16 @@ export default function LineChart({
             series: input,
         }));
 
-        const xExtent: Extent = { max: -Infinity, min: Infinity };
-        const yExtent: Extent = { max: -Infinity, min: Infinity };
-
-        for (const { points } of seriesList) {
-            extendExtent(xExtent, points, "x");
-            extendExtent(yExtent, points, "y");
-        }
+        const extents = computeExtents(seriesList);
 
         return {
             axisColor,
             palette,
             seriesList,
-            xMax: xExtent.max === -Infinity ? 1 : xExtent.max,
-            xMin: xExtent.min === Infinity ? 0 : xExtent.min,
-            yMax: maxY ?? (yExtent.max === -Infinity ? 1 : yExtent.max),
-            yMin: minY ?? (yExtent.min === Infinity ? 0 : yExtent.min),
+            xMax: extents.xMax === Number.NEGATIVE_INFINITY ? 1 : extents.xMax,
+            xMin: extents.xMin === Number.POSITIVE_INFINITY ? 0 : extents.xMin,
+            yMax: maxY ?? (extents.yMax === Number.NEGATIVE_INFINITY ? 1 : extents.yMax),
+            yMin: minY ?? (extents.yMin === Number.POSITIVE_INFINITY ? 0 : extents.yMin),
         };
     }, [series, axisColor, palette, minY, maxY]);
 
@@ -223,7 +201,7 @@ export default function LineChart({
                     drawSeriesOnCanvas(ctx, "line", config);
                 }}
                 height={height}
-                version={[series, width, height, minY, maxY]}
+                version={[series, width, height, minY, maxY, axisColor, palette]}
                 width={width}
             />
             {showLegend ? (

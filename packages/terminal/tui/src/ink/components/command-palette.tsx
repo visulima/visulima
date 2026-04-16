@@ -1,7 +1,7 @@
 /* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import useFocus from "../hooks/use-focus";
@@ -168,6 +168,18 @@ export default function CommandPalette({
 
         return scored.slice(0, limit).map(({ command }) => command);
     }, [commands, query, limit]);
+
+    // Keep `focusedIndex` inside the live range. This handles shrinking
+    // results (typing narrows the list) and external changes to `commands`
+    // that would otherwise leave focus pointing past the last row.
+    useEffect(() => {
+        const maxIndex = Math.max(0, filtered.length - 1);
+
+        if (focusedIndexRef.current > maxIndex) {
+            focusedIndexRef.current = maxIndex;
+            setFocusedIndex(maxIndex);
+        }
+    }, [filtered]);
 
     useInput(
         useCallback(
