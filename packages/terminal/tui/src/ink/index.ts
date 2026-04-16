@@ -75,6 +75,8 @@ export type { FileEntry, FilePickerFilter, FilePickerProps } from "./components/
 export { FilePicker } from "./components/file-picker";
 export type { FormFieldProps, Props as FormProps } from "./components/form";
 export { default as Form, FormField } from "./components/form";
+export type { GaugeSize, GaugeThreshold, Props as GaugeProps } from "./components/gauge";
+export { default as Gauge } from "./components/gauge";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/gradient";
 export { default as Gradient } from "./components/gradient";
 export type { HeadingLevel, Props as HeadingProps } from "./components/heading";
