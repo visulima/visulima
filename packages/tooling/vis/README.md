@@ -117,14 +117,18 @@ vis secrets                         # scan the workspace (grouped, colourised ou
 vis secrets --staged                # pre-commit mode: scan staged files only
 vis secrets --since main            # scan files changed since the `main` branch
 vis secrets --affected              # scan only files affected by the current branch
-vis secrets --init                  # scaffold a baseline + empty .gitleaksignore
+vis secrets --init                  # scaffold an initial .secrets-baseline.json
 vis secrets --list-rules            # print all bundled detection rules
+vis secrets --enable-rule tag:preset:weak-passwords  # enable an opt-in rule group additively
+vis secrets --exclude 'dist/**' --exclude-from .secretsignore    # extra walker exclusions
+vis secrets --include-rule stripe-access-token                   # check a single rule
+vis secrets --exclude-rule generic-api-key                       # drop a noisy rule
 vis secrets --baseline .secrets-baseline.json   # suppress triaged findings; print diff
 vis secrets --update-baseline       # merge current findings into the baseline
 vis secrets --format sarif > report.sarif       # SARIF for GitHub code-scanning
 ```
 
-**Suppression** — inline (`// gitleaks:allow`), block (`gitleaks:allow-start` … `gitleaks:allow-end`), `.gitleaksignore` fingerprints, or a baseline JSON. See the [secret-scanner README](../secret-scanner/README.md#suppression) for details.
+**Suppression** — inline (`// gitleaks:allow`), block (`gitleaks:allow-start` … `gitleaks:allow-end`), or a baseline JSON (sole fingerprint store). See the [secret-scanner README](../secret-scanner/README.md#suppression) for details.
 
 **CI example** (GitHub Actions, SARIF upload):
 

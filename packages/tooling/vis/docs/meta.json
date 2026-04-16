@@ -23,6 +23,7 @@
                 "commands/install",
                 "commands/dlx",
                 "commands/audit",
+                "commands/secrets",
                 "commands/sbom",
                 "commands/clean",
                 "commands/hook"
