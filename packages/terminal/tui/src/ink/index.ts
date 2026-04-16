@@ -29,6 +29,8 @@ export type { BreadcrumbItem, Props as BreadcrumbProps } from "./components/brea
 export { default as Breadcrumb } from "./components/breadcrumb";
 export type { ButtonVariant, Props as ButtonProps } from "./components/button";
 export { default as Button } from "./components/button";
+export type { Props as CalendarProps } from "./components/calendar";
+export { default as Calendar } from "./components/calendar";
 export type { Props as CardProps } from "./components/card";
 export { default as Card } from "./components/card";
 export type { Props as CheckboxProps } from "./components/checkbox";
@@ -41,6 +43,8 @@ export type { CommandStatus, Props as CommandBlockProps } from "./components/com
 export { default as CommandBlock } from "./components/command-block";
 export type { CommandEntry, Props as CommandPaletteProps } from "./components/command-palette";
 export { default as CommandPalette } from "./components/command-palette";
+export type { ConfirmTone, Props as ConfirmDialogProps } from "./components/confirm-dialog";
+export { default as ConfirmDialog } from "./components/confirm-dialog";
 export type { ContentSwitcherOption, Props as ContentSwitcherProps } from "./components/content-switcher";
 export { default as ContentSwitcher } from "./components/content-switcher";
 export type { Props as ConfirmInputProps } from "./components/confirm-input";
@@ -49,6 +53,8 @@ export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./compone
 export { default as ConsoleOverlay } from "./components/console-overlay";
 export type { Props as CursorProps } from "./components/cursor";
 export { default as Cursor } from "./components/cursor";
+export type { Props as DatePickerProps } from "./components/date-picker";
+export { default as DatePicker } from "./components/date-picker";
 export type { DefinitionItem, Props as DefinitionListProps } from "./components/definition-list";
 export { default as DefinitionList } from "./components/definition-list";
 export type { Props as DialogProps } from "./components/dialog";
@@ -59,6 +65,8 @@ export type { Props as DividerProps } from "./components/divider";
 export { default as Divider } from "./components/divider";
 export type { FileEntry, FilePickerFilter, FilePickerProps } from "./components/file-picker";
 export { FilePicker } from "./components/file-picker";
+export type { FormFieldProps, Props as FormProps } from "./components/form";
+export { default as Form, FormField } from "./components/form";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/gradient";
 export { default as Gradient } from "./components/gradient";
 export type { HeadingLevel, Props as HeadingProps } from "./components/heading";
@@ -95,6 +103,8 @@ export type { PageMeta, Props as PaginatorProps } from "./components/paginator";
 export { default as Paginator } from "./components/paginator";
 export type { Props as ParagraphProps } from "./components/paragraph";
 export { default as Paragraph } from "./components/paragraph";
+export type { Props as PlaceholderProps } from "./components/placeholder";
+export { default as Placeholder } from "./components/placeholder";
 export type { Props as ProgressBarProps } from "./components/progress-bar";
 export { default as ProgressBar } from "./components/progress-bar";
 export type { Props as RadioGroupProps, RadioOption } from "./components/radio-group";
@@ -208,6 +218,16 @@ export { default as useConsoleCapture } from "./hooks/use-console-capture";
 export { default as useCursor } from "./hooks/use-cursor";
 export { default as useFocus } from "./hooks/use-focus";
 export { default as useFocusManager } from "./hooks/use-focus-manager";
+export type {
+    FieldConfig,
+    FieldValidator,
+    FormSchema,
+    FormValues,
+    UseFormOptions,
+    UseFormResult,
+    ValidationResult,
+} from "./hooks/use-form";
+export { default as useForm } from "./hooks/use-form";
 export type { Key } from "./hooks/use-input";
 export { default as useInput } from "./hooks/use-input";
 export { default as useIsScreenReaderEnabled } from "./hooks/use-is-screen-reader-enabled";
