@@ -3,6 +3,7 @@ import type { Command } from "@visulima/cerebro";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import { migrateGitleaks } from "./gitleaks";
+import { migrateKingfisher } from "./kingfisher";
 import { migrateLintStaged } from "./lint-staged";
 import { migrateMoon } from "./moon";
 import { migrateNx } from "./nx";
@@ -90,7 +91,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
 
 const migrate: Command = {
     argument: {
-        description: "Migration type: all, deps, lint-staged, turborepo, nx, moon, gitleaks, secretlint, verify",
+        description: "Migration type: all, deps, lint-staged, turborepo, nx, moon, gitleaks, kingfisher, secretlint, verify",
         name: "type",
         type: String,
     },
@@ -98,6 +99,7 @@ const migrate: Command = {
     examples: [
         ["vis migrate", "Run all built-in migrations"],
         ["vis migrate gitleaks", "Migrate gitleaks config/baseline/hooks to `vis secrets`"],
+        ["vis migrate kingfisher", "Migrate Kingfisher baseline/hooks/scripts to `vis secrets`"],
         ["vis migrate secretlint", "Replace secretlint with `vis secrets`"],
         ["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint references (exit 1 on issues)"],
     ],
@@ -110,7 +112,7 @@ const migrate: Command = {
         const packageManager = detectPackageManager(root);
         const report = createMigrationReport();
 
-        const knownActions = ["all", "deps", "lint-staged", "turborepo", "nx", "moon", "gitleaks", "secretlint", "verify"];
+        const knownActions = ["all", "deps", "lint-staged", "turborepo", "nx", "moon", "gitleaks", "kingfisher", "secretlint", "verify"];
 
         if (!knownActions.includes(action)) {
             throw new Error(`Unknown migration type "${action}". Use one of: ${knownActions.join(", ")}.`);
@@ -171,6 +173,12 @@ const migrate: Command = {
         if (action === "gitleaks") {
             logger.info("── Migrating gitleaks ──");
             migrateGitleaks(root, { dryRun }, logger, report);
+            logger.info("");
+        }
+
+        if (action === "kingfisher") {
+            logger.info("── Migrating Kingfisher ──");
+            migrateKingfisher(root, { dryRun }, logger, report);
             logger.info("");
         }
 
