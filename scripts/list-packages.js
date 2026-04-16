@@ -17,7 +17,7 @@ const readmePath = join(__dirname, "..", "README.md");
  * @param {string[]} packages - Array to collect package info
  * @returns {Promise<void>}
  */
-async function findPackages(dir, packages = []) {
+const findPackages = async (dir, packages = []) => {
     try {
         const entries = await readdir(dir, { withFileTypes: true });
 
@@ -64,42 +64,38 @@ async function findPackages(dir, packages = []) {
             console.error(`Error reading directory ${dir}:`, error.message);
         }
     }
-}
+};
 
 /**
  * Escapes markdown table special characters
  * @param {string} text - Text to escape
  * @returns {string}
  */
-function escapeMarkdown(text) {
-    return text.replace(/\|/g, "\\|").replace(/\n/g, " ");
-}
+const escapeMarkdown = (text) => text.replace(/\|/g, "\\|").replace(/\n/g, " ");
 
 /**
  * Generates npm badge URL
  * @param {string} packageName - Package name
  * @returns {string}
  */
-function getNpmBadgeUrl(packageName) {
+const getNpmBadgeUrl = (packageName) => {
     const encodedName = encodeURIComponent(packageName);
     return `https://img.shields.io/npm/v/${encodedName}?style=flat-square&labelColor=292a44&color=663399&label=v`;
-}
+};
 
 /**
  * Generates npm package URL
  * @param {string} packageName - Package name
  * @returns {string}
  */
-function getNpmPackageUrl(packageName) {
-    return `https://www.npmjs.com/package/${packageName}`;
-}
+const getNpmPackageUrl = (packageName) => `https://www.npmjs.com/package/${packageName}`;
 
 /**
  * Formats category name for display (e.g., "data-manipulation" -> "Data Manipulation", "api" -> "API")
  * @param {string} category - Category name
  * @returns {string}
  */
-function formatCategoryName(category) {
+const formatCategoryName = (category) => {
     // Special cases for acronyms (check entire category first)
     const categoryAcronyms = {
         api: "API",
@@ -124,14 +120,14 @@ function formatCategoryName(category) {
             return word.charAt(0).toUpperCase() + word.slice(1);
         })
         .join(" ");
-}
+};
 
 /**
  * Generates the markdown table content grouped by category
  * @param {Object} packagesByCategory - Object with categories as keys and arrays of packages as values
  * @returns {string}
  */
-function generateTableContent(packagesByCategory) {
+const generateTableContent = (packagesByCategory) => {
     let content = "";
 
     // Sort categories alphabetically
@@ -161,7 +157,7 @@ function generateTableContent(packagesByCategory) {
     }
 
     return content.trim();
-}
+};
 
 /**
  * Replaces content between placeholders in README
@@ -169,7 +165,7 @@ function generateTableContent(packagesByCategory) {
  * @param {string} newContent - New content to insert
  * @returns {string}
  */
-function replaceTableContent(readmeContent, newContent) {
+const replaceTableContent = (readmeContent, newContent) => {
     const startMarker = "<!-- START_TABLE_PLACEHOLDER -->";
     const endMarker = "<!-- END_TABLE_PLACEHOLDER -->";
 
@@ -188,12 +184,12 @@ function replaceTableContent(readmeContent, newContent) {
     const after = readmeContent.substring(endIndex);
 
     return `${before}\n${newContent}\n${after}`;
-}
+};
 
 /**
  * Main function to list all packages and update README
  */
-async function listPackages() {
+const listPackages = async () => {
     const packages = [];
     await findPackages(packagesDir, packages);
 
@@ -221,7 +217,7 @@ async function listPackages() {
     const totalPackages = packages.length;
     const categoryCount = Object.keys(packagesByCategory).length;
     console.log(`✅ Successfully updated README.md with ${totalPackages} packages across ${categoryCount} categories\n`);
-}
+};
 
 listPackages().catch((error) => {
     console.error("Error listing packages:", error);
