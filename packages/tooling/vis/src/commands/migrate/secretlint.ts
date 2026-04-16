@@ -114,7 +114,7 @@ const convertIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
     }
 
     // secretlintignore is gitignore-style (paths/globs); .gitleaksignore is fingerprint-style.
-    // Not a direct translation — we append paths as `extraIgnores` guidance only.
+    // Not a direct translation — we append paths as `--exclude` guidance only.
     const lines = readFileSync(source, "utf8")
         .split(/\r?\n/)
         .map((l) => l.trim())
@@ -126,7 +126,7 @@ const convertIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
 
     addManualStep(
         report,
-        `.secretlintignore contained ${String(lines.length)} path pattern(s). vis secrets uses .gitignore + --extra-ignores; add these globs to your .gitignore or pass --extra-ignores: ${lines.slice(0, 5).join(", ")}${lines.length > 5 ? ", ..." : ""}`,
+        `.secretlintignore contained ${String(lines.length)} path pattern(s). vis secrets uses .gitignore + --exclude / --exclude-from; add these globs to your .gitignore or pass --exclude: ${lines.slice(0, 5).join(", ")}${lines.length > 5 ? ", ..." : ""}`,
     );
 
     // Keep the file around in dryRun; otherwise it will be cleaned by removeSecretlintConfigFiles.

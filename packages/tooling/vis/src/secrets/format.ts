@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-import { cyan, dim, red, yellow } from "@visulima/colorize";
+import { cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { isAbsolute, relative, resolve } from "@visulima/path";
 import type { Finding, RuleInfo } from "@visulima/secret-scanner";
 
@@ -40,7 +40,15 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
         return useColor ? dim("No secrets detected.") : "No secrets detected.";
     }
 
-    const color = useColor ? { cyan, dim, red, yellow } : { cyan: (s: string) => s, dim: (s: string) => s, red: (s: string) => s, yellow: (s: string) => s };
+    const color = useColor
+        ? { cyan, dim, green, red, yellow }
+        : {
+              cyan: (s: string) => s,
+              dim: (s: string) => s,
+              green: (s: string) => s,
+              red: (s: string) => s,
+              yellow: (s: string) => s,
+          };
     const lines: string[] = [];
     const byFile = groupByFile(findings);
 
@@ -52,7 +60,32 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
         const sourceLines = loadLines(file);
 
         for (const f of items) {
-            lines.push(`  ${color.red("✖")} ${color.yellow(`[${f.ruleId}]`)} ${color.dim(`line ${String(f.startLine)}:${String(f.startColumn)}`)}`);
+            // Provenance + quality signal ride next to the rule id so every line of
+            // text output is self-describing (`kingfisher, medium`). Gitleaks rules
+            // without an explicit confidence render their "low" default — call it
+            // out rather than hiding it so users see the floor that's being applied.
+            const provenance = [f.source, f.confidence].filter((s): s is string => Boolean(s)).join(", ");
+            const provenanceSuffix = provenance ? ` ${color.dim(`(${provenance})`)}` : "";
+            const alternates = f.alternateMatches && f.alternateMatches.length > 0
+                ? ` ${color.dim(`also: ${f.alternateMatches.join(", ")}`)}`
+                : "";
+            // Validation status badge: only shown when the user opted into --validate
+            // (validation is null by default). Successful verification is green, the
+            // provider-rejected case is red, the network/timeout case is yellow.
+            let validationBadge = "";
+            if (f.validation === "verified") {
+                validationBadge = ` ${color.green("✓ verified")}`;
+            } else if (f.validation === "rejected") {
+                validationBadge = ` ${color.red("✗ rejected")}`;
+            } else if (f.validation === "error") {
+                validationBadge = ` ${color.yellow("! error")}`;
+            } else if (f.validation === "skipped") {
+                validationBadge = ` ${color.dim("— unverifiable")}`;
+            }
+
+            lines.push(
+                `  ${color.red("✖")} ${color.yellow(`[${f.ruleId}]`)}${provenanceSuffix}${validationBadge} ${color.dim(`line ${String(f.startLine)}:${String(f.startColumn)}`)}${alternates}`,
+            );
 
             if (sourceLines) {
                 const start = Math.max(0, f.startLine - 1 - CONTEXT_RADIUS);
@@ -130,29 +163,50 @@ export const formatSarif = (findings: Finding[], toolVersion: string, root: stri
                     originalUriBaseIds: {
                         SRCROOT: { uri: pathToFileURL(root).toString() },
                     },
-                    results: findings.map((f) => ({
-                        level: "error",
-                        locations: [
-                            {
-                                physicalLocation: {
-                                    artifactLocation: {
-                                        uri: toSarifUri(f.file, root),
-                                        uriBaseId: isAbsolute(f.file) ? undefined : "SRCROOT",
-                                    },
-                                    region: {
-                                        endColumn: f.endColumn,
-                                        endLine: f.endLine,
-                                        snippet: { text: f.match },
-                                        startColumn: f.startColumn,
-                                        startLine: f.startLine,
+                    results: findings.map((f) => {
+                        const properties: Record<string, unknown> = {};
+
+                        if (f.source) {
+                            properties["source"] = f.source;
+                        }
+
+                        if (f.confidence) {
+                            properties["confidence"] = f.confidence;
+                        }
+
+                        if (f.alternateMatches && f.alternateMatches.length > 0) {
+                            properties["alternateRules"] = f.alternateMatches;
+                        }
+
+                        if (f.validation) {
+                            properties["validation"] = f.validation;
+                        }
+
+                        return {
+                            level: "error",
+                            locations: [
+                                {
+                                    physicalLocation: {
+                                        artifactLocation: {
+                                            uri: toSarifUri(f.file, root),
+                                            uriBaseId: isAbsolute(f.file) ? undefined : "SRCROOT",
+                                        },
+                                        region: {
+                                            endColumn: f.endColumn,
+                                            endLine: f.endLine,
+                                            snippet: { text: f.match },
+                                            startColumn: f.startColumn,
+                                            startLine: f.startLine,
+                                        },
                                     },
                                 },
-                            },
-                        ],
-                        message: { text: f.description || f.ruleId },
-                        ruleId: f.ruleId,
-                        ruleIndex: ruleIndex.get(f.ruleId) ?? -1,
-                    })),
+                            ],
+                            message: { text: f.description || f.ruleId },
+                            properties: Object.keys(properties).length > 0 ? properties : undefined,
+                            ruleId: f.ruleId,
+                            ruleIndex: ruleIndex.get(f.ruleId) ?? -1,
+                        };
+                    }),
                     tool: {
                         driver: {
                             informationUri: "https://visulima.com/packages/secret-scanner",
@@ -160,6 +214,19 @@ export const formatSarif = (findings: Finding[], toolVersion: string, root: stri
                             rules: ruleIds.map((id) => {
                                 const meta = metaById.get(id);
                                 const description = meta?.description ?? `Detected by rule \`${id}\``;
+                                const ruleProperties: Record<string, unknown> = {};
+
+                                if (meta?.tags && meta.tags.length > 0) {
+                                    ruleProperties["tags"] = meta.tags;
+                                }
+
+                                if (meta?.source) {
+                                    ruleProperties["source"] = meta.source;
+                                }
+
+                                if (meta?.confidence) {
+                                    ruleProperties["confidence"] = meta.confidence;
+                                }
 
                                 return {
                                     defaultConfiguration: { level: "error" },
@@ -167,7 +234,7 @@ export const formatSarif = (findings: Finding[], toolVersion: string, root: stri
                                     helpUri: "https://visulima.com/packages/secret-scanner",
                                     id,
                                     name: id,
-                                    properties: meta?.tags && meta.tags.length > 0 ? { tags: meta.tags } : undefined,
+                                    properties: Object.keys(ruleProperties).length > 0 ? ruleProperties : undefined,
                                     shortDescription: { text: shortText(description) },
                                 };
                             }),
