@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from "react";
 import { useCallback } from "react";
 import type { LiteralUnion } from "type-fest";
 
+import useFocus from "../hooks/use-focus";
 import useInput from "../hooks/use-input";
 import Box from "./box";
 import Text from "./text";
@@ -28,6 +29,13 @@ export type Props = {
      * Accessible description of what approving will do.
      */
     readonly description?: string;
+
+    /**
+     * Auto-focus the prompt on mount. Set to `false` if a parent already
+     * owns focus and routes input to this component.
+     * @default true
+     */
+    readonly autoFocus?: boolean;
 
     /**
      * Disable input; use when a parent manages focus and input routing.
@@ -94,6 +102,7 @@ const formatParamValue = (value: unknown): string => {
  */
 export default function ApprovalPrompt({
     accentColor,
+    autoFocus = true,
     children,
     description,
     isDisabled = false,
@@ -104,6 +113,7 @@ export default function ApprovalPrompt({
 }: Props): ReactElement {
     const riskColor = RISK_COLOR[risk];
     const color = accentColor ?? riskColor;
+    const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
 
     useInput(
         useCallback(
@@ -128,7 +138,7 @@ export default function ApprovalPrompt({
             },
             [onDecision],
         ),
-        { isActive: !isDisabled },
+        { isActive: !isDisabled && isFocused },
     );
 
     const paramEntries = params === undefined ? [] : Object.entries(params);

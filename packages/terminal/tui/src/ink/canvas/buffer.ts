@@ -19,18 +19,21 @@ const EMPTY_COLOR = 0;
 
 /**
  * Encodes a color into the buffer. `undefined` and `null` become EMPTY_COLOR (0),
- * strings are stored in a per-canvas interning map.
+ * other values are stored in a per-canvas interning map. Numbers and strings
+ * with the same textual form (`1.5` vs `"1.5"`) are kept distinct via a
+ * type-prefix in the cache key.
  */
 type ColorEncoder = (color: CanvasColor) => number;
 
 /**
- * Reverse of the encoder. 0 → undefined, any other → original string.
+ * Reverse of the encoder. 0 → undefined; any other id returns the original
+ * CanvasColor (preserving number vs string distinction).
  */
-type ColorDecoder = (id: number) => string | undefined;
+type ColorDecoder = (id: number) => CanvasColor;
 
 const createColorCoders = (): { decode: ColorDecoder; encode: ColorEncoder } => {
     const encoded = new Map<string, number>();
-    const decoded: Array<string | undefined> = [undefined];
+    const decoded: Array<CanvasColor> = [undefined];
 
     return {
         decode: (id) => decoded[id],
@@ -39,7 +42,7 @@ const createColorCoders = (): { decode: ColorDecoder; encode: ColorEncoder } => 
                 return EMPTY_COLOR;
             }
 
-            const key = typeof color === "number" ? String(color) : color;
+            const key = typeof color === "number" ? `n:${color}` : `s:${color}`;
             const existing = encoded.get(key);
 
             if (existing !== undefined) {
@@ -48,7 +51,7 @@ const createColorCoders = (): { decode: ColorDecoder; encode: ColorEncoder } => 
 
             const next = decoded.length;
 
-            decoded.push(key);
+            decoded.push(color);
             encoded.set(key, next);
 
             return next;
@@ -321,12 +324,12 @@ export const serializeRow = (buffer: CanvasBuffer, row: number): string => {
 
         let rendered = text;
 
-        if (fgColor !== undefined) {
-            rendered = colorize(rendered, fgColor, "foreground");
+        if (fgColor !== undefined && fgColor !== null) {
+            rendered = colorize(rendered, typeof fgColor === "number" ? String(fgColor) : fgColor, "foreground");
         }
 
-        if (bgColor !== undefined) {
-            rendered = colorize(rendered, bgColor, "background");
+        if (bgColor !== undefined && bgColor !== null) {
+            rendered = colorize(rendered, typeof bgColor === "number" ? String(bgColor) : bgColor, "background");
         }
 
         if ((spanStyles & STYLE_BOLD) !== 0) {

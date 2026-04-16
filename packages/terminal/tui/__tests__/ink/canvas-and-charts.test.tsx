@@ -138,7 +138,7 @@ describe(Canvas, () => {
 
         const draw = vi.fn();
 
-        renderToString(<Canvas draw={draw} height={3} width={5} />);
+        renderToString(<Canvas draw={draw} height={3} version="v0" width={5} />);
 
         const ctx = draw.mock.calls[0]?.[0];
 
@@ -154,6 +154,7 @@ describe(Canvas, () => {
                     ctx.drawText(0, 0, "hello");
                 }}
                 height={1}
+                version="v1"
                 width={5}
             />,
         );

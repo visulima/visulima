@@ -110,6 +110,20 @@ export default function DatePicker({
         { isActive: !isDisabled && isFocused && !isOpen },
     );
 
+    // While the Calendar is open we still want Esc to dismiss without
+    // committing — the Calendar itself doesn't handle Escape.
+    useInput(
+        useCallback(
+            (_input, key) => {
+                if (key.escape) {
+                    setIsOpen(false);
+                }
+            },
+            [],
+        ),
+        { isActive: !isDisabled && isFocused && isOpen },
+    );
+
     const handleCalendarSubmit = useCallback(
         (date: Date) => {
             if (value === undefined) {

@@ -1,7 +1,7 @@
 /* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import useFocus from "../hooks/use-focus";
@@ -154,6 +154,21 @@ export default function Menu({
     const focusedIndexRef = useRef(focusedIndex);
 
     focusedIndexRef.current = focusedIndex;
+
+    // Re-clamp focus when the set of rows changes underneath us — otherwise a
+    // stale index can land on a removed/disabled row and Enter hits nothing.
+    useEffect(() => {
+        const current = focusedIndexRef.current;
+        const row = rows[current];
+        const stillValid = row !== undefined && row.kind === "item" && !row.item.isDisabled;
+
+        if (!stillValid) {
+            const next = firstEnabledIndex(rows);
+
+            setFocusedIndex(next);
+            focusedIndexRef.current = next;
+        }
+    }, [rows]);
 
     useInput(
         useCallback(

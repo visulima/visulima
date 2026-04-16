@@ -73,10 +73,6 @@ export default function Collapsible({
     useInput(
         useCallback(
             (input, key) => {
-                if (!isFocused) {
-                    return;
-                }
-
                 if (key.return || input === " ") {
                     const next = !open;
 
@@ -87,7 +83,7 @@ export default function Collapsible({
                     onToggle?.(next);
                 }
             },
-            [isFocused, open, isOpen, onToggle],
+            [open, isOpen, onToggle],
         ),
         { isActive: !isDisabled && isFocused },
     );

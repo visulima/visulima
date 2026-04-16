@@ -1,7 +1,7 @@
 /* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import Box from "./box";
@@ -64,6 +64,9 @@ export default function Toast({
 }: Props): ReactElement | null {
     const [internalVisible, setInternalVisible] = useState(true);
     const isVisible = visible ?? internalVisible;
+    const onDismissRef = useRef(onDismiss);
+
+    onDismissRef.current = onDismiss;
 
     useEffect(() => {
         if (visible !== undefined || duration <= 0 || !isVisible) {
@@ -72,13 +75,13 @@ export default function Toast({
 
         const timer = setTimeout(() => {
             setInternalVisible(false);
-            onDismiss?.();
+            onDismissRef.current?.();
         }, duration);
 
         return () => {
             clearTimeout(timer);
         };
-    }, [duration, visible, isVisible, onDismiss]);
+    }, [duration, visible, isVisible]);
 
     if (!isVisible) {
         return null;

@@ -183,6 +183,10 @@ export default function CommandPalette({
                 }
 
                 if (key.downArrow) {
+                    if (filtered.length === 0) {
+                        return;
+                    }
+
                     setFocusedIndex((previous) => Math.min(filtered.length - 1, previous + 1));
 
                     return;

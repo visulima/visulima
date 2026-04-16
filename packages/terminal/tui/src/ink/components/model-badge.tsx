@@ -50,7 +50,15 @@ export default function ModelBadge({
         if (variant === "outline") {
             return (
                 <Box borderColor={color} borderStyle="round" paddingX={1}>
-                    <Text color={color}>{content}</Text>
+                    <Text color={color}>
+                        {icon === undefined ? undefined : (
+                            <>
+                                {icon}
+                                {" "}
+                            </>
+                        )}
+                        {content}
+                    </Text>
                 </Box>
             );
         }

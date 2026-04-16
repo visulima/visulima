@@ -78,15 +78,17 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
     }
 
     const counts = Array.from({ length: thresholds.length - 1 }, () => 0);
+    const lowerBound = thresholds[0]!;
+    const upperBound = thresholds[thresholds.length - 1]!;
 
     for (const value of data) {
-        if (value < thresholds[0]!) {
+        // Skip values that fall outside the configured range — both
+        // underflow and overflow are dropped symmetrically.
+        if (value < lowerBound || value > upperBound) {
             continue;
         }
 
         // Find the bucket via linear scan (fine for typical bin counts).
-        let placed = false;
-
         for (let index = 0; index < thresholds.length - 1; index += 1) {
             const isLastBin = index === thresholds.length - 2;
             const upper = thresholds[index + 1]!;
@@ -94,13 +96,8 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
 
             if (withinBin) {
                 counts[index] = (counts[index] ?? 0) + 1;
-                placed = true;
                 break;
             }
-        }
-
-        if (!placed) {
-            counts[counts.length - 1] = (counts[counts.length - 1] ?? 0) + 1;
         }
     }
 

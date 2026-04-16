@@ -73,7 +73,19 @@ export default function Accordion({
     items,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [expanded, setExpanded] = useState<ReadonlyArray<string>>(() => defaultExpanded ?? []);
+    const [expanded, setExpanded] = useState<ReadonlyArray<string>>(() => {
+        if (defaultExpanded === undefined || defaultExpanded.length === 0) {
+            return [];
+        }
+
+        // When `allowMultiple` is false the accordion only ever shows one open
+        // panel — clamp the seed so the initial render matches that contract.
+        if (!allowMultiple) {
+            return defaultExpanded.slice(0, 1);
+        }
+
+        return defaultExpanded;
+    });
     const [focusedIndex, setFocusedIndex] = useState(0);
     const focusedIndexRef = useRef(focusedIndex);
 

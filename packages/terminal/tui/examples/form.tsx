@@ -11,6 +11,7 @@
  *
  * Run: node --import @oxc-node/core/register examples/form.tsx
  */
+import type { FieldConfig } from "@visulima/tui";
 import {
     Box,
     Button,
@@ -28,8 +29,6 @@ import {
 } from "@visulima/tui";
 import React, { useState } from "react";
 
-type FieldConfig = { initialValue: string; validate: (value: unknown) => string | undefined };
-
 const App = () => {
     const { exit } = useApp();
     const [showConfirm, setShowConfirm] = useState(false);
@@ -41,7 +40,7 @@ const App = () => {
         }
     });
 
-    const form = useForm<Record<string, FieldConfig>>({
+    const form = useForm<Record<string, FieldConfig<string>>>({
         fields: {
             email: {
                 initialValue: "",

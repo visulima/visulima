@@ -91,13 +91,19 @@ export default function ContentSwitcher({
                 return;
             }
 
+            const currentId = value ?? internal;
+
+            if (target.id === currentId) {
+                return;
+            }
+
             if (value === undefined) {
                 setInternal(target.id);
             }
 
             onChange?.(target.id);
         },
-        [options, value, onChange],
+        [options, value, internal, onChange],
     );
 
     useInput(

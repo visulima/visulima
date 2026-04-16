@@ -19,7 +19,10 @@ export type UseKeyChordOptions = {
     readonly resetAfter?: number;
 };
 
-const keyToString = (input: string, key: Key): string | undefined => {
+/**
+ * Resolve the bare key name (no modifiers) for a given input event.
+ */
+const resolveKeyName = (input: string, key: Key): string | undefined => {
     if (key.escape) {
         return "escape";
     }
@@ -34,6 +37,26 @@ const keyToString = (input: string, key: Key): string | undefined => {
 
     if (key.backspace) {
         return "backspace";
+    }
+
+    if (key.delete) {
+        return "delete";
+    }
+
+    if (key.home) {
+        return "home";
+    }
+
+    if (key.end) {
+        return "end";
+    }
+
+    if (key.pageUp) {
+        return "pageup";
+    }
+
+    if (key.pageDown) {
+        return "pagedown";
     }
 
     if (key.upArrow) {
@@ -60,13 +83,38 @@ const keyToString = (input: string, key: Key): string | undefined => {
         return undefined;
     }
 
-    let result = input;
+    return input;
+};
 
-    if (key.ctrl) {
-        result = `ctrl+${result}`;
+/**
+ * Convert a parsed key event into a canonical chord token. Modifiers are
+ * prefixed in a stable order (`ctrl+meta+shift+key`) so chord strings can be
+ * compared character-for-character against `useHotkey`-style tokens.
+ */
+const keyToString = (input: string, key: Key): string | undefined => {
+    const name = resolveKeyName(input, key);
+
+    if (name === undefined) {
+        return undefined;
     }
 
-    return result;
+    const parts: Array<string> = [];
+
+    if (key.ctrl) {
+        parts.push("ctrl");
+    }
+
+    if (key.meta) {
+        parts.push("meta");
+    }
+
+    if (key.shift) {
+        parts.push("shift");
+    }
+
+    parts.push(name);
+
+    return parts.join("+");
 };
 
 const normalizeStep = (step: KeyChordStep): string => step.trim().toLowerCase();

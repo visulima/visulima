@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
+import process from "node:process";
 
 import { useCallback, useRef, useState } from "react";
 
@@ -50,11 +51,19 @@ export const createMemoryStorage = (): PersistentStorage => {
 
 /**
  * Default file-backed storage. Reads/writes a single JSON object per
- * namespace, keyed by `key`. Errors are caught and logged to stderr so a
- * read-only filesystem degrades gracefully.
+ * namespace, keyed by `key`. The directory is created on first write and
+ * updates use a temp-file + rename to avoid partial writes if the process
+ * crashes mid-write. Errors are forwarded to `process.stderr.write` so they
+ * are visible without crashing the UI.
  */
 export const createFileStorage = (namespace: string): PersistentStorage => {
     const filePath = path.join(homedir(), ".cache", "visulima-tui", `${namespace}.json`);
+
+    const reportError = (operation: string, error: unknown): void => {
+        const message = error instanceof Error ? error.message : String(error);
+
+        process.stderr.write(`[visulima/tui] persistent-state ${operation} failed: ${message}\n`);
+    };
 
     const load = (): Record<string, string> => {
         try {
@@ -66,7 +75,14 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
             }
 
             return {};
-        } catch {
+        } catch (error) {
+            // ENOENT and EACCES are expected on first run; log everything else.
+            const code = (error as NodeJS.ErrnoException | undefined)?.code;
+
+            if (code !== "ENOENT" && code !== "EACCES") {
+                reportError("read", error);
+            }
+
             return {};
         }
     };
@@ -74,16 +90,27 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
     return {
         read: (key) => load()[key],
         write: (key, value) => {
+            const directory = path.dirname(filePath);
+            const tempPath = `${filePath}.tmp.${process.pid}`;
+
             try {
+                mkdirSync(directory, { recursive: true });
+
                 const current = load();
 
                 current[key] = value;
-                writeFileSync(filePath, JSON.stringify(current, null, 2), {
+
+                // Write to a temp file in the same directory then atomically
+                // rename — prevents readers from ever seeing a half-written
+                // file, and guarantees we either keep the old contents or
+                // see the new ones.
+                writeFileSync(tempPath, JSON.stringify(current, null, 2), {
                     encoding: "utf8",
                     flag: "w",
                 });
-            } catch {
-                // Swallow errors — read-only filesystems, permission issues.
+                renameSync(tempPath, filePath);
+            } catch (error) {
+                reportError("write", error);
             }
         },
     };

@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from "react";
 import { useCallback, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
+import useFocus from "../hooks/use-focus";
 import useInput from "../hooks/use-input";
 import Box from "./box";
 import Text from "./text";
@@ -27,6 +28,13 @@ export type Props = {
      * @default "Confirm"
      */
     readonly confirmLabel?: string;
+
+    /**
+     * Auto-focus the dialog on mount. Set `false` if a parent already owns
+     * focus and routes input here.
+     * @default true
+     */
+    readonly autoFocus?: boolean;
 
     /**
      * Default button when opening the dialog.
@@ -78,6 +86,7 @@ const TONE_COLOR: Record<ConfirmTone, LiteralUnion<AnsiColors, string>> = {
  * y/n as shortcuts, Esc to cancel.
  */
 export default function ConfirmDialog({
+    autoFocus = true,
     cancelLabel = "Cancel",
     children,
     confirmLabel = "Confirm",
@@ -91,6 +100,7 @@ export default function ConfirmDialog({
 }: Props): ReactElement {
     const [focus, setFocus] = useState<"cancel" | "confirm">(defaultFocus);
     const color = TONE_COLOR[tone];
+    const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
 
     useInput(
         useCallback(
@@ -123,7 +133,7 @@ export default function ConfirmDialog({
             },
             [focus, onConfirm, onCancel],
         ),
-        { isActive: !isDisabled },
+        { isActive: !isDisabled && isFocused },
     );
 
     const buttonLabel = (label: string, isFocusedButton: boolean): ReactElement => (

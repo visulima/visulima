@@ -1,6 +1,6 @@
 /* eslint-disable react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
-import { Children, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
+import { Children, cloneElement, isValidElement, useCallback, useEffect, useState } from "react";
 
 import Box from "./box";
 
@@ -39,8 +39,6 @@ const isAnimatable = (element: ReactElement): element is ReactElement<Animatable
  * keep outgoing children mounted until their exit animation finishes.
  */
 export default function AnimatePresence({ children }: Props): ReactElement {
-    const initial = useRef<ReadonlyArray<Slot>>([]);
-
     const [slots, setSlots] = useState<ReadonlyArray<Slot>>(() => {
         const collected: Slot[] = [];
 
@@ -61,8 +59,6 @@ export default function AnimatePresence({ children }: Props): ReactElement {
                 show: true,
             });
         });
-
-        initial.current = collected;
 
         return collected;
     });

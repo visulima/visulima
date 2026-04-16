@@ -108,19 +108,30 @@ const useForm = <S extends Readonly<Record<string, FieldConfig<unknown>>>>(optio
     valuesRef.current = values;
 
     const validateField = useCallback(
-        <K extends keyof S>(name: K, value: FormValues<S>[K]): ValidationResult => {
+        <K extends keyof S>(
+            name: K,
+            value: FormValues<S>[K],
+            allValues: Readonly<Record<string, unknown>> = valuesRef.current as Readonly<Record<string, unknown>>,
+        ): ValidationResult => {
             const config = fields[name as string] as FieldConfig<FormValues<S>[K]> | undefined;
 
-            return config?.validate?.(value, valuesRef.current as Readonly<Record<string, unknown>>);
+            return config?.validate?.(value, allValues);
         },
         [fields],
     );
 
     const setValue = useCallback(
         <K extends keyof S>(name: K, value: FormValues<S>[K]) => {
-            setValues((previous) => ({ ...previous, [name]: value }));
+            // Compute the merged next state up-front so `valuesRef` and the
+            // validator both see the latest field — multiple synchronous
+            // setValue calls in the same event loop tick now validate
+            // against each other instead of stale snapshots.
+            const nextValues = { ...valuesRef.current, [name]: value } as FormValues<S>;
 
-            const error = validateField(name, value);
+            valuesRef.current = nextValues;
+            setValues(nextValues);
+
+            const error = validateField(name, value, nextValues as Readonly<Record<string, unknown>>);
 
             setErrors((previous) => {
                 if (error === undefined) {

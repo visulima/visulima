@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import useAnimation from "../hooks/use-animation";
+import useWindowSize from "../hooks/use-window-size";
 import Box from "./box";
 import Text from "./text";
 
@@ -67,17 +68,22 @@ export default function Placeholder({
     width,
 }: Props): ReactElement {
     const { frame } = useAnimation({ interval, isActive: animated });
+    const { columns } = useWindowSize();
     const dim = animated && frame % 2 === 0;
+    // When `width` is omitted, fall back to the terminal width so the
+    // skeleton actually fills its parent rather than truncating to 40 cells.
+    const baseWidth = width ?? Math.max(1, columns);
 
     return (
         <Box flexDirection="column" width={width}>
             {Array.from({ length: rows }, (_, index) => {
                 const ratio = widths[index % widths.length] ?? 1;
-                const effectiveWidth = width === undefined ? undefined : Math.max(1, Math.round(width * ratio));
-                const fill = character.repeat(effectiveWidth ?? 40);
+                const effectiveWidth = Math.max(1, Math.round(baseWidth * ratio));
+                const boxWidth = width === undefined ? effectiveWidth : effectiveWidth;
+                const fill = character.repeat(effectiveWidth);
 
                 return (
-                    <Box key={index} width={effectiveWidth}>
+                    <Box key={index} width={boxWidth}>
                         <Text color={color} dimColor={dim} wrap="truncate-end">
                             {fill}
                         </Text>

@@ -40,13 +40,14 @@ const LEVEL_COLOR: Record<HeadingLevel, string> = {
     6: "white",
 };
 
+// Markdown convention: H1 = "# ", H2 = "## ", … H6 = "###### ".
 const LEVEL_PREFIX: Record<HeadingLevel, string> = {
-    1: "",
-    2: "# ",
-    3: "## ",
-    4: "### ",
-    5: "#### ",
-    6: "##### ",
+    1: "# ",
+    2: "## ",
+    3: "### ",
+    4: "#### ",
+    5: "##### ",
+    6: "###### ",
 };
 
 /**

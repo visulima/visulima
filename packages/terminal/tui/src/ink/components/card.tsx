@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import Box from "./box";
+import Divider from "./divider";
 import Text from "./text";
 
 export type Props = {
@@ -98,7 +99,7 @@ export default function Card({
             <Box flexDirection="column">{children}</Box>
             {footer === undefined ? undefined : (
                 <Box flexDirection="column" marginTop={1}>
-                    <Text dimColor>{"─".repeat(60)}</Text>
+                    <Divider dimColor length={typeof width === "number" ? Math.max(1, width - 4) : undefined} />
                     <Box marginTop={1}>{footer}</Box>
                 </Box>
             )}

@@ -11,7 +11,7 @@
  * Run: node --import @oxc-node/core/register examples/feedback.tsx
  */
 import { Box, Placeholder, render, Stepper, Text, Toast, useApp, useInput } from "@visulima/tui";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 const STEPS = [
     { label: "Download" },
@@ -24,7 +24,9 @@ const App = () => {
     const { exit } = useApp();
     const [activeIndex, setActiveIndex] = useState(1);
     const [toasts, setToasts] = useState<Array<{ id: number; message: string }>>([]);
-    const [nextId, setNextId] = useState(0);
+    // Mutable counter so rapid keypresses each get a unique id without
+    // racing setState batching.
+    const nextIdRef = useRef(0);
 
     useInput((input, key) => {
         if (key.escape) {
@@ -36,10 +38,12 @@ const App = () => {
         } else if (input === "p") {
             setActiveIndex((n) => Math.max(0, n - 1));
         } else if (input === "t") {
-            setNextId((id) => id + 1);
+            const id = nextIdRef.current;
+
+            nextIdRef.current += 1;
             setToasts((current) => [
                 ...current,
-                { id: nextId, message: `Event #${nextId + 1} fired` },
+                { id, message: `Event #${id + 1} fired` },
             ]);
         }
     });

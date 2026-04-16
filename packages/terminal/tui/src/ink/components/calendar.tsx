@@ -88,6 +88,21 @@ const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
 
 const startOfDay = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
+/**
+ * Move `date` by `delta` months while clamping the day so end-of-month
+ * navigation does not roll over (e.g., Jan 31 + 1 month becomes Feb 28/29
+ * instead of overflowing to March 3).
+ */
+const shiftMonth = (date: Date, delta: number): Date => {
+    const targetYear = date.getFullYear();
+    const targetMonth = date.getMonth() + delta;
+    // `new Date(year, monthIndex + 1, 0)` returns the last day of `monthIndex`.
+    const lastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const day = Math.min(date.getDate(), lastDay);
+
+    return new Date(targetYear, targetMonth, day);
+};
+
 const isSameDay = (a: Date, b: Date): boolean =>
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
@@ -200,9 +215,9 @@ export default function Calendar({
                 } else if (key.downArrow) {
                     moveCursor(new Date(current.getFullYear(), current.getMonth(), current.getDate() + 7));
                 } else if (key.pageUp) {
-                    moveCursor(new Date(current.getFullYear(), current.getMonth() - 1, current.getDate()));
+                    moveCursor(shiftMonth(current, -1));
                 } else if (key.pageDown) {
-                    moveCursor(new Date(current.getFullYear(), current.getMonth() + 1, current.getDate()));
+                    moveCursor(shiftMonth(current, 1));
                 } else if (key.return) {
                     onSubmit?.(current);
                 }

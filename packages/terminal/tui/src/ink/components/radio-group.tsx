@@ -116,13 +116,19 @@ export default function RadioGroup({
                 return;
             }
 
+            const currentValue = value ?? internal;
+
+            if (target.value === currentValue) {
+                return;
+            }
+
             if (value === undefined) {
                 setInternal(target.value);
             }
 
             onChange?.(target.value);
         },
-        [options, value, onChange],
+        [options, value, internal, onChange],
     );
 
     useInput(
@@ -133,6 +139,10 @@ export default function RadioGroup({
                 }
 
                 const total = options.length;
+
+                if (total === 0) {
+                    return;
+                }
 
                 const moveNext = (key.downArrow && orientation === "vertical") || (key.rightArrow && orientation === "horizontal") || input === "j";
                 const movePrev = (key.upArrow && orientation === "vertical") || (key.leftArrow && orientation === "horizontal") || input === "k";

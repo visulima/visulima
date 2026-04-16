@@ -85,11 +85,20 @@ const findMax = (data: ReadonlyArray<BarDatum>, userMax: number | undefined): nu
         return userMax;
     }
 
-    let max = 0;
+    if (data.length === 0) {
+        return 0;
+    }
 
-    for (const datum of data) {
-        if (datum.value > max) {
-            max = datum.value;
+    // Seed from the first sample so all-negative datasets still yield a
+    // sensible upper bound (otherwise initializing `max = 0` would wipe out
+    // every datum < 0).
+    let max = data[0]!.value;
+
+    for (let index = 1; index < data.length; index += 1) {
+        const value = data[index]!.value;
+
+        if (value > max) {
+            max = value;
         }
     }
 

@@ -43,14 +43,10 @@ export default function BlinkDot({
     isActive = true,
 }: Props): ReactElement {
     const { frame } = useAnimation({ interval: Math.max(1, Math.floor(interval / 2)), isActive });
+    // When the animation is paused, useAnimation freezes `frame` at 0 — the
+    // dot stays solid. When running, even frames show the character and odd
+    // frames show a space, producing the blink.
+    const visible = !isActive || frame % 2 === 0;
 
-    if (!isActive) {
-        return <Text color={color}>{character}</Text>;
-    }
-
-    const visible = frame % 2 === 0;
-
-    return (
-        <Text color={color}>{visible ? character : " "}</Text>
-    );
+    return <Text color={color}>{visible ? character : " "}</Text>;
 }

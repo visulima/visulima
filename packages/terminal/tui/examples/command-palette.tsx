@@ -11,7 +11,7 @@
  * Run: node --import @oxc-node/core/register examples/command-palette.tsx
  */
 import { Box, CommandPalette, render, Text, useApp } from "@visulima/tui";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const COMMANDS = [
     { hotkey: "Ctrl+N", id: "file.new", keywords: ["create"], label: "File: New" },
@@ -28,16 +28,28 @@ const App = () => {
     const { exit } = useApp();
     const [picked, setPicked] = useState<string | undefined>();
 
+    // Defer exit so React commits the "selected" line first; otherwise
+    // calling exit synchronously inside onSelect unmounts before the
+    // confirmation render lands.
+    useEffect(() => {
+        if (picked === undefined) {
+            return undefined;
+        }
+
+        const timer = setTimeout(exit, 200);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [picked, exit]);
+
     return (
         <Box flexDirection="column" gap={1} padding={1}>
             <Text bold color="cyan">Command palette</Text>
             <CommandPalette
                 commands={COMMANDS}
                 onCancel={exit}
-                onSelect={(id) => {
-                    setPicked(id);
-                    exit();
-                }}
+                onSelect={setPicked}
             />
             {picked !== undefined && (
                 <Text color="green">

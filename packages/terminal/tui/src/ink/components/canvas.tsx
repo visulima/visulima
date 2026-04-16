@@ -24,10 +24,13 @@ export type Props = {
     readonly height: number;
 
     /**
-     * Invalidation key. Re-runs `draw` and re-serializes only the rows the
-     * draw callback dirtied. Pass the data you render (or a hash of it).
+     * Invalidation key — required so the memoization contract is explicit.
+     * Re-runs `draw` and re-serializes only the rows the draw callback
+     * dirtied. Pass the data you render (or a hash of it). Use a stable
+     * value (e.g. a counter) when you intentionally want to redraw on
+     * every render.
      */
-    readonly version?: unknown;
+    readonly version: unknown;
 
     /**
      * Number of columns (character cells horizontally).

@@ -50,6 +50,7 @@ const App = () => {
     });
 
     const trend = React.useMemo(() => randomSeries(24, 100), [version]);
+    const histData = React.useMemo(() => randomSeries(120, 80), [version]);
     const bars = React.useMemo(
         () => [
             { label: "Mon", value: 32 },
@@ -78,7 +79,7 @@ const App = () => {
             <Text bold color="cyan">BarChart + Histogram</Text>
             <Box gap={4}>
                 <BarChart data={bars} height={6} showValues />
-                <Histogram bins={6} data={randomSeries(120, 80)} height={6} />
+                <Histogram bins={6} data={histData} height={6} />
             </Box>
             <Text bold color="cyan">LineChart + AreaChart</Text>
             <Box gap={4}>
