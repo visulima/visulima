@@ -61,4 +61,76 @@ describe("suppression", () => {
             await rm(baselineDir, { force: true, recursive: true });
         }
     });
+
+    it("content-hash fingerprint survives line shifts in the source file", async () => {
+        expect.assertions(3);
+
+        const nativeMod = await loadNative();
+
+        if (!nativeMod) {
+            return;
+        }
+
+        const leakFile = resolve(tmpDir, "leak.env");
+        const secretLine = 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n';
+
+        await writeFile(leakFile, secretLine);
+
+        const originalFindings = await nativeMod.scan([tmpDir]);
+
+        expect(originalFindings.length).toBeGreaterThan(0);
+        expect(originalFindings[0]?.startLine).toBe(1);
+
+        const baselineDir = await mkdtemp(resolve(tmpdir(), "secret-scanner-baseline-"));
+        const baselinePath = resolve(baselineDir, "baseline.json");
+
+        await writeFile(baselinePath, JSON.stringify(originalFindings));
+
+        // Prepend four blank lines so the same secret now lives at line 5 — the
+        // content-hash fingerprint hashes `(secret, ruleId, file)` and must
+        // still match the baseline entry despite the line shift.
+        await writeFile(leakFile, `\n\n\n\n${secretLine}`);
+
+        try {
+            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
+
+            expect(filtered).toHaveLength(0);
+        } finally {
+            await rm(baselineDir, { force: true, recursive: true });
+        }
+    });
+
+    it("accepts legacy line-based baselines for backwards compatibility", async () => {
+        expect.assertions(1);
+
+        const nativeMod = await loadNative();
+
+        if (!nativeMod) {
+            return;
+        }
+
+        const leakFile = resolve(tmpDir, "leak.env");
+
+        await writeFile(leakFile, 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
+
+        const fresh = await nativeMod.scan([tmpDir]);
+
+        // Simulate a pre-content-hash baseline: keep the raw Finding shape but
+        // strip the `secret` field to model older writers that sometimes left
+        // the field off (redacted CI output). Suppression must still match via
+        // the legacy line-based fingerprint.
+        const legacyEntries = fresh.map(({ secret: _secret, ...rest }) => rest);
+        const baselineDir = await mkdtemp(resolve(tmpdir(), "secret-scanner-baseline-"));
+        const baselinePath = resolve(baselineDir, "baseline.json");
+
+        await writeFile(baselinePath, JSON.stringify(legacyEntries));
+
+        try {
+            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
+
+            expect(filtered).toHaveLength(0);
+        } finally {
+            await rm(baselineDir, { force: true, recursive: true });
+        }
+    });
 });

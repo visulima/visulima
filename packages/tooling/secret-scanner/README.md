@@ -1,4 +1,14 @@
-<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER --><!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="secret-scanner" />
+
+</a>
+
+<h3 align="center">Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
@@ -26,15 +36,15 @@
 
 Fast secret and credential scanner for Node.js — a Rust port of the [gitleaks](https://github.com/gitleaks/gitleaks) detection engine, exposed through NAPI.
 
-- Bundles the default gitleaks ruleset (177+ rules, MIT)
+- Bundles the default gitleaks ruleset (222 rules, MIT) plus 825 rules from MongoDB Kingfisher (Apache-2.0)
+- Opt-in rule groups tagged `preset:<name>` — ships `weak-passwords` (low-entropy credentials) and `password-manager` (committed vault exports) disabled by default, enable via `rules.include: ["tag:preset:<name>"]`
 - PCRE-compatible `fancy-regex` engine + Aho–Corasick keyword prefilter
 - Parallel file scanning via `rayon`, memory-mapped zero-copy reads for large files
-- Respects `.gitignore` / `.ignore` out of the box
+- Respects `.gitignore` / `.ignore` out of the box; extra gitignore-syntax filters via `walk.excludePatterns` / `walk.excludeFromFiles`
 - Deterministic output order across runs
 - Baseline JSON (fingerprint suppression), inline (`gitleaks:allow`) and block (`gitleaks:allow-start` / `gitleaks:allow-end`) suppression
 - Also accepts `secret-scanner:allow` / `-start` / `-end` markers
-- Config loading via [`c12`](https://github.com/unjs/c12) — accepts `.toml`, `.json`, `.yaml`, `.ts`, `.js`, `.mjs`, `.cjs` configs on top of the bundled gitleaks ruleset
-- Path exclusion via `.gitignore` (respected by the walker) + `extraIgnores` option
+- JSON config at runtime (gitleaks-compatible shape). Author rules in TOML, convert once at build time.
 
 ## Install
 
@@ -80,11 +90,66 @@ const rules = await listRules();
 console.log(`${rules.length} rules loaded`);
 
 // 5) Validate a custom config — returns rules that failed to compile
-const skipped = await inspectRuleset({ configPath: "./gitleaks.toml" });
+const skipped = await inspectRuleset({ config: { path: "./gitleaks.json" } });
 
-// 6) Gitleaks-compatible fingerprint (`file:ruleID:startLine`)
+// 6) Enable an opt-in rule bundle additively (weak-passwords / password-manager).
+//    `rules.enable` turns them on without restricting output; use `rules.include`
+//    instead if you want to see *only* preset findings.
+const weak = await scan([process.cwd()], { rules: { enable: ["tag:preset:weak-passwords"] } });
+
+// 7) Only high-confidence rules (drops unlabeled + low/medium — useful in CI).
+//    Gitleaks rules have no declared confidence → treated as low → dropped; you'll
+//    get a Kingfisher-only subset.
+const highOnly = await scan([process.cwd()], { config: { minConfidence: "high" } });
+
+// 8) Live-validate each finding against its provider. Every Kingfisher rule that
+//    carries an HTTP `validation:` block (StatusMatch + WordMatch matchers) hits
+//    its API; the finding's `validation` field becomes "verified" | "rejected" |
+//    "skipped" | "error". `onlyVerified` filters to `"verified"` for CI gating.
+//    WARNING: sends candidate secrets to the provider — only enable on owned repos.
+const verified = await scan([process.cwd()], { config: { validate: true, onlyVerified: true } });
+
+// 7) Content-hash fingerprint — stable across line shifts in the source file.
+//    Hashes `(secret, ruleId, file)`, so edits that move a secret up or down
+//    don't invalidate the baseline entry. Legacy line-based baselines
+//    (`file:ruleID:startLine`) are still accepted on read.
 for (const f of findings) console.log(fingerprint(f));
 ```
+
+### Ruleset
+
+A single bundled ruleset ships: **1,058 rules** — the union of upstream
+gitleaks (MIT, 222 rules), MongoDB Kingfisher (Apache-2.0, 825 rules), and
+11 opt-in preset rules tagged `preset:weak-passwords` and
+`preset:password-manager` (`defaultEnabled: false` — enable via
+`rules.enable: ["tag:preset:<name>"]`). The native detector layers a
+`regex::bytes::RegexSet` prefilter + compiled-ruleset cache on top of the
+aho-corasick keyword filter, so scan cost stays in the low single-digit
+milliseconds per file.
+
+Kingfisher rules carry two extra hooks:
+
+- `patternRequirements` — `minDigits`, `minLength`, and a case-insensitive `ignoreIfContains`
+  list that drops documentation placeholders (`EXAMPLE`, `TEST`, `YOUR_KEY_HERE`).
+- `confidence` — `"low" | "medium" | "high"`. Filter at load time with
+  `config.minConfidence` / `--min-confidence`.
+
+`Finding.source`, `Finding.confidence`, and `Finding.alternateMatches` are populated on
+every emitted finding so reporters and baselines can distinguish between overlapping rules.
+
+Kingfisher's `validation:` blocks are consumed by the opt-in HTTP validator
+(`config.validate: true` / `--validate`). The validator handles `type: Http`
+rules with `StatusMatch` or `WordMatch` response matchers — ~493 of the 510
+validation-carrying rules qualify. Other types (`AWS`, `GCP`, `MongoDB`,
+`Postgres`, `Jdbc`, `JWT`, `Grpc`, `Raw`, and the few JSON / XML / Header
+matchers) populate `finding.validation = "skipped"`. Templates support `{{ TOKEN }}`
+plus the filters `downcase`, `upcase`, `b64enc`, `b64dec` — enough to construct
+the HTTP request that every StatusMatch/WordMatch-based rule needs.
+`depends_on_rule:` blocks are preserved on every rule for future multi-token
+validation. Rules with `pattern_requirements.checksum:` (11 upstream) are still
+skipped during import — those need crc verification before their loose pattern
+is meaningful. See `data/kingfisher.skipped.log`. The upstream reference is
+pinned in `scripts/kingfisher.ref`; regenerate with `pnpm run build:rules`.
 
 ### Suppression
 
@@ -109,33 +174,59 @@ const testFixtures = {
 
 **Baseline JSON**
 
-- Array of `Finding` objects (same shape `scan()` returns). Pass via `baselinePath`. Findings whose fingerprint (`<file>:<ruleID>:<startLine>`) appears in the baseline are suppressed.
-- `disableRules` / `onlyRules` option arrays for rule-id level filtering.
-- Use `.gitignore` to exclude paths from scanning (respected by the walker).
+- Array of `Finding` objects (same shape `scan()` returns). Pass via `baseline: "./path.json"`. Findings whose content-hash fingerprint (SHA-256 over `secret + ruleId + file`, truncated to 16 hex chars) matches an entry in the baseline are suppressed. Line-shift tolerant; the legacy `file:ruleID:startLine` format continues to suppress correctly without a migration.
+- `rules.include` / `rules.exclude` arrays for rule-id level filtering.
+- Use `.gitignore` to exclude paths from scanning (respected by the walker), or `walk.excludePatterns` / `walk.excludeFromFiles` for extra gitignore-syntax filters.
 
 ### API
 
 ```ts
 interface ScanOptions {
-    /** Pre-parsed config object (gitleaks-compatible shape). */
-    config?: GitleaksConfig;
-    /** Path to a config file — c12 auto-detects TOML/JSON/YAML/TS/JS. */
-    configPath?: string;
-    /** Directory to resolve the config from. Defaults to cwd. */
-    cwd?: string;
-    /** Set false to skip merging the bundled gitleaks ruleset (default: merge). */
-    includeBundled?: boolean;
-
-    respectGitignore?: boolean;
-    includeHidden?: boolean;
-    extraIgnores?: string[];
-    maxFileSize?: number;
-    redact?: boolean;
+    /** Path to a baseline JSON array of `Finding` objects (suppression list). */
+    baseline?: string;
+    /** Rayon worker threads. 0 / omit = auto. */
     concurrency?: number;
-    baselinePath?: string;
-    onlyRules?: string[];
-    disableRules?: string[];
-    warnOnSkippedRules?: boolean;
+
+    config?: {
+        /** Layer the user's rules on top of the bundled ruleset. Default: true. */
+        extendBundled?: boolean;
+        /** Pre-parsed gitleaks-shaped object. Fastest path — zero file IO. */
+        inline?: GitleaksConfig;
+        /** Path to a JSON file (gitleaks-compatible shape). */
+        path?: string;
+    };
+
+    /** Mask `match` / `secret` strings in every finding. */
+    redact?: boolean;
+
+    /**
+     * Rule-id filters. Entries are either literal ids or `tag:<name>` selectors.
+     * Unknown tags throw so typos surface early.
+     */
+    rules?: {
+        /** Additive: enable opt-in rules (e.g. `tag:preset:weak-passwords`) without restricting output. */
+        enable?: string[];
+        /** Blacklist: drop findings whose ruleId matches. */
+        exclude?: string[];
+        /** Whitelist: only emit findings whose ruleId matches. Implies enablement for referenced opt-in rules. */
+        include?: string[];
+    };
+
+    /** Print diagnostics (skipped rules) to stderr on first run. */
+    verbose?: boolean;
+
+    walk?: {
+        /** Additional `.gitignore`-shaped files to honor (e.g. `.secretsignore`). */
+        excludeFromFiles?: string[];
+        /** Gitignore-syntax lines applied on top of `.gitignore`. */
+        excludePatterns?: string[];
+        /** Respect `.gitignore` / `.ignore`. Default: true. */
+        gitignore?: boolean;
+        /** Visit dotfiles / hidden entries. Default: false. */
+        includeHidden?: boolean;
+        /** Skip files larger than this (bytes). Default: 10 MiB. */
+        maxFileSize?: number;
+    };
 }
 
 interface Finding {

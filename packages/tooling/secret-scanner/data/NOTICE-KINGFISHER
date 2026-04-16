@@ -1,0 +1,150 @@
+NOTICE file corresponding to Section 4 (d) of the Apache License, Version 2.0
+
+--------------------------------------------------------------------
+Notices for Kingfisher
+--------------------------------------------------------------------
+Copyright 2025-2026 MongoDB, Inc.
+https://www.mongodb.com
+
+Source repository: https://github.com/mongodb/kingfisher
+
+
+--------------------------------------------------------------------
+Upstream notices
+--------------------------------------------------------------------
+Copyright 2022 Praetorian Security, Inc <https://praetorian.com>.
+
+This product includes software from the Nosey Parker project developed
+by Praetorian Security, Inc:
+
+    https://github.com/praetorian-inc/noseyparker
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------
+
+Certain detection rules:
+ * crates/kingfisher-rules/data/rules/redis.yml
+ * crates/kingfisher-rules/data/rules/branchio.yml
+ * crates/kingfisher-rules/data/rules/browserstack.yml
+ * crates/kingfisher-rules/data/rules/cypress.yml
+ * crates/kingfisher-rules/data/rules/keenio.yml
+ * crates/kingfisher-rules/data/rules/wpengine.yml
+ * crates/kingfisher-rules/data/rules/appcenter.yml
+ * crates/kingfisher-rules/data/rules/calendly.yml
+ * crates/kingfisher-rules/data/rules/delighted.yml
+ * crates/kingfisher-rules/data/rules/deviantart.yml
+ * crates/kingfisher-rules/data/rules/instagram.yml
+ * crates/kingfisher-rules/data/rules/iterable.yml
+ * crates/kingfisher-rules/data/rules/lokalise.yml
+ * crates/kingfisher-rules/data/rules/azure-notification-hub.yml
+ * crates/kingfisher-rules/data/rules/firebase.yml
+ * crates/kingfisher-rules/data/rules/helpscout.yml
+ * crates/kingfisher-rules/data/rules/kubernetes.yml
+ * crates/kingfisher-rules/data/rules/pendo.yml
+ * crates/kingfisher-rules/data/rules/razorpay.yml
+ * crates/kingfisher-rules/data/rules/spotify.yml
+ * crates/kingfisher-rules/data/rules/wakatime.yml
+ * crates/kingfisher-rules/data/rules/zapier.yml
+ * crates/kingfisher-rules/data/rules/zendesk.yml
+
+are derived in part from Titus (https://github.com/praetorian-inc/titus),
+which is licensed under the Apache License, Version 2.0.
+
+Titus
+Copyright 2026 Praetorian Security, Inc.
+
+This product includes software developed at Praetorian Security, Inc.
+(https://www.praetorian.com/).
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--------------------------------------------------------------------
+
+Certain detection rules:
+ * crates/kingfisher-rules/data/rules/octopusdeploy.yml
+ * crates/kingfisher-rules/data/rules/openshift.yml
+ * crates/kingfisher-rules/data/rules/polymarket.yml
+ * crates/kingfisher-rules/data/rules/privateai.yml
+ * crates/kingfisher-rules/data/rules/settlemint.yml
+ * crates/kingfisher-rules/data/rules/sidekiq.yml
+
+are derived in part from Betterleaks
+(https://github.com/betterleaks/betterleaks), which is licensed under the MIT
+License.
+
+Betterleaks
+Copyright (c) 2026 Zachary Rice
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------------------------------------------------------
+
+Certain detection rules:
+ * crates/kingfisher-rules/data/rules/etsy.yml
+ * crates/kingfisher-rules/data/rules/flutterwave.yml
+ * crates/kingfisher-rules/data/rules/freemius.yml
+ * crates/kingfisher-rules/data/rules/jfrog.yml
+ * crates/kingfisher-rules/data/rules/kraken.yml
+ * crates/kingfisher-rules/data/rules/kucoin.yml
+ * crates/kingfisher-rules/data/rules/trello.yml
+
+are derived in part from Gitleaks (https://github.com/gitleaks/gitleaks),
+which is licensed under the MIT License.
+
+Gitleaks
+Copyright (c) 2019 Zachary Rice
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

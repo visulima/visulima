@@ -12,6 +12,21 @@ export interface Finding {
     secret: string;
     entropy: number;
     tags: Array<string>;
+    /**
+     * Rule provenance — `"gitleaks"`, `"kingfisher"`, `"visulima"`, or a user string.
+     * `None` for legacy rules that don't declare a source.
+     */
+    source?: string;
+    /**
+     * Author-declared quality signal: `"low"`, `"medium"`, or `"high"`. Always set —
+     * rules that don't declare confidence resolve to `"low"`.
+     */
+    confidence: string;
+    /**
+     * Rule ids that matched the same byte span and were collapsed by the dedup
+     * pass. Lets reporters surface "also: X, Y" without emitting duplicate findings.
+     */
+    alternateMatches: Array<string>;
 }
 
 /**
@@ -31,6 +46,14 @@ export interface RuleInfo {
     entropy?: number;
     hasRegex: boolean;
     hasPathFilter: boolean;
+    /**
+     * `true` when the rule has no `keywords` and therefore bypasses the AC prefilter —
+     * its main regex runs against every file. Surface this in tooling so users can spot
+     * perf-regressing custom rules (#1675).
+     */
+    alwaysRuns: boolean;
+    source?: string;
+    confidence: string;
 }
 
 export declare function scan(paths: Array<string>, options?: ScanOptions | undefined | null): Promise<Array<Finding>>;
@@ -62,6 +85,13 @@ export interface ScanOptions {
     redact?: boolean;
     /** Number of rayon worker threads. 0/omitted = use rayon's global pool. */
     concurrency?: number;
+    /**
+     * Minimum author-declared confidence required for a rule to load. Accepts
+     * "low" | "medium" | "high". Unset (or "low") loads every rule — matching
+     * legacy behaviour. Rules with no declared confidence are treated as "low"
+     * and so are dropped whenever a higher floor is set.
+     */
+    minConfidence?: string;
 }
 
 export declare function scanSync(paths: Array<string>, options?: ScanOptions | undefined | null): Array<Finding>;
