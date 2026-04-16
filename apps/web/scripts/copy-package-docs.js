@@ -37,14 +37,31 @@ const CATEGORY_CONFIG = {
     bundler: { title: "Bundler", packages: ["packem"] },
     "cli-terminal": {
         title: "CLI & Terminal",
-        packages: ["cerebro", "pail", "command-line-args", "boxen", "tabular", "ansi", "colorize", "is-ansi-color-supported", "fmt"],
+        packages: [
+            "cerebro",
+            "pail",
+            "command-line-args",
+            "boxen",
+            "tabular",
+            "ansi",
+            "colorize",
+            "is-ansi-color-supported",
+            "fmt",
+            "interactive-manager",
+            "progress-bar",
+            "spinner",
+            "tui",
+        ],
     },
     "data-manipulation": { title: "Data & Utilities", packages: ["string", "object", "deep-clone", "bytes", "humanizer", "redact", "content-safety"] },
     filesystem: { title: "File System", packages: ["fs", "path", "find-cache-dir", "package", "tsconfig", "storage", "storage-client"] },
-    api: { title: "API & Web", packages: ["api-platform", "crud", "html", "pagination", "health-check", "jsdoc-open-api"] },
+    api: { title: "API & Web", packages: ["api-platform", "connect", "crud", "html", "pagination", "health-check", "jsdoc-open-api"] },
     "error-debugging": { title: "Error Handling", packages: ["error", "error-handler", "ono", "source-map", "inspector", "vite-overlay"] },
     email: { title: "Internationalization & Communication", packages: ["iso-locale", "disposable-email-domains", "email"] },
-    "dev-tools": { title: "Dev Tools", packages: ["dev-toolbar", "prisma-dmmf-transformer"] },
+    "dev-tools": {
+        title: "Dev Tools",
+        packages: ["dev-toolbar", "prisma-dmmf-transformer", "secret-scanner", "find-ai-runner", "task-runner", "vis"],
+    },
 };
 
 /**
