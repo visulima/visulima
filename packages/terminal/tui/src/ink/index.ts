@@ -14,6 +14,8 @@ export type { AccordionItem, Props as AccordionProps } from "./components/accord
 export { default as Accordion } from "./components/accordion";
 export type { Props as AlertProps, AlertVariant } from "./components/alert";
 export { default as Alert } from "./components/alert";
+export type { Props as AnimatePresenceProps } from "./components/animate-presence";
+export { default as AnimatePresence } from "./components/animate-presence";
 export type { ApprovalDecision, ApprovalRisk, Props as ApprovalPromptProps } from "./components/approval-prompt";
 export { default as ApprovalPrompt } from "./components/approval-prompt";
 export type { Props as AppProps } from "./components/app-context";
@@ -186,6 +188,8 @@ export type { Props as TooltipProps, TooltipPlacement } from "./components/toolt
 export { default as Tooltip } from "./components/tooltip";
 export type { Props as TransformProps } from "./components/transform";
 export { default as Transform } from "./components/transform";
+export type { Props as TransitionProps, TransitionPhase, TransitionPreset } from "./components/transition";
+export { default as Transition } from "./components/transition";
 export type {
     AsyncChildrenFunction,
     FlatNode,

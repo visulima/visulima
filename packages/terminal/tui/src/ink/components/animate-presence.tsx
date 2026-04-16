@@ -1,0 +1,142 @@
+/* eslint-disable react/function-component-definition */
+import type { ReactElement, ReactNode } from "react";
+import { Children, cloneElement, isValidElement, useCallback, useEffect, useRef, useState } from "react";
+
+import Box from "./box";
+
+type AnimatableProps = {
+    readonly onExit?: () => void;
+    readonly show?: boolean;
+};
+
+export type Props = {
+    /**
+     * Keyed children. Any child that accepts a `show: boolean` prop and calls
+     * `onExit` when its exit transition finishes (such as `<Transition />`) is
+     * orchestrated automatically. Other children render as-is.
+     */
+    readonly children: ReactNode;
+};
+
+type Slot = {
+    readonly element: ReactElement<AnimatableProps>;
+    readonly key: string;
+    readonly show: boolean;
+};
+
+const getKey = (element: ReactElement): string | undefined => {
+    const key = element.key;
+
+    return key == null ? undefined : String(key);
+};
+
+const isAnimatable = (element: ReactElement): element is ReactElement<AnimatableProps> =>
+    typeof element.props === "object" && element.props !== null && "show" in element.props;
+
+/**
+ * Orchestrates enter / exit animations for keyed children. Wrap a dynamic
+ * list of `<Transition />` (or any component accepting `show` + `onExit`) to
+ * keep outgoing children mounted until their exit animation finishes.
+ */
+export default function AnimatePresence({ children }: Props): ReactElement {
+    const initial = useRef<ReadonlyArray<Slot>>([]);
+
+    const [slots, setSlots] = useState<ReadonlyArray<Slot>>(() => {
+        const collected: Slot[] = [];
+
+        Children.forEach(children, (child) => {
+            if (!isValidElement(child)) {
+                return;
+            }
+
+            const key = getKey(child);
+
+            if (key === undefined) {
+                return;
+            }
+
+            collected.push({
+                element: isAnimatable(child) ? child : (child as ReactElement<AnimatableProps>),
+                key,
+                show: true,
+            });
+        });
+
+        initial.current = collected;
+
+        return collected;
+    });
+
+    // Reconcile children on every render — additions marked show=true,
+    // removals flipped to show=false so they can animate out. Persisting
+    // keys simply get their element updated.
+    useEffect(() => {
+        const incoming = new Map<string, ReactElement<AnimatableProps>>();
+
+        Children.forEach(children, (child) => {
+            if (!isValidElement(child)) {
+                return;
+            }
+
+            const key = getKey(child);
+
+            if (key === undefined) {
+                return;
+            }
+
+            incoming.set(key, isAnimatable(child) ? child : (child as ReactElement<AnimatableProps>));
+        });
+
+        setSlots((previous) => {
+            const next: Slot[] = [];
+            const seen = new Set<string>();
+
+            for (const slot of previous) {
+                if (incoming.has(slot.key)) {
+                    next.push({
+                        element: incoming.get(slot.key)!,
+                        key: slot.key,
+                        show: true,
+                    });
+                    seen.add(slot.key);
+                } else {
+                    // Removed in the incoming render; keep rendering with show=false.
+                    next.push({ ...slot, show: false });
+                }
+            }
+
+            for (const [key, element] of incoming) {
+                if (!seen.has(key)) {
+                    next.push({ element, key, show: true });
+                }
+            }
+
+            return next;
+        });
+    }, [children]);
+
+    const removeSlot = useCallback((key: string) => {
+        setSlots((previous) => previous.filter((slot) => slot.key !== key));
+    }, []);
+
+    return (
+        <Box flexDirection="column">
+            {slots.map((slot) => {
+                if (!isAnimatable(slot.element)) {
+                    return slot.element;
+                }
+
+                const originalOnExit = slot.element.props.onExit;
+
+                return cloneElement(slot.element, {
+                    key: slot.key,
+                    onExit: () => {
+                        originalOnExit?.();
+                        removeSlot(slot.key);
+                    },
+                    show: slot.show,
+                });
+            })}
+        </Box>
+    );
+}
