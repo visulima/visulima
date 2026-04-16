@@ -91,7 +91,7 @@
         "vitest": "catalog:test"
     },
     "engines": {
-        "node": ">=22.21 <=25.*"
+        "node": "^22.14.0 || >=24.10.0"
     },
     "publishConfig": {
         "access": "public",

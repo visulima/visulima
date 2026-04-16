@@ -186,7 +186,7 @@
         "@visulima/tui-binding-win32-x64-msvc": "workspace:*"
     },
     "engines": {
-        "node": ">=22.13 <=25.x"
+        "node": "^22.14.0 || >=24.10.0"
     },
     "publishConfig": {
         "access": "public",

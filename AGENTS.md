@@ -6,7 +6,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 Visulima is a pnpm monorepo with 44+ TypeScript packages organized under `packages/<category>/<name>/`. Categories: `api`, `data-manipulation`, `email`, `error-debugging`, `filesystem`, `storage`, `terminal`, `tooling`. Apps live in `apps/` (web, storybook). Shared code in `shared/`.
 
-**Package manager**: pnpm v10.32.1 (enforced). **Monorepo orchestration**: Nx. **Node**: >=22.13 <=25.x.
+**Package manager**: pnpm v10.32.1 (enforced). **Monorepo orchestration**: Nx. **Node**: ^22.14.0 || >=24.10.0.
 
 ## Build & Test Commands
 
