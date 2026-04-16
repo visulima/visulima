@@ -3,7 +3,3 @@
 native/target/
 
 data/**
-!data/ruleset.json
-!data/LICENSE-GITLEAKS
-!data/LICENSE-KINGFISHER
-!data/NOTICE-KINGFISHER

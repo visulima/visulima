@@ -10,6 +10,8 @@ node_modules
 .eslintcache
 native/target
 data/LICENSE-GITLEAKS
+data/LICENSE-KINGFISHER
+data/NOTICE-KINGFISHER
 
 **/tsconfig.json
 **/jsconfig.json

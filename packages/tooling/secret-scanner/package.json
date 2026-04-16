@@ -61,10 +61,11 @@
     ],
     "scripts": {
         "build": "pnpm run build:rules && packem build --development",
-        "build:native": "pnpm run build:rules && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native": "pnpm run build:rules:prod && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:native:debug": "pnpm run build:rules && napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
-        "build:prod": "pnpm run build:rules && packem build --production",
+        "build:prod": "pnpm run build:rules:prod && packem build --production",
         "build:rules": "node scripts/build-rules.mjs",
+        "build:rules:prod": "node scripts/build-rules.mjs --minify",
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",

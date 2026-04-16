@@ -1,9 +1,8 @@
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { readFileSync, writeFileSync } from "@visulima/fs";
-import { dirname, resolve } from "@visulima/path";
 import { parse as parseTOML } from "smol-toml";
 import { parse as parseYaml } from "yaml";
 
@@ -15,8 +14,9 @@ const pkgDir = resolve(here, "..");
 const dataDir = resolve(pkgDir, "data");
 const cacheRoot = resolve(pkgDir, "node_modules", ".cache");
 
-const readToml = (path) => parseTOML(readFileSync(path));
-const readJson = (path) => JSON.parse(readFileSync(path));
+const readText = (path) => readFileSync(path, "utf8");
+const readToml = (path) => parseTOML(readText(path));
+const readJson = (path) => JSON.parse(readText(path));
 
 // Merge `overlay` into `base`. Rules with matching `id` in the overlay replace the
 // bundled definition; allowlists are appended (gitleaks supports multiple [[allowlists]]).
@@ -90,12 +90,19 @@ const patchUpstreamRegexes = (config) => {
     };
 };
 
-const writeJson = (jsonPath, data) => {
-    writeFileSync(jsonPath, `${JSON.stringify(data, undefined, 2)}\n`);
+// `--minify` (or `SECRET_SCANNER_MINIFY=1`) is set by the prod/native release build
+// scripts. It only applies to the shipped `ruleset.json`; the gitleaks/kingfisher
+// intermediates stay pretty-printed so ref bumps produce reviewable diffs.
+const minifyShipped = process.argv.includes("--minify") || process.env.SECRET_SCANNER_MINIFY === "1";
+
+const writeJson = (jsonPath, data, { minify = false } = {}) => {
+    const json = minify ? JSON.stringify(data) : JSON.stringify(data, undefined, 2);
+
+    writeFileSync(jsonPath, `${json}\n`);
 
     const ruleCount = Array.isArray(data?.rules) ? data.rules.length : 0;
     const allowlistCount = Array.isArray(data?.allowlists) ? data.allowlists.length : 0;
-    const summary = `${ruleCount} rules, ${allowlistCount} allowlists`;
+    const summary = `${ruleCount} rules, ${allowlistCount} allowlists${minify ? ", minified" : ""}`;
 
     // eslint-disable-next-line no-console -- build-time progress output
     console.log(`secret-scanner: wrote ${jsonPath} (${summary})`);
@@ -127,7 +134,7 @@ const tagRuleSource = (config, source) => {
 const LINE_SPLIT_PATTERN = /\r?\n/;
 
 const readRefFile = (path) => {
-    const raw = readFileSync(path);
+    const raw = readText(path);
     const entries = {};
 
     for (const line of raw.split(LINE_SPLIT_PATTERN)) {
@@ -242,7 +249,7 @@ const buildGitleaks = (patchesOverlay) => {
         // eslint-disable-next-line no-console
         console.log("secret-scanner: gitleaks fetch skipped (env), reusing existing data/gitleaks.json");
 
-        return JSON.parse(readFileSync(gitleaksJson));
+        return JSON.parse(readText(gitleaksJson));
     }
 
     const { ref, sha } = readRefFile(refPath);
@@ -306,7 +313,7 @@ const loadKingfisherRules = (rulesDir) => {
     const skipped = [];
 
     for (const entry of entries) {
-        const raw = readFileSync(resolve(rulesDir, entry));
+        const raw = readText(resolve(rulesDir, entry));
         let doc;
 
         try {
@@ -354,7 +361,7 @@ const buildKingfisher = () => {
         // eslint-disable-next-line no-console
         console.log("secret-scanner: kingfisher fetch skipped (env), reusing existing data/kingfisher.json");
 
-        return JSON.parse(readFileSync(kingfisherJson));
+        return JSON.parse(readText(kingfisherJson));
     }
 
     const { ref, sha } = readRefFile(refPath);
@@ -480,7 +487,7 @@ if (kingfisherCore) {
         rules: [...(gitleaksCore.rules ?? []), ...(kingfisherCore.rules ?? []), ...presetRules],
     };
 
-    writeJson(resolve(dataDir, "ruleset.json"), ruleset);
+    writeJson(resolve(dataDir, "ruleset.json"), ruleset, { minify: minifyShipped });
 
     // 5. Static overlap report — groups rules by inferred provider slug so humans can
     //    audit where the two sources overlap. Regenerated deterministically on every
