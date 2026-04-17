@@ -1,4 +1,23 @@
-import type { ProjectGraph, Task, TaskGraph } from "./types";
+import type { ProjectGraph, Task, TaskGraph, TaskPriority } from "./types";
+
+/**
+ * Numeric weight for a `TaskPriority` value. `"normal"` is the anchor;
+ * `"high"` outranks it and `"low"` is ranked below. Used as the
+ * primary sort key in the scheduler's ready-queue ordering.
+ */
+const taskPriorityWeight = (priority: TaskPriority | undefined): number => {
+    switch (priority) {
+        case "high": {
+            return 2;
+        }
+        case "low": {
+            return 0;
+        }
+        default: {
+            return 1;
+        }
+    }
+};
 
 /**
  * Options for partitioning tasks across CI runners.
@@ -192,6 +211,15 @@ export class TaskScheduler {
 
     #sortByPriority(tasks: Task[]): Task[] {
         return [...tasks].toSorted((a, b) => {
+            // Explicit priority hints outrank graph-derived signals —
+            // `"high"` tasks fire first, then `"normal"`, then `"low"`.
+            const aPriority = taskPriorityWeight(a.priority);
+            const bPriority = taskPriorityWeight(b.priority);
+
+            if (aPriority !== bPriority) {
+                return bPriority - aPriority;
+            }
+
             const aDeps = this.#dependentCounts.get(a.id) ?? 0;
             const bDeps = this.#dependentCounts.get(b.id) ?? 0;
 

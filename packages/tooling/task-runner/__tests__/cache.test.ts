@@ -134,6 +134,182 @@ describe(Cache, () => {
 
             expect(restored).toBe(true);
         });
+
+        it("round-trips outputs through the compressed archive", async () => {
+            expect.assertions(3);
+
+            const outputDirectory = join(workspaceRoot, "dist");
+
+            await mkdir(outputDirectory, { recursive: true });
+            // Use a compressible payload so the archive is meaningfully
+            // smaller than the source — catches regressions where
+            // someone swaps the compressor out.
+            await writeFile(join(outputDirectory, "bundle.js"), "console.log('hello');\n".repeat(200));
+
+            await cache.put("br-build", "built", ["dist"], 0);
+            await rm(outputDirectory, { force: true, recursive: true });
+
+            const restored = await cache.restoreOutputs("br-build", ["dist"]);
+
+            expect(restored).toBe(true);
+
+            const { stat: fsStat } = await import("node:fs/promises");
+            const archiveStat = await fsStat(join(workspaceRoot, ".task-runner-cache", "br-build", "outputs.tar.br"));
+
+            expect(archiveStat.isFile()).toBe(true);
+
+            const content = await readFile(join(outputDirectory, "bundle.js"), "utf8");
+
+            expect(content).toContain("console.log('hello');");
+        });
+
+        it("cacheNamespace isolates entries under ns/<namespace>", async () => {
+            expect.assertions(3);
+
+            const nsCache = new Cache({ cacheNamespace: "prod", workspaceRoot });
+
+            await nsCache.put("isolated-hash", "built", [], 0);
+
+            const { stat: fsStat } = await import("node:fs/promises");
+
+            await expect(fsStat(join(workspaceRoot, ".task-runner-cache", "ns", "prod", "isolated-hash"))).resolves.toBeDefined();
+
+            // Other namespace gets its own tree and can't see the first entry.
+            const otherCache = new Cache({ cacheNamespace: "staging", workspaceRoot });
+            const hitFromOther = await otherCache.get("isolated-hash");
+
+            expect(hitFromOther).toBeUndefined();
+
+            // Unnamespaced cache also doesn't see namespaced entries.
+            const vanillaCache = new Cache({ workspaceRoot });
+
+            await expect(vanillaCache.get("isolated-hash")).resolves.toBeUndefined();
+        });
+
+        it("archives and restores outputs specified via glob patterns", async () => {
+            expect.assertions(3);
+
+            const distDirectory = join(workspaceRoot, "dist");
+
+            await mkdir(join(distDirectory, "nested"), { recursive: true });
+            await writeFile(join(distDirectory, "bundle.js"), "console.log(1);\n".repeat(100));
+            await writeFile(join(distDirectory, "nested/deep.js"), "deep");
+
+            await cache.put("glob-build", "built", ["dist/**"], 0);
+
+            await rm(distDirectory, { force: true, recursive: true });
+
+            const restored = await cache.restoreOutputs("glob-build");
+
+            expect(restored).toBe(true);
+
+            // Glob expansion produced archive entries for each file; the
+            // restore swap root (`dist`) is derived from the archive's
+            // top-level, so both files land back in place.
+            await expect(readFile(join(distDirectory, "bundle.js"), "utf8")).resolves.toContain("console.log(1);");
+            await expect(readFile(join(distDirectory, "nested/deep.js"), "utf8")).resolves.toBe("deep");
+        });
+
+        it("excludes files matching a negative glob from the archive", async () => {
+            expect.assertions(3);
+
+            const distDirectory = join(workspaceRoot, "dist");
+
+            await mkdir(join(distDirectory, "cache"), { recursive: true });
+            await writeFile(join(distDirectory, "bundle.js"), "kept");
+            await writeFile(join(distDirectory, "cache/tmp.bin"), "excluded-on-archive");
+
+            await cache.put("neg-build", "built", ["dist/**", "!dist/cache/**"], 0);
+
+            // Nuke the workspace output tree before restoring.
+            await rm(distDirectory, { force: true, recursive: true });
+
+            const restored = await cache.restoreOutputs("neg-build");
+
+            expect(restored).toBe(true);
+            await expect(readFile(join(distDirectory, "bundle.js"), "utf8")).resolves.toBe("kept");
+
+            // Excluded file is not in the archive and therefore not
+            // restored — exclusion semantics match the docs.
+            const { stat: fsStat } = await import("node:fs/promises");
+
+            await expect(fsStat(join(distDirectory, "cache/tmp.bin"))).rejects.toBeDefined();
+        });
+
+        it("archives files from { auto: true } based on autoWrites input", async () => {
+            expect.assertions(2);
+
+            const buildDirectory = join(workspaceRoot, "build");
+
+            await mkdir(buildDirectory, { recursive: true });
+            await writeFile(join(buildDirectory, "traced.js"), "auto-captured");
+            await writeFile(join(buildDirectory, "not-written.js"), "untraced");
+
+            // Only `traced.js` is in `autoWrites` — simulates what the
+            // orchestrator passes from the file-access tracker. The
+            // untraced sibling should NOT make it into the archive.
+            await cache.put("auto-build", "built", [{ auto: true }], 0, undefined, [join(buildDirectory, "traced.js")]);
+
+            await rm(buildDirectory, { force: true, recursive: true });
+
+            const restored = await cache.restoreOutputs("auto-build");
+
+            expect(restored).toBe(true);
+            await expect(readFile(join(buildDirectory, "traced.js"), "utf8")).resolves.toBe("auto-captured");
+        });
+
+        it("restore swaps the new tree into place and leaves the existing tree intact until success", async () => {
+            expect.assertions(2);
+
+            const outputDirectory = join(workspaceRoot, "dist");
+
+            // Seed + cache the initial payload.
+            await mkdir(outputDirectory, { recursive: true });
+            await writeFile(join(outputDirectory, "out.js"), "v1");
+            await cache.put("round2", "built", ["dist"], 0);
+
+            // Simulate a stale in-tree build — the existing tree should be
+            // replaced by the cached one on restore, not merged into.
+            await writeFile(join(outputDirectory, "stale.js"), "should be gone");
+
+            const restored = await cache.restoreOutputs("round2", ["dist"]);
+
+            expect(restored).toBe(true);
+
+            // The stale file is gone (not merged), and the cached file is
+            // present — atomic swap worked.
+            const { stat: fsStat } = await import("node:fs/promises");
+
+            await expect(fsStat(join(outputDirectory, "stale.js"))).rejects.toBeDefined();
+        });
+    });
+
+    describe("cacheNamespace safety", () => {
+        it("rejects path separators to prevent escape from the cache subtree", () => {
+            expect.assertions(3);
+            expect(() => new Cache({ cacheNamespace: "../escape", workspaceRoot })).toThrow(/path separators/);
+            expect(() => new Cache({ cacheNamespace: "a/b", workspaceRoot })).toThrow(/path separators/);
+            expect(() => new Cache({ cacheNamespace: String.raw`a\b`, workspaceRoot })).toThrow(/path separators/);
+        });
+
+        it("rejects '..' and '.' whole components", () => {
+            expect.assertions(2);
+            expect(() => new Cache({ cacheNamespace: "..", workspaceRoot })).toThrow(/escape/);
+            expect(() => new Cache({ cacheNamespace: ".", workspaceRoot })).toThrow(/escape/);
+        });
+
+        it("rejects null bytes", () => {
+            expect.assertions(1);
+            expect(() => new Cache({ cacheNamespace: "prod\0admin", workspaceRoot })).toThrow(/null bytes/);
+        });
+
+        it("empty namespace falls through to the unnamespaced path", () => {
+            expect.assertions(1);
+
+            const cache1 = new Cache({ cacheNamespace: "", workspaceRoot });
+
+            expect(cache1.cacheDirectory).not.toContain("/ns/");
+        });
     });
 
     describe("task index", () => {

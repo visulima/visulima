@@ -3,7 +3,10 @@ import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:
 import { formatBytes, parseBytes } from "@visulima/humanizer";
 import { dirname, join, resolve } from "@visulima/path";
 
+import { createTarBrotli, extractTarBrotli } from "./archive";
 import type { TaskFingerprint } from "./fingerprint";
+import { resolveOutputs } from "./output-resolver";
+import type { OutputSpec } from "./types";
 import { uniqueId } from "./utils";
 
 /**
@@ -26,6 +29,18 @@ interface CachedResult {
 interface CacheOptions {
     /** The cache directory (defaults to `{workspaceRoot}/.task-runner-cache`) */
     cacheDirectory?: string;
+
+    /**
+     * Optional isolation namespace appended to the cache directory
+     * as `&lt;cacheDir>/ns/&lt;namespace>`. When the caller derives the
+     * namespace from the resolved global-env fingerprint, flipping an
+     * env var sends writes into a new namespace while keeping the old
+     * namespace intact — rolling the env back restores the old hits.
+     *
+     * Filesystem-safe segment; callers are responsible for sanitising
+     * (slashes/colons would break path resolution).
+     */
+    cacheNamespace?: string;
     /** Maximum age of cache entries in milliseconds (default: 7 days) */
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "500MB", "1GB") */
@@ -43,6 +58,30 @@ const DEFAULT_MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
  * without hard-coding the literal.
  */
 const DEFAULT_CACHE_DIRECTORY_NAME = ".task-runner-cache";
+
+/**
+ * Validates that a `cacheNamespace` segment can't escape the cache
+ * subtree. Rejects path separators (`/`, `\`), the `..` parent-traversal
+ * token as a whole component, and null bytes. `join()` alone isn't
+ * enough — a namespace of `"../../etc"` would happily resolve above
+ * the cache root.
+ *
+ * Throws on rejection so misconfiguration surfaces loudly instead of
+ * silently writing to the wrong directory.
+ */
+const assertSafeNamespace = (namespace: string): void => {
+    if (namespace.includes("\0")) {
+        throw new Error("cacheNamespace: null bytes are not allowed.");
+    }
+
+    if (namespace.includes("/") || namespace.includes("\\")) {
+        throw new Error(`cacheNamespace: path separators are not allowed (received ${JSON.stringify(namespace)}).`);
+    }
+
+    if (namespace === "." || namespace === "..") {
+        throw new Error(`cacheNamespace: "${namespace}" would escape the cache subtree.`);
+    }
+};
 
 /**
  * Removes a cache entry directory.
@@ -137,7 +176,22 @@ class Cache {
 
     public constructor(options: CacheOptions) {
         this.#workspaceRoot = options.workspaceRoot;
-        this.#cacheDirectory = options.cacheDirectory ?? join(options.workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
+
+        const baseDirectory = options.cacheDirectory ?? join(options.workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
+
+        // Namespacing lets callers partition the cache by an external
+        // fingerprint (e.g. globalEnv hash) without disturbing the task
+        // hash format. Reject path separators + null bytes: a stray
+        // `..` or slash in the namespace would escape the cache subtree
+        // and either leak state across callers or let a remote value
+        // poison paths outside the cache directory.
+        if (options.cacheNamespace !== undefined && options.cacheNamespace.length > 0) {
+            assertSafeNamespace(options.cacheNamespace);
+        }
+
+        this.#cacheDirectory = options.cacheNamespace && options.cacheNamespace.length > 0
+            ? join(baseDirectory, "ns", options.cacheNamespace)
+            : baseDirectory;
         this.#maxCacheAge = options.maxCacheAge ?? DEFAULT_MAX_CACHE_AGE;
         this.#maxCacheSize = options.maxCacheSize ? parseCacheSize(options.maxCacheSize) : undefined;
     }
@@ -196,8 +250,21 @@ class Cache {
      *
      * Uses atomic write: builds the entry in a temporary directory,
      * then renames into place to avoid partial reads by concurrent processes.
+     *
+     * `outputs` accepts the richer `OutputSpec[]` shape — glob
+     * patterns, negative globs, and `{ auto: true }` entries. Pass
+     * `autoWrites` alongside `{ auto: true }` so the resolver knows
+     * which files the task actually wrote; otherwise auto entries
+     * contribute nothing.
      */
-    public async put(hash: string, terminalOutput: string, outputs: string[], code: number, fingerprint?: TaskFingerprint): Promise<void> {
+    public async put(
+        hash: string,
+        terminalOutput: string,
+        outputs: OutputSpec[],
+        code: number,
+        fingerprint?: TaskFingerprint,
+        autoWrites?: ReadonlyArray<string>,
+    ): Promise<void> {
         const cacheEntryDirectory = join(this.#cacheDirectory, hash);
         const temporaryDirectory = join(this.#cacheDirectory, `.tmp-${hash}-${uniqueId()}`);
 
@@ -208,7 +275,7 @@ class Cache {
             const writes: Promise<void>[] = [
                 writeFile(join(temporaryDirectory, "code"), String(code)),
                 writeFile(join(temporaryDirectory, "terminalOutput"), terminalOutput),
-                this.#archiveOutputs(temporaryDirectory, outputs),
+                this.#archiveOutputs(temporaryDirectory, outputs, autoWrites),
             ];
 
             if (fingerprint) {
@@ -228,47 +295,22 @@ class Cache {
     }
 
     /**
-     * Restores cached outputs to their original locations.
+     * Restores cached outputs from the compressed `outputs.tar.br`
+     * archive. Returns `true` either when the archive was extracted
+     * successfully OR when the entry simply has no outputs to restore.
+     *
+     * The restore flow stages into a temp directory, then swaps each
+     * top-level entry into place (see {@link restoreOutputsCompressed})
+     * so a mid-restore failure never destroys the user's working tree.
+     * The `outputs` parameter is no longer consulted at restore time —
+     * the archive is authoritative, and top-level entries in the
+     * extracted staging become the set of swap roots. Still accepted
+     * for backward compat.
      */
-    public async restoreOutputs(hash: string, outputs: string[]): Promise<boolean> {
+    public async restoreOutputs(hash: string, _outputs?: OutputSpec[]): Promise<boolean> {
         const cacheEntryDirectory = join(this.#cacheDirectory, hash);
-        const outputsDirectory = join(cacheEntryDirectory, "outputs");
 
-        try {
-            await stat(outputsDirectory);
-        } catch {
-            // No outputs to restore
-            return true;
-        }
-
-        try {
-            await Promise.all(
-                outputs.map(async (output) => {
-                    const absoluteOutput = resolve(this.#workspaceRoot, output);
-                    const cachedOutput = join(outputsDirectory, output);
-
-                    try {
-                        await stat(cachedOutput);
-                    } catch {
-                        return;
-                    }
-
-                    const parentDirectory = dirname(absoluteOutput);
-
-                    await mkdir(parentDirectory, { recursive: true });
-
-                    // Remove existing output
-                    await rm(absoluteOutput, { force: true, recursive: true });
-
-                    // Copy cached output
-                    await cp(cachedOutput, absoluteOutput, { recursive: true });
-                }),
-            );
-
-            return true;
-        } catch {
-            return false;
-        }
+        return restoreOutputsCompressed(cacheEntryDirectory, this.#workspaceRoot);
     }
 
     /**
@@ -418,34 +460,217 @@ class Cache {
     }
 
     /**
-     * Archives task output files into the cache.
+     * Archives task output files into the cache as a single
+     * brotli-compressed tarball (`outputs.tar.br`). See
+     * {@link archiveOutputsCompressed} for the staging + compression
+     * flow.
      */
-    async #archiveOutputs(cacheEntryDirectory: string, outputs: string[]): Promise<void> {
-        const outputsDirectory = join(cacheEntryDirectory, "outputs");
-
-        await mkdir(outputsDirectory, { recursive: true });
-
-        for (const output of outputs) {
-            const absoluteOutput = resolve(this.#workspaceRoot, output);
-            const cachedOutput = join(outputsDirectory, output);
-
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                await stat(absoluteOutput);
-
-                const cachedOutputParent = join(cachedOutput, "..");
-
-                // eslint-disable-next-line no-await-in-loop
-                await mkdir(cachedOutputParent, { recursive: true });
-
-                // eslint-disable-next-line no-await-in-loop
-                await cp(absoluteOutput, cachedOutput, { recursive: true });
-            } catch {
-                // Output file doesn't exist, skip it
-            }
-        }
+    async #archiveOutputs(cacheEntryDirectory: string, outputs: OutputSpec[], autoWrites?: ReadonlyArray<string>): Promise<void> {
+        await archiveOutputsCompressed(this.#workspaceRoot, cacheEntryDirectory, outputs, autoWrites);
     }
 }
+
+const OUTPUTS_ARCHIVE_FILENAME = "outputs.tar.br";
+
+/**
+ * Resolves `outputs` through `resolveOutputs()` — expanding globs,
+ * filtering negatives, materialising `{ auto: true }` — then stages
+ * each concrete file under `stagingDirectory` preserving its
+ * workspace-relative path, and writes
+ * `cacheEntryDirectory/outputs.tar.br`. Staging is cleaned up on exit.
+ *
+ * `resolveOutputs` already skips missing files, so the per-file `cp`
+ * failure catch only covers the narrow race where a path vanishes
+ * between resolve and stage (tasks cleaning up temp files during
+ * teardown).
+ */
+const archiveOutputsCompressed = async (
+    workspaceRoot: string,
+    cacheEntryDirectory: string,
+    outputs: OutputSpec[],
+    autoWrites?: ReadonlyArray<string>,
+): Promise<void> => {
+    if (outputs.length === 0) {
+        return;
+    }
+
+    const resolvedPaths = await resolveOutputs(workspaceRoot, outputs, autoWrites);
+
+    if (resolvedPaths.length === 0) {
+        return;
+    }
+
+    const stagingDirectory = join(cacheEntryDirectory, `.outputs-stage-${uniqueId()}`);
+    const finalPath = join(cacheEntryDirectory, OUTPUTS_ARCHIVE_FILENAME);
+
+    try {
+        await mkdir(stagingDirectory, { recursive: true });
+
+        // Parallel stage with a bounded pool — tasks can emit
+        // thousands of files and per-file sequential cp dominates
+        // archive time. FD exhaustion risk is capped at the pool
+        // size; paths are unique (deduped upstream) so there's no
+        // ordering constraint between copies.
+        const stagedFlags = await runBounded(STAGE_CONCURRENCY, resolvedPaths, async (relativePath): Promise<boolean> => {
+            const absoluteOutput = resolve(workspaceRoot, relativePath);
+            const stagedOutput = join(stagingDirectory, relativePath);
+
+            try {
+                await mkdir(dirname(stagedOutput), { recursive: true });
+                await cp(absoluteOutput, stagedOutput, { recursive: true });
+
+                return true;
+            } catch {
+                // Path vanished between resolve and stage (rare).
+                return false;
+            }
+        });
+
+        const stagedCount = stagedFlags.filter(Boolean).length;
+
+        if (stagedCount === 0) {
+            return;
+        }
+
+        await createTarBrotli(stagingDirectory, finalPath);
+    } finally {
+        await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
+    }
+};
+
+/** Concurrency cap for per-file archive staging + restore swap. */
+const STAGE_CONCURRENCY = 16;
+
+/**
+ * Runs `fn` across `items` with at most `limit` in flight. Results
+ * come back in input order, matching `Promise.all` semantics.
+ */
+const runBounded = async <T, R>(limit: number, items: ReadonlyArray<T>, fn: (item: T, index: number) => Promise<R>): Promise<R[]> => {
+    const results: R[] = Array.from({ length: items.length });
+    let cursor = 0;
+
+    const worker = async (): Promise<void> => {
+        while (cursor < items.length) {
+            const index = cursor;
+
+            cursor += 1;
+            // eslint-disable-next-line no-await-in-loop -- worker is the serialisation unit; parallelism comes from multiple workers.
+            results[index] = await fn(items[index] as T, index);
+        }
+    };
+
+    const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+
+    await Promise.all(workers);
+
+    return results;
+};
+
+/**
+ * Restores outputs from the compressed `outputs.tar.br` archive.
+ * Returns `true` when the restore succeeded OR when the entry has no
+ * archive (which is valid for tasks that declare no outputs). Returns
+ * `false` only on actual extraction/copy failure.
+ *
+ * Uses a backup-and-rollback flow so a mid-restore failure never
+ * destroys the user's existing output tree:
+ *  1. decompress + extract to a staging dir
+ *  2. read the archive's top-level entries as the set of swap roots
+ *     (e.g. `dist`, `build` — whatever the archive contains). This
+ *     lets glob-expanded archives restore cleanly without callers
+ *     having to re-resolve patterns against the post-task workspace.
+ *  3. for each root, move the existing tree aside to
+ *     `&lt;path>.pre-restore-&lt;uid>` (atomic rename) before copying the
+ *     staged version into place.
+ *  4. on any failure during step 3, undo every rename so the user
+ *     ends up exactly where they started
+ *  5. on success, rm the backups
+ *
+ * Note: swap roots come from the archive's top-level entries. If a
+ * task's outputs were filtered via negative globs, those paths won't
+ * appear in the archive and therefore won't be touched on restore —
+ * matching the user's "exclude from cache, keep on disk" intent.
+ */
+const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRoot: string): Promise<boolean> => {
+    const archivePath = join(cacheEntryDirectory, OUTPUTS_ARCHIVE_FILENAME);
+
+    try {
+        await stat(archivePath);
+    } catch {
+        // No archive — entry has no saved outputs. That's a valid
+        // state (task declared no outputs, or outputs were empty at
+        // cache time). Treat as a successful no-op.
+        return true;
+    }
+
+    const stagingDirectory = join(cacheEntryDirectory, `.restore-${uniqueId()}`);
+    const backups: { backup: string; original: string }[] = [];
+
+    try {
+        await mkdir(stagingDirectory, { recursive: true });
+        await extractTarBrotli(archivePath, stagingDirectory);
+
+        // Derive swap roots from what's actually in the archive.
+        // Avoids the caller having to re-resolve globs against the
+        // post-task workspace, which may have moved on.
+        const topLevel = await readdir(stagingDirectory);
+
+        // Swap roots are disjoint subtrees by construction (archive
+        // top-levels), so placement can run in parallel. Each task
+        // locally backs up → cps; the shared `backups` array is only
+        // pushed to, and we only read it on the error path after the
+        // Promise.all settles, so there's no interleaving hazard.
+        await runBounded(STAGE_CONCURRENCY, topLevel, async (entry) => {
+            const absoluteOutput = resolve(workspaceRoot, entry);
+            const stagedOutput = join(stagingDirectory, entry);
+
+            await mkdir(dirname(absoluteOutput), { recursive: true });
+
+            // Move the existing tree aside atomically before copying the
+            // replacement into place. If anything fails below, the
+            // rollback loop renames these backups back to their originals.
+            try {
+                await stat(absoluteOutput);
+
+                const backup = `${absoluteOutput}.pre-restore-${uniqueId()}`;
+
+                await rename(absoluteOutput, backup);
+                backups.push({ backup, original: absoluteOutput });
+            } catch {
+                // No existing tree to back up — nothing to rollback later.
+            }
+
+            await cp(stagedOutput, absoluteOutput, { recursive: true });
+        });
+
+        // All outputs placed successfully — drop the backups in parallel.
+        await Promise.all(backups.map(({ backup }) => rm(backup, { force: true, recursive: true }).catch(() => {})));
+
+        return true;
+    } catch {
+        // Roll back every rename so the working tree matches its
+        // pre-call state. Any new cp() that partially succeeded also
+        // needs to go so the rename can land.
+        //
+        // Known limitation: rollback is best-effort. If `rm(original)`
+        // fails — Windows file lock, EBUSY, or a permission change
+        // mid-flight — the subsequent `rename` can't land and the user
+        // ends up with neither the new tree nor the old. We swallow
+        // the inner failure because surfacing it would mask the
+        // original restore error that triggered the rollback, and
+        // both failures already surface via the `return false`.
+        for (const { backup, original } of backups) {
+            // eslint-disable-next-line no-await-in-loop
+            await rm(original, { force: true, recursive: true }).catch(() => {});
+            // eslint-disable-next-line no-await-in-loop
+            await rename(backup, original).catch(() => {});
+        }
+
+        return false;
+    } finally {
+        await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
+    }
+};
 
 export type { CachedResult, CacheOptions };
 export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize };

@@ -195,6 +195,36 @@ class IncrementalFileHasher {
     public clear(): void {
         this.#snapshot.clear();
     }
+
+    /**
+     * Looks up the cached hash for `absolutePath` when its mtime and
+     * size match the snapshot; returns `undefined` otherwise. Callers
+     * that already have a `stat` result (e.g. `InProcessTaskHasher`)
+     * skip an extra syscall by passing it through directly.
+     *
+     * The snapshot is considered loaded on first call — lazy-load is
+     * synchronous-friendly here because the caller already performed
+     * an async `stat` before calling this method.
+     */
+    public getSnapshotHash(absolutePath: string, mtimeMs: number, size: number): string | undefined {
+        const entry = this.#snapshot.get(absolutePath);
+
+        if (!entry) {
+            return undefined;
+        }
+
+        return entry.mtimeMs === mtimeMs && entry.size === size ? entry.hash : undefined;
+    }
+
+    /**
+     * Writes a fresh snapshot entry after the caller has computed the
+     * hash. Pairs with {@link IncrementalFileHasher.getSnapshotHash}
+     * — after a miss, the caller hashes the file and records the
+     * result here so the next run can reuse it.
+     */
+    public recordSnapshot(absolutePath: string, hash: string, mtimeMs: number, size: number): void {
+        this.#snapshot.set(absolutePath, { hash, mtimeMs, size });
+    }
 }
 
 export type { FileSnapshot, IncrementalHasherOptions };

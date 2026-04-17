@@ -13,6 +13,33 @@ export interface TaskTarget {
 /**
  * Represents a single task to be executed.
  */
+
+/**
+ * Scheduling priority hint. The scheduler picks higher-priority tasks
+ * out of the ready-queue first; ties fall through to the graph-derived
+ * signals (dependent count, project depth).
+ *
+ * Use `"high"` for long-running leaves you want to kick off early
+ * (integration tests, e2e suites) so their wall-clock overlaps with
+ * the main build phase. Use `"low"` for work you don't mind deferring
+ * (linters, coverage uploads) when faster tasks contend for slots.
+ */
+export type TaskPriority = "high" | "low" | "normal";
+
+/**
+ * A single entry in a task's `outputs` list.
+ *
+ * - `string` — a literal path *or* a glob pattern relative to the
+ *   workspace root. Prefix with `!` to exclude files the positive
+ *   patterns would otherwise include (e.g. `"!dist/cache/**"`).
+ * - `{ auto: true }` — use whatever files the task actually wrote
+ *   during execution (resolved from the file-access tracker). Lets
+ *   authors who don't know their exact output layout cache results
+ *   without listing every path. Silently behaves as "no outputs" when
+ *   tracking isn't active for this task.
+ */
+export type OutputSpec = string | { auto: true };
+
 export interface Task {
     /** Whether this task is eligible for caching */
     cache?: boolean;
@@ -22,12 +49,24 @@ export interface Task {
     hashDetails?: TaskHashDetails;
     /** Unique identifier for the task, typically "project:target:configuration" */
     id: string;
-    /** Output file paths produced by this task */
-    outputs: string[];
+
+    /**
+     * Output patterns this task produces. Each entry is either a
+     * literal path, a glob (`"dist/**"`), a negative glob
+     * (`"!dist/cache/**"`), or `{ auto: true }` to pick up whatever
+     * files the task wrote during execution.
+     */
+    outputs: OutputSpec[];
     /** Overrides/extra options passed to the task */
     overrides: Record<string, unknown>;
     /** Whether this task supports parallel execution */
     parallelism?: boolean;
+
+    /**
+     * Explicit scheduling priority. Outranks the scheduler's
+     * graph-derived heuristics. Defaults to `"normal"` when absent.
+     */
+    priority?: TaskPriority;
     /** The project root directory */
     projectRoot?: string;
     /** The target this task executes */
@@ -71,8 +110,7 @@ export type TaskStatus = "success" | "failure" | "skipped" | "local-cache" | "lo
 export interface TaskResult {
     /** The exit code, if applicable */
     code?: number;
-    /** The end time of the task */
-    endTime?: number;
+
     /**
      * Set when auto-fingerprint tracking was attempted for this task but
      * returned zero workspace accesses — usually a static binary on
@@ -81,6 +119,9 @@ export interface TaskResult {
      * produce false cache hits on every subsequent run.
      */
     emptyFingerprint?: boolean;
+    /** The end time of the task */
+    endTime?: number;
+
     /**
      * Set when the task modified one or more of its own tracked input
      * files during execution. Caching is skipped in this case — the
@@ -406,6 +447,7 @@ export interface TaskRunnerOptions {
      * @default false
      */
     cacheDiagnostics?: boolean;
+
     /** Directory for storing cache */
     cacheDirectory?: string;
 
@@ -458,12 +500,40 @@ export interface TaskRunnerOptions {
      * forcing a full rebuild. This matches Turborepo's `globalDependencies`.
      */
     globalInputs?: string[];
+
+    /**
+     * When `true`, file hashes are cached in a persistent mtime+size
+     * indexed snapshot under `node_modules/.cache/task-runner/`. On
+     * subsequent runs, unchanged files skip content re-reads — cuts
+     * cold-cache fingerprint time dramatically on large workspaces.
+     *
+     * Changed or new files still get full content hashing. Safe to
+     * leave on by default; overhead when nothing matches is a single
+     * `stat` call per file.
+     * @default false
+     */
+    incrementalFileHashing?: boolean;
+
     /** Maximum age of cache entries in milliseconds */
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "1GB") */
     maxCacheSize?: string;
     /** Named inputs for cache invalidation */
     namedInputs?: NamedInputs;
+
+    /**
+     * When `true`, the cache directory is partitioned by a hash of
+     * the resolved `globalEnv` values. Changing a globalEnv var moves
+     * cache writes into a new namespace; rolling it back reuses the
+     * old namespace and its hits. Without this option, any globalEnv
+     * change silently busts every cached entry.
+     *
+     * Keep disabled when globalEnv is stable across runs — the extra
+     * path depth offers no value, and misconfigured namespaces can
+     * hide stale hits.
+     * @default false
+     */
+    namespaceByGlobalEnv?: boolean;
     /** Maximum number of parallel tasks */
     parallel?: number | boolean;
 
@@ -715,8 +785,27 @@ export interface ConcurrentRunResult {
 export interface LifeCycleInterface {
     endCommand?: () => void;
     endTasks?: (taskResults: TaskResult[]) => void;
+
+    /**
+     * Called when a running task emits data on stderr, in the order the
+     * data arrives. Executors that support streaming output (`vis run`'s
+     * concurrent executor) forward chunks here verbatim. Executors that
+     * only buffer full output (e.g. the simple test executor) skip this
+     * hook — rely on `printTaskTerminalOutput` for the final dump.
+     *
+     * Handlers should be non-blocking; the orchestrator doesn't await.
+     */
+    onTaskStderr?: (task: Task, chunk: string) => void;
+
+    /**
+     * Called when a running task emits data on stdout, in the order the
+     * data arrives. See {@link LifeCycleInterface.onTaskStderr} for
+     * semantics — same contract, different stream.
+     */
+    onTaskStdout?: (task: Task, chunk: string) => void;
     /** Called when a cache miss occurs with diagnostic information */
     printCacheMiss?: (task: Task, reasons: string) => void;
+
     /**
      * Called when caching was skipped because auto-fingerprint tracking
      * came back empty — a signal that the tracker (strace or Node
@@ -725,6 +814,7 @@ export interface LifeCycleInterface {
      * `reason` is a short human-readable diagnostic.
      */
     printEmptyFingerprintWarning?: (task: Task, reason: string) => void;
+
     /**
      * Called when caching is skipped because the task modified one or
      * more of its own tracked inputs. `modifiedFiles` lists the

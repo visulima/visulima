@@ -76,6 +76,18 @@ class CompositeLifeCycle implements LifeCycleInterface {
             lc.printCacheMiss?.(task, reasons);
         }
     }
+
+    public onTaskStdout(task: Task, chunk: string): void {
+        for (const lc of this.#lifeCycles) {
+            lc.onTaskStdout?.(task, chunk);
+        }
+    }
+
+    public onTaskStderr(task: Task, chunk: string): void {
+        for (const lc of this.#lifeCycles) {
+            lc.onTaskStderr?.(task, chunk);
+        }
+    }
 }
 
 /**

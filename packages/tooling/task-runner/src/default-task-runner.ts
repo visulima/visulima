@@ -1,10 +1,35 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { xxh3Hash } from "@shared/xxh3";
+
 import { Cache } from "./cache";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
+import { IncrementalFileHasher } from "./incremental-hasher";
 import { RemoteCache } from "./remote-cache";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
-import type { Task, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+import type { ProjectConfiguration, Task, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+
+/**
+ * Hashes the resolved `globalEnv` values into a short namespace segment.
+ * The hash uses `name=value` lines sorted deterministically so the
+ * segment is stable across runs when env hasn't changed.
+ *
+ * Returns `undefined` when there are no globalEnv entries — callers
+ * skip namespacing rather than creating an empty `ns/` subtree.
+ */
+const computeGlobalEnvNamespace = (globalEnv: string[] | undefined): string | undefined => {
+    if (!globalEnv || globalEnv.length === 0) {
+        return undefined;
+    }
+
+    const payload = [...globalEnv]
+        .sort()
+        .map((name) => `${name}=${process.env[name] ?? ""}`)
+        .join("\n");
+
+    return xxh3Hash(Buffer.from(payload)).slice(0, 16);
+};
 
 /**
  * Resolves the parallel option to a numeric value.
@@ -66,9 +91,15 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
 const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
     const { lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
 
+    // Partition the cache by globalEnv fingerprint when the caller
+    // opts in. Flipping an env var no longer busts every entry — the
+    // old namespace survives, so rolling back the env restores its hits.
+    const cacheNamespace = options.namespaceByGlobalEnv ? computeGlobalEnvNamespace(options.globalEnv) : undefined;
+
     // Create the cache
     const cache = new Cache({
         cacheDirectory: options.cacheDirectory,
+        cacheNamespace,
         maxCacheAge: options.maxCacheAge,
         maxCacheSize: options.maxCacheSize,
         workspaceRoot,
@@ -78,10 +109,19 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     cache.removeOldEntries().catch(() => {});
 
     // Create the task hasher with global inputs support
-    const projects: Record<string, import("./types").ProjectConfiguration> = {};
+    const projects: Record<string, ProjectConfiguration> = {};
 
     for (const [name, node] of Object.entries(projectGraph.nodes)) {
         projects[name] = node.data;
+    }
+
+    // Persistent mtime/size-indexed snapshot. Loaded upfront so the
+    // hasher's hot path can consult it synchronously; saved after the
+    // orchestrator finishes.
+    const incrementalHasher = options.incrementalFileHashing ? new IncrementalFileHasher({ workspaceRoot }) : undefined;
+
+    if (incrementalHasher) {
+        await incrementalHasher.load();
     }
 
     const taskHasher = new InProcessTaskHasher({
@@ -90,6 +130,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         frameworkInference: options.frameworkInference,
         globalEnv: options.globalEnv,
         globalInputs: options.globalInputs,
+        incrementalHasher,
         namedInputs: options.namedInputs,
         projects,
         smartLockfileHashing: options.smartLockfileHashing,
@@ -146,7 +187,16 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         workspaceRoot,
     });
 
-    return orchestrator.run();
+    const results = await orchestrator.run();
+
+    // Persist the snapshot so the next invocation starts warm. Best-effort:
+    // a failed save degrades gracefully to a cold run next time, so we
+    // don't surface the error through the run's exit status.
+    if (incrementalHasher) {
+        await incrementalHasher.save().catch(() => {});
+    }
+
+    return results;
 };
 
 export { defaultTaskRunner };
