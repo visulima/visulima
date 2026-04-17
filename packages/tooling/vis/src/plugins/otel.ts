@@ -52,7 +52,6 @@ const SPAN_STATUS_ERROR = 2;
  * Streaming stdout/stderr events are intentionally **not** emitted as
  * span events — high-frequency chunks would blow up OTel backends. Use
  * a log exporter if you need stream-level visibility.
- *
  * @example
  * ```ts
  * import { trace } from "@opentelemetry/api";
@@ -96,9 +95,34 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
 
                 runSpan.end();
                 runSpan = undefined;
+
+                // Close any task spans that somehow escaped their
+                // `task:after` — can happen if the runner short-circuits
+                // a task without emitting `endTasks`. Prevents span
+                // leaks that would otherwise hang the OTel exporter
+                // across watch-mode reruns.
+                for (const stray of taskSpans.values()) {
+                    stray.end();
+                }
+
+                taskSpans.clear();
             },
 
             "run:before": (context) => {
+                // Defensive close: watch-mode reruns or a bug in an
+                // upstream hook could leave the previous span open. End
+                // it with an abandoned status rather than leak.
+                if (runSpan) {
+                    runSpan.setStatus?.({ code: SPAN_STATUS_ERROR, message: "run:before fired while previous run was still active" });
+                    runSpan.end();
+                }
+
+                for (const stray of taskSpans.values()) {
+                    stray.end();
+                }
+
+                taskSpans.clear();
+
                 runSpan = tracer.startSpan("vis.run", {
                     attributes: {
                         "vis.run.task_count": context.tasks.length,
@@ -122,6 +146,16 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
             },
 
             "task:before": (task) => {
+                // On retry, the same task id fires `task:before` again.
+                // End the stale span so we don't leak and the tracer's
+                // parent/child tree stays sensible.
+                const existing = taskSpans.get(task.id);
+
+                if (existing) {
+                    existing.setStatus?.({ code: SPAN_STATUS_ERROR, message: "retried — superseded by new attempt" });
+                    existing.end();
+                }
+
                 const span = tracer.startSpan(renameSpan ? renameSpan(task) : task.id, {
                     attributes: {
                         "vis.task.id": task.id,

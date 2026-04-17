@@ -187,4 +187,56 @@ describe(HookableLifeCycle, () => {
 
         expect(miss).toHaveBeenCalledWith(task, "src/index.ts changed");
     });
+
+    it("emits task:stdout / task:stderr for streaming chunks", async () => {
+        expect.assertions(2);
+
+        const hooks = createVisHooks();
+        const stdoutHandler = vi.fn();
+        const stderrHandler = vi.fn();
+
+        hooks.hook("task:stdout", stdoutHandler);
+        hooks.hook("task:stderr", stderrHandler);
+
+        const adapter = new HookableLifeCycle(hooks);
+        const task = makeTask("app:build");
+
+        adapter.onTaskStdout(task, "line 1\n");
+        adapter.onTaskStderr(task, "error 1\n");
+
+        // Promise.resolve() pump — HookableLifeCycle fires and forgets
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 0);
+        });
+
+        expect(stdoutHandler).toHaveBeenCalledWith(task, "line 1\n");
+        expect(stderrHandler).toHaveBeenCalledWith(task, "error 1\n");
+    });
+
+    it("routes fire-and-forget hook failures through the per-instance onError handler", async () => {
+        expect.assertions(3);
+
+        const hooks = createVisHooks();
+
+        hooks.hook("task:stdout", () => {
+            throw new Error("boom from plugin");
+        });
+
+        const captured: { error: unknown; hook: string }[] = [];
+        const adapter = new HookableLifeCycle(hooks, (hookName, error) => {
+            captured.push({ error, hook: String(hookName) });
+        });
+
+        adapter.onTaskStdout(makeTask("app:build"), "chunk");
+
+        // Flush the microtask queue so the fire-and-forget `.catch`
+        // callback has a chance to run.
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 0);
+        });
+
+        expect(captured).toHaveLength(1);
+        expect(captured[0]?.hook).toBe("task:stdout");
+        expect((captured[0]?.error as Error).message).toBe("boom from plugin");
+    });
 });

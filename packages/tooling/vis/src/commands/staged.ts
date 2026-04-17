@@ -115,12 +115,6 @@ export const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: Stag
         options.diffFilter = diffFilter;
     }
 
-    const configFile = readString("config");
-
-    if (configFile !== undefined) {
-        options.configPath = configFile;
-    }
-
     // `--force-kill` is a boolean shorthand for `killSignal: "SIGKILL"`. Users with more exotic
     // requirements can supply `killSignal` directly via the programmatic API.
     const forceKill = readBool("force-kill");
@@ -153,18 +147,17 @@ const staged: Command = {
     execute: async ({ options, visConfig }) => {
         const config = (visConfig ?? {}) as Record<string, unknown>;
         const stagedConfig = config["staged"] as StagedConfig | undefined;
-        const configFlag = options["config"];
-        const hasConfigFlag = typeof configFlag === "string" && configFlag.length > 0;
 
-        if (!stagedConfig && !hasConfigFlag) {
+        if (!stagedConfig) {
             throw new Error(
-                'No "staged" config found in vis.config.ts. Either add a staged config:\n\n'
+                'No "staged" config found in vis.config.ts. Add one:\n\n'
                 + "  // vis.config.ts\n"
                 + '  import { defineConfig } from "@visulima/vis/config";\n\n'
                 + "  export default defineConfig({\n"
                 + "    staged: { '*': 'vis check --fix' },\n"
                 + "  });\n\n"
-                + "or point at an external config file with --config <path>.",
+                + "Migrating from lint-staged or nano-staged? Run `vis migrate lint-staged`"
+                + " (or `vis migrate nano-staged`) to move the config in and remove the legacy files.",
             );
         }
 
@@ -197,11 +190,6 @@ const staged: Command = {
             description: "Run all tasks to completion even if one fails",
             name: "continue-on-error",
             type: Boolean,
-        },
-        {
-            description: "Path to an external staged-tasks config file (JSON/YAML/JS/TS)",
-            name: "config",
-            type: String,
         },
         {
             description: "Working directory to run all tasks in",

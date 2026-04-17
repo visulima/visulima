@@ -103,7 +103,6 @@
         "react": "catalog:frontend",
         "semver": "^7.7.4",
         "validate-npm-package-name": "^7.0.2",
-        "yaml": "catalog:dev",
         "zeptomatch": "catalog:dev"
     },
     "devDependencies": {

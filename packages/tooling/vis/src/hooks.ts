@@ -47,6 +47,19 @@ export interface VisHooks {
     "task:cacheMiss": (task: Task, reasons: string) => Promise<void> | void;
     /** Fired when a task exits non-zero. */
     "task:failure": (task: Task, result: TaskResult) => Promise<void> | void;
+
+    /**
+     * Fired with a stderr chunk as a running task emits it. Plugins
+     * that ship logs live (Slack, Datadog) should prefer this over
+     * `task:after` so they don't wait for the full buffer.
+     */
+    "task:stderr": (task: Task, chunk: string) => Promise<void> | void;
+
+    /**
+     * Fired with a stdout chunk as a running task emits it. See
+     * `task:stderr` for semantics.
+     */
+    "task:stdout": (task: Task, chunk: string) => Promise<void> | void;
 }
 
 /**
@@ -78,6 +91,13 @@ export interface VisPlugin {
      */
     setup?: (hooks: Hookable<VisHooks>) => Promise<void> | void;
 }
+
+/**
+ * Optional callback invoked whenever a plugin handler throws. Lets
+ * callers surface buggy plugins without crashing the run — pass a
+ * logger or re-throw to promote plugin errors to fatals.
+ */
+export type HookErrorHandler = (hookName: keyof VisHooks, error: unknown) => void;
 
 /**
  * Creates a fresh typed hook registry. One instance is created per
@@ -121,11 +141,14 @@ export const registerPlugins = async (hooks: Hookable<VisHooks>, plugins: VisPlu
 export class HookableLifeCycle implements LifeCycleInterface {
     readonly #hooks: Hookable<VisHooks>;
 
+    readonly #onError: HookErrorHandler | undefined;
+
     /** Cached {task.id → Task} for the current run, filled on startTasks. */
     readonly #inFlight = new Map<string, Task>();
 
-    public constructor(hooks: Hookable<VisHooks>) {
+    public constructor(hooks: Hookable<VisHooks>, onError?: HookErrorHandler) {
         this.#hooks = hooks;
+        this.#onError = onError;
     }
 
     public startTasks(tasks: Task[]): void {
@@ -134,25 +157,52 @@ export class HookableLifeCycle implements LifeCycleInterface {
             // Fire-and-forget — task-runner's startTasks is synchronous.
             // Plugins that need to block task execution should use
             // `run:before` instead.
-            Promise.resolve(this.#hooks.callHook("task:before", task)).catch(() => {});
+            this.#fire("task:before", task);
         }
     }
 
     public endTasks(results: TaskResult[]): void {
         for (const result of results) {
             this.#inFlight.delete(result.task.id);
-            Promise.resolve(this.#hooks.callHook("task:after", result.task, result)).catch(() => {});
+            this.#fire("task:after", result.task, result);
 
             if (result.status === "failure") {
-                Promise.resolve(this.#hooks.callHook("task:failure", result.task, result)).catch(() => {});
+                this.#fire("task:failure", result.task, result);
             } else if (isCacheStatus(result.status)) {
-                Promise.resolve(this.#hooks.callHook("task:cacheHit", result.task, result)).catch(() => {});
+                this.#fire("task:cacheHit", result.task, result);
             }
         }
     }
 
     public printCacheMiss(task: Task, reasons: string): void {
-        Promise.resolve(this.#hooks.callHook("task:cacheMiss", task, reasons)).catch(() => {});
+        this.#fire("task:cacheMiss", task, reasons);
+    }
+
+    public onTaskStdout(task: Task, chunk: string): void {
+        // Streaming hooks are high-frequency; fire-and-forget so the
+        // executor's write loop doesn't stall. Failures route through
+        // `onError` (when configured) so buggy plugins aren't invisible.
+        this.#fire("task:stdout", task, chunk);
+    }
+
+    public onTaskStderr(task: Task, chunk: string): void {
+        this.#fire("task:stderr", task, chunk);
+    }
+
+    #fire<K extends keyof VisHooks>(name: K, ...args: Parameters<VisHooks[K]>): void {
+        Promise.resolve(
+            // `callHook` is typed as `(name, ...args: any[])` by
+            // hookable, so the `Parameters<>` spread needs the cast.
+            (this.#hooks.callHook as (name: K, ...a: Parameters<VisHooks[K]>) => Promise<unknown> | undefined)(name, ...args),
+        ).catch((error: unknown) => {
+            if (this.#onError) {
+                try {
+                    this.#onError(name, error);
+                } catch {
+                    // A handler that itself throws must not take down the run.
+                }
+            }
+        });
     }
 }
 

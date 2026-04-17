@@ -53,10 +53,8 @@ export interface RunOptions {
     readonly autoStage?: boolean;
     /** Concurrency: `true` (unbounded), `false` (serial), or a positive integer. */
     readonly concurrent?: boolean | number;
-    /** Inline config — takes precedence over `configPath`. */
+    /** Inline staged config — the single source of truth at runtime. Supplied by `vis staged` from `vis.config.ts`. */
     readonly config?: StagedConfig;
-    /** Path to an external config file (JSON/YAML/JS/TS). */
-    readonly configPath?: string;
     /** Run all tasks to completion even if one fails. */
     readonly continueOnError?: boolean;
     /** Working directory used for git and task execution. */
