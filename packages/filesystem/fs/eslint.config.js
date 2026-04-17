@@ -75,6 +75,6 @@ export default createConfig(
         },
     },
     {
-        ignores: ["__bench__/walk.bench.ts", "__bench__/find-up.bench.ts", "__bench__/file-ops.bench.ts"],
+        ignores: ["__bench__/walk.bench.ts", "__bench__/find-up.bench.ts", "__bench__/file-ops.bench.ts", "__bench__/glob.bench.ts"],
     },
 );

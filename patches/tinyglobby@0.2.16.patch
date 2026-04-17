@@ -1,0 +1,184 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 5badacb548b2d0ee0fb195c7f012cfa54084a9b4..c6e82b17a867f01eda385f19c4063db0fdadce06 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -158,7 +158,15 @@ function normalizePattern(pattern, opts, props, isIgnore) {
+ 	const cwd = opts.cwd;
+ 	let result = pattern;
+ 	if (pattern[pattern.length - 1] === "/") result = pattern.slice(0, -1);
+-	if (result[result.length - 1] !== "*" && opts.expandDirectories) result += "/**";
++	// Issue #188: skip the /** append when the last segment is a negated extglob.
++	// Appending /** turns `loc/**/!(en.po)` into `loc/**/!(en.po)/**`, which lets picomatch
++	// satisfy `!(en.po)` with a non-file segment and consume the real file via the trailing
++	// `**` — defeating the negation. Positive extglobs (@(...), +(...), *(...), ?(...)) stay
++	// untouched because they accept the expansion cleanly.
++	const lastSlashIndex = result.lastIndexOf("/");
++	const lastSegment = lastSlashIndex === -1 ? result : result.slice(lastSlashIndex + 1);
++	const endsInNegatedExtglob = lastSegment.startsWith("!(");
++	if (result[result.length - 1] !== "*" && !endsInNegatedExtglob && opts.expandDirectories) result += "/**";
+ 	const escapedCwd = escapePath(cwd);
+ 	result = (0, path.isAbsolute)(result.replace(ESCAPING_BACKSLASHES, "")) ? path.posix.relative(escapedCwd, result) : path.posix.normalize(result);
+ 	const parentDir = (_PARENT_DIRECTORY$exe = PARENT_DIRECTORY.exec(result)) === null || _PARENT_DIRECTORY$exe === void 0 ? void 0 : _PARENT_DIRECTORY$exe[0];
+@@ -200,9 +208,11 @@ function normalizePattern(pattern, opts, props, isIgnore) {
+ function processPatterns(options, patterns, props) {
+ 	const matchPatterns = [];
+ 	const ignorePatterns = [];
++	const unignorePatterns = [];
+ 	for (const pattern of options.ignore) {
+ 		if (!pattern) continue;
+ 		if (pattern[0] !== "!" || pattern[1] === "(") ignorePatterns.push(normalizePattern(pattern, options, props, true));
++		else unignorePatterns.push(pattern.slice(1));
+ 	}
+ 	for (const pattern of patterns) {
+ 		if (!pattern) continue;
+@@ -211,7 +221,8 @@ function processPatterns(options, patterns, props) {
+ 	}
+ 	return {
+ 		match: matchPatterns,
+-		ignore: ignorePatterns
++		ignore: ignorePatterns,
++		unignore: unignorePatterns
+ 	};
+ }
+ //#endregion
+@@ -234,28 +245,42 @@ function buildCrawler(options, patterns) {
+ 		noglobstar: options.globstar === false,
+ 		posix: true
+ 	};
+-	const matcher = (0, picomatch.default)(processed.match, matchOptions);
++	const hasUnignore = processed.unignore.length > 0;
++	const unignoreMatcher = hasUnignore ? (0, picomatch.default)(processed.unignore, matchOptions) : void 0;
++	const partialUnignoreMatcher = hasUnignore ? getPartialMatcher(processed.unignore, matchOptions) : void 0;
++	const matcher = (0, picomatch.default)(processed.match, {
++		...matchOptions,
++		ignore: processed.ignore,
++		onIgnore: unignoreMatcher ? (result) => unignoreMatcher(result.output) && picomatch.default.constants.UNIGNORE : void 0
++	});
+ 	const ignore = (0, picomatch.default)(processed.ignore, matchOptions);
+ 	const partialMatcher = getPartialMatcher(processed.match, matchOptions);
+ 	const format = buildFormat(cwd, root, absolute);
+ 	const excludeFormatter = absolute ? format : buildFormat(cwd, root, true);
+-	const excludePredicate = (_, p) => {
++	// Perf (upstream issue #143): when there is no ignore/unignore and every match pattern is
++	// trivially broad (`**` or `**/*`), the exclude predicate would never prune a directory but
++	// fdir still pays the cost of invoking it per entry. Leave it undefined in that case.
++	const trivialMatch = processed.match.length > 0 && processed.match.every((p) => p === "**" || p === "**/*");
++	const needsExcludePredicate = processed.ignore.length > 0 || hasUnignore || !trivialMatch;
++	const excludePredicate = !needsExcludePredicate ? void 0 : (_, p) => {
+ 		const relativePath = excludeFormatter(p, true);
+-		return relativePath !== "." && !partialMatcher(relativePath) || ignore(relativePath);
++		if (relativePath === ".") return false;
++		if (partialUnignoreMatcher && partialUnignoreMatcher(relativePath)) return false;
++		return !partialMatcher(relativePath) || ignore(relativePath);
+ 	};
+ 	let maxDepth;
+ 	if (options.deep !== void 0) maxDepth = Math.round(options.deep - props.depthOffset);
+ 	const crawler = new fdir.fdir({
+ 		filters: [debug ? (p, isDirectory) => {
+ 			const path = format(p, isDirectory);
+-			const matches = matcher(path) && !ignore(path);
++			const matches = matcher(path);
+ 			if (matches) log(`matched ${path}`);
+ 			return matches;
+ 		} : (p, isDirectory) => {
+ 			const path = format(p, isDirectory);
+-			return matcher(path) && !ignore(path);
++			return matcher(path);
+ 		}],
+-		exclude: debug ? (_, p) => {
++		exclude: debug && excludePredicate ? (_, p) => {
+ 			const skipped = excludePredicate(_, p);
+ 			log(`${skipped ? "skipped" : "crawling"} ${p}`);
+ 			return skipped;
+diff --git a/dist/index.mjs b/dist/index.mjs
+index ac043aae1267767dc337ae8cee82b9e81bc49de6..96a787167b145bef84b19af2ca4cd6b487226f9d 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -134,7 +134,15 @@ function normalizePattern(pattern, opts, props, isIgnore) {
+ 	const cwd = opts.cwd;
+ 	let result = pattern;
+ 	if (pattern[pattern.length - 1] === "/") result = pattern.slice(0, -1);
+-	if (result[result.length - 1] !== "*" && opts.expandDirectories) result += "/**";
++	// Issue #188: skip the /** append when the last segment is a negated extglob.
++	// Appending /** turns `loc/**/!(en.po)` into `loc/**/!(en.po)/**`, which lets picomatch
++	// satisfy `!(en.po)` with a non-file segment and consume the real file via the trailing
++	// `**` — defeating the negation. Positive extglobs (@(...), +(...), *(...), ?(...)) stay
++	// untouched because they accept the expansion cleanly.
++	const lastSlashIndex = result.lastIndexOf("/");
++	const lastSegment = lastSlashIndex === -1 ? result : result.slice(lastSlashIndex + 1);
++	const endsInNegatedExtglob = lastSegment.startsWith("!(");
++	if (result[result.length - 1] !== "*" && !endsInNegatedExtglob && opts.expandDirectories) result += "/**";
+ 	const escapedCwd = escapePath(cwd);
+ 	result = isAbsolute(result.replace(ESCAPING_BACKSLASHES, "")) ? posix.relative(escapedCwd, result) : posix.normalize(result);
+ 	const parentDir = (_PARENT_DIRECTORY$exe = PARENT_DIRECTORY.exec(result)) === null || _PARENT_DIRECTORY$exe === void 0 ? void 0 : _PARENT_DIRECTORY$exe[0];
+@@ -176,9 +184,11 @@ function normalizePattern(pattern, opts, props, isIgnore) {
+ function processPatterns(options, patterns, props) {
+ 	const matchPatterns = [];
+ 	const ignorePatterns = [];
++	const unignorePatterns = [];
+ 	for (const pattern of options.ignore) {
+ 		if (!pattern) continue;
+ 		if (pattern[0] !== "!" || pattern[1] === "(") ignorePatterns.push(normalizePattern(pattern, options, props, true));
++		else unignorePatterns.push(pattern.slice(1));
+ 	}
+ 	for (const pattern of patterns) {
+ 		if (!pattern) continue;
+@@ -187,7 +197,8 @@ function processPatterns(options, patterns, props) {
+ 	}
+ 	return {
+ 		match: matchPatterns,
+-		ignore: ignorePatterns
++		ignore: ignorePatterns,
++		unignore: unignorePatterns
+ 	};
+ }
+ //#endregion
+@@ -210,28 +221,42 @@ function buildCrawler(options, patterns) {
+ 		noglobstar: options.globstar === false,
+ 		posix: true
+ 	};
+-	const matcher = picomatch(processed.match, matchOptions);
++	const hasUnignore = processed.unignore.length > 0;
++	const unignoreMatcher = hasUnignore ? picomatch(processed.unignore, matchOptions) : void 0;
++	const partialUnignoreMatcher = hasUnignore ? getPartialMatcher(processed.unignore, matchOptions) : void 0;
++	const matcher = picomatch(processed.match, {
++		...matchOptions,
++		ignore: processed.ignore,
++		onIgnore: unignoreMatcher ? (result) => unignoreMatcher(result.output) && picomatch.constants.UNIGNORE : void 0
++	});
+ 	const ignore = picomatch(processed.ignore, matchOptions);
+ 	const partialMatcher = getPartialMatcher(processed.match, matchOptions);
+ 	const format = buildFormat(cwd, root, absolute);
+ 	const excludeFormatter = absolute ? format : buildFormat(cwd, root, true);
+-	const excludePredicate = (_, p) => {
++	// Perf (upstream issue #143): when there is no ignore/unignore and every match pattern is
++	// trivially broad (`**` or `**/*`), the exclude predicate would never prune a directory but
++	// fdir still pays the cost of invoking it per entry. Leave it undefined in that case.
++	const trivialMatch = processed.match.length > 0 && processed.match.every((p) => p === "**" || p === "**/*");
++	const needsExcludePredicate = processed.ignore.length > 0 || hasUnignore || !trivialMatch;
++	const excludePredicate = !needsExcludePredicate ? void 0 : (_, p) => {
+ 		const relativePath = excludeFormatter(p, true);
+-		return relativePath !== "." && !partialMatcher(relativePath) || ignore(relativePath);
++		if (relativePath === ".") return false;
++		if (partialUnignoreMatcher && partialUnignoreMatcher(relativePath)) return false;
++		return !partialMatcher(relativePath) || ignore(relativePath);
+ 	};
+ 	let maxDepth;
+ 	if (options.deep !== void 0) maxDepth = Math.round(options.deep - props.depthOffset);
+ 	const crawler = new fdir({
+ 		filters: [debug ? (p, isDirectory) => {
+ 			const path = format(p, isDirectory);
+-			const matches = matcher(path) && !ignore(path);
++			const matches = matcher(path);
+ 			if (matches) log(`matched ${path}`);
+ 			return matches;
+ 		} : (p, isDirectory) => {
+ 			const path = format(p, isDirectory);
+-			return matcher(path) && !ignore(path);
++			return matcher(path);
+ 		}],
+-		exclude: debug ? (_, p) => {
++		exclude: debug && excludePredicate ? (_, p) => {
+ 			const skipped = excludePredicate(_, p);
+ 			log(`${skipped ? "skipped" : "crawling"} ${p}`);
+ 			return skipped;

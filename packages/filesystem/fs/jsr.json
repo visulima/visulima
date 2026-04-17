@@ -7,6 +7,10 @@
         "./error": "./src/error.ts",
         "./yaml": "./src/yaml.ts",
         "./size": "./src/size.ts",
-        "./eol": "./src/eol.ts"
+        "./eol": "./src/eol.ts",
+        "./glob": "./src/glob.ts",
+        "./glob-parent": "./src/glob-parent.ts",
+        "./is-glob": "./src/is-glob.ts",
+        "./match": "./src/match.ts"
     }
 }

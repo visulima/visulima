@@ -104,6 +104,22 @@
             "types": "./dist/eol.d.ts",
             "default": "./dist/eol.js"
         },
+        "./glob": {
+            "types": "./dist/glob.d.ts",
+            "default": "./dist/glob.js"
+        },
+        "./glob-parent": {
+            "types": "./dist/glob-parent.d.ts",
+            "default": "./dist/glob-parent.js"
+        },
+        "./is-glob": {
+            "types": "./dist/is-glob.d.ts",
+            "default": "./dist/is-glob.js"
+        },
+        "./match": {
+            "types": "./dist/match.d.ts",
+            "default": "./dist/match.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -139,7 +155,10 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@types/glob-parent": "^5.1.3",
+        "@types/is-glob": "^4.0.4",
         "@types/node": "catalog:types",
+        "@types/picomatch": "^4.0.3",
         "@visulima/error": "6.0.0-alpha.9",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
@@ -149,7 +168,10 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fast-safe-stringify": "catalog:dev",
+        "glob-parent": "^6.0.2",
         "is-fs-case-sensitive": "catalog:dev",
+        "is-glob": "^4.0.3",
+        "picomatch": "^4.0.4",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "redos-detector": "catalog:dev",
@@ -157,6 +179,7 @@
         "safe-regex2": "catalog:dev",
         "semantic-release": "catalog:cli",
         "tempy": "catalog:dev",
+        "tinyglobby": "^0.2.16",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
         "yaml": "catalog:dev"
