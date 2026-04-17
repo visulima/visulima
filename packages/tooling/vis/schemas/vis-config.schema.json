@@ -170,10 +170,20 @@
             }
         },
         "staged": {
-            "description": "Staged file patterns and commands (replaces lint-staged). Accepts all lint-staged config forms.",
+            "description": "Staged file patterns and commands (replaces lint-staged). Accepts string, string[], {title, task}, or mixed arrays. Function-form tasks are supported at runtime but are not JSON-schema-representable.",
             "type": "object",
             "additionalProperties": {
-                "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                "oneOf": [
+                    { "type": "string" },
+                    { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object" }] } },
+                    {
+                        "type": "object",
+                        "required": ["title"],
+                        "properties": {
+                            "title": { "type": "string" }
+                        }
+                    }
+                ]
             }
         },
         "targetDefaults": {
