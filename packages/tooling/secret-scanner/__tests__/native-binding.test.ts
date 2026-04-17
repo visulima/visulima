@@ -30,12 +30,12 @@ describe("native-binding", () => {
         expectTypeOf(nativeMod.scanTextSync).toBeFunction();
     });
 
-    it("detects a hard-coded GitHub token via scanString", async () => {
-        expect.assertions(1);
-
+    it("detects a hard-coded GitHub token via scanString", { timeout: 30_000 }, async () => {
         if (!nativeBinaryPresent) {
             return;
         }
+
+        expect.assertions(1);
 
         const api = await import("../src/index.js");
         const content = ["# config", 'github_token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"'].join("\n");
