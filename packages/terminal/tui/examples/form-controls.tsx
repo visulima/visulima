@@ -1,0 +1,71 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/**
+ * form-controls.tsx — Button, Checkbox, Switch, RadioGroup, Divider demo
+ *
+ * Controls:
+ *   Tab      cycle focus between controls
+ *   Space    toggle checkbox / switch / select radio
+ *   Enter    press button
+ *   Esc      quit
+ *
+ * Run: node --import @oxc-node/core/register examples/form-controls.tsx
+ */
+import { Box, Button, Checkbox, Divider, RadioGroup, render, Switch, Text, useApp, useInput } from "@visulima/tui";
+import React, { useState } from "react";
+
+const App = () => {
+    const { exit } = useApp();
+    const [checked, setChecked] = useState(false);
+    const [enabled, setEnabled] = useState(true);
+    const [size, setSize] = useState("medium");
+    const [pressed, setPressed] = useState(0);
+
+    useInput((_input, key) => {
+        if (key.escape) {
+            exit();
+        }
+    });
+
+    return (
+        <Box flexDirection="column" gap={1} padding={1}>
+            <Text bold color="cyan">Form controls</Text>
+            <Divider length={40} label="Button" />
+            <Button autoFocus onPress={() => setPressed((n) => n + 1)}>
+                Click me (
+                {pressed}
+                )
+            </Button>
+            <Divider length={40} label="Checkbox & Switch" />
+            <Box gap={2}>
+                <Checkbox isChecked={checked} onChange={setChecked}>Accept terms</Checkbox>
+                <Switch onChange={setEnabled} value={enabled}>Enabled</Switch>
+            </Box>
+            <Divider length={40} label="Radio group" />
+            <RadioGroup
+                defaultValue="medium"
+                onChange={setSize}
+                options={[
+                    { label: "Small", value: "small" },
+                    { label: "Medium", value: "medium" },
+                    { label: "Large", value: "large" },
+                ]}
+            />
+            <Divider length={40} />
+            <Text dimColor>
+                pressed=
+                {pressed}
+                {" | "}
+                checked=
+                {String(checked)}
+                {" | "}
+                enabled=
+                {String(enabled)}
+                {" | "}
+                size=
+                {size}
+            </Text>
+        </Box>
+    );
+};
+
+render(<App />);
