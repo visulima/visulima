@@ -1,14 +1,31 @@
 import { execFile } from "node:child_process";
-import { createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
+import { createBrotliCompress, createBrotliDecompress, constants as zlibConstants } from "node:zlib";
 
 import { join } from "@visulima/path";
+
+/**
+ * Compression algorithm used for artifact tarballs on the wire.
+ * - `"gzip"` (default): tar+gzip, matches Turborepo's protocol format
+ *   and stays interop-safe with existing remote cache servers.
+ * - `"brotli"`: tar + Node brotli (BROTLI_MODE_TEXT, quality 4) — a
+ *   solid ratio/speed trade-off for source-tree tarballs. Both upload
+ *   and download sides must agree; switching invalidates existing
+ *   remote entries (they will simply re-populate on next run).
+ */
+export type RemoteCacheCompression = "brotli" | "gzip";
 
 /**
  * Options for the remote cache.
  */
 interface RemoteCacheOptions {
+    /**
+     * Compression format for artifact tarballs. Defaults to `"gzip"`
+     * for Turborepo protocol compatibility.
+     */
+    compression?: RemoteCacheCompression;
     /**
      * Called when a fire-and-forget upload fails.
      * Since uploads are non-blocking, errors are silently swallowed by default.
@@ -51,6 +68,67 @@ const extractTarGz = (archivePath: string, destinationDirectory: string): Promis
         });
     });
 
+const createTar = (sourceDirectory: string, outputPath: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        execFile("tar", ["-cf", outputPath, "-C", sourceDirectory, "."], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+const extractTar = (archivePath: string, destinationDirectory: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        execFile("tar", ["-xf", archivePath, "-C", destinationDirectory], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+/**
+ * Brotli quality 4 hits a sweet spot for cache tarballs: ~15% smaller
+ * than gzip -6 on typical source/dist payloads at comparable throughput.
+ * Higher qualities (8+) reach diminishing returns and slow uploads.
+ */
+const BROTLI_OPTIONS = {
+    params: {
+        [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
+        [zlibConstants.BROTLI_PARAM_QUALITY]: 4,
+    },
+};
+
+/**
+ * Creates an uncompressed tar and pipes it through brotli into `outputPath`.
+ * Uses a two-step (tar to temp, then brotli-stream it) to avoid shelling
+ * out to an external `brotli` binary that may not exist.
+ */
+const createTarBrotli = async (sourceDirectory: string, outputPath: string): Promise<void> => {
+    const tarPath = `${outputPath}.tar`;
+
+    try {
+        await createTar(sourceDirectory, tarPath);
+        await pipeline(createReadStream(tarPath), createBrotliCompress(BROTLI_OPTIONS), createWriteStream(outputPath));
+    } finally {
+        await rm(tarPath, { force: true }).catch(() => {});
+    }
+};
+
+const extractTarBrotli = async (archivePath: string, destinationDirectory: string): Promise<void> => {
+    const tarPath = `${archivePath}.tar`;
+
+    try {
+        await pipeline(createReadStream(archivePath), createBrotliDecompress(), createWriteStream(tarPath));
+        await extractTar(tarPath, destinationDirectory);
+    } finally {
+        await rm(tarPath, { force: true }).catch(() => {});
+    }
+};
+
 /**
  * HTTP-based remote cache compatible with the Turborepo remote cache protocol.
  *
@@ -79,6 +157,8 @@ class RemoteCache {
 
     readonly #onUploadError: ((hash: string, error: unknown) => void) | undefined;
 
+    readonly #compression: RemoteCacheCompression;
+
     public constructor(options: RemoteCacheOptions) {
         this.#url = options.url.replace(/\/$/, "");
         this.#token = options.token;
@@ -87,6 +167,7 @@ class RemoteCache {
         this.#read = options.read ?? true;
         this.#write = options.write ?? true;
         this.#onUploadError = options.onUploadError;
+        this.#compression = options.compression ?? "gzip";
     }
 
     /**
@@ -129,7 +210,13 @@ class RemoteCache {
 
             // Extract the archive to the cache entry directory
             await mkdir(entryDirectory, { recursive: true });
-            await extractTarGz(archivePath, entryDirectory);
+
+            if (this.#compression === "brotli") {
+                await extractTarBrotli(archivePath, entryDirectory);
+            } else {
+                await extractTarGz(archivePath, entryDirectory);
+            }
+
             await rm(archivePath, { force: true });
 
             return true;
@@ -157,8 +244,12 @@ class RemoteCache {
             // Check the entry exists and is complete
             await stat(join(entryDirectory, ".commit"));
 
-            // Create a gzipped tarball of the cache entry
-            await createTarGz(entryDirectory, archivePath);
+            // Compressed tarball of the cache entry, algorithm per config.
+            if (this.#compression === "brotli") {
+                await createTarBrotli(entryDirectory, archivePath);
+            } else {
+                await createTarGz(entryDirectory, archivePath);
+            }
 
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
             const archiveContent = await readFile(archivePath);
@@ -168,7 +259,12 @@ class RemoteCache {
                 headers: {
                     ...this.#buildHeaders(),
                     "Content-Length": String(archiveContent.length),
+                    // Advertise the compression format in a custom header so
+                    // spec-compatible servers (and the matching download side)
+                    // can branch if needed. The body is still an opaque blob
+                    // from the server's perspective.
                     "Content-Type": "application/octet-stream",
+                    "X-Artifact-Compression": this.#compression,
                 },
                 method: "PUT",
                 signal: AbortSignal.timeout(this.#timeout),
@@ -231,3 +327,5 @@ class RemoteCache {
 
 export type { RemoteCacheOptions };
 export { RemoteCache };
+// RemoteCacheCompression is exported above as `export type`, re-export grouping
+// intentional to stay compatible with consumers importing from the barrel.

@@ -43,6 +43,10 @@ export { IncrementalFileHasher } from "./incremental-hasher";
 
 // Life cycle
 export { CompositeLifeCycle, ConsoleLifeCycle, EmptyLifeCycle } from "./life-cycle";
+
+// Log reporter (--log=interleaved|labeled|grouped, matches vite-task)
+export type { LogMode } from "./log-reporter";
+export { createLogReporter, LogReporter } from "./log-reporter";
 // Smart lockfile hashing
 export type { PackageLockfileHash, ResolvedDependency } from "./lockfile-hasher";
 export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "./lockfile-hasher";
@@ -53,12 +57,16 @@ export { isNativeAvailable, loadNativeBindings } from "./native-binding";
 export { enforceProjectConstraints } from "./project-constraints";
 
 // Remote cache (Turborepo-compatible HTTP protocol)
-export type { RemoteCacheOptions } from "./remote-cache";
+export type { RemoteCacheCompression, RemoteCacheOptions } from "./remote-cache";
 export { RemoteCache } from "./remote-cache";
 
-// Run summary (--summarize)
+// Run summary (--summarize and --last-details)
 export type { RunSummary, TaskSummary } from "./run-summary";
-export { generateRunSummary, writeRunSummary } from "./run-summary";
+export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
+
+// Chrome tracing profile (--profile)
+export type { ChromeTraceEvent } from "./chrome-trace";
+export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 
 // Task graph
 export { createTaskGraph, getTaskId, parseTaskId } from "./task-graph";
@@ -105,7 +113,9 @@ export type {
     DependencyType,
     EnvironmentInput,
     ExternalDependencyInput,
+    FileSetBase,
     FileSetInput,
+    FileSetPattern,
     InputDefinition,
     LifeCycleInterface,
     NamedInputs,

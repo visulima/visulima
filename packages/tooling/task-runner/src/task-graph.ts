@@ -143,6 +143,11 @@ const getDependencyProjectTasks = (
 
 /**
  * Resolves a string-format dependency like "build" or "^build".
+ *
+ * String-form deps **do not inherit** the parent task's overrides —
+ * matching the config-form default (`params: "forward"` must be set
+ * explicitly to propagate). This is what lets consumers scope extra
+ * CLI args to the user-invoked target only. (Same fix as vite-task PR #324.)
  */
 const resolveStringDependency = (
     task: Task,
@@ -155,11 +160,11 @@ const resolveStringDependency = (
     if (dep.startsWith("^")) {
         const targetName = dep.slice(1);
 
-        return getDependencyProjectTasks(task.target.project, targetName, task.overrides, workspace, projectGraph, targetDefaults);
+        return getDependencyProjectTasks(task.target.project, targetName, {}, workspace, projectGraph, targetDefaults);
     }
 
     // "targetName" means the target on the same project
-    return getSameProjectTask(task.target.project, dep, task.overrides, workspace, targetDefaults);
+    return getSameProjectTask(task.target.project, dep, {}, workspace, targetDefaults);
 };
 
 /**

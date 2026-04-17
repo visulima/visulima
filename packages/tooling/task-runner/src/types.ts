@@ -73,6 +73,21 @@ export interface TaskResult {
     code?: number;
     /** The end time of the task */
     endTime?: number;
+    /**
+     * Set when auto-fingerprint tracking was attempted for this task but
+     * returned zero workspace accesses — usually a static binary on
+     * macOS/Windows, where the Node preload can't attach. Caching is
+     * skipped to avoid persisting an empty fingerprint that would
+     * produce false cache hits on every subsequent run.
+     */
+    emptyFingerprint?: boolean;
+    /**
+     * Set when the task modified one or more of its own tracked input
+     * files during execution. Caching is skipped in this case — the
+     * fingerprint captured before the run would mismatch the post-run
+     * contents and produce false cache hits on subsequent runs.
+     */
+    selfModified?: boolean;
     /** The start time of the task */
     startTime?: number;
     status: TaskStatus;
@@ -158,10 +173,31 @@ export interface TargetDependencyConfig {
 export type InputDefinition = FileSetInput | RuntimeInput | EnvironmentInput | ExternalDependencyInput;
 
 /**
+ * Controls how a glob pattern is anchored.
+ * - "package" (default): pattern is resolved relative to the project root
+ * - "workspace": pattern is resolved relative to the workspace root
+ */
+export type FileSetBase = "package" | "workspace";
+
+/**
  * An input based on file patterns.
+ *
+ * `fileset` may be a bare glob string (package-root relative) or an object
+ * form `{ pattern, base }` to anchor explicitly to the workspace root.
+ * Negation (`!` prefix) works in both forms.
  */
 export interface FileSetInput {
-    fileset: string;
+    fileset: FileSetPattern | string;
+}
+
+/**
+ * Object form of a fileset pattern, for anchoring to the workspace root.
+ */
+export interface FileSetPattern {
+    /** Anchor for the pattern. */
+    base: FileSetBase;
+    /** Glob pattern (may start with `!` for negation). */
+    pattern: string;
 }
 
 /**
@@ -344,6 +380,15 @@ export interface NamedInputs {
  * Configuration for the task runner.
  */
 export interface TaskRunnerOptions {
+    /**
+     * Scan each task's resolved command text for `$VAR`/`${VAR}`
+     * references and automatically fingerprint those env vars. Catches
+     * tasks like `curl ${VERCEL_URL}/api` where the user forgot to
+     * declare the reference in `envVars`/`globalEnv`.
+     * @default false
+     */
+    autoEnvVars?: boolean;
+
     /**
      * Enable auto-fingerprinting mode (Vite Task-style).
      * When enabled, the task runner automatically tracks which files
@@ -672,6 +717,21 @@ export interface LifeCycleInterface {
     endTasks?: (taskResults: TaskResult[]) => void;
     /** Called when a cache miss occurs with diagnostic information */
     printCacheMiss?: (task: Task, reasons: string) => void;
+    /**
+     * Called when caching was skipped because auto-fingerprint tracking
+     * came back empty — a signal that the tracker (strace or Node
+     * preload) couldn't observe the task's file access, typically
+     * because it's a static binary on a platform without strace.
+     * `reason` is a short human-readable diagnostic.
+     */
+    printEmptyFingerprintWarning?: (task: Task, reason: string) => void;
+    /**
+     * Called when caching is skipped because the task modified one or
+     * more of its own tracked inputs. `modifiedFiles` lists the
+     * workspace-relative paths that changed between pre- and
+     * post-execution hashes.
+     */
+    printSelfModifyingSkip?: (task: Task, modifiedFiles: string[]) => void;
     printTaskTerminalOutput?: (task: Task, status: TaskStatus, terminalOutput: string) => void;
     scheduleTask?: (task: Task) => void;
     startCommand?: () => void;

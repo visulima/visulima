@@ -308,6 +308,95 @@ describe(RemoteCache, () => {
                 await closeServer(server);
             }
         });
+
+        it("advertises compression via X-Artifact-Compression header", async () => {
+            expect.assertions(2);
+
+            const entryDirectory = join(cacheDirectory, "br-hash");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "br-hash");
+            await writeFile(join(entryDirectory, "code"), "0");
+
+            let receivedEncoding = "";
+
+            const { server, url } = await startMockServer((request, response) => {
+                receivedEncoding = String(request.headers["x-artifact-compression"] ?? "");
+
+                collectRequestBody(request)
+                    .then(() => {
+                        response.writeHead(200);
+                        response.end();
+
+                        return undefined;
+                    })
+                    .catch(() => {
+                        response.writeHead(500);
+                        response.end();
+                    });
+            });
+
+            try {
+                const cache = new RemoteCache({ compression: "brotli", url });
+                const result = await cache.store("br-hash", cacheDirectory);
+
+                expect(result).toBe(true);
+                expect(receivedEncoding).toBe("brotli");
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("uploads and round-trips a brotli-compressed artifact", async () => {
+            expect.assertions(2);
+
+            const entryDirectory = join(cacheDirectory, "roundtrip");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "roundtrip");
+            await writeFile(join(entryDirectory, "payload.txt"), "Lorem ipsum ".repeat(200));
+
+            let storedBytes: Buffer = Buffer.alloc(0);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "PUT") {
+                    collectRequestBody(request)
+                        .then((body) => {
+                            storedBytes = body;
+                            response.writeHead(200);
+                            response.end();
+
+                            return undefined;
+                        })
+                        .catch(() => {
+                            response.writeHead(500);
+                            response.end();
+                        });
+                } else {
+                    response.writeHead(200, {
+                        "Content-Length": String(storedBytes.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(storedBytes);
+                }
+            });
+
+            try {
+                const uploader = new RemoteCache({ compression: "brotli", url });
+                const downloadDirectory = join(cacheDirectory, "dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const stored = await uploader.store("roundtrip", cacheDirectory);
+                const downloader = new RemoteCache({ compression: "brotli", url });
+                const retrieved = await downloader.retrieve("roundtrip", downloadDirectory);
+
+                expect(stored).toBe(true);
+                expect(retrieved).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
     });
 
     describe("retrieve", () => {

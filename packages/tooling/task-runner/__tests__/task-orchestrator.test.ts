@@ -531,4 +531,131 @@ describe(TaskOrchestrator, () => {
             );
         });
     });
+
+    describe("self-modifying tasks", () => {
+        it("skips cache and reports when a task modifies its own input", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const { writeFile } = await import("node:fs/promises");
+            const inputFile = join(workspaceRoot, "packages/app/src/index.ts");
+
+            const executor: TaskExecutor = async () => {
+                await writeFile(inputFile, "const x = 2;");
+
+                return { code: 0, terminalOutput: "modified-own-input" };
+            };
+
+            const printSelfModifyingSkip = vi.fn();
+            const lifeCycle: LifeCycleInterface = { printSelfModifyingSkip };
+            const orchestrator = createOrchestrator([task], executor, { lifeCycle });
+
+            const results = await orchestrator.run();
+            const result = results.get("app:build");
+
+            expect(result?.selfModified).toBe(true);
+            expect(printSelfModifyingSkip).toHaveBeenCalledTimes(1);
+
+            // Second run must re-execute (the first run was not cached)
+            const executor2 = vi.fn<TaskExecutor>(async () => ({ code: 0, terminalOutput: "second" }));
+            const orch2 = createOrchestrator([task], executor2);
+
+            await orch2.run();
+
+            expect(executor2).toHaveBeenCalledTimes(1);
+        });
+
+        it("does not flag tasks that leave their inputs untouched", async () => {
+            expect.assertions(2);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const printSelfModifyingSkip = vi.fn();
+            const lifeCycle: LifeCycleInterface = { printSelfModifyingSkip };
+            const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
+
+            const results = await orchestrator.run();
+            const result = results.get("app:build");
+
+            expect(result?.selfModified).toBeUndefined();
+            expect(printSelfModifyingSkip).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("empty-fingerprint safety net", () => {
+        it("skips cache and warns when auto-fingerprint tracking finds no workspace accesses", async () => {
+            expect.assertions(3);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+
+            const cache = new Cache({ workspaceRoot });
+            const taskHasher = new InProcessTaskHasher({
+                projects: { app: { root: "packages/app" } },
+                workspaceRoot,
+            });
+
+            // Stub the hasher to return zero file nodes, mirroring the
+            // tracker-came-back-empty signal for a static binary on a
+            // platform without strace. The orchestrator constructs a
+            // real TrackedTaskExecutor internally; `resolveCommand`
+            // forces the auto-fingerprint "real tracker" branch, and
+            // `echo` is a shell builtin the Node preload can't attach to.
+            const taskGraph: TaskGraph = {
+                dependencies: { "app:build": [] },
+                roots: ["app:build"],
+                tasks: { "app:build": task },
+            };
+            const projectGraph: ProjectGraph = {
+                dependencies: { app: [] },
+                nodes: { app: { data: { root: "packages/app" }, name: "app", type: "application" } },
+            };
+            const scheduler = new TaskScheduler(taskGraph, projectGraph, 3);
+
+            const printEmptyFingerprintWarning = vi.fn();
+            const executor: TaskExecutor = async () => ({ code: 0, terminalOutput: "ran" });
+
+            const orchestrator = new TaskOrchestrator({
+                autoFingerprint: true,
+                cache,
+                lifeCycle: { printEmptyFingerprintWarning },
+                resolveCommand: () => "echo hello",
+                scheduler,
+                taskExecutor: executor,
+                taskGraph,
+                taskHasher,
+                workspaceRoot,
+            });
+
+            const results = await orchestrator.run();
+            const result = results.get("app:build");
+
+            expect(result?.emptyFingerprint).toBe(true);
+            expect(printEmptyFingerprintWarning).toHaveBeenCalledTimes(1);
+
+            // Nothing was persisted to the cache — the task-id index must
+            // not resolve, so subsequent runs have no shortcut to hit.
+            const cached = await cache.getByTaskId("app:build");
+
+            expect(cached).toBeUndefined();
+        });
+    });
 });

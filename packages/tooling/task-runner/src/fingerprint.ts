@@ -19,6 +19,15 @@ export interface TaskFingerprint {
     fileHashes: Record<string, string>;
     /** Paths of files that were probed but didn't exist (ENOENT) */
     missingFiles: string[];
+    /**
+     * Workspace-relative paths that were both read **and** written
+     * during execution. Populated when the tracker emits
+     * {@link FileAccess} entries with `"write"` type. The orchestrator
+     * uses a non-empty value here to skip caching a self-modifying
+     * task, whose fingerprint would otherwise capture post-write state
+     * and trigger false cache hits.
+     */
+    modifiedInputs?: string[];
 }
 
 /**
@@ -57,6 +66,8 @@ export class FingerprintManager {
         const fileHashes: Record<string, string> = {};
         const missingPaths = new Set<string>();
         const directoryListings: Record<string, string[]> = {};
+        const readPaths = new Set<string>();
+        const writePaths = new Set<string>();
 
         for (const access of accesses) {
             const relativePath = relative(this.#workspaceRoot, access.path);
@@ -69,6 +80,8 @@ export class FingerprintManager {
                 }
                 case "read":
                 case "stat": {
+                    readPaths.add(relativePath);
+
                     if (!fileHashes[relativePath]) {
                         // eslint-disable-next-line no-await-in-loop
                         const hash = await this.#hashFileWithCache(access.path);
@@ -94,11 +107,27 @@ export class FingerprintManager {
 
                     break;
                 }
+                case "write": {
+                    writePaths.add(relativePath);
+
+                    break;
+                }
                 default: {
                     break;
                 }
             }
         }
+
+        // Self-modifying inputs = files the task read *and* wrote.
+        const modifiedInputs: string[] = [];
+
+        for (const path of writePaths) {
+            if (readPaths.has(path)) {
+                modifiedInputs.push(path);
+            }
+        }
+
+        modifiedInputs.sort();
 
         const commandHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
@@ -116,7 +145,14 @@ export class FingerprintManager {
 
         const missingFiles = [...missingPaths].toSorted();
 
-        return { commandHash, directoryListings, envHashes, fileHashes, missingFiles };
+        return {
+            commandHash,
+            directoryListings,
+            envHashes,
+            fileHashes,
+            missingFiles,
+            ...(modifiedInputs.length > 0 ? { modifiedInputs } : {}),
+        };
     }
 
     /**

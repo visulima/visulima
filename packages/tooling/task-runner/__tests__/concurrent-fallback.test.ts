@@ -188,12 +188,12 @@ describe(runConcurrentFallback, () => {
         });
 
         const closeIndex = events.findIndex((e) => e.kind === "close");
-        const stdoutIndices = events.map((e, i) => (e.kind === "stdout" ? i : -1)).filter((i) => i >= 0);
+        const lastStdoutIndex = events.findLastIndex((e) => e.kind === "stdout");
 
-        // All stdout events should come before the close event
-        for (const index of stdoutIndices) {
-            expect(index).toBeLessThan(closeIndex);
-        }
+        // Every stdout event must precede the close event — asserting the
+        // max index is strictly less than closeIndex covers all of them in
+        // a single expectation (compatible with expect.assertions(1)).
+        expect(lastStdoutIndex).toBeLessThan(closeIndex);
     });
 
     it("should emit 'started' event with write function for pipe mode", async () => {

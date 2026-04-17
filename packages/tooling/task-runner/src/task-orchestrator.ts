@@ -1,12 +1,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { createXxh3Hasher } from "@shared/xxh3";
-import { join } from "@visulima/path";
+import { join, resolve } from "@visulima/path";
 
 import type { Cache, CachedResult } from "./cache";
 import type { TaskFingerprint } from "./fingerprint";
 import { FingerprintManager } from "./fingerprint";
 import type { RemoteCache } from "./remote-cache";
-import { generateRunSummary, writeRunSummary } from "./run-summary";
+import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
@@ -181,10 +181,16 @@ class TaskOrchestrator {
             this.#lifeCycle.endCommand?.();
         }
 
-        if (this.#summarize && this.#taskGraph) {
+        if (this.#taskGraph && !this.#aborted) {
             const summary = generateRunSummary(this.#results, this.#taskGraph, this.#startTime);
 
-            await writeRunSummary(summary, this.#workspaceRoot);
+            // Always persist the "last run" snapshot so CLIs can replay it
+            // (interrupted runs are skipped — they'd cache incomplete output).
+            await writeLastRunSummary(summary, this.#workspaceRoot);
+
+            if (this.#summarize) {
+                await writeRunSummary(summary, this.#workspaceRoot);
+            }
         }
 
         return this.#results;
@@ -380,7 +386,15 @@ class TaskOrchestrator {
             this.#results.set(task.id, result);
 
             if (code === 0 && task.cache !== false && task.hash) {
-                await this.#cache.put(task.hash, terminalOutput, task.outputs, code);
+                const modified = await this.#detectSelfModifiedInputs(task);
+
+                if (modified.length > 0) {
+                    result.selfModified = true;
+
+                    this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
+                } else {
+                    await this.#cache.put(task.hash, terminalOutput, task.outputs, code);
+                }
             }
 
             return result;
@@ -391,6 +405,32 @@ class TaskOrchestrator {
 
             return result;
         }
+    }
+
+    /**
+     * Re-hashes every file recorded in `task.hashDetails.nodes` and returns
+     * the workspace-relative paths whose post-execution hash differs from the
+     * pre-execution hash. A non-empty result means the task wrote to its own
+     * tracked inputs and the cache entry would be unsafe to persist.
+     */
+    async #detectSelfModifiedInputs(task: Task): Promise<string[]> {
+        const nodes = task.hashDetails?.nodes;
+
+        if (!nodes || typeof this.#taskHasher.rehashFile !== "function") {
+            return [];
+        }
+
+        const rehash = this.#taskHasher.rehashFile.bind(this.#taskHasher);
+        const entries = Object.entries(nodes);
+
+        const checks = await Promise.all(entries.map(async ([path, priorHash]) => {
+            const absolute = resolve(this.#workspaceRoot, path);
+            const fresh = await rehash(absolute);
+
+            return fresh !== undefined && fresh !== priorHash ? path : undefined;
+        }));
+
+        return checks.filter((path): path is string => path !== undefined);
     }
 
     async #executeTaskWithTracking(task: Task, startTime: number): Promise<TaskResult> {
@@ -405,6 +445,8 @@ class TaskOrchestrator {
             let code: number;
             let terminalOutput: string;
             let fingerprint: TaskFingerprint | undefined;
+            let trackerAccessCount = 0;
+            let usedRealTracker = false;
 
             const shellCommand = this.#resolveCommand?.(task);
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
@@ -414,6 +456,8 @@ class TaskOrchestrator {
 
                 code = trackedResult.code;
                 terminalOutput = trackedResult.terminalOutput;
+                trackerAccessCount = trackedResult.accesses.length;
+                usedRealTracker = true;
 
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     trackedResult.accesses,
@@ -462,12 +506,25 @@ class TaskOrchestrator {
             this.#results.set(task.id, result);
 
             if (code === 0 && task.cache !== false && fingerprint) {
-                const hash = hashFingerprint(fingerprint);
+                const modified = this.#detectSelfModifiedFingerprint(fingerprint);
+                const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 
-                Object.assign(task, { hash });
+                if (modified.length > 0) {
+                    result.selfModified = true;
 
-                await this.#cache.put(hash, terminalOutput, task.outputs, code, fingerprint);
-                await this.#cache.setTaskIndex(task.id, hash);
+                    this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
+                } else if (emptyFingerprintReason) {
+                    result.emptyFingerprint = true;
+
+                    this.#lifeCycle.printEmptyFingerprintWarning?.(task, emptyFingerprintReason);
+                } else {
+                    const hash = hashFingerprint(fingerprint);
+
+                    Object.assign(task, { hash });
+
+                    await this.#cache.put(hash, terminalOutput, task.outputs, code, fingerprint);
+                    await this.#cache.setTaskIndex(task.id, hash);
+                }
             }
 
             return result;
@@ -478,6 +535,49 @@ class TaskOrchestrator {
 
             return result;
         }
+    }
+
+    /**
+     * In auto-fingerprint mode, returns the workspace-relative paths the
+     * task both read *and* wrote during execution. {@link FingerprintManager}
+     * populates `modifiedInputs` from the tracker's `"write"`-typed accesses;
+     * backends that don't yet emit write accesses leave it empty.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    #detectSelfModifiedFingerprint(fingerprint: TaskFingerprint): string[] {
+        return fingerprint.modifiedInputs ?? [];
+    }
+
+    /**
+     * Returns a human-readable reason string when a fingerprint looks
+     * suspiciously empty (tracker ran but observed no workspace files),
+     * or `undefined` when the fingerprint is trustworthy. Caching is
+     * skipped for empty fingerprints — silently persisting one would
+     * guarantee false cache hits on every subsequent run.
+     *
+     * Only flags results from the real tracker; the glob-based fallback
+     * path legitimately produces wide fingerprints and isn't at risk.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    #describeEmptyFingerprint(fingerprint: TaskFingerprint, usedRealTracker: boolean, trackerAccessCount: number): string | undefined {
+        if (!usedRealTracker) {
+            return undefined;
+        }
+
+        const hasAnyAccess
+            = Object.keys(fingerprint.fileHashes).length > 0
+                || Object.keys(fingerprint.directoryListings).length > 0
+                || fingerprint.missingFiles.length > 0;
+
+        if (hasAnyAccess) {
+            return undefined;
+        }
+
+        const zeroAccesses = trackerAccessCount === 0;
+
+        return zeroAccesses
+            ? "Tracker observed no workspace file accesses — likely a static binary on a platform without strace. Caching skipped."
+            : "Tracker returned accesses but none fell inside the workspace. Caching skipped to avoid false cache hits.";
     }
 
     #dryRunResult(task: Task, startTime: number): TaskResult {

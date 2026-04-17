@@ -19,11 +19,25 @@ const results = await defaultTaskRunner(
             teamId: "my-team",
             read: true, // Enable remote reads (default)
             write: true, // Enable remote writes (default)
+            compression: "gzip", // "gzip" (default, Turborepo-compatible) or "brotli"
         },
     },
     context,
 );
 ```
+
+## Compression
+
+Artifact tarballs are compressed client-side before upload. Two formats are supported:
+
+| Compression | Size ratio on typical dist payloads | Compatibility                                      |
+| ----------- | ----------------------------------- | -------------------------------------------------- |
+| `"gzip"`    | baseline                            | Turborepo wire-compatible — works with any server  |
+| `"brotli"`  | ~15–20% smaller                     | vis clients on both ends (server is format-agnostic) |
+
+Brotli uses Node's built-in `zlib.createBrotliCompress` at quality level 4 — a sweet spot between ratio and upload throughput. Switching formats invalidates existing remote entries (they'll re-populate on the next run).
+
+The upload includes an `X-Artifact-Compression` header advertising the format so spec-extended servers can branch if they add format-aware features; stock Turborepo-protocol servers just store the bytes.
 
 ## How It Works
 

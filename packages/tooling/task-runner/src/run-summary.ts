@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
@@ -222,5 +222,50 @@ const writeRunSummary = async (summary: RunSummary, workspaceRoot: string): Prom
     return filePath;
 };
 
+const LAST_SUMMARY_FILE = "last-summary.json";
+
+/**
+ * Path where the most-recent run summary is persisted.
+ * Consumers (e.g. CLIs exposing `--last-details`) read this file
+ * to replay or render the previous run without re-executing.
+ */
+const getLastRunSummaryPath = (workspaceRoot: string): string => join(workspaceRoot, ".task-runner", LAST_SUMMARY_FILE);
+
+/**
+ * Persists `summary` as the most-recent run summary at
+ * `.task-runner/last-summary.json`, overwriting any previous entry.
+ *
+ * This is the companion to {@link readLastRunSummary} and powers
+ * CLI surfaces that display "last run" details without re-running tasks.
+ * @returns The path to the written summary file
+ */
+const writeLastRunSummary = async (summary: RunSummary, workspaceRoot: string): Promise<string> => {
+    const cacheDirectory = join(workspaceRoot, ".task-runner");
+
+    await mkdir(cacheDirectory, { recursive: true });
+
+    const filePath = getLastRunSummaryPath(workspaceRoot);
+
+    await writeFile(filePath, JSON.stringify(summary, undefined, 2));
+
+    return filePath;
+};
+
+/**
+ * Reads the most-recent run summary written by {@link writeLastRunSummary}.
+ * Returns `undefined` when no previous run has been recorded or the file
+ * cannot be parsed — callers should render an informational message
+ * instead of treating this as an error.
+ */
+const readLastRunSummary = async (workspaceRoot: string): Promise<RunSummary | undefined> => {
+    try {
+        const content = await readFile(getLastRunSummaryPath(workspaceRoot), "utf8");
+
+        return JSON.parse(content) as RunSummary;
+    } catch {
+        return undefined;
+    }
+};
+
 export type { RunSummary, TaskSummary };
-export { generateRunSummary, writeRunSummary };
+export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary };

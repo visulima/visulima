@@ -260,4 +260,43 @@ describe(FingerprintManager, () => {
             expect(output).toContain("Environment variable changed: NODE_ENV");
         });
     });
+
+    describe("modifiedInputs", () => {
+        it("populates modifiedInputs when a path is both read and written", async () => {
+            expect.assertions(2);
+
+            const { writeFile } = await import("node:fs/promises");
+            const { join } = await import("node:path");
+            const target = join(workspaceRoot, "round.txt");
+
+            await writeFile(target, "content");
+
+            const fingerprint = await manager.createFingerprint(
+                [
+                    { path: target, type: "read" },
+                    { path: target, type: "write" },
+                ],
+                "app:build",
+                {},
+                {},
+            );
+
+            expect(fingerprint.modifiedInputs).toHaveLength(1);
+            expect(fingerprint.modifiedInputs?.[0]).toBe("round.txt");
+        });
+
+        it("omits modifiedInputs when a path was only read", async () => {
+            expect.assertions(1);
+
+            const { writeFile } = await import("node:fs/promises");
+            const { join } = await import("node:path");
+            const target = join(workspaceRoot, "readonly.txt");
+
+            await writeFile(target, "data");
+
+            const fingerprint = await manager.createFingerprint([{ path: target, type: "read" }], "app:build", {}, {});
+
+            expect(fingerprint.modifiedInputs).toBeUndefined();
+        });
+    });
 });

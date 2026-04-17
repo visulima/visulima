@@ -28,12 +28,18 @@ const isStraceAvailable = (): boolean => {
 
 /**
  * Represents a file access recorded during task execution.
+ *
+ * Write-intent accesses (`"write"`) are emitted when a task opens a file
+ * with `O_WRONLY`/`O_RDWR`/`O_CREAT`/`O_TRUNC` flags (strace) or calls
+ * `writeFile`/`appendFile`/`unlink`/`rename` (preload script).
+ * The orchestrator uses the overlap of reads and writes to the same
+ * workspace path to detect self-modifying tasks and skip caching.
  */
 export interface FileAccess {
     /** The absolute path of the file */
     path: string;
     /** The type of access */
-    type: "read" | "stat" | "readdir" | "missing";
+    type: "missing" | "read" | "readdir" | "stat" | "write";
 }
 
 /**
@@ -51,13 +57,33 @@ export interface TrackingResult {
 /**
  * Strace syscall patterns and their corresponding file access types.
  * Order matters — first match wins.
+ *
+ * For open/openat the resolved type depends on the flag list, which
+ * {@link parseOpenAccessType} inspects separately. These entries mark
+ * the pattern as an `open`-family syscall; the actual read/write type
+ * is decided in {@link FileAccessTracker.parseStraceLine}.
  */
-const STRACE_PATTERNS: ReadonlyArray<{ pattern: RegExp; type: FileAccess["type"] }> = [
-    { pattern: /openat\(AT_FDCWD,\s*"([^"]+)"/, type: "read" },
-    { pattern: /^(?:\d+\s+)?open\("([^"]+)"/, type: "read" },
-    { pattern: /(?:stat|lstat|newfstatat)\((?:AT_FDCWD,\s*)?"([^"]+)"/, type: "stat" },
-    { pattern: /access\("([^"]+)"/, type: "stat" },
+const STRACE_PATTERNS: ReadonlyArray<{ kind: "access" | "creat" | "getdents" | "open" | "stat"; pattern: RegExp }> = [
+    { kind: "open", pattern: /openat\(AT_FDCWD,\s*"([^"]+)"/ },
+    { kind: "open", pattern: /^(?:\d+\s+)?open\("([^"]+)"/ },
+    { kind: "creat", pattern: /(?:^|\s)creat\("([^"]+)"/ },
+    { kind: "stat", pattern: /(?:stat|lstat|newfstatat)\((?:AT_FDCWD,\s*)?"([^"]+)"/ },
+    { kind: "stat", pattern: /access\("([^"]+)"/ },
+    { kind: "getdents", pattern: /getdents(?:64)?\(\d+/ },
 ];
+
+/**
+ * Returns `"write"` when the open-family flags imply write intent,
+ * `"read"` otherwise. Checks for `O_WRONLY`/`O_RDWR`/`O_CREAT`/`O_TRUNC`
+ * in the strace-formatted flag list.
+ */
+const parseOpenAccessType = (line: string): "read" | "write" => {
+    if (/O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND/.test(line)) {
+        return "write";
+    }
+
+    return "read";
+};
 
 /**
  * Tracks which files a child process accesses during execution.
@@ -132,7 +158,7 @@ export class FileAccessTracker {
         // -e trace=open,openat,stat,lstat,newfstatat,access,getdents,getdents64: track file operations
         // -o: output to file
         // -qq: suppress non-essential messages
-        const straceCommand = `strace -f -qq -e trace=open,openat,stat,lstat,newfstatat,access,getdents,getdents64 -o ${traceFile} -- ${command}`;
+        const straceCommand = `strace -f -qq -e trace=open,openat,creat,stat,lstat,newfstatat,access,getdents,getdents64,unlink,unlinkat,rename,renameat,renameat2 -o ${traceFile} -- ${command}`;
 
         return new Promise((_resolve) => {
             // eslint-disable-next-line sonarjs/os-command
@@ -173,16 +199,27 @@ export class FileAccessTracker {
 
     /**
      * Parses strace output to extract file accesses.
+     *
+     * A single path may appear with both `read` and `write` types when a
+     * task reads a file and later rewrites it — self-modifying detection
+     * relies on seeing both, so we dedupe per `(path, type)` rather than
+     * by path alone.
      */
     #parseStraceOutput(traceContent: string, cwd: string): FileAccess[] {
         const accesses: FileAccess[] = [];
-        const seenPaths = new Set<string>();
+        const seen = new Set<string>();
 
         for (const line of traceContent.split("\n")) {
             const parsed = this.#parseStraceLine(line, cwd);
 
-            if (parsed && !seenPaths.has(parsed.path)) {
-                seenPaths.add(parsed.path);
+            if (!parsed) {
+                continue;
+            }
+
+            const key = `${parsed.type}:${parsed.path}`;
+
+            if (!seen.has(key)) {
+                seen.add(key);
                 accesses.push(parsed);
             }
         }
@@ -192,20 +229,32 @@ export class FileAccessTracker {
 
     /**
      * Parses a single strace output line.
-     * Each entry maps a regex to the file access type it represents.
+     * Each entry maps a regex to the file access kind; the actual type
+     * (read vs write) depends on flag inspection for `open`/`openat`.
      */
     #parseStraceLine(line: string, cwd: string): FileAccess | undefined {
         const isMissing = line.includes("ENOENT");
 
-        // Try each syscall pattern in order; first match wins
-        for (const { pattern, type } of STRACE_PATTERNS) {
+        for (const { kind, pattern } of STRACE_PATTERNS) {
             const match = pattern.exec(line);
 
-            if (!match?.[1]) {
+            if (!match) {
                 continue;
             }
 
-            let path = match[1];
+            if (kind === "getdents") {
+                // getdents operates on an fd, not a path — skip until we
+                // later introduce fd→path tracking.
+                return undefined;
+            }
+
+            const capturedPath = match[1];
+
+            if (!capturedPath) {
+                continue;
+            }
+
+            let path = capturedPath;
 
             if (!path.startsWith("/")) {
                 path = resolve(cwd, path);
@@ -215,7 +264,32 @@ export class FileAccessTracker {
                 return undefined;
             }
 
-            return { path, type: isMissing ? "missing" : type };
+            if (isMissing) {
+                return { path, type: "missing" };
+            }
+
+            const type: FileAccess["type"]
+                = kind === "open" ? parseOpenAccessType(line) : kind === "creat" ? "write" : "stat";
+
+            return { path, type };
+        }
+
+        // unlink/rename take a path but don't match the capturing patterns
+        // above. Handle them here so the touched path is flagged as a write.
+        const destructive = /(?:^|\s)(?:unlink|unlinkat|rename|renameat|renameat2)\((?:AT_FDCWD,\s*)?"([^"]+)"/.exec(line);
+
+        if (destructive?.[1]) {
+            let path = destructive[1];
+
+            if (!path.startsWith("/")) {
+                path = resolve(cwd, path);
+            }
+
+            if (this.#shouldExclude(path) || !path.startsWith(this.#workspaceRoot)) {
+                return undefined;
+            }
+
+            return { path, type: "write" };
         }
 
         return undefined;
@@ -301,18 +375,30 @@ const patch = (obj, method, type) => {
     };
 };
 
-// Sync
+// Reads / stats / directory listing
 patch(fs, "readFileSync", "read");
 patch(fs, "statSync", "stat");
 patch(fs, "readdirSync", "readdir");
-// Async (callback)
 patch(fs, "readFile", "read");
 patch(fs, "stat", "stat");
 patch(fs, "readdir", "readdir");
-// Async (promises)
 patch(fsp, "readFile", "read");
 patch(fsp, "stat", "stat");
 patch(fsp, "readdir", "readdir");
+
+// Writes and path-mutating ops — needed for self-modifying task detection
+patch(fs, "writeFileSync", "write");
+patch(fs, "appendFileSync", "write");
+patch(fs, "unlinkSync", "write");
+patch(fs, "renameSync", "write");
+patch(fs, "writeFile", "write");
+patch(fs, "appendFile", "write");
+patch(fs, "unlink", "write");
+patch(fs, "rename", "write");
+patch(fsp, "writeFile", "write");
+patch(fsp, "appendFile", "write");
+patch(fsp, "unlink", "write");
+patch(fsp, "rename", "write");
 
 process.on("beforeExit", () => { logStream.end(); });
 `;

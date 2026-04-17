@@ -30,6 +30,18 @@ const options = {
 };
 ```
 
+Bare glob strings resolve relative to the project root. For workspace-root-relative paths (shared configs, root lockfiles), use the object form:
+
+```typescript
+inputs: [
+    "src/**",
+    { fileset: { pattern: "tsconfig.base.json", base: "workspace" } },
+    { fileset: { pattern: "!packages/*/dist", base: "workspace" } },
+];
+```
+
+`base` accepts `"package"` (default, same as a bare string) or `"workspace"`. Negation with `!` works in both forms.
+
 ### Environment variables
 
 ```typescript
