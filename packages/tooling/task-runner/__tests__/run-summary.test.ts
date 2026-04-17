@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { RunSummary } from "../src/run-summary";
-import { generateRunSummary, writeRunSummary } from "../src/run-summary";
+import { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "../src/run-summary";
 import type { Task, TaskGraph, TaskResult, TaskResults } from "../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
@@ -345,5 +345,68 @@ describe(writeRunSummary, () => {
 
         expect(parsed.tasks[0]?.cacheStatus).toBe("MISS");
         expect(parsed.stats.succeeded).toBe(1);
+    });
+});
+
+describe(writeLastRunSummary, () => {
+    let workspaceRoot: string;
+
+    beforeEach(async () => {
+        workspaceRoot = await createTemporaryDirectory();
+    });
+
+    afterEach(async () => {
+        await rm(workspaceRoot, { force: true, recursive: true });
+    });
+
+    const makeSummary = (id: string): RunSummary => ({
+        duration: 123,
+        endTime: new Date().toISOString(),
+        environment: {
+            arch: process.arch,
+            nodeVersion: process.version,
+            platform: process.platform,
+        },
+        id,
+        startTime: new Date().toISOString(),
+        stats: { cached: 0, failed: 0, skipped: 0, succeeded: 0, total: 0 },
+        taskGraph: { dependencies: {}, roots: [] },
+        tasks: [],
+    });
+
+    it("persists to a stable path and overwrites on repeat runs", async () => {
+        expect.assertions(3);
+
+        const expectedPath = getLastRunSummaryPath(workspaceRoot);
+
+        const first = await writeLastRunSummary(makeSummary("first"), workspaceRoot);
+
+        expect(first).toBe(expectedPath);
+
+        const second = await writeLastRunSummary(makeSummary("second"), workspaceRoot);
+
+        expect(second).toBe(expectedPath);
+
+        const parsed = JSON.parse(await readFile(expectedPath, "utf8")) as RunSummary;
+
+        expect(parsed.id).toBe("second");
+    });
+
+    it("readLastRunSummary returns undefined when no run has been recorded", async () => {
+        expect.assertions(1);
+
+        const result = await readLastRunSummary(workspaceRoot);
+
+        expect(result).toBeUndefined();
+    });
+
+    it("readLastRunSummary round-trips the most-recent run", async () => {
+        expect.assertions(1);
+
+        await writeLastRunSummary(makeSummary("abc"), workspaceRoot);
+
+        const parsed = await readLastRunSummary(workspaceRoot);
+
+        expect(parsed?.id).toBe("abc");
     });
 });

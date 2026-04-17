@@ -351,6 +351,153 @@ describe(InProcessTaskHasher, () => {
         expect(paths.some((p) => p.includes("src/index.ts"))).toBe(true);
         expect(paths).not.toContain("packages/lib-a/package.json");
     });
+
+    it("should resolve object-form filesets with base 'workspace'", async () => {
+        expect.assertions(2);
+
+        await writeFile(join(workspaceRoot, "tsconfig.base.json"), '{"compilerOptions":{}}');
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: [{ fileset: { pattern: "tsconfig.base.json", base: "workspace" } }],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const details = await hasher.hashTask(task);
+        const paths = Object.keys(details.nodes);
+
+        expect(paths).toContain("tsconfig.base.json");
+        expect(paths.some((p) => p.startsWith("packages/lib-a"))).toBe(false);
+    });
+
+    it("auto-fingerprints env vars referenced in the command when autoEnvVars is true", async () => {
+        expect.assertions(2);
+
+        process.env["MY_REFERENCED_VAR"] = "initial-value";
+
+        const hasher = new InProcessTaskHasher({
+            autoEnvVars: true,
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: { command: "echo $MY_REFERENCED_VAR" },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const hash1 = await hasher.hashTask(task);
+
+        process.env["MY_REFERENCED_VAR"] = "changed";
+
+        // Clear internal file cache isn't enough — we need a fresh hasher
+        // so the runtime entry is recomputed against the new env value.
+        const hasher2 = new InProcessTaskHasher({
+            autoEnvVars: true,
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: { command: "echo $MY_REFERENCED_VAR" },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const hash2 = await hasher2.hashTask(task);
+
+        expect(hash1.runtime?.["env:MY_REFERENCED_VAR"]).toBeDefined();
+        expect(hash1.runtime?.["env:MY_REFERENCED_VAR"]).not.toBe(hash2.runtime?.["env:MY_REFERENCED_VAR"]);
+
+        delete process.env["MY_REFERENCED_VAR"];
+    });
+
+    it("does not auto-fingerprint env vars when autoEnvVars is false (default)", async () => {
+        expect.assertions(1);
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: { command: "echo $SOME_VAR" },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const hash = await hasher.hashTask(task);
+
+        expect(hash.runtime?.["env:SOME_VAR"]).toBeUndefined();
+    });
+
+    it("should honor workspace-base negation in object form", async () => {
+        expect.assertions(1);
+
+        await mkdir(join(workspaceRoot, "packages/lib-a/dist"), { recursive: true });
+        await writeFile(join(workspaceRoot, "packages/lib-a/dist/out.js"), "built");
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: [
+                                "{projectRoot}/**/*",
+                                { fileset: { pattern: "!packages/lib-a/dist", base: "workspace" } },
+                            ],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const details = await hasher.hashTask(task);
+
+        expect(Object.keys(details.nodes).some((p) => p.includes("dist/out.js"))).toBe(false);
+    });
 });
 
 describe(computeTaskHash, () => {

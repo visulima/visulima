@@ -28,12 +28,26 @@ import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
  */
 interface TaskHasher {
     hashTask: (task: Task) => Promise<TaskHashDetails>;
+    /**
+     * Rehashes a single file bypassing any in-memory cache. Optional to keep
+     * external/custom hashers backward compatible; the orchestrator skips
+     * self-modifying-task detection when the implementation is absent.
+     */
+    rehashFile?: (filePath: string) => Promise<string | undefined>;
 }
 
 /**
  * Options for creating an InProcessTaskHasher.
  */
 interface TaskHasherOptions {
+    /**
+     * When true, scan each task's resolved command for `$VAR`/`${VAR}`
+     * references and auto-fingerprint them. Catches the common case of
+     * a script reading `$VERCEL_URL` or `${NEXT_PUBLIC_API}` without
+     * the user remembering to declare it in `envVars`/`globalEnv`.
+     * @default false
+     */
+    autoEnvVars?: boolean;
     /** Additional environment variables to include in hash */
     envVars?: string[];
 
@@ -148,8 +162,71 @@ const hashRuntimeValue = async (runtime: string): Promise<string> => {
     return hashStrings(runtime, output);
 };
 
+/** Shell positional / special variables that are never real env state. */
+const SHELL_SPECIAL_VARS = new Set(["?", "$", "!", "0", "#", "*", "@", "-", "_"]);
+
+/**
+ * Extracts the names of environment variables referenced inside a
+ * shell command. Matches `$FOO` and `${FOO}` (including parameter
+ * expansions like `${FOO:-default}` — everything after the first
+ * operator is stripped). Skips positional args (`$1`, `$2`, …) and
+ * shell specials (`$?`, `$@`, …) since those aren't environment state.
+ */
+const extractReferencedEnvVars = (command: string): string[] => {
+    const found = new Set<string>();
+    const pattern = /\$(?:\{([^}]+)\}|([A-Z_a-z][\w]*))/g;
+
+    let match: RegExpExecArray | null;
+
+    // eslint-disable-next-line no-cond-assign -- regex.exec loop is idiomatic
+    while ((match = pattern.exec(command)) !== null) {
+        const raw = match[1] ?? match[2];
+
+        if (!raw) {
+            continue;
+        }
+
+        const name = raw.split(/[#%:/?+\-=,^]/)[0]?.trim();
+
+        if (!name || SHELL_SPECIAL_VARS.has(name) || /^\d+$/.test(name)) {
+            continue;
+        }
+
+        if (!/^[A-Z_a-z][\w]*$/.test(name)) {
+            continue;
+        }
+
+        found.add(name);
+    }
+
+    return [...found];
+};
+
 // Type guards
 const isFileSetInput = (input: InputDefinition): input is FileSetInput => "fileset" in input;
+
+/**
+ * Normalizes a fileset entry into a string pattern that uses
+ * `{projectRoot}` / `{workspaceRoot}` tokens for downstream resolution.
+ *
+ * - Bare strings are returned unchanged.
+ * - Object form `{ pattern, base: "workspace" }` → `{workspaceRoot}/<pattern>`
+ *   (or `!{workspaceRoot}/...` when `pattern` starts with `!`).
+ * - Object form `{ pattern, base: "package" }` → `{projectRoot}/<pattern>`.
+ */
+const normalizeFileset = (fileset: FileSetInput["fileset"]): string => {
+    if (typeof fileset === "string") {
+        return fileset;
+    }
+
+    const token = fileset.base === "workspace" ? "{workspaceRoot}" : "{projectRoot}";
+
+    if (fileset.pattern.startsWith("!")) {
+        return `!${token}/${fileset.pattern.slice(1)}`;
+    }
+
+    return `${token}/${fileset.pattern}`;
+};
 
 const isRuntimeInput = (input: InputDefinition): input is RuntimeInput => "runtime" in input;
 
@@ -186,6 +263,8 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #frameworkInference: boolean;
 
+    readonly #autoEnvVars: boolean;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
@@ -200,6 +279,7 @@ class InProcessTaskHasher implements TaskHasher {
         this.#smartLockfileHashing = options.smartLockfileHashing ?? false;
         this.#lockfileHasher = this.#smartLockfileHashing ? new LockfileHasher(options.workspaceRoot) : undefined;
         this.#frameworkInference = options.frameworkInference ?? false;
+        this.#autoEnvVars = options.autoEnvVars ?? false;
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -220,7 +300,7 @@ class InProcessTaskHasher implements TaskHasher {
         for (const input of inputs) {
             if (isFileSetInput(input)) {
                 // eslint-disable-next-line no-await-in-loop -- filesets must be processed sequentially to accumulate into shared nodes/runtime maps
-                const fileHashes = await this.#hashFileSet(task, input.fileset, negationPatterns);
+                const fileHashes = await this.#hashFileSet(task, normalizeFileset(input.fileset), negationPatterns);
 
                 for (const [filePath, hash] of Object.entries(fileHashes)) {
                     nodes[filePath] = hash;
@@ -242,6 +322,25 @@ class InProcessTaskHasher implements TaskHasher {
 
         for (const envVariable of this.#envVars) {
             runtime[`env:${envVariable}`] = hashStrings(envVariable, process.env[envVariable] ?? "");
+        }
+
+        // Auto-fingerprint env vars referenced in the task's command
+        // text. Scripts like `curl ${VERCEL_URL}/api` start busting
+        // cache when VERCEL_URL changes without the user having to
+        // declare it in `envVars`/`globalEnv`.
+        if (this.#autoEnvVars) {
+            const command = this.#resolveCommandText(task);
+
+            if (command) {
+                for (const name of extractReferencedEnvVars(command)) {
+                    const key = `env:${name}`;
+
+                    // Don't overwrite if the user already declared it.
+                    if (runtime[key] === undefined) {
+                        runtime[key] = hashStrings(name, process.env[name] ?? "");
+                    }
+                }
+            }
         }
 
         // Hoist project lookup once for lockfile + framework features
@@ -300,6 +399,25 @@ class InProcessTaskHasher implements TaskHasher {
         return hash.digest();
     }
 
+    /**
+     * Looks up the command string associated with a task so referenced
+     * env vars can be extracted. Checks `task.overrides.command` first
+     * (consumers like vis stash the resolved command there), then falls
+     * back to the project's target config.
+     */
+    #resolveCommandText(task: Task): string | undefined {
+        const override = task.overrides["command"];
+
+        if (typeof override === "string") {
+            return override;
+        }
+
+        const project = this.#projects[task.target.project];
+        const command = project?.targets?.[task.target.target]?.command ?? this.#targetDefaults[task.target.target]?.command;
+
+        return typeof command === "string" ? command : undefined;
+    }
+
     #resolveInputs(task: Task): InputDefinition[] {
         const project = this.#projects[task.target.project];
         const targetConfig = project?.targets?.[task.target.target];
@@ -347,7 +465,7 @@ class InProcessTaskHasher implements TaskHasher {
                 continue;
             }
 
-            const resolved = input.fileset.replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
+            const resolved = normalizeFileset(input.fileset).replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
 
             if (resolved.startsWith("!")) {
                 patterns.push(
@@ -497,6 +615,26 @@ class InProcessTaskHasher implements TaskHasher {
         this.#fileHashCache.clear();
         this.#globalHash = undefined;
         this.#lockfileHasher?.clearCache();
+    }
+
+    /**
+     * Reads `filePath` fresh and returns its content hash, bypassing the
+     * in-memory cache used during the initial `hashTask` pass.
+     *
+     * Used to detect tasks that modify their own tracked inputs: compare
+     * a pre-execution hash (from `task.hashDetails.nodes`) against the
+     * post-execution result of this method.
+     * @param filePath Absolute path to the file.
+     * @returns The fresh xxh3 hash, or `undefined` if the file cannot be read.
+     */
+    public async rehashFile(filePath: string): Promise<string | undefined> {
+        try {
+            const content = await readFile(filePath);
+
+            return xxh3Hash(content);
+        } catch {
+            return undefined;
+        }
     }
 }
 

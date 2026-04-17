@@ -85,6 +85,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     }
 
     const taskHasher = new InProcessTaskHasher({
+        autoEnvVars: options.autoEnvVars,
         envVars: options.envVars,
         frameworkInference: options.frameworkInference,
         globalEnv: options.globalEnv,

@@ -154,6 +154,8 @@ Turborepo-compatible HTTP cache client.
 - `retrieve(hash, localCacheDirectory)` - Download from remote
 - `store(hash, localCacheDirectory)` - Upload to remote
 
+Options include `compression: "gzip" | "brotli"` (default `"gzip"` for Turborepo wire compatibility). Brotli reduces tarball size significantly on source-tree payloads but requires vis clients on both ends.
+
 ## Lockfile
 
 ### `LockfileHasher`
@@ -192,7 +194,42 @@ Smart lockfile parser that hashes per-package dependency versions.
 ## Run Summary
 
 - `generateRunSummary(results, taskGraph, startTime)` - Create summary
-- `writeRunSummary(summary, workspaceRoot)` - Write to disk
+- `writeRunSummary(summary, workspaceRoot)` - Write a timestamped JSON under `.task-runner/runs/`
+- `writeLastRunSummary(summary, workspaceRoot)` - Overwrite `.task-runner/last-summary.json` (one file, always latest)
+- `readLastRunSummary(workspaceRoot)` - Returns the last persisted summary or `undefined` if none
+- `getLastRunSummaryPath(workspaceRoot)` - Canonical path where the last-run summary lives
+
+The orchestrator writes `last-summary.json` automatically after every completed (non-aborted) run, so CLI integrations can render "last run details" without re-executing.
+
+## Log Reporter
+
+- `createLogReporter(mode, write?)` - Factory returning a `LogReporter`
+- `LogReporter` - Implements `LifeCycleInterface`; renders `printTaskTerminalOutput` per mode
+
+Modes:
+
+| Mode           | Behavior                                                              |
+| -------------- | --------------------------------------------------------------------- |
+| `interleaved`  | Pass-through — emit each task's buffered output verbatim              |
+| `labeled`      | Prefix every line with `[project#target]` so parallel tasks stay distinguishable |
+| `grouped`      | Wrap each task's output in a `── project#target ──` header + blank-line footer  |
+
+Matches vite-task's `--log` flag semantics. Pair with `CompositeLifeCycle` to keep your existing UI renderer alongside the log reporter.
+
+## Chrome Tracing Profile
+
+- `toChromeTrace(summary)` - Convert a `RunSummary` to a Chrome Tracing event array
+- `writeChromeTrace(summary, outputPath)` - Write the trace JSON to disk
+
+```typescript
+import { writeChromeTrace, generateRunSummary } from "@visulima/task-runner";
+
+const summary = generateRunSummary(results, taskGraph, startTime);
+await writeChromeTrace(summary, "trace.json");
+// Open in chrome://tracing or Perfetto to see the gantt.
+```
+
+Parallel tasks are packed into synthetic `tid` lanes via sweep-line scheduling, so the timeline reflects true concurrency even without real thread IDs. Dependency edges render as flow arrows between spans.
 
 ## Lifecycle
 
@@ -200,6 +237,16 @@ Smart lockfile parser that hashes per-package dependency versions.
 - `EmptyLifeCycle` - No-op implementation
 - `CompositeLifeCycle` - Combines multiple lifecycles
 
+Optional hooks on `LifeCycleInterface` (implement what you need):
+
+| Hook                            | When                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| `printCacheMiss(task, reasons)` | Auto-fingerprint cache miss, with diagnostic reason                                         |
+| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                              |
+| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace    |
+
 ## Types
 
-Key interfaces: `Task`, `TaskGraph`, `TaskResult`, `TaskRunnerOptions`, `TaskRunnerContext`, `ProjectGraph`, `ProjectConfiguration`, `TargetConfiguration`, `TaskHashDetails`, `InputDefinition`, `TaskFingerprint`, `CacheMissReason`, `RunSummary`, `DetectedFramework`, `ConcurrentCommandConfig`, `ConcurrentCommandInput`, `ConcurrentRunnerOptions`, `ConcurrentRunResult`, `ConcurrentCloseEvent`, `ProcessEvent`.
+Key interfaces: `Task`, `TaskGraph`, `TaskResult`, `TaskRunnerOptions`, `TaskRunnerContext`, `ProjectGraph`, `ProjectConfiguration`, `TargetConfiguration`, `TaskHashDetails`, `InputDefinition`, `FileSetInput`, `FileSetPattern`, `FileSetBase`, `TaskFingerprint`, `CacheMissReason`, `RunSummary`, `ChromeTraceEvent`, `LogMode`, `RemoteCacheCompression`, `DetectedFramework`, `ConcurrentCommandConfig`, `ConcurrentCommandInput`, `ConcurrentRunnerOptions`, `ConcurrentRunResult`, `ConcurrentCloseEvent`, `ProcessEvent`.
+
+`TaskResult` adds `selfModified?: boolean` and `emptyFingerprint?: boolean` flags when caching is skipped for those reasons. `TaskFingerprint` adds `modifiedInputs?: string[]` populated when the auto-fingerprint tracker sees both read and write accesses against the same workspace path.

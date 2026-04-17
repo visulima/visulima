@@ -176,4 +176,21 @@ describe(createTaskGraph, () => {
 
         expect(graph.roots).toContain("lib-a:build");
     });
+
+    it("does not propagate overrides to string-form dependsOn deps", () => {
+        expect.assertions(2);
+
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: { visForwardedArgs: ["--filter=foo"] },
+            target: { project: "app", target: "build" },
+        };
+
+        const graph = createTaskGraph([task], { projectGraph, workspace });
+
+        // Dep tasks are added via "^build" — they must not inherit overrides.
+        expect(graph.tasks["lib-a:build"]?.overrides).toEqual({});
+        expect(graph.tasks["lib-b:build"]?.overrides).toEqual({});
+    });
 });

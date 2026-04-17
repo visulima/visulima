@@ -83,3 +83,33 @@ import { generateRunSummary, writeRunSummary } from "@visulima/task-runner";
 const summary = generateRunSummary(results, taskGraph, startTime);
 const filePath = await writeRunSummary(summary, workspaceRoot);
 ```
+
+## Last-run replay (`last-summary.json`)
+
+The orchestrator writes a `.task-runner/last-summary.json` after every completed run regardless of whether `summarize` is enabled. It's a single overwritten file — always the most-recent run — designed for CLIs that want to show "last run details" without re-executing.
+
+```typescript
+import { readLastRunSummary } from "@visulima/task-runner";
+
+const previous = await readLastRunSummary(workspaceRoot);
+
+if (previous) {
+    console.log(`Last run: ${previous.stats.succeeded} succeeded, ${previous.stats.failed} failed`);
+}
+```
+
+`readLastRunSummary` returns `undefined` when no previous run exists or the file can't be parsed. Treat it as an informational lookup, not a hard dependency.
+
+Interrupted runs (Ctrl-C) are not persisted — the incomplete snapshot would mislead callers.
+
+## Chrome Tracing Profile
+
+For visual timeline analysis, convert a summary to Chrome Tracing JSON:
+
+```typescript
+import { writeChromeTrace } from "@visulima/task-runner";
+
+await writeChromeTrace(summary, "trace.json");
+```
+
+Open the file in `chrome://tracing` or [Perfetto](https://ui.perfetto.dev) to see a gantt of task execution with dependency arrows. Parallel tasks are packed into separate lanes automatically — useful for spotting over-serialized `dependsOn` chains.

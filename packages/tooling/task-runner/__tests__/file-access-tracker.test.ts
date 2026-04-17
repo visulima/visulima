@@ -140,6 +140,35 @@ describe(FileAccessTracker, () => {
 
             expect(result.output).toContain("test_value_123");
         });
+
+        it.skipIf(!new FileAccessTracker(tmpdir()).isSupported())("emits a write access when a file is modified", async () => {
+            expect.assertions(1);
+
+            const tracker = new FileAccessTracker(workspaceRoot);
+            const target = join(workspaceRoot, "out.txt");
+
+            // sh -c 'echo hi > out.txt' — openat(O_WRONLY|O_CREAT|O_TRUNC)
+            const result = await tracker.track(`sh -c 'echo hi > ${target}'`, { cwd: workspaceRoot });
+
+            expect(result.accesses.some((a) => a.path === target && a.type === "write")).toBe(true);
+        });
+
+        it.skipIf(!new FileAccessTracker(tmpdir()).isSupported())("records both read and write for a self-modifying command", async () => {
+            expect.assertions(2);
+
+            const tracker = new FileAccessTracker(workspaceRoot);
+            const target = join(workspaceRoot, "roundtrip.txt");
+
+            await writeFile(target, "before");
+
+            // Read the file then overwrite it in the same shell invocation.
+            const result = await tracker.track(`sh -c 'cat ${target} > /dev/null && echo after > ${target}'`, { cwd: workspaceRoot });
+
+            const types = new Set(result.accesses.filter((a) => a.path === target).map((a) => a.type));
+
+            expect(types.has("read")).toBe(true);
+            expect(types.has("write")).toBe(true);
+        });
     });
 
     describe("track on unsupported platform", () => {
@@ -184,6 +213,17 @@ describe(generatePreloadScript, () => {
         expect(script).toContain('"readFile"');
         expect(script).toContain('"stat"');
         expect(script).toContain('"readdir"');
+    });
+
+    it("should patch write-family methods", () => {
+        expect.assertions(4);
+
+        const script = generatePreloadScript("/tmp/log");
+
+        expect(script).toContain('"writeFileSync"');
+        expect(script).toContain('"appendFile"');
+        expect(script).toContain('"unlinkSync"');
+        expect(script).toContain('"renameSync"');
     });
 
     it("should flush on process exit", () => {
