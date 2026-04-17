@@ -130,6 +130,7 @@ export const chunkFiles = (files: ReadonlyArray<string>, fixedPrefixLength: numb
 export interface ExecCommandOptions {
     readonly cwd: string;
     readonly env?: Record<string, string>;
+
     /**
      * Signal delivered to the child process when `signal` fires. Defaults to `SIGTERM`
      * (graceful). Use `SIGKILL` for fast-fail runs where graceful shutdown is not
