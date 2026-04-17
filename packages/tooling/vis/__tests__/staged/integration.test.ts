@@ -841,7 +841,9 @@ describe("runStaged — integration", () => {
                         task: async () => {
                             active += 1;
                             maxActive = Math.max(maxActive, active);
-                            await new Promise((resolve) => setTimeout(resolve, 50));
+                            await new Promise((resolve) => {
+                                setTimeout(resolve, 50);
+                            });
                             active -= 1;
                         },
                         title: "slow-a",
@@ -850,7 +852,9 @@ describe("runStaged — integration", () => {
                         task: async () => {
                             active += 1;
                             maxActive = Math.max(maxActive, active);
-                            await new Promise((resolve) => setTimeout(resolve, 50));
+                            await new Promise((resolve) => {
+                                setTimeout(resolve, 50);
+                            });
                             active -= 1;
                         },
                         title: "slow-b",
@@ -908,7 +912,7 @@ describe("runStaged — integration", () => {
             ].join("\n"),
         );
 
-        const quote = (value: string): string => `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
+        const quote = (value: string): string => `"${value.replaceAll("\\", String.raw`\\`).replaceAll("\"", String.raw`\"`)}"`;
         const waitFor = async (predicate: () => boolean, timeoutMs: number): Promise<void> => {
             const deadline = Date.now() + timeoutMs;
 
@@ -917,7 +921,9 @@ describe("runStaged — integration", () => {
                     return;
                 }
 
-                await new Promise((resolve) => setTimeout(resolve, 20));
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 20);
+                });
             }
 
             throw new Error("Timed out waiting for condition.");
@@ -977,6 +983,66 @@ describe("runStaged — integration", () => {
         });
 
         expect(result.success).toBe(true);
+    });
+
+    it("--auto-stage stages new files that tasks create during the run", async () => {
+        expect.assertions(3);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "touched\n");
+        sh(["add", "a.txt"], root);
+
+        const result = await runStaged({
+            autoStage: true,
+            config: {
+                "*.txt": {
+                    task: () => {
+                        // Simulate a codegen task that writes a new artefact outside the originally-staged set.
+                        writeFileSync(join(root, "generated.txt"), "from task\n");
+                    },
+                    title: "generate",
+                },
+            },
+            cwd: root,
+            stash: false,
+        });
+
+        expect(result.success).toBe(true);
+        // The new file exists on disk.
+        expect(readFileSync(join(root, "generated.txt"), "utf8")).toBe("from task\n");
+        // `git status --porcelain` should show generated.txt as staged (A) not untracked (??).
+        expect(sh(["status", "--porcelain", "generated.txt"], root)).toMatch(/^A +generated\.txt$/);
+    });
+
+    it("leaves untracked files alone when --auto-stage is off", async () => {
+        expect.assertions(2);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "touched\n");
+        sh(["add", "a.txt"], root);
+
+        const result = await runStaged({
+            config: {
+                "*.txt": {
+                    task: () => {
+                        writeFileSync(join(root, "generated.txt"), "from task\n");
+                    },
+                    title: "generate",
+                },
+            },
+            cwd: root,
+            stash: false,
+        });
+
+        expect(result.success).toBe(true);
+        // Default: the new file stays untracked.
+        expect(sh(["status", "--porcelain", "generated.txt"], root)).toMatch(/^\?\? +generated\.txt$/);
     });
 
     it("--hide-all hides untracked files and restores them after the run", async () => {

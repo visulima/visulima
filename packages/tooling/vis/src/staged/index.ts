@@ -1,3 +1,5 @@
+import { isFsCaseSensitive } from "@visulima/fs";
+
 import { resolveConfig, validateConfig } from "./config";
 import { ApplyEmptyCommitError, StagedError } from "./errors";
 import { GitWorkflow } from "./git";
@@ -8,6 +10,21 @@ import { runTasks } from "./tasks/run";
 import type { RunOptions, RunResult } from "./types";
 
 const DEFAULT_CONCURRENT = true;
+
+/**
+ * True when the current cwd's filesystem is case-insensitive (HFS+/APFS on
+ * macOS default, NTFS on Windows). Resolved once per run so the probe cost
+ * stays off the hot path, then passed into the glob matcher to match
+ * lint-staged's `picomatch({ nocase: true })` behavior on those platforms.
+ */
+const detectCaseInsensitive = (cwd: string): boolean => {
+    try {
+        return !isFsCaseSensitive(cwd);
+    } catch {
+        // Probe failed (permission error, path gone); assume case-sensitive — the POSIX default.
+        return false;
+    }
+};
 
 /**
  * Runs staged tasks end-to-end: backup, hide unstaged, match files,
@@ -75,7 +92,8 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
             return { failedCommands: [], ranTasks: false, success: true };
         }
 
-        const candidateFiles = applyIgnore(workflow.stagedFiles, options.ignore, cwd);
+        const caseInsensitive = detectCaseInsensitive(cwd);
+        const candidateFiles = applyIgnore(workflow.stagedFiles, options.ignore, cwd, { caseInsensitive });
 
         if (candidateFiles.length === 0 && workflow.stagedFiles.length > 0) {
             renderer.info({ message: "Every staged file was excluded by the `ignore` list." });
@@ -87,6 +105,7 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
         const staticConfig = typeof resolvedConfig === "function" ? validateConfig(await resolvedConfig([...candidateFiles])) : resolvedConfig;
 
         const patterns = await buildTaskGraph({
+            caseInsensitive,
             config: staticConfig,
             cwd,
             files: candidateFiles,
@@ -117,7 +136,7 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
         if (success) {
             // `--diff` operates on a git range, not the index, so there's nothing to re-stage and no meaningful empty-commit check.
             if (options.diff === undefined) {
-                await workflow.applyModifications();
+                await workflow.applyModifications({ autoStage: options.autoStage === true });
 
                 if (options.failOnChanges === true && workflow.indexTreeChanged()) {
                     renderer.warn({ message: "Tasks modified staged content — failing because --fail-on-changes is set." });

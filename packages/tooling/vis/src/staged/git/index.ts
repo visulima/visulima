@@ -4,7 +4,7 @@ import { join, relative as relativePath } from "@visulima/path";
 
 import { GitError, RestoreOriginalStateError } from "../errors";
 import type { RunOptions } from "../types";
-import { capturePatch, checkoutPaths, getFiles, getIntentToAddPaths, getPartiallyStagedFiles, removeFromIndex, updateIndexAgain } from "./diff";
+import { capturePatch, checkoutPaths, getFiles, getIntentToAddPaths, getPartiallyStagedFiles, getUntrackedFiles, removeFromIndex, updateIndexAgain } from "./diff";
 import { assertGitVersion, getGitDirectory, getWorkTree, git, headTreeSha, isGitRepo, writeIndexTree } from "./exec";
 import { applyBackupStash, createBackupStash, createHideAllStash, dropBackupStash, popHideAllStash } from "./stash";
 
@@ -68,6 +68,9 @@ export class GitWorkflow {
     /** Paths that were `git add -N`'d (intent-to-add) — removed from the index before stashing, restored after. */
     private intentToAddPaths: string[] = [];
 
+    /** Untracked files observed at the end of `prepare()`. Diffed post-run to detect task-created files for `--autoStage`. */
+    private preTaskUntracked: ReadonlySet<string> = new Set();
+
     public constructor(options: RunOptions) {
         this.cwd = options.cwd ?? process.cwd();
         this.options = options;
@@ -122,6 +125,10 @@ export class GitWorkflow {
         this.preTaskIndexTree = this.stagedFiles.length === 0 ? "" : await writeIndexTree(this.workTree);
         this.postTaskIndexTree = this.preTaskIndexTree;
         this.headTree = await headTreeSha(this.workTree);
+
+        // Snapshot the untracked set so `applyModifications({ autoStage: true })` can diff before/after
+        // and stage only the files that tasks created during this run.
+        this.preTaskUntracked = new Set(await getUntrackedFiles(this.workTree));
     }
 
     /**
@@ -130,7 +137,7 @@ export class GitWorkflow {
      * Uses `git update-index --again` for parity with lint-staged v17,
      * which behaves correctly when the original commit used a pathspec.
      */
-    public async applyModifications(): Promise<void> {
+    public async applyModifications({ autoStage = false }: { readonly autoStage?: boolean } = {}): Promise<void> {
         if (this.stagedFiles.length === 0) {
             return;
         }
@@ -138,6 +145,22 @@ export class GitWorkflow {
         const worktreeRelative = this.stagedFiles.map((path) => relativePath(this.workTree, path));
 
         await updateIndexAgain(worktreeRelative, { cwd: this.workTree });
+
+        // --autoStage: diff untracked set vs pre-run and stage anything new.
+        // Only files that didn't exist as untracked before the run count — pre-existing untracked files stay untouched.
+        if (autoStage) {
+            const postUntracked = await getUntrackedFiles(this.workTree);
+            const newFiles = postUntracked.filter((path) => !this.preTaskUntracked.has(path));
+
+            if (newFiles.length > 0) {
+                const pathspec = `${newFiles.join("\u0000")}\u0000`;
+
+                await git(
+                    ["add", "--pathspec-from-file=-", "--pathspec-file-nul", "--"],
+                    { cwd: this.workTree, input: pathspec },
+                );
+            }
+        }
 
         // Intent-to-add paths were removed from the index in prepare() so the backup stash could serialise.
         // Re-mark them with `--intent-to-add` to preserve the user's original declaration — promoting them to a

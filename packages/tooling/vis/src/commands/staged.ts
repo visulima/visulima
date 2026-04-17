@@ -2,30 +2,16 @@ import type { Command } from "@visulima/cerebro";
 
 import type { RunOptions, StagedConfig } from "../staged";
 import { runStaged } from "../staged";
+import { CONCURRENT_ENV_VAR, parseConcurrent } from "../staged/cli-parse";
 
 type MutableRunOptions = { -readonly [K in keyof RunOptions]: RunOptions[K] };
-const CONCURRENT_ENV_VAR = "VIS_STAGED_CONCURRENT";
-
-const parseConcurrent = (value: string): boolean | number => {
-    if (value === "true" || value === "") {
-        return true;
-    }
-
-    if (value === "false") {
-        return false;
-    }
-
-    const parsed = Number(value);
-
-    return Number.isNaN(parsed) ? true : parsed;
-};
 
 /**
  * Translates the cerebro-parsed CLI options (kebab-case keys, string/boolean values)
  * into a strongly-typed `RunOptions` object. Only the flags the user passed are
  * forwarded — the rest fall through to `runStaged`'s own defaults.
  */
-const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfig | undefined): RunOptions => {
+export const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfig | undefined): RunOptions => {
     const options: MutableRunOptions = {};
 
     if (stagedConfig !== undefined) {
@@ -43,6 +29,12 @@ const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfi
 
     if (allowEmpty !== undefined) {
         options.allowEmpty = allowEmpty;
+    }
+
+    const autoStage = readBool("auto-stage");
+
+    if (autoStage !== undefined) {
+        options.autoStage = autoStage;
     }
 
     const continueOnError = readBool("continue-on-error");
@@ -137,14 +129,14 @@ const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfi
         options.killSignal = "SIGKILL";
     }
 
-    if (raw["concurrent"] !== undefined) {
-        options.concurrent = parseConcurrent(String(raw["concurrent"]));
-    } else {
+    if (raw["concurrent"] === undefined) {
         const envValue = process.env[CONCURRENT_ENV_VAR];
 
         if (envValue !== undefined) {
             options.concurrent = parseConcurrent(envValue.trim());
         }
+    } else {
+        options.concurrent = parseConcurrent(String(raw["concurrent"]));
     }
 
     return options;
@@ -187,6 +179,12 @@ const staged: Command = {
             defaultValue: false,
             description: "Allow empty commits when tasks revert all staged changes",
             name: "allow-empty",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Automatically stage new files that tasks create during the run",
+            name: "auto-stage",
             type: Boolean,
         },
         {

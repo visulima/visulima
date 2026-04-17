@@ -62,3 +62,33 @@ describe(applyIgnore, () => {
         expect(applyIgnore(files, ["*.test.ts", "docs/**"], cwd)).toEqual(["/repo/src/index.ts", "/repo/src/lib/util.ts", "/repo/package.json"]);
     });
 });
+
+describe("matchFiles — caseInsensitive", () => {
+    const cwdCase = "/repo";
+    const filesCase = ["/repo/src/Index.ts", "/repo/src/lib/Util.TS", "/repo/README.md"];
+
+    it("misses mixed-case extensions when caseInsensitive is off (default POSIX behavior)", () => {
+        expect.assertions(1);
+
+        // `.ts` matches, `.TS` doesn't — case-sensitive default drops the uppercase extension.
+        expect(matchFiles("*.ts", filesCase, cwdCase)).toEqual(["/repo/src/Index.ts"]);
+    });
+
+    it("matches regardless of case when caseInsensitive is on (macOS/Windows filesystems)", () => {
+        expect.assertions(1);
+
+        expect(matchFiles("*.ts", filesCase, cwdCase, { caseInsensitive: true })).toEqual(["/repo/src/Index.ts", "/repo/src/lib/Util.TS"]);
+    });
+
+    it("applies caseInsensitive to path-style globs as well", () => {
+        expect.assertions(1);
+
+        expect(matchFiles("SRC/**/*.TS", filesCase, cwdCase, { caseInsensitive: true })).toEqual(["/repo/src/Index.ts", "/repo/src/lib/Util.TS"]);
+    });
+
+    it("applies caseInsensitive to the ignore list", () => {
+        expect.assertions(1);
+
+        expect(applyIgnore(filesCase, ["*.MD"], cwdCase, { caseInsensitive: true })).toEqual(["/repo/src/Index.ts", "/repo/src/lib/Util.TS"]);
+    });
+});
