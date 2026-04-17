@@ -76,3 +76,4 @@ dist
 .claude/settings.local.json
 .playwright-mcp
 .soulforge
+.codex
