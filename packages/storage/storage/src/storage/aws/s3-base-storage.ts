@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
@@ -344,7 +345,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             const readable
                                 = part.body instanceof Readable
                                     ? part.body
-                                    : Readable.fromWeb(part.body as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
+                                    : Readable.fromWeb(part.body as unknown as NodeReadableStream<Uint8Array>);
 
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
 

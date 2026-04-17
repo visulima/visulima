@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { render, Text } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
@@ -88,7 +88,7 @@ describe("alternate screen", () => {
         await waitFor(() => stdout.getWrites().some((w) => w.includes("Secret Content")));
 
         // Clear the writes so we only see unmount-related output
-        (stdout.write as ReturnType<typeof import("vitest").vi.fn>).mockClear();
+        (stdout.write as ReturnType<typeof vi.fn>).mockClear();
 
         unmount();
 
@@ -136,7 +136,7 @@ describe("alternate screen", () => {
         const rendersBefore = renderCount;
 
         // Clear writes
-        (stdout.write as ReturnType<typeof import("vitest").vi.fn>).mockClear();
+        (stdout.write as ReturnType<typeof vi.fn>).mockClear();
 
         unmount();
 

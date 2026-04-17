@@ -1,5 +1,5 @@
 import type { Command } from "@visulima/cerebro";
-import type { Task, TaskTarget } from "@visulima/task-runner";
+import type { TargetConfiguration, Task, TaskTarget } from "@visulima/task-runner";
 import { createTaskGraph } from "@visulima/task-runner";
 
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
@@ -135,7 +135,7 @@ const actionGraph: Command = {
 
         const taskGraph = createTaskGraph(initialTasks, {
             projectGraph,
-            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<import("@visulima/task-runner").TargetConfiguration>>,
+            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
             workspace,
         });
 

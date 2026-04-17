@@ -6,7 +6,7 @@ import { detectMimeType, generateContentId, readFileAsBuffer } from "../src/atta
 
 vi.mock(import("@visulima/fs"), () => {
     return {
-        readFile: vi.fn<Parameters<typeof import("@visulima/fs").readFile>>(),
+        readFile: vi.fn<Parameters<typeof readFile>>(),
     };
 });
 

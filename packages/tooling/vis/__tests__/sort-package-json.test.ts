@@ -1,8 +1,10 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+import type { loadNativeBindings } from "../src/native-binding";
+
 // Native addon integration tests - only run if addon is compiled
 describe("sort-package-json native integration", () => {
-    let native: Awaited<ReturnType<typeof import("../src/native-binding").loadNativeBindings>>;
+    let native: Awaited<ReturnType<typeof loadNativeBindings>>;
 
     beforeAll(async () => {
         vi.resetModules();

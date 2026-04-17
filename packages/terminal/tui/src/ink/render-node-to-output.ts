@@ -6,6 +6,7 @@ import getMaxWidth from "./get-max-width";
 import { getAbsoluteContentPosition } from "./layout";
 import { calculateScrollbarLayout } from "./measure-element";
 import Output from "./output";
+import type { Region } from "./region";
 import renderBackground from "./render-background";
 import renderBorder from "./render-border";
 import { renderScrollbar } from "./render-scrollbar";
@@ -539,7 +540,7 @@ export const renderToStatic = (node: DOMElement, options?: { skipStaticElements?
     }
 
     // Create a Region from the rendered output for caching
-    const region: import("./region").Region = {
+    const region: Region = {
         children: [],
         cursorPosition: undefined,
         height,

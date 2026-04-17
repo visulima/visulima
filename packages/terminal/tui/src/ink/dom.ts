@@ -3,6 +3,7 @@ import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
 import measureText from "./measure-text";
+import type { Region } from "./region";
 import type { OutputTransformer } from "./render-node-to-output";
 import type ResizeObserver from "./resize-observer";
 import type { ScrollState } from "./scroll";
@@ -79,7 +80,7 @@ export type DOMElement = InkNode & {
      * skipped during rendering and the cached region is composited directly.
      * Set by setCachedRender(), cleared on unmount by cleanupNodeTree().
      */
-    cachedRender?: import("./region").Region;
+    cachedRender?: Region;
     childNodes: DOMNode[];
     internal_accessibility?: {
         role?:
@@ -447,7 +448,7 @@ export const emitLayoutListeners = (rootNode: DOMElement): void => {
  *
  * Ported from jacob314/ink (Google LLC, Apache-2.0).
  */
-export const setCachedRender = (node: DOMElement, cachedRender: import("./region").Region): void => {
+export const setCachedRender = (node: DOMElement, cachedRender: Region): void => {
     node.cachedRender = cachedRender;
 
     if (node.yogaNode) {

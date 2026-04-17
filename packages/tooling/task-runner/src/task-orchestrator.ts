@@ -11,7 +11,7 @@ import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
-import type { LifeCycleInterface, Task, TaskExecutor, TaskResult, TaskResults, TaskStatus } from "./types";
+import type { LifeCycleInterface, Task, TaskExecutor, TaskGraph, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
 
 /**
@@ -31,7 +31,7 @@ interface TaskOrchestratorOptions {
     skipCache?: boolean;
     summarize?: boolean;
     taskExecutor: TaskExecutor;
-    taskGraph?: import("./types").TaskGraph;
+    taskGraph?: TaskGraph;
     taskHasher: TaskHasher;
     untrackedEnvVars?: string[];
     workspaceRoot: string;
@@ -117,7 +117,7 @@ class TaskOrchestrator {
 
     readonly #summarize: boolean;
 
-    readonly #taskGraph: import("./types").TaskGraph | undefined;
+    readonly #taskGraph: TaskGraph | undefined;
 
     readonly #results: TaskResults = new Map();
 

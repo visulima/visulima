@@ -3,6 +3,7 @@ import { getStringWidth } from "@visulima/string";
 
 import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
 import { colorToAnsi256 } from "./color-utils";
+import type { Region } from "./region";
 import type { OutputTransformer } from "./render-node-to-output";
 import { FULL_WIDTH_MASK } from "./style-flags";
 import { StyledLine } from "./styled-line";
@@ -293,7 +294,7 @@ export default class Output {
         return this.clipStack.at(-1);
     }
 
-    addRegionTree(region: import("./region").Region, x: number, y: number): void {
+    addRegionTree(region: Region, x: number, y: number): void {
         for (let ry = 0; ry < region.height; ry++) {
             const targetY = y + ry;
 

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { BaseStorage } from "../../src/storage/storage";
 import type { MediaTransformerConfig } from "../../src/transformer";
 import MediaTransformer from "../../src/transformer/media-transformer";
+import type { MediaTransformQuery } from "../../src/transformer/types";
 
 // Mock storage
 const mockStorage = {
@@ -351,7 +352,7 @@ describe(MediaTransformer, () => {
                 // Should not throw for valid image parameters
                 expect(() => {
                     (
-                        transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateImageQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).not.toThrow();
             });
@@ -367,7 +368,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateImageQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).toThrow(
                     "Invalid query parameters for image transformation: codec, sampleRate. " +
@@ -385,7 +386,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateImageQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).toThrow('Invalid fit value: "invalid". Supported values: "cover", "contain", "fill", "inside", "outside"');
             });
@@ -400,7 +401,7 @@ describe(MediaTransformer, () => {
                 // Angle validation was removed, so any angle should be accepted
                 expect(() => {
                     (
-                        transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateImageQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).not.toThrow();
             });
@@ -416,7 +417,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateImageQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateImageQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateImageQueryParameters(query);
                 }).toThrow("Incomplete crop parameters: left, top. All crop parameters must be provided: left, top, cropWidth, cropHeight");
             });
@@ -437,7 +438,7 @@ describe(MediaTransformer, () => {
                 // Should not throw for valid video parameters
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).not.toThrow();
             });
@@ -453,7 +454,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow(
                     "Invalid query parameters for video transformation: numberOfChannels, sampleRate. " +
@@ -471,7 +472,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow('Invalid codec for video: "invalid". Supported codecs: avc, hevc, vp8, vp9, av1');
             });
@@ -485,7 +486,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow('Invalid format for video: "jpg". Supported formats: mp4, webm, mkv, ogg');
             });
@@ -499,7 +500,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow("Invalid width: -100. Must be a positive number.");
             });
@@ -513,7 +514,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateVideoQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateVideoQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateVideoQueryParameters(query);
                 }).toThrow("Invalid bitrate: 0. Must be a positive number.");
             });
@@ -534,7 +535,7 @@ describe(MediaTransformer, () => {
                 // Should not throw for valid audio parameters
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).not.toThrow();
             });
@@ -551,7 +552,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow(
                     "Invalid query parameters for audio transformation: angle, height, width. " +
@@ -569,7 +570,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow('Invalid codec for audio: "invalid". Supported codecs: aac, opus, mp3, vorbis, flac');
             });
@@ -583,7 +584,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow('Invalid format for audio: "mp4". Supported formats: mp3, wav, ogg, aac, flac');
             });
@@ -597,7 +598,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow("Invalid sampleRate: 12345. Supported sample rates: 8000, 11025, 16000, 22050, 32000, 44100, 48000, 88200, 96000, 192000");
             });
@@ -611,7 +612,7 @@ describe(MediaTransformer, () => {
 
                 expect(() => {
                     (
-                        transformer as unknown as { validateAudioQueryParameters: (query: import("../../src/transformer/types").MediaTransformQuery) => void }
+                        transformer as unknown as { validateAudioQueryParameters: (query: MediaTransformQuery) => void }
                     ).validateAudioQueryParameters(query);
                 }).toThrow("Invalid numberOfChannels: 10. Must be a number between 1 and 8.");
             });

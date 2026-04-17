@@ -7,7 +7,7 @@
  * to match the inspector's rendering approach.
  */
 
-import type { Annotation, AnnotationIntent, AnnotationSeverity, CreateAnnotationData } from "../../types/annotations";
+import type { Annotation, AnnotationIntent, AnnotationSeverity, BoundingBox, CreateAnnotationData } from "../../types/annotations";
 import type { MarkerColor } from "./annotation-settings";
 import { getMarkerColor, loadSettings } from "./annotation-settings";
 import {
@@ -1160,7 +1160,7 @@ export const showAnnotationForm = (
  * Show annotation form for a multi-select (drag) region.
  * Creates a single annotation covering multiple elements.
  */
-export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect, boundingBoxes: import("../../types/annotations").BoundingBox[]): void => {
+export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect, boundingBoxes: BoundingBox[]): void => {
     removeAnnotationForm();
     removeAnnotationDetail();
 

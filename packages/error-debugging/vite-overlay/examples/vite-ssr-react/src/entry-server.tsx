@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
-import { type RenderToPipeableStreamOptions, renderToPipeableStream } from "react-dom/server";
+import type { RenderToPipeableStreamOptions } from "react-dom/server";
+import { renderToPipeableStream } from "react-dom/server";
 import App from "./App";
 
 /*

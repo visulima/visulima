@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -95,7 +96,7 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
             return;
         }
 
-        let entries: import("node:fs").Dirent<string>[];
+        let entries: Dirent<string>[];
 
         try {
             entries = await fs.readdir(directory, { encoding: "utf8", withFileTypes: true });

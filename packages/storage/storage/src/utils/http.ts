@@ -1,5 +1,6 @@
 import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import typeis, { hasBody } from "type-is";
 
@@ -303,7 +304,7 @@ export const getRequestStream = (request: IncomingMessage | Request): Readable =
     // Check if it's a Web API Request with ReadableStream body
     if ("body" in request && request.body && typeof (request.body as ReadableStream).getReader === "function") {
         // Web API ReadableStream - convert to Node.js Readable
-        return Readable.fromWeb(request.body as unknown as import("node:stream/web").ReadableStream);
+        return Readable.fromWeb(request.body as unknown as NodeReadableStream);
     }
 
     // Check if request has body property with buffer data (converted Web API request)
