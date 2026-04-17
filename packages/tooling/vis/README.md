@@ -88,23 +88,25 @@ vis hook install
 
 ## Commands
 
-| Command                 | Alias | Description                                                          |
-| ----------------------- | ----- | -------------------------------------------------------------------- |
-| `vis create [template]` |       | Scaffold a new project from templates, npm packages, or git repos    |
-| `vis init`              |       | Initialize vis.config.ts with security defaults                      |
-| `vis run <target>`      |       | Run a target across workspace projects with caching                  |
-| `vis affected <target>` |       | Run tasks only on projects affected by git changes                   |
-| `vis ignore <project>`  |       | CI build gating for Vercel / Netlify "Ignored Build Step"            |
-| `vis graph`             |       | Visualize the project dependency graph                               |
-| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs                |
-| `vis update [packages]` | `up`  | Update packages to their latest versions                             |
-| `vis install`           | `i`   | Install dependencies via the detected package manager                |
-| `vis dlx <package>`     |       | Execute a remote package without permanent installation              |
-| `vis audit`             |       | Audit dependencies for security vulnerabilities                      |
-| `vis clean`             |       | Remove build artifacts, caches, and node_modules                     |
-| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                       |
-| `vis secrets [paths]`   |       | Scan for hardcoded secrets / credentials (Rust-native)               |
-| `vis migrate <type>`    |       | Migrate from other tools — now including `gitleaks` and `secretlint` |
+| Command                 | Alias  | Description                                                          |
+| ----------------------- | ------ | -------------------------------------------------------------------- |
+| `vis create [template]` |        | Scaffold a new project from templates, npm packages, or git repos    |
+| `vis init`              |        | Initialize vis.config.ts with security defaults                      |
+| `vis run <target>`      |        | Run a target across workspace projects with caching                  |
+| `vis affected <target>` |        | Run tasks only on projects affected by git changes                   |
+| `vis ignore <project>`  |        | CI build gating for Vercel / Netlify "Ignored Build Step"            |
+| `vis graph`             |        | Visualize the project dependency graph                               |
+| `vis check [packages]`  | `c`    | Check for outdated dependencies in workspace catalogs                |
+| `vis update [packages]` | `up`   | Update packages to their latest versions                             |
+| `vis install`           | `i`    | Install dependencies via the detected package manager                |
+| `vis info <package>`    | `view` | Show npm registry metadata for a package (wraps `npm view` et al.)   |
+| `vis dlx <package>`     |        | Execute a remote package without permanent installation              |
+| `vis audit`             |        | Audit dependencies for security vulnerabilities                      |
+| `vis clean`             |        | Remove build artifacts, caches, and node_modules                     |
+| `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                       |
+| `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)               |
+| `vis staged`            |        | Run tasks on staged files (built-in `lint-staged` replacement)       |
+| `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint` |
 
 For `vis ignore`, see the [command reference](./docs/commands/ignore.mdx) and the [deployment build gating section](./docs/guides/ci-cd.mdx#deployment-build-gating) of the CI/CD guide.
 
@@ -159,6 +161,69 @@ vis migrate secretlint   # removes @secretlint/*, rewrites scripts/hooks, notes 
 ```
 
 Every destructive step writes a `.bak` sidecar first and prompts for confirmation (skip with `-y`). Dry-run previews are available via `--dry-run`.
+
+### Running tasks on staged files
+
+`vis staged` is a built-in replacement for `lint-staged` — the same config shape, no peer dependency, and an integrated task renderer. Requires Git ≥ 2.32.
+
+Declare the patterns and tasks under `staged` in `vis.config.ts`:
+
+```ts
+// vis.config.ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    staged: {
+        "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+        "*.md": "prettier --write",
+        "package.json": (files) => `sort-package-json ${files.join(" ")}`,
+    },
+});
+```
+
+Each key is a glob (basename or path-style — path-style matches resolve relative to `cwd`). Each value is one of:
+
+- a command string — split into argv, invoked with matched files appended;
+- a `string[]` array — commands run serially for that pattern;
+- a function `(files) => string | string[] | {title, task}` — generate dynamic commands or a custom task;
+- a `{ title, task }` object — runs `task(files)` with no argv construction, useful for in-process side effects.
+
+An external config file is also supported via `--config <path>` — JSON, YAML (`.yaml`/`.yml`/`.lintstagedrc`), or JS/TS (via jiti).
+
+#### Command-line flags
+
+```sh
+vis staged                          # run tasks on the current staged set
+vis staged --verbose                # show stdout/stderr on success as well as failure
+vis staged --no-stash               # skip the backup stash (faster, but no recovery on failure)
+vis staged --diff HEAD~1            # operate on a range instead of `--staged`
+vis staged --diff-filter=ACM        # override the default ACMR filter
+vis staged --concurrent 4           # cap parallel pattern execution
+vis staged --continue-on-error      # don't short-circuit on the first failure
+vis staged --fail-on-changes        # non-zero exit if tasks modified staged content
+vis staged --hide-unstaged          # hide all unstaged edits on tracked files
+vis staged --hide-all               # hide unstaged edits AND untracked files
+vis staged --relative               # pass paths relative to cwd to tasks
+vis staged --revert                 # restore pre-task state on failure
+vis staged --allow-empty            # allow a commit when tasks revert everything
+vis staged --config ./path/to/.lintstagedrc.yaml
+```
+
+#### How it behaves
+
+1. A hidden backup stash is created (via `git stash create` + `git stash store`, so the working tree is untouched).
+2. For partially-staged files, the unstaged delta is captured as a patch and the working tree is reset to the staged content. `--hide-all` extends this to every unstaged change *and* untracked files via a single `git stash push --include-untracked`.
+3. Tasks run — patterns in parallel (capped at `os.availableParallelism()` by default), commands within a pattern serially.
+4. Task-driven edits are re-staged with `git update-index --again` (with a `git add -u` fallback for deletions), so commits made via pathspec (`git commit -m "…" .`) keep working.
+5. The unstaged patch — or the hide-all stash — is re-applied and the backup stash is dropped on success. On failure without `--revert`, the backup stash is preserved and the recovery sha is surfaced to the user. Ctrl+C aborts in-flight commands and still runs the restore path; a second Ctrl+C exits immediately.
+
+#### Migrating from lint-staged
+
+```sh
+vis migrate lint-staged    # moves the config into vis.config.ts and rewrites hooks
+```
+
+The migrator detects `package.json` keys, `.lintstagedrc*` files, and `lint-staged.config.*`, prompts before rewriting husky/vis hooks to call `vis staged`, and removes `lint-staged` from the dependency list.
 
 ## Documentation
 
