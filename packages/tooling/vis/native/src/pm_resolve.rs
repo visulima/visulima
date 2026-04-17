@@ -1153,11 +1153,32 @@ pub fn resolve_pm_command(
         }
     }
 
-    // view/info
+    // view/info — registry metadata lookup. Each PM spells it differently:
+    //   npm/pnpm  → `<pm> view <extra>`      (both also accept `info` as alias)
+    //   yarn v1   → `yarn info <extra>`      (no `view` subcommand)
+    //   yarn v2+  → `yarn npm info <extra>`  (bare `yarn view` does not exist in berry)
+    //   bun       → `bun pm view <extra>`    (two-word subcommand; bun ≥ 1.3)
     if subcommand == "view" || subcommand == "info" {
-        let cmd = if pm == "yarn" && version.starts_with("1.") { "info" } else { "view" };
-        args.push(cmd.into());
-        args.extend(extra_args);
+        match pm.as_str() {
+            "yarn" => {
+                if version.starts_with("1.") {
+                    args.push("info".into());
+                } else {
+                    args.push("npm".into());
+                    args.push("info".into());
+                }
+                args.extend(extra_args);
+            }
+            "bun" => {
+                args.push("pm".into());
+                args.push("view".into());
+                args.extend(extra_args);
+            }
+            _ => {
+                args.push("view".into());
+                args.extend(extra_args);
+            }
+        }
         return Ok(ResolvedCommand { bin: pm, args, warnings });
     }
 

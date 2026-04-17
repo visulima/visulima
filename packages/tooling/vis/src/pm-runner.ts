@@ -6,6 +6,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, parse as parsePath } from "node:path";
 
+import { coerce, lt } from "semver";
+
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "./native-binding";
 import { loadNativeBindings } from "./native-binding";
 
@@ -160,6 +162,102 @@ const runWhy = (pm: PmInfo, options: WhyOptions, cwd: string, logger: Console): 
 const runOutdated = (pm: PmInfo, options: OutdatedOptions, cwd: string, logger: Console): number =>
     resolveAndRun((native) => native.resolveOutdated(pm.name, pm.version, options), cwd, logger);
 
+interface InfoOptions {
+    fields: string[];
+    json: boolean;
+    package: string;
+}
+
+/**
+ * Resolves a registry metadata lookup to a runnable command. Built in TS
+ * rather than the Rust resolver because bun needs `pm view` (two-word
+ * subcommand) and yarn berry needs `yarn npm info` — both shapes the existing
+ * `resolve_pm_command` view branch gets wrong.
+ *
+ * Pure function — exported for unit testing.
+ */
+const resolveInfo = (pm: PmInfo, options: InfoOptions): ResolvedCommand => {
+    const args: string[] = [];
+    const warnings: string[] = [];
+    const bin = pm.name;
+
+    // `--` is a POSIX argv "end of options" marker. Every PM's view/info
+    // subcommand respects it. Inserting it before the user-supplied package
+    // name prevents a name starting with `-` (e.g. `-rf`, `--registry=...`)
+    // from being reinterpreted as a flag by the underlying tool.
+    switch (pm.name) {
+        case "bun": {
+            // `bun pm view` landed in bun 1.3. Older bun has no registry-info command;
+            // warn the user and let bun exit with its own "unknown subcommand" error.
+            const coerced = coerce(pm.version);
+
+            if (coerced && lt(coerced, "1.3.0")) {
+                warnings.push(
+                    `bun ${pm.version} does not support \`bun pm view\` (added in bun 1.3). Upgrade bun, or run \`npm view ${options.package}\` instead.`,
+                );
+            }
+
+            args.push("pm", "view", "--", options.package, ...options.fields);
+
+            if (options.json) {
+                args.push("--json");
+            }
+
+            break;
+        }
+        case "npm":
+        case "pnpm": {
+            args.push("view", "--", options.package, ...options.fields);
+
+            if (options.json) {
+                args.push("--json");
+            }
+
+            break;
+        }
+        case "yarn": {
+            if (pm.version.startsWith("1.")) {
+                args.push("info", "--", options.package);
+
+                const [firstField, ...rest] = options.fields;
+
+                if (firstField !== undefined) {
+                    if (rest.length > 0) {
+                        warnings.push("yarn v1 only supports querying one field at a time; using the first.");
+                    }
+
+                    args.push(firstField);
+                }
+
+                if (options.json) {
+                    args.push("--json");
+                }
+            } else {
+                args.push("npm", "info", "--", options.package);
+
+                if (options.fields.length > 0) {
+                    warnings.push("yarn berry does not support field arguments to 'npm info'; ignoring.");
+                }
+
+                if (options.json) {
+                    args.push("--json");
+                }
+            }
+
+            break;
+        }
+        default: {
+            const exhaustive: never = pm.name;
+
+            throw new Error(`Unsupported package manager: ${exhaustive as string}`);
+        }
+    }
+
+    return { args, bin, warnings };
+};
+
+const runInfo = (pm: PmInfo, options: InfoOptions, cwd: string, logger: Console): number => runResolved(resolveInfo(pm, options), cwd, logger);
+
 /**
  * Resolves and runs a PM `link` operation. Passes `pm.version` to the native
  * resolver so it can warn about pnpm v11 restrictions (arg-less link and
@@ -181,5 +279,5 @@ const runExec = (pm: PmInfo, options: ExecOptions, cwd: string, logger: Console)
 const runPmSubcommand = (pm: PmInfo, subcommand: string, args: string[], cwd: string, logger: Console): number =>
     resolveAndRun((native) => native.resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger);
 
-export type { PmInfo };
-export { detectPm, runAdd, runDedupe, runDlx, runExec, runInstall, runLink, runOutdated, runPmSubcommand, runRemove, runUnlink, runWhy };
+export type { InfoOptions, PmInfo };
+export { detectPm, resolveInfo, runAdd, runDedupe, runDlx, runExec, runInfo, runInstall, runLink, runOutdated, runPmSubcommand, runRemove, runUnlink, runWhy };
