@@ -40,19 +40,49 @@ vis run test --watch                                      # Rerun on file change
 
 ## Options
 
-| Option               | Alias | Default | Description                                             |
-| -------------------- | ----- | ------- | ------------------------------------------------------- |
-| `--projects`         | `-p`  | all     | Comma-separated list of projects to run                 |
-| `--parallel`         |       | `3`     | Maximum number of parallel tasks                        |
-| `--cache`            |       | `true`  | Enable caching (`--no-cache` to disable)                |
-| `--cache-dir`        |       |         | Custom cache directory                                  |
-| `--dry-run`          |       | `false` | Show what would run without executing                   |
-| `--summarize`        |       | `false` | Generate a JSON run summary                             |
-| `--partition`        |       |         | Partition for distributed CI (e.g. `1/4`)               |
-| `--skip-constraints` |       | `false` | Skip project constraint validation                      |
-| `--query`            |       |         | Filter by query (e.g. `language=typescript && tag=lib`) |
-| `--watch`            |       | `false` | Rerun on file change (Ctrl+C to exit)                   |
-| `--flaky`            |       | `true`  | Show flaky report on failure (`--no-flaky` to suppress) |
+| Option               | Alias | Default | Description                                                                                  |
+| -------------------- | ----- | ------- | -------------------------------------------------------------------------------------------- |
+| `--projects`         | `-p`  | all     | Comma-separated list of projects to run                                                      |
+| `--parallel`         |       | `3`     | Maximum number of parallel tasks                                                             |
+| `--cache`            |       | `true`  | Enable caching (`--no-cache` to disable)                                                     |
+| `--cache-dir`        |       |         | Custom cache directory                                                                       |
+| `--dry-run`          |       | `false` | Show what would run without executing                                                        |
+| `--summarize`        |       | `false` | Generate a JSON run summary                                                                  |
+| `--partition`        |       |         | Partition for distributed CI (e.g. `1/4`)                                                    |
+| `--skip-constraints` |       | `false` | Skip project constraint validation                                                           |
+| `--query`            |       |         | Filter by query (e.g. `language=typescript && tag=lib`)                                      |
+| `--watch`            |       | `false` | Rerun on file change (Ctrl+C to exit)                                                        |
+| `--flaky`            |       | `true`  | Show flaky report on failure (`--no-flaky` to suppress)                                      |
+| `--log`              |       |         | Output mode: `interleaved`, `labeled` (`[pkg#task]` prefixes), or `grouped` (buffered block) |
+| `--pty`              |       | `false` | Run every task through a PTY so color-aware tools render as if attached to a TTY             |
+| `--retry-budget`     |       |         | Global cap on total retries across the run (per-target `retryCount` is honored up to budget) |
+| `--profile`          |       |         | Write a Chrome Tracing JSON of the run to this path (open in chrome://tracing or Perfetto)   |
+
+### Positional args after the target
+
+Extra arguments past the target name are forwarded **only** to the user-invoked target, not to `dependsOn` dependencies:
+
+```bash
+vis run test --reporter=verbose    # forwards --reporter=verbose to the test task only
+```
+
+`build` deps triggered by `test` do not receive the args.
+
+### Interactive target picker
+
+Running `vis run` with no target in a TTY launches a readline numbered picker:
+
+```
+$ vis run
+Available targets:
+   1. build
+   2. lint
+   3. test
+
+Select a target (number or name, blank to cancel):
+```
+
+The chosen target is appended to your shell history so up-arrow replays it verbatim (bash / zsh / fish; set `VIS_NO_SHELL_HISTORY=1` to disable). Non-TTY sessions keep the list-and-hint behavior.
 
 ## Query Language
 
@@ -105,22 +135,95 @@ Targets in `project.json` support vis-specific options:
 
 ### Available Options
 
-| Option                 | Type                                 | Default         | Description                                                          |
-| ---------------------- | ------------------------------------ | --------------- | -------------------------------------------------------------------- |
-| `persistent`           | `boolean`                            | `false`         | Long-running process, run last, never cached                         |
-| `interactive`          | `boolean`                            | `false`         | Claims stdin, serialized execution                                   |
-| `internal`             | `boolean`                            | `false`         | Hidden from CLI, only invoked as a dependency                        |
-| `runInCI`              | `boolean \| "affected" \| "always"`  | `true`          | Whether to run in CI environments                                    |
-| `retryCount`           | `number`                             | `0`             | Auto-retry on failure                                                |
-| `retryDelay`           | `number \| "exponential"`            | `"exponential"` | Delay between retries                                                |
-| `affectedFiles`        | `false \| "args" \| "env" \| "both"` | `false`         | Forward changed files to task                                        |
-| `envFile`              | `string`                             |                 | Dotenv file to load (relative to project root)                       |
-| `mutex`                | `string`                             |                 | Named lock for serializing tasks                                     |
-| `osType`               | `string \| string[]`                 |                 | Restrict to Linux (`linux`), macOS (`macos`), or Windows (`windows`) |
-| `runFromWorkspaceRoot` | `boolean`                            | `false`         | Use workspace root as CWD                                            |
-| `shell`                | `string`                             |                 | Per-target shell override                                            |
-| `unixShell`            | `string`                             |                 | Shell override for Linux/macOS                                       |
-| `windowsShell`         | `string`                             |                 | Shell override for Windows                                           |
+| Option                 | Type                                    | Default         | Description                                                                        |
+| ---------------------- | --------------------------------------- | --------------- | ---------------------------------------------------------------------------------- |
+| `persistent`           | `boolean`                               | `false`         | Long-running process, run last, never cached                                       |
+| `interactive`          | `boolean`                               | `false`         | Claims stdin, serialized execution                                                 |
+| `internal`             | `boolean`                               | `false`         | Hidden from CLI, only invoked as a dependency                                      |
+| `pty`                  | `boolean`                               | `false`         | Run through a pseudo-terminal so colour-aware tools render as if attached to a TTY |
+| `runInCI`              | `boolean \| "affected" \| "always"`     | `true`          | Whether to run in CI environments                                                  |
+| `retryCount`           | `number`                                | `0`             | Auto-retry on failure                                                              |
+| `retryDelay`           | `number \| "exponential"`               | `"exponential"` | Delay between retries                                                              |
+| `affectedFiles`        | `false \| "args" \| "env" \| "both"`    | `false`         | Forward changed files to task                                                      |
+| `envFile`              | `boolean \| string \| string[]`         |                 | Dotenv file(s) — see [env file layering](#env-file-layering)                       |
+| `mutex`                | `string`                                |                 | Named lock for serializing tasks                                                   |
+| `osType`               | `string \| string[]`                    |                 | Restrict to Linux (`linux`), macOS (`macos`), or Windows (`windows`)               |
+| `runFromWorkspaceRoot` | `boolean`                               | `false`         | Use workspace root as CWD                                                          |
+| `shell`                | `string`                                |                 | Per-target shell override                                                          |
+| `unixShell`            | `string`                                |                 | Shell override for Linux/macOS                                                     |
+| `when`                 | see [Task conditions](#task-conditions) |                 | Declarative gate — skip the task unless the condition matches                      |
+| `windowsShell`         | `string`                                |                 | Shell override for Windows                                                         |
+
+### Task metadata
+
+Targets support optional metadata fields rendered by `vis list`:
+
+```json
+{
+    "targets": {
+        "test": {
+            "command": "vitest run",
+            "description": "Run unit + integration tests",
+            "aliases": ["t", "spec"]
+        }
+    }
+}
+```
+
+- `description` — one-liner shown in `vis list` and future per-task `--help`.
+- `aliases` — alternate target names resolved before the selector runs. `vis run t` resolves to `test`. Aliases are workspace-global; the first declaration wins on conflict.
+
+### Env file layering
+
+`envFile` accepts three shapes:
+
+```json
+{ "envFile": ".env.local" }                       // single file
+{ "envFile": [".env", ".env.local"] }              // array — later entries override earlier
+{ "envFile": true }                                // auto-cascade
+```
+
+Auto-cascade (`true`) loads in Next.js order: `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`. `.env.local` is skipped when `NODE_ENV=test` to avoid leaking CI secrets into tests.
+
+### Task conditions
+
+The `when` option skips a task unless the condition holds. Kept declarative on purpose — no dynamic code execution.
+
+```json
+{
+    "targets": {
+        "release": {
+            "command": "pnpm publish",
+            "options": { "when": "$CI" }
+        },
+        "dev-only": {
+            "command": "node scripts/dev.mjs",
+            "options": { "when": "!CI" }
+        },
+        "mac-codesign": {
+            "command": "codesign ...",
+            "options": { "when": { "platform": "darwin" } }
+        },
+        "prod-only": {
+            "command": "pnpm build",
+            "options": { "when": { "env": "NODE_ENV", "equals": "production" } }
+        }
+    }
+}
+```
+
+Shapes:
+
+| `when`               | Matches when…                     |
+| -------------------- | --------------------------------- |
+| `"$VAR"`             | `process.env.VAR` is non-empty    |
+| `"!VAR"`             | `process.env.VAR` is empty/unset  |
+| `"VAR"`              | same as `"$VAR"`                  |
+| `{ env, equals }`    | `process.env[env] === equals`     |
+| `{ env, in: [...] }` | `process.env[env]` is in the list |
+| `{ env }`            | `process.env[env]` is non-empty   |
+| `{ platform }`       | `process.platform` matches        |
+| `{ env, platform }`  | both conditions match             |
 
 ### Task Types
 

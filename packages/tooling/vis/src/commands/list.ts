@@ -1,6 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
 import { filterProjectsByQuery } from "../selectors";
+import type { VisTargetConfiguration } from "../target-options";
 import type { VisProjectConfiguration } from "../workspace";
 import { discoverWorkspace } from "../workspace";
 
@@ -16,7 +17,7 @@ const list: Command = {
             throw new Error("Could not determine workspace root.");
         }
 
-        const { workspace } = discoverWorkspace(wsRoot, visConfig);
+        const { projectOptions, workspace } = discoverWorkspace(wsRoot, visConfig);
         let projectNames = Object.keys(workspace.projects).sort();
 
         if (options.query) {
@@ -32,6 +33,18 @@ const list: Command = {
         if (options.json) {
             const data = projectNames.map((name) => {
                 const project = workspace.projects[name] as VisProjectConfiguration;
+                const visTargets = projectOptions.get(name) ?? {};
+                const targets = Object.entries(project.targets ?? {}).map(([targetName]) => {
+                    const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+
+                    return {
+                        aliases: visTarget?.aliases ?? [],
+                        command: visTarget?.command,
+                        description: visTarget?.description,
+                        name: targetName,
+                        type: visTarget?.type,
+                    };
+                });
 
                 return {
                     language: project.language,
@@ -40,7 +53,7 @@ const list: Command = {
                     root: project.root,
                     stack: project.stack,
                     tags: project.tags ?? [],
-                    targets: Object.keys(project.targets ?? {}),
+                    targets,
                     type: project.projectType ?? "library",
                 };
             });

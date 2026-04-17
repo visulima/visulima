@@ -7,6 +7,7 @@ import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@v
 import { dirname, join } from "@visulima/path";
 import { createJiti } from "jiti";
 
+import type { VisPlugin } from "./hooks";
 import type { VisConfig } from "./workspace";
 
 /** Supported config file names, checked in order. */
@@ -230,4 +231,12 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
  */
 const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 
-export { applyDefaults, CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS };
+/**
+ * Type-safe helper for defining a vis plugin. Pure identity — exists
+ * only so plugin authors get inference from the `VisPlugin` contract
+ * without needing a `satisfies` annotation.
+ */
+const definePlugin = (plugin: VisPlugin): VisPlugin => plugin;
+
+export type { VisHooks, VisPlugin } from "./hooks";
+export { applyDefaults, CONFIG_FILES, defineConfig, definePlugin, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS };

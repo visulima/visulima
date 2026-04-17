@@ -32,7 +32,7 @@
         "configuration",
         {
             "title": "Guides",
-            "pages": ["guides/best-practices", "guides/ci-cd", "guides/git-hooks"]
+            "pages": ["guides/best-practices", "guides/ci-cd", "guides/git-hooks", "guides/plugins"]
         }
     ]
 }

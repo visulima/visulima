@@ -1,4 +1,4 @@
-import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
+import type { LifeCycleInterface, LogReporter, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 import { renderToString, Text } from "@visulima/tui";
 import React from "react";
 
@@ -12,6 +12,13 @@ interface StaticOutputOptions {
     args: {
         targets: string[];
     };
+
+    /**
+     * Optional {@link LogReporter} that takes over `printTaskTerminalOutput`
+     * when the user picks a `--log` mode. Absent, the CI-style
+     * separator+status formatting is kept (vis's default).
+     */
+    logReporter?: LogReporter;
     projectNames: string[];
     tasks: Task[];
 }
@@ -33,12 +40,15 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
 
     readonly #allCompletedTasks = new Map<string, TaskResult>();
 
+    readonly #logReporter: LogReporter | undefined;
+
     #commandStartTime = 0;
 
     public constructor(options: StaticOutputOptions) {
         this.#projectNames = options.projectNames;
         this.#targets = options.args.targets;
         this.#tasks = options.tasks;
+        this.#logReporter = options.logReporter;
     }
 
     public startCommand(): void {
@@ -108,6 +118,12 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     }
 
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
+        if (this.#logReporter) {
+            this.#logReporter.printTaskTerminalOutput(task, status, terminalOutput);
+
+            return;
+        }
+
         logCommandOutputCI(task.id, status, terminalOutput);
     }
 

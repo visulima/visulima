@@ -138,12 +138,19 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
     // total rows - VIS header(1) - tabs(1) - description+margin(2) - editor border(2) - section header(1) - footer(2) = 9
     const listViewportHeight = Math.max(1, rows - 9);
 
-    // Keep selected item in view (scroll-follow)
+    // Keep selected item in view (scroll-follow).
+    // `listScrollOffset` is not pure-derived state: the next offset
+    // depends on the **previous** offset plus the current field index
+    // (sticky-in-view scrolling). useMemo during render can't express
+    // this because it has no access to the prior value, and the
+    // interaction is cheap enough that a ref-based trick isn't worth
+    // the readability cost.
     useEffect(() => {
         if (state.section !== "features" && state.section !== "extensions") {
             return;
         }
 
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-derived-state -- prev-value-dependent scroll tracking
         setListScrollOffset((current) => {
             // Scroll down if selected is below viewport
             if (state.fieldIndex >= current + listViewportHeight) {
@@ -369,7 +376,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                // No default
+                    // No default
                 }
 
                 return;
@@ -588,7 +595,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         break;
                     }
                     case "environment": {
-                    // Enter on "+" add rows triggers add flow
+                        // Enter on "+" add rows triggers add flow
                         const containerCount = Object.keys(state.config.containerEnv ?? {}).length;
                         const containerAddIndex = containerCount;
                         const remoteAddIndex = containerCount + 1 + Object.keys(state.config.remoteEnv ?? {}).length;
@@ -630,7 +637,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                // No default
+                    // No default
                 }
 
                 return;
@@ -660,7 +667,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         break;
                     }
                     case "general": {
-                    // Boolean fields start after string fields
+                        // Boolean fields start after string fields
                         const stringFieldCount = GENERAL_FIELD_COUNT - GENERAL_BOOLEAN_FIELDS.length;
                         const boolIndex = state.fieldIndex - stringFieldCount;
 
@@ -672,7 +679,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                // No default
+                    // No default
                 }
 
                 return;
@@ -727,7 +734,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                             // Clamp fieldIndex
                             if (containerKeys.length === 1) {
-                            // Deleted last container entry, stay at the add row
+                                // Deleted last container entry, stay at the add row
                             } else if (state.fieldIndex >= containerKeys.length - 1) {
                                 store.setFieldIndex(containerKeys.length - 2);
                             }
@@ -738,7 +745,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                                 store.removeEnvVar("remote", remoteKeys[remoteIndex] as string);
 
                                 if (remoteKeys.length === 1) {
-                                // Deleted last remote entry, stay at remote add row
+                                    // Deleted last remote entry, stay at remote add row
                                 } else if (remoteIndex >= remoteKeys.length - 1) {
                                     store.setFieldIndex(state.fieldIndex - 1);
                                 }
@@ -777,7 +784,7 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
                         break;
                     }
-                // No default
+                    // No default
                 }
             }
         },

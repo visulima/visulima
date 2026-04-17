@@ -209,14 +209,99 @@ export default defineConfig({
         parallel: 5,
         smartLockfileHashing: true,
         frameworkInference: true,
+        autoEnvVars: true, // auto-fingerprint $VAR refs in command text
         remoteCache: {
             url: "https://cache.example.com",
             token: "my-token",
             teamId: "my-team",
+            compression: "brotli", // or "gzip" (default, Turborepo-compatible)
         },
     },
 });
 ```
+
+Notable options:
+
+- `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output.
+- `remoteCache.compression` — `"gzip"` (default) keeps Turborepo protocol compatibility; `"brotli"` reduces upload size at the cost of lock-in to vis clients on both ends.
+
+### Task Groups
+
+Named bundles of target dependencies, referenceable from any task's `dependsOn`. Groups expand recursively; cycles throw with a clear error.
+
+```typescript
+export default defineConfig({
+    taskGroups: {
+        lint: ["eslint", "prettier", "types"],
+        "pre-build": [{ group: "lint" }, "codegen"],
+    },
+    targetDefaults: {
+        build: {
+            // Expands to: ["eslint", "prettier", "types", "codegen"]
+            dependsOn: [{ group: "pre-build" }],
+        },
+    },
+});
+```
+
+Use groups when the same three-or-more-entry `dependsOn` array repeats across targets — the indirection is worth it once you have it in two or more places.
+
+### Plugins
+
+Typed plugin API built on [`hookable`](https://github.com/unjs/hookable). Each plugin registers handlers that fire at run / task / cache boundaries.
+
+```typescript
+import { defineConfig, definePlugin } from "@visulima/vis/config";
+
+const slackNotifier = definePlugin({
+    name: "slack-notifier",
+    hooks: {
+        "task:failure": async (task, result) => {
+            await fetch(process.env.SLACK_WEBHOOK!, {
+                method: "POST",
+                body: JSON.stringify({
+                    text: `❌ ${task.id} failed (exit ${result.code})`,
+                }),
+            });
+        },
+        "run:after": async (results) => {
+            const failed = [...results.values()].filter((r) => r.status === "failure").length;
+            // aggregate summary…
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [slackNotifier],
+});
+```
+
+Available hooks:
+
+| Hook             | Arguments                          | When                                                   |
+| ---------------- | ---------------------------------- | ------------------------------------------------------ |
+| `run:before`     | `{ tasks, workspaceRoot }`         | Once, before any task starts. Throwing aborts the run. |
+| `run:after`      | `results: Map<taskId, TaskResult>` | Once, after all tasks complete (success or failure).   |
+| `task:before`    | `task: Task`                       | Before each task's command runs.                       |
+| `task:after`     | `task, result: TaskResult`         | After each task completes (any status).                |
+| `task:cacheHit`  | `task, result: TaskResult`         | Task served from local or remote cache.                |
+| `task:cacheMiss` | `task, reasons: string`            | Auto-fingerprint cache miss with diagnostic reason.    |
+| `task:failure`   | `task, result: TaskResult`         | Task exited non-zero.                                  |
+
+For advanced cases (`hookOnce`, `removeHook`, `beforeEach`), use the imperative form:
+
+```typescript
+definePlugin({
+    name: "once",
+    setup(hooks) {
+        hooks.hookOnce("run:before", async () => {
+            // runs only on the first invocation
+        });
+    },
+});
+```
+
+Handlers run in registration order, awaited sequentially. A handler that throws propagates out of `callHook` — wrap in try/catch inside the handler if failure shouldn't abort the run.
 
 ### Update Defaults
 
