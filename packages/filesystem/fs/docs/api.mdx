@@ -30,6 +30,12 @@ import {
     ensureSymlinkSync,
     emptyDir,
     emptyDirSync,
+    glob,
+    globSync,
+    isGlob,
+    globParent,
+    match,
+    matcher,
 } from "@visulima/fs";
 
 // YAML (requires 'yaml' peer dependency)
@@ -40,6 +46,12 @@ import { getFileSize, getFileSizeSync, getCompressedSize, getCompressedSizeSync 
 
 // EOL utilities
 import { detectEOL, detectEOLSync, normalizeEOL, normalizeEOLSync } from "@visulima/fs/eol";
+
+// Glob helpers (each is also available as a dedicated subpath for tree-shaking)
+import { glob, globSync } from "@visulima/fs/glob";
+import isGlob from "@visulima/fs/is-glob";
+import globParent from "@visulima/fs/glob-parent";
+import { match, matcher } from "@visulima/fs/match";
 ```
 
 ## JSON Functions
@@ -654,6 +666,171 @@ normalizeEOLSync("file.txt", "\n");
 
 ---
 
+## Glob Matching
+
+File matching helpers built on [`tinyglobby`](https://github.com/SuperchupuDev/tinyglobby), [`is-glob`](https://github.com/micromatch/is-glob), [`glob-parent`](https://github.com/gulpjs/glob-parent) and [`picomatch`](https://github.com/micromatch/picomatch). All four libraries are bundled into the built output, so `@visulima/fs` has no extra runtime dependencies for glob support. `tinyglobby` and `picomatch` ship with a small local patch that enables negated ignore patterns (see [`glob`](#globpatterns-string--readonly-string-options-globoptions-promisestring)).
+
+> Attribution: portions of this section (in particular the `glob`/`globSync` signatures and the options table) are adapted from the [tinyglobby documentation](https://superchupu.dev/tinyglobby/documentation#api), © 2024 Madeline Gurriarán, distributed under the MIT License. `is-glob` © 2014–present Jon Schlinkert, `glob-parent` © 2015–present Gulp Team & contributors, `picomatch` © 2017–present Jon Schlinkert — all MIT.
+
+### `glob(patterns: string | readonly string[], options?: GlobOptions): Promise<string[]>`
+
+Asynchronously match files following one or more glob patterns.
+
+**Pattern forms:**
+
+- **Plain glob** — `src/**/*.ts`
+- **Negated pattern** — `!src/**/*.spec.ts` inside `patterns` adds to the internal ignore list (same as passing it via `ignore`).
+- **Negated ignore** — a leading `!` inside the `ignore` option _un-ignores_ entries an earlier ignore pattern would drop, e.g. `ignore: ["dist/**", "!dist/index.d.ts"]`.
+
+**Parameters:**
+
+- `patterns` (string | readonly string[]): One or more glob patterns.
+- `options` (GlobOptions, optional): See [Glob Options](#glob-options).
+
+**Returns:** Promise resolving to the list of matched paths (relative to `cwd` unless `absolute` is `true`).
+
+**Example:**
+
+```typescript
+import { glob } from "@visulima/fs";
+
+const scripts = await glob("src/**/*.{ts,js}", {
+    cwd: process.cwd(),
+    ignore: ["**/node_modules/**"],
+});
+
+// Negated ignore: drop the whole `dist/` tree except the type entry point.
+const distPublic = await glob("**/*", {
+    ignore: ["dist/**", "!dist/index.d.ts"],
+});
+```
+
+---
+
+### `globSync(patterns: string | readonly string[], options?: GlobOptions): string[]`
+
+Synchronous counterpart of `glob`. Supports the same pattern forms — including negated ignores.
+
+**Example:**
+
+```typescript
+import { globSync } from "@visulima/fs";
+
+const tests = globSync(["**/*.test.ts", "!dist/**"]);
+
+const keep = globSync("**/*.ts", {
+    ignore: ["ignored/**", "!ignored/keep.ts"],
+});
+```
+
+---
+
+### Glob Options
+
+| Option                | Type                          | Default         | Description                                                                                                                                                                       |
+| --------------------- | ----------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `absolute`            | `boolean`                     | `false`         | Return absolute paths instead of paths relative to `cwd`.                                                                                                                         |
+| `braceExpansion`      | `boolean`                     | `true`          | Enable brace expansion syntax like `{a,b}` or `{1..9}`.                                                                                                                           |
+| `caseSensitiveMatch`  | `boolean`                     | `true`          | Match in case-sensitive mode.                                                                                                                                                     |
+| `cwd`                 | `string \| URL`               | `process.cwd()` | Working directory for the search.                                                                                                                                                 |
+| `debug`               | `boolean`                     | `false`         | Log debug information (intended for development only; log format is not stable).                                                                                                  |
+| `deep`                | `number`                      | `Infinity`      | Maximum directory depth to crawl.                                                                                                                                                 |
+| `dot`                 | `boolean`                     | `false`         | Return dot-prefixed entries (e.g. `.gitignore`).                                                                                                                                  |
+| `expandDirectories`   | `boolean`                     | `true`          | Auto-expand directory patterns. Disable when migrating from `fast-glob`.                                                                                                          |
+| `extglob`             | `boolean`                     | `true`          | Enable extglobs like `+(pattern)`.                                                                                                                                                |
+| `followSymbolicLinks` | `boolean`                     | `true`          | Traverse and include symbolic links. Can slightly affect performance.                                                                                                             |
+| `fs`                  | `Partial<FSLike>`             | `node:fs`       | Override `node:fs` functions (useful for virtual file systems).                                                                                                                   |
+| `globstar`            | `boolean`                     | `true`          | Enable `**` to match nested directories. When `false`, `**` behaves like `*`.                                                                                                     |
+| `ignore`              | `string \| readonly string[]` | `[]`            | Additional patterns to exclude from the results. Entries starting with `!` _un-ignore_ a path that an earlier pattern would drop, e.g. `ignore: ["dist/**", "!dist/index.d.ts"]`. |
+| `onlyDirectories`     | `boolean`                     | `false`         | Return only directories. When `true`, `onlyFiles` is implicitly disabled.                                                                                                         |
+| `onlyFiles`           | `boolean`                     | `true`          | Return only files.                                                                                                                                                                |
+| `signal`              | `AbortSignal`                 | `undefined`     | `AbortSignal` to stop crawling the file system.                                                                                                                                   |
+
+---
+
+### `isGlob(value: unknown, options?: IsGlobOptions): boolean`
+
+Returns `true` if the given value looks like a glob pattern (including extglobs like `@(foo|bar)`). Escaped meta characters such as `\*` are not considered globs. Non-string values always return `false`.
+
+**Parameters:**
+
+- `value` (unknown): The value to inspect.
+- `options` (IsGlobOptions, optional):
+    - `strict` (boolean): When `false`, matches more permissively — any string containing unescaped glob meta characters (`*`, `?`, `{}`, `()`, `[]`) is treated as a glob. Default: `true`.
+
+**Example:**
+
+```typescript
+import { isGlob } from "@visulima/fs";
+
+isGlob("src/**/*.ts"); // true
+isGlob("src/index.ts"); // false
+isGlob("src/\\*.ts"); // false — escaped
+isGlob("!foo.js"); // true — negation
+isGlob("(abc)", { strict: false }); // true
+```
+
+---
+
+### `globParent(pattern: string, options?: GlobParentOptions): string`
+
+Extracts the non-glob parent directory from a glob pattern. Useful when you need to know which directory to watch or walk for a given pattern.
+
+**Parameters:**
+
+- `pattern` (string): The glob pattern to inspect.
+- `options` (GlobParentOptions, optional):
+    - `flipBackslashes` (boolean): On Windows, flip backslashes to forward slashes before analysing. Default: `true`.
+
+**Example:**
+
+```typescript
+import { globParent } from "@visulima/fs";
+
+globParent("src/**/*.ts"); // "src"
+globParent("foo/{a,b}/*.js"); // "foo"
+globParent("foo/bar.js"); // "foo"
+globParent("index.ts"); // "."
+```
+
+---
+
+### `match(value: string | string[], pattern: string | string[], options?: MatchOptions): boolean`
+
+Test whether a path (or any of a list of paths) matches one or more glob patterns. For repeated matches against the same pattern, prefer `matcher` to compile the pattern once.
+
+**Example:**
+
+```typescript
+import { match } from "@visulima/fs";
+
+match("src/index.ts", "src/**/*.ts"); // true
+match("src/index.ts", ["**/*.js", "**/*.ts"]); // true
+match(["a.ts", "b.js"], "**/*.ts"); // true (any value matches)
+```
+
+---
+
+### `matcher(pattern: string | string[], options?: MatchOptions): (value: string) => boolean`
+
+Compile a glob pattern into a reusable single-argument predicate. The returned function accepts exactly one argument, so it is safe to pass to `Array.prototype.filter` without triggering `picomatch`'s `returnObject` parameter.
+
+**Example:**
+
+```typescript
+import { matcher } from "@visulima/fs";
+
+const isTs = matcher("**/*.ts");
+["a.ts", "b.js", "c.ts"].filter(isTs); // ["a.ts", "c.ts"]
+
+const isScript = matcher(["**/*.ts", "**/*.js"]);
+isScript("a.css"); // false
+```
+
+`MatchOptions` is re-exported unchanged from `picomatch.PicomatchOptions` — see the [picomatch options reference](https://github.com/micromatch/picomatch#options) for the full list.
+
+---
+
 ## TypeScript Types
 
 ```typescript
@@ -691,4 +868,34 @@ type FindUpMatcher = (directory: string, file: string) => boolean | Promise<bool
 interface WriteJsonOptions {
     spaces?: number;
 }
+
+// Glob options (adapted from tinyglobby)
+interface GlobOptions {
+    absolute?: boolean;
+    braceExpansion?: boolean;
+    caseSensitiveMatch?: boolean;
+    cwd?: string | URL;
+    debug?: boolean;
+    deep?: number;
+    dot?: boolean;
+    expandDirectories?: boolean;
+    extglob?: boolean;
+    followSymbolicLinks?: boolean;
+    fs?: Partial<import("fdir").FSLike>;
+    globstar?: boolean;
+    ignore?: string | readonly string[];
+    onlyDirectories?: boolean;
+    onlyFiles?: boolean;
+    signal?: AbortSignal;
+}
+
+interface IsGlobOptions {
+    strict?: boolean;
+}
+
+interface GlobParentOptions {
+    flipBackslashes?: boolean;
+}
+
+// MatchOptions === picomatch.PicomatchOptions (re-exported as-is)
 ```

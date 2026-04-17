@@ -1,10 +1,21 @@
 import type { Dirent, PathLike } from "node:fs";
 
+import type { GlobOptions as TinyGlobOptions } from "tinyglobby";
 import type { CreateNodeOptions, DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions, ToStringOptions } from "yaml";
 
 import type { FIND_UP_STOP } from "./constants";
 
 type ColorizeMethod = (value: string) => string;
+
+/**
+ * Options for the `glob` and `globSync` functions.
+ *
+ * Re-exported from [`tinyglobby`](https://github.com/SuperchupuDev/tinyglobby) (which is bundled into the built
+ * output, with a local patch adding negated-ignore support). The `ignore` option accepts leading-`!` patterns to
+ * _un-ignore_ entries — for example `ignore: ["dist/**", "!dist/index.d.ts"]` drops the `dist/` tree except for
+ * its type entry point.
+ */
+export type GlobOptions = Omit<TinyGlobOptions, "patterns">;
 
 /**
  * Options for the `walk` and `walkSync` functions.

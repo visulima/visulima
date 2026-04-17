@@ -12,10 +12,18 @@ export { default as collect } from "./find/collect";
 export { default as collectSync } from "./find/collect-sync";
 export { default as findUp } from "./find/find-up";
 export { default as findUpSync } from "./find/find-up-sync";
+export { default as glob } from "./find/glob";
+export { default as globSync } from "./find/glob-sync";
 export { default as walk } from "./find/walk";
 export { default as walkSync } from "./find/walk-sync";
+export type { GlobParentOptions } from "./glob-parent";
+export { default as globParent } from "./glob-parent";
 export { default as isAccessible } from "./is-accessible";
 export { default as isAccessibleSync } from "./is-accessible-sync";
+export type { IsGlobOptions } from "./is-glob";
+export { default as isGlob } from "./is-glob";
+export type { MatchOptions } from "./match";
+export { match, matcher } from "./match";
 export { move, moveSync, rename, renameSync } from "./move";
 export type { Options as MoveOptions } from "./move/types";
 export { default as readFile } from "./read/read-file";
@@ -37,6 +45,7 @@ export type {
     FindUpNameSync,
     FindUpNameSyncFnResult,
     FindUpOptions,
+    GlobOptions,
     JsonReplacer,
     JsonReviver,
     ReadFileEncoding,
