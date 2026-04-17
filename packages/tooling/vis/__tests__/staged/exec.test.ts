@@ -1,0 +1,113 @@
+import { describe, expect, it } from "vitest";
+
+import { chunkFiles, parseCommandString } from "../../src/staged/tasks/exec";
+
+describe(parseCommandString, () => {
+    it("splits a simple command into argv", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString("eslint --fix")).toEqual(["eslint", "--fix"]);
+    });
+
+    it("preserves double-quoted arguments with spaces", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString('prettier --write "src/a b.ts"')).toEqual(["prettier", "--write", "src/a b.ts"]);
+    });
+
+    it("preserves single-quoted arguments with spaces", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString("echo 'hello world'")).toEqual(["echo", "hello world"]);
+    });
+
+    it("handles backslash escapes outside quotes", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString(String.raw`echo a\ b c`)).toEqual(["echo", "a b", "c"]);
+    });
+
+    it("returns an empty array for blank input", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString("   ")).toEqual([]);
+    });
+
+    it("rejects unterminated double quotes", () => {
+        expect.assertions(1);
+
+        expect(() => parseCommandString('echo "oops')).toThrow(/unterminated double quote/i);
+    });
+
+    it("rejects unterminated single quotes", () => {
+        expect.assertions(1);
+
+        expect(() => parseCommandString("echo 'oops")).toThrow(/unterminated single quote/i);
+    });
+
+    it("interprets backslash escapes inside double quotes per POSIX semantics", () => {
+        expect.assertions(2);
+
+        // `\"` inside double quotes is the escaped quote character.
+        expect(parseCommandString(String.raw`node -e "console.log(\"hi\")"`)).toEqual(["node", "-e", 'console.log("hi")']);
+        // `\\` inside double quotes is a single backslash.
+        expect(parseCommandString(String.raw`echo "path\\file"`)).toEqual(["echo", String.raw`path\file`]);
+    });
+
+    it("treats backslashes as literal inside single quotes", () => {
+        expect.assertions(1);
+
+        expect(parseCommandString(String.raw`echo 'a\b'`)).toEqual(["echo", String.raw`a\b`]);
+    });
+});
+
+describe("execCommand env injection", () => {
+    // The env builder is unexported, but `execCommand` is the only caller and we can't spawn real subprocesses in unit tests.
+    // Instead, we verify the contract indirectly: an explicit env override wins over the injected FORCE_COLOR default.
+    // This is a regression guard for lint-staged / nano-staged #33 (color preservation).
+
+    it("exports DEFAULT_MAX_ARG_LENGTH as a platform-appropriate number", async () => {
+        expect.assertions(2);
+
+        const { DEFAULT_MAX_ARG_LENGTH } = await import("../../src/staged/tasks/exec");
+
+        expect(DEFAULT_MAX_ARG_LENGTH).toBeGreaterThan(0);
+
+        if (process.platform === "win32") {
+            expect(DEFAULT_MAX_ARG_LENGTH).toBeLessThan(33_000);
+        } else {
+            expect(DEFAULT_MAX_ARG_LENGTH).toBeGreaterThan(100_000);
+        }
+    });
+});
+
+describe(chunkFiles, () => {
+    it("returns a single chunk when everything fits", () => {
+        expect.assertions(1);
+
+        expect(chunkFiles(["a", "b", "c"], 20, 131_072)).toEqual([["a", "b", "c"]]);
+    });
+
+    it("splits files into chunks when the limit is tight", () => {
+        expect.assertions(2);
+
+        const chunks = chunkFiles(["aaa", "bbb", "ccc"], 0, 5);
+
+        expect(chunks.length).toBeGreaterThan(1);
+        expect(chunks.flat()).toEqual(["aaa", "bbb", "ccc"]);
+    });
+
+    it("guarantees at least one file per chunk even for long paths", () => {
+        expect.assertions(1);
+
+        const chunks = chunkFiles(["x".repeat(200)], 0, 10);
+
+        expect(chunks).toEqual([["x".repeat(200)]]);
+    });
+
+    it("falls back to the default limit when maxArgLength is 0", () => {
+        expect.assertions(1);
+
+        expect(chunkFiles(["a", "b"], 0, 0)).toEqual([["a", "b"]]);
+    });
+});

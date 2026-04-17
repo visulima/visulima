@@ -12,8 +12,8 @@ import type {
     TargetConfiguration,
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
-import type { Configuration as StagedConfig } from "lint-staged";
 
+import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
 import { applyPreset, defaultCacheForType } from "./target-options";
 
@@ -1068,4 +1068,4 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 export type { PackageJson, VisConfig };
 export { buildProjectGraph, collectTargetDefaults, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns, scopeMatches };
 
-export { type Configuration as StagedConfig } from "lint-staged";
+export { type StagedConfig } from "./staged";

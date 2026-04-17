@@ -93,6 +93,7 @@
         "@visulima/secret-scanner": "workspace:*",
         "@visulima/task-runner": "workspace:*",
         "@visulima/tui": "workspace:*",
+        "execa": "catalog:dev",
         "giget": "^3.2.0",
         "jiti": "catalog:dev",
         "jstoxml": "catalog:prod",
@@ -100,7 +101,9 @@
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
         "semver": "^7.7.1",
-        "validate-npm-package-name": "^7.0.2"
+        "validate-npm-package-name": "^7.0.2",
+        "yaml": "catalog:dev",
+        "zeptomatch": "catalog:dev"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -142,14 +145,6 @@
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
-    },
-    "peerDependencies": {
-        "lint-staged": ">=15.0.0"
-    },
-    "peerDependenciesMeta": {
-        "lint-staged": {
-            "optional": true
-        }
     },
     "optionalDependencies": {
         "@visulima/vis-binding-darwin-arm64": "workspace:*",
