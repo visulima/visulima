@@ -15,7 +15,7 @@ import SupportSection from "../../pages/home/sections/support";
 import { NotFound } from "../../pages/not-found";
 
 export const Route = createFileRoute("/docs/$")({
-    component: Page,
+    component: () => <Page />,
     loader: async ({ params }) => {
         const slugs = params._splat?.split("/") ?? [];
         const data = await serverLoader({ data: slugs });
@@ -116,7 +116,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
 const Page = () => {
     const data = Route.useLoaderData();
     const Content = clientLoader.getComponent(data.path);
-    const tree = useMemo(() => transformPageTree(data.tree as PageTree.Folder), [data.tree]);
+    const tree = useMemo(() => transformPageTree(data.tree as unknown as PageTree.Root), [data.tree]);
 
     const articleJsonLd = useMemo(() => {
         const jsonLd: Record<string, unknown> = {

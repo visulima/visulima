@@ -1,4 +1,4 @@
-import type { MetaStorageOptions } from "./types";
+import type { MetaStorageOptions } from "./meta-storage-options";
 import type { File } from "./utils/file";
 
 /**

@@ -297,7 +297,9 @@ const projectColors = {};
 const palette = ['#e94560','#0f3460','#533483','#16c79a','#f39c12','#2ecc71','#3498db','#e67e22','#9b59b6','#1abc9c'];
 let ci = 0;
 data.nodes.forEach(n => {
-  if (!projectColors[n.project]) projectColors[n.project] = palette[ci++ % palette.length];
+  if (!projectColors[n.project]) {
+      projectColors[n.project] = palette[ci++ % palette.length];
+  }
 });
 
 // Simple force-directed layout

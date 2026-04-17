@@ -48,7 +48,7 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * - ❌ getUrl: Not implemented (GCS public URLs not supported)
  * - ❌ getUploadUrl: Not implemented (resumable upload URLs handled internally)
  */
-class GCStorage extends BaseStorage<GCSFile> {
+class GCStorage extends BaseStorage {
     public static override readonly name: string = "gcs";
 
     public override checksumTypes: string[] = ["md5", "crc32c"];

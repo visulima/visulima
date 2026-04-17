@@ -1,3 +1,4 @@
+import type { Trace } from "@visulima/error";
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 
@@ -38,7 +39,6 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         return normalizedStack;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error) as unknown as {
         column?: number;
         file?: string;
@@ -114,8 +114,7 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
         }),
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
-    return formatStacktrace(mapped as unknown, { header });
+    return formatStacktrace(mapped as unknown as Trace[], { header });
 };
 
 /**

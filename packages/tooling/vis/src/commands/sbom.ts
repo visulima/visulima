@@ -9,9 +9,9 @@ import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 type SbomFormat = "json" | "xml";
 
-const SBOM_FORMATS: readonly SbomFormat[] = ["json", "xml"];
+const SBOM_FORMATS: ReadonlyArray<SbomFormat> = ["json", "xml"];
 
-const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as readonly string[]).includes(value);
+const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as ReadonlyArray<string>).includes(value);
 
 /**
  * `vis sbom` — CycloneDX 1.6 Software Bill of Materials generator.
@@ -21,7 +21,6 @@ const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as re
  * (or stdout).
  */
 const sbom: Command = {
-    group: "Security & Health",
     description: "Generate a CycloneDX 1.6 Software Bill of Materials for the workspace",
     examples: [
         ["vis sbom", "Write the full-workspace SBOM to sbom.cdx.json"],
@@ -42,9 +41,9 @@ const sbom: Command = {
         const focusRaw = options.focus as string | undefined;
         const focus = focusRaw
             ? focusRaw
-                  .split(",")
-                  .map((name) => name.trim())
-                  .filter(Boolean)
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean)
             : undefined;
 
         const format = ((options.format as string | undefined) ?? "json").toLowerCase();
@@ -82,6 +81,7 @@ const sbom: Command = {
         success(`SBOM written to ${outPath}`);
         note(`${componentCount} components, ${dependencyCount} dependency edges`);
     },
+    group: "Security & Health",
     name: "sbom",
     options: [
         {

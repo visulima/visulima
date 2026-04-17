@@ -70,10 +70,9 @@ storybook-static/
 # Package build output
 dist
 
-data/
-
 !packages/data-manipulation/iso-locale/src/data/
 !packages/tooling/vis/data/
 
 .claude/settings.local.json
 .playwright-mcp
+.soulforge

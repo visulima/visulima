@@ -8,7 +8,8 @@ import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../docker";
 import { readInstalledPackageMetadata } from "./installed-package";
-import { extractLicenseChoice, type RawLicenseInput } from "./license";
+import type { RawLicenseInput } from "./license";
+import { extractLicenseChoice } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
 import { toNpmPurl } from "./purl";
@@ -38,10 +39,13 @@ interface BuilderPackageJson extends RawLicenseInput {
 }
 
 export interface BuildSbomOptions {
+    /** If set, limit the emitted BOM to these projects + their transitive closure. */
+    focus?: string[];
     /** Optional package.json version of vis itself — stamped into `metadata.tools`. */
     generatorVersion?: string;
     /** Include devDependencies in the emitted BOM (default: false — production only). */
     includeDev?: boolean;
+
     /**
      * Override the `serialNumber`. Useful for deterministic tests; in
      * production the builder generates one per call.
@@ -49,8 +53,6 @@ export interface BuildSbomOptions {
     now?: Date;
     /** Project graph used for resolving focus closure and dependency edges. */
     projectGraph: ProjectGraph;
-    /** If set, limit the emitted BOM to these projects + their transitive closure. */
-    focus?: string[];
     /** Override the `serialNumber` (defaults to a fresh UUID). */
     serialNumber?: string;
     /** Workspace configuration with resolved project roots. */
@@ -444,7 +446,7 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const rootPkg = readPackageJson(join(workspaceRoot, "package.json"));
 
     const metadataComponent: Component = (() => {
-        if (focus && focus.length === 1) {
+        if (focus?.length === 1) {
             const match = projectComponents.find((component) => component.name === focus[0]);
 
             if (match) {
@@ -518,8 +520,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
  */
 export const serializeBomToXml = (bom: CycloneDxBom): string => {
     const rootAttributes: Record<string, string | number> = {
-        xmlns: "http://cyclonedx.org/schema/bom/1.6",
         version: bom.version ?? 1,
+        xmlns: "http://cyclonedx.org/schema/bom/1.6",
     };
 
     if (bom.serialNumber) {
@@ -640,11 +642,13 @@ const componentToXmlElement = (component: Component): XmlElement => {
 
     if (component.hashes && component.hashes.length > 0) {
         children.push({
-            _content: component.hashes.map((hash) => ({
-                _attrs: { alg: hash.alg },
-                _content: hash.content,
-                _name: "hash",
-            })),
+            _content: component.hashes.map((hash) => {
+                return {
+                    _attrs: { alg: hash.alg },
+                    _content: hash.content,
+                    _name: "hash",
+                };
+            }),
             _name: "hashes",
         });
     }
@@ -665,11 +669,13 @@ const componentToXmlElement = (component: Component): XmlElement => {
 
     if (component.externalReferences && component.externalReferences.length > 0) {
         children.push({
-            _content: component.externalReferences.map((reference) => ({
-                _attrs: { type: reference.type },
-                _content: [{ url: reference.url }],
-                _name: "reference",
-            })),
+            _content: component.externalReferences.map((reference) => {
+                return {
+                    _attrs: { type: reference.type },
+                    _content: [{ url: reference.url }],
+                    _name: "reference",
+                };
+            }),
             _name: "externalReferences",
         });
     }
@@ -709,10 +715,12 @@ const dependencyToXmlElement = (dep: Dependency): XmlElement => {
     if (dep.dependsOn && dep.dependsOn.length > 0) {
         return {
             _attrs: { ref: dep.ref },
-            _content: dep.dependsOn.map((child) => ({
-                _attrs: { ref: child },
-                _name: "dependency",
-            })),
+            _content: dep.dependsOn.map((child) => {
+                return {
+                    _attrs: { ref: child },
+                    _name: "dependency",
+                };
+            }),
             _name: "dependency",
         };
     }

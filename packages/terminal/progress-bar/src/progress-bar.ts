@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import type { ProgressBarOptions, ProgressBarPayload } from "./types";

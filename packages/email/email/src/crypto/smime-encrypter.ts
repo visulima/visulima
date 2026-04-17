@@ -200,7 +200,7 @@ export class SmimeEncrypter implements EmailEncrypter {
                 return new Certificate({ schema: asn1.result });
             });
 
-            certificates.push(...(await Promise.all(certPromises)));
+            certificates.push(...await Promise.all(certPromises));
         }
 
         const message = await this.buildMessage(email);
@@ -340,7 +340,7 @@ export class SmimeEncrypter implements EmailEncrypter {
         const lines: string[] = [
             `From: ${SmimeEncrypter.formatAddress(email.from)}`,
             `To: ${SmimeEncrypter.formatAddresses(email.to)}`,
-            ...(email.cc ? [`Cc: ${SmimeEncrypter.formatAddresses(email.cc)}`] : []),
+            ...email.cc ? [`Cc: ${SmimeEncrypter.formatAddresses(email.cc)}`] : [],
         ];
 
         if (email.replyTo) {

@@ -4,6 +4,8 @@ import DataLimitedLruMap from "../../src/ink/data-limited-lru-map";
 
 describe(DataLimitedLruMap, () => {
     it("should store and retrieve values", () => {
+        expect.assertions(2);
+
         const map = new DataLimitedLruMap<number>(10, 1000);
 
         map.set("foo", 42);
@@ -13,12 +15,16 @@ describe(DataLimitedLruMap, () => {
     });
 
     it("should return undefined for missing keys", () => {
+        expect.assertions(1);
+
         const map = new DataLimitedLruMap<number>(10, 1000);
 
         expect(map.get("missing")).toBeUndefined();
     });
 
     it("should evict LRU entries when max keys is reached", () => {
+        expect.assertions(5);
+
         const map = new DataLimitedLruMap<number>(3, 10_000);
 
         map.set("a", 1);
@@ -35,6 +41,8 @@ describe(DataLimitedLruMap, () => {
 
     it("should evict LRU entries when max data size is reached", () => {
         // maxDataSize = 6, keys "aa"(2), "bb"(2), "cc"(2) = 6 total
+        expect.assertions(3);
+
         const map = new DataLimitedLruMap<number>(100, 6);
 
         map.set("aa", 1);
@@ -50,6 +58,8 @@ describe(DataLimitedLruMap, () => {
     });
 
     it("should promote accessed entries to most-recently-used", () => {
+        expect.assertions(2);
+
         const map = new DataLimitedLruMap<number>(3, 10_000);
 
         map.set("a", 1);
@@ -67,6 +77,8 @@ describe(DataLimitedLruMap, () => {
     });
 
     it("should update value for existing key", () => {
+        expect.assertions(2);
+
         const map = new DataLimitedLruMap<number>(10, 1000);
 
         map.set("key", 1);
@@ -77,6 +89,8 @@ describe(DataLimitedLruMap, () => {
     });
 
     it("should skip keys that exceed maxDataSize individually", () => {
+        expect.assertions(2);
+
         const map = new DataLimitedLruMap<number>(10, 5);
 
         map.set("toolongkey", 1);
@@ -86,6 +100,8 @@ describe(DataLimitedLruMap, () => {
     });
 
     it("should handle get() with has() check for falsy values", () => {
+        expect.assertions(2);
+
         const map = new DataLimitedLruMap<number | null>(10, 1000);
 
         map.set("zero", 0);

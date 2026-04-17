@@ -8,12 +8,16 @@ import { plainTextToStyledLine } from "../../src/ink/styled-line-factory";
 describe("selection", () => {
     describe(comparePoints, () => {
         it("should return 0 for same node and offset", () => {
+            expect.assertions(1);
+
             const node = createTextNode("hello");
 
             expect(comparePoints(node, 0, node, 0)).toBe(0);
         });
 
         it("should compare offsets within the same node", () => {
+            expect.assertions(2);
+
             const node = createTextNode("hello");
 
             expect(comparePoints(node, 0, node, 3)).toBe(-1);
@@ -21,6 +25,8 @@ describe("selection", () => {
         });
 
         it("should compare sibling nodes", () => {
+            expect.assertions(2);
+
             const parent = createNode("ink-box");
             const child1 = createTextNode("a");
             const child2 = createTextNode("b");
@@ -36,12 +42,16 @@ describe("selection", () => {
 
     describe(Range, () => {
         it("should start collapsed", () => {
+            expect.assertions(1);
+
             const range = new Range();
 
             expect(range.collapsed).toBe(true);
         });
 
         it("should set start and end", () => {
+            expect.assertions(5);
+
             const range = new Range();
             const node = createTextNode("hello");
 
@@ -56,6 +66,8 @@ describe("selection", () => {
         });
 
         it("should collapse to start", () => {
+            expect.assertions(3);
+
             const range = new Range();
             const node = createTextNode("hello");
 
@@ -69,6 +81,8 @@ describe("selection", () => {
         });
 
         it("should collapse to end", () => {
+            expect.assertions(3);
+
             const range = new Range();
             const node = createTextNode("hello");
 
@@ -82,6 +96,8 @@ describe("selection", () => {
         });
 
         it("should select a node", () => {
+            expect.assertions(3);
+
             const parent = createNode("ink-box");
             const child = createTextNode("hello");
 
@@ -98,6 +114,8 @@ describe("selection", () => {
         });
 
         it("should select node contents", () => {
+            expect.assertions(2);
+
             const node = createTextNode("hello");
 
             const range = new Range();
@@ -109,6 +127,8 @@ describe("selection", () => {
         });
 
         it("should compute common ancestor for same node", () => {
+            expect.assertions(1);
+
             const node = createTextNode("hello");
 
             const range = new Range();
@@ -120,6 +140,8 @@ describe("selection", () => {
         });
 
         it("should compute common ancestor for sibling nodes", () => {
+            expect.assertions(1);
+
             const parent = createNode("ink-box");
             const child1 = createTextNode("a");
             const child2 = createTextNode("b");
@@ -139,6 +161,8 @@ describe("selection", () => {
 
     describe(Selection, () => {
         it("should start with no ranges", () => {
+            expect.assertions(2);
+
             const selection = new Selection();
 
             expect(selection.rangeCount).toBe(0);
@@ -146,6 +170,8 @@ describe("selection", () => {
         });
 
         it("should add a range", () => {
+            expect.assertions(3);
+
             const selection = new Selection();
             const range = new Range();
             const node = createTextNode("hello");
@@ -160,6 +186,8 @@ describe("selection", () => {
         });
 
         it("should not add duplicate ranges", () => {
+            expect.assertions(1);
+
             const selection = new Selection();
             const range = new Range();
 
@@ -170,6 +198,8 @@ describe("selection", () => {
         });
 
         it("should remove a range", () => {
+            expect.assertions(1);
+
             const selection = new Selection();
             const range = new Range();
 
@@ -180,6 +210,8 @@ describe("selection", () => {
         });
 
         it("should remove all ranges", () => {
+            expect.assertions(2);
+
             const selection = new Selection();
 
             selection.addRange(new Range());
@@ -191,6 +223,8 @@ describe("selection", () => {
         });
 
         it("should fire onChange listeners", () => {
+            expect.assertions(1);
+
             const selection = new Selection();
             let called = 0;
 
@@ -201,6 +235,8 @@ describe("selection", () => {
         });
 
         it("should collapse to a point", () => {
+            expect.assertions(2);
+
             const selection = new Selection();
             const node = createTextNode("hello");
 
@@ -211,6 +247,8 @@ describe("selection", () => {
         });
 
         it("should check containsNode", () => {
+            expect.assertions(3);
+
             const parent = createNode("ink-box");
             const child1 = createTextNode("a");
             const child2 = createTextNode("b");
@@ -236,6 +274,8 @@ describe("selection", () => {
 
     describe(applySelectionToStyledLine, () => {
         it("should apply INVERSE style to characters in range", () => {
+            expect.assertions(4);
+
             const line = plainTextToStyledLine("hello");
 
             const result = applySelectionToStyledLine(line, { end: 3, start: 1 });
@@ -248,6 +288,8 @@ describe("selection", () => {
         });
 
         it("should not modify when range is empty", () => {
+            expect.assertions(1);
+
             const line = plainTextToStyledLine("hel");
 
             const result = applySelectionToStyledLine(line, { end: 0, start: 0 });
@@ -257,6 +299,8 @@ describe("selection", () => {
         });
 
         it("should not modify empty line", () => {
+            expect.assertions(1);
+
             const line = plainTextToStyledLine("");
 
             const result = applySelectionToStyledLine(line, { end: 3, start: 1 });
@@ -265,6 +309,8 @@ describe("selection", () => {
         });
 
         it("should clamp range to line bounds", () => {
+            expect.assertions(3);
+
             const line = plainTextToStyledLine("abc");
 
             const result = applySelectionToStyledLine(line, { end: 10, start: 1 });
@@ -275,6 +321,8 @@ describe("selection", () => {
         });
 
         it("should not mutate the original line", () => {
+            expect.assertions(1);
+
             const line = plainTextToStyledLine("hello");
 
             applySelectionToStyledLine(line, { end: 3, start: 1 });

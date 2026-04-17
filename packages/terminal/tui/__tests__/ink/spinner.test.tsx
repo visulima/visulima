@@ -6,6 +6,8 @@ import { renderToString } from "../helpers/ink-render";
 
 describe(Spinner, () => {
     it("should render default dots spinner", () => {
+        expect.assertions(1);
+
         const output = renderToString(<Spinner />);
 
         // The first frame of the dots spinner is "⠋"
@@ -13,6 +15,8 @@ describe(Spinner, () => {
     });
 
     it("should render a different spinner type", () => {
+        expect.assertions(1);
+
         const output = renderToString(<Spinner type="line" />);
 
         // The first frame of the line spinner is "-"

@@ -36,6 +36,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should collect tasks from startTasks and endTasks", () => {
+        expect.assertions(2);
+
         const lc = new SummaryLifeCycle();
         const task = createTask("app-a", "build");
 
@@ -50,6 +52,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should show [cache] label for cached tasks", () => {
+        expect.assertions(1);
+
         const lc = new SummaryLifeCycle();
         const task = createTask("app-a", "build");
 
@@ -63,6 +67,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should sort failures first in the summary", () => {
+        expect.assertions(2);
+
         const lc = new SummaryLifeCycle();
         const taskA = createTask("app-a", "build");
         const taskB = createTask("app-b", "build");
@@ -84,6 +90,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should do nothing on endCommand when no tasks were tracked", () => {
+        expect.assertions(1);
+
         const lc = new SummaryLifeCycle();
 
         lc.endCommand();
@@ -92,6 +100,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should accumulate output via appendTaskOutput", () => {
+        expect.assertions(1);
+
         const lc = new SummaryLifeCycle();
         const task = createTask("app-a", "build");
 
@@ -108,6 +118,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should collect output via printTaskTerminalOutput", () => {
+        expect.assertions(1);
+
         const lc = new SummaryLifeCycle();
         const task = createTask("app-a", "build");
 
@@ -122,6 +134,8 @@ describe("tui/SummaryLifeCycle", () => {
     });
 
     it("should handle endTasks for tasks not previously seen in startTasks", () => {
+        expect.assertions(1);
+
         const lc = new SummaryLifeCycle();
         const task = createTask("app-a", "build");
 

@@ -87,18 +87,19 @@ export default function* walkSync(
 
     const mappedMatch = match
         ? match.map(
-              // eslint-disable-next-line no-confusing-arrow
-              (pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern),
-          )
+            // eslint-disable-next-line no-confusing-arrow
+            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
+        )
         : undefined;
     const mappedSkip = skip
         ? skip.map(
-              // eslint-disable-next-line no-confusing-arrow
-              (pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern),
-          )
+            // eslint-disable-next-line no-confusing-arrow
+            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
+        )
         : undefined;
 
     const resolvedDirectory: string = resolve(toPath(directory));
+
     // eslint-disable-next-line no-param-reassign
     directory = resolvedDirectory;
 

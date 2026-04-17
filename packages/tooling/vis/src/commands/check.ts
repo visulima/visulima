@@ -16,7 +16,6 @@ import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 
 const check: Command = {
-    group: "Security & Health",
     alias: ["c", "outdated"],
     argument: {
         description: "Specific packages to check (checks all if omitted)",
@@ -112,18 +111,18 @@ const check: Command = {
 
         const onProgress = isTTY
             ? (current: number, total: number): void => {
-                  if (progressInstance) {
-                      progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-                  } else {
-                      progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                          interactive: true,
-                          patchConsole: false,
-                      });
-                  }
-              }
+                if (progressInstance) {
+                    progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+                } else {
+                    progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                        interactive: true,
+                        patchConsole: false,
+                    });
+                }
+            }
             : (current: number, total: number): void => {
-                  logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-              };
+                logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+            };
 
         if (!isTTY) {
             logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
@@ -239,6 +238,7 @@ const check: Command = {
             process.exitCode = 1;
         }
     },
+    group: "Security & Health",
     name: "check",
     options: [
         {

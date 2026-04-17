@@ -1,6 +1,6 @@
 {
     "name": "@visulima/humanizer",
-    "version": "2.0.5",
+    "version": "3.0.0-alpha.10",
     "exports": {
         ".": "./src/index.ts",
         "./language/af": "./src/language/af.ts",

@@ -79,8 +79,12 @@ const ScrollDemo = () => {
             <Text dimColor>
                 {" "}
                 scrollTop=
-                {scrollTop} innerHeight=
-                {metrics.innerHeight} scrollHeight=
+                {scrollTop}
+                {" "}
+                innerHeight=
+                {metrics.innerHeight}
+                {" "}
+                scrollHeight=
                 {metrics.scrollHeight}
             </Text>
         </Box>

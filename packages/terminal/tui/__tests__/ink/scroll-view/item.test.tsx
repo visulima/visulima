@@ -19,6 +19,8 @@ describe("callbacksAndPosition", () => {
      * Also verifies that `getItemHeight` reflects the new size immediately.
      */
     it("should trigger onItemHeightChange when ScrollView width changes", async () => {
+        expect.assertions(5);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setWidthFunction: any;
         const onItemHeightChange = vi.fn();
@@ -78,6 +80,8 @@ describe("callbacksAndPosition", () => {
      * 3. Calling `remeasureItem` again -> NO callback.
      */
     it("should trigger onItemHeightChange when remeasureItem detects a change, but NOT when there is no change", async () => {
+        expect.assertions(5);
+
         let scrollViewRef: ScrollViewRef | null = null;
         const onItemHeightChange = vi.fn();
 
@@ -128,7 +132,9 @@ describe("callbacksAndPosition", () => {
         expect(onItemHeightChange).not.toHaveBeenCalled();
 
         // 2. Change internal lines
-        if (globalStore["setLines_0"]) globalStore["setLines_0"](3);
+        if (globalStore["setLines_0"]) {
+            globalStore["setLines_0"](3);
+        }
 
         await delay(100);
 
@@ -161,6 +167,8 @@ describe("callbacksAndPosition", () => {
      * Item offsets (top position) should be recalculated correctly when previous items are removed or new items are inserted.
      */
     it("should return correct getItemPosition values after mutations", async () => {
+        expect.assertions(9);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setItemsFunction: any;
 
@@ -241,6 +249,8 @@ describe("callbacksAndPosition", () => {
      * 2. Height prop change on an item -> Subsequent items shift down.
      */
     it("should return correct getItemPosition values when dimensions or content size changes", async () => {
+        expect.assertions(9);
+
         let scrollViewRef: ScrollViewRef | null = null;
         let setWidthFunction: any;
         let setItemHeightFunction: any;

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null -- routeType uses null as the "no match" sentinel in the public return type */
 import { match } from "path-to-regexp";
 
 import { RouteType } from "../types";

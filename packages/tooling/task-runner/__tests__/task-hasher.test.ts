@@ -38,6 +38,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should hash a task with default inputs (all project files)", async () => {
+        expect.assertions(2);
+
         const hasher = new InProcessTaskHasher({
             projects: {
                 "lib-a": { root: "packages/lib-a" },
@@ -59,6 +61,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should produce different hashes for different file contents", async () => {
+        expect.assertions(1);
+
         const hasher = new InProcessTaskHasher({
             projects: {
                 "lib-a": { root: "packages/lib-a" },
@@ -83,10 +87,12 @@ describe(InProcessTaskHasher, () => {
 
         const hash2 = await hasher.hashTask(task);
 
-        expect(hash1.nodes).not.toEqual(hash2.nodes);
+        expect(hash1.nodes).not.toStrictEqual(hash2.nodes);
     });
 
     it("should produce different command hashes for different overrides", async () => {
+        expect.assertions(1);
+
         const hasher = new InProcessTaskHasher({
             projects: {
                 "lib-a": { root: "packages/lib-a" },
@@ -115,6 +121,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should include environment variables in hash", async () => {
+        expect.assertions(2);
+
         process.env["TEST_VAR_HASHER"] = "value1";
 
         const hasher = new InProcessTaskHasher({
@@ -139,6 +147,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should use smart lockfile hashing when enabled", async () => {
+        expect.assertions(2);
+
         // Create a lockfile
         await writeFile(
             join(workspaceRoot, "package-lock.json"),
@@ -181,6 +191,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should produce different lockfile hashes for different resolved versions", async () => {
+        expect.assertions(1);
+
         await writeFile(
             join(workspaceRoot, "packages/lib-a/package.json"),
             JSON.stringify({
@@ -234,6 +246,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should include framework env vars in hash when frameworkInference is enabled", async () => {
+        expect.assertions(2);
+
         // Make lib-a a Next.js project
         await writeFile(
             join(workspaceRoot, "packages/lib-a/package.json"),
@@ -268,6 +282,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should not include framework env vars when frameworkInference is disabled", async () => {
+        expect.assertions(1);
+
         await writeFile(
             join(workspaceRoot, "packages/lib-a/package.json"),
             JSON.stringify({
@@ -301,6 +317,8 @@ describe(InProcessTaskHasher, () => {
     });
 
     it("should use named inputs when configured", async () => {
+        expect.assertions(2);
+
         const hasher = new InProcessTaskHasher({
             namedInputs: {
                 production: ["{projectRoot}/src/**/*"],
@@ -337,6 +355,8 @@ describe(InProcessTaskHasher, () => {
 
 describe(computeTaskHash, () => {
     it("should produce deterministic hash", () => {
+        expect.assertions(1);
+
         const details: TaskHashDetails = {
             command: "abc",
             nodes: { file1: "hash1", file2: "hash2" },
@@ -349,6 +369,8 @@ describe(computeTaskHash, () => {
     });
 
     it("should produce different hashes for different inputs", () => {
+        expect.assertions(1);
+
         const details1: TaskHashDetails = {
             command: "abc",
             nodes: { file1: "hash1" },
@@ -363,6 +385,8 @@ describe(computeTaskHash, () => {
     });
 
     it("should be order-independent for nodes", () => {
+        expect.assertions(1);
+
         const details1: TaskHashDetails = {
             command: "abc",
             nodes: { a: "1", b: "2" },

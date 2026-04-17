@@ -126,6 +126,7 @@ describe("objects", () => {
         const customString = (object as any)[Symbol.for("nodejs.util.inspect.custom")].toString();
         const falseResult = `[ { inspect: [Function: ${stringInspectString}], [Symbol(nodejs.util.inspect.custom)]: [Function: ${String(customString)}] }, [] ]`;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- fallback for older Node without util.inspect.custom
         const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
 
         expect(inspect([object, []])).toBe(symbolStringFallback);

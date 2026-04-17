@@ -209,7 +209,8 @@ const PackemSection = () => (
                         <div className="mt-auto pt-6">
                             <Link
                                 className="inline-flex items-center gap-2 bg-sky-sapphire/20 px-3 py-1.5 text-sm font-medium text-sky-sapphire transition-colors hover:bg-sky-sapphire/30 hover:text-white"
-                                to="/packages/packem"
+                                params={{ slug: "packem" }}
+                                to="/packages/$slug"
                             >
                                 Explore Packem
                                 <ArrowRight className="h-4 w-4" />
@@ -346,7 +347,8 @@ const PailSection = () => (
                         <div className="mt-auto pt-6">
                             <Link
                                 className="inline-flex items-center gap-2 bg-crimson-energy/20 px-3 py-1.5 text-sm font-medium text-crimson-energy transition-colors hover:bg-crimson-energy/30 hover:text-white"
-                                to="/packages/pail"
+                                params={{ slug: "pail" }}
+                                to="/packages/$slug"
                             >
                                 Explore Pail
                                 <ArrowRight className="h-4 w-4" />
@@ -568,7 +570,8 @@ const CerebroSection = () => (
                         <div className="mt-auto pt-6">
                             <Link
                                 className="inline-flex items-center gap-2 bg-royal-amethyst/20 px-3 py-1.5 text-sm font-medium text-royal-amethyst transition-colors hover:bg-royal-amethyst/30 hover:text-white"
-                                to="/packages/cerebro"
+                                params={{ slug: "cerebro" }}
+                                to="/packages/$slug"
                             >
                                 Explore Cerebro
                                 <ArrowRight className="h-4 w-4" />

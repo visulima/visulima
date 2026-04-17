@@ -242,13 +242,21 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
 
             const parts: string[] = [];
 
-            if (event.altKey) parts.push("Alt");
+            if (event.altKey) {
+                parts.push("Alt");
+            }
 
-            if (event.ctrlKey) parts.push("Control");
+            if (event.ctrlKey) {
+                parts.push("Control");
+            }
 
-            if (event.metaKey) parts.push("Meta");
+            if (event.metaKey) {
+                parts.push("Meta");
+            }
 
-            if (event.shiftKey) parts.push("Shift");
+            if (event.shiftKey) {
+                parts.push("Shift");
+            }
 
             parts.push(event.key);
 

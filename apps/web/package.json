@@ -107,10 +107,10 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "tailwind-csstree": "0.3.0",
+        "tailwind-csstree": "0.3.1",
         "vitest": "catalog:test"
     },
     "engines": {
-        "node": "22.*"
+        "node": "^22.14.0 || >=24.10.0"
     }
 }

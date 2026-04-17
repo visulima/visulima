@@ -7,6 +7,8 @@ import { styledLineToString } from "../../src/ink/styled-line-serializer";
 describe(StyledLine, () => {
     describe("empty", () => {
         it("should create an empty line of spaces", () => {
+            expect.assertions(4);
+
             const line = StyledLine.empty(5);
 
             expect(line).toHaveLength(5);
@@ -16,6 +18,8 @@ describe(StyledLine, () => {
         });
 
         it("should return zero-length for empty(0)", () => {
+            expect.assertions(2);
+
             const line = StyledLine.empty(0);
 
             expect(line).toHaveLength(0);
@@ -23,6 +27,8 @@ describe(StyledLine, () => {
         });
 
         it("should cache and clone empty lines", () => {
+            expect.assertions(2);
+
             const a = StyledLine.empty(10);
             const b = StyledLine.empty(10);
 
@@ -37,6 +43,8 @@ describe(StyledLine, () => {
 
     describe("setChar", () => {
         it("should set a character at an index", () => {
+            expect.assertions(2);
+
             const line = StyledLine.empty(5);
 
             line.setChar(0, "A", 0);
@@ -46,16 +54,20 @@ describe(StyledLine, () => {
         });
 
         it("should set character with style flags", () => {
+            expect.assertions(3);
+
             const line = StyledLine.empty(5);
 
             line.setChar(0, "B", BOLD_MASK, "red");
 
             expect(line.getValue(0)).toBe("B");
-            expect((line.getFormatFlags(0) & BOLD_MASK) !== 0).toBe(true);
+            expect(line.getFormatFlags(0) & BOLD_MASK).not.toBe(0);
             expect(line.getFgColor(0)).toBe("red");
         });
 
         it("should set full-width character", () => {
+            expect.assertions(2);
+
             const line = StyledLine.empty(5);
 
             line.setChar(0, "\u4E16", FULL_WIDTH_MASK); // CJK char
@@ -65,6 +77,8 @@ describe(StyledLine, () => {
         });
 
         it("should handle out-of-bounds gracefully", () => {
+            expect.assertions(1);
+
             const line = StyledLine.empty(3);
 
             line.setChar(-1, "X", 0);
@@ -76,6 +90,8 @@ describe(StyledLine, () => {
 
     describe("pushChar", () => {
         it("should append characters", () => {
+            expect.assertions(2);
+
             const line = new StyledLine();
 
             line.pushChar("H", 0);
@@ -86,6 +102,8 @@ describe(StyledLine, () => {
         });
 
         it("should coalesce spans with same style", () => {
+            expect.assertions(2);
+
             const line = new StyledLine();
 
             line.pushChar("A", BOLD_MASK);
@@ -99,6 +117,8 @@ describe(StyledLine, () => {
 
     describe("clone", () => {
         it("should create a deep copy", () => {
+            expect.assertions(3);
+
             const original = StyledLine.empty(3);
 
             original.setChar(0, "X", BOLD_MASK, "red");
@@ -117,6 +137,8 @@ describe(StyledLine, () => {
 
     describe("slice", () => {
         it("should extract a sub-line", () => {
+            expect.assertions(3);
+
             const line = StyledLine.empty(5);
 
             line.setChar(0, "A", 0);
@@ -133,6 +155,8 @@ describe(StyledLine, () => {
         });
 
         it("should handle empty slice", () => {
+            expect.assertions(1);
+
             const line = StyledLine.empty(3);
             const sliced = line.slice(2, 2);
 
@@ -142,6 +166,8 @@ describe(StyledLine, () => {
 
     describe("combine", () => {
         it("should concatenate lines", () => {
+            expect.assertions(2);
+
             const a = new StyledLine();
 
             a.pushChar("H", 0);
@@ -161,6 +187,8 @@ describe(StyledLine, () => {
 
     describe("getTrimmedLength / trimEnd", () => {
         it("should trim trailing spaces", () => {
+            expect.assertions(2);
+
             const line = StyledLine.empty(10);
 
             line.setChar(0, "H", 0);
@@ -171,6 +199,8 @@ describe(StyledLine, () => {
         });
 
         it("should not trim styled spaces", () => {
+            expect.assertions(1);
+
             const line = StyledLine.empty(5);
 
             line.setChar(0, "A", 0);
@@ -180,6 +210,8 @@ describe(StyledLine, () => {
         });
 
         it("should return 0 for all-space lines", () => {
+            expect.assertions(1);
+
             const line = StyledLine.empty(5);
 
             expect(line.getTrimmedLength()).toBe(0);
@@ -188,6 +220,8 @@ describe(StyledLine, () => {
 
     describe("equals", () => {
         it("should return true for identical lines", () => {
+            expect.assertions(1);
+
             const a = StyledLine.empty(3);
             const b = StyledLine.empty(3);
 
@@ -198,6 +232,8 @@ describe(StyledLine, () => {
         });
 
         it("should return false for different content", () => {
+            expect.assertions(1);
+
             const a = StyledLine.empty(3);
             const b = StyledLine.empty(3);
 
@@ -208,6 +244,8 @@ describe(StyledLine, () => {
         });
 
         it("should return false for different styles", () => {
+            expect.assertions(1);
+
             const a = StyledLine.empty(3);
             const b = StyledLine.empty(3);
 
@@ -220,6 +258,8 @@ describe(StyledLine, () => {
 
     describe("iterator", () => {
         it("should yield character info", () => {
+            expect.assertions(7);
+
             const line = StyledLine.empty(2);
 
             line.setChar(0, "A", BOLD_MASK, "red");
@@ -229,7 +269,7 @@ describe(StyledLine, () => {
 
             expect(chars).toHaveLength(2);
             expect(chars[0]!.value).toBe("A");
-            expect((chars[0]!.formatFlags & BOLD_MASK) !== 0).toBe(true);
+            expect(chars[0]!.formatFlags & BOLD_MASK).not.toBe(0);
             expect(chars[0]!.fgColor).toBe("red");
             expect(chars[0]!.hasStyles).toBe(true);
             expect(chars[1]!.value).toBe("B");
@@ -240,6 +280,8 @@ describe(StyledLine, () => {
 
 describe(styledLineToString, () => {
     it("should serialize plain text", () => {
+        expect.assertions(1);
+
         const line = StyledLine.empty(5);
 
         line.setChar(0, "H", 0);
@@ -252,6 +294,8 @@ describe(styledLineToString, () => {
     });
 
     it("should serialize bold text", () => {
+        expect.assertions(3);
+
         const line = new StyledLine();
 
         line.pushChar("B", BOLD_MASK);
@@ -267,6 +311,8 @@ describe(styledLineToString, () => {
     });
 
     it("should handle style transitions", () => {
+        expect.assertions(3);
+
         const line = new StyledLine();
 
         line.pushChar("A", BOLD_MASK);
@@ -281,6 +327,8 @@ describe(styledLineToString, () => {
     });
 
     it("should serialize foreground colors", () => {
+        expect.assertions(2);
+
         const line = new StyledLine();
 
         line.pushChar("R", 0, "red");
@@ -292,6 +340,8 @@ describe(styledLineToString, () => {
     });
 
     it("should serialize background colors", () => {
+        expect.assertions(1);
+
         const line = new StyledLine();
 
         line.pushChar("B", 0, undefined, "blue");
@@ -302,6 +352,8 @@ describe(styledLineToString, () => {
     });
 
     it("should handle hex colors", () => {
+        expect.assertions(1);
+
         const line = new StyledLine();
 
         line.pushChar("H", 0, "#ff0000");
@@ -312,10 +364,14 @@ describe(styledLineToString, () => {
     });
 
     it("should return empty string for empty line", () => {
+        expect.assertions(1);
+
         expect(styledLineToString(new StyledLine())).toBe("");
     });
 
     it("should handle inverse", () => {
+        expect.assertions(1);
+
         const line = StyledLine.empty(3);
 
         line.setInverted(0, true);
@@ -326,6 +382,8 @@ describe(styledLineToString, () => {
     });
 
     it("should handle mixed styles with reset", () => {
+        expect.assertions(2);
+
         const line = new StyledLine();
 
         line.pushChar("B", BOLD_MASK);

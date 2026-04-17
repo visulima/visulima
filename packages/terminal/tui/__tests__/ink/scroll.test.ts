@@ -7,6 +7,8 @@ import { calculateScroll, getScrollHeight, getScrollLeft, getScrollTop, getScrol
 describe("scroll", () => {
     describe(calculateScroll, () => {
         it("should calculate scroll state for a scrollable node", () => {
+            expect.assertions(4);
+
             const node = createNode("ink-box");
 
             node.style = { overflow: "scroll", scrollTop: 0 };
@@ -36,6 +38,8 @@ describe("scroll", () => {
         });
 
         it("should clamp scrollTop to valid range", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             node.style = { overflow: "scroll", scrollTop: 999 };
@@ -60,6 +64,8 @@ describe("scroll", () => {
         });
 
         it("should handle node without yoga node", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-virtual-text");
 
             node.style = { overflow: "scroll" };
@@ -70,6 +76,8 @@ describe("scroll", () => {
         });
 
         it("should ensure clientHeight and clientWidth are non-negative", () => {
+            expect.assertions(3);
+
             const node = createNode("ink-box");
 
             node.style = { borderStyle: "single", overflow: "scroll", scrollTop: 0 };
@@ -91,6 +99,8 @@ describe("scroll", () => {
 
     describe("getScrollHeight/getScrollWidth", () => {
         it("should return 0 for nodes without scroll state", () => {
+            expect.assertions(2);
+
             const node = createNode("ink-box");
 
             expect(getScrollHeight(node)).toBe(0);
@@ -100,6 +110,8 @@ describe("scroll", () => {
 
     describe("getScrollTop/getScrollLeft", () => {
         it("should return 0 for nodes without scroll state", () => {
+            expect.assertions(2);
+
             const node = createNode("ink-box");
 
             expect(getScrollTop(node)).toBe(0);
@@ -107,6 +119,8 @@ describe("scroll", () => {
         });
 
         it("should return computed scroll position", () => {
+            expect.assertions(1);
+
             const node = createNode("ink-box");
 
             node.style = { overflow: "scroll", scrollTop: 5 };

@@ -1345,8 +1345,8 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     // "+" badge in top-right corner
     const badge = document.createElement("div");
 
-    badge.style.cssText =
-        "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
+    badge.style.cssText
+        = "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
     badge.textContent = "+";
     outline.append(badge);
     document.body.append(outline);
@@ -1675,10 +1675,15 @@ const parseInlineStyle = (css: string): Record<string, string> => {
 
 // ─── Annotation detail popup ─────────────────────────────────────────────────
 
+// eslint-disable-next-line unused-imports/no-unused-vars -- kept for future typed querySelector casts
+interface AnnotationElement extends Element {
+    __cleanup?: () => void;
+    __resizeObserver?: ResizeObserver;
+    annotationId?: string;
+}
+
 const removeAnnotationDetail = (): void => {
-    const element = document.querySelector(`#${DETAIL_ID}`) as
-        | (Element & { __cleanup?: () => void; __resizeObserver?: ResizeObserver; annotationId?: string })
-        | null;
+    const element = document.querySelector(`#${DETAIL_ID}`);
 
     // Unmark the marker
     if (element?.annotationId) {

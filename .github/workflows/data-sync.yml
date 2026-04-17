@@ -35,7 +35,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "22.x"
+                  node-version: "22"
                   cache-prefix: "data-sync"
                   install-packages: "true"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config

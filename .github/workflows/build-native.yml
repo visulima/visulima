@@ -67,6 +67,12 @@ jobs:
                         - 'packages/tooling/vis/package.json'
                         - 'packages/tooling/vis/index.js'
                         - '.github/workflows/build-native.yml'
+                      secret-scanner:
+                        - 'packages/tooling/secret-scanner/native/**'
+                        - 'packages/tooling/secret-scanner/npm/**'
+                        - 'packages/tooling/secret-scanner/package.json'
+                        - 'packages/tooling/secret-scanner/index.js'
+                        - '.github/workflows/build-native.yml'
 
     # Build all changed packages per target, test inline on native-runnable targets
     build:
@@ -141,6 +147,14 @@ jobs:
                   path: "packages/tooling/vis/*.node"
                   key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**') }}"
 
+            - name: "Cache secret-scanner native build"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true'"
+              id: "cache-secret-scanner"
+              uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
+              with:
+                  path: "packages/tooling/secret-scanner/*.node"
+                  key: "native-secret-scanner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/secret-scanner/native/Cargo.toml', 'packages/tooling/secret-scanner/native/Cargo.lock', 'packages/tooling/secret-scanner/native/build.rs', 'packages/tooling/secret-scanner/native/src/**') }}"
+
             # Determine if any package actually needs building (not all cached)
             # A skipped cache step (package unchanged) has outcome='skipped' and empty cache-hit,
             # so we must check both that the cache step ran AND missed.
@@ -156,6 +170,9 @@ jobs:
                     NEED="true"
                   fi
                   if [[ "${{ steps.cache-vis.outcome }}" == "success" && "${{ steps.cache-vis.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-secret-scanner.outcome }}" == "success" && "${{ steps.cache-secret-scanner.outputs.cache-hit }}" != "true" ]]; then
                     NEED="true"
                   fi
                   echo "any=$NEED" >> "$GITHUB_OUTPUT"
@@ -206,6 +223,11 @@ jobs:
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/vis"
 
+            - name: "Build secret-scanner native"
+              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true') && steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+              working-directory: "packages/tooling/secret-scanner"
+
             # --- Upload artifacts per package ---
             - name: "Upload task-runner artifact"
               if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
@@ -231,6 +253,14 @@ jobs:
                   path: "packages/tooling/vis/*.node"
                   if-no-files-found: "error"
 
+            - name: "Upload secret-scanner artifact"
+              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true'"
+              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              with:
+                  name: "bindings-secret-scanner-${{ matrix.settings.target }}"
+                  path: "packages/tooling/secret-scanner/*.node"
+                  if-no-files-found: "error"
+
             # --- Test native bindings inline (only on targets that can run natively) ---
             - name: "Test task-runner native binding"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true')"
@@ -246,6 +276,15 @@ jobs:
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true')"
               run: "pnpm vitest run __tests__/native-binding.test.ts"
               working-directory: "packages/tooling/vis"
+
+            - name: "Build secret-scanner JS dependencies (fs, path)"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+              run: "pnpm exec nx run-many --target=build --projects=fs,path"
+
+            - name: "Test secret-scanner native binding"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/tooling/secret-scanner"
 
     # This check runs once all build jobs have passed
     build-native-required-check:

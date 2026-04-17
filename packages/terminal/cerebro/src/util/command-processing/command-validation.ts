@@ -98,7 +98,7 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>,
         if (conflict) {
             throw new ConflictingOptionsError(
                 conflict.name,
-                typeof conflict.conflicts === "string" ? conflict.conflicts : (conflict.conflicts?.[0] ?? "unknown"),
+                typeof conflict.conflicts === "string" ? conflict.conflicts : conflict.conflicts?.[0] ?? "unknown",
             );
         }
     }

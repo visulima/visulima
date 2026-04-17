@@ -4,11 +4,13 @@ import { randomName } from "../../src/commands/create/random-name";
 
 describe(randomName, () => {
     it("should return a string in word-word format", () => {
-        expect.assertions(2);
+        // `expectTypeOf` is compile-time only; only `expect()` counts toward assertion totals.
+        expect.assertions(1);
 
         const name = randomName();
 
-        expect(typeof name).toBe("string");
+        expectTypeOf(name).toBeString();
+
         expect(name).toMatch(/^[a-z]+-[a-z]+$/);
     });
 

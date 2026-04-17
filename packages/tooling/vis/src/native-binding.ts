@@ -134,6 +134,11 @@ interface SortPackageJsonOptions {
 }
 
 interface NativeBindings {
+    cleanWorkspace: (root: string, removeLockfile: boolean) => CleanResult;
+    detectPackageManager: (cwd: string) => DetectedPackageManager;
+    execPmCommand: (bin: string, args: string[], cwd: string) => ExecResult;
+    execPmCommandInteractive: (bin: string, args: string[], cwd: string) => number;
+
     /**
      * ABI compatibility version exported from the Rust binding. The TypeScript
      * loader compares this against {@link EXPECTED_NATIVE_BINDING_VERSION} and
@@ -141,10 +146,6 @@ interface NativeBindings {
      * signature change is not used silently.
      */
     NATIVE_BINDING_VERSION: number;
-    cleanWorkspace: (root: string, removeLockfile: boolean) => CleanResult;
-    detectPackageManager: (cwd: string) => DetectedPackageManager;
-    execPmCommand: (bin: string, args: string[], cwd: string) => ExecResult;
-    execPmCommandInteractive: (bin: string, args: string[], cwd: string) => number;
     resolveAdd: (pm: string, version: string, options: AddOptions) => ResolvedCommand;
     resolveDedupe: (pm: string, version: string, check: boolean) => ResolvedCommand;
     resolveDlx: (pm: string, version: string, options: DlxOptions) => ResolvedCommand;
@@ -195,10 +196,10 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         // .node file with the pre-v11 2-arg resolveLink would pass a bare
         // `typeof === "function"` check and then silently misinterpret args).
         if (
-            typeof loaded.detectPackageManager === "function" &&
-            typeof loaded.execPmCommand === "function" &&
-            typeof loaded.resolveLink === "function" &&
-            loaded.NATIVE_BINDING_VERSION === EXPECTED_NATIVE_BINDING_VERSION
+            typeof loaded.detectPackageManager === "function"
+            && typeof loaded.execPmCommand === "function"
+            && typeof loaded.resolveLink === "function"
+            && loaded.NATIVE_BINDING_VERSION === EXPECTED_NATIVE_BINDING_VERSION
         ) {
             nativeBindings = loaded;
         }

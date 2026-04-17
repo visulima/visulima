@@ -14,7 +14,7 @@ import type { TsConfigJson } from "type-fest";
 import type { TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
 
-const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }) as string);
+const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }));
 
 /** Converts backslashes to forward slashes without resolving ../ segments. */
 const slash = (path: string): string => path.replaceAll("\\", "/");
@@ -37,7 +37,6 @@ const resolveAndRelativize = (fromDirectoryPath: string, extendsDirectoryPath: s
     const absolutePath = join(extendsDirectoryPath, filePath);
     const relativePath = relative(fromDirectoryPath, absolutePath);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- fallback on empty string, not nullish
     return normalize(relativePath) || "./";
 };
 

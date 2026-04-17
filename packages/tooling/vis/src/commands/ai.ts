@@ -95,7 +95,6 @@ const handleProviderStatus = (format: string, logger: Console, aiConfig?: AiConf
 };
 
 const ai: Command = {
-    group: "System",
     alias: "a",
     description: "Show AI provider status, test connectivity, and manage cache",
     examples: [
@@ -135,6 +134,7 @@ const ai: Command = {
 
         handleProviderStatus(format, logger, visConfig?.ai);
     },
+    group: "System",
     name: "ai",
     options: [
         {

@@ -1,4 +1,4 @@
-export type CssObject = {
+type CssObject = {
     __proto__: null;
     backgroundColor: string | null;
     color: string | null;
@@ -590,3 +590,5 @@ export const cssToAnsi = (css: CssObject, previousCss?: CssObject): string => {
 
     return ansi;
 };
+
+export type { CssObject };

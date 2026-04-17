@@ -7,7 +7,7 @@ import { buildCodeownersLines, renderCodeowners } from "../codeowners";
 import { discoverWorkspace } from "../workspace";
 
 /**
- * `vis sync <kind>` performs workspace-wide synchronisations that
+ * `vis sync &lt;kind>` performs workspace-wide synchronisations that
  * cannot be derived from a task graph alone.
  *
  * Currently supported kinds:
@@ -20,7 +20,6 @@ import { discoverWorkspace } from "../workspace";
  * `tsconfig-references`, `package-json` sort, `hooks`).
  */
 const sync: Command = {
-    group: "Workspace",
     argument: {
         description: "What to sync: codeowners",
         name: "kind",
@@ -87,6 +86,7 @@ const sync: Command = {
         writeFileSync(outPath, rendered);
         logger.info(`Wrote ${lines.length} entries to ${outPath}`);
     },
+    group: "Workspace",
     name: "sync",
     options: [
         {

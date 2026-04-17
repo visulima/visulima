@@ -34,8 +34,8 @@ const ScrollBarBox = ({
 }: ScrollBarBoxProps): React.JSX.Element => {
     const isLeft = scrollBarPosition === "left";
     const scrollBarPlacement = isLeft ? "left" : "right";
-    const scrollBarColor = isLeft ? (borderLeftColor ?? borderColor) : (borderRightColor ?? borderColor);
-    const scrollBarDimColor = isLeft ? (borderLeftDimColor ?? borderDimColor) : (borderRightDimColor ?? borderDimColor);
+    const scrollBarColor = isLeft ? borderLeftColor ?? borderColor : borderRightColor ?? borderColor;
+    const scrollBarDimColor = isLeft ? borderLeftDimColor ?? borderDimColor : borderRightDimColor ?? borderDimColor;
 
     return (
         <Box flexDirection="row" height={height} {...boxProps}>

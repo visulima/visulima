@@ -78,47 +78,51 @@ export const pailPlugin = <T extends string = string>(app: PailElysiaInstance, o
     const requestState = new WeakMap<Request, RequestState>();
     const emitted = new WeakSet<Request>();
 
-    return app
-        .derive({ as: "global" }, ({ request }: { request: Request }) => {
-            const url = new URL(request.url);
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
-            const safeHeaders = extractSafeHeaders(request.headers);
+    return (
+        app
+            .derive({ as: "global" }, ({ request }: { request: Request }) => {
+                const url = new URL(request.url);
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+                const safeHeaders = extractSafeHeaders(request.headers);
 
-            const result = createMiddlewareLogger(options, {
-                headers: safeHeaders,
-                method: request.method,
-                path: url.pathname,
-                requestId,
-            });
+                const result = createMiddlewareLogger(options, {
+                    headers: safeHeaders,
+                    method: request.method,
+                    path: url.pathname,
+                    requestId,
+                });
 
-            requestState.set(request, result);
+                requestState.set(request, result);
 
-            if (!result.skipped) {
-                activeLoggers.add(result.logger);
-                storage.enterWith(result.logger);
-            }
+                if (!result.skipped) {
+                    activeLoggers.add(result.logger);
+                    storage.enterWith(result.logger);
+                }
 
-            return { log: result.logger };
-        })
-        .onAfterHandle({ as: "global" }, async ({ request, set }: { request: Request; set: { status?: number } }) => {
-            const state = requestState.get(request);
+                return { log: result.logger };
+            })
+            // eslint-disable-next-line @typescript-eslint/require-await -- Elysia hook signature requires Promise<void>
+            .onAfterHandle({ as: "global" }, async ({ request, set }: { request: Request; set: { status?: number } }) => {
+                const state = requestState.get(request);
 
-            if (!state?.skipped && state && !emitted.has(request)) {
-                emitted.add(request);
-                state.finish({ status: set.status ?? 200 });
-                activeLoggers.delete(state.logger);
-            }
-        })
-        .onError({ as: "global" }, async ({ error, request }: { error: Error; request: Request }) => {
-            const state = requestState.get(request);
+                if (!state?.skipped && state && !emitted.has(request)) {
+                    emitted.add(request);
+                    state.finish({ status: set.status ?? 200 });
+                    activeLoggers.delete(state.logger);
+                }
+            })
+            // eslint-disable-next-line @typescript-eslint/require-await -- Elysia hook signature requires Promise<void>
+            .onError({ as: "global" }, async ({ error, request }: { error: Error; request: Request }) => {
+                const state = requestState.get(request);
 
-            if (!state?.skipped && state && !emitted.has(request)) {
-                emitted.add(request);
-                state.finish({ error });
-                activeLoggers.delete(state.logger);
-            }
-        });
+                if (!state?.skipped && state && !emitted.has(request)) {
+                    emitted.add(request);
+                    state.finish({ error });
+                    activeLoggers.delete(state.logger);
+                }
+            })
+    );
 };
 
 export { useLogger };

@@ -29,12 +29,16 @@ vi.mock(import("node:readline"), async (importOriginal) => {
 
 describe(generateVariants, () => {
     it("should return empty set for names shorter than 3 characters", () => {
+        expect.assertions(3);
+
         expect(generateVariants("").size).toBe(0);
         expect(generateVariants("a").size).toBe(0);
         expect(generateVariants("ab").size).toBe(0);
     });
 
     it("should return a non-empty set for names with 3+ characters", () => {
+        expect.assertions(1);
+
         expect(generateVariants("abc").size).toBeGreaterThan(0);
     });
 
@@ -42,6 +46,8 @@ describe(generateVariants, () => {
 
     describe("character omission", () => {
         it("should drop each non-separator character", () => {
+            expect.assertions(5);
+
             const variants = generateVariants("react");
 
             expect(variants.has("eact")).toBe(true); // drop r
@@ -52,6 +58,8 @@ describe(generateVariants, () => {
         });
 
         it("should not drop separator characters", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("a-b-c");
 
             // Dropping '-' at index 1 would give "ab-c" — that should NOT appear
@@ -68,6 +76,8 @@ describe(generateVariants, () => {
 
     describe("adjacent transposition", () => {
         it("should swap each adjacent pair of different characters", () => {
+            expect.assertions(4);
+
             const variants = generateVariants("react");
 
             expect(variants.has("eract")).toBe(true); // swap r,e
@@ -77,6 +87,8 @@ describe(generateVariants, () => {
         });
 
         it("should not swap identical adjacent characters", () => {
+            expect.assertions(1);
+
             const variants = generateVariants("aab");
 
             // a,a are identical — should not produce "aab" (which is the original)
@@ -88,6 +100,8 @@ describe(generateVariants, () => {
 
     describe("character duplication", () => {
         it("should duplicate each non-separator character", () => {
+            expect.assertions(5);
+
             const variants = generateVariants("react");
 
             expect(variants.has("rreact")).toBe(true); // dup r
@@ -98,6 +112,8 @@ describe(generateVariants, () => {
         });
 
         it("should not duplicate separators", () => {
+            expect.assertions(1);
+
             const variants = generateVariants("a-b");
             // Should not produce "a--b"
             const variantsArray = [...variants];
@@ -111,6 +127,8 @@ describe(generateVariants, () => {
 
     describe("homoglyph substitution", () => {
         it("should substitute common homoglyphs", () => {
+            expect.assertions(5);
+
             const variants = generateVariants("react");
 
             expect(variants.has("r3act")).toBe(true); // e→3
@@ -122,6 +140,8 @@ describe(generateVariants, () => {
 
         it("should handle multiple substitution options per character", () => {
             // 'a' maps to ["4", "e"], 'e' maps to ["3", "a"]
+            expect.assertions(6);
+
             const variants = generateVariants("aes");
 
             expect(variants.has("4es")).toBe(true); // a→4
@@ -134,6 +154,8 @@ describe(generateVariants, () => {
 
         it("should handle characters without substitutions", () => {
             // 'x', 'y', 'z' have no substitution entries except z (which is a sub for s)
+            expect.assertions(1);
+
             const variants = generateVariants("xyz");
 
             // Should still produce omission, transposition, duplication variants
@@ -145,6 +167,8 @@ describe(generateVariants, () => {
 
     describe("separator manipulation", () => {
         it("should produce separator variants for hyphenated names", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("body-parser");
 
             expect(variants.has("bodyparser")).toBe(true); // remove hyphens
@@ -153,6 +177,8 @@ describe(generateVariants, () => {
         });
 
         it("should produce multiple separator replacements for multiple hyphens", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("a-b-c");
 
             expect(variants.has("abc")).toBe(true); // remove all
@@ -161,6 +187,8 @@ describe(generateVariants, () => {
         });
 
         it("should produce all separator insertions for long non-hyphenated names", () => {
+            expect.assertions(4);
+
             const variants = generateVariants("express");
 
             expect(variants.has("ex-press")).toBe(true);
@@ -170,6 +198,8 @@ describe(generateVariants, () => {
         });
 
         it("should treat underscores as separators", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("a_b_c");
 
             expect(variants.has("abc")).toBe(true); // remove all
@@ -178,6 +208,8 @@ describe(generateVariants, () => {
         });
 
         it("should not produce separator insertion for short names (length <= 5)", () => {
+            expect.assertions(1);
+
             const variants = generateVariants("react"); // length 5
 
             // No separator insertion — only 5 chars
@@ -189,6 +221,8 @@ describe(generateVariants, () => {
         });
 
         it("should not transpose characters across separators", () => {
+            expect.assertions(2);
+
             const variants = generateVariants("body-parser");
 
             // "bodyp-arser" would mean swapping '-' and 'p' — should not happen
@@ -202,6 +236,8 @@ describe(generateVariants, () => {
 
     describe("common suffixes", () => {
         it("should add -js, js, -node suffixes for unscoped packages", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("lodash");
 
             expect(variants.has("lodash-js")).toBe(true);
@@ -210,6 +246,8 @@ describe(generateVariants, () => {
         });
 
         it("should not add suffixes for scoped packages", () => {
+            expect.assertions(3);
+
             const variants = generateVariants("@scope/pkg");
 
             expect(variants.has("@scope/pkg-js")).toBe(false);
@@ -222,12 +260,17 @@ describe(generateVariants, () => {
 
     describe("edge cases", () => {
         it("should never include the original name in variants", () => {
+            // 5 names × 1 assertion each = 5
+            expect.assertions(5);
+
             for (const name of ["lodash", "react", "express", "body-parser", "@scope/pkg"]) {
                 expect(generateVariants(name).has(name)).toBe(false);
             }
         });
 
         it("should produce unique variants (Set guarantees)", () => {
+            expect.assertions(1);
+
             const variants = generateVariants("lodash");
             const asArray = [...variants];
 
@@ -235,6 +278,8 @@ describe(generateVariants, () => {
         });
 
         it("should handle names with dots", () => {
+            expect.assertions(2);
+
             const variants = generateVariants("socket.io");
 
             // Dots are treated as separators for omission/duplication
@@ -244,6 +289,8 @@ describe(generateVariants, () => {
         });
 
         it("should handle names that are exactly 3 characters", () => {
+            expect.assertions(4);
+
             const variants = generateVariants("vue");
 
             expect(variants.size).toBeGreaterThan(0);
@@ -258,6 +305,8 @@ describe(generateVariants, () => {
 
 describe(checkTyposquat, () => {
     it("should detect a known blocklisted typosquat", () => {
+        expect.assertions(4);
+
         const result = checkTyposquat("axois");
 
         expect(result).toBeDefined();
@@ -267,7 +316,9 @@ describe(checkTyposquat, () => {
     });
 
     it("should detect multiple different blocklisted entries", () => {
-        // Test several known entries from the JSON
+        // 5 cases × 2 assertions each = 10
+        expect.assertions(10);
+
         const cases: [string, string][] = [
             ["loash", "lodash"],
             ["rreact", "react"],
@@ -287,6 +338,8 @@ describe(checkTyposquat, () => {
     it("should detect heuristic typosquats not in the blocklist", () => {
         // "expresz" is a substitution variant of "express" (s→z) that likely
         // isn't in the blocklist but the heuristic should catch it
+        expect.assertions(3);
+
         const result = checkTyposquat("expr3ss");
 
         expect(result).toBeDefined();
@@ -295,6 +348,8 @@ describe(checkTyposquat, () => {
     });
 
     it("should return undefined for legitimate package names", () => {
+        expect.assertions(6);
+
         expect(checkTyposquat("react")).toBeUndefined();
         expect(checkTyposquat("express")).toBeUndefined();
         expect(checkTyposquat("lodash")).toBeUndefined();
@@ -304,6 +359,8 @@ describe(checkTyposquat, () => {
     });
 
     it("should return undefined for unrelated package names", () => {
+        expect.assertions(3);
+
         expect(checkTyposquat("my-totally-unique-package-name-xyz123")).toBeUndefined();
         expect(checkTyposquat("@myorg/internal-utils")).toBeUndefined();
         expect(checkTyposquat("some-enterprise-tool")).toBeUndefined();
@@ -311,6 +368,8 @@ describe(checkTyposquat, () => {
 
     it("should strip scope and check the bare name", () => {
         // "@evil/axois" → bare name "axois" → matches "axios"
+        expect.assertions(3);
+
         const result = checkTyposquat("@evil/axois");
 
         expect(result).toBeDefined();
@@ -320,6 +379,8 @@ describe(checkTyposquat, () => {
 
     it("should handle scoped packages without a slash", () => {
         // Edge case: "@something" with no slash
+        expect.assertions(1);
+
         const result = checkTyposquat("@something");
 
         // "@something" has no "/" so bareName returns "@something" — unlikely to match
@@ -327,7 +388,9 @@ describe(checkTyposquat, () => {
     });
 
     it("should detect all known blocklist entries in the JSON", () => {
-        // Verify a sampling of entries across different packages
+        // 6 samples × 3 assertions each = 18
+        expect.assertions(18);
+
         const samples: [string, string][] = [
             ["axxios", "axios"],
             ["bable", "babel"],
@@ -351,16 +414,22 @@ describe(checkTyposquat, () => {
 
 describe(checkTyposquats, () => {
     it("should return empty array when all names are safe", () => {
+        expect.assertions(1);
+
         const result = checkTyposquats(["react", "express", "lodash"]);
 
         expect(result).toEqual([]);
     });
 
     it("should return empty array for an empty input", () => {
+        expect.assertions(1);
+
         expect(checkTyposquats([])).toEqual([]);
     });
 
     it("should return a single match among safe packages", () => {
+        expect.assertions(3);
+
         const result = checkTyposquats(["react", "axois", "lodash"]);
 
         expect(result).toHaveLength(1);
@@ -369,6 +438,8 @@ describe(checkTyposquats, () => {
     });
 
     it("should detect multiple typosquats in one call", () => {
+        expect.assertions(4);
+
         const result = checkTyposquats(["axois", "loash", "rreact"]);
 
         expect(result.length).toBeGreaterThanOrEqual(3);
@@ -381,12 +452,16 @@ describe(checkTyposquats, () => {
     });
 
     it("should preserve the input field in each match", () => {
+        expect.assertions(1);
+
         const result = checkTyposquats(["axois"]);
 
         expect(result[0].input).toBe("axois");
     });
 
     it("should correctly map each typosquat to its legitimate package", () => {
+        expect.assertions(2);
+
         const result = checkTyposquats(["axois", "halk"]);
 
         const byInput = new Map(result.map((r) => [r.input, r]));
@@ -416,6 +491,8 @@ describe(runTyposquatCheck, () => {
     };
 
     it("should return ok=true with unchanged packages when no typosquats found", async () => {
+        expect.assertions(2);
+
         const result = await runTyposquatCheck(["react", "express"]);
 
         expect(result.ok).toBe(true);
@@ -423,6 +500,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=false in non-interactive mode when typosquat is detected", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         const result = await runTyposquatCheck(["axois"]);
@@ -432,6 +511,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=false when user answers N (abort)", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("N");
 
@@ -442,6 +523,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=false when user presses enter (default N)", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("");
 
@@ -451,6 +534,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=true with original packages when user answers y (keep)", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("y");
 
@@ -461,6 +546,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=true with 'yes' answer (keep original)", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("yes");
 
@@ -471,6 +558,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=true with corrected packages when user answers S (suggested)", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("S");
 
@@ -481,6 +570,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should return ok=true with 'suggested' answer", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("suggested");
 
@@ -491,6 +582,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should only replace typosquat names while keeping safe names untouched", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("s");
 
@@ -501,6 +594,8 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should replace multiple typosquats when user answers S", async () => {
+        expect.assertions(2);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
         mockRl("s");
 
@@ -511,6 +606,9 @@ describe(runTyposquatCheck, () => {
     });
 
     it("should handle case-insensitive answers", async () => {
+        // 4 answers × 2 assertions each = 8
+        expect.assertions(8);
+
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
 
         for (const answer of ["s", "S", "SUGGESTED", "Suggested"]) {
@@ -528,46 +626,68 @@ describe(runTyposquatCheck, () => {
 
 describe(parsePackageArgument, () => {
     it("should parse a bare package name", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("react")).toEqual({ name: "react", versionSpec: undefined });
     });
 
     it("should parse name@version", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("react@19")).toEqual({ name: "react", versionSpec: "19" });
     });
 
     it("should parse name@semver-range", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("lodash@^4.17.0")).toEqual({ name: "lodash", versionSpec: "^4.17.0" });
     });
 
     it("should parse name@tilde-range", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("express@~4.18.0")).toEqual({ name: "express", versionSpec: "~4.18.0" });
     });
 
     it("should parse name@dist-tag", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("react@next")).toEqual({ name: "react", versionSpec: "next" });
     });
 
     it("should parse a scoped package without version", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@types/react")).toEqual({ name: "@types/react", versionSpec: undefined });
     });
 
     it("should parse a scoped package with version", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@types/react@18")).toEqual({ name: "@types/react", versionSpec: "18" });
     });
 
     it("should parse a scoped package with semver range", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@scope/pkg@^2.0.0")).toEqual({ name: "@scope/pkg", versionSpec: "^2.0.0" });
     });
 
     it("should handle a scope without a slash", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@something")).toEqual({ name: "@something", versionSpec: undefined });
     });
 
     it("should handle a scope with slash but no version", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@org/lib")).toEqual({ name: "@org/lib", versionSpec: undefined });
     });
 
     it("should parse a scoped package with dist-tag", () => {
+        expect.assertions(1);
+
         expect(parsePackageArgument("@scope/pkg@latest")).toEqual({ name: "@scope/pkg", versionSpec: "latest" });
     });
 });
@@ -576,6 +696,8 @@ describe(parsePackageArgument, () => {
 
 describe("checkTyposquats with allowlist", () => {
     it("should skip allowlisted packages", () => {
+        expect.assertions(2);
+
         const result = checkTyposquats(["axois", "halk"], ["axois"]);
 
         expect(result).toHaveLength(1);
@@ -583,18 +705,24 @@ describe("checkTyposquats with allowlist", () => {
     });
 
     it("should skip all matches when all are allowlisted", () => {
+        expect.assertions(1);
+
         const result = checkTyposquats(["axois", "halk"], ["axois", "halk"]);
 
         expect(result).toEqual([]);
     });
 
     it("should behave normally when allowlist is empty", () => {
+        expect.assertions(1);
+
         const result = checkTyposquats(["axois"], []);
 
         expect(result).toHaveLength(1);
     });
 
     it("should behave normally when allowlist is undefined", () => {
+        expect.assertions(1);
+
         const result = checkTyposquats(["axois"], undefined);
 
         expect(result).toHaveLength(1);
@@ -620,12 +748,16 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should return true when no package.json exists", async () => {
+        expect.assertions(1);
+
         const result = await scanDepsForTyposquats(tmpDir);
 
         expect(result).toBe(true);
     });
 
     it("should return true when package.json has no dependencies", async () => {
+        expect.assertions(1);
+
         writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test" }));
 
         const result = await scanDepsForTyposquats(tmpDir);
@@ -634,6 +766,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should return true when all dependencies are safe", async () => {
+        expect.assertions(1);
+
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({
@@ -648,6 +782,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should return false in non-TTY mode when a typosquat is found", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         writeFileSync(
@@ -664,6 +800,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should skip allowlisted deps", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         writeFileSync(
@@ -680,6 +818,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should scan all dependency types", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         writeFileSync(
@@ -696,6 +836,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should detect typosquats in npm: alias targets", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         writeFileSync(
@@ -712,6 +854,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should detect typosquats in pnpm: alias targets", async () => {
+        expect.assertions(1);
+
         Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
 
         writeFileSync(
@@ -728,6 +872,8 @@ describe(scanDepsForTyposquats, () => {
     });
 
     it("should not flag non-alias version specifiers", async () => {
+        expect.assertions(1);
+
         writeFileSync(
             join(tmpDir, "package.json"),
             JSON.stringify({

@@ -11,6 +11,8 @@ const Spacer: React.FC = () => React.createElement(Box, { flexGrow: 1 });
 
 describe("ratatat renderer layout", () => {
     it("should render a bordered box with full-width content", () => {
+        expect.assertions(6);
+
         const output = renderToString(
             <Box borderStyle="single" height={3} width={20}>
                 <Text>Hello World</Text>
@@ -32,6 +34,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should render tab bar without truncation at sufficient width", () => {
+        expect.assertions(1);
+
         const SECTIONS = ["Layout", "Focus", "Graph", "Live", "Incremental", "UI", "Static", "Mouse"];
 
         const TabBar = () => (
@@ -39,15 +43,17 @@ describe("ratatat renderer layout", () => {
                 <Text> </Text>
                 {SECTIONS.map((s, i) => (
                     <Box key={s} marginRight={1}>
-                        {i === 0 ? (
-                            <Box paddingX={1}>
-                                <Text bold>{s}</Text>
-                            </Box>
-                        ) : (
-                            <Box paddingX={1}>
-                                <Text>{s}</Text>
-                            </Box>
-                        )}
+                        {i === 0
+                            ? (
+                                <Box paddingX={1}>
+                                    <Text bold>{s}</Text>
+                                </Box>
+                            )
+                            : (
+                                <Box paddingX={1}>
+                                    <Text>{s}</Text>
+                                </Box>
+                            )}
                     </Box>
                 ))}
                 <Spacer />
@@ -64,6 +70,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should position content correctly inside bordered box with padding", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box borderStyle="single" height={3} paddingX={1} width={12}>
                 <Text>test</Text>
@@ -79,6 +87,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should render nested boxes with borders correctly", () => {
+        expect.assertions(3);
+
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={5} width={20}>
                 <Box borderStyle="single" height={3} width={10}>
@@ -95,6 +105,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should handle flex row with multiple boxes", () => {
+        expect.assertions(4);
+
         const output = renderToString(
             <Box flexDirection="row" height={3} width={40}>
                 <Box borderStyle="single" height={3} width={15}>
@@ -122,6 +134,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should use Spacer to push content apart", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box borderStyle="single" height={3} width={30}>
                 <Text>left</Text>
@@ -143,6 +157,8 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should apply gap between flex children", () => {
+        expect.assertions(2);
+
         const output = renderToString(
             <Box flexDirection="row" gap={3} height={3} width={30}>
                 <Box borderStyle="single" height={3} width={10}>

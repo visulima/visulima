@@ -77,8 +77,8 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
     // Error: strictDepBuilds is on but no allowBuilds
     if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. " +
-                "Run 'vis approve-builds' to review and add packages.",
+            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. "
+            + "Run 'vis approve-builds' to review and add packages.",
         );
     }
 
@@ -116,8 +116,8 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
 
     if (result.warnings.length > 0) {
         warn(
-            `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. ` +
-                "Run 'vis check --security-config' for details.",
+            `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. `
+            + "Run 'vis check --security-config' for details.",
         );
     }
 };
@@ -409,7 +409,9 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                     result.extraArgs.push("--ignore-scripts");
 
                     for (const [pattern, allowed] of Object.entries(allowBuilds)) {
-                        if (allowed) result.postInstallPackages.push(pattern);
+                        if (allowed) {
+                            result.postInstallPackages.push(pattern);
+                        }
                     }
                 }
             }
@@ -478,9 +480,9 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             let existing: Record<string, boolean> = {};
 
             try {
-                const data = readYamlSync<{ allowBuilds?: Record<string, boolean> }>(filePath);
+                const data = readYamlSync(filePath) as { allowBuilds?: Record<string, boolean> } | undefined;
 
-                existing = data?.allowBuilds ?? {};
+                existing = data?.allowBuilds ?? ({} as Record<string, boolean>);
             } catch {
                 /* fall through: treat as empty */
             }
@@ -497,7 +499,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             // Render the map deterministically (sorted keys, quoted scoped names)
             const sortedKeys = Object.keys(merged).sort();
             const needsQuote = (key: string): boolean => key.startsWith("@") || key.includes("/") || /[:#\s]/.test(key);
-            const renderKey = (key: string): string => (needsQuote(key) ? `'${key.replace(/'/g, "''")}'` : key);
+            const renderKey = (key: string): string => (needsQuote(key) ? `'${key.replaceAll('\'', "''")}'` : key);
             const block = sortedKeys.map((key) => `  ${renderKey(key)}: ${String(merged[key])}`).join("\n");
             const allowBuildsBlock = `allowBuilds:\n${block}\n`;
 
@@ -510,7 +512,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
             // Replace existing block if present, otherwise append.
             // Matches: "allowBuilds:" followed by zero or more indented (2+ space/tab) lines.
-            const existingBlockRegex = /^allowBuilds:[ \t]*\n(?:[ \t]{2,}[^\n]*\n)*/m;
+            const existingBlockRegex = /^allowBuilds:[ \t]*\n(?:[ \t]{2}[^\n]*\n)*/m;
 
             content = existingBlockRegex.test(content) ? content.replace(existingBlockRegex, allowBuildsBlock) : `${content.trimEnd()}\n\n${allowBuildsBlock}`;
 
@@ -630,7 +632,9 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
         const pkgDir = join(nodeModulesPath, pkg);
         const pkgJsonPath = join(pkgDir, "package.json");
 
-        if (!existsSync(pkgJsonPath)) continue;
+        if (!existsSync(pkgJsonPath)) {
+            continue;
+        }
 
         try {
             const scripts = JSON.parse(readFileSync(pkgJsonPath, "utf8")).scripts ?? {};

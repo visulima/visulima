@@ -32,7 +32,7 @@ export const validateStringArray = (value: unknown, fieldName: string): string[]
 /**
  * Validates that a value is a function.
  */
-export const validateFunction = (value: unknown, fieldName: string): ((...args: unknown[]) => unknown) => {
+export const validateFunction = (value: unknown, fieldName: string): (...args: unknown[]) => unknown => {
     if (typeof value !== "function") {
         throw new CerebroError(`${fieldName} must be a function`, "INVALID_INPUT", { fieldName, value });
     }
@@ -67,12 +67,12 @@ export const validateCommandName = (name: string): string => {
 
     // Prevent path traversal and command injection attempts
     if (
-        trimmedName.includes("..") ||
-        trimmedName.includes("/") ||
-        trimmedName.includes("\\") ||
-        trimmedName.includes(";") ||
-        trimmedName.includes("|") ||
-        trimmedName.includes("&")
+        trimmedName.includes("..")
+        || trimmedName.includes("/")
+        || trimmedName.includes("\\")
+        || trimmedName.includes(";")
+        || trimmedName.includes("|")
+        || trimmedName.includes("&")
     ) {
         throw new CerebroError(`Command name "${trimmedName}" contains invalid characters`, "INVALID_COMMAND_NAME", { commandName: trimmedName });
     }
@@ -104,12 +104,12 @@ export const validatePluginName = (name: string): string => {
 
     // Prevent path traversal and injection attempts
     if (
-        trimmedName.includes("..") ||
-        trimmedName.includes("/") ||
-        trimmedName.includes("\\") ||
-        trimmedName.includes(";") ||
-        trimmedName.includes("|") ||
-        trimmedName.includes("&")
+        trimmedName.includes("..")
+        || trimmedName.includes("/")
+        || trimmedName.includes("\\")
+        || trimmedName.includes(";")
+        || trimmedName.includes("|")
+        || trimmedName.includes("&")
     ) {
         throw new CerebroError(`Plugin name "${trimmedName}" contains invalid characters`, "INVALID_PLUGIN_NAME", { pluginName: trimmedName });
     }

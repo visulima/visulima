@@ -45,7 +45,7 @@ const Overview = () => {
     const allBlogsRaw = routeApi.useLoaderData();
     // Explicitly type allBlogs to ensure downstream types are correct.
     // It's better if useLoaderData() is generically typed or the loader itself provides a typed response.
-    const allBlogs: BlogEntry[] = allBlogsRaw as BlogEntry[];
+    const allBlogs: BlogEntry[] = (allBlogsRaw ?? []) as unknown as BlogEntry[];
 
     const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
 
@@ -163,7 +163,7 @@ const Overview = () => {
                     <>
                         <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-12 sm:mt-10 md:grid-cols-2 xl:grid-cols-3">
                             {first4Blogs.map((blog, index) => (
-                                <Link key={`main-blog-${blog.file.flattenedPath}`} to={`/blog${blog.url}`}>
+                                <Link key={`main-blog-${blog.file.flattenedPath}`} to={`/blog${blog.url}` as unknown as "."}>
                                     <div
                                         className={cn("relative isolate", {
                                             "min-xl:hidden": index > 2, // Original logic for hiding items
@@ -203,7 +203,7 @@ const Overview = () => {
                                             hidden: pageIndex !== 1,
                                             "hidden xl:flex": index === 0,
                                         })}
-                                        to={`/blog${blog.url}`}
+                                        to={`/blog${blog.url}` as unknown as "."}
                                     >
                                         <svg
                                             aria-hidden="true"
@@ -274,14 +274,18 @@ const Overview = () => {
                                 {pageIndex > 1
                                     ? (
                                         <PaginationItem>
-                                            <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 }} to="/blog/" />
+                                            <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 } as never} to={"/blog/" as unknown as "."} />
                                         </PaginationItem>
                                     )
                                     : null}
 
                                 {pageNumbersForLinks.map((pageNumber) => (
                                     <PaginationItem key={`pagination-item-${pageNumber}`}>
-                                        <PaginationLink isActive={pageIndex === pageNumber} search={{ includeCategories, pageIndex: pageNumber }} to="/blog/">
+                                        <PaginationLink
+                                            isActive={pageIndex === pageNumber}
+                                            search={{ includeCategories, pageIndex: pageNumber } as never}
+                                            to={"/blog/" as unknown as "."}
+                                        >
                                             {pageNumber}
                                         </PaginationLink>
                                     </PaginationItem>
@@ -298,7 +302,7 @@ const Overview = () => {
                                 {pageIndex < totalPages
                                     ? (
                                         <PaginationItem>
-                                            <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 }} to="/blog/" />
+                                            <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 } as never} to={"/blog/" as unknown as "."} />
                                         </PaginationItem>
                                     )
                                     : null}

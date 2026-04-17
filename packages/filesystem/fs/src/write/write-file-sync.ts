@@ -90,7 +90,7 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
             }
         }
 
-        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
+        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
         renameSync(temporaryPath, path);
     } catch (error: unknown) {

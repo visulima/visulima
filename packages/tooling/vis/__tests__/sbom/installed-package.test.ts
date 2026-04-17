@@ -6,7 +6,7 @@ import { readInstalledPackageMetadata } from "../../src/sbom/installed-package";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
 /**
- * Lays a `package.json` at `<workspaceRoot>/<relativeDir>/package.json`
+ * Lays a `package.json` at `&lt;workspaceRoot>/&lt;relativeDir>/package.json`
  * and returns the fully-qualified package JSON object written.
  */
 const writePackageJson = (workspaceRoot: string, relativeDir: string, pkg: Record<string, unknown>): void => {
@@ -142,9 +142,9 @@ describe(readInstalledPackageMetadata, () => {
         // `join` on Windows treats `\` as a separator, so a value like
         // `foo\..\..\etc` would escape workspaceRoot even though it has no
         // forward slashes or literal `..` segments apart from the escaped ones.
-        expect(readInstalledPackageMetadata(tmpDir, "foo\\bar", "1.0.0")).toBeUndefined();
-        expect(readInstalledPackageMetadata(tmpDir, "lodash", "1.0.0\\..\\..\\etc")).toBeUndefined();
-        expect(readInstalledPackageMetadata(tmpDir, "foo\\..\\..\\etc", "1.0.0")).toBeUndefined();
+        expect(readInstalledPackageMetadata(tmpDir, String.raw`foo\bar`, "1.0.0")).toBeUndefined();
+        expect(readInstalledPackageMetadata(tmpDir, "lodash", String.raw`1.0.0\..\..\etc`)).toBeUndefined();
+        expect(readInstalledPackageMetadata(tmpDir, String.raw`foo\..\..\etc`, "1.0.0")).toBeUndefined();
     });
 
     it("should find pnpm peer-disambiguated install dirs (foo@1.0.0_react@18.0.0)", () => {

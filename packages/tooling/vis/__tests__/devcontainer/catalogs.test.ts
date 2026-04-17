@@ -17,19 +17,25 @@ describe("features catalog", () => {
     });
 
     it("should have valid categories for all entries", () => {
-        const validCategories = new Set(["language", "tool", "cloud", "database", "other"]);
+        expect.assertions(1);
+
+        const validCategories = new Set(["cloud", "database", "language", "other", "tool"]);
         const invalid = FEATURE_CATALOG.filter((f) => !validCategories.has(f.category));
 
         expect(invalid).toHaveLength(0);
     });
 
     it("should have non-empty name and description for all entries", () => {
+        expect.assertions(1);
+
         const empty = FEATURE_CATALOG.filter((f) => !f.name || !f.description);
 
         expect(empty).toHaveLength(0);
     });
 
     it("should have ghcr.io IDs for all entries", () => {
+        expect.assertions(1);
+
         const invalid = FEATURE_CATALOG.filter((f) => !f.id.startsWith("ghcr.io/"));
 
         expect(invalid).toHaveLength(0);
@@ -55,13 +61,17 @@ describe("extensions catalog", () => {
     });
 
     it("should have publisher.name format for all IDs", () => {
+        expect.assertions(1);
+
         const invalid = EXTENSION_CATALOG.filter((e) => !/^[\w-]+\.[\w-]+$/u.test(e.id));
 
         expect(invalid).toHaveLength(0);
     });
 
     it("should have valid categories for all entries", () => {
-        const validCategories = new Set(["linting", "formatting", "language", "git", "testing", "debugging", "other"]);
+        expect.assertions(1);
+
+        const validCategories = new Set(["debugging", "formatting", "git", "language", "linting", "other", "testing"]);
         const invalid = EXTENSION_CATALOG.filter((e) => !validCategories.has(e.category));
 
         expect(invalid).toHaveLength(0);
@@ -102,19 +112,23 @@ describe("templates", () => {
     });
 
     it("should have image or dockerComposeFile for every template", () => {
+        expect.assertions(1);
+
         const invalid = TEMPLATES.filter((t) => !t.config.image && !t.config.dockerComposeFile);
 
         expect(invalid).toHaveLength(0);
     });
 
     it("should have non-empty name and description", () => {
+        expect.assertions(1);
+
         const empty = TEMPLATES.filter((t) => !t.name || !t.description);
 
         expect(empty).toHaveLength(0);
     });
 });
 
-describe("filterFeatures", () => {
+describe(filterFeatures, () => {
     it("should return all features with empty search", () => {
         expect.assertions(1);
 
@@ -156,7 +170,7 @@ describe("filterFeatures", () => {
     });
 });
 
-describe("filterExtensions", () => {
+describe(filterExtensions, () => {
     it("should return all extensions with empty search", () => {
         expect.assertions(1);
 
@@ -209,7 +223,7 @@ describe("mount suggestions", () => {
     it("should not suggest mounts that already exist", () => {
         expect.assertions(1);
 
-        const existingMounts = PM_MOUNTS.pnpm.map((m) => ({ ...m }));
+        const existingMounts = PM_MOUNTS.pnpm.map((m) => { return { ...m }; });
         const mounts = getSuggestedMounts("pnpm", {}, existingMounts);
 
         expect(mounts).toHaveLength(0);

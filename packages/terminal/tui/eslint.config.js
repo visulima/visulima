@@ -185,7 +185,6 @@ export default createConfig(
             "vitest/no-disabled-tests": "off",
             "vitest/no-conditional-in-test": "off",
             "vitest/no-conditional-tests": "off",
-            "vitest/prefer-expect-assertions": "off",
             "vitest/prefer-strict-equal": "off",
             "vitest/require-mock-type-parameters": "off",
             "vitest/unbound-method": "off",

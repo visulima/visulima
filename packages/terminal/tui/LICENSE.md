@@ -67,11 +67,14 @@ Licensed under the Apache License, Version 2.0
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/tui artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled dependencies:
+
 ## cli-boxes
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-boxes
@@ -86,9 +89,10 @@ Repository: sindresorhus/cli-boxes
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## cli-spinners
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-spinners
@@ -103,9 +107,10 @@ Repository: sindresorhus/cli-spinners
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## code-excerpt
+
 License: MIT
 By: vdemedes
 Repository: vadimdemedes/code-excerpt
@@ -132,9 +137,10 @@ Repository: vadimdemedes/code-excerpt
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## convert-to-spaces
+
 License: MIT
 By: Vadim Demedes
 Repository: vadimdemedes/convert-to-spaces
@@ -161,9 +167,10 @@ Repository: vadimdemedes/convert-to-spaces
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## es-toolkit
+
 License: MIT
 Repository: https://github.com/toss/es-toolkit.git
 
@@ -193,9 +200,10 @@ Repository: https://github.com/toss/es-toolkit.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
----------------------------------------
+---
 
 ## escape-string-regexp
+
 License: MIT
 By: Sindre Sorhus, Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com), Joshua Boy Nicolai Appelman <joshua@jbna.nl> (jbna.nl)
 Repository: sindresorhus/escape-string-regexp
@@ -210,9 +218,10 @@ Repository: sindresorhus/escape-string-regexp
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## is-in-ci
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/is-in-ci
@@ -227,9 +236,10 @@ Repository: sindresorhus/is-in-ci
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----------------------------------------
+---
 
 ## signal-exit
+
 License: ISC
 By: Ben Coe
 Repository: https://github.com/tapjs/signal-exit.git
@@ -251,9 +261,10 @@ Repository: https://github.com/tapjs/signal-exit.git
 > WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 > ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
----------------------------------------
+---
 
 ## stack-utils
+
 License: MIT
 By: James Talmage
 Repository: tapjs/stack-utils
@@ -280,9 +291,10 @@ Repository: tapjs/stack-utils
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
----------------------------------------
+---
 
 ## terminal-size
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/terminal-size

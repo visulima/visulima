@@ -48,6 +48,8 @@ describe("item", () => {
      * to continue pointing to the same logical item (selectedIndex += addedCount).
      */
     it("should scroll to selected item when items are added", async () => {
+        expect.assertions(2);
+
         let scrollListRef: ScrollListRef | null = null;
         let setItemsFunction: (items: number[]) => void;
 
@@ -111,6 +113,8 @@ describe("item", () => {
      * is responsible for keeping selectedIndex within valid bounds.
      */
     it("should handle selectedIndex when items are removed", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
         let setItemsFunction: (items: number[]) => void;
         let setIndexFunction: (index: number) => void;
@@ -172,6 +176,8 @@ describe("item", () => {
      * - No scrolling occurs (getItemPosition returns null for invalid index)
      */
     it("should handle empty list gracefully", async () => {
+        expect.assertions(2);
+
         let scrollListRef: ScrollListRef | null = null;
 
         const TestComponent = () => {
@@ -220,6 +226,8 @@ describe("item", () => {
      * - Scroll should adjust to keep item visible
      */
     it("should handle item height changes correctly", async () => {
+        expect.assertions(1);
+
         let scrollListRef: ScrollListRef | null = null;
         let setExpandedFunction: (expanded: boolean) => void;
 

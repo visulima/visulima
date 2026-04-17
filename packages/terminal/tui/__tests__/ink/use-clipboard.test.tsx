@@ -95,6 +95,8 @@ describe(useClipboard, () => {
 
 describe("clipboard utilities", () => {
     it("isOsc52Supported should detect supported terminals", async () => {
+        expect.assertions(1);
+
         const { isOsc52Supported } = await import("../../src/ink/clipboard");
 
         const originalTermProgram = process.env["TERM_PROGRAM"];
@@ -117,6 +119,8 @@ describe("clipboard utilities", () => {
     });
 
     it("writeOsc52 should write correct escape sequence", async () => {
+        expect.assertions(1);
+
         const { writeOsc52 } = await import("../../src/ink/clipboard");
         const { PassThrough } = await import("node:stream");
 
@@ -134,6 +138,8 @@ describe("clipboard utilities", () => {
     });
 
     it("clearOsc52 should write empty payload", async () => {
+        expect.assertions(1);
+
         const { clearOsc52 } = await import("../../src/ink/clipboard");
         const { PassThrough } = await import("node:stream");
 
@@ -150,6 +156,8 @@ describe("clipboard utilities", () => {
     });
 
     it("writeOsc52 should support primary selection target", async () => {
+        expect.assertions(1);
+
         const { writeOsc52 } = await import("../../src/ink/clipboard");
         const { PassThrough } = await import("node:stream");
 

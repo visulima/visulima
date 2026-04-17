@@ -22,6 +22,8 @@ describe(formatTimingTable, () => {
     };
 
     it("should format a single command", () => {
+        expect.assertions(3);
+
         const table = formatTimingTable([makeEvent(0, "build", 0, 1234)]);
 
         expect(table).toContain("build");
@@ -30,6 +32,8 @@ describe(formatTimingTable, () => {
     });
 
     it("should sort by duration descending", () => {
+        expect.assertions(3);
+
         const events = [makeEvent(0, "fast", 0, 100), makeEvent(1, "slow", 0, 5000), makeEvent(2, "medium", 0, 1000)];
 
         const table = formatTimingTable(events);
@@ -44,6 +48,8 @@ describe(formatTimingTable, () => {
     });
 
     it("should show killed status", () => {
+        expect.assertions(1);
+
         const event: ConcurrentCloseEvent = {
             command: "sleep 10",
             durationMs: 500,
@@ -59,10 +65,14 @@ describe(formatTimingTable, () => {
     });
 
     it("should return empty string for no events", () => {
+        expect.assertions(1);
+
         expect(formatTimingTable([])).toBe("");
     });
 
     it("should truncate long commands", () => {
+        expect.assertions(1);
+
         const event = makeEvent(0, "x", 0, 100);
 
         event.command = "a".repeat(50);
@@ -73,12 +83,16 @@ describe(formatTimingTable, () => {
     });
 
     it("should format millisecond durations", () => {
+        expect.assertions(1);
+
         const table = formatTimingTable([makeEvent(0, "quick", 0, 42)]);
 
         expect(table).toContain("42ms");
     });
 
     it("should format minute durations", () => {
+        expect.assertions(1);
+
         const table = formatTimingTable([makeEvent(0, "long", 0, 90_000)]);
 
         expect(table).toContain("1m");
@@ -87,6 +101,8 @@ describe(formatTimingTable, () => {
 
 describe(createInputHandler, () => {
     it("should route unprefixed input to default target", () => {
+        expect.assertions(1);
+
         const stdin0 = new PassThrough();
         const inputStream = new PassThrough();
         const chunks: string[] = [];
@@ -97,12 +113,14 @@ describe(createInputHandler, () => {
 
         inputStream.write("hello\n");
 
-        expect(chunks).toEqual(["hello\n"]);
+        expect(chunks).toStrictEqual(["hello\n"]);
 
         cleanup();
     });
 
     it("should route prefixed input by name", () => {
+        expect.assertions(2);
+
         const stdin0 = new PassThrough();
         const stdin1 = new PassThrough();
         const inputStream = new PassThrough();
@@ -122,13 +140,15 @@ describe(createInputHandler, () => {
 
         inputStream.write("client:hello\n");
 
-        expect(chunks0).toEqual([]);
-        expect(chunks1).toEqual(["hello\n"]);
+        expect(chunks0).toStrictEqual([]);
+        expect(chunks1).toStrictEqual(["hello\n"]);
 
         cleanup();
     });
 
     it("should route prefixed input by index", () => {
+        expect.assertions(1);
+
         const stdin0 = new PassThrough();
         const stdin1 = new PassThrough();
         const inputStream = new PassThrough();
@@ -146,12 +166,14 @@ describe(createInputHandler, () => {
 
         inputStream.write("1:world\n");
 
-        expect(chunks1).toEqual(["world\n"]);
+        expect(chunks1).toStrictEqual(["world\n"]);
 
         cleanup();
     });
 
     it("should cleanup listeners on dispose", () => {
+        expect.assertions(1);
+
         const inputStream = new PassThrough();
 
         const cleanup = createInputHandler([], { inputStream });
@@ -164,6 +186,8 @@ describe(createInputHandler, () => {
 
 describe(withRestart, () => {
     it("should not restart when tries is 0", async () => {
+        expect.assertions(2);
+
         let callCount = 0;
 
         const result = await withRestart(
@@ -182,6 +206,8 @@ describe(withRestart, () => {
     });
 
     it("should restart failing commands up to N tries", async () => {
+        expect.assertions(2);
+
         let callCount = 0;
 
         const result = await withRestart(
@@ -201,6 +227,8 @@ describe(withRestart, () => {
     });
 
     it("should not restart successful commands", async () => {
+        expect.assertions(2);
+
         let callCount = 0;
 
         const result = await withRestart(
@@ -221,32 +249,40 @@ describe(withRestart, () => {
 
 describe(runTeardown, () => {
     it("should run teardown commands sequentially", async () => {
+        expect.assertions(1);
+
         const results = await runTeardown({
             commands: ["echo cleanup1", "echo cleanup2"],
         });
 
-        expect(results).toEqual([0, 0]);
+        expect(results).toStrictEqual([0, 0]);
     });
 
     it("should return non-zero for failing commands", async () => {
+        expect.assertions(1);
+
         const results = await runTeardown({
             commands: ["exit 42"],
         });
 
-        expect(results).toEqual([42]);
+        expect(results).toStrictEqual([42]);
     });
 
     it("should continue after a failure", async () => {
+        expect.assertions(1);
+
         const results = await runTeardown({
             commands: ["exit 1", "echo ok"],
         });
 
-        expect(results).toEqual([1, 0]);
+        expect(results).toStrictEqual([1, 0]);
     });
 
     it("should handle empty commands", async () => {
+        expect.assertions(1);
+
         const results = await runTeardown({ commands: [] });
 
-        expect(results).toEqual([]);
+        expect(results).toStrictEqual([]);
     });
 });

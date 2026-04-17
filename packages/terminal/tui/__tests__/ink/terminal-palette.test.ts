@@ -4,6 +4,8 @@ import { isTerminalPaletteQuerySupported } from "../../src/ink/terminal-palette"
 
 describe("terminal-palette", () => {
     it("isTerminalPaletteQuerySupported should detect supported terminals", () => {
+        expect.assertions(1);
+
         const original = process.env["TERM_PROGRAM"];
 
         process.env["TERM_PROGRAM"] = "kitty";
@@ -24,6 +26,8 @@ describe("terminal-palette", () => {
     });
 
     it("should detect WezTerm", () => {
+        expect.assertions(1);
+
         const original = process.env["TERM_PROGRAM"];
 
         process.env["TERM_PROGRAM"] = "WezTerm";
@@ -38,6 +42,8 @@ describe("terminal-palette", () => {
     });
 
     it("should detect xterm via TERM variable", () => {
+        expect.assertions(1);
+
         const originalProgram = process.env["TERM_PROGRAM"];
         const originalTerm = process.env["TERM"];
 

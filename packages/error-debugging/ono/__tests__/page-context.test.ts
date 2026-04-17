@@ -190,8 +190,8 @@ describe("context page", () => {
 
             const jsonPage = await createRequestContextPage(jsonRequest, {});
 
-            expect(jsonPage?.code.html).toContain('"message"');
-            expect(jsonPage?.code.html).toContain('"hello"');
+            expect(jsonPage?.code.html).toContain("\"message\"");
+            expect(jsonPage?.code.html).toContain("\"hello\"");
 
             // Test text body
             const textRequest = {

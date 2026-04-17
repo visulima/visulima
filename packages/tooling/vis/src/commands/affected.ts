@@ -6,7 +6,6 @@ import { filterProjectsByQuery } from "../selectors";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const affected: Command = {
-    group: "Run & Execute",
     argument: {
         description: "The target to run (e.g., build, test, lint)",
         name: "target",
@@ -68,7 +67,7 @@ const affected: Command = {
             return;
         }
 
-        let affectedProjects = result.affectedProjects;
+        let { affectedProjects } = result;
 
         if (options.query) {
             affectedProjects = filterProjectsByQuery(affectedProjects, workspace, options.query as string);
@@ -110,6 +109,7 @@ const affected: Command = {
             delete process.env["VIS_AFFECTED_FILES"];
         }
     },
+    group: "Run & Execute",
     name: "affected",
     options: [
         {

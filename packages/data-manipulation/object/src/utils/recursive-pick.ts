@@ -59,7 +59,7 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
         }
 
         // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-        carry[key] = recursivePick<T, PickedKeys>(object[key] as any, pickedKeys, path);
+        carry[key] = recursivePick<T, any>(object[key] as any, pickedKeys, path);
 
         return carry;
     }, {}) as T;

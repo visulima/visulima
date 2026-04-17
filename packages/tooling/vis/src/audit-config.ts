@@ -71,7 +71,7 @@ const readPnpmAuditExclusions = (workspaceRoot: string): NativeAuditExclusions =
     }
 
     try {
-        const data = readYamlSync<PnpmWorkspaceYaml>(filePath);
+        const data = readYamlSync(filePath) as PnpmWorkspaceYaml | undefined;
 
         return {
             excludedPackages: [],
@@ -90,7 +90,7 @@ const readYarnAuditExclusions = (workspaceRoot: string): NativeAuditExclusions =
     }
 
     try {
-        const data = readYamlSync<YarnrcYml>(filePath);
+        const data = readYamlSync(filePath) as YarnrcYml | undefined;
 
         return {
             excludedPackages: toStringArray(data?.npmAuditExcludePackages),
@@ -247,9 +247,9 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
 
             content = /npmAuditIgnoreAdvisories:/.test(content)
                 ? content.replace(
-                      /npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/,
-                      advisoryBlock,
-                  )
+                    /npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/,
+                    advisoryBlock,
+                )
                 : `${content.trimEnd()}\n\n${advisoryBlock}`;
 
             writeFileSync(filePath, content);

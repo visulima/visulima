@@ -55,7 +55,7 @@ export const createStandardAttachment = async (
         contentType: attachment.contentType ?? "application/octet-stream",
         disposition: attachment.contentDisposition ?? "attachment",
         filename: attachment.filename,
-        ...(attachment.cid && { contentId: attachment.cid }),
+        ...attachment.cid && { contentId: attachment.cid },
     };
 };
 
@@ -82,7 +82,7 @@ export const createSendGridAttachment = async (
         disposition: attachment.contentDisposition ?? "attachment",
         filename: attachment.filename,
         type: attachment.contentType ?? "application/octet-stream",
-        ...(attachment.cid && { content_id: attachment.cid }),
+        ...attachment.cid && { content_id: attachment.cid },
     };
 };
 
@@ -107,7 +107,7 @@ export const createPostmarkAttachment = async (
         Content: content,
         ContentType: attachment.contentType ?? "application/octet-stream",
         Name: attachment.filename,
-        ...(attachment.cid && { ContentID: attachment.cid }),
+        ...attachment.cid && { ContentID: attachment.cid },
     };
 };
 

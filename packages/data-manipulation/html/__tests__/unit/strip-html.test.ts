@@ -119,7 +119,7 @@ describe(stripHtml, () => {
         it("should handle HTML with attributes", () => {
             expect.assertions(1);
 
-            const result = stripHtml('<div class="container">Content</div>');
+            const result = stripHtml("<div class=\"container\">Content</div>");
 
             expect(result.result).toBe("Content");
         });

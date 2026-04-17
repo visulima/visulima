@@ -13,13 +13,21 @@ const FocusWithId = () => {
     const { exit } = useApp();
 
     useInput((input, key) => {
-        if (input === "1") focus("1");
+        if (input === "1") {
+            focus("1");
+        }
 
-        if (input === "2") focus("2");
+        if (input === "2") {
+            focus("2");
+        }
 
-        if (input === "3") focus("3");
+        if (input === "3") {
+            focus("3");
+        }
 
-        if (key.escape) exit();
+        if (key.escape) {
+            exit();
+        }
     });
 
     return (
@@ -39,7 +47,9 @@ const Item = ({ id, label }: { id: string; label: string }) => {
 
     return (
         <Text>
-            {label} {isFocused ? <Text color="green">(focused)</Text> : ""}
+            {label}
+            {" "}
+            {isFocused ? <Text color="green">(focused)</Text> : ""}
         </Text>
     );
 };

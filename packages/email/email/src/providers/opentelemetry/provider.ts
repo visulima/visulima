@@ -111,17 +111,17 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider> = de
         throw new RequiredOptionError(PROVIDER_NAME, "provider");
     }
 
-    const options: Pick<OpenTelemetryConfig, "logger"> &
-        Required<Omit<OpenTelemetryConfig, "logger" | "provider" | "tracer">> & { provider: Provider | ProviderFactory; tracer?: Tracer } = {
-        debug: config.debug ?? false,
-        logger: config.logger,
-        provider: config.provider,
-        recordContent: config.recordContent ?? false,
-        retries: config.retries ?? 3,
-        serviceName: config.serviceName ?? DEFAULT_SERVICE_NAME,
-        timeout: config.timeout ?? 30_000,
-        tracer: config.tracer,
-    };
+    const options: Pick<OpenTelemetryConfig, "logger">
+        & Required<Omit<OpenTelemetryConfig, "logger" | "provider" | "tracer">> & { provider: Provider | ProviderFactory; tracer?: Tracer } = {
+            debug: config.debug ?? false,
+            logger: config.logger,
+            provider: config.provider,
+            recordContent: config.recordContent ?? false,
+            retries: config.retries ?? 3,
+            serviceName: config.serviceName ?? DEFAULT_SERVICE_NAME,
+            timeout: config.timeout ?? 30_000,
+            tracer: config.tracer,
+        };
 
     let isInitialized = false;
     let wrappedProvider: Provider;

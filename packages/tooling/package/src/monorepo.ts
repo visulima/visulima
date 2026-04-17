@@ -26,17 +26,21 @@ export interface RootMonorepo<T extends Strategy = Strategy> {
 export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo> => {
     const workspaceFilePath: string | undefined = await findUp(["lerna.json", "turbo.json"], {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
         const lerna = await readJson(workspaceFilePath);
 
-        if (lerna.useWorkspaces || lerna.packages) {
-            return {
-                path: dirname(workspaceFilePath),
-                strategy: "lerna",
-            };
+        if (lerna && typeof lerna === "object" && !Array.isArray(lerna)) {
+            const l = lerna as { packages?: unknown; useWorkspaces?: unknown };
+
+            if (l.useWorkspaces || l.packages) {
+                return {
+                    path: dirname(workspaceFilePath),
+                    strategy: "lerna",
+                };
+            }
         }
     }
 
@@ -91,7 +95,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
 export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
     const workspaceFilePath: string | undefined = findUpSync(["lerna.json", "turbo.json"], {
         type: "file",
-        ...(cwd && { cwd }),
+        ...cwd && { cwd },
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {

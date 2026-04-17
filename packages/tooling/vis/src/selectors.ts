@@ -6,7 +6,7 @@ import type { VisProjectConfiguration } from "./workspace";
 /**
  * Parsed form of a target selector.
  *
- * vis accepts moon-style target syntax alongside the simple `<target>`
+ * vis accepts moon-style target syntax alongside the simple `&lt;target>`
  * and `--projects` form:
  *
  *   :build              → run `build` on every project
@@ -16,23 +16,22 @@ import type { VisProjectConfiguration } from "./workspace";
  *   build               → run `build` on every project (legacy form)
  */
 export interface ParsedSelector {
-    /** Projects the selector resolves to (before further filtering). */
-    projects?: string[];
     /** Selector kind — used by commands for richer diagnostics. */
     kind: "all" | "closest" | "project" | "tag";
+    /** Projects the selector resolves to (before further filtering). */
+    projects?: string[];
     /** The tag, when `kind === "tag"`. */
     tag?: string;
     /** The target name. */
     target: string;
 }
 
-const TAG_PROJECT_RE = /^#([a-zA-Z0-9_\-/]+):(.+)$/;
-const NAMED_PROJECT_RE = /^([@a-zA-Z0-9_\-/]+):(.+)$/;
+const TAG_PROJECT_RE = /^#([\w\-/]+):(.+)$/;
+const NAMED_PROJECT_RE = /^([@\w\-/]+):(.+)$/;
 
 /**
  * Parses a target selector string into its component parts.
- *
- * @param input - Raw selector string (e.g. `:build`, `~:test`, `#tag:lint`, `pkg:build`, or bare `build`).
+ * @param input Raw selector string (e.g. `:build`, `~:test`, `#tag:lint`, `pkg:build`, or bare `build`).
  * @returns The parsed selector, or `undefined` if `input` is empty.
  */
 export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projects"> | undefined => {
@@ -50,17 +49,15 @@ export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projec
 
     const tagMatch = TAG_PROJECT_RE.exec(input);
 
-    if (tagMatch && tagMatch[1] && tagMatch[2]) {
+    if (tagMatch?.[1] && tagMatch[2]) {
         return { kind: "tag", tag: tagMatch[1], target: tagMatch[2] };
     }
 
     const projectMatch = NAMED_PROJECT_RE.exec(input);
 
-    if (projectMatch && projectMatch[1] && projectMatch[2]) {
-        // Distinguish `pkg-name:target` from a bare `target` that happens to contain `:`.
-        if (projectMatch[1].startsWith("@") || projectMatch[1].includes("/") || projectMatch[1].includes("-")) {
-            return { kind: "project", projects: [projectMatch[1]], target: projectMatch[2] } as Omit<ParsedSelector, "projects"> & { projects: string[] };
-        }
+    if (projectMatch?.[1] && projectMatch[2] // Distinguish `pkg-name:target` from a bare `target` that happens to contain `:`.
+        && (projectMatch[1].startsWith("@") || projectMatch[1].includes("/") || projectMatch[1].includes("-"))) {
+        return { kind: "project", projects: [projectMatch[1]], target: projectMatch[2] } as Omit<ParsedSelector, "projects"> & { projects: string[] };
     }
 
     return { kind: "all", target: input };
@@ -69,11 +66,10 @@ export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projec
 /**
  * Resolves a selector string against a workspace to produce a concrete
  * list of project names and the target to run.
- *
- * @param input - Raw selector string.
- * @param workspace - The discovered workspace configuration.
- * @param cwd - Current working directory (used for `~:` closest resolution).
- * @param workspaceRoot - Absolute path to the workspace root.
+ * @param input Raw selector string.
+ * @param workspace The discovered workspace configuration.
+ * @param cwd Current working directory (used for `~:` closest resolution).
+ * @param workspaceRoot Absolute path to the workspace root.
  * @returns An object with `projects` (candidate names) and `target`.
  * @throws If the selector is invalid or `~:` finds no matching project.
  */
@@ -139,8 +135,8 @@ export const resolveSelector = async (
 
             process.stderr.write(`No project found at ${relCwd}. Pick one:\n`);
 
-            for (let i = 0; i < allNames.length; i++) {
-                process.stderr.write(`  ${String(i + 1)}) ${allNames[i]}\n`);
+            for (const [i, allName] of allNames.entries()) {
+                process.stderr.write(`  ${String(i + 1)}) ${allName}\n`);
             }
 
             const answer = await new Promise<string>((resolve) => {
@@ -188,13 +184,12 @@ const QUERY_CLAUSE_RE = /^(\w+)\s*(!?=)\s*(.+)$/;
 /**
  * Parses a query string into a structured predicate.
  *
- * Grammar: `<field>=<value>` or `<field>!=<value>` clauses joined by
- * `&&` (all must match) or `||` (any must match). Mixing operators is
+ * Grammar: `&lt;field>=&lt;value>` or `&lt;field>!=&lt;value>` clauses joined by
+ * `&amp;&amp;` (all must match) or `||` (any must match). Mixing operators is
  * not supported and throws.
- *
- * @param input - Raw query string, e.g. `"language=typescript && tag=lib"`.
+ * @param input Raw query string, e.g. `"language=typescript &amp;& tag=lib"`.
  * @returns The parsed query, or `undefined` if the input is empty.
- * @throws On mixed `&&` / `||` or malformed clauses.
+ * @throws On mixed `&amp;&amp;` / `||` or malformed clauses.
  */
 export const parseQuery = (input: string): ParsedQuery | undefined => {
     const trimmed = input.trim();
@@ -230,7 +225,7 @@ export const parseQuery = (input: string): ParsedQuery | undefined => {
         clauses.push({
             field: field!,
             op: rawOp === "!=" ? "!=" : "=",
-            value: rawValue!.trim().replace(/^["']|["']$/g, ""),
+            value: rawValue!.trim().replaceAll(/^["']|["']$/g, ""),
         });
     }
 
@@ -265,33 +260,39 @@ const matchClause = (clause: QueryClause, name: string, project: VisProjectConfi
     };
 
     switch (field) {
-        case "project":
         case "id":
+        case "project": {
             return test(name);
-        case "tag":
-        case "tags":
-            return testList(project.tags);
-        case "type":
-        case "projectType":
-            return test(project.projectType);
-        case "language":
+        }
+        case "language": {
             return test(project.language);
-        case "stack":
-            return test(project.stack);
-        case "layer":
+        }
+        case "layer": {
             return test(project.layer);
-        default:
+        }
+        case "projectType":
+        case "type": {
+            return test(project.projectType);
+        }
+        case "stack": {
+            return test(project.stack);
+        }
+        case "tag":
+        case "tags": {
+            return testList(project.tags);
+        }
+        default: {
             // Unknown field — treat as non-match so we don't crash.
             return false;
+        }
     }
 };
 
 /**
  * Filters project names by a query string.
- *
- * @param projectNames - Candidate project names to filter.
- * @param workspace - The workspace configuration (projects must carry vis metadata).
- * @param query - A query string, or `undefined` / empty to skip filtering.
+ * @param projectNames Candidate project names to filter.
+ * @param workspace The workspace configuration (projects must carry vis metadata).
+ * @param query A query string, or `undefined` / empty to skip filtering.
  * @returns The subset of `projectNames` that match the query.
  */
 export const filterProjectsByQuery = (projectNames: string[], workspace: WorkspaceConfiguration, query: string | undefined): string[] => {

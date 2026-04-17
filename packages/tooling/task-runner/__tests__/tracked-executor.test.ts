@@ -41,20 +41,24 @@ describe(TrackedTaskExecutor, () => {
 
     describe("isTrackingSupported", () => {
         it("should always return true (preload script works cross-platform)", () => {
+            expect.assertions(1);
+
             expect(executor.isTrackingSupported).toBe(true);
         });
     });
 
     describe("isStraceSupported", () => {
-        it("should return false on non-Linux platforms", () => {
-            if (process.platform !== "linux") {
-                expect(executor.isStraceSupported).toBe(false);
-            }
+        it.runIf(process.platform !== "linux")("should return false on non-Linux platforms", () => {
+            expect.assertions(1);
+
+            expect(executor.isStraceSupported).toBe(false);
         });
     });
 
     describe("execute", () => {
         it("should execute a command and return output", async () => {
+            expect.assertions(3);
+
             const task = createTask();
             const options: TaskExecutionOptions = { cwd: workspaceRoot };
 
@@ -66,6 +70,8 @@ describe(TrackedTaskExecutor, () => {
         });
 
         it("should return non-zero exit code for failing command", async () => {
+            expect.assertions(1);
+
             const task = createTask();
             const options: TaskExecutionOptions = { cwd: workspaceRoot };
 
@@ -75,6 +81,8 @@ describe(TrackedTaskExecutor, () => {
         });
 
         it("should use task projectRoot to resolve cwd when options.cwd is not provided", async () => {
+            expect.assertions(2);
+
             const projectDirectory = join(workspaceRoot, "packages", "my-pkg");
 
             await mkdir(projectDirectory, { recursive: true });
@@ -89,10 +97,8 @@ describe(TrackedTaskExecutor, () => {
             expect(result.code).toBe(0);
         });
 
-        it("should track file accesses on Linux", async () => {
-            if (!executor.isStraceSupported) {
-                return;
-            }
+        it.runIf(new TrackedTaskExecutor(tmpdir()).isStraceSupported)("should track file accesses on Linux", async () => {
+            expect.assertions(2);
 
             // Use a workspace root outside /tmp since default exclude patterns filter /tmp/
             const homeWorkspace = join(process.cwd(), "node_modules", ".cache", "task-runner-test-workspace");
@@ -121,6 +127,8 @@ describe(TrackedTaskExecutor, () => {
         });
 
         it("should pass environment variables to the command", async () => {
+            expect.assertions(1);
+
             const task = createTask();
             const options: TaskExecutionOptions = {
                 cwd: workspaceRoot,

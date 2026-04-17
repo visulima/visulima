@@ -6,6 +6,8 @@ import { renderToString } from "../helpers/ink-render";
 
 describe(Dialog, () => {
     it("should render nothing when visible is false", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog columns={80} rows={24} visible={false}>
@@ -18,6 +20,8 @@ describe(Dialog, () => {
     });
 
     it("should render children content when visible", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} rows={24}>
@@ -30,6 +34,8 @@ describe(Dialog, () => {
     });
 
     it("should render a string title", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} rows={24} title="My Title">
@@ -42,6 +48,8 @@ describe(Dialog, () => {
     });
 
     it("should render a custom ReactNode title", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} rows={24} title={<Text color="red">Custom</Text>}>
@@ -54,6 +62,8 @@ describe(Dialog, () => {
     });
 
     it("should render footer content", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} footer={<Text>Press Esc</Text>} rows={24}>
@@ -66,6 +76,8 @@ describe(Dialog, () => {
     });
 
     it("should use round border style by default", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} rows={24}>
@@ -79,6 +91,8 @@ describe(Dialog, () => {
     });
 
     it("should support custom border style", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" borderStyle="double" columns={80} rows={24}>
@@ -92,6 +106,8 @@ describe(Dialog, () => {
     });
 
     it("should render with all props combined", () => {
+        expect.assertions(4);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog
@@ -121,6 +137,8 @@ describe(Dialog, () => {
     });
 
     it("should default visible to true", () => {
+        expect.assertions(1);
+
         const output = renderToString(
             <Box height={24} width={80}>
                 <Dialog backgroundColor="black" columns={80} rows={24}>

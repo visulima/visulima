@@ -28,12 +28,15 @@ describe("native-binding", () => {
 
     describe("isNativeAvailable", () => {
         it("should return a boolean", async () => {
+            expect.assertions(1);
+
             vi.resetModules();
             const { isNativeAvailable } = await import("../src/native-binding");
 
             const result = isNativeAvailable();
 
             expectTypeOf(result).toBeBoolean();
+
             expect(typeof result === "boolean").toBe(true);
         });
     });
@@ -50,12 +53,13 @@ describe("native addon integration", () => {
         native = loadNativeBindings();
     });
 
-    describe.skipIf(!native)("NATIVE_BINDING_VERSION", () => {
+    describe.skipIf(!native)("nATIVE_BINDING_VERSION", () => {
         it("should export NATIVE_BINDING_VERSION as a number", () => {
             expect.assertions(2);
 
             expect(native!.NATIVE_BINDING_VERSION).toBeDefined();
-            expect(typeof native!.NATIVE_BINDING_VERSION).toBe("number");
+
+            expectTypeOf(native!.NATIVE_BINDING_VERSION).toBeNumber();
         });
 
         it("should match the expected ABI version in native-binding.ts", () => {

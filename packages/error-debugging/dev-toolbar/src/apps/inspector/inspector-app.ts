@@ -367,7 +367,7 @@ const showToast = (message: string, type: "error" | "success" = "success"): void
         "border-radius:4px",
         `background:${type === "success" ? "#22c55e" : "#ef4444"}`,
         "color:#fff",
-        'font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
+        "font:12px/1 \"JetBrains Mono\",\"Geist Mono\",ui-monospace,\"Cascadia Code\",\"Fira Code\",monospace",
         "font-weight:600",
         "pointer-events:none",
         "opacity:0",
@@ -424,7 +424,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
         `box-shadow:${pillShadow}`,
         "pointer-events:auto",
         "user-select:none",
-        'font:13px/1.6 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
+        "font:13px/1.6 \"JetBrains Mono\",\"Geist Mono\",ui-monospace,\"Cascadia Code\",\"Fira Code\",monospace",
     ].join(";");
     badge.addEventListener("click", (e) => e.stopPropagation());
     badge.addEventListener("mousedown", (e) => e.stopPropagation());
@@ -687,7 +687,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
                 "display:flex",
                 "align-items:center",
                 "gap:8px",
-                'font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
+                "font:12px/1 \"JetBrains Mono\",\"Geist Mono\",ui-monospace,\"Cascadia Code\",\"Fira Code\",monospace",
                 `color:${c.fg}`,
                 "pointer-events:auto",
             ].join(";");
@@ -1325,17 +1325,17 @@ export const startGlobalInspection = (onCancel: () => void): void => {
         handleClick(event: MouseEvent): void {
             // Cmd/Ctrl (without Shift) = deep select / pierce mode
             const piercing = (event.metaKey || event.ctrlKey) && !event.shiftKey;
-            const target =
-                (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
-                (event.target as Element | undefined);
+            const target
+                = (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY))
+                    ?? (event.target as Element | undefined);
 
             if (
-                !target ||
-                isInsideDevToolbar(target) ||
-                isOverBadge(target) ||
-                isOverResultPopup(target) ||
-                isOverAnnotationOverlay(target) ||
-                isRulerElement(target)
+                !target
+                || isInsideDevToolbar(target)
+                || isOverBadge(target)
+                || isOverResultPopup(target)
+                || isOverAnnotationOverlay(target)
+                || isRulerElement(target)
             ) {
                 return;
             }
@@ -1531,8 +1531,8 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 if (!rect) {
                     rect = document.createElement("div");
                     rect.id = DRAG_RECT_ID;
-                    rect.style.cssText =
-                        "position:fixed;pointer-events:none;z-index:2147483644;border:2px dashed rgba(99,102,241,0.7);background:rgba(99,102,241,0.1);";
+                    rect.style.cssText
+                        = "position:fixed;pointer-events:none;z-index:2147483644;border:2px dashed rgba(99,102,241,0.7);background:rgba(99,102,241,0.1);";
                     document.body.append(rect);
                 }
 
@@ -1556,17 +1556,17 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
             // Cmd/Ctrl (without Shift) = deep select / pierce mode on hover
             const piercing = (event.metaKey || event.ctrlKey) && !event.shiftKey;
-            const target =
-                (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
-                (event.target as Element | undefined);
+            const target
+                = (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY))
+                    ?? (event.target as Element | undefined);
 
             if (
-                !target ||
-                isInsideDevToolbar(target) ||
-                isOverBadge(target) ||
-                isOverResultPopup(target) ||
-                isOverAnnotationOverlay(target) ||
-                isRulerElement(target)
+                !target
+                || isInsideDevToolbar(target)
+                || isOverBadge(target)
+                || isOverResultPopup(target)
+                || isOverAnnotationOverlay(target)
+                || isRulerElement(target)
             ) {
                 hideOverlay();
 

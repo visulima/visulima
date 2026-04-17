@@ -41,7 +41,6 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
     protected readonly stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     protected interactiveManager: InteractiveManager | undefined;
 
     protected readonly interactive: boolean;
@@ -120,7 +119,6 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         this.stderr = stderr;
 
         if (this.interactive) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
@@ -190,15 +188,15 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
 
         // Combine parent and child reporters - pass Sets directly to avoid array conversion
         const childReporters = options?.reporters ?? [];
-        const allReporters =
-            childReporters.length > 0
+        const allReporters
+            = childReporters.length > 0
                 ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
                 : ([...this.reporters] as unknown as Reporter<LC>[]);
 
         // Combine parent and child processors - pass Sets directly to avoid array conversion
         const childProcessors = options?.processors ?? [];
-        const allProcessors =
-            childProcessors.length > 0
+        const allProcessors
+            = childProcessors.length > 0
                 ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
                 : ([...this.processors] as unknown as Processor<LC>[]);
 
@@ -222,14 +220,14 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         // Merge messages (child overrides parent)
         const mergedMessages = options?.messages
             ? {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-                  ...options.messages,
-              }
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+                ...options.messages,
+            }
             : {
-                  timerEnd: this.endTimerMessage,
-                  timerStart: this.startTimerMessage,
-              };
+                timerEnd: this.endTimerMessage,
+                timerStart: this.startTimerMessage,
+            };
 
         // Create child logger options
         // Pass parent types, longestLabel, stringify, logLevels, and messages for optimization when unchanged
@@ -321,7 +319,7 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * }
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     public getInteractiveManager(): InteractiveManager | undefined {
         return this.interactiveManager;
     }
@@ -496,11 +494,11 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     }
 }
 
-export type PailServerType<T extends string = string, L extends string = string> = Console &
-    (new <TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>) &
-    PailServerImpl<T, L> &
-    Record<DefaultLogTypes, LoggerFunction> &
-    Record<T, LoggerFunction> & {
+export type PailServerType<T extends string = string, L extends string = string> = Console
+    & (new <TC extends string = string, LC extends string = string>(options?: ServerConstructorOptions<TC, LC>) => PailServerType<TC, LC>)
+    & PailServerImpl<T, L>
+    & Record<DefaultLogTypes, LoggerFunction>
+    & Record<T, LoggerFunction> & {
         force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
     };
 

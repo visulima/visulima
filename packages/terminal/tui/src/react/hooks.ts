@@ -225,7 +225,9 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
 export const useTuiContext = (): TuiContextProps => {
     const context = useContext(TuiContext);
 
-    if (!context) throw new Error("useTuiContext must be used within a TUI App environment");
+    if (!context) {
+        throw new Error("useTuiContext must be used within a TUI App environment");
+    }
 
     return context;
 };
@@ -339,7 +341,9 @@ export const useStdin = (): { isRawModeSupported: boolean; setRawMode: (value: b
  * Ink-compatible: measureElement(ref.current)
  */
 export const measureElement = (node: LayoutNode | null): { height: number; width: number } => {
-    if (!node || !node.yogaNode) return { height: 0, width: 0 };
+    if (!node || !node.yogaNode) {
+        return { height: 0, width: 0 };
+    }
 
     return {
         height: node.yogaNode.getComputedHeight() ?? 0,
@@ -520,7 +524,9 @@ export type MouseHandler = (event: MouseEvent) => void;
 export const useMouse = (handler: MouseHandler): void => {
     const context = useContext(TuiContext);
 
-    if (!context) throw new Error("useMouse must be used within a TUI App environment");
+    if (!context) {
+        throw new Error("useMouse must be used within a TUI App environment");
+    }
 
     const handlerRef = useRef<MouseHandler>(handler);
 

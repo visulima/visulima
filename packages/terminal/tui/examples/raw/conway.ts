@@ -69,15 +69,15 @@ function step() {
         for (let x = 0; x < cols; x++) {
             const alive = grid[index(x, y)]! > 0;
 
-            const neighbors =
-                (grid[index(x - 1, y - 1)]! > 0 ? 1 : 0) +
-                (grid[index(x, y - 1)]! > 0 ? 1 : 0) +
-                (grid[index(x + 1, y - 1)]! > 0 ? 1 : 0) +
-                (grid[index(x - 1, y)]! > 0 ? 1 : 0) +
-                (grid[index(x + 1, y)]! > 0 ? 1 : 0) +
-                (grid[index(x - 1, y + 1)]! > 0 ? 1 : 0) +
-                (grid[index(x, y + 1)]! > 0 ? 1 : 0) +
-                (grid[index(x + 1, y + 1)]! > 0 ? 1 : 0);
+            const neighbors
+                = (grid[index(x - 1, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x - 1, y)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y)]! > 0 ? 1 : 0)
+                    + (grid[index(x - 1, y + 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x, y + 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y + 1)]! > 0 ? 1 : 0);
 
             const currentAge = grid[index(x, y)]!;
 

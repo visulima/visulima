@@ -42,7 +42,7 @@ type Listener = () => void;
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
-const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+const deepClone = <T>(value: T): T => structuredClone(value);
 
 // ── DevcontainerStore ───────────────────────────────────────────────────
 
@@ -171,11 +171,11 @@ export class DevcontainerStore {
     public toggleFeature(featureId: string): void {
         const features = { ...this.#state.config.features };
 
-        if (features[featureId] !== undefined) {
+        if (features[featureId] === undefined) {
+            features[featureId] = {};
+        } else {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete features[featureId];
-        } else {
-            features[featureId] = {};
         }
 
         this.#emit(
@@ -230,10 +230,10 @@ export class DevcontainerStore {
         const extensions = [...(vscode.extensions ?? [])];
         const index = extensions.indexOf(extensionId);
 
-        if (index >= 0) {
-            extensions.splice(index, 1);
-        } else {
+        if (index === -1) {
             extensions.push(extensionId);
+        } else {
+            extensions.splice(index, 1);
         }
 
         vscode.extensions = extensions.length > 0 ? extensions : undefined;

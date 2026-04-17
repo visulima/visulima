@@ -16,31 +16,28 @@ const rootDir = resolve(__dirname, "..");
  * @param {string} imagePath - Path to the JPG image
  * @returns {string} Base64 data URI
  */
-function imageToBase64(imagePath) {
+const imageToBase64 = (imagePath) => {
     const imageBuffer = readFileSync(imagePath);
     return `data:image/jpeg;base64,${imageBuffer.toString("base64")}`;
-}
+};
 
 /**
  * Escapes HTML entities in text
  * @param {string} text - Text to escape
  * @returns {string} Escaped text
  */
-function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
+const escapeHtml = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 
 /**
  * Capitalizes the first letter of each word
  * @param {string} text - Text to capitalize
  * @returns {string} Capitalized text
  */
-function capitalize(text) {
-    return text
+const capitalize = (text) =>
+    text
         .split(" ")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
-}
 
 /**
  * Generates SVG with package name overlaid on the image
@@ -48,7 +45,7 @@ function capitalize(text) {
  * @param {string} imageDataUri - Base64 data URI of the image
  * @returns {string} SVG string
  */
-function generatePackageSVG(packageName, imageDataUri) {
+const generatePackageSVG = (packageName, imageDataUri) => {
     // Image dimensions from the JPG file (1660x512)
     const width = 1660;
     const height = 512;
@@ -82,17 +79,17 @@ function generatePackageSVG(packageName, imageDataUri) {
 ${tspanElements}
   </text>
 </svg>`;
-}
+};
 
 /**
  * Finds all packages with @visulima scope
  * @returns {Array<{name: string, path: string, packageName: string, description: string}>} Array of package info
  */
-function findPackages() {
+const findPackages = () => {
     const packages = [];
     const packagesDir = resolve(rootDir, "packages");
 
-    function traverseDir(dir) {
+    const traverseDir = (dir) => {
         const entries = readdirSync(dir, { withFileTypes: true });
 
         for (const entry of entries) {
@@ -121,11 +118,11 @@ function findPackages() {
                 }
             }
         }
-    }
+    };
 
     traverseDir(packagesDir);
     return packages;
-}
+};
 
 /**
  * Saves SVG to __assets__ folder
@@ -133,7 +130,7 @@ function findPackages() {
  * @param {string} svg - SVG string to save
  * @returns {string} Relative path to the saved SVG file
  */
-function saveSVGToAssets(packagePath, svg) {
+const saveSVGToAssets = (packagePath, svg) => {
     const assetsDir = join(packagePath, "__assets__");
     if (!existsSync(assetsDir)) {
         mkdirSync(assetsDir, { recursive: true });
@@ -142,7 +139,7 @@ function saveSVGToAssets(packagePath, svg) {
     const svgPath = join(assetsDir, "package-og.svg");
     writeFileSync(svgPath, svg, "utf-8");
     return "__assets__/package-og.svg";
-}
+};
 
 /**
  * Inserts SVG link into README.md file and replaces name/description section
@@ -155,7 +152,7 @@ function saveSVGToAssets(packagePath, svg) {
  * @param {boolean} addPlaceholderIfMissing - Whether to add placeholder if it doesn't exist
  * @returns {boolean} True if file was updated, false otherwise
  */
-function insertSVGIntoReadme(
+const insertSVGIntoReadme = (
     readmePath,
     svgPath,
     packageName,
@@ -163,7 +160,7 @@ function insertSVGIntoReadme(
     startPlaceholder = "<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->",
     endPlaceholder = "<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->",
     addPlaceholderIfMissing = false,
-) {
+) => {
     if (!existsSync(readmePath)) {
         console.warn(`README.md not found at ${readmePath}`);
         return false;
@@ -219,12 +216,12 @@ function insertSVGIntoReadme(
 
     writeFileSync(readmePath, content, "utf-8");
     return true;
-}
+};
 
 /**
  * Main function
  */
-async function run() {
+const run = async () => {
     console.info("Generating package OG images...");
 
     // Load the base image
@@ -263,7 +260,7 @@ async function run() {
     }
 
     console.info(`\nCompleted! Updated ${updated} README files, skipped ${skipped} files.`);
-}
+};
 
 try {
     run().then(() => {

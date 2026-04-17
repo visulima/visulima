@@ -1,10 +1,10 @@
 import type { Command } from "@visulima/cerebro";
 
 import { filterProjectsByQuery } from "../selectors";
-import { discoverWorkspace, type VisProjectConfiguration } from "../workspace";
+import type { VisProjectConfiguration } from "../workspace";
+import { discoverWorkspace } from "../workspace";
 
 const list: Command = {
-    group: "Workspace",
     description: "List all workspace projects with metadata",
     examples: [
         ["vis list", "Show all projects"],
@@ -82,6 +82,7 @@ const list: Command = {
         logger.info("");
         logger.info(`${String(projectNames.length)} project(s)`);
     },
+    group: "Workspace",
     name: "list",
     options: [
         {

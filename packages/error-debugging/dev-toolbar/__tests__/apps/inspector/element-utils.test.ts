@@ -18,7 +18,7 @@ import {
 beforeAll(() => {
     if (typeof CSS === "undefined" || !CSS.escape) {
         (globalThis as any).CSS = {
-            ...(typeof CSS === "undefined" ? {} : CSS),
+            ...typeof CSS === "undefined" ? {} : CSS,
             escape: (value: string) => value.replaceAll(/([^\w-])/g, String.raw`\$1`),
         };
     }
@@ -27,6 +27,8 @@ beforeAll(() => {
 describe("element-utils", () => {
     describe(generateSelector, () => {
         it("uses ID when available", () => {
+            expect.assertions(1);
+
             const el = document.createElement("div");
 
             el.id = "my-element";
@@ -38,6 +40,8 @@ describe("element-utils", () => {
         });
 
         it("uses tag + class when unique", () => {
+            expect.assertions(2);
+
             const el = document.createElement("button");
 
             el.classList.add("submit-btn");
@@ -52,6 +56,8 @@ describe("element-utils", () => {
         });
 
         it("falls back to nth-of-type for non-unique elements", () => {
+            expect.assertions(1);
+
             const parent = document.createElement("div");
             const el1 = document.createElement("span");
             const el2 = document.createElement("span");
@@ -69,48 +75,60 @@ describe("element-utils", () => {
 
     describe(getElementLabel, () => {
         it("labels buttons with text", () => {
+            expect.assertions(1);
+
             const btn = document.createElement("button");
 
             btn.textContent = "Submit";
 
-            expect(getElementLabel(btn)).toBe('button "Submit"');
+            expect(getElementLabel(btn)).toBe("button \"Submit\"");
         });
 
         it("labels links with href", () => {
+            expect.assertions(1);
+
             const a = document.createElement("a");
 
             a.href = "/about";
             a.textContent = "About";
 
-            expect(getElementLabel(a)).toBe('link "About" to /about');
+            expect(getElementLabel(a)).toBe("link \"About\" to /about");
         });
 
         it("labels images with alt text", () => {
+            expect.assertions(1);
+
             const img = document.createElement("img");
 
             img.alt = "Logo";
 
-            expect(getElementLabel(img)).toBe('image "Logo"');
+            expect(getElementLabel(img)).toBe("image \"Logo\"");
         });
 
         it("labels inputs with type and placeholder", () => {
+            expect.assertions(1);
+
             const input = document.createElement("input");
 
             input.type = "email";
             input.placeholder = "Enter email";
 
-            expect(getElementLabel(input)).toBe('input[email] "Enter email"');
+            expect(getElementLabel(input)).toBe("input[email] \"Enter email\"");
         });
 
         it("labels headings with text", () => {
+            expect.assertions(1);
+
             const h1 = document.createElement("h1");
 
             h1.textContent = "Welcome";
 
-            expect(getElementLabel(h1)).toBe('h1 "Welcome"');
+            expect(getElementLabel(h1)).toBe("h1 \"Welcome\"");
         });
 
         it("falls back to tag for empty elements", () => {
+            expect.assertions(1);
+
             const div = document.createElement("div");
 
             expect(getElementLabel(div)).toBe("div");
@@ -119,6 +137,8 @@ describe("element-utils", () => {
 
     describe(cleanCssClasses, () => {
         it("strips CSS module hashes", () => {
+            expect.assertions(1);
+
             const el = document.createElement("div");
 
             el.classList.add("btn_abc123", "primary_def456");
@@ -129,6 +149,8 @@ describe("element-utils", () => {
         });
 
         it("keeps non-hashed classes", () => {
+            expect.assertions(1);
+
             const el = document.createElement("div");
 
             el.classList.add("flex", "items-center");
@@ -139,6 +161,8 @@ describe("element-utils", () => {
 
     describe(getFullDomPath, () => {
         it("builds path from element to body", () => {
+            expect.assertions(3);
+
             const div = document.createElement("div");
             const span = document.createElement("span");
 
@@ -157,6 +181,8 @@ describe("element-utils", () => {
 
     describe(getNearbyElements, () => {
         it("returns sibling tags", () => {
+            expect.assertions(2);
+
             const parent = document.createElement("div");
             const a = document.createElement("span");
             const b = document.createElement("p");
@@ -171,6 +197,8 @@ describe("element-utils", () => {
         });
 
         it("returns empty for orphan elements", () => {
+            expect.assertions(1);
+
             const el = document.createElement("div");
 
             expect(getNearbyElements(el)).toBe("");
@@ -179,6 +207,8 @@ describe("element-utils", () => {
 
     describe(getNearbyText, () => {
         it("returns element text content", () => {
+            expect.assertions(1);
+
             const el = document.createElement("p");
 
             el.textContent = "Hello world";
@@ -187,6 +217,8 @@ describe("element-utils", () => {
         });
 
         it("truncates long text", () => {
+            expect.assertions(1);
+
             const el = document.createElement("p");
 
             el.textContent = "A".repeat(200);
@@ -197,6 +229,8 @@ describe("element-utils", () => {
         });
 
         it("falls back to aria-label", () => {
+            expect.assertions(1);
+
             const el = document.createElement("button");
 
             el.setAttribute("aria-label", "Close dialog");
@@ -205,6 +239,8 @@ describe("element-utils", () => {
         });
 
         it("falls back to placeholder", () => {
+            expect.assertions(1);
+
             const input = document.createElement("input");
 
             input.placeholder = "Search...";
@@ -215,11 +251,14 @@ describe("element-utils", () => {
 
     describe(getSelectedText, () => {
         it("returns empty when no selection", () => {
+            expect.assertions(1);
+
             expect(getSelectedText()).toBe("");
         });
     });
 
     describe(isElementFixed, () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- type-only assertion via expectTypeOf
         it("returns false for static elements", () => {
             const el = document.createElement("div");
 
@@ -234,6 +273,8 @@ describe("element-utils", () => {
 
     describe(captureAccessibility, () => {
         it("captures role", () => {
+            expect.assertions(1);
+
             const el = document.createElement("div");
 
             el.setAttribute("role", "navigation");
@@ -244,6 +285,8 @@ describe("element-utils", () => {
         });
 
         it("captures aria-label", () => {
+            expect.assertions(1);
+
             const el = document.createElement("button");
 
             el.setAttribute("aria-label", "Close");
@@ -252,12 +295,16 @@ describe("element-utils", () => {
         });
 
         it("detects focusable elements", () => {
+            expect.assertions(3);
+
             expect(captureAccessibility(document.createElement("button")).focusable).toBe(true);
             expect(captureAccessibility(document.createElement("input")).focusable).toBe(true);
             expect(captureAccessibility(document.createElement("div")).focusable).toBe(false);
         });
 
         it("captures tabindex", () => {
+            expect.assertions(2);
+
             const el = document.createElement("div");
 
             el.setAttribute("tabindex", "0");
@@ -270,6 +317,7 @@ describe("element-utils", () => {
     });
 
     describe(captureComputedStyles, () => {
+        // eslint-disable-next-line vitest/prefer-expect-assertions -- type-only assertion via expectTypeOf
         it("returns a string of styles", () => {
             const el = document.createElement("div");
 

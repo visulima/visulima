@@ -2,11 +2,10 @@ import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
 import { findMonorepoRootSync } from "@visulima/package";
 import isInCi from "is-in-ci";
+import { satisfies, validRange } from "semver";
 
 import pkg from "../../package.json";
 import { findVisConfigFile, loadVisConfig } from "../config";
-import { satisfies, validRange } from "semver";
-
 import type { VisConfig } from "../workspace";
 
 const configLoaderPlugin: Plugin = {

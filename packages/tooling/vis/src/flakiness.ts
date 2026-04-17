@@ -6,39 +6,38 @@ import { join } from "@visulima/path";
  * Per-task flakiness statistics aggregated across multiple run summaries.
  */
 export interface TaskFlakiness {
-    taskId: string;
-    project: string;
-    target: string;
-    /** Total number of times this task appeared in runs. */
-    totalRuns: number;
     /** Number of runs where this task failed (exitCode !== 0). */
     failures: number;
-    /** Number of runs where this task succeeded. */
-    successes: number;
     /** Flakiness rate: failures / totalRuns. */
     flakinessRate: number;
     /** Most recent failure time (ISO 8601), if any. */
     lastFailure?: string;
+    project: string;
+    /** Number of runs where this task succeeded. */
+    successes: number;
+    target: string;
+    taskId: string;
+    /** Total number of times this task appeared in runs. */
+    totalRuns: number;
 }
 
 interface RunSummaryFile {
     id: string;
     startTime: string;
     tasks: {
-        taskId: string;
-        target: { project: string; target: string };
-        exitCode?: number;
         cacheStatus: string;
+        exitCode?: number;
         startTime?: string;
+        target: { project: string; target: string };
+        taskId: string;
     }[];
 }
 
 /**
  * Reads all run summary files from `.task-runner/runs/` and computes
  * per-task flakiness statistics.
- *
- * @param workspaceRoot - Absolute path to the workspace root.
- * @param options - Filtering options.
+ * @param workspaceRoot Absolute path to the workspace root.
+ * @param options Filtering options.
  * @returns Flakiness stats sorted by rate (most flaky first).
  */
 export const analyzeFlakiness = (workspaceRoot: string, options: { minRuns?: number; since?: string } = {}): TaskFlakiness[] => {
@@ -116,8 +115,8 @@ export const analyzeFlakiness = (workspaceRoot: string, options: { minRuns?: num
         }
 
         results.push({
-            flakinessRate: data.failures / data.totalRuns,
             failures: data.failures,
+            flakinessRate: data.failures / data.totalRuns,
             lastFailure: data.lastFailure,
             project: data.project,
             successes: data.successes,
@@ -134,8 +133,7 @@ export const analyzeFlakiness = (workspaceRoot: string, options: { minRuns?: num
 
 /**
  * Formats flakiness stats as an ASCII table.
- *
- * @param stats - Flakiness statistics to format.
+ * @param stats Flakiness statistics to format.
  * @returns Lines of formatted output (including header).
  */
 export const formatFlakinessTable = (stats: TaskFlakiness[]): string[] => {

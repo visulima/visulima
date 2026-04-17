@@ -18,7 +18,7 @@
 
 import semver from "semver";
 
-/** `name → Set<version>` index built from every lockfile entry. */
+/** `name → Set&lt;version>` index built from every lockfile entry. */
 export type VersionIndex = Map<string, Set<string>>;
 
 /**

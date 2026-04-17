@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "2.1.5",
+    "version": "3.0.0-alpha.10",
     "exports": {
         ".": "./src/index.ts",
         "./command/help": "./src/commands/help-command.ts",
@@ -10,6 +10,8 @@
         "./plugins/error-handler": "./src/plugins/error-handler-plugin.ts",
         "./plugins/runtime-version-check": "./src/plugins/runtime-version-check-plugin.ts",
         "./plugins/update-notifier": "./src/plugins/update-notifier/update-notifier-plugin.ts",
+        "./compile-cache": "./src/util/general/compile-cache.ts",
+        "./heap-tuning": "./src/util/general/heap-tuning.ts",
         "./logger/pail": "./src/logger/create-pail-logger.ts"
     }
 }

@@ -38,8 +38,8 @@ const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, file
         }
     }
 
-    const transformId =
-        module_ && typeof module_ === "object" && (("id" in module_ && module_.id) || ("url" in module_ && module_.url))
+    const transformId
+        = module_ && typeof module_ === "object" && (("id" in module_ && module_.id) || ("url" in module_ && module_.url))
             ? ((("id" in module_ && module_.id) || ("url" in module_ && module_.url)) as string)
             : idCandidates[0];
 

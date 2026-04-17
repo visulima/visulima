@@ -85,7 +85,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "22.x"
+                  node-version: "22"
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
@@ -141,7 +141,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
-                  node-version: "22.x"
+                  node-version: "22"
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
@@ -203,12 +203,11 @@ jobs:
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-            # From https://github.com/rhysd/actionlint/main/docs/usage.md#use-actionlint-on-github-actions
             - name: "Lint github workflows"
-              run: |
-                  bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-                  # The -ignore flag is used to ignore a specific error for a working solution in test.yml
-                  ./actionlint -color -shellcheck=""
+              uses: "raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8" # v2.1.2
+              with:
+                  # The empty shellcheck flag disables shellcheck for a working solution in test.yml
+                  shellcheck: ""
 
     rust-fmt:
         if: "needs.files-changed.outputs.rust_lintable == 'true'"
@@ -266,7 +265,7 @@ jobs:
             - name: "Use Node.js 22.x"
               uses: "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020" # v4.4.0
               with:
-                  node-version: "22.x"
+                  node-version: "22"
                   cache: "pnpm"
 
             - name: "Install dependencies"

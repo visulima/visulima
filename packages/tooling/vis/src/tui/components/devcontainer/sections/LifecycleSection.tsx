@@ -44,7 +44,7 @@ const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: Li
                 <Box flexDirection="column" key={hook} marginBottom={1}>
                     <Box>
                         <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
-                            {isSelected ? "\u276f " : "  "}
+                            {isSelected ? "\u276F " : "  "}
                             {HOOK_LABELS[hook]}
                         </Text>
                     </Box>
@@ -52,17 +52,19 @@ const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: Li
                         <Text dimColor>{HOOK_DESCRIPTIONS[hook]}</Text>
                     </Box>
                     <Box paddingLeft={4}>
-                        {isSelected && fieldEditing ? (
-                            <TextInput
-                                defaultValue={displayValue}
-                                onChange={(newValue: string) => {
-                                    onSetCommand(hook, newValue);
-                                }}
-                                placeholder="e.g. npm install"
-                            />
-                        ) : (
-                            <Text color={displayValue ? "green" : "gray"}>{displayValue || "(not set)"}</Text>
-                        )}
+                        {isSelected && fieldEditing
+                            ? (
+                                <TextInput
+                                    defaultValue={displayValue}
+                                    onChange={(newValue: string) => {
+                                        onSetCommand(hook, newValue);
+                                    }}
+                                    placeholder="e.g. npm install"
+                                />
+                            )
+                            : (
+                                <Text color={displayValue ? "green" : "gray"}>{displayValue || "(not set)"}</Text>
+                            )}
                     </Box>
                 </Box>
             );
@@ -71,17 +73,20 @@ const LifecycleSection = ({ config, fieldEditing, fieldIndex, onSetCommand }: Li
             <Text dimColor>
                 <Text bold color="white">
                     Enter
-                </Text>{" "}
+                </Text>
+                {" "}
                 edit command
                 {"  "}
                 <Text bold color="white">
                     {"\u2191\u2193"}
-                </Text>{" "}
+                </Text>
+                {" "}
                 navigate
                 {"  "}
                 <Text bold color="white">
                     Esc
-                </Text>{" "}
+                </Text>
+                {" "}
                 stop editing
             </Text>
         </Box>

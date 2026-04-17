@@ -69,29 +69,29 @@ const ROOT_MANIFEST_FILES = [
 export interface ScaffoldOptions {
     /** Project names to focus on — transitive deps are pulled in automatically. */
     focus: string[];
-    /** Output directory, typically `.vis/docker/workspace`. */
-    outDir: string;
-    /** Workspace root on disk. */
-    workspaceRoot: string;
-    /** Workspace configuration with resolved project roots. */
-    workspace: WorkspaceConfiguration;
-    /** Project graph used to compute the transitive dependency closure. */
-    projectGraph: ProjectGraph;
+
     /**
      * Include the full source tree for the focus project(s). Used for the
      * `sources` stage so the build can actually compile code after deps
      * are installed.
      */
     includeSources?: boolean;
+    /** Output directory, typically `.vis/docker/workspace`. */
+    outDir: string;
+    /** Project graph used to compute the transitive dependency closure. */
+    projectGraph: ProjectGraph;
+    /** Workspace configuration with resolved project roots. */
+    workspace: WorkspaceConfiguration;
+    /** Workspace root on disk. */
+    workspaceRoot: string;
 }
 
 /**
  * Computes the full set of projects that must exist in the Docker context
  * to build a given focus set: the focus projects themselves plus every
  * project reachable from them in the workspace dependency graph.
- *
- * @param focus - Project names to focus on.
- * @param projectGraph - The workspace project graph.
+ * @param focus Project names to focus on.
+ * @param projectGraph The workspace project graph.
  * @returns A set containing every project in the transitive closure.
  */
 export const resolveFocusProjects = (focus: string[], projectGraph: ProjectGraph): Set<string> => {
@@ -163,12 +163,11 @@ const copyTreeExcludingNodeModules = (src: string, dest: string): void => {
  * Build a minimal Docker context at {@link ScaffoldOptions.outDir}.
  *
  * Creates two directories:
- * - `<outDir>/workspace/` — root manifests + per-project manifests for the
+ * - `&lt;outDir>/workspace/` — root manifests + per-project manifests for the
  *   focus closure. `COPY` this BEFORE `pnpm install` for layer caching.
- * - `<outDir>/sources/` — full source trees for the focus projects (only
+ * - `&lt;outDir>/sources/` — full source trees for the focus projects (only
  *   when {@link ScaffoldOptions.includeSources} is true).
- *
- * @param options - Scaffold configuration.
+ * @param options Scaffold configuration.
  * @returns The list of project names included in the scaffold.
  */
 export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: string[] } => {
@@ -228,8 +227,8 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
 export interface PruneOptions {
     /** Root of the scaffolded context (containing `vis-docker-manifest.json`). */
     contextRoot: string;
-    workspaceRoot: string;
     workspace: WorkspaceConfiguration;
+    workspaceRoot: string;
 }
 
 /**
@@ -238,8 +237,7 @@ export interface PruneOptions {
  * Intended to run inside a Docker build stage after installing
  * dependencies, so unfocused workspace symlinks are stripped from
  * the final image.
- *
- * @param options - Prune configuration.
+ * @param options Prune configuration.
  * @returns The list of project root paths that were removed.
  * @throws If no `vis-docker-manifest.json` exists at the context root.
  */
@@ -254,7 +252,7 @@ export const pruneDockerContext = (options: PruneOptions): { removed: string[] }
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { focus: string[]; projects: string[] };
 
     if (!Array.isArray(manifest.projects)) {
-        throw new Error(`Invalid ${DOCKER_MANIFEST_FILENAME}: "projects" must be an array.`);
+        throw new TypeError(`Invalid ${DOCKER_MANIFEST_FILENAME}: "projects" must be an array.`);
     }
 
     const keep = new Set(manifest.projects);

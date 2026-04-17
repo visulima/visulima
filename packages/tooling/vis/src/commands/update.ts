@@ -4,8 +4,8 @@ import type { Command } from "@visulima/cerebro";
 import { red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
-import { join } from "@visulima/path";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
+import { join } from "@visulima/path";
 import { render, renderToString, Text } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
@@ -212,8 +212,8 @@ const executeCatalogUpdate = async (
         const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
 
         logger.warn(
-            `${yellow("\u26A0")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, ` +
-                `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
+            `${yellow("\u26A0")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, `
+            + `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
         );
     }
 
@@ -244,18 +244,18 @@ const executeCatalogUpdate = async (
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-              if (progressInstance) {
-                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-              } else {
-                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                      interactive: true,
-                      patchConsole: false,
-                  });
-              }
-          }
+            if (progressInstance) {
+                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+            } else {
+                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                    interactive: true,
+                    patchConsole: false,
+                });
+            }
+        }
         : (current: number, total: number): void => {
-              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-          };
+            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+        };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
@@ -290,24 +290,24 @@ const executeCatalogUpdate = async (
 
     if (!isTTY && checkedCount > outdated.length) {
         const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-        const dedupeNote =
-            totalCatalogEntries > checkedCount
+        const dedupeNote
+            = totalCatalogEntries > checkedCount
                 ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
                 : "";
 
         logger.info(
-            `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(outdated.length)} outdated, ${String(upToDate)} up-to-date` +
-                (failed.length > 0 ? `, ${String(failed.length)} failed` : "") +
-                (filteredByTarget.length > 0 ? `, ${String(filteredByTarget.length)} skipped by target` : ""),
+            `Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(outdated.length)} outdated, ${String(upToDate)} up-to-date${
+                failed.length > 0 ? `, ${String(failed.length)} failed` : ""
+            }${filteredByTarget.length > 0 ? `, ${String(filteredByTarget.length)} skipped by target` : ""}`,
         );
     }
 
     if (outdated.length === 0) {
         if (filteredByTarget.length > 0) {
             logger.info(
-                `All catalog dependencies are up to date within the current target.` +
-                    `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:` +
-                    `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} \u2192 ${e.newRange}  (${e.updateType})`).join("\n")}`,
+                `All catalog dependencies are up to date within the current target.`
+                + `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:`
+                + `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} \u2192 ${e.newRange}  (${e.updateType})`).join("\n")}`,
             );
         } else {
             logger.info("All catalog dependencies are up to date.");
@@ -410,14 +410,14 @@ const executeCatalogUpdate = async (
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-            const dedupeNote =
-                totalCatalogEntries > checkedCount
+            const dedupeNote
+                = totalCatalogEntries > checkedCount
                     ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
                     : "";
 
             logger.info(
-                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date` +
-                    (failed.length > 0 ? `, ${String(failed.length)} failed` : ""),
+                `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date${
+                    failed.length > 0 ? `, ${String(failed.length)} failed` : ""}`,
             );
         }
 
@@ -567,7 +567,6 @@ const executePmWrapper = (
 };
 
 const update: Command = {
-    group: "Dependencies",
     alias: "up",
     argument: {
         description: "Packages to update (updates all if omitted)",
@@ -620,7 +619,7 @@ const update: Command = {
                     const corrected = result.packages[i];
 
                     if (corrected !== p.name) {
-                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected ?? "";
+                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : (corrected ?? "");
                     }
 
                     return argument[i] ?? "";
@@ -667,6 +666,7 @@ const update: Command = {
             executePmWrapper(workspaceRoot, packageManager, version, options, argument, logger);
         }
     },
+    group: "Dependencies",
     name: "update",
     options: [
         {

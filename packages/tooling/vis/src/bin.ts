@@ -1,4 +1,5 @@
 import { createCerebro } from "@visulima/cerebro";
+import completionCommand from "@visulima/cerebro/command/completion";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
@@ -40,6 +41,7 @@ import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import sbomCommand from "./commands/sbom";
+import secretsCommand from "./commands/secrets";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
@@ -48,8 +50,6 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
-import completionCommand from "@visulima/cerebro/command/completion";
-
 import { injectVersion, setTerminalTitle } from "./output";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
@@ -155,6 +155,7 @@ cli.addCommand(auditCommand);
 cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 cli.addCommand(sbomCommand);
+cli.addCommand(secretsCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

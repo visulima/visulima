@@ -12,8 +12,8 @@ const PROVIDER_NAME = "mock";
 // Global storage for all mock providers (shared across instances)
 const emailStorage = new Map<string, MockEmailEntry[]>();
 
-type DefaultMockConfig = Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange"> &
-    Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">>;
+type DefaultMockConfig = Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
+    & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">>;
 
 /**
  * Creates a default mock configuration.
@@ -52,14 +52,14 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[]> = defineProvid
 
     let isInitialized = false;
     let nextResponse: Receipt | undefined;
-    const config: Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange"> &
-        Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> = {
-        ...createDefaultConfig(),
-        defaultResponse: options.defaultResponse,
-        logger: options.logger,
-        randomDelayRange: options.randomDelayRange ?? { max: 0, min: 0 },
-        ...options,
-    };
+    const config: Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
+        & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> = {
+            ...createDefaultConfig(),
+            defaultResponse: options.defaultResponse,
+            logger: options.logger,
+            randomDelayRange: options.randomDelayRange ?? { max: 0, min: 0 },
+            ...options,
+        };
 
     const logger = createLogger(PROVIDER_NAME, config.logger);
 

@@ -12,7 +12,9 @@ const App = () => {
             </Text>
             <FilePicker
                 limit={15}
-                onCancel={() => exit()}
+                onCancel={() => {
+                    exit();
+                }}
                 onSelect={(entry) => {
                     setSelectedPath(entry.path);
                 }}
@@ -20,7 +22,8 @@ const App = () => {
             />
             {selectedPath && (
                 <Text>
-                    Selected:{" "}
+                    Selected:
+                    {" "}
                     <Text bold color="green">
                         {selectedPath}
                     </Text>

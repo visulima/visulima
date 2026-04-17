@@ -241,7 +241,6 @@ const runSocketPreCheck = async (
 // ── Command ─────────────────────────────────────────────────────────
 
 const add: Command = {
-    group: "Dependencies",
     argument: {
         description: "Packages to add (e.g., react react-dom)",
         name: "packages",
@@ -283,7 +282,7 @@ const add: Command = {
                 const corrected = result.packages[i];
 
                 if (corrected !== p.name) {
-                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected ?? "";
+                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : (corrected ?? "");
                 }
 
                 return packages[i] ?? "";
@@ -332,6 +331,7 @@ const add: Command = {
             process.exitCode = code;
         }
     },
+    group: "Dependencies",
     name: "add",
     options: [
         { alias: "D", defaultValue: false, description: "Add as dev dependency", name: "save-dev", type: Boolean },

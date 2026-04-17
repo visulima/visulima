@@ -112,6 +112,33 @@
 "package: redact":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/redact/**/*"
+"package: secret-scanner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/**/*"
+"package: secret-scanner/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/darwin-arm64/**/*"
+"package: secret-scanner/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/darwin-x64/**/*"
+"package: secret-scanner/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-arm64-gnu/**/*"
+"package: secret-scanner/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-arm64-musl/**/*"
+"package: secret-scanner/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-x64-gnu/**/*"
+"package: secret-scanner/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-x64-musl/**/*"
+"package: secret-scanner/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/win32-arm64-msvc/**/*"
+"package: secret-scanner/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/win32-x64-msvc/**/*"
 "package: source-map":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/source-map/**/*"

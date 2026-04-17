@@ -18,29 +18,29 @@ export type TextErrorHandlerOptions = {
     formatter?: TextErrorFormatter;
 };
 
-export const textErrorHandler =
-    (options: TextErrorHandlerOptions = {}): ErrorHandler =>
-    async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
-        addStatusCodeToResponse(response, error);
+export const textErrorHandler
+    = (options: TextErrorHandlerOptions = {}): ErrorHandler =>
+        async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
+            addStatusCodeToResponse(response, error);
 
-        setErrorHeaders(response, error);
+            setErrorHeaders(response, error);
 
-        const { statusCode } = response;
-        const reasonPhrase = getReasonPhrase(statusCode) || "Error";
+            const { statusCode } = response;
+            const reasonPhrase = getReasonPhrase(statusCode) || "Error";
 
-        response.setHeader("content-type", "text/plain; charset=utf-8");
+            response.setHeader("content-type", "text/plain; charset=utf-8");
 
-        if (options.formatter) {
-            const text = await options.formatter({ error, reasonPhrase, request, response, statusCode });
+            if (options.formatter) {
+                const text = await options.formatter({ error, reasonPhrase, request, response, statusCode });
 
-            response.end(text);
+                response.end(text);
 
-            return;
-        }
+                return;
+            }
 
-        const message = (error as Error & { message?: string }).message || reasonPhrase;
-        const { expose } = error as Error & { expose?: boolean };
-        const stack = expose ? error.stack : undefined;
+            const message = (error as Error & { message?: string }).message || reasonPhrase;
+            const { expose } = error as Error & { expose?: boolean };
+            const stack = expose ? error.stack : undefined;
 
-        response.end(stack ? `${message}\n\n${stack}` : message);
-    };
+            response.end(stack ? `${message}\n\n${stack}` : message);
+        };

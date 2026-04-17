@@ -24,7 +24,10 @@ const Spacer: React.FC = () => React.createElement(Box, { flexGrow: 1 });
 const SectionHeading = ({ title }: { title: string }) => (
     <Box marginBottom={1}>
         <Text bold color="cyan">
-            ━━ {title}{" "}
+            ━━
+            {" "}
+            {title}
+            {" "}
         </Text>
         <Text dim>{"━".repeat(Math.max(0, 40 - title.length - 4))}</Text>
     </Box>
@@ -91,12 +94,16 @@ const LayoutSection = () => (
 
 describe("kitchen-sink Layout (Flexbox) snapshots", () => {
     it("should render the full layout section at 130x40", () => {
+        expect.assertions(1);
+
         const output = renderToString(<LayoutSection />, { columns: 130, rows: 40 });
 
         expect(output).toMatchSnapshot();
     });
 
     it("should render the full layout section at 80x30 (narrower terminal)", () => {
+        expect.assertions(1);
+
         const output = renderToString(<LayoutSection />, { columns: 80, rows: 30 });
 
         expect(output).toMatchSnapshot();
@@ -106,6 +113,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("justifyContent", () => {
         it.each(["flex-start", "center", "flex-end", "space-between", "space-around"] as const)("should render justifyContent=%s correctly", (mode) => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box borderStyle="single" justifyContent={mode} width={26}>
                     <Text>▪</Text>
@@ -123,6 +132,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("alignItems", () => {
         it.each(["flex-start", "center", "flex-end"] as const)("should render alignItems=%s with height=5", (mode) => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box alignItems={mode} borderStyle="single" height={5} width={16}>
                     <Text>▪▪▪</Text>
@@ -138,6 +149,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("spacer", () => {
         it("should push content to opposite ends of a row", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box borderStyle="single" width={24}>
                     <Text>◀ left</Text>
@@ -155,6 +168,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("nested borders", () => {
         it("should render nested box with different border styles", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box borderStyle="round" padding={1} width={24}>
                     <Box borderStyle="single" paddingX={1}>
@@ -172,6 +187,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("staircase boxes", () => {
         it("should render boxes with increasing heights in a row", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="row" gap={1}>
                     {[1, 2, 3].map((n) => (
@@ -191,6 +208,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("gap spacing", () => {
         it("should apply row gap=3 between columns", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="row" gap={3}>
                     <Box borderStyle="single" height={3} width={8}>
@@ -210,6 +229,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
         });
 
         it("should apply column gap=1 between rows", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="column" gap={1}>
                     <Box borderStyle="single" height={3} width={12}>
@@ -230,6 +251,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("flexDirection", () => {
         it("should lay out children in a column", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="column" width={10}>
                     <Text>first</Text>
@@ -243,6 +266,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
         });
 
         it("should lay out children in a row (default)", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box width={20}>
                     <Text>A </Text>
@@ -260,6 +285,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("flexGrow", () => {
         it("should distribute remaining space according to flexGrow", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box height={3} width={30}>
                     <Box borderStyle="single" flexGrow={1} height={3}>
@@ -280,6 +307,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
 
     describe("padding and margin", () => {
         it("should render box with padding", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box borderStyle="single" height={5} paddingX={2} paddingY={1} width={20}>
                     <Text>padded</Text>
@@ -291,6 +320,8 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
         });
 
         it("should render box with margin", () => {
+            expect.assertions(1);
+
             const output = renderToString(
                 <Box flexDirection="column" height={5} width={20}>
                     <Box borderStyle="single" height={3} marginLeft={3} width={10}>

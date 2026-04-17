@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { cwd } from "node:process";
 import { createInterface } from "node:readline";
 
@@ -88,6 +88,53 @@ const executeMigrate = (hooksDirectory: string, logger: { info: (message: string
     }
 };
 
+const SECRETS_HOOK_MARKER = "# vis:secrets-hook";
+const SECRETS_HOOK_SCRIPT = `#!/usr/bin/env sh
+${SECRETS_HOOK_MARKER}
+# Scan staged files for secrets before each commit. Remove this block or the whole file to disable.
+pnpm exec vis secrets --staged --quiet || exit 1
+`;
+
+const executeAdd = (what: string | undefined, hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
+    if (what !== "secrets") {
+        throw new Error(`Unknown hook add target "${String(what)}". Currently supported: "secrets".`);
+    }
+
+    const root = cwd();
+    const hookPath = join(root, hooksDirectory, "pre-commit");
+
+    if (!existsSync(join(root, hooksDirectory))) {
+        throw new Error(`Hooks directory ${hooksDirectory}/ does not exist. Run \`vis hook install\` first.`);
+    }
+
+    if (existsSync(hookPath)) {
+        const existing = readFileSync(hookPath, "utf8");
+
+        if (existing.includes(SECRETS_HOOK_MARKER)) {
+            logger.info(`Secrets hook already present in ${hookPath}.`);
+
+            return;
+        }
+
+        if (/\bvis secrets\b/.test(existing)) {
+            logger.warn(`Found a \`vis secrets\` invocation in ${hookPath} without the managed marker — leaving it untouched.`);
+
+            return;
+        }
+
+        const appended = `${existing.trimEnd()}\n\n${SECRETS_HOOK_MARKER}\npnpm exec vis secrets --staged --quiet || exit 1\n`;
+
+        writeFileSync(hookPath, appended);
+        chmodSync(hookPath, 0o755);
+        logger.info(`Appended secrets scan to ${hookPath}.`);
+
+        return;
+    }
+
+    writeFileSync(hookPath, SECRETS_HOOK_SCRIPT, { mode: 0o755 });
+    logger.info(`Created ${hookPath} with a secrets-scan pre-commit check.`);
+};
+
 const executeUninstall = (hooksDirectory: string, logger: { info: (message: string) => void }): void => {
     logger.info("Removing git hooks...");
 
@@ -107,9 +154,8 @@ const executeUninstall = (hooksDirectory: string, logger: { info: (message: stri
 };
 
 const hook: Command = {
-    group: "Scaffold & Config",
     argument: {
-        description: "Action to perform: install, uninstall, or migrate",
+        description: "Action to perform: install, uninstall, migrate, or add <target>",
         name: "action",
         type: String,
     },
@@ -126,6 +172,7 @@ const hook: Command = {
         ["vis hook install", "Install git hooks in .vis-hooks/"],
         ["vis hook uninstall", "Remove git hooks and reset core.hooksPath"],
         ["vis hook migrate", "Migrate from husky to vis hooks"],
+        ["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
     execute: async ({ argument, logger, options }) => {
@@ -133,6 +180,11 @@ const hook: Command = {
         const hooksDirectory = (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
 
         switch (action) {
+            case "add": {
+                executeAdd(argument[1] as string | undefined, hooksDirectory, logger);
+                break;
+            }
+
             case "install": {
                 await executeInstall(hooksDirectory, logger);
                 break;
@@ -149,10 +201,11 @@ const hook: Command = {
             }
 
             default: {
-                throw new Error(`Unknown action "${action}". Use "install", "uninstall", or "migrate".`);
+                throw new Error(`Unknown action "${action}". Use "install", "uninstall", "migrate", or "add <target>".`);
             }
         }
     },
+    group: "Scaffold & Config",
     name: "hook",
     options: [
         {

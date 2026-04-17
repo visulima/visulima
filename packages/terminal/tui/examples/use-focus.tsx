@@ -13,7 +13,9 @@ const Item = ({ label }: { label: string }) => {
 
     return (
         <Text>
-            {label} {isFocused ? <Text color="green">(focused)</Text> : <Text color="gray">(unfocused)</Text>}
+            {label}
+            {" "}
+            {isFocused ? <Text color="green">(focused)</Text> : <Text color="gray">(unfocused)</Text>}
         </Text>
     );
 };
@@ -22,7 +24,9 @@ const FocusExample = () => {
     const { exit } = useApp();
 
     useInput((_input, key) => {
-        if (key.escape) exit();
+        if (key.escape) {
+            exit();
+        }
     });
 
     return (

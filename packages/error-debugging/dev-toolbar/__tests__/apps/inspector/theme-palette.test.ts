@@ -20,6 +20,8 @@ describe("theme-palette", () => {
 
     describe("palettes", () => {
         it("dark and light palettes have same keys", () => {
+            expect.assertions(1);
+
             const darkKeys = Object.keys(INSPECTOR_DARK).sort();
             const lightKeys = Object.keys(INSPECTOR_LIGHT).sort();
 
@@ -27,6 +29,8 @@ describe("theme-palette", () => {
         });
 
         it("annotation palettes have danger and success", () => {
+            expect.assertions(4);
+
             expect(ANNOTATION_DARK).toHaveProperty("danger");
             expect(ANNOTATION_DARK).toHaveProperty("success");
             expect(ANNOTATION_LIGHT).toHaveProperty("danger");
@@ -34,6 +38,8 @@ describe("theme-palette", () => {
         });
 
         it("inspector palettes have overlay properties", () => {
+            expect.assertions(2);
+
             expect(INSPECTOR_DARK).toHaveProperty("overlayBg");
             expect(INSPECTOR_DARK).toHaveProperty("overlayBorder");
         });
@@ -41,6 +47,8 @@ describe("theme-palette", () => {
 
     describe(isDarkTheme, () => {
         it("returns dark for 'dark' localStorage value", () => {
+            expect.assertions(1);
+
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
 
@@ -48,6 +56,8 @@ describe("theme-palette", () => {
         });
 
         it("returns light for 'light' localStorage value", () => {
+            expect.assertions(1);
+
             localStorage.setItem("__v_dt__theme", "light");
             resetPaletteCache();
 
@@ -57,6 +67,8 @@ describe("theme-palette", () => {
 
     describe(getInspectorPalette, () => {
         it("returns dark palette when theme is dark", () => {
+            expect.assertions(1);
+
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
 
@@ -66,6 +78,8 @@ describe("theme-palette", () => {
         });
 
         it("returns light palette when theme is light", () => {
+            expect.assertions(1);
+
             localStorage.setItem("__v_dt__theme", "light");
             resetPaletteCache();
 
@@ -78,6 +92,8 @@ describe("theme-palette", () => {
     describe(getAnnotationPalette, () => {
         it("returns palette with base + annotation-specific fields", () => {
             // Set explicit theme to avoid matchMedia (not in JSDOM)
+            expect.assertions(4);
+
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
 
@@ -92,6 +108,8 @@ describe("theme-palette", () => {
 
     describe(resetPaletteCache, () => {
         it("forces re-read from localStorage on next call", () => {
+            expect.assertions(2);
+
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
 

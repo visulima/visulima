@@ -311,7 +311,6 @@ const collectSourceFiles = (dir: string): string[] => {
  * which optimizations to apply. In non-TTY/CI mode, outputs a static report.
  */
 const optimize: Command = {
-    group: "Workspace",
     description: "Analyze and optimize dependencies using e18e replacements and @socketregistry overrides",
     examples: [
         ["vis optimize", "Interactive TUI to select and apply optimizations"],
@@ -319,7 +318,6 @@ const optimize: Command = {
         ["vis optimize --pin", "Pin Socket.dev overrides to exact versions"],
         ["vis optimize --prod", "Only optimize production dependencies"],
     ],
-
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -550,6 +548,8 @@ const optimize: Command = {
             note("Run without --dry-run for interactive selection.");
         }
     },
+
+    group: "Workspace",
     name: "optimize",
     options: [
         { alias: "d", defaultValue: false, description: "Preview available optimizations without applying", name: "dry-run", type: Boolean },

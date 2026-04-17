@@ -27,14 +27,14 @@ export class TerminalBuffer {
 
     readonly #maxBytes: number;
 
-    constructor(maxBytes: number = 256 * 1024) {
+    public constructor(maxBytes: number = 256 * 1024) {
         this.#maxBytes = maxBytes;
     }
 
     /**
      * Process raw PTY output data.
      */
-    write(data: string): void {
+    public write(data: string): void {
         let i = 0;
 
         while (i < data.length) {
@@ -95,7 +95,7 @@ export class TerminalBuffer {
     }
 
     /** Get the current buffer content as a string. */
-    toString(): string {
+    public toString(): string {
         return this.#lines.join("\n");
     }
 
@@ -109,7 +109,7 @@ export class TerminalBuffer {
 
         // Collect parameter bytes (digits and semicolons)
         while (j < data.length && ((data[j]! >= "0" && data[j]! <= "9") || data[j] === ";")) {
-            params += data[j];
+            params += data[j] ?? "";
             j++;
         }
 
@@ -280,7 +280,9 @@ export class TerminalBuffer {
 
                 break;
             }
-            // No default
+            default: {
+                break;
+            }
         }
     }
 
@@ -303,7 +305,9 @@ export class TerminalBuffer {
 
                 break;
             }
-            // No default
+            default: {
+                break;
+            }
         }
     }
 

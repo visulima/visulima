@@ -25,6 +25,8 @@ describe("native-binding", () => {
             return; // native addon not available (local dev without compiled .node)
         }
 
+        expect.assertions(1);
+
         expect(binding.Renderer).toBeDefined();
 
         expectTypeOf(binding.Renderer).toBeFunction();
@@ -37,6 +39,8 @@ describe("native-binding", () => {
             return;
         }
 
+        expect.assertions(1);
+
         expect(binding.TerminalGuard).toBeDefined();
 
         expectTypeOf(binding.TerminalGuard).toBeFunction();
@@ -48,6 +52,8 @@ describe("native-binding", () => {
         if (!binding) {
             return;
         }
+
+        expect.assertions(1);
 
         expect(binding.terminalSize).toBeDefined();
 
@@ -72,6 +78,8 @@ describe("native-binding", () => {
             return;
         }
 
+        expect.assertions(3);
+
         expect(size).toBeDefined();
 
         expectTypeOf(size.cols).toBeNumber();
@@ -87,6 +95,8 @@ describe("native-binding", () => {
         if (!binding) {
             return;
         }
+
+        expect.assertions(3);
 
         const renderer = new binding.Renderer(80, 24);
 

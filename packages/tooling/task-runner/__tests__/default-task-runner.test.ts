@@ -96,6 +96,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should execute and cache tasks end-to-end", async () => {
+        expect.assertions(4);
+
         const task = makeTask();
         const { executor, getCount } = createCountingExecutor();
 
@@ -115,6 +117,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should support dry-run mode", async () => {
+        expect.assertions(2);
+
         const task = makeTask();
         const executor: TaskExecutor = async () => {
             throw new Error("Should not execute in dry-run");
@@ -130,6 +134,8 @@ describe(defaultTaskRunner, () => {
 
     // eslint-disable-next-line no-secrets/no-secrets
     it("should support smartLockfileHashing", async () => {
+        expect.assertions(3);
+
         const task = makeTask();
 
         // Create npm lockfile
@@ -161,6 +167,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should support frameworkInference", async () => {
+        expect.assertions(3);
+
         const task = makeTask();
 
         // Make it a Next.js project
@@ -195,6 +203,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should generate summary when summarize is enabled", async () => {
+        expect.assertions(8);
+
         const task = makeTask();
         const executor = createSimpleExecutor();
 
@@ -222,6 +232,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should invoke cacheDiagnostics lifecycle hook on miss", async () => {
+        expect.assertions(2);
+
         const task = makeTask();
         const executor = createSimpleExecutor();
 
@@ -242,6 +254,8 @@ describe(defaultTaskRunner, () => {
     });
 
     it("should skip cache when skipNxCache is true", async () => {
+        expect.assertions(2);
+
         const task = makeTask();
         const { executor, getCount } = createCountingExecutor();
 

@@ -3,23 +3,23 @@ import { existsSync, readdirSync } from "node:fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
-import type { MigrateLogger, MigrationReport } from "./types";
 import { serializeConfigObject, writeVisConfig } from "./shared";
+import type { MigrateLogger, MigrationReport } from "./types";
 
 // ── Moon config shape ────────────────────────────────────────────────
 
 interface MoonTaskYaml {
-    command?: string;
     args?: string | string[];
+    command?: string;
     deps?: string[];
-    inputs?: string[];
-    outputs?: string[];
     env?: Record<string, string>;
-    platform?: string;
-    toolchain?: string;
-    preset?: string;
-    type?: string;
+    inputs?: string[];
     options?: Record<string, unknown>;
+    outputs?: string[];
+    platform?: string;
+    preset?: string;
+    toolchain?: string;
+    type?: string;
 }
 
 interface MoonTasksYaml {
@@ -27,8 +27,8 @@ interface MoonTasksYaml {
     fileGroups?: Record<string, string[]>;
     implicitDeps?: string[];
     implicitInputs?: string[];
-    tasks?: Record<string, MoonTaskYaml>;
     taskOptions?: Record<string, unknown>;
+    tasks?: Record<string, MoonTaskYaml>;
 }
 
 // ── Conversion ───────────────────────────────────────────────────────
@@ -138,11 +138,10 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
 
 /**
  * Translates a moon `.moon/tasks.yml` into a `vis.config.ts`.
- *
- * @param workspaceRoot - Absolute workspace root path.
- * @param options - Migration options.
- * @param logger - Logger for user feedback.
- * @param report - Migration report to append manual steps and warnings.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param options Migration options.
+ * @param logger Logger for user feedback.
+ * @param report Migration report to append manual steps and warnings.
  */
 export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const tasksFile = findMoonTasksFile(workspaceRoot);
@@ -157,7 +156,7 @@ export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }
     let parsed: MoonTasksYaml;
 
     try {
-        parsed = readYamlSync<MoonTasksYaml>(tasksFile);
+        parsed = readYamlSync(tasksFile) as MoonTasksYaml;
     } catch (error) {
         throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
     }

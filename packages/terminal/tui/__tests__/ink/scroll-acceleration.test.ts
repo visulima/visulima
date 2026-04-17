@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 describe("scroll-acceleration (unit)", () => {
     it("rapid events in same direction should increase velocity", () => {
         // Simulate the acceleration logic
+        expect.assertions(3);
+
         const acceleration = 1.5;
         const maxVelocity = 20;
         let velocity = 1; // initial scroll down
@@ -25,6 +27,8 @@ describe("scroll-acceleration (unit)", () => {
     });
 
     it("velocity should be clamped at maxVelocity", () => {
+        expect.assertions(1);
+
         const acceleration = 2;
         const maxVelocity = 5;
         let velocity = 4;
@@ -35,6 +39,8 @@ describe("scroll-acceleration (unit)", () => {
     });
 
     it("decay should reduce velocity over time", () => {
+        expect.assertions(3);
+
         const decayRate = 0.92;
         let velocity = 10;
 
@@ -56,6 +62,8 @@ describe("scroll-acceleration (unit)", () => {
 
     it("direction change should reset velocity", () => {
         // Simulate: scrolling down, then switching to up
+        expect.assertions(1);
+
         let velocity = 5; // positive = down
         const newDirection = "up";
         const sign = newDirection === "down" ? 1 : -1;

@@ -302,6 +302,8 @@ describe(Table, () => {
     });
 
     it("should render with maxWidth constraint", () => {
+        expect.assertions(1);
+
         const data = [{ description: "Another long description value", name: "A very long name value" }];
 
         const output = strip(renderToString(<Table data={data} maxWidth={40} />));

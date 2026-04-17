@@ -13,12 +13,16 @@ describe("freeze-animations", () => {
 
     describe(isFrozen, () => {
         it("returns false initially", () => {
+            expect.assertions(1);
+
             expect(isFrozen()).toBe(false);
         });
     });
 
     describe(freezeAll, () => {
         it("sets frozen state to true", () => {
+            expect.assertions(1);
+
             freezeAll();
 
             expect(isFrozen()).toBe(true);
@@ -27,6 +31,8 @@ describe("freeze-animations", () => {
         });
 
         it("injects freeze CSS into head", () => {
+            expect.assertions(3);
+
             freezeAll();
 
             const style = document.querySelector("#__vdt_freeze_styles");
@@ -39,6 +45,8 @@ describe("freeze-animations", () => {
         });
 
         it("is idempotent", () => {
+            expect.assertions(2);
+
             freezeAll();
             freezeAll(); // second call should be no-op
 
@@ -54,6 +62,8 @@ describe("freeze-animations", () => {
 
     describe(unfreezeAll, () => {
         it("sets frozen state to false", () => {
+            expect.assertions(1);
+
             freezeAll();
             unfreezeAll();
 
@@ -61,6 +71,8 @@ describe("freeze-animations", () => {
         });
 
         it("removes freeze CSS from head", () => {
+            expect.assertions(1);
+
             freezeAll();
             unfreezeAll();
 
@@ -70,6 +82,8 @@ describe("freeze-animations", () => {
         });
 
         it("is no-op when not frozen", () => {
+            expect.assertions(1);
+
             unfreezeAll(); // should not throw
 
             expect(isFrozen()).toBe(false);
@@ -78,6 +92,8 @@ describe("freeze-animations", () => {
 
     describe(toggleFreeze, () => {
         it("freezes when not frozen", () => {
+            expect.assertions(2);
+
             const result = toggleFreeze();
 
             expect(result).toBe(true);
@@ -87,6 +103,8 @@ describe("freeze-animations", () => {
         });
 
         it("unfreezes when frozen", () => {
+            expect.assertions(2);
+
             freezeAll();
 
             const result = toggleFreeze();

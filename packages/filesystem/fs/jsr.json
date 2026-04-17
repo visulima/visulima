@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "4.1.0",
+    "version": "5.0.0-alpha.8",
     "exports": {
         ".": "./src/index.ts",
         "./utils": "./src/utils.ts",
