@@ -43,6 +43,14 @@ export type StagedConfigFunction = (files: string[]) => Promise<Record<string, S
 export interface RunOptions {
     /** Allow empty commits when tasks revert every staged change. */
     readonly allowEmpty?: boolean;
+
+    /**
+     * When a task writes *new* files that sit outside the originally-staged
+     * set, automatically stage them too. Defaults to `false` — only tasks
+     * explicitly called out to produce new artefacts should set this (e.g.
+     * codegen, lockfile regeneration). Closes nano-staged #43.
+     */
+    readonly autoStage?: boolean;
     /** Concurrency: `true` (unbounded), `false` (serial), or a positive integer. */
     readonly concurrent?: boolean | number;
     /** Inline config — takes precedence over `configPath`. */

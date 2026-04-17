@@ -8,6 +8,8 @@ const isCustomTask = (value: unknown): value is CustomTask =>
     typeof value === "object" && value !== null && typeof (value as CustomTask).title === "string" && typeof (value as CustomTask).task === "function";
 
 export interface BuildTaskGraphOptions {
+    /** Match globs case-insensitively — enable on HFS+/APFS (macOS) and NTFS (Windows). */
+    readonly caseInsensitive?: boolean;
     readonly config: Readonly<Record<string, StagedTask>>;
     readonly cwd: string;
     readonly files: ReadonlyArray<string>;
@@ -127,7 +129,7 @@ export const buildTaskGraph = async (options: BuildTaskGraphOptions): Promise<Pa
     const patterns: PatternDescriptor[] = [];
 
     for (const [pattern, value] of Object.entries(options.config)) {
-        const matched = matchFiles(pattern, options.files, options.cwd);
+        const matched = matchFiles(pattern, options.files, options.cwd, { caseInsensitive: options.caseInsensitive === true });
 
         if (matched.length === 0) {
             continue;

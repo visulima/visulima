@@ -206,8 +206,16 @@ vis staged --hide-all               # hide unstaged edits AND untracked files
 vis staged --relative               # pass paths relative to cwd to tasks
 vis staged --revert                 # restore pre-task state on failure
 vis staged --allow-empty            # allow a commit when tasks revert everything
+vis staged --auto-stage             # auto-stage new files tasks create (codegen, lockfile regen, …)
+vis staged --force-kill             # kill in-flight tasks with SIGKILL on fast-fail (default: SIGTERM)
 vis staged --config ./path/to/.lintstagedrc.yaml
 ```
+
+#### Environment variables
+
+| Variable                  | Description                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `VIS_STAGED_CONCURRENT`   | Concurrency fallback when `--concurrent` is not passed. Same value shape as the flag (`true`, `false`, or an integer). Useful in CI so you don't repeat the flag on every invocation. |
 
 #### How it behaves
 

@@ -48,6 +48,16 @@ export const getIntentToAddPaths = async (cwd: string): Promise<string[]> => {
     return paths;
 };
 
+/**
+ * Lists untracked, non-ignored files in the working tree. Used by
+ * `--autoStage` to pick up files a task created during the run.
+ */
+export const getUntrackedFiles = async (cwd: string): Promise<string[]> => {
+    const { stdout } = await git(["ls-files", "--others", "--exclude-standard", "-z"], { cwd });
+
+    return stdout.split("\u0000").filter((path) => path.length > 0);
+};
+
 /** Removes the listed paths from the index (`git rm --cached`), leaving the on-disk content alone. */
 export const removeFromIndex = async (paths: ReadonlyArray<string>, options: { readonly cwd: string }): Promise<void> => {
     if (paths.length === 0) {
