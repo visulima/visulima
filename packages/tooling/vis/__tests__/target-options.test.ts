@@ -235,6 +235,80 @@ describe(loadEnvFile, () => {
 
         expect(env.ABS).toBe("true");
     });
+
+    it("loads an array of files with later entries overriding earlier", () => {
+        expect.assertions(2);
+
+        writeFileSync(join(tmpDir, ".env"), "FOO=base\nBASE=1");
+        writeFileSync(join(tmpDir, ".env.local"), "FOO=override");
+
+        const env = loadEnvFile(tmpDir, [".env", ".env.local"]);
+
+        expect(env.FOO).toBe("override");
+        expect(env.BASE).toBe("1");
+    });
+
+    it("envFile=true auto-cascades .env → .env.NODE_ENV → .env.local → .env.NODE_ENV.local", () => {
+        expect.assertions(4);
+
+        const previous = process.env["NODE_ENV"];
+
+        process.env["NODE_ENV"] = "production";
+
+        try {
+            writeFileSync(join(tmpDir, ".env"), "A=base\nSHARED=1");
+            writeFileSync(join(tmpDir, ".env.production"), "B=prod\nSHARED=2");
+            writeFileSync(join(tmpDir, ".env.local"), "C=local\nSHARED=3");
+            writeFileSync(join(tmpDir, ".env.production.local"), "D=prodlocal\nSHARED=4");
+
+            const env = loadEnvFile(tmpDir, true);
+
+            expect(env.A).toBe("base");
+            expect(env.B).toBe("prod");
+            expect(env.D).toBe("prodlocal");
+            // SHARED is defined in all four; the last-loaded file must win.
+            expect(env.SHARED).toBe("4");
+        } finally {
+            if (previous === undefined) {
+                delete process.env["NODE_ENV"];
+            } else {
+                process.env["NODE_ENV"] = previous;
+            }
+        }
+    });
+
+    it("envFile=true skips .env.local when NODE_ENV=test (matches Next.js)", () => {
+        expect.assertions(1);
+
+        const previous = process.env["NODE_ENV"];
+
+        process.env["NODE_ENV"] = "test";
+
+        try {
+            writeFileSync(join(tmpDir, ".env"), "X=base");
+            writeFileSync(join(tmpDir, ".env.local"), "X=local");
+
+            const env = loadEnvFile(tmpDir, true);
+
+            expect(env.X).toBe("base");
+        } finally {
+            if (previous === undefined) {
+                delete process.env["NODE_ENV"];
+            } else {
+                process.env["NODE_ENV"] = previous;
+            }
+        }
+    });
+
+    it("envFile=false is a no-op", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(tmpDir, ".env"), "X=yes");
+
+        const env = loadEnvFile(tmpDir, false);
+
+        expect(env).toStrictEqual({});
+    });
 });
 
 describe(resolveTargetShell, () => {

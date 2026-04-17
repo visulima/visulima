@@ -13,6 +13,7 @@ import type {
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
 
+import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
 import { applyPreset, defaultCacheForType } from "./target-options";
@@ -123,6 +124,19 @@ interface VisConfig {
     };
 
     /**
+     * Scope the task-runner cache directory by the current git branch.
+     * When `true`, caches are stored under `&lt;cacheDir>/branches/&lt;slug>`
+     * so `main` and feature branches stop thrashing each other —
+     * generated artefacts (schemas, `.d.ts` snapshots) that legitimately
+     * differ across branches no longer oscillate the cache contents.
+     *
+     * Falls back to the unscoped path on detached HEAD, non-git
+     * workspaces, or when git isn't available.
+     * @default false
+     */
+    branchScopedCache?: boolean;
+
+    /**
      * Code ownership configuration. Controls how `vis sync codeowners`
      * renders the generated CODEOWNERS file.
      */
@@ -228,8 +242,17 @@ interface VisConfig {
      * to task-runner's `namedInputs` but configurable from the vis config.
      */
     namedInputs?: NamedInputs;
+
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
+
+    /**
+     * Plugins — each plugin registers typed hooks that fire at run /
+     * task / cache boundaries. See {@link VisPlugin} for the contract.
+     * Prefer plugins over per-target shell hooks when behaviour needs
+     * access to task metadata, results, or cache state.
+     */
+    plugins?: VisPlugin[];
 
     /**
      * Default options for `vis secrets`. CLI flags always take precedence;
@@ -493,6 +516,14 @@ interface VisConfig {
      */
     taskDefaults?: TaskDefaultsBlock[];
 
+    /**
+     * Named bundles of target dependencies, referenceable from any task's
+     * `dependsOn`. `dependsOn: [{ group: "lint" }]` expands to every entry
+     * in the named group; nested groups are resolved recursively and a
+     * cycle raises during discovery.
+     */
+    taskGroups?: Record<string, (string | { dependencies?: boolean; projects?: string | string[]; target: string } | { group: string })[]>;
+
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
     /** Terminal UI configuration */
@@ -690,6 +721,89 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
 /**
  * Reads workspace patterns from pnpm-workspace.yaml (simple parser).
  */
+
+/**
+ * Expands every `{ group: "name" }` entry in a target's `dependsOn`
+ * into the group's declared members, recursively resolving nested
+ * groups and detecting cycles.
+ *
+ * Runs once per workspace discovery so task-runner's graph builder
+ * only ever sees bare dependency entries — groups are pure vis sugar.
+ */
+export const expandTaskGroups = (
+    dependsOn: (string | { dependencies?: boolean; projects?: string | string[]; target: string } | { group: string })[] | undefined,
+    groups: VisConfig["taskGroups"],
+    seen: Set<string> = new Set(),
+): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] => {
+    if (!dependsOn) {
+        return [];
+    }
+
+    const expanded: (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] = [];
+
+    for (const entry of dependsOn) {
+        if (typeof entry === "object" && entry && "group" in entry) {
+            const groupName = entry.group;
+
+            if (seen.has(groupName)) {
+                throw new Error(`Cycle detected in vis.config taskGroups: ${[...seen, groupName].join(" → ")}`);
+            }
+
+            const members = groups?.[groupName];
+
+            if (!members) {
+                throw new Error(`Unknown taskGroup "${groupName}" referenced in dependsOn. Declare it under \`taskGroups\` in vis.config.ts.`);
+            }
+
+            expanded.push(...expandTaskGroups(members, groups, new Set([...seen, groupName])));
+            continue;
+        }
+
+        expanded.push(entry);
+    }
+
+    return expanded;
+};
+
+/**
+ * Validates the root `package.json` `workspaces` field and returns the
+ * resolved pattern array. Throws a clear diagnostic when the field is
+ * malformed (empty array, wrong type, object without `packages`)
+ * instead of falling through to a vague "no workspace configuration
+ * found" error that hides the real problem.
+ */
+const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
+    if (Array.isArray(raw)) {
+        if (raw.length === 0) {
+            throw new Error('Invalid package.json `workspaces`: empty array. Add at least one pattern like "packages/*" or remove the field.');
+        }
+
+        for (const entry of raw) {
+            if (typeof entry !== "string" || entry.trim().length === 0) {
+                throw new TypeError(`Invalid package.json \`workspaces\` entry: expected a non-empty glob string, got ${JSON.stringify(entry)}.`);
+            }
+        }
+
+        return raw;
+    }
+
+    if (raw && typeof raw === "object") {
+        const { packages } = raw;
+
+        if (packages === undefined) {
+            throw new Error('Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ "packages": ["packages/*"] }`).');
+        }
+
+        if (!Array.isArray(packages)) {
+            throw new TypeError(`Invalid package.json \`workspaces.packages\`: expected an array of glob strings, got ${typeof packages}.`);
+        }
+
+        return validateWorkspacesField(packages);
+    }
+
+    throw new TypeError(`Invalid package.json \`workspaces\`: expected an array or { packages: string[] } object, got ${typeof raw}.`);
+};
+
 const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
@@ -949,8 +1063,8 @@ const discoverWorkspace = (
 
     if (pnpmPatterns) {
         workspacePatterns = pnpmPatterns;
-    } else if (rootPkg?.workspaces) {
-        workspacePatterns = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces.packages;
+    } else if (rootPkg?.workspaces !== undefined) {
+        workspacePatterns = validateWorkspacesField(rootPkg.workspaces);
     }
 
     if (!workspacePatterns) {
@@ -988,9 +1102,13 @@ const discoverWorkspace = (
 
         for (const [targetName, target] of Object.entries(visTargets)) {
             const { options, preset: _preset, type: _type, ...rest } = target;
+            const expandedDependsOn = target.dependsOn
+                ? expandTaskGroups(target.dependsOn as Parameters<typeof expandTaskGroups>[0], config.taskGroups)
+                : undefined;
 
             sanitizedTargets[targetName] = {
                 ...rest,
+                ...(expandedDependsOn ? { dependsOn: expandedDependsOn } : {}),
                 ...(options ? { options: options as unknown as Record<string, unknown> } : {}),
             };
         }
@@ -1066,6 +1184,14 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 };
 
 export type { PackageJson, VisConfig };
-export { buildProjectGraph, collectTargetDefaults, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns, scopeMatches };
+export {
+    buildProjectGraph,
+    collectTargetDefaults,
+    discoverWorkspace,
+    readPnpmWorkspacePatterns,
+    resolveWorkspacePatterns,
+    scopeMatches,
+    validateWorkspacesField,
+};
 
 export { type StagedConfig } from "./staged";

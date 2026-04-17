@@ -1,6 +1,9 @@
 import type { FSWatcher } from "node:fs";
 import { watch } from "node:fs";
 
+import { dirname, relative, resolve } from "@visulima/path";
+import type { TaskResults } from "@visulima/task-runner";
+
 /**
  * Debounced multi-directory file watcher. Watches one or more project
  * roots recursively and invokes `onChange` at most once per debounce
@@ -16,6 +19,14 @@ export interface WatchHandle {
 export interface WatchOptions {
     /** Debounce window in milliseconds. Defaults to 150 ms. */
     debounceMs?: number;
+
+    /**
+     * Optional predicate invoked against every raw file event
+     * (relative path as provided by `node:fs.watch`). Used by
+     * tracked-access watch mode to drop changes to files the last
+     * run didn't actually read. Return `false` to discard the event.
+     */
+    filter?: (path: string) => boolean;
     /** Fired when a watched file changes (after debounce). */
     onChange: (changedPaths: string[]) => void | Promise<void>;
     /** Project roots to watch, resolved to absolute paths. */
@@ -23,6 +34,92 @@ export interface WatchOptions {
 }
 
 const IGNORE_PATTERNS = [/node_modules(?:\/|$)/, /\.git(?:\/|$)/, /\.vis(?:\/|$)/, /\.task-runner(?:\/|$)/];
+
+/**
+ * The set of workspace-relative paths that a run actually read, plus
+ * the minimal set of directories that contain them. Used by
+ * tracked-access watch mode to only re-trigger runs when a file the
+ * previous run actually consumed changes — drops noise from unrelated
+ * edits under the project roots.
+ *
+ * `files` stays workspace-relative because `node:fs.watch` emits
+ * paths relative to the watched root.
+ */
+export interface TrackedWatchTargets {
+    directories: string[];
+    files: Set<string>;
+}
+
+/**
+ * Extracts the set of files every task in `results` reported as an
+ * input. Returns empty sets when no task carries hash details — the
+ * caller falls back to watching project roots in that case.
+ *
+ * Directories are deduplicated and pruned so a parent dir shadows its
+ * descendants — watching both would double-fire events.
+ */
+export const collectTrackedWatchTargets = (results: TaskResults, workspaceRoot: string): TrackedWatchTargets => {
+    const files = new Set<string>();
+    const directories = new Set<string>();
+
+    for (const [, result] of results) {
+        const nodes = result.task.hashDetails?.nodes;
+
+        if (!nodes) {
+            continue;
+        }
+
+        for (const filePath of Object.keys(nodes)) {
+            files.add(filePath);
+            directories.add(dirname(resolve(workspaceRoot, filePath)));
+        }
+    }
+
+    // Prune descendants — watching a parent covers everything beneath.
+    const sorted = [...directories].sort();
+    const pruned: string[] = [];
+
+    for (const directory of sorted) {
+        if (pruned.some((parent) => directory === parent || directory.startsWith(`${parent}/`))) {
+            continue;
+        }
+
+        pruned.push(directory);
+    }
+
+    return { directories: pruned, files };
+};
+
+/**
+ * Translates a set of workspace-relative tracked paths into a filter
+ * suitable for {@link startWatcher}. The watcher emits paths relative
+ * to its watched root — which, after pruning, may be any ancestor
+ * directory — so we match on the **suffix** of the tracked path
+ * instead of an exact comparison.
+ */
+export const createTrackedFileFilter = (trackedFiles: Set<string>, workspaceRoot: string, watchedDirectories: string[]): ((path: string) => boolean) => {
+    const lookup = new Set<string>();
+
+    for (const file of trackedFiles) {
+        const absolute = resolve(workspaceRoot, file);
+
+        for (const directory of watchedDirectories) {
+            if (absolute === directory || absolute.startsWith(`${directory}/`)) {
+                const rel = relative(directory, absolute);
+
+                if (rel.length > 0) {
+                    lookup.add(rel);
+                }
+            }
+        }
+    }
+
+    return (path: string) => {
+        const normalized = path.replaceAll("\\", "/");
+
+        return lookup.has(normalized);
+    };
+};
 
 const shouldIgnore = (path: string): boolean => {
     const normalized = path.replaceAll("\\", "/");
@@ -37,7 +134,7 @@ const shouldIgnore = (path: string): boolean => {
  * @returns A handle to close all watchers.
  */
 export const startWatcher = (options: WatchOptions): WatchHandle => {
-    const { debounceMs = 150, onChange, paths } = options;
+    const { debounceMs = 150, filter, onChange, paths } = options;
     const watchers: FSWatcher[] = [];
     let pendingChanges = new Set<string>();
     let timer: NodeJS.Timeout | undefined;
@@ -66,6 +163,10 @@ export const startWatcher = (options: WatchOptions): WatchHandle => {
                 }
 
                 if (shouldIgnore(filename)) {
+                    return;
+                }
+
+                if (filter && !filter(filename)) {
                     return;
                 }
 

@@ -46,6 +46,82 @@ export type TargetOsType = "linux" | "macos" | "windows";
  * base `TargetConfiguration`. These live under `target.options` and are
  * interpreted by vis before handing the task off to task-runner.
  */
+
+/**
+ * Object form of the `when` gate. Matches against process.env or
+ * process.platform — deliberately small surface area so conditions
+ * stay auditable and declarative.
+ */
+export interface TargetConditionObject {
+    /** Env var name to compare against `equals` or `in`. */
+    env?: string;
+    /** Value that `env` must match exactly. */
+    equals?: string;
+    /** Any value in this list matches. Ignored when `equals` is set. */
+    in?: string[];
+    /** Run only on this platform (or one of these). */
+    platform?: NodeJS.Platform | NodeJS.Platform[];
+}
+
+/**
+ * Evaluates a `when` condition against the current process state.
+ * Returns `true` when the task should run, `false` when it should be
+ * skipped. Unknown shapes default to `true` — we'd rather over-run
+ * than silently hide tasks on malformed config.
+ */
+export const evaluateWhen = (
+    when: TargetConditionObject | string | undefined,
+    environment: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+    platform: NodeJS.Platform = process.platform,
+): boolean => {
+    if (when === undefined) {
+        return true;
+    }
+
+    if (typeof when === "string") {
+        const trimmed = when.trim();
+
+        if (trimmed.startsWith("!")) {
+            const name = trimmed.slice(1);
+
+            return !environment[name];
+        }
+
+        if (trimmed.startsWith("$")) {
+            const name = trimmed.slice(1);
+
+            return Boolean(environment[name]);
+        }
+
+        // Bare string treated as an env-var name, same as "$name"
+        return Boolean(environment[trimmed]);
+    }
+
+    if (when.platform !== undefined) {
+        const targets = Array.isArray(when.platform) ? when.platform : [when.platform];
+
+        if (!targets.includes(platform)) {
+            return false;
+        }
+    }
+
+    if (when.env !== undefined) {
+        const value = environment[when.env];
+
+        if (when.equals !== undefined) {
+            return value === when.equals;
+        }
+
+        if (when.in !== undefined) {
+            return typeof value === "string" && when.in.includes(value);
+        }
+
+        return Boolean(value);
+    }
+
+    return true;
+};
+
 export interface VisTargetOptions {
     /**
      * How to forward affected files to the task process.
@@ -55,10 +131,15 @@ export interface VisTargetOptions {
     affectedFiles?: AffectedFilesMode;
 
     /**
-     * Load environment variables from the given dotenv file before running.
-     * Path is resolved relative to the project root.
+     * Load environment variables from dotenv file(s) before running.
+     * - `string`: a single file path (relative to project root).
+     * - `string[]`: multiple files — later entries override earlier ones,
+     *   so put more-specific files last (e.g. `[".env", ".env.local"]`).
+     * - `true`: auto-cascade in the Next/Vite order:
+     *   `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`.
+     *   Skips `.env.local` when NODE_ENV is `test`, matching Next.js.
      */
-    envFile?: string;
+    envFile?: boolean | string | string[];
 
     /**
      * When true, the task is serialized with respect to parallel execution
@@ -102,6 +183,19 @@ export interface VisTargetOptions {
     preset?: TargetPreset;
 
     /**
+     * Run the task through a pseudo-terminal so color-aware tools
+     * (vitest, eslint, biome, …) render as if attached to a real TTY
+     * instead of a pipe. Output is captured via task-runner's
+     * `TerminalBuffer` so ANSI escapes are normalized into the final
+     * rendered state before reaching the reporter.
+     *
+     * Forces cache to off — PTY output can include timing-dependent
+     * frames (spinners) that aren't safe to replay from a cache.
+     * @default false
+     */
+    pty?: boolean;
+
+    /**
      * Number of times to retry the task on failure. Uses an exponential
      * backoff by default (1s, 2s, 4s, ...).
      * @default 0
@@ -135,10 +229,39 @@ export interface VisTargetOptions {
     shell?: string;
 
     /**
+     * Maximum wall-clock milliseconds a single task run is allowed to
+     * take before being killed. `0` / `undefined` means no timeout.
+     *
+     * When the timeout fires the task is sent SIGTERM then SIGKILL
+     * (via the concurrent runner's `killSignal`/`killTimeout`
+     * semantics) and the task exits with a failure status carrying the
+     * `[timeout]` marker in `terminalOutput`. Retries count against
+     * this per-attempt, not cumulatively.
+     *
+     * Use this to prevent runaway tasks from eating CI wall-clock time
+     * up to the job-level cutoff.
+     */
+    timeout?: number;
+
+    /**
      * Per-target unix shell override, used on Linux and macOS.
      * Takes precedence over `shell` on unix-like systems.
      */
     unixShell?: string;
+
+    /**
+     * Conditional gate: the task is scheduled only when `when` evaluates
+     * truthy. Shapes:
+     * - `"$VAR"` — run only if the env var is non-empty
+     * - `"!VAR"` — run only if the env var is empty/unset
+     * - `{ env: "NAME", equals: "value" }` — run only if env equals
+     * - `{ env: "NAME", in: ["a", "b"] }` — run only if env is in set
+     * - `{ platform: "darwin" | "linux" | "win32" }` — OS gate
+     *
+     * Kept declarative on purpose — no dynamic code execution. For
+     * richer logic, use osType/runInCI or a pre-hook script.
+     */
+    when?: TargetConditionObject | string;
 
     /**
      * Per-target windows shell override, used on Windows.
@@ -152,6 +275,20 @@ export interface VisTargetOptions {
  * on top of task-runner's `TargetConfiguration`.
  */
 export interface VisTargetConfiguration extends Omit<TargetConfiguration, "options"> {
+    /**
+     * Alternate names that resolve to this target on the CLI. Useful
+     * for shortening long canonical names (`test` ↔ `t`) or for
+     * offering migration-friendly aliases when renaming targets.
+     * Aliases must be globally unique within the workspace.
+     */
+    aliases?: string[];
+
+    /**
+     * One-line description surfaced by `vis list` and (in future)
+     * per-task `--help`. Kept short — longer docs belong in project
+     * READMEs or vis.config.ts comments.
+     */
+    description?: string;
     /** Vis-specific target options. */
     options?: VisTargetOptions;
     /** Preset applied before user-specified options. */
@@ -271,11 +408,57 @@ export const shouldRunInCI = (options: VisTargetOptions | undefined, isCi: boole
 };
 
 /**
- * Parses a dotenv file into a map. Minimal parser — sufficient for
- * `KEY=value` lines, `#` comments, and optional surrounding quotes.
- * Returns an empty object if the file doesn't exist or can't be parsed.
+ * Resolves the `envFile` target option into a merged env map.
+ *
+ * - `string` → load that single file
+ * - `string[]` → load each in order; later entries win on key collision
+ * - `true` → load the Next/Vite cascade:
+ *   `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`
+ *   (`.env.local` skipped for NODE_ENV=test, matching Next.js)
+ *
+ * Silently skips files that don't exist. Returns `{}` when no file in
+ * the cascade is present — safe to merge directly into the child env.
  */
-export const loadEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
+export const loadEnvFile = (projectRoot: string, envFile: boolean | string | string[]): Record<string, string> => {
+    if (envFile === false) {
+        return {};
+    }
+
+    const files = envFile === true ? resolveEnvCascade(process.env["NODE_ENV"]) : Array.isArray(envFile) ? envFile : [envFile];
+    const merged: Record<string, string> = {};
+
+    for (const file of files) {
+        Object.assign(merged, loadSingleEnvFile(projectRoot, file));
+    }
+
+    return merged;
+};
+
+/**
+ * Returns the ordered dotenv filenames used by auto-cascade mode.
+ * Mirrors Next.js loading order: specific files override base files.
+ */
+const resolveEnvCascade = (nodeEnv: string | undefined): string[] => {
+    const files = [".env"];
+
+    if (nodeEnv) {
+        files.push(`.env.${nodeEnv}`);
+    }
+
+    // `.env.local` is intentionally skipped when running tests so CI
+    // secrets don't leak into the test environment — matches Next.js.
+    if (nodeEnv !== "test") {
+        files.push(".env.local");
+    }
+
+    if (nodeEnv && nodeEnv !== "test") {
+        files.push(`.env.${nodeEnv}.local`);
+    }
+
+    return files;
+};
+
+const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
     const absolutePath = envFile.startsWith("/") ? envFile : join(projectRoot, envFile);
 
     if (!existsSync(absolutePath)) {

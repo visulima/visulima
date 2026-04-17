@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+
 import { isAbsolute, relative, resolve } from "@visulima/path";
 import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
 
@@ -39,6 +41,81 @@ const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | 
     }
 
     return resolve(workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
+};
+
+const BRANCH_SLUG_RE = /[^\w.-]+/g;
+const LEADING_TRAILING_DASH_RE = /^-+|-+$/g;
+
+/**
+ * Converts an arbitrary branch name into a filesystem-safe segment.
+ * Strips characters outside `[A-Za-z0-9_.-]`, collapses runs of
+ * disallowed characters into a single `-`, and trims leading/trailing
+ * dashes. Truncated to 64 chars so deep-nested branch names (`user/long/feat`)
+ * stay bounded.
+ */
+export const sanitizeBranchSegment = (branch: string): string => {
+    const slug = branch.trim().replaceAll(BRANCH_SLUG_RE, "-").replaceAll(LEADING_TRAILING_DASH_RE, "");
+
+    return slug.slice(0, 64);
+};
+
+/**
+ * Detects the current git branch by shelling out to `git rev-parse`.
+ * Returns `undefined` on detached HEAD, non-git workspaces, or when
+ * git is unavailable — callers fall back to the unscoped cache.
+ */
+export const detectGitBranch = (cwd: string): string | undefined => {
+    try {
+        const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+            cwd,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+        }).trim();
+
+        if (!branch || branch === "HEAD") {
+            return undefined;
+        }
+
+        return branch;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Appends a branch-specific subdirectory to `cacheDirectory` when
+ * `enabled` is true and a branch can be detected. Keeps `main` and
+ * feature branches from thrashing each other's caches — different
+ * generated artefacts (schemas, `.d.ts` snapshots) cause oscillating
+ * invalidations when the same hash resolves to different contents.
+ *
+ * When `enabled === false` or the branch can't be detected, returns
+ * `cacheDirectory` unchanged. On detached HEAD or CI checkouts where
+ * `git rev-parse` resolves `HEAD`, the original path is used — this
+ * matches the behaviour of a non-git clone.
+ * @param cacheDirectory Resolved base cache directory.
+ * @param workspaceRoot Absolute path used to probe the branch.
+ * @param enabled When undefined, branch scoping is off. Set to `true`
+ * (or omit to keep current behaviour) to enable.
+ */
+export const applyBranchScope = (cacheDirectory: string, workspaceRoot: string, enabled: boolean | undefined): string => {
+    if (enabled !== true) {
+        return cacheDirectory;
+    }
+
+    const branch = detectGitBranch(workspaceRoot);
+
+    if (!branch) {
+        return cacheDirectory;
+    }
+
+    const slug = sanitizeBranchSegment(branch);
+
+    if (slug.length === 0) {
+        return cacheDirectory;
+    }
+
+    return resolve(cacheDirectory, "branches", slug);
 };
 
 /**

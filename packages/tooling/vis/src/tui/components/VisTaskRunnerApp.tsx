@@ -186,6 +186,10 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, stdinR
 
         const panelRows = Math.max(1, rows - 4);
 
+        // This effect pushes imperative PTY resize events into a
+        // non-React registry — not a parent component — so the
+        // "don't pass data to parents" heuristic misfires here.
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent -- imperative PTY resize, not parent state
         stdinRegistry.get(outputTaskId)?.resize?.(panelCols, panelRows);
     }, [columns, rows, state.viewMode, outputTaskId]);
 

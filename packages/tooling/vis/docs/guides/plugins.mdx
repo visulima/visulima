@@ -1,0 +1,234 @@
+---
+title: Writing plugins
+description: Build vis plugins using the typed hookable-based plugin API
+---
+
+# Writing plugins
+
+vis plugins subscribe to typed hooks that fire at run, task, and cache boundaries. The plugin API is built on [`hookable`](https://github.com/unjs/hookable) — the same library Nuxt uses — so plugins are small, async-friendly, and composable.
+
+## Quick start
+
+```typescript
+// vis.config.ts
+import { defineConfig, definePlugin } from "@visulima/vis/config";
+
+const timingPlugin = definePlugin({
+    name: "timing-logger",
+    hooks: {
+        "task:after": (task, result) => {
+            const duration = result.endTime! - result.startTime!;
+
+            console.log(`${task.id}: ${duration}ms`);
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [timingPlugin],
+});
+```
+
+Running `vis run build` now logs each task's duration as it finishes.
+
+## Hook reference
+
+Each hook is awaited sequentially; returning a promise blocks the next hook firing until it resolves.
+
+### `run:before(context)`
+
+Fires once before any task in the graph starts. Good for one-off setup (fetching env, starting a local dependency, warming a cache).
+
+```typescript
+definePlugin({
+    name: "docker-up",
+    hooks: {
+        "run:before": async () => {
+            await execa("docker", ["compose", "up", "-d"]);
+        },
+    },
+});
+```
+
+Throwing from `run:before` aborts the entire run — nothing in the task graph executes.
+
+### `run:after(results)`
+
+Fires once after all tasks complete, regardless of success or failure. `results` is a `Map<taskId, TaskResult>`.
+
+```typescript
+definePlugin({
+    name: "metrics",
+    hooks: {
+        "run:after": async (results) => {
+            const failed = [...results.values()].filter((r) => r.status === "failure");
+
+            await metricsClient.recordRun({
+                total: results.size,
+                failed: failed.length,
+                failedTasks: failed.map((r) => r.task.id),
+            });
+        },
+    },
+});
+```
+
+### `task:before(task)`
+
+Fires right before each task's command executes — after scheduling, before the executor spawns the process.
+
+### `task:after(task, result)`
+
+Fires after each task completes (success, failure, cache hit). Receives the final `TaskResult`.
+
+### `task:cacheHit(task, result)`
+
+Specialization of `task:after` — fires only when the task was served from local or remote cache.
+
+### `task:cacheMiss(task, reason)`
+
+Fires when auto-fingerprint cache diagnostics report a miss. `reason` is a human-readable string.
+
+### `task:failure(task, result)`
+
+Specialization of `task:after` — fires only when a task exited non-zero.
+
+## Patterns
+
+### Notifier on failure
+
+```typescript
+definePlugin({
+    name: "slack-on-failure",
+    hooks: {
+        "task:failure": async (task, result) => {
+            if (!process.env.SLACK_WEBHOOK) {
+                return;
+            }
+
+            await fetch(process.env.SLACK_WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: `❌ \`${task.id}\` failed in ${process.env.CI_PROJECT_NAME}`,
+                    attachments: [{ text: (result.terminalOutput ?? "").slice(-4000) }],
+                }),
+            });
+        },
+    },
+});
+```
+
+### Conditional run gate
+
+```typescript
+definePlugin({
+    name: "block-release-without-changelog",
+    hooks: {
+        "run:before": async ({ tasks }) => {
+            const hasRelease = tasks.some((t) => t.target.target === "release");
+
+            if (!hasRelease) {
+                return;
+            }
+
+            const { stdout } = await execa("git", ["log", "--name-only", "-1"]);
+
+            if (!stdout.includes("CHANGELOG")) {
+                throw new Error("Refusing to run release without a CHANGELOG update in HEAD");
+            }
+        },
+    },
+});
+```
+
+### Multiple handlers per hook
+
+Pass an array — both run in order:
+
+```typescript
+definePlugin({
+    name: "multi",
+    hooks: {
+        "task:after": [(task) => console.log(`1st: ${task.id}`), (task) => console.log(`2nd: ${task.id}`)],
+    },
+});
+```
+
+### Imperative registration
+
+For `hookOnce`, `removeHook`, or `beforeEach`, use `setup`:
+
+```typescript
+definePlugin({
+    name: "once",
+    setup(hooks) {
+        // Fire only on the first task, then auto-unregister.
+        hooks.hookOnce("task:before", (task) => {
+            console.log(`warming up for ${task.id}…`);
+        });
+
+        // beforeEach runs synchronously before every hook invocation.
+        hooks.beforeEach((event) => {
+            if (event.name.startsWith("task:")) {
+                metrics.increment(`vis.hook.${event.name}`);
+            }
+        });
+    },
+});
+```
+
+## Authoring a reusable plugin
+
+Publish a plugin as its own package with a factory function:
+
+```typescript
+// packages/vis-plugin-newrelic/src/index.ts
+import type { VisPlugin } from "@visulima/vis/config";
+import { definePlugin } from "@visulima/vis/config";
+
+export interface NewRelicPluginOptions {
+    apiKey: string;
+    appName?: string;
+}
+
+export const newRelicPlugin = (options: NewRelicPluginOptions): VisPlugin =>
+    definePlugin({
+        name: "newrelic",
+        hooks: {
+            "task:after": async (task, result) => {
+                // ship to New Relic…
+            },
+        },
+    });
+```
+
+Consumers then:
+
+```typescript
+import { newRelicPlugin } from "vis-plugin-newrelic";
+
+export default defineConfig({
+    plugins: [newRelicPlugin({ apiKey: process.env.NEWRELIC_API_KEY! })],
+});
+```
+
+## Execution order & error handling
+
+- Plugins are registered in the order they appear in `config.plugins`.
+- Handlers within a hook run in registration order, each awaited before the next.
+- A handler that throws propagates out of `callHook` — if you don't want failure to abort the run, wrap the handler body in `try/catch`.
+- `HookableLifeCycle` (the internal bridge) forwards task-level events from the task runner to plugins — plugin authors never need to touch the lower-level `LifeCycleInterface`.
+
+## When to use plugins vs built-in options
+
+| Use-case                             | Prefer                        |
+| ------------------------------------ | ----------------------------- |
+| Skip a task unless `$CI` is set      | `when: "$CI"` target option   |
+| Retry a flaky task 3 times           | `retryCount: 3` target option |
+| Run `docker compose up` before build | Plugin — `run:before` hook    |
+| Post to Slack on any failure         | Plugin — `task:failure` hook  |
+| Stream metrics to Datadog            | Plugin — `task:after` hook    |
+| Early-exit when no CHANGELOG change  | Plugin — `run:before` hook    |
+
+Built-in options are stable, declarative, and appear in `vis list --json`. Plugins are strictly more powerful but require runtime to load and don't surface in static inspection. Reach for options first; graduate to a plugin when behavior can't be expressed declaratively.

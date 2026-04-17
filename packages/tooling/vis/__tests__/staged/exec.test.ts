@@ -73,11 +73,12 @@ describe("execCommand env injection", () => {
 
         expect(DEFAULT_MAX_ARG_LENGTH).toBeGreaterThan(0);
 
-        if (process.platform === "win32") {
-            expect(DEFAULT_MAX_ARG_LENGTH).toBeLessThan(33_000);
-        } else {
-            expect(DEFAULT_MAX_ARG_LENGTH).toBeGreaterThan(100_000);
-        }
+        // Windows cmd line caps at ~32k characters; POSIX ARG_MAX is
+        // typically 128k+. Pick the appropriate upper/lower bound once
+        // based on platform to avoid a conditional expect.
+        const [threshold, matcher]: [number, "above" | "below"] = process.platform === "win32" ? [33_000, "below"] : [100_000, "above"];
+
+        expect(DEFAULT_MAX_ARG_LENGTH).toSatisfy((value: number) => (matcher === "below" ? value < threshold : value > threshold));
     });
 });
 
