@@ -36,7 +36,7 @@ export const parseCommandString = (input: string): string[] => {
             const next = input[i + 1];
 
             if (next !== undefined) {
-                if (inDouble && next !== "\"" && next !== "\\") {
+                if (inDouble && next !== '"' && next !== "\\") {
                     buffer += character;
                     buffer += next;
                 } else {
@@ -49,7 +49,7 @@ export const parseCommandString = (input: string): string[] => {
             }
         }
 
-        if (character === "\"" && !inSingle) {
+        if (character === '"' && !inSingle) {
             inDouble = !inDouble;
 
             continue;
@@ -130,6 +130,12 @@ export const chunkFiles = (files: ReadonlyArray<string>, fixedPrefixLength: numb
 export interface ExecCommandOptions {
     readonly cwd: string;
     readonly env?: Record<string, string>;
+    /**
+     * Signal delivered to the child process when `signal` fires. Defaults to `SIGTERM`
+     * (graceful). Use `SIGKILL` for fast-fail runs where graceful shutdown is not
+     * worth the wait.
+     */
+    readonly killSignal?: NodeJS.Signals;
     readonly maxArgLength?: number;
     /** Aborted when the caller cancels the run (e.g. another task failed without `continueOnError`). */
     readonly signal?: AbortSignal;
@@ -175,6 +181,9 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
             // unless the user has already set it — tools like eslint / prettier check isTTY, which is false
             // when piped, and drop ANSI styling without this hint. Matches lint-staged / nano-staged behavior.
             env: buildTaskEnv(options.env),
+            // Signal delivered to the child when `cancelSignal` aborts. Defaults to SIGTERM for graceful
+            // shutdown; callers can set SIGKILL via `killSignal` for fast-fail runs.
+            killSignal: options.killSignal ?? "SIGTERM",
             reject: false,
             stderr: "pipe",
             stdout: "pipe",

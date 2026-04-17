@@ -212,7 +212,7 @@ vis staged --config ./path/to/.lintstagedrc.yaml
 #### How it behaves
 
 1. A hidden backup stash is created (via `git stash create` + `git stash store`, so the working tree is untouched).
-2. For partially-staged files, the unstaged delta is captured as a patch and the working tree is reset to the staged content. `--hide-all` extends this to every unstaged change *and* untracked files via a single `git stash push --include-untracked`.
+2. For partially-staged files, the unstaged delta is captured as a patch and the working tree is reset to the staged content. `--hide-all` extends this to every unstaged change _and_ untracked files via a single `git stash push --include-untracked`.
 3. Tasks run — patterns in parallel (capped at `os.availableParallelism()` by default), commands within a pattern serially.
 4. Task-driven edits are re-staged with `git update-index --again` (with a `git add -u` fallback for deletions), so commits made via pathspec (`git commit -m "…" .`) keep working.
 5. The unstaged patch — or the hide-all stash — is re-applied and the backup stash is dropped on success. On failure without `--revert`, the backup stash is preserved and the recovery sha is surfaced to the user. Ctrl+C aborts in-flight commands and still runs the restore path; a second Ctrl+C exits immediately.

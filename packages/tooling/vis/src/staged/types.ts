@@ -80,6 +80,16 @@ export interface RunOptions {
      * have picked it up. Closes lint-staged issue #1722.
      */
     readonly ignore?: ReadonlyArray<string>;
+
+    /**
+     * Signal used to kill in-flight task subprocesses when the run is
+     * cancelled (another task failed without `continueOnError`, or the
+     * user hit Ctrl+C). Defaults to `SIGTERM`, which lets well-behaved
+     * tools flush before exiting. Use `SIGKILL` for fast-fail runs
+     * where graceful shutdown is not worth the wait.
+     * @default "SIGTERM"
+     */
+    readonly killSignal?: NodeJS.Signals;
     /** Cap on combined argv byte length per command invocation. Defaults to a conservative OS limit. */
     readonly maxArgLength?: number;
     /** Suppress progress output entirely. */

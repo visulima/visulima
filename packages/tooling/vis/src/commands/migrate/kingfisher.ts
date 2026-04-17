@@ -180,7 +180,10 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
 
     if (dryRun) {
         logger.info(`[dry-run] Would convert ${name} -> .secrets-baseline.json (${String(placeholders.length)} placeholder finding(s))`);
-        addManualStep(report, "Run `vis secrets --update-baseline` after migration — Kingfisher xxhash fingerprints aren't interchangeable with our content-hash.");
+        addManualStep(
+            report,
+            "Run `vis secrets --update-baseline` after migration — Kingfisher xxhash fingerprints aren't interchangeable with our content-hash.",
+        );
 
         return;
     }

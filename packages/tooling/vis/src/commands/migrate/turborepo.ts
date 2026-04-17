@@ -29,19 +29,20 @@ interface TurboTask {
     persistent?: boolean;
 }
 
-const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] => deps.map((dep) => {
-    if (dep.startsWith("^")) {
-        return { dependencies: true, target: dep.slice(1) };
-    }
+const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] =>
+    deps.map((dep) => {
+        if (dep.startsWith("^")) {
+            return { dependencies: true, target: dep.slice(1) };
+        }
 
-    if (dep.includes("#")) {
-        const [project, target] = dep.split("#");
+        if (dep.includes("#")) {
+            const [project, target] = dep.split("#");
 
-        return { projects: project, target: target! };
-    }
+            return { projects: project, target: target! };
+        }
 
-    return dep;
-});
+        return dep;
+    });
 
 const renderVisConfig = (turbo: TurboJson): string => {
     const tasks = turbo.tasks ?? turbo.pipeline ?? {};

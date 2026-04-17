@@ -13,7 +13,11 @@ const groupByFile = (findings: Finding[]): Map<string, Finding[]> => {
     for (const f of findings) {
         const list = byFile.get(f.file);
 
-        if (list) { list.push(f); } else { byFile.set(f.file, [f]); }
+        if (list) {
+            list.push(f);
+        } else {
+            byFile.set(f.file, [f]);
+        }
     }
 
     return byFile;
@@ -66,9 +70,7 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
             // out rather than hiding it so users see the floor that's being applied.
             const provenance = [f.source, f.confidence].filter(Boolean).join(", ");
             const provenanceSuffix = provenance ? ` ${color.dim(`(${provenance})`)}` : "";
-            const alternates = f.alternateMatches && f.alternateMatches.length > 0
-                ? ` ${color.dim(`also: ${f.alternateMatches.join(", ")}`)}`
-                : "";
+            const alternates = f.alternateMatches && f.alternateMatches.length > 0 ? ` ${color.dim(`also: ${f.alternateMatches.join(", ")}`)}` : "";
             // Validation status badge: only shown when the user opted into --validate
             // (validation is null by default). Successful verification is green, the
             // provider-rejected case is red, the network/timeout case is yellow.
@@ -95,7 +97,7 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
 
                     break;
                 }
-            // No default
+                // No default
             }
 
             lines.push(
@@ -135,7 +137,9 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
  * `url.pathToFileURL`.
  */
 const toSarifUri = (path: string, root: string): string => {
-    if (!isAbsolute(path)) { return path.replaceAll("\\", "/"); }
+    if (!isAbsolute(path)) {
+        return path.replaceAll("\\", "/");
+    }
 
     try {
         return pathToFileURL(path).toString();
@@ -146,7 +150,9 @@ const toSarifUri = (path: string, root: string): string => {
 
 /** Truncate a long description to SARIF's recommended short-description length. */
 const shortText = (text: string, limit = 100): string => {
-    if (text.length <= limit) { return text; }
+    if (text.length <= limit) {
+        return text;
+    }
 
     return `${text.slice(0, limit - 1).trimEnd()}…`;
 };
@@ -165,7 +171,9 @@ export const formatSarif = (findings: Finding[], toolVersion: string, root: stri
     const metaById = new Map(ruleMetadata.map((r) => [r.id, r]));
     const seenIds = new Set<string>();
 
-    for (const f of findings) { seenIds.add(f.ruleId); }
+    for (const f of findings) {
+        seenIds.add(f.ruleId);
+    }
 
     const ruleIds = [...new Set([...metaById.keys(), ...seenIds])].sort((a, b) => a.localeCompare(b));
     const ruleIndex = new Map(ruleIds.map((id, i) => [id, i]));

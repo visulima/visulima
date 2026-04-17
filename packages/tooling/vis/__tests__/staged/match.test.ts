@@ -42,12 +42,7 @@ describe(applyIgnore, () => {
     it("drops files matching a basename-style ignore pattern", () => {
         expect.assertions(1);
 
-        expect(applyIgnore(files, ["*.test.ts"], cwd)).toEqual([
-            "/repo/src/index.ts",
-            "/repo/src/lib/util.ts",
-            "/repo/docs/readme.md",
-            "/repo/package.json",
-        ]);
+        expect(applyIgnore(files, ["*.test.ts"], cwd)).toEqual(["/repo/src/index.ts", "/repo/src/lib/util.ts", "/repo/docs/readme.md", "/repo/package.json"]);
     });
 
     it("drops files matching a path-style ignore pattern", () => {
@@ -64,10 +59,6 @@ describe(applyIgnore, () => {
     it("combines multiple ignore patterns as a union", () => {
         expect.assertions(1);
 
-        expect(applyIgnore(files, ["*.test.ts", "docs/**"], cwd)).toEqual([
-            "/repo/src/index.ts",
-            "/repo/src/lib/util.ts",
-            "/repo/package.json",
-        ]);
+        expect(applyIgnore(files, ["*.test.ts", "docs/**"], cwd)).toEqual(["/repo/src/index.ts", "/repo/src/lib/util.ts", "/repo/package.json"]);
     });
 });

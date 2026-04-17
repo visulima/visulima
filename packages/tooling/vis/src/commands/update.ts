@@ -417,7 +417,8 @@ const executeCatalogUpdate = async (
 
             logger.info(
                 `  Checked ${String(checkedCount)} unique packages${dedupeNote}: ${String(upToDate)} up-to-date${
-                    failed.length > 0 ? `, ${String(failed.length)} failed` : ""}`,
+                    failed.length > 0 ? `, ${String(failed.length)} failed` : ""
+                }`,
             );
         }
 

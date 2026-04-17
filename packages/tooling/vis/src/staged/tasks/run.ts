@@ -51,9 +51,13 @@ export const runTasks = async (patterns: ReadonlyArray<PatternDescriptor>, rende
         if (options.externalSignal.aborted) {
             cancel();
         } else {
-            options.externalSignal.addEventListener("abort", () => {
-                cancel();
-            }, { once: true });
+            options.externalSignal.addEventListener(
+                "abort",
+                () => {
+                    cancel();
+                },
+                { once: true },
+            );
         }
     }
 

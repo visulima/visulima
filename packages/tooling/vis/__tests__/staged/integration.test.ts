@@ -394,7 +394,9 @@ describe("runStaged — integration", () => {
         sh(["add", "a.txt"], root);
 
         const result = await runStaged({
-            config: (() => { return { "*.txt": 42 as unknown as string }; }) as never,
+            config: (() => {
+                return { "*.txt": 42 as unknown as string };
+            }) as never,
             cwd: root,
             stash: false,
         });
