@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 
 import type { Xxh3Hasher } from "@shared/xxh3";
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
@@ -7,6 +7,7 @@ import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
 import { join, relative, resolve } from "@visulima/path";
 
 import { getFrameworkEnvVariables } from "./framework-inference";
+import type { IncrementalFileHasher } from "./incremental-hasher";
 import { LockfileHasher } from "./lockfile-hasher";
 import { loadNativeBindings } from "./native-binding";
 import type {
@@ -48,6 +49,18 @@ interface TaskHasherOptions {
      * @default false
      */
     autoEnvVars?: boolean;
+
+    /**
+     * Optional persistent mtime/size-indexed file snapshot. When set,
+     * `#hashFile` consults the snapshot first and only re-reads file
+     * contents when the file's mtime or size has changed since the
+     * previous run. Cuts cold-cache fingerprint time dramatically on
+     * large workspaces where most source files don't change run-to-run.
+     *
+     * The caller is responsible for `load()`ing the snapshot before
+     * using the hasher and `save()`ing it after the run completes.
+     */
+    incrementalHasher?: IncrementalFileHasher;
     /** Additional environment variables to include in hash */
     envVars?: string[];
 
@@ -265,6 +278,8 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #autoEnvVars: boolean;
 
+    readonly #incrementalHasher: IncrementalFileHasher | undefined;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
@@ -280,6 +295,7 @@ class InProcessTaskHasher implements TaskHasher {
         this.#lockfileHasher = this.#smartLockfileHashing ? new LockfileHasher(options.workspaceRoot) : undefined;
         this.#frameworkInference = options.frameworkInference ?? false;
         this.#autoEnvVars = options.autoEnvVars ?? false;
+        this.#incrementalHasher = options.incrementalHasher;
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -504,14 +520,45 @@ class InProcessTaskHasher implements TaskHasher {
         try {
             if (this.#native) {
                 const fileHashes = this.#native.hashFilesInDirectory(absoluteBase, this.#workspaceRoot);
+                const incremental = this.#incrementalHasher;
+
+                // Populate the persistent snapshot with the native batch
+                // so subsequent runs can reuse these hashes via the
+                // incremental fast-path in `#hashFile`. Stat in parallel
+                // — snapshot writes are ordered by completion and cheap
+                // enough that a sequential loop would dominate for large
+                // workspaces.
+                const recordPromises: Promise<void>[] = [];
 
                 for (const { hash, path } of fileHashes) {
                     const absPath = resolve(this.#workspaceRoot, path);
 
-                    if (!isExcluded(absPath)) {
-                        result[path] = hash;
-                        this.#fileHashCache.set(absPath, hash);
+                    if (isExcluded(absPath)) {
+                        continue;
                     }
+
+                    result[path] = hash;
+                    this.#fileHashCache.set(absPath, hash);
+
+                    if (incremental) {
+                        recordPromises.push(
+                            stat(absPath)
+                                .then((s) => {
+                                    if (s.isFile()) {
+                                        incremental.recordSnapshot(absPath, hash, s.mtimeMs, s.size);
+                                    }
+                                })
+                                .catch(() => {
+                                    // Best-effort — missing or unreadable
+                                    // file just means the snapshot misses
+                                    // next run. Not a correctness issue.
+                                }),
+                        );
+                    }
+                }
+
+                if (recordPromises.length > 0) {
+                    await Promise.all(recordPromises);
                 }
 
                 return result;
@@ -544,6 +591,40 @@ class InProcessTaskHasher implements TaskHasher {
 
         if (cached) {
             return cached;
+        }
+
+        // Two-layer cache:
+        //   1. `#fileHashCache` — per-run, in-memory; checked above.
+        //   2. `#incrementalHasher` — cross-run, persisted, mtime+size
+        //      indexed; consulted when the in-memory miss hits.
+        // The incremental layer skips reading the file content when
+        // its mtime and size match the snapshot. Falls back to a full
+        // read whenever the snapshot is cold or stale.
+        if (this.#incrementalHasher) {
+            try {
+                const fileStat = await stat(filePath);
+
+                if (fileStat.isFile()) {
+                    const snapshotHit = this.#incrementalHasher.getSnapshotHash(filePath, fileStat.mtimeMs, fileStat.size);
+
+                    if (snapshotHit) {
+                        this.#fileHashCache.set(filePath, snapshotHit);
+
+                        return snapshotHit;
+                    }
+
+                    const content = await readFile(filePath);
+                    const hash = xxh3Hash(content);
+
+                    this.#incrementalHasher.recordSnapshot(filePath, hash, fileStat.mtimeMs, fileStat.size);
+                    this.#fileHashCache.set(filePath, hash);
+
+                    return hash;
+                }
+            } catch {
+                // stat failed — fall through to the legacy readFile
+                // path so behaviour matches the non-incremental mode.
+            }
         }
 
         try {

@@ -6,6 +6,9 @@ export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, f
 export type { CachedResult, CacheOptions } from "./cache";
 export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } from "./cache";
 
+// Chrome tracing profile (--profile)
+export type { ChromeTraceEvent } from "./chrome-trace";
+export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 // Command parser
 export type { ParseCommandsOptions } from "./command-parser";
 export { expandArguments, expandShortcut, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
@@ -14,59 +17,49 @@ export { runConcurrently } from "./concurrent";
 export { runConcurrentFallback } from "./concurrent-fallback";
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";
-
 // Shell detection
 export { detectScriptShell } from "./detect-shell";
 // File access tracking
 export type { FileAccess, TrackingResult } from "./file-access-tracker";
 export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
-
 // Auto-fingerprinting (Vite Task-style caching)
 export type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 export { FingerprintManager } from "./fingerprint";
-
 // Flow controllers
 export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
 export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
-
 // Framework environment variable inference
 export type { DetectedFramework } from "./framework-inference";
 export { detectFrameworks, getFrameworkEnvVariables, inferFrameworkEnvPatterns } from "./framework-inference";
-
 // Graph visualization
 export type { GraphFormat, GraphJson, GraphVisualizerOptions } from "./graph-visualizer";
 export { projectGraphToDot, toGraphAscii, toGraphHtml, toGraphJson, toGraphvizDot } from "./graph-visualizer";
-
 // Incremental file hashing (mtime-based, daemon-compatible)
 export type { FileSnapshot, IncrementalHasherOptions } from "./incremental-hasher";
 export { IncrementalFileHasher } from "./incremental-hasher";
 
 // Life cycle
 export { CompositeLifeCycle, ConsoleLifeCycle, EmptyLifeCycle } from "./life-cycle";
-
-// Log reporter (--log=interleaved|labeled|grouped, matches vite-task)
-export type { LogMode } from "./log-reporter";
-export { createLogReporter, LogReporter } from "./log-reporter";
 // Smart lockfile hashing
 export type { PackageLockfileHash, ResolvedDependency } from "./lockfile-hasher";
 export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "./lockfile-hasher";
+// Log reporter (--log=interleaved|labeled|grouped, matches vite-task)
+export type { LogMode } from "./log-reporter";
+export { createLogReporter, LogReporter } from "./log-reporter";
+
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";
-
+export { resolveOutputs } from "./output-resolver";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
 
 // Remote cache (Turborepo-compatible HTTP protocol)
-export type { RemoteCacheCompression, RemoteCacheOptions } from "./remote-cache";
+export type { RemoteCacheCompression, RemoteCacheOptions, RemoteCacheSigning } from "./remote-cache";
 export { RemoteCache } from "./remote-cache";
 
 // Run summary (--summarize and --last-details)
 export type { RunSummary, TaskSummary } from "./run-summary";
 export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
-
-// Chrome tracing profile (--profile)
-export type { ChromeTraceEvent } from "./chrome-trace";
-export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 
 // Task graph
 export { createTaskGraph, getTaskId, parseTaskId } from "./task-graph";
@@ -119,6 +112,7 @@ export type {
     InputDefinition,
     LifeCycleInterface,
     NamedInputs,
+    OutputSpec,
     ProcessEvent,
     ProjectConfiguration,
     ProjectGraph,
@@ -133,6 +127,7 @@ export type {
     TaskExecutor,
     TaskGraph,
     TaskHashDetails,
+    TaskPriority,
     TaskResult,
     TaskResults,
     TaskRunnerContext,

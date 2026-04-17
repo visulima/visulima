@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
-import type { TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
+import type { OutputSpec, TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
 import { uniqueId } from "./utils";
 
 /**
@@ -25,8 +25,8 @@ interface TaskSummary {
     hash: string | undefined;
     /** Detailed hash information */
     hashDetails: TaskHashDetails | undefined;
-    /** The task's declared outputs */
-    outputs: string[];
+    /** The task's declared outputs (glob patterns, literals, or `{ auto: true }`). */
+    outputs: OutputSpec[];
     /** Start time (ISO 8601) */
     startTime: string | undefined;
     /** The task target */

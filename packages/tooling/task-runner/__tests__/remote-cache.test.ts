@@ -549,4 +549,267 @@ describe(RemoteCache, () => {
             }
         });
     });
+
+    describe("HMAC signing", () => {
+        it("rejects a construction with a too-short secret", () => {
+            expect.assertions(1);
+            expect(() => new RemoteCache({ signing: { secret: "short" }, url: "http://localhost:9999" })).toThrow(/at least 16 characters/);
+        });
+
+        it("upload includes the X-Artifact-Signature header", async () => {
+            expect.assertions(2);
+
+            const entryDirectory = join(cacheDirectory, "sig-hash");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "sig-hash");
+
+            let received = "";
+
+            const { server, url } = await startMockServer((request, response) => {
+                received = String(request.headers["x-artifact-signature"] ?? "");
+
+                collectRequestBody(request)
+                    .then(() => {
+                        response.writeHead(200);
+                        response.end();
+
+                        return undefined;
+                    })
+                    .catch(() => {
+                        response.writeHead(500);
+                        response.end();
+                    });
+            });
+
+            try {
+                const cache = new RemoteCache({ signing: { secret: "this-is-a-16+-char-secret" }, url });
+
+                await cache.store("sig-hash", cacheDirectory);
+
+                expect(received).toHaveLength(64); // HMAC-SHA256 hex digest length
+                expect(/^[\da-f]+$/.test(received)).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("rejects a download whose body doesn't match the signature", async () => {
+            expect.assertions(1);
+
+            // Store a real artifact so we can hand its bytes back from a
+            // server that lies about the signature.
+            const sourceDirectory = join(cacheDirectory, "source");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "tampered");
+
+            const archivePath = join(cacheDirectory, "tampered.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                        "X-Artifact-Signature": "0".repeat(64), // deliberate mismatch
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const cache = new RemoteCache({
+                    signing: { secret: "this-is-a-16+-char-secret", verifyOnDownload: true },
+                    url,
+                });
+
+                const downloadDirectory = join(cacheDirectory, "download");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const retrieved = await cache.retrieve("tampered", downloadDirectory);
+
+                expect(retrieved).toBe(false);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("round-trips a signed artifact (upload+download with matching secret)", async () => {
+            expect.assertions(2);
+
+            const secret = "this-is-a-16+-char-secret";
+            const entryDirectory = join(cacheDirectory, "round");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "round");
+            await writeFile(join(entryDirectory, "payload.txt"), "data");
+
+            let storedBytes: Buffer = Buffer.alloc(0);
+            let storedSignature = "";
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "PUT") {
+                    storedSignature = String(request.headers["x-artifact-signature"] ?? "");
+
+                    collectRequestBody(request)
+                        .then((body) => {
+                            storedBytes = body;
+                            response.writeHead(200);
+                            response.end();
+
+                            return undefined;
+                        })
+                        .catch(() => {
+                            response.writeHead(500);
+                            response.end();
+                        });
+                } else {
+                    response.writeHead(200, {
+                        "Content-Length": String(storedBytes.length),
+                        "Content-Type": "application/octet-stream",
+                        "X-Artifact-Signature": storedSignature,
+                    });
+                    response.end(storedBytes);
+                }
+            });
+
+            try {
+                const uploader = new RemoteCache({ signing: { secret }, url });
+                const stored = await uploader.store("round", cacheDirectory);
+
+                const downloader = new RemoteCache({ signing: { secret, verifyOnDownload: true }, url });
+                const downloadDirectory = join(cacheDirectory, "dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const retrieved = await downloader.retrieve("round", downloadDirectory);
+
+                expect(stored).toBe(true);
+                expect(retrieved).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("accepts an unsigned download when verifyOnDownload is false (lax mode)", async () => {
+            expect.assertions(1);
+
+            const secret = "this-is-a-16+-char-secret";
+
+            // Stage a real archive so the server can hand back the bytes.
+            const sourceDirectory = join(cacheDirectory, "lax-source");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "lax");
+
+            const archivePath = join(cacheDirectory, "lax.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    // Intentionally omit X-Artifact-Signature — lax
+                    // mode treats this as a legacy entry and accepts.
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const cache = new RemoteCache({ signing: { secret }, url });
+                const downloadDirectory = join(cacheDirectory, "lax-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const retrieved = await cache.retrieve("lax", downloadDirectory);
+
+                expect(retrieved).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("rejects an unsigned download when verifyOnDownload is true (strict mode)", async () => {
+            expect.assertions(1);
+
+            const secret = "this-is-a-16+-char-secret";
+            const sourceDirectory = join(cacheDirectory, "strict-source");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "strict");
+
+            const archivePath = join(cacheDirectory, "strict.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    // No signature header — strict mode must refuse.
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const cache = new RemoteCache({ signing: { secret, verifyOnDownload: true }, url });
+                const downloadDirectory = join(cacheDirectory, "strict-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                const retrieved = await cache.retrieve("strict", downloadDirectory);
+
+                expect(retrieved).toBe(false);
+            } finally {
+                await closeServer(server);
+            }
+        });
+    });
 });

@@ -154,6 +154,38 @@ describe(TaskScheduler, () => {
 
         expect(batch2).toHaveLength(0);
     });
+
+    it("ranks high-priority tasks before normal and low in the ready queue", () => {
+        expect.assertions(1);
+
+        // Three sibling leaves — no dependencies between them. Without
+        // priority the scheduler would fall back to graph-derived signals
+        // (identical here) and finally alphabetical ID.
+        const tasks: Record<string, Task> = {
+            "a:build": { id: "a:build", outputs: [], overrides: {}, priority: "low", target: { project: "a", target: "build" } },
+            "b:build": { id: "b:build", outputs: [], overrides: {}, priority: "high", target: { project: "b", target: "build" } },
+            "c:build": { id: "c:build", outputs: [], overrides: {}, target: { project: "c", target: "build" } }, // normal default
+        };
+        const graph: TaskGraph = {
+            dependencies: { "a:build": [], "b:build": [], "c:build": [] },
+            roots: ["a:build", "b:build", "c:build"],
+            tasks,
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { a: [], b: [], c: [] },
+            nodes: {
+                a: { data: { root: "a" }, name: "a", type: "library" },
+                b: { data: { root: "b" }, name: "b", type: "library" },
+                c: { data: { root: "c" }, name: "c", type: "library" },
+            },
+        };
+        const scheduler = new TaskScheduler(graph, projectGraph, 3);
+
+        const batch = scheduler.getNextBatch();
+
+        // high → normal → low
+        expect(batch.map((t) => t.id)).toStrictEqual(["b:build", "c:build", "a:build"]);
+    });
 });
 
 const makeTask = (id: string): Task => {

@@ -447,6 +447,13 @@ class TaskOrchestrator {
             let fingerprint: TaskFingerprint | undefined;
             let trackerAccessCount = 0;
             let usedRealTracker = false;
+            // Populated only when the real file-access tracker runs.
+            // Fed into `cache.put` as `autoWrites` so `{ auto: true }`
+            // outputs can materialise without the user having to list
+            // concrete paths. The synthetic-reads path below never
+            // fills this — auto outputs silently contribute nothing
+            // when tracking isn't available.
+            let autoWrites: string[] | undefined;
 
             const shellCommand = this.#resolveCommand?.(task);
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
@@ -458,6 +465,7 @@ class TaskOrchestrator {
                 terminalOutput = trackedResult.terminalOutput;
                 trackerAccessCount = trackedResult.accesses.length;
                 usedRealTracker = true;
+                autoWrites = trackedResult.accesses.filter((a) => a.type === "write").map((a) => a.path);
 
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     trackedResult.accesses,
@@ -522,7 +530,7 @@ class TaskOrchestrator {
 
                     Object.assign(task, { hash });
 
-                    await this.#cache.put(hash, terminalOutput, task.outputs, code, fingerprint);
+                    await this.#cache.put(hash, terminalOutput, task.outputs, code, fingerprint, autoWrites);
                     await this.#cache.setTaskIndex(task.id, hash);
                 }
             }
