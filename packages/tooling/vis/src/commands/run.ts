@@ -1,5 +1,5 @@
 import type { Command } from "@visulima/cerebro";
-import type { ConcurrentCommandInput, LogMode, ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
+import type { ConcurrentCommandInput, LifeCycleInterface, LogMode, ProcessEvent, TargetConfiguration, Task, TaskResults, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
 import {
     CompositeLifeCycle,
     createLogReporter,
@@ -8,6 +8,7 @@ import {
     enforceProjectConstraints,
     generateRunSummary,
     parsePartition,
+    readLastRunSummary,
     runConcurrently,
     TaskScheduler,
     TerminalBuffer,
@@ -265,6 +266,13 @@ interface ExecutorDependencies {
      * reference the original invocation directory.
      */
     initCwd: string;
+
+    /**
+     * Optional task-runner lifecycle to receive streaming stdout/stderr
+     * chunks. Plumbed so plugin authors get live output without having
+     * to wait for the buffered dump at task-end.
+     */
+    lifeCycle?: LifeCycleInterface;
     mutexPool?: MutexPool;
     onOutput?: (taskId: string, text: string) => void;
     onOutputReplace?: (taskId: string, fullContent: string) => void;
@@ -289,7 +297,7 @@ interface ExecutorDependencies {
  * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
 const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
-    const { affectedFiles, initCwd, mutexPool, onOutput, onOutputReplace, retryBudget, stdinRegistry, workspaceRoot } = deps;
+    const { affectedFiles, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, stdinRegistry, workspaceRoot } = deps;
 
     const visOptions = getTaskOptions(task);
     const currentOs = detectCurrentOs();
@@ -352,6 +360,16 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Ta
         }
 
         if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
+            // Stream the raw chunk to the lifecycle first so plugins
+            // (notifiers, metrics, log shippers) see output as it
+            // arrives — before we store it in a buffer for the
+            // buffered `printTaskTerminalOutput` at task-end.
+            if (event.kind === "stdout") {
+                lifeCycle?.onTaskStdout?.(task, event.text);
+            } else {
+                lifeCycle?.onTaskStderr?.(task, event.text);
+            }
+
             if (termBuf) {
                 termBuf.write(event.text);
 
@@ -446,6 +464,88 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Ta
     return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
 };
 
+/**
+ * Parses the `VIS_RUN_CONCURRENCY_LIMIT` env var into a positive
+ * integer. Returns `{ value: N }` on success, `undefined` when the
+ * env is unset or empty (silent fallthrough), or `{ invalid: raw }`
+ * when the value is set but unparseable — callers surface the
+ * invalid case via a warn so misconfigurations aren't silent.
+ * Floors fractional values so `VIS_RUN_CONCURRENCY_LIMIT=2.5` is
+ * treated as 2 rather than rejected.
+ */
+const parseEnvConcurrency = (raw: string | undefined): { invalid: string } | { value: number } | undefined => {
+    if (!raw || raw.trim().length === 0) {
+        return undefined;
+    }
+
+    const value = Number.parseFloat(raw);
+
+    if (!Number.isFinite(value) || value <= 0) {
+        return { invalid: raw };
+    }
+
+    return { value: Math.floor(value) };
+};
+
+/**
+ * Renders `.task-runner/last-summary.json` as a compact stats block.
+ *
+ * Keeps the format simple on purpose — users who want the full JSON
+ * can `cat .task-runner/last-summary.json` directly. This view is the
+ * "glance at what happened" companion to `vis run --last-details`.
+ */
+const renderLastRunSummary = async (workspaceRoot: string, logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void }): Promise<void> => {
+    const summary = await readLastRunSummary(workspaceRoot);
+
+    if (!summary) {
+        logger.warn("No previous run recorded yet. Run a task at least once to populate .task-runner/last-summary.json.");
+
+        return;
+    }
+
+    const seconds = (summary.duration / 1000).toFixed(2);
+
+    logger.info("");
+    logger.info(`Last run — ${summary.startTime} (${seconds}s)`);
+    logger.info("");
+    logger.info(`  Total:     ${String(summary.stats.total)}`);
+    logger.info(`  Succeeded: ${String(summary.stats.succeeded)}`);
+    logger.info(`  Cached:    ${String(summary.stats.cached)}`);
+    logger.info(`  Failed:    ${String(summary.stats.failed)}`);
+    logger.info(`  Skipped:   ${String(summary.stats.skipped)}`);
+    logger.info("");
+
+    if (summary.stats.failed > 0) {
+        const failedTasks = summary.tasks.filter((t) => t.exitCode !== undefined && t.exitCode !== 0);
+
+        logger.info("Failed tasks:");
+
+        for (const task of failedTasks) {
+            const durationMs = task.duration ?? 0;
+
+            logger.info(`  × ${task.taskId}  (exit ${String(task.exitCode ?? -1)}, ${durationMs}ms)`);
+        }
+
+        logger.info("");
+    }
+
+    // Slowest 5 — useful for spotting where wall-clock time actually went.
+    const slowest = [...summary.tasks]
+        .filter((t) => typeof t.duration === "number")
+        .sort((a, b) => (b.duration ?? 0) - (a.duration ?? 0))
+        .slice(0, 5);
+
+    if (slowest.length > 0) {
+        logger.info("Slowest tasks:");
+
+        for (const task of slowest) {
+            logger.info(`  ${task.taskId.padEnd(40)}  ${String(task.duration ?? 0).padStart(6)}ms  [${task.cacheStatus}]`);
+        }
+
+        logger.info("");
+    }
+};
+
 const run: Command = {
     argument: {
         description: "The target to run (e.g., build, test, lint)",
@@ -470,6 +570,18 @@ const run: Command = {
         }
 
         const workspaceRoot = wsRoot;
+
+        // `--last-details` short-circuits execution: render the
+        // persisted last-run summary and exit. Handles the common
+        // "I ran tests 30s ago, show me what happened" case without
+        // re-running and (more importantly) without needing the
+        // workspace to be in a runnable state.
+        if (options.lastDetails === true) {
+            await renderLastRunSummary(workspaceRoot, logger);
+
+            return;
+        }
+
         // The directory the user invoked `vis` from, captured before any
         // workspace resolution. Propagated as INIT_CWD to every task —
         // matches pnpm/npm/yarn semantics so scripts can resolve paths
@@ -719,7 +831,7 @@ const run: Command = {
 
         const taskGraph = createTaskGraph(initialTasks, {
             projectGraph,
-            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<import("@visulima/task-runner").TargetConfiguration>>,
+            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
             workspace,
         });
 
@@ -771,10 +883,20 @@ const run: Command = {
         // needing to understand the lower-level LifeCycleInterface.
         const hooks = createVisHooks();
 
+        // Per-run handler, passed into HookableLifeCycle below. No
+        // module-level state: concurrent `vis` invocations in the same
+        // process (programmatic API, Vitest parallel suites) each get
+        // their own channel.
+        const onHookError = (hookName: string, error: unknown): void => {
+            const message = error instanceof Error ? error.message : String(error);
+
+            logger.warn(`Plugin error in ${hookName}: ${message}`);
+        };
+
         await registerPlugins(hooks, config.plugins);
 
         const profilePath = typeof options.profile === "string" ? options.profile : undefined;
-        const maybeWriteProfile = async (results: import("@visulima/task-runner").TaskResults): Promise<void> => {
+        const maybeWriteProfile = async (results: TaskResults): Promise<void> => {
             if (!profilePath) {
                 return;
             }
@@ -799,9 +921,24 @@ const run: Command = {
         // branches stop overwriting each other's entries.
         const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);
 
+        // Concurrency resolution order: --parallel CLI flag > VIS_RUN_CONCURRENCY_LIMIT
+        // env > built-in default of 3. Matches vite-task's
+        // VP_RUN_CONCURRENCY_LIMIT semantics — lets CI runners set a
+        // global limit via env without passing the flag on every call.
+        // An invalid env value surfaces as a warn so misconfigurations
+        // aren't silently ignored.
+        const parallelEnvParsed = parseEnvConcurrency(process.env["VIS_RUN_CONCURRENCY_LIMIT"]);
+
+        if (parallelEnvParsed && "invalid" in parallelEnvParsed) {
+            logger.warn(`VIS_RUN_CONCURRENCY_LIMIT=${parallelEnvParsed.invalid} is not a positive number; falling back to default concurrency.`);
+        }
+
+        const parallelFromEnv = parallelEnvParsed && "value" in parallelEnvParsed ? parallelEnvParsed.value : undefined;
+        const resolvedParallel = (options.parallel as number | undefined) ?? parallelFromEnv ?? 3;
+
         const runnerOptions: TaskRunnerOptions = {
             dryRun: options.dryRun as boolean,
-            parallel: (options.parallel as number) ?? 3,
+            parallel: resolvedParallel,
             skipNxCache: !options.cache,
             summarize: options.summarize as boolean,
             ...configTaskRunnerOptions,
@@ -823,7 +960,7 @@ const run: Command = {
         const retryBudgetLimit = typeof options.retryBudget === "number" ? options.retryBudget : undefined;
         const sharedRetryBudget = retryBudgetLimit === undefined ? undefined : createRetryBudget(retryBudgetLimit);
 
-        const hookLifeCycle = new HookableLifeCycle(hooks);
+        const hookLifeCycle = new HookableLifeCycle(hooks, onHookError);
 
         await hooks.callHook("run:before", { tasks: initialTasks, workspaceRoot });
 
@@ -839,6 +976,7 @@ const run: Command = {
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
                 initCwd: invocationCwd,
+                lifeCycle,
                 mutexPool,
                 onOutput: (taskId, text) => {
                     store.addOutput(taskId, text);
@@ -854,7 +992,7 @@ const run: Command = {
             let loopAction: "quit" | "rerun" | "retry" = "rerun";
             let retryTaskId: string | null = null;
 
-            let lastResults: import("@visulima/task-runner").TaskResults = new Map();
+            let lastResults: TaskResults = new Map();
 
             while (loopAction !== "quit") {
                 if (loopAction === "rerun") {
@@ -971,22 +1109,26 @@ const run: Command = {
             }
         } else {
             const mutexPool: MutexPool = new Map();
-            const taskExecutor = createConcurrentExecutor({
-                affectedFiles,
-                initCwd: invocationCwd,
-                mutexPool,
-                retryBudget: sharedRetryBudget,
-                workspaceRoot,
-            });
             const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
             const logMode: LogMode | undefined
                 = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
             const logReporter = logMode ? createLogReporter(logMode) : undefined;
             // Composite so plugin hooks see every task boundary event in
-            // addition to the CI-style static renderer.
+            // addition to the CI-style static renderer. Build the
+            // lifecycle first so the executor can forward streaming
+            // stdout/stderr chunks into it.
             const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter }), hookLifeCycle]);
 
-            const runOnce = async (): Promise<{ hasFailure: boolean; results: import("@visulima/task-runner").TaskResults }> => {
+            const taskExecutor = createConcurrentExecutor({
+                affectedFiles,
+                initCwd: invocationCwd,
+                lifeCycle,
+                mutexPool,
+                retryBudget: sharedRetryBudget,
+                workspaceRoot,
+            });
+
+            const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults }> => {
                 const runStart = Date.now();
 
                 const results = await defaultTaskRunner(initialTasks, runnerOptions, {
@@ -1161,7 +1303,7 @@ const run: Command = {
         },
         {
             defaultValue: 3,
-            description: "Maximum number of parallel tasks",
+            description: "Maximum number of parallel tasks (falls back to VIS_RUN_CONCURRENCY_LIMIT env var, then 3)",
             name: "parallel",
             type: Number,
         },
@@ -1242,6 +1384,12 @@ const run: Command = {
             description: "Write a Chrome Tracing JSON profile of the run to this path (open in chrome://tracing or Perfetto)",
             name: "profile",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Render the most-recent run's saved summary (from .task-runner/last-summary.json) and exit without executing any tasks",
+            name: "last-details",
+            type: Boolean,
         },
         {
             defaultValue: true,

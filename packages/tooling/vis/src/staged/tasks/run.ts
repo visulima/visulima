@@ -102,21 +102,32 @@ export const runTasks = async (patterns: ReadonlyArray<PatternDescriptor>, rende
             renderer.commandStart({ commandId: command.id, patternId: pattern.id });
 
             const outcome = await runCommand(command, options, abortController.signal);
+            // A task that failed only because cancellation reached it counts as "skipped", not "failed" —
+            // the caller already has the root-cause failure from the task that triggered the cancel, and
+            // surfacing cancellation-fallout as extra failedCommands entries is noise.
+            const classified: CommandOutcome = outcome.status === "failed" && abortController.signal.aborted
+                ? { ...outcome, status: "skipped" }
+                : outcome;
 
             renderer.commandEnd({
                 commandId: command.id,
-                durationMs: outcome.durationMs,
-                error: outcome.error,
-                output: outcome.output,
+                durationMs: classified.durationMs,
+                error: classified.error,
+                output: classified.output,
                 patternId: pattern.id,
-                status: outcome.status,
+                status: classified.status,
             });
 
-            if (outcome.status === "failed") {
+            if (classified.status === "failed") {
                 failedCommands.push(command.title);
                 patternStatus = "failed";
                 cancel();
 
+                break;
+            }
+
+            if (classified.status === "skipped") {
+                patternStatus = patternStatus === "success" ? "skipped" : patternStatus;
                 break;
             }
         }
@@ -144,7 +155,12 @@ export const runTasks = async (patterns: ReadonlyArray<PatternDescriptor>, rende
 
     await Promise.all(workers);
 
-    return { failedCommands, success: failedCommands.length === 0 };
+    // External cancellation (SIGINT / SIGTERM) counts as an overall failure
+    // even when no individual task raised a real error — the run was aborted
+    // by the user and the exit status should reflect that.
+    const externallyCancelled = options.externalSignal?.aborted === true;
+
+    return { failedCommands, success: failedCommands.length === 0 && !externallyCancelled };
 };
 
 interface CommandOutcome {

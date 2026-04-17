@@ -188,7 +188,7 @@ Each key is a glob (basename or path-style — path-style matches resolve relati
 - a function `(files) => string | string[] | {title, task}` — generate dynamic commands or a custom task;
 - a `{ title, task }` object — runs `task(files)` with no argv construction, useful for in-process side effects.
 
-An external config file is also supported via `--config <path>` — JSON, YAML (`.yaml`/`.yml`/`.lintstagedrc`), or JS/TS (via jiti).
+`vis.config.ts` is the single source of truth — no standalone `.lintstagedrc*` or `.vis-staged.*` files are read at runtime. Migrating from lint-staged or nano-staged? Run `vis migrate lint-staged` (or `vis migrate nano-staged`) to move the config in and remove the legacy files.
 
 #### Command-line flags
 
@@ -208,7 +208,6 @@ vis staged --revert                 # restore pre-task state on failure
 vis staged --allow-empty            # allow a commit when tasks revert everything
 vis staged --auto-stage             # auto-stage new files tasks create (codegen, lockfile regen, …)
 vis staged --force-kill             # kill in-flight tasks with SIGKILL on fast-fail (default: SIGTERM)
-vis staged --config ./path/to/.lintstagedrc.yaml
 ```
 
 #### Environment variables

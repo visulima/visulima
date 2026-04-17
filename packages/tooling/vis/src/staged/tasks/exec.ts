@@ -198,10 +198,22 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
             outputs.push(merged);
         }
 
-        const exitCode = typeof result.exitCode === "number" ? result.exitCode : 0;
+        // Treat signal termination and cancellation as failures even though
+        // execa may report `exitCode: undefined` (child killed by signal) or
+        // leave an `isCanceled`/`isTerminated` flag. Without this guard, a
+        // SIGTERM'd child under `cancelSignal` falls through as success.
+        if (result.isCanceled === true || result.isTerminated === true || typeof result.exitCode !== "number") {
+            const reason = result.isCanceled === true
+                ? "Task aborted by earlier failure."
+                : result.isTerminated === true
+                    ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
+                    : merged.trim() || `Task exited without a numeric status code.`;
 
-        if (exitCode !== 0) {
-            throw new TaskError(command, merged.trim() || `Exit code ${exitCode} from ${program}`);
+            throw new TaskError(command, reason);
+        }
+
+        if (result.exitCode !== 0) {
+            throw new TaskError(command, merged.trim() || `Exit code ${result.exitCode} from ${program}`);
         }
     }
 

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -405,8 +405,8 @@ describe("runStaged — integration", () => {
         expect(result.success).toBe(false);
     });
 
-    it("loads a YAML .lintstagedrc config from disk when no inline config is provided", async () => {
-        expect.assertions(1);
+    it("throws ConfigError when no inline config is provided — external files are intentionally not auto-loaded at runtime", async () => {
+        expect.assertions(2);
 
         writeFileSync(join(root, "a.txt"), "x\n");
         sh(["add", "a.txt"], root);
@@ -415,27 +415,11 @@ describe("runStaged — integration", () => {
         writeFileSync(join(root, "a.txt"), "y\n");
         sh(["add", "a.txt"], root);
 
-        writeFileSync(join(root, ".lintstagedrc.yaml"), '"*.txt":\n  - "node -e \\"process.exit(0)\\""\n');
-
-        const result = await runStaged({
-            cwd: root,
-            stash: false,
-        });
-
-        expect(result.success).toBe(true);
-    });
-
-    it("throws ConfigError when neither inline config nor a config file is available", async () => {
-        expect.assertions(1);
-
-        writeFileSync(join(root, "a.txt"), "x\n");
-        sh(["add", "a.txt"], root);
-        sh(["commit", "-q", "-m", "chore: init"], root);
-
-        writeFileSync(join(root, "a.txt"), "y\n");
-        sh(["add", "a.txt"], root);
+        // A nearby .lintstagedrc.yaml must be ignored — users go through `vis migrate` to move it into vis.config.ts.
+        writeFileSync(join(root, ".lintstagedrc.yaml"), '"*.txt": "node -e 0"\n');
 
         await expect(runStaged({ cwd: root, stash: false })).rejects.toBeInstanceOf(ConfigError);
+        await expect(runStaged({ cwd: root, stash: false })).rejects.toThrow(/vis\.config\.ts/);
     });
 
     it("stages a task-driven deletion via git add -A so the index reflects it", async () => {
@@ -589,29 +573,6 @@ describe("runStaged — integration", () => {
         expect(seen).toEqual(["content\n"]);
         // After the run, working tree has staged + unstaged combined.
         expect(readFileSync(join(root, "new.txt"), "utf8")).toBe("content\nunstaged-extra\n");
-    });
-
-    it("loads an external config file when --configPath is set", async () => {
-        expect.assertions(1);
-
-        writeFileSync(join(root, "a.txt"), "x\n");
-        sh(["add", "a.txt"], root);
-        sh(["commit", "-q", "-m", "chore: init"], root);
-
-        writeFileSync(join(root, "a.txt"), "y\n");
-        sh(["add", "a.txt"], root);
-
-        const external = join(root, "custom-staged.json");
-
-        writeFileSync(external, JSON.stringify({ "*.txt": 'node -e "process.exit(0)"' }));
-
-        const result = await runStaged({
-            configPath: external,
-            cwd: root,
-            stash: false,
-        });
-
-        expect(result.success).toBe(true);
     });
 
     it("guards against the ApplyEmptyCommitError re-throwing path", () => {
@@ -1077,5 +1038,155 @@ describe("runStaged — integration", () => {
         expect(sawUntrackedDuringRun).toEqual([false]);
         // After the run the untracked file is back.
         expect(readFileSync(join(root, "untracked.log"), "utf8")).toBe("debug log\n");
+    });
+
+    it("preserves a staged symlink across a run — the link is passed through to the task, not resolved", async () => {
+        expect.assertions(4);
+
+        writeFileSync(join(root, "target.txt"), "target\n");
+        sh(["add", "target.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        // Create a symlink pointing at target.txt and stage it. Git records symlinks with mode 120000.
+        symlinkSync("target.txt", join(root, "link.txt"));
+        sh(["add", "link.txt"], root);
+
+        const observed: { lstat: boolean; linkTarget: string }[] = [];
+
+        const result = await runStaged({
+            config: {
+                "*.txt": {
+                    task: (files) => {
+                        for (const file of files) {
+                            // Tasks see the symlink path. We record whether it's still a link on disk
+                            // and where it points to — both must survive the run untouched.
+                            if (file.endsWith("link.txt")) {
+                                observed.push({ lstat: lstatSync(file).isSymbolicLink(), linkTarget: readlinkSync(file) });
+                            }
+                        }
+                    },
+                    title: "inspect",
+                },
+            },
+            cwd: root,
+            stash: true,
+        });
+
+        expect(result.success).toBe(true);
+        // Task saw the symlink as a link, not a resolved file.
+        expect(observed).toEqual([{ lstat: true, linkTarget: "target.txt" }]);
+        // After the run the link still exists on disk.
+        expect(lstatSync(join(root, "link.txt")).isSymbolicLink()).toBe(true);
+        expect(readlinkSync(join(root, "link.txt"))).toBe("target.txt");
+    });
+
+    it("SIGINT during a running task cancels the run and restores pre-run state", async () => {
+        expect.assertions(4);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "staged-change\n");
+        sh(["add", "a.txt"], root);
+        writeFileSync(join(root, "a.txt"), "staged-change\nunstaged-change\n");
+
+        const marker = join(root, "task-started.txt");
+        // Long-running node command; cancelSignal will kill it when SIGINT fires.
+        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll('"', '\\"')}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
+
+        const preListeners = new Set(process.listeners("SIGINT"));
+
+        const runPromise = runStaged({
+            config: {
+                "*.txt": longRunner,
+            },
+            cwd: root,
+            revert: true,
+            stash: true,
+        });
+
+        // Wait for the task's child process to start (marker file appears) and for our handler to register.
+        const deadline = Date.now() + 5000;
+
+        while (Date.now() < deadline) {
+            const handler = process.listeners("SIGINT").find((fn) => !preListeners.has(fn));
+
+            if (handler && existsSync(marker)) {
+                // Invoke the handler directly — simulates SIGINT delivery without actually emitting the signal
+                // (which would also fire vitest's own handler and kill the test process).
+                (handler as (signal: NodeJS.Signals) => void)("SIGINT");
+                break;
+            }
+
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 20);
+            });
+        }
+
+        const result = await runPromise;
+
+        expect(result.success).toBe(false);
+        // revert: true restores the pre-run combined content (staged + unstaged).
+        expect(readFileSync(join(root, "a.txt"), "utf8")).toBe("staged-change\nunstaged-change\n");
+        // No vis backup stash left behind — revert dropped it.
+        expect(sh(["stash", "list"], root)).not.toMatch(/vis_staged_automatic_backup/);
+        // Our SIGINT handler removed itself during cleanup.
+        expect(process.listeners("SIGINT").filter((fn) => !preListeners.has(fn))).toEqual([]);
+    });
+
+    it("passes through staged submodule gitlinks (mode 160000) without trying to stash inside the submodule", async () => {
+        expect.assertions(3);
+
+        // Seed a commit in the outer repo so we have a HEAD.
+        writeFileSync(join(root, "README.md"), "outer\n");
+        sh(["add", "README.md"], root);
+        sh(["commit", "-q", "-m", "chore: outer init"], root);
+
+        // Spin up a tiny in-tree "submodule" repo.
+        const submoduleSource = join(root, "..", `${root.split("/").pop() ?? "sm"}-submodule`);
+
+        mkdirSync(submoduleSource, { recursive: true });
+        sh(["init", "-q", "-b", "main"], submoduleSource);
+        sh(["config", "user.email", "test@example.com"], submoduleSource);
+        sh(["config", "user.name", "Vis Test"], submoduleSource);
+        sh(["config", "commit.gpgsign", "false"], submoduleSource);
+        writeFileSync(join(submoduleSource, "inner.txt"), "inner-v1\n");
+        sh(["add", "inner.txt"], submoduleSource);
+        sh(["commit", "-q", "-m", "chore: inner init"], submoduleSource);
+
+        // Add the submodule into the outer repo with a file:// URL and commit the gitlink.
+        sh(["-c", "protocol.file.allow=always", "submodule", "add", `file://${submoduleSource}`, "vendor/sub"], root);
+        sh(["commit", "-q", "-m", "feat: add submodule"], root);
+
+        // Update the submodule's HEAD and stage the new gitlink ref in the outer repo.
+        writeFileSync(join(submoduleSource, "inner.txt"), "inner-v2\n");
+        sh(["commit", "-q", "-am", "feat: inner bump"], submoduleSource);
+        sh(["-C", "vendor/sub", "fetch", "origin", "main"], root);
+        sh(["-C", "vendor/sub", "reset", "--hard", "origin/main"], root);
+        sh(["add", "vendor/sub"], root);
+
+        const seen: string[] = [];
+
+        const result = await runStaged({
+            config: {
+                "vendor/sub": {
+                    task: (files) => {
+                        seen.push(...files.map((f) => f.split("/").slice(-2).join("/")));
+                    },
+                    title: "inspect-submodule",
+                },
+            },
+            cwd: root,
+            stash: true,
+        });
+
+        expect(result.success).toBe(true);
+        // Task received the gitlink path (not its inner contents).
+        expect(seen).toEqual(["vendor/sub"]);
+        // The submodule gitlink is still staged after the run — nothing lost in the stash dance.
+        expect(sh(["diff", "--cached", "--name-only", "vendor/sub"], root)).toBe("vendor/sub");
+
+        rmSync(submoduleSource, { force: true, recursive: true });
     });
 });

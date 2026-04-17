@@ -6,6 +6,7 @@ import { migrateGitleaks } from "./gitleaks";
 import { migrateKingfisher } from "./kingfisher";
 import { migrateLintStaged } from "./lint-staged";
 import { migrateMoon } from "./moon";
+import { migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
 import { migrateSecretlint } from "./secretlint";
@@ -91,7 +92,7 @@ const printSummary = (report: MigrationReport, logger: Logger): void => {
 
 const migrate: Command = {
     argument: {
-        description: "Migration type: all, deps, lint-staged, turborepo, nx, moon, gitleaks, kingfisher, secretlint, verify",
+        description: "Migration type: all, deps, lint-staged, nano-staged, turborepo, nx, moon, gitleaks, kingfisher, secretlint, verify",
         name: "type",
         type: String,
     },
@@ -112,7 +113,7 @@ const migrate: Command = {
         const packageManager = detectPackageManager(root);
         const report = createMigrationReport();
 
-        const knownActions = ["all", "deps", "lint-staged", "turborepo", "nx", "moon", "gitleaks", "kingfisher", "secretlint", "verify"];
+        const knownActions = ["all", "deps", "lint-staged", "nano-staged", "turborepo", "nx", "moon", "gitleaks", "kingfisher", "secretlint", "verify"];
 
         if (!knownActions.includes(action)) {
             throw new Error(`Unknown migration type "${action}". Use one of: ${knownActions.join(", ")}.`);
@@ -149,6 +150,12 @@ const migrate: Command = {
         if (action === "all" || action === "lint-staged") {
             logger.info("── Migrating lint-staged ──");
             migrateLintStaged(root, { dryRun }, logger, report);
+            logger.info("");
+        }
+
+        if (action === "all" || action === "nano-staged") {
+            logger.info("── Migrating nano-staged ──");
+            migrateNanoStaged(root, { dryRun }, logger, report);
             logger.info("");
         }
 
