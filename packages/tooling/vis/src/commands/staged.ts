@@ -114,6 +114,14 @@ const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfi
         options.configPath = configFile;
     }
 
+    // `--force-kill` is a boolean shorthand for `killSignal: "SIGKILL"`. Users with more exotic
+    // requirements can supply `killSignal` directly via the programmatic API.
+    const forceKill = readBool("force-kill");
+
+    if (forceKill === true) {
+        options.killSignal = "SIGKILL";
+    }
+
     if (raw["concurrent"] !== undefined) {
         const value = String(raw["concurrent"]);
 
@@ -211,6 +219,12 @@ const staged: Command = {
             defaultValue: false,
             description: "Fail with exit code 1 when tasks modify tracked files",
             name: "fail-on-changes",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Kill in-flight tasks with SIGKILL on fast-fail instead of the default SIGTERM",
+            name: "force-kill",
             type: Boolean,
         },
         {

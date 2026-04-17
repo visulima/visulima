@@ -9,6 +9,40 @@ import type { RunOptions, RunResult } from "./types";
 
 const DEFAULT_CONCURRENT = true;
 
+/** Env var name for the concurrency override — lets CI operators set a default without repeating the CLI flag. */
+const CONCURRENT_ENV_VAR = "VIS_STAGED_CONCURRENT";
+
+/**
+ * Resolves the concurrency setting with precedence: explicit option ?? env var ?? default.
+ * Env-var parsing mirrors the CLI flag: `"true"`/`""` → true, `"false"` → false,
+ * integer string → number, anything else → default.
+ */
+const resolveConcurrent = (explicit: RunOptions["concurrent"]): boolean | number => {
+    if (explicit !== undefined) {
+        return explicit;
+    }
+
+    const raw = process.env[CONCURRENT_ENV_VAR];
+
+    if (raw === undefined) {
+        return DEFAULT_CONCURRENT;
+    }
+
+    const value = raw.trim();
+
+    if (value === "true" || value === "") {
+        return true;
+    }
+
+    if (value === "false") {
+        return false;
+    }
+
+    const parsed = Number(value);
+
+    return Number.isNaN(parsed) ? DEFAULT_CONCURRENT : parsed;
+};
+
 /**
  * Runs staged tasks end-to-end: backup, hide unstaged, match files,
  * execute commands, re-stage fixes, reapply unstaged deltas, cleanup.
@@ -103,10 +137,11 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
         }
 
         const { failedCommands, success } = await runTasks(patterns, renderer, {
-            concurrent: options.concurrent ?? DEFAULT_CONCURRENT,
+            concurrent: resolveConcurrent(options.concurrent),
             continueOnError: options.continueOnError === true,
             cwd,
             externalSignal: externalAborter.signal,
+            killSignal: options.killSignal,
             maxArgLength: options.maxArgLength,
             verbose: options.verbose,
         });

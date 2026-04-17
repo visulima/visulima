@@ -816,6 +816,69 @@ describe("runStaged — integration", () => {
         expect(existsSync(join(root, "new.txt"))).toBe(true);
     });
 
+    it("falls back to VIS_STAGED_CONCURRENT env var when --concurrent is not set", async () => {
+        expect.assertions(1);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "touched\n");
+        sh(["add", "a.txt"], root);
+
+        const previous = process.env["VIS_STAGED_CONCURRENT"];
+
+        process.env["VIS_STAGED_CONCURRENT"] = "1";
+
+        try {
+            const result = await runStaged({
+                config: {
+                    "*.txt": {
+                        task: () => {},
+                        title: "noop",
+                    },
+                },
+                cwd: root,
+                stash: false,
+            });
+
+            expect(result.success).toBe(true);
+        } finally {
+            if (previous === undefined) {
+                delete process.env["VIS_STAGED_CONCURRENT"];
+            } else {
+                process.env["VIS_STAGED_CONCURRENT"] = previous;
+            }
+        }
+    });
+
+    it("honors a SIGKILL `killSignal` option without breaking the happy path", async () => {
+        expect.assertions(1);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        sh(["add", "a.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "touched\n");
+        sh(["add", "a.txt"], root);
+
+        // killSignal only matters on cancellation; for a successful run the option is inert.
+        // This test pins the option plumbing so the type wiring doesn't silently regress.
+        const result = await runStaged({
+            config: {
+                "*.txt": {
+                    task: () => {},
+                    title: "noop",
+                },
+            },
+            cwd: root,
+            killSignal: "SIGKILL",
+            stash: false,
+        });
+
+        expect(result.success).toBe(true);
+    });
+
     it("--hide-all hides untracked files and restores them after the run", async () => {
         expect.assertions(3);
 

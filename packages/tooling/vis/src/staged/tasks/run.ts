@@ -10,6 +10,8 @@ export interface RunTasksOptions {
     readonly cwd: string;
     /** External cancellation (e.g. SIGINT handler). When fired, cancels like a task failure. */
     readonly externalSignal?: AbortSignal;
+    /** Signal delivered to in-flight child processes when the run cancels. Defaults to `SIGTERM`. */
+    readonly killSignal?: NodeJS.Signals;
     readonly maxArgLength?: number;
     readonly verbose?: boolean;
 }
@@ -165,6 +167,7 @@ const runCommand = async (command: CommandDescriptor, options: RunTasksOptions, 
         if (command.command) {
             const result = await execCommand(command.command, command.files, {
                 cwd: options.cwd,
+                killSignal: options.killSignal,
                 maxArgLength: options.maxArgLength,
                 signal,
             });
