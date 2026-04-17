@@ -9,6 +9,7 @@ import VisTaskRunnerApp from "./components/VisTaskRunnerApp";
 import { formatMs } from "./pretty-time";
 import { getStatusInfo } from "./status-utils";
 import { CROSS } from "./symbols";
+import type { StdinEntry } from "./types";
 
 interface DynamicOutputOptions {
     args: {
@@ -19,7 +20,7 @@ interface DynamicOutputOptions {
     autoExit?: boolean | number;
     projectNames: string[];
     /** Registry of writable stdin entries keyed by task ID, for interactive input. */
-    stdinRegistry?: Map<string, import("./types").StdinEntry>;
+    stdinRegistry?: Map<string, StdinEntry>;
     tasks: Task[];
 }
 
@@ -84,7 +85,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
         for (const row of state.rows) {
             const { status, taskId } = row;
-            const info = getStatusInfo(status as import("@visulima/task-runner").TaskStatus);
+            const info = getStatusInfo(status as TaskStatus);
 
             let cacheLabel = "";
 

@@ -1,3 +1,4 @@
+import type { GoogleAuth } from "google-auth-library";
 import type { Response as NodeFetchResponse } from "node-fetch";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,8 +11,8 @@ const mockAuthRequest = vi.fn();
 vi.mock(import("google-auth-library"), () => {
     return {
         GoogleAuth: vi.fn().mockImplementation(function GoogleAuthMock(
-            this: import("google-auth-library").GoogleAuth,
-            _config: import("../../../src/storage/gcs/types").GCSMetaStorageOptions,
+            this: GoogleAuth,
+            _config: GCSMetaStorageOptions,
         ) {
             this.request = mockAuthRequest;
 

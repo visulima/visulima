@@ -1,7 +1,7 @@
 import type { ViteDevServer, WebSocketClient } from "vite";
 
 import type { CreateAnnotationData, UpdateAnnotationData } from "../types/annotations";
-import type { ServerFunctions, ServerRPCContext } from "../types/rpc";
+import type { ClientFunctions, ServerFunctions, ServerRPCContext } from "../types/rpc";
 import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "./functions/annotations";
 import { getStaticAssets } from "./functions/assets";
 import { getModuleGraph } from "./functions/module-graph";
@@ -80,9 +80,9 @@ const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial
     });
 
     return {
-        callClient<K extends keyof import("../types/rpc.js").ClientFunctions>(
+        callClient<K extends keyof ClientFunctions>(
             name: K,
-            ...args: Parameters<import("../types/rpc.js").ClientFunctions[K]>
+            ...args: Parameters<ClientFunctions[K]>
         ): void {
             server.ws.send({
                 data: {

@@ -1,3 +1,4 @@
+import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
@@ -26,7 +27,7 @@ interface OutputPanelProps {
     /** Whether interactive input mode is active (keystrokes forwarded to PTY). */
     interactiveMode?: boolean;
     output: string;
-    scrollRef?: React.RefObject<import("@visulima/tui").ScrollViewRef>;
+    scrollRef?: React.RefObject<ScrollViewRef>;
     /** Whether to show "&lt;enter> full screen" hint in bottom border. */
     showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;

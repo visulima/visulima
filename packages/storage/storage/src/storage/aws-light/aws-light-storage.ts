@@ -1,5 +1,7 @@
 import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
+import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
 import type { FileInit, FileQuery } from "../utils/file";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
@@ -116,7 +118,7 @@ class AwsLightStorage extends S3BaseStorage {
     /**
      * Normalizes AWS S3 errors with S3-specific context.
      */
-    public override normalizeError(error: AwsLightError | Error): import("../../utils/types").HttpError {
+    public override normalizeError(error: AwsLightError | Error): HttpError {
         const awsError = error as AwsLightError;
 
         if (awsError.statusCode || awsError.code) {
@@ -155,7 +157,7 @@ class AwsLightStorage extends S3BaseStorage {
 
             // Body from adapter is ReadableStream, convert to Readable
             const stream: Readable
-                = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
+                = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as NodeReadableStream<Uint8Array>) : (Body as Readable);
 
             const readableStream = new Readable({
                 read() {

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it, vi
 
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import type { DiskStorageOptions } from "../../../src/storage/types";
-import type { File } from "../../../src/storage/utils/file";
+import type { File, FilePart } from "../../../src/storage/utils/file";
 import { ERRORS } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 import RequestReadStream from "../../__helpers__/streams/request-read-stream";
@@ -253,7 +253,7 @@ describe(DiskStorage, () => {
                 },
             });
 
-            const writePart: import("../../../src/storage/utils/file").FilePart & { signal?: AbortSignal } = {
+            const writePart: FilePart & { signal?: AbortSignal } = {
                 ...metafile,
                 body: bodyStream,
                 checksum: "test-checksum", // Add checksum so keepPartial is false and abort throws error
@@ -919,7 +919,7 @@ describe(DiskStorage, () => {
                     }),
                     signal,
                     start: 0, // Required for hasContent() to return true
-                } as import("../../../src/storage/utils/file").FilePart & { signal?: AbortSignal });
+                } as FilePart & { signal?: AbortSignal });
 
                 // Advance timers to trigger abort
                 vi.advanceTimersByTime(5);

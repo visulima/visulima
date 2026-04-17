@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -86,7 +87,7 @@ const walkDirectory = async (
         return;
     }
 
-    let entries: import("node:fs").Dirent[];
+    let entries: Dirent[];
 
     await semaphore.acquire();
 

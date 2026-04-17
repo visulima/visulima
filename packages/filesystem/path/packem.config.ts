@@ -4,7 +4,8 @@ import { writeFile, mkdir } from "node:fs/promises";
 import type { BuildConfig } from "@visulima/packem/config";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
-import { build, type BuildOptions, transform } from "esbuild";
+import type { BuildOptions } from "esbuild";
+import { build, transform } from "esbuild";
 
 async function buildZeptomatch() {
     let bundle = await build(<BuildOptions>{

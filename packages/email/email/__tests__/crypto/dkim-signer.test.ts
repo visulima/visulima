@@ -9,7 +9,7 @@ import { TEST_PRIVATE_KEY } from "./fixtures";
 // Mock @visulima/fs
 vi.mock(import("@visulima/fs"), () => {
     return {
-        readFile: vi.fn<Parameters<typeof import("@visulima/fs").readFile>>(),
+        readFile: vi.fn<Parameters<typeof readFile>>(),
     };
 });
 

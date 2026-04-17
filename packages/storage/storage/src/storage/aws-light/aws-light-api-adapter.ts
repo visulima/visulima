@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
@@ -559,7 +560,7 @@ ${partsXml}
      */
     // eslint-disable-next-line class-methods-use-this
     private streamToReadable(stream: ReadableStream<Uint8Array>): Readable {
-        return Readable.fromWeb(stream as unknown as import("node:stream/web").ReadableStream<Uint8Array>);
+        return Readable.fromWeb(stream as unknown as NodeReadableStream<Uint8Array>);
     }
 }
 
