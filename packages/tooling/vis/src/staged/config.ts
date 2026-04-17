@@ -181,6 +181,7 @@ const validateTask = (pattern: string, value: unknown): void => {
     throw new ConfigError(`Invalid task for "${pattern}" — expected string, string[], function, or { title, task } object.`);
 };
 
-const isCustomTask = (value: unknown): value is CustomTask => typeof value === "object" && value !== null && typeof (value as CustomTask).title === "string" && typeof (value as CustomTask).task === "function";
+const isCustomTask = (value: unknown): value is CustomTask =>
+    typeof value === "object" && value !== null && typeof (value as CustomTask).title === "string" && typeof (value as CustomTask).task === "function";
 
 export { CONFIG_FILE_CANDIDATES };

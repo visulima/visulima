@@ -22,12 +22,12 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
             <Box>
                 <Spinner type="dots" />
                 <Text>
-                    {' '}
+                    {" "}
                     Checking
                     {String(total)}
                     {' '}
                     catalog dependencies
-                    {' '}
+                    {" "}
                 </Text>
                 <Text dimColor>
                     {String(current)}

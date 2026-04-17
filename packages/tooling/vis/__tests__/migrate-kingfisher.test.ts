@@ -23,16 +23,13 @@ describe(detectKingfisherBaseline, () => {
         expect(detectKingfisherBaseline(tmpDir)).toBeUndefined();
     });
 
-    it.each(["kingfisher-baseline.yaml", ".kingfisher-baseline.yaml", "kingfisher-baseline.yml", ".kingfisher-baseline.yml"])(
-        "finds %s",
-        (name) => {
-            expect.assertions(1);
+    it.each(["kingfisher-baseline.yaml", ".kingfisher-baseline.yaml", "kingfisher-baseline.yml", ".kingfisher-baseline.yml"])("finds %s", (name) => {
+        expect.assertions(1);
 
-            writeFileSync(join(tmpDir, name), "ExactFindings:\n  matches: []\n");
+        writeFileSync(join(tmpDir, name), "ExactFindings:\n  matches: []\n");
 
-            expect(detectKingfisherBaseline(tmpDir)).toContain(name);
-        },
-    );
+        expect(detectKingfisherBaseline(tmpDir)).toContain(name);
+    });
 });
 
 describe(detectKingfisherRules, () => {
@@ -248,10 +245,7 @@ describe(migrateKingfisher, () => {
         expect.assertions(2);
 
         writeFileSync(join(tmpDir, "kingfisher-rules.yml"), "rules: []\n");
-        writeFileSync(
-            join(tmpDir, "package.json"),
-            JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan --rules-path kingfisher-rules.yml" } }),
-        );
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "t", scripts: { scan: "kingfisher scan --rules-path kingfisher-rules.yml" } }));
         mkdirSync(join(tmpDir, ".husky"), { recursive: true });
         writeFileSync(join(tmpDir, ".husky", "pre-commit"), "kingfisher scan --staged --rules-path kingfisher-rules.yml\n");
 

@@ -1098,7 +1098,9 @@ const filterCandidates = (
     constraint?: (parsed: ParsedVersion) => boolean,
 ): string | undefined => {
     const best = versions
-        .map((v) => { return { parsed: parseVersion(v), raw: v }; })
+        .map((v) => {
+            return { parsed: parseVersion(v), raw: v };
+        })
         .filter((v): v is { parsed: ParsedVersion; raw: string } => {
             if (!v.parsed) {
                 return false;

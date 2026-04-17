@@ -37,10 +37,7 @@ export const createBackupStash = async (cwd: string): Promise<string | null> => 
  */
 export const createHideAllStash = async (cwd: string): Promise<string | null> => {
     const message = buildMessage();
-    const { exitCode, stdout } = await git(
-        ["stash", "push", "--keep-index", "--include-untracked", "--quiet", "-m", message],
-        { cwd, lenient: true },
-    );
+    const { exitCode, stdout } = await git(["stash", "push", "--keep-index", "--include-untracked", "--quiet", "-m", message], { cwd, lenient: true });
 
     if (exitCode !== 0) {
         return null;

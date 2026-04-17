@@ -223,7 +223,9 @@ describe("mount suggestions", () => {
     it("should not suggest mounts that already exist", () => {
         expect.assertions(1);
 
-        const existingMounts = PM_MOUNTS.pnpm.map((m) => { return { ...m }; });
+        const existingMounts = PM_MOUNTS.pnpm.map((m) => {
+            return { ...m };
+        });
         const mounts = getSuggestedMounts("pnpm", {}, existingMounts);
 
         expect(mounts).toHaveLength(0);

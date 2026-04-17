@@ -107,9 +107,9 @@ const printListValidators = async (scanOptions: ScanOptions, useColor: boolean):
     const report = await listRequiredValidators(scanOptions);
 
     if (report.length === 0) {
-        process.stdout.write(useColor
-            ? `${dim("No non-HTTP validators required by the current ruleset.")}\n`
-            : "No non-HTTP validators required by the current ruleset.\n");
+        process.stdout.write(
+            useColor ? `${dim("No non-HTTP validators required by the current ruleset.")}\n` : "No non-HTTP validators required by the current ruleset.\n",
+        );
 
         return;
     }
@@ -123,9 +123,7 @@ const printListValidators = async (scanOptions: ScanOptions, useColor: boolean):
         process.stdout.write(`${title} ${useColor ? dim(typeLabel) : typeLabel}\n`);
         process.stdout.write(`  ${entry.summary}\n`);
 
-        const hint = entry.packageName
-            ? `install: npm add ${entry.packageName}`
-            : "no driver — bespoke implementation required";
+        const hint = entry.packageName ? `install: npm add ${entry.packageName}` : "no driver — bespoke implementation required";
 
         process.stdout.write(`  ${useColor ? dim(hint) : hint}\n\n`);
     }
@@ -446,7 +444,8 @@ const secrets: Command = {
         { description: "Scan only files changed since <ref> (e.g. main, origin/HEAD)", name: "since", type: String },
         { defaultValue: false, description: "Scan only projects affected by the current branch", name: "affected", type: Boolean },
         {
-            description: "Enable an opt-in rule or tag without restricting output — additive (e.g. tag:preset:weak-passwords, tag:preset:password-manager). Repeatable.",
+            description:
+                "Enable an opt-in rule or tag without restricting output — additive (e.g. tag:preset:weak-passwords, tag:preset:password-manager). Repeatable.",
             multiple: true,
             name: "enable-rule",
             type: String,

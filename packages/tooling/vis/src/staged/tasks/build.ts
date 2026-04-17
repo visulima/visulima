@@ -54,7 +54,7 @@ export const buildTaskGraph = async (options: BuildTaskGraphOptions): Promise<Pa
         }
 
         if (typeof value === "function") {
-            const generated = await (value)([...files]);
+            const generated = await value([...files]);
 
             if (typeof generated === "string") {
                 commands.push({

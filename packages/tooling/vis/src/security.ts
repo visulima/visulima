@@ -499,7 +499,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             // Render the map deterministically (sorted keys, quoted scoped names)
             const sortedKeys = Object.keys(merged).sort();
             const needsQuote = (key: string): boolean => key.startsWith("@") || key.includes("/") || /[:#\s]/.test(key);
-            const renderKey = (key: string): string => (needsQuote(key) ? `'${key.replaceAll('\'', "''")}'` : key);
+            const renderKey = (key: string): string => (needsQuote(key) ? `'${key.replaceAll("'", "''")}'` : key);
             const block = sortedKeys.map((key) => `  ${renderKey(key)}: ${String(merged[key])}`).join("\n");
             const allowBuildsBlock = `allowBuilds:\n${block}\n`;
 
