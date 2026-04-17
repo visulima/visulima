@@ -816,26 +816,44 @@ describe("runStaged — integration", () => {
         expect(existsSync(join(root, "new.txt"))).toBe(true);
     });
 
-    it("falls back to VIS_STAGED_CONCURRENT env var when --concurrent is not set", async () => {
-        expect.assertions(1);
+    it("does not let VIS_STAGED_CONCURRENT affect the programmatic runStaged API", async () => {
+        expect.assertions(2);
 
-        writeFileSync(join(root, "a.txt"), "seed\n");
-        sh(["add", "a.txt"], root);
+        writeFileSync(join(root, "a.txt"), "seed-a\n");
+        writeFileSync(join(root, "b.txt"), "seed-b\n");
+        sh(["add", "a.txt", "b.txt"], root);
         sh(["commit", "-q", "-m", "chore: init"], root);
 
-        writeFileSync(join(root, "a.txt"), "touched\n");
-        sh(["add", "a.txt"], root);
+        writeFileSync(join(root, "a.txt"), "touched-a\n");
+        writeFileSync(join(root, "b.txt"), "touched-b\n");
+        sh(["add", "a.txt", "b.txt"], root);
 
         const previous = process.env["VIS_STAGED_CONCURRENT"];
+        let active = 0;
+        let maxActive = 0;
 
         process.env["VIS_STAGED_CONCURRENT"] = "1";
 
         try {
             const result = await runStaged({
                 config: {
-                    "*.txt": {
-                        task: () => {},
-                        title: "noop",
+                    "a.txt": {
+                        task: async () => {
+                            active += 1;
+                            maxActive = Math.max(maxActive, active);
+                            await new Promise((resolve) => setTimeout(resolve, 50));
+                            active -= 1;
+                        },
+                        title: "slow-a",
+                    },
+                    "b.txt": {
+                        task: async () => {
+                            active += 1;
+                            maxActive = Math.max(maxActive, active);
+                            await new Promise((resolve) => setTimeout(resolve, 50));
+                            active -= 1;
+                        },
+                        title: "slow-b",
                     },
                 },
                 cwd: root,
@@ -843,6 +861,7 @@ describe("runStaged — integration", () => {
             });
 
             expect(result.success).toBe(true);
+            expect(maxActive).toBe(2);
         } finally {
             if (previous === undefined) {
                 delete process.env["VIS_STAGED_CONCURRENT"];
@@ -850,6 +869,89 @@ describe("runStaged — integration", () => {
                 process.env["VIS_STAGED_CONCURRENT"] = previous;
             }
         }
+    });
+
+    it("uses SIGKILL to terminate in-flight subprocesses on fast-fail cancellation", async () => {
+        expect.assertions(4);
+
+        writeFileSync(join(root, "a.txt"), "seed\n");
+        writeFileSync(join(root, "b.txt"), "seed\n");
+        sh(["add", "a.txt", "b.txt"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "a.txt"), "touched\n");
+        writeFileSync(join(root, "b.txt"), "touched\n");
+        sh(["add", "a.txt", "b.txt"], root);
+
+        const signalFile = join(root, "signal.txt");
+        const pidFile = join(root, "pid.txt");
+        const sleeper = join(root, "sleep-forever.mjs");
+
+        writeFileSync(
+            sleeper,
+            [
+                'import { writeFileSync } from "node:fs";',
+                "",
+                'const [, , pidPath, trapPath] = process.argv;',
+                "",
+                "if (!pidPath || !trapPath) {",
+                "  process.exit(2);",
+                "}",
+                "",
+                'writeFileSync(pidPath, String(process.pid));',
+                'process.on("SIGTERM", () => {',
+                '  writeFileSync(trapPath, "SIGTERM");',
+                "  process.exit(0);",
+                "});",
+                "",
+                "setInterval(() => {}, 1000);",
+            ].join("\n"),
+        );
+
+        const quote = (value: string): string => `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
+        const waitFor = async (predicate: () => boolean, timeoutMs: number): Promise<void> => {
+            const deadline = Date.now() + timeoutMs;
+
+            while (Date.now() < deadline) {
+                if (predicate()) {
+                    return;
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, 20));
+            }
+
+            throw new Error("Timed out waiting for condition.");
+        };
+
+        const result = await runStaged({
+            config: {
+                "a.txt": `${quote(process.execPath)} ${quote(sleeper)} ${quote(pidFile)} ${quote(signalFile)}`,
+                "b.txt": `${quote(process.execPath)} -e "setTimeout(() => process.exit(1), 100)"`,
+            },
+            cwd: root,
+            killSignal: "SIGKILL",
+            stash: false,
+        });
+
+        await waitFor(() => existsSync(pidFile), 1000);
+
+        const childPid = Number(readFileSync(pidFile, "utf8"));
+
+        expect(result.success).toBe(false);
+        expect(Number.isInteger(childPid)).toBe(true);
+
+        await waitFor(() => {
+            try {
+                process.kill(childPid, 0);
+
+                return false;
+            } catch {
+                return true;
+            }
+        }, 1000);
+
+        expect(existsSync(signalFile)).toBe(false);
+        expect(result.failedCommands).toHaveLength(1);
     });
 
     it("honors a SIGKILL `killSignal` option without breaking the happy path", async () => {
@@ -862,8 +964,6 @@ describe("runStaged — integration", () => {
         writeFileSync(join(root, "a.txt"), "touched\n");
         sh(["add", "a.txt"], root);
 
-        // killSignal only matters on cancellation; for a successful run the option is inert.
-        // This test pins the option plumbing so the type wiring doesn't silently regress.
         const result = await runStaged({
             config: {
                 "*.txt": {

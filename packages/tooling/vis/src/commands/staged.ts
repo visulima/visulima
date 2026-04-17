@@ -4,6 +4,21 @@ import type { RunOptions, StagedConfig } from "../staged";
 import { runStaged } from "../staged";
 
 type MutableRunOptions = { -readonly [K in keyof RunOptions]: RunOptions[K] };
+const CONCURRENT_ENV_VAR = "VIS_STAGED_CONCURRENT";
+
+const parseConcurrent = (value: string): boolean | number => {
+    if (value === "true" || value === "") {
+        return true;
+    }
+
+    if (value === "false") {
+        return false;
+    }
+
+    const parsed = Number(value);
+
+    return Number.isNaN(parsed) ? true : parsed;
+};
 
 /**
  * Translates the cerebro-parsed CLI options (kebab-case keys, string/boolean values)
@@ -123,16 +138,12 @@ const buildRunOptions = (raw: Record<string, unknown>, stagedConfig: StagedConfi
     }
 
     if (raw["concurrent"] !== undefined) {
-        const value = String(raw["concurrent"]);
+        options.concurrent = parseConcurrent(String(raw["concurrent"]));
+    } else {
+        const envValue = process.env[CONCURRENT_ENV_VAR];
 
-        if (value === "true" || value === "") {
-            options.concurrent = true;
-        } else if (value === "false") {
-            options.concurrent = false;
-        } else {
-            const parsed = Number(value);
-
-            options.concurrent = Number.isNaN(parsed) ? true : parsed;
+        if (envValue !== undefined) {
+            options.concurrent = parseConcurrent(envValue.trim());
         }
     }
 
