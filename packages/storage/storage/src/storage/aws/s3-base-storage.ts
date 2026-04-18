@@ -343,9 +343,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
                             const readable
-                                = part.body instanceof Readable
-                                    ? part.body
-                                    : Readable.fromWeb(part.body as unknown as NodeReadableStream<Uint8Array>);
+                                = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body as unknown as NodeReadableStream<Uint8Array>);
 
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
 

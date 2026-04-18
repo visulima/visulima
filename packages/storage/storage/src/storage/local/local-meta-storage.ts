@@ -10,9 +10,9 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage from "../meta-storage";
 import type { LocalMetaStorageOptions } from "../meta-storage-options";
 import type { File } from "../utils/file";
+import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 
 export type { LocalMetaStorageOptions } from "../meta-storage-options";
-import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 
 /**
  * Stores upload metafiles on local disk

@@ -26,10 +26,7 @@ const mockAuthRequest = vi.fn();
 
 vi.mock(import("google-auth-library"), () => {
     return {
-        GoogleAuth: vi.fn().mockImplementation(function GoogleAuthMock(
-            this: GoogleAuth,
-            _config: GCStorageOptions,
-        ) {
+        GoogleAuth: vi.fn().mockImplementation(function GoogleAuthMock(this: GoogleAuth, _config: GCStorageOptions) {
             this.request = mockAuthRequest;
 
             return this;
