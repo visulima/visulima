@@ -145,7 +145,7 @@ export class DkimSigner implements EmailSigner {
 
         // Escape backslashes and double quotes per RFC 5322
         const backslashChar = "\\";
-        const quoteChar = "\"";
+        const quoteChar = '"';
 
         sanitized = sanitized.replaceAll(backslashChar, backslashChar + backslashChar).replaceAll(quoteChar, backslashChar + quoteChar);
 
@@ -214,7 +214,7 @@ export class DkimSigner implements EmailSigner {
         }
 
         const headers: Record<string, string> = {
-            ...email.headers ? headersToRecord(email.headers) : {},
+            ...(email.headers ? headersToRecord(email.headers) : {}),
             From: DkimSigner.formatAddress(email.from),
             To: DkimSigner.formatAddresses(email.to),
         };

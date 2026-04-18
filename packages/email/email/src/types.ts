@@ -181,49 +181,49 @@ export interface EmailResult {
  * Receipt type for email sending results
  * Uses discriminated union for type safety
  */
-export type Receipt
-    = | {
-        /**
-         * The unique identifier for the message that was sent
-         */
-        readonly messageId: string;
-
-        /**
-         * Optional provider name
-         */
-        readonly provider?: string;
-
-        /**
-         * Optional response data from provider
-         */
-        readonly response?: unknown;
-
-        /**
-         * Indicates that the email was sent successfully
-         */
-        readonly successful: true;
-
-        /**
-         * Timestamp when email was sent
-         */
-        readonly timestamp: Date;
-    }
+export type Receipt =
     | {
-        /**
-         * An array of error messages that occurred during the sending process
-         */
-        readonly errorMessages: ReadonlyArray<string>;
+          /**
+           * The unique identifier for the message that was sent
+           */
+          readonly messageId: string;
 
-        /**
-         * Optional provider name
-         */
-        readonly provider?: string;
+          /**
+           * Optional provider name
+           */
+          readonly provider?: string;
 
-        /**
-         * Indicates that the email failed to send
-         */
-        readonly successful: false;
-    };
+          /**
+           * Optional response data from provider
+           */
+          readonly response?: unknown;
+
+          /**
+           * Indicates that the email was sent successfully
+           */
+          readonly successful: true;
+
+          /**
+           * Timestamp when email was sent
+           */
+          readonly timestamp: Date;
+      }
+    | {
+          /**
+           * An array of error messages that occurred during the sending process
+           */
+          readonly errorMessages: ReadonlyArray<string>;
+
+          /**
+           * Optional provider name
+           */
+          readonly provider?: string;
+
+          /**
+           * Indicates that the email failed to send
+           */
+          readonly successful: false;
+      };
 
 /**
  * Generic result type
