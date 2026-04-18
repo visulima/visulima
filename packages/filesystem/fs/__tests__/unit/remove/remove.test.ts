@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { symlink, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
@@ -52,5 +52,34 @@ describe.each([
         }
 
         expect(existsSync(path)).toBe(false);
+    });
+
+    it.each([
+        ["empty options", {}],
+        ["explicit undefined retryDelay", { retryDelay: undefined }],
+        ["explicit undefined maxRetries", { maxRetries: undefined }],
+        ["both undefined", { maxRetries: undefined, retryDelay: undefined }],
+    ])("should remove a directory when options carry undefined retry fields (%s)", async (_, options) => {
+        expect.assertions(1);
+
+        // Regression for an upstream Node ≥22.3 behaviour: passing
+        // `retryDelay: undefined` or `maxRetries: undefined` to
+        // `fs.rm`/`fs.rmSync` throws `ERR_INVALID_ARG_TYPE`. The
+        // surrounding try/catch in `remove`/`removeSync` previously
+        // swallowed that throw and silently turned the call into a
+        // no-op — the directory was never removed.
+        const targetDirectory = join(distribution, `regression-${name}-${String(Object.keys(options).length)}-${Date.now()}`);
+
+        mkdirSync(targetDirectory, { recursive: true });
+        await writeFile(join(targetDirectory, "marker.txt"), "x");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "remove") {
+            await function_(targetDirectory, options);
+        } else {
+            function_(targetDirectory, options);
+        }
+
+        expect(existsSync(targetDirectory)).toBe(false);
     });
 });

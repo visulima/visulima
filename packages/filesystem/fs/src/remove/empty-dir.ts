@@ -7,6 +7,7 @@ import { toPath } from "@visulima/path/utils";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import buildRmOptions from "./utils/build-rm-options";
 
 /**
  * Ensures that a directory is empty.
@@ -46,10 +47,11 @@ const emptyDir = async (dir: URL | string, options?: RetryOptions): Promise<void
     }
 
     const items = await readdir(dir);
+    const rmOptions = buildRmOptions(options);
 
     for (const item of items) {
         // eslint-disable-next-line no-await-in-loop
-        await rm(join(toPath(dir), item), { ...options, force: true, recursive: true });
+        await rm(join(toPath(dir), item), rmOptions);
     }
 };
 

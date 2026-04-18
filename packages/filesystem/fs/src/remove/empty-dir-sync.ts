@@ -6,6 +6,7 @@ import { toPath } from "@visulima/path/utils";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import buildRmOptions from "./utils/build-rm-options";
 
 /**
  * Ensures that a directory is empty.
@@ -39,8 +40,10 @@ const emptyDirSync = (dir: URL | string, options?: RetryOptions): void => {
         return;
     }
 
+    const rmOptions = buildRmOptions(options);
+
     for (const item of readdirSync(dir)) {
-        rmSync(join(toPath(dir), item), { ...options, force: true, recursive: true });
+        rmSync(join(toPath(dir), item), rmOptions);
     }
 };
 

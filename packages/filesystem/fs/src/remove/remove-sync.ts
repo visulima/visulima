@@ -2,6 +2,7 @@ import { rmSync, unlinkSync } from "node:fs";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import buildRmOptions from "./utils/build-rm-options";
 
 /**
  * Synchronously removes a file or directory (recursively).
@@ -37,7 +38,7 @@ const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     }
 
     try {
-        rmSync(path, { force: true, maxRetries: options.maxRetries, recursive: true, retryDelay: options.retryDelay });
+        rmSync(path, buildRmOptions(options));
     } catch {
         /* empty */
     }

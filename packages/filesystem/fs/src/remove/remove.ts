@@ -2,6 +2,7 @@ import { rm, unlink } from "node:fs/promises";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import buildRmOptions from "./utils/build-rm-options";
 
 /**
  * Asynchronously removes a file or directory (recursively).
@@ -42,7 +43,7 @@ const remove = async (path: URL | string, options: RetryOptions = {}): Promise<v
     }
 
     try {
-        await rm(path, { force: true, maxRetries: options.maxRetries, recursive: true, retryDelay: options.retryDelay });
+        await rm(path, buildRmOptions(options));
     } catch {
         /* empty */
     }
