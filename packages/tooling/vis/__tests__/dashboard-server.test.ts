@@ -8,7 +8,7 @@ import { startDashboardServer } from "../src/dashboard/server";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 const writeRun = (dir: string, id: string, body: unknown): void => {
-    const runsDir = join(dir, ".task-runner", "runs");
+    const runsDir = join(dir, ".vis", "runs");
 
     mkdirSync(runsDir, { recursive: true });
     writeFileSync(join(runsDir, `${id}.json`), JSON.stringify(body));
@@ -190,5 +190,29 @@ describe("dashboard server", () => {
 
         expect(body.workspaceRoot).toBe(tmpDir);
         expect(body.node).toBe(process.version);
+    });
+
+    it("serves the SSE endpoint with the correct content-type", async () => {
+        expect.assertions(1);
+
+        server = await startDashboardServer({
+            workspaceRoot: tmpDir,
+            cacheDirectory: join(tmpDir, ".task-runner-cache"),
+            host: "127.0.0.1",
+            port: 0,
+        });
+
+        const controller = new AbortController();
+
+        try {
+            const response = await fetch(`${server.url}/api/events`, {
+                signal: controller.signal,
+                headers: { accept: "text/event-stream" },
+            });
+
+            expect(response.headers.get("content-type")).toContain("text/event-stream");
+        } finally {
+            controller.abort();
+        }
     });
 });

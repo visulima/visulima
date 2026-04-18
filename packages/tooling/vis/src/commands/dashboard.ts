@@ -2,9 +2,9 @@ import { exec } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
 
-import { resolveCacheDirectory } from "../cache-directory";
+import { resolveCacheDirectory } from "../cache/cache-directory";
 import { startDashboardServer } from "../dashboard/server";
-import { info, note, success } from "../output";
+import { pail } from "../io/logger";
 
 const openInBrowser = (url: string): void => {
     const platform = process.platform;
@@ -44,10 +44,10 @@ const dashboard: Command = {
             port,
         });
 
-        success(`Dashboard listening on ${server.url}`);
-        info(`Workspace: ${workspaceRoot}`);
-        info(`Cache:     ${cacheDirectory}`);
-        note("Press Ctrl+C to stop.");
+        pail.success(`Dashboard listening on ${server.url}`);
+        pail.info(`Workspace: ${workspaceRoot}`);
+        pail.info(`Cache:     ${cacheDirectory}`);
+        pail.info("Press Ctrl+C to stop.");
 
         if (options.open !== false) {
             openInBrowser(server.url);
