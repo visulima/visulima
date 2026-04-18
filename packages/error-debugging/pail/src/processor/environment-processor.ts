@@ -64,14 +64,14 @@ const detectEnvironment = (): EnvironmentInfo => {
         /* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing -- env vars may be undefined or empty at runtime */
         // Commit hash
         commit:
-            env.COMMIT_SHA
-            || env.GIT_COMMIT
-            || env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
-            || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
-            || env.RENDER_GIT_COMMIT?.slice(0, 7)
-            || env.HEROKU_SLUG_COMMIT?.slice(0, 7)
-            || env.CF_PAGES_COMMIT_SHA?.slice(0, 7)
-            || undefined,
+            env.COMMIT_SHA ||
+            env.GIT_COMMIT ||
+            env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ||
+            env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ||
+            env.RENDER_GIT_COMMIT?.slice(0, 7) ||
+            env.HEROKU_SLUG_COMMIT?.slice(0, 7) ||
+            env.CF_PAGES_COMMIT_SHA?.slice(0, 7) ||
+            undefined,
         // Environment / Node env
         environment: env.NODE_ENV || env.ENVIRONMENT || env.APP_ENV || undefined,
         // Hostname
@@ -80,36 +80,36 @@ const detectEnvironment = (): EnvironmentInfo => {
         pid: process.pid,
         // Region (including GCP Cloud Functions FUNCTION_REGION and GOOGLE_CLOUD_REGION)
         region:
-            env.AWS_REGION
-            || env.VERCEL_REGION
-            || env.FLY_REGION
-            || env.RENDER_REGION
-            || env.CF_REGION
-            || env.GOOGLE_CLOUD_REGION // GCP general
-            || env.FUNCTION_REGION // GCP Cloud Functions
-            || undefined,
+            env.AWS_REGION ||
+            env.VERCEL_REGION ||
+            env.FLY_REGION ||
+            env.RENDER_REGION ||
+            env.CF_REGION ||
+            env.GOOGLE_CLOUD_REGION || // GCP general
+            env.FUNCTION_REGION || // GCP Cloud Functions
+            undefined,
         // Service name - check common platform variables (including GCP Cloud Run / App Engine)
         service:
-            env.SERVICE_NAME
-            || env.APP_NAME
-            || env.K_SERVICE // GCP Cloud Run
-            || env.GAE_SERVICE // GCP App Engine
-            || env.FUNCTION_TARGET // GCP Cloud Functions
-            || env.VERCEL_PROJECT_PRODUCTION_URL
-            || env.FLY_APP_NAME
-            || env.RAILWAY_SERVICE_NAME
-            || env.RENDER_SERVICE_NAME
-            || env.HEROKU_APP_NAME
-            || undefined,
+            env.SERVICE_NAME ||
+            env.APP_NAME ||
+            env.K_SERVICE || // GCP Cloud Run
+            env.GAE_SERVICE || // GCP App Engine
+            env.FUNCTION_TARGET || // GCP Cloud Functions
+            env.VERCEL_PROJECT_PRODUCTION_URL ||
+            env.FLY_APP_NAME ||
+            env.RAILWAY_SERVICE_NAME ||
+            env.RENDER_SERVICE_NAME ||
+            env.HEROKU_APP_NAME ||
+            undefined,
         // Version (including GCP Cloud Run K_REVISION and App Engine GAE_VERSION)
         version:
-            env.APP_VERSION
-            || env.npm_package_version
-            || env.K_REVISION // GCP Cloud Run revision
-            || env.GAE_VERSION // GCP App Engine version
-            || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
-            || env.RENDER_GIT_COMMIT?.slice(0, 7)
-            || undefined,
+            env.APP_VERSION ||
+            env.npm_package_version ||
+            env.K_REVISION || // GCP Cloud Run revision
+            env.GAE_VERSION || // GCP App Engine version
+            env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ||
+            env.RENDER_GIT_COMMIT?.slice(0, 7) ||
+            undefined,
         /* eslint-enable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing */
     };
 
