@@ -1,21 +1,21 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AiProviderInfo } from "../src/index";
 import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
 
 vi.mock(import("node:child_process"), () => {
     return {
-        execFileSync: vi.fn(),
-        spawn: vi.fn(),
+        execFileSync: vi.fn<typeof execFileSync>(),
+        spawn: vi.fn<typeof import("node:child_process").spawn>(),
     };
 });
 
 vi.mock(import("node:fs"), () => {
     return {
-        existsSync: vi.fn(() => false),
+        existsSync: vi.fn<typeof existsSync>(() => false),
     };
 });
 
@@ -26,6 +26,8 @@ const mockExistsSync = vi.mocked(existsSync);
 
 describe("pROVIDERS", () => {
     it("should define all 11 providers", () => {
+        expect.assertions(12);
+
         expect(Object.keys(PROVIDERS)).toHaveLength(11);
         expect(PROVIDERS.claude).toBeDefined();
         expect(PROVIDERS.gemini).toBeDefined();
@@ -41,6 +43,8 @@ describe("pROVIDERS", () => {
     });
 
     it("should define environment variables for each provider", () => {
+        expect.assertions(11);
+
         expect(PROVIDERS.claude.envVariable).toBe("CLAUDE_PATH");
         expect(PROVIDERS.gemini.envVariable).toBe("GEMINI_PATH");
         expect(PROVIDERS.codex.envVariable).toBe("CODEX_PATH");
@@ -55,18 +59,24 @@ describe("pROVIDERS", () => {
     });
 
     it("should have buildArgs function for every provider", () => {
+        expect.assertions(11);
+
         for (const config of Object.values(PROVIDERS)) {
-            expectTypeOf(config.buildArgs).toBeFunction();
+            expect(config.buildArgs).toBeTypeOf("function");
         }
     });
 
     it("should define default models for major providers", () => {
+        expect.assertions(3);
+
         expect(PROVIDERS.claude.defaultModel).toContain("claude");
         expect(PROVIDERS.gemini.defaultModel).toContain("gemini");
         expect(PROVIDERS.codex.defaultModel).toBe("o3");
     });
 
     it("should define alternate commands where applicable", () => {
+        expect.assertions(3);
+
         expect(PROVIDERS.codex.alternateCommands).toContain("openai-codex");
         expect(PROVIDERS.gemini.alternateCommands).toContain("gemini-cli");
         expect(PROVIDERS.qwen.alternateCommands).toContain("qwen-code");
@@ -75,6 +85,8 @@ describe("pROVIDERS", () => {
 
 describe("pROVIDER_NAMES", () => {
     it("should list all provider names alphabetically", () => {
+        expect.assertions(4);
+
         expect(PROVIDER_NAMES).toHaveLength(11);
         expect(PROVIDER_NAMES[0]).toBe("amp");
         expect(PROVIDER_NAMES[1]).toBe("claude");
@@ -94,6 +106,8 @@ describe(detectProvider, () => {
     });
 
     it("should return unavailable when nothing found", () => {
+        expect.assertions(3);
+
         const result = detectProvider("claude");
 
         expect(result.available).toBe(false);
@@ -102,6 +116,8 @@ describe(detectProvider, () => {
     });
 
     it("should detect via environment variable", () => {
+        expect.assertions(4);
+
         const originalEnv = process.env["CLAUDE_PATH"];
 
         process.env["CLAUDE_PATH"] = "/custom/path/claude";
@@ -125,6 +141,8 @@ describe(detectProvider, () => {
     });
 
     it("should detect via which command", () => {
+        expect.assertions(4);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "claude") {
                 return "/usr/local/bin/claude\n";
@@ -146,6 +164,8 @@ describe(detectProvider, () => {
     });
 
     it("should try alternate commands", () => {
+        expect.assertions(2);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "openai-codex") {
                 return "/usr/local/bin/openai-codex\n";
@@ -165,6 +185,8 @@ describe(detectProvider, () => {
     });
 
     it("should try qwen-code alternate command", () => {
+        expect.assertions(1);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "qwen-code") {
                 return "/usr/local/bin/qwen-code\n";
@@ -179,6 +201,8 @@ describe(detectProvider, () => {
     });
 
     it("should detect via known paths", () => {
+        expect.assertions(3);
+
         mockExecFileSync.mockImplementation((_cmd: string, args?: ReadonlyArray<string>) => {
             if (args?.[0] === "--version") {
                 return "3.0.0\n";
@@ -196,6 +220,8 @@ describe(detectProvider, () => {
     });
 
     it("should handle version detection failure gracefully", () => {
+        expect.assertions(2);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "claude") {
                 return "/usr/local/bin/claude\n";
@@ -211,6 +237,8 @@ describe(detectProvider, () => {
     });
 
     it("should parse version with v prefix", () => {
+        expect.assertions(1);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "gemini") {
                 return "/usr/bin/gemini\n";
@@ -229,6 +257,8 @@ describe(detectProvider, () => {
     });
 
     it("should parse prerelease version", () => {
+        expect.assertions(1);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "claude") {
                 return "/usr/bin/claude\n";
@@ -247,6 +277,8 @@ describe(detectProvider, () => {
     });
 
     it("should detect additional providers like amp", () => {
+        expect.assertions(2);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "amp") {
                 return "/usr/local/bin/amp\n";
@@ -274,6 +306,8 @@ describe(detectAllProviders, () => {
     });
 
     it("should return all 11 providers", () => {
+        expect.assertions(12);
+
         const results = detectAllProviders();
 
         expect(results).toHaveLength(11);
@@ -294,6 +328,8 @@ describe(detectAllProviders, () => {
     });
 
     it("should return in alphabetical order", () => {
+        expect.assertions(3);
+
         const results = detectAllProviders();
 
         expect(results[0]?.name).toBe("amp");
@@ -314,10 +350,14 @@ describe(detectAvailableProviders, () => {
     });
 
     it("should return empty when nothing available", () => {
+        expect.assertions(1);
+
         expect(detectAvailableProviders()).toHaveLength(0);
     });
 
     it("should return only available providers", () => {
+        expect.assertions(2);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && args?.[0] === "claude") {
                 return "/usr/bin/claude\n";
@@ -333,6 +373,8 @@ describe(detectAvailableProviders, () => {
     });
 
     it("should include detection-only providers if found", () => {
+        expect.assertions(3);
+
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && (args?.[0] === "claude" || args?.[0] === "amp")) {
                 return `/usr/bin/${args[0] as string}\n`;
@@ -356,6 +398,8 @@ describe(detectAvailableProviders, () => {
 
 describe(buildCliArgs, () => {
     it("should build claude args", () => {
+        expect.assertions(6);
+
         const args = buildCliArgs("claude", "analyze this");
 
         expect(args).toContain("--dangerously-skip-permissions");
@@ -367,6 +411,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build gemini args", () => {
+        expect.assertions(4);
+
         const args = buildCliArgs("gemini", "analyze this");
 
         expect(args).toContain("--sandbox");
@@ -376,6 +422,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build codex args", () => {
+        expect.assertions(4);
+
         const args = buildCliArgs("codex", "analyze this");
 
         expect(args[0]).toBe("analyze this");
@@ -385,6 +433,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should use custom model", () => {
+        expect.assertions(1);
+
         const args = buildCliArgs("claude", "test", { model: "claude-opus-4-20250514" });
         const modelIndex = args.indexOf("--model");
 
@@ -392,18 +442,24 @@ describe(buildCliArgs, () => {
     });
 
     it("should use custom maxTokens", () => {
+        expect.assertions(1);
+
         const args = buildCliArgs("gemini", "test", { maxTokens: 8192 });
 
         expect(args).toContain("8192");
     });
 
     it("should use default model when not specified", () => {
+        expect.assertions(1);
+
         const args = buildCliArgs("claude", "test");
 
         expect(args).toContain(PROVIDERS.claude.defaultModel);
     });
 
     it("should build amp args with -x flag", () => {
+        expect.assertions(3);
+
         const args = buildCliArgs("amp", "analyze this");
 
         expect(args).toContain("-x");
@@ -412,6 +468,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build kimi args with --quiet and -p", () => {
+        expect.assertions(3);
+
         const args = buildCliArgs("kimi", "analyze this");
 
         expect(args).toContain("--quiet");
@@ -420,6 +478,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build kimi args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("kimi", "test", { model: "k2" });
 
         expect(args).toContain("-m");
@@ -427,6 +487,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build opencode args with run subcommand", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("opencode", "analyze this");
 
         expect(args[0]).toBe("run");
@@ -434,6 +496,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build opencode args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("opencode", "test", { model: "anthropic/claude-opus-4" });
 
         expect(args).toContain("-m");
@@ -441,6 +505,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build qwen args with -p and --yolo", () => {
+        expect.assertions(5);
+
         const args = buildCliArgs("qwen", "analyze this");
 
         expect(args).toContain("-p");
@@ -451,6 +517,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build droid args with positional prompt", () => {
+        expect.assertions(4);
+
         const args = buildCliArgs("droid", "analyze this");
 
         expect(args[0]).toBe("analyze this");
@@ -460,6 +528,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build droid args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("droid", "test", { model: "gpt-4" });
 
         expect(args).toContain("-m");
@@ -467,6 +537,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build cursor args with -p and --force", () => {
+        expect.assertions(5);
+
         const args = buildCliArgs("cursor", "analyze this");
 
         expect(args).toContain("-p");
@@ -477,6 +549,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build cursor args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("cursor", "test", { model: "gpt-5.2" });
 
         expect(args).toContain("--model");
@@ -484,6 +558,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build copilot args with -p and --allow-all-tools", () => {
+        expect.assertions(3);
+
         const args = buildCliArgs("copilot", "analyze this");
 
         expect(args).toContain("-p");
@@ -492,6 +568,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build copilot args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("copilot", "test", { model: "claude-sonnet-4.5" });
 
         expect(args).toContain("--model");
@@ -499,6 +577,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build crush args with run subcommand and --yolo", () => {
+        expect.assertions(3);
+
         const args = buildCliArgs("crush", "analyze this");
 
         expect(args[0]).toBe("run");
@@ -507,6 +587,8 @@ describe(buildCliArgs, () => {
     });
 
     it("should build crush args with custom model", () => {
+        expect.assertions(2);
+
         const args = buildCliArgs("crush", "test", { model: "anthropic/claude-sonnet-4" });
 
         expect(args).toContain("-m");
@@ -518,6 +600,8 @@ describe(buildCliArgs, () => {
 
 describe(runProvider, () => {
     it("should reject when provider is not available", async () => {
+        expect.assertions(1);
+
         const provider: AiProviderInfo = {
             available: false,
             name: "claude",
@@ -527,6 +611,8 @@ describe(runProvider, () => {
     });
 
     it("should reject when provider has no path", async () => {
+        expect.assertions(1);
+
         const provider: AiProviderInfo = {
             available: true,
             name: "claude",
