@@ -33,7 +33,7 @@ import type { NetlifyBlobStorageOptions } from "./types";
  * - ❌ getUrl: Not implemented (Netlify Blob URLs available via Netlify Blob API)
  * - ❌ getUploadUrl: Not implemented (Netlify Blob upload URLs handled internally)
  */
-class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
+class NetlifyBlobStorage extends BaseStorage {
     public static override readonly name: string = "netlify-blob";
 
     public override checksumTypes: string[] = ["md5"];
