@@ -154,7 +154,7 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
 
         const requestHeaders = safeGetProperty(request, "headers");
         const contentType: string = isHeadersObject(requestHeaders)
-            ? (safeGetMethod(requestHeaders, "get")?.("content-type") as string | null) ?? ""
+            ? ((safeGetMethod(requestHeaders, "get")?.("content-type") as string | null) ?? "")
             : String((requestHeaders as Record<string, string | string[]>)["content-type"] ?? "");
 
         const cloneMethod = safeGetMethod(request, "clone");
@@ -169,7 +169,7 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
                 try {
                     const textMethod = safeGetMethod(cloned, "text");
 
-                    return textMethod ? await textMethod() ?? "" : undefined;
+                    return textMethod ? ((await textMethod()) ?? "") : undefined;
                 } catch {
                     return undefined;
                 }
@@ -417,7 +417,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
     const renderObjectValue = (object: Record<string, unknown>, depth: number): string => {
         if (Object.keys(object).length === 0) {
-            return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty object)</span>";
+            return '<span class="italic text-[var(--ono-text-muted)]">(empty object)</span>';
         }
 
         if (depth >= 3) {
@@ -437,8 +437,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             })
             .join("");
 
-        const remaining
-            = Object.keys(object).length > 10
+        const remaining =
+            Object.keys(object).length > 10
                 ? `<div class="ml-4 italic text-[var(--ono-text-muted)]">... and ${String(Object.keys(object).length - 10)} more keys</div>`
                 : "";
 
@@ -456,7 +456,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
         if (Array.isArray(value)) {
             if (value.length === 0) {
-                return "<span class=\"italic text-[var(--ono-text-muted)]\">(empty array)</span>";
+                return '<span class="italic text-[var(--ono-text-muted)]">(empty array)</span>';
             }
 
             if (depth >= 3) {
@@ -475,8 +475,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
                 })
                 .join("");
 
-            const remaining
-                = value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--ono-text-muted)]">... and ${String(value.length - 10)} more items</div>` : "";
+            const remaining =
+                value.length > 10 ? `<div class="ml-4 text-sm italic text-[var(--ono-text-muted)]">... and ${String(value.length - 10)} more items</div>` : "";
 
             return `<div class="space-y-1">${items}${remaining}</div>`;
         }
