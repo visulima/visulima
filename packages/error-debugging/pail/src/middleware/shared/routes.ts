@@ -13,7 +13,7 @@ const patternToRegex = (pattern: string): RegExp => {
     let index = 0;
 
     while (index < pattern.length) {
-        const char = pattern[index] as string;
+        const char = pattern[index];
 
         if (char === "*" && pattern[index + 1] === "*") {
             // ** matches anything including /
@@ -117,7 +117,6 @@ export const getServiceForPath = (path: string, routes?: Record<string, RouteCon
 
     const entries: [string, RouteConfig][] = Object.entries(routes);
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access -- array index access typing */
     for (let i = 0; i < entries.length; i += 1) {
         const [pattern, config] = entries[i];
 
@@ -125,7 +124,6 @@ export const getServiceForPath = (path: string, routes?: Record<string, RouteCon
             return config.service;
         }
     }
-    /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 
     return undefined;
 };

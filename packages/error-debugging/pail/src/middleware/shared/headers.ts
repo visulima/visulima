@@ -32,7 +32,6 @@ export const extractSafeNodeHeaders = (headers: Record<string, string | string[]
 
     const entries: [string, string | string[] | undefined][] = Object.entries(headers);
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- array index access typing */
     for (let i = 0; i < entries.length; i += 1) {
         const [key, value] = entries[i];
 
@@ -40,7 +39,6 @@ export const extractSafeNodeHeaders = (headers: Record<string, string | string[]
             safe[key.toLowerCase()] = Array.isArray(value) ? value.join(", ") : value;
         }
     }
-    /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 
     return safe;
 };
