@@ -29,6 +29,7 @@ describe("annotation-settings", () => {
         });
 
         it("each color has required fields", () => {
+            // eslint-disable-next-line vitest/prefer-expect-assertions
             expect.assertions(MARKER_COLORS.length * 6);
 
             for (const color of MARKER_COLORS) {
