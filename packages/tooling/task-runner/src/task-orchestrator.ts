@@ -423,12 +423,14 @@ class TaskOrchestrator {
         const rehash = this.#taskHasher.rehashFile.bind(this.#taskHasher);
         const entries = Object.entries(nodes);
 
-        const checks = await Promise.all(entries.map(async ([path, priorHash]) => {
-            const absolute = resolve(this.#workspaceRoot, path);
-            const fresh = await rehash(absolute);
+        const checks = await Promise.all(
+            entries.map(async ([path, priorHash]) => {
+                const absolute = resolve(this.#workspaceRoot, path);
+                const fresh = await rehash(absolute);
 
-            return fresh !== undefined && fresh !== priorHash ? path : undefined;
-        }));
+                return fresh !== undefined && fresh !== priorHash ? path : undefined;
+            }),
+        );
 
         return checks.filter((path): path is string => path !== undefined);
     }
@@ -573,9 +575,7 @@ class TaskOrchestrator {
         }
 
         const hasAnyAccess
-            = Object.keys(fingerprint.fileHashes).length > 0
-                || Object.keys(fingerprint.directoryListings).length > 0
-                || fingerprint.missingFiles.length > 0;
+            = Object.keys(fingerprint.fileHashes).length > 0 || Object.keys(fingerprint.directoryListings).length > 0 || fingerprint.missingFiles.length > 0;
 
         if (hasAnyAccess) {
             return undefined;

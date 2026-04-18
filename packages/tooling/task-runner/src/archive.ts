@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { createReadStream, createWriteStream } from "node:fs";
 import { rm } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
-import { createBrotliCompress, createBrotliDecompress, constants as zlibConstants } from "node:zlib";
+import { constants as zlibConstants, createBrotliCompress, createBrotliDecompress } from "node:zlib";
 
 /**
  * Shared tar + brotli archive helpers.

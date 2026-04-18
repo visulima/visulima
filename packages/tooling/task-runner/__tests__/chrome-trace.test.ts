@@ -8,31 +8,35 @@ import type { ChromeTraceEvent } from "../src/chrome-trace";
 import { toChromeTrace, writeChromeTrace } from "../src/chrome-trace";
 import type { RunSummary, TaskSummary } from "../src/run-summary";
 
-const makeSummary = (tasks: TaskSummary[]): RunSummary => ({
-    duration: 10_000,
-    endTime: new Date(1_700_000_010_000).toISOString(),
-    environment: { arch: "x64", nodeVersion: "v22", platform: "linux" },
-    id: "test-run",
-    startTime: new Date(1_700_000_000_000).toISOString(),
-    stats: { cached: 0, failed: 0, skipped: 0, succeeded: tasks.length, total: tasks.length },
-    taskGraph: { dependencies: {}, roots: tasks.map((t) => t.taskId) },
-    tasks,
-});
+const makeSummary = (tasks: TaskSummary[]): RunSummary => {
+    return {
+        duration: 10_000,
+        endTime: new Date(1_700_000_010_000).toISOString(),
+        environment: { arch: "x64", nodeVersion: "v22", platform: "linux" },
+        id: "test-run",
+        startTime: new Date(1_700_000_000_000).toISOString(),
+        stats: { cached: 0, failed: 0, skipped: 0, succeeded: tasks.length, total: tasks.length },
+        taskGraph: { dependencies: {}, roots: tasks.map((t) => t.taskId) },
+        tasks,
+    };
+};
 
-const makeTask = (id: string, startMs: number, endMs: number, dependencies: string[] = []): TaskSummary => ({
-    cacheable: true,
-    cacheStatus: "MISS",
-    dependencies,
-    duration: endMs - startMs,
-    endTime: new Date(1_700_000_000_000 + endMs).toISOString(),
-    exitCode: 0,
-    hash: `hash-${id}`,
-    hashDetails: undefined,
-    outputs: [],
-    startTime: new Date(1_700_000_000_000 + startMs).toISOString(),
-    target: { project: id.split(":")[0] ?? "app", target: id.split(":")[1] ?? "build" },
-    taskId: id,
-});
+const makeTask = (id: string, startMs: number, endMs: number, dependencies: string[] = []): TaskSummary => {
+    return {
+        cacheable: true,
+        cacheStatus: "MISS",
+        dependencies,
+        duration: endMs - startMs,
+        endTime: new Date(1_700_000_000_000 + endMs).toISOString(),
+        exitCode: 0,
+        hash: `hash-${id}`,
+        hashDetails: undefined,
+        outputs: [],
+        startTime: new Date(1_700_000_000_000 + startMs).toISOString(),
+        target: { project: id.split(":")[0] ?? "app", target: id.split(":")[1] ?? "build" },
+        taskId: id,
+    };
+};
 
 describe(toChromeTrace, () => {
     it("emits one X event per task plus a metadata header", () => {
@@ -72,10 +76,7 @@ describe(toChromeTrace, () => {
     it("emits matching flow start/finish for dependencies", () => {
         expect.assertions(3);
 
-        const tasks = [
-            makeTask("lib:build", 0, 500),
-            makeTask("app:build", 500, 1000, ["lib:build"]),
-        ];
+        const tasks = [makeTask("lib:build", 0, 500), makeTask("app:build", 500, 1000, ["lib:build"])];
         const events = toChromeTrace(makeSummary(tasks));
         const starts = events.filter((e) => e.ph === "s");
         const finishes = events.filter((e) => e.ph === "f");

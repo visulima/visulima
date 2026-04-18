@@ -268,8 +268,7 @@ export class FileAccessTracker {
                 return { path, type: "missing" };
             }
 
-            const type: FileAccess["type"]
-                = kind === "open" ? parseOpenAccessType(line) : kind === "creat" ? "write" : "stat";
+            const type: FileAccess["type"] = kind === "open" ? parseOpenAccessType(line) : kind === "creat" ? "write" : "stat";
 
             return { path, type };
         }

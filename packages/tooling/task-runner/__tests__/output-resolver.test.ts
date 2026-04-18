@@ -93,11 +93,7 @@ describe(resolveOutputs, () => {
         await writeFile(join(workspaceRoot, "dist/skip.log"), "log");
         await writeFile(join(workspaceRoot, "build/traced.js"), "t");
 
-        const resolved = await resolveOutputs(
-            workspaceRoot,
-            ["dist/**", { auto: true }, "!**/*.log"],
-            [join(workspaceRoot, "build/traced.js")],
-        );
+        const resolved = await resolveOutputs(workspaceRoot, ["dist/**", { auto: true }, "!**/*.log"], [join(workspaceRoot, "build/traced.js")]);
 
         expect(resolved).toStrictEqual(["build/traced.js", "dist/a.js"]);
     });

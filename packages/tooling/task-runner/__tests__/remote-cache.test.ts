@@ -550,7 +550,7 @@ describe(RemoteCache, () => {
         });
     });
 
-    describe("HMAC signing", () => {
+    describe("hMAC signing", () => {
         it("rejects a construction with a too-short secret", () => {
             expect.assertions(1);
             expect(() => new RemoteCache({ signing: { secret: "short" }, url: "http://localhost:9999" })).toThrow(/at least 16 characters/);

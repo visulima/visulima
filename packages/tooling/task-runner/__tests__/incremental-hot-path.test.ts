@@ -17,7 +17,7 @@ const createTemporaryDirectory = async (): Promise<string> => {
     return directory;
 };
 
-describe("IncrementalFileHasher × InProcessTaskHasher hot path", () => {
+describe("incrementalFileHasher × InProcessTaskHasher hot path", () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {

@@ -564,7 +564,9 @@ describe(TaskOrchestrator, () => {
             expect(printSelfModifyingSkip).toHaveBeenCalledTimes(1);
 
             // Second run must re-execute (the first run was not cached)
-            const executor2 = vi.fn<TaskExecutor>(async () => ({ code: 0, terminalOutput: "second" }));
+            const executor2 = vi.fn<TaskExecutor>(async () => {
+                return { code: 0, terminalOutput: "second" };
+            });
             const orch2 = createOrchestrator([task], executor2);
 
             await orch2.run();
@@ -631,7 +633,9 @@ describe(TaskOrchestrator, () => {
             const scheduler = new TaskScheduler(taskGraph, projectGraph, 3);
 
             const printEmptyFingerprintWarning = vi.fn();
-            const executor: TaskExecutor = async () => ({ code: 0, terminalOutput: "ran" });
+            const executor: TaskExecutor = async () => {
+                return { code: 0, terminalOutput: "ran" };
+            };
 
             const orchestrator = new TaskOrchestrator({
                 autoFingerprint: true,

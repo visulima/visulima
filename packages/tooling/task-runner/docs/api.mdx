@@ -208,11 +208,11 @@ The orchestrator writes `last-summary.json` automatically after every completed 
 
 Modes:
 
-| Mode           | Behavior                                                              |
-| -------------- | --------------------------------------------------------------------- |
-| `interleaved`  | Pass-through — emit each task's buffered output verbatim              |
-| `labeled`      | Prefix every line with `[project#target]` so parallel tasks stay distinguishable |
-| `grouped`      | Wrap each task's output in a `── project#target ──` header + blank-line footer  |
+| Mode          | Behavior                                                                         |
+| ------------- | -------------------------------------------------------------------------------- |
+| `interleaved` | Pass-through — emit each task's buffered output verbatim                         |
+| `labeled`     | Prefix every line with `[project#target]` so parallel tasks stay distinguishable |
+| `grouped`     | Wrap each task's output in a `── project#target ──` header + blank-line footer   |
 
 Matches vite-task's `--log` flag semantics. Pair with `CompositeLifeCycle` to keep your existing UI renderer alongside the log reporter.
 
@@ -239,11 +239,11 @@ Parallel tasks are packed into synthetic `tid` lanes via sweep-line scheduling, 
 
 Optional hooks on `LifeCycleInterface` (implement what you need):
 
-| Hook                            | When                                                                                        |
-| ------------------------------- | ------------------------------------------------------------------------------------------- |
-| `printCacheMiss(task, reasons)` | Auto-fingerprint cache miss, with diagnostic reason                                         |
-| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                              |
-| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace    |
+| Hook                                          | When                                                                                     |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                      |
+| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                           |
+| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace |
 
 ## Types
 
