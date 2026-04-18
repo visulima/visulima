@@ -3,8 +3,8 @@ import type { Readable } from "node:stream";
 import type { Cache } from "../utils/cache";
 import type { RetryConfig } from "../utils/retry";
 import type { HttpError, HttpErrorBody, Metrics, Validation } from "../utils/types";
-import type { LocalMetaStorageOptions } from "./meta-storage-options";
 import type MetaStorage from "./meta-storage";
+import type { LocalMetaStorageOptions } from "./meta-storage-options";
 import type { File, FileInit, FilePart, FileQuery, FileReturn, UploadFile } from "./utils/file";
 
 export type { MetaStorageOptions } from "./meta-storage-options";
