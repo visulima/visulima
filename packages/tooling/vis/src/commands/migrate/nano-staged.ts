@@ -73,8 +73,7 @@ const extractNanoStagedFromPackageJson = (root: string): Record<string, string |
     return pkg?.["nano-staged"];
 };
 
-const parseNanoStagedJsonFile = (filePath: string): Record<string, string | string[]> | undefined =>
-    readJsonFile<Record<string, string | string[]>>(filePath);
+const parseNanoStagedJsonFile = (filePath: string): Record<string, string | string[]> | undefined => readJsonFile<Record<string, string | string[]>>(filePath);
 
 // Config writing ----------------------------------------------------
 

@@ -44,12 +44,7 @@ export const matchFiles = (pattern: string, files: ReadonlyArray<string>, cwd: s
  * otherwise. Mirrors the `matchFiles` semantics (including `caseInsensitive`)
  * so users don't have to think twice about the ignore syntax.
  */
-export const applyIgnore = (
-    files: ReadonlyArray<string>,
-    ignore: ReadonlyArray<string> | undefined,
-    cwd: string,
-    options: MatchOptions = {},
-): string[] => {
+export const applyIgnore = (files: ReadonlyArray<string>, ignore: ReadonlyArray<string> | undefined, cwd: string, options: MatchOptions = {}): string[] => {
     if (!ignore || ignore.length === 0) {
         return [...files];
     }

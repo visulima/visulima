@@ -61,7 +61,7 @@ const implode: Command = {
         logger.info("This will remove:");
         logger.info(`  ${VIS_HOME}/`);
 
-        const shellFiles = SHELL_PROFILES.filter((p) => isAccessibleSync(p) && (readFileSync(p) as string).includes(".vis"));
+        const shellFiles = SHELL_PROFILES.filter((p) => isAccessibleSync(p) && readFileSync(p).includes(".vis"));
 
         for (const file of shellFiles) {
             logger.info(`  Lines in ${file}`);

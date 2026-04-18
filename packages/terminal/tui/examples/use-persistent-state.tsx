@@ -22,7 +22,7 @@ const App = () => {
     const { exit } = useApp();
     const storage = useMemo(() => createMemoryStorage(), []);
     const [count, setCount] = usePersistentState("counter", 0, { storage });
-    const [theme, setTheme] = usePersistentState<string>("theme", "light", { storage });
+    const [theme, setTheme] = usePersistentState("theme", "light", { storage });
 
     useInput((_input, key) => {
         if (key.escape) {

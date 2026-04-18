@@ -12,8 +12,6 @@ export type CellStyle = {
 const STYLE_BOLD = Math.trunc(1);
 const STYLE_DIM = 1 << 1;
 
-const STYLE_ITALIC = 1 << 2;
-
 const SPACE_CODEPOINT = 0x20;
 const EMPTY_COLOR = 0;
 

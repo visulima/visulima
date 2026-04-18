@@ -857,13 +857,13 @@ describe("runStaged — integration", () => {
             [
                 'import { writeFileSync } from "node:fs";',
                 "",
-                'const [, , pidPath, trapPath] = process.argv;',
+                "const [, , pidPath, trapPath] = process.argv;",
                 "",
                 "if (!pidPath || !trapPath) {",
                 "  process.exit(2);",
                 "}",
                 "",
-                'writeFileSync(pidPath, String(process.pid));',
+                "writeFileSync(pidPath, String(process.pid));",
                 'process.on("SIGTERM", () => {',
                 '  writeFileSync(trapPath, "SIGTERM");',
                 "  process.exit(0);",
@@ -873,7 +873,7 @@ describe("runStaged — integration", () => {
             ].join("\n"),
         );
 
-        const quote = (value: string): string => `"${value.replaceAll("\\", String.raw`\\`).replaceAll("\"", String.raw`\"`)}"`;
+        const quote = (value: string): string => `"${value.replaceAll("\\", String.raw`\\`).replaceAll('"', String.raw`\"`)}"`;
         const waitFor = async (predicate: () => boolean, timeoutMs: number): Promise<void> => {
             const deadline = Date.now() + timeoutMs;
 
@@ -1051,7 +1051,7 @@ describe("runStaged — integration", () => {
         symlinkSync("target.txt", join(root, "link.txt"));
         sh(["add", "link.txt"], root);
 
-        const observed: { lstat: boolean; linkTarget: string }[] = [];
+        const observed: { linkTarget: string; lstat: boolean }[] = [];
 
         const result = await runStaged({
             config: {
@@ -1061,7 +1061,7 @@ describe("runStaged — integration", () => {
                             // Tasks see the symlink path. We record whether it's still a link on disk
                             // and where it points to — both must survive the run untouched.
                             if (file.endsWith("link.txt")) {
-                                observed.push({ lstat: lstatSync(file).isSymbolicLink(), linkTarget: readlinkSync(file) });
+                                observed.push({ linkTarget: readlinkSync(file), lstat: lstatSync(file).isSymbolicLink() });
                             }
                         }
                     },
@@ -1074,13 +1074,13 @@ describe("runStaged — integration", () => {
 
         expect(result.success).toBe(true);
         // Task saw the symlink as a link, not a resolved file.
-        expect(observed).toEqual([{ lstat: true, linkTarget: "target.txt" }]);
+        expect(observed).toEqual([{ linkTarget: "target.txt", lstat: true }]);
         // After the run the link still exists on disk.
         expect(lstatSync(join(root, "link.txt")).isSymbolicLink()).toBe(true);
         expect(readlinkSync(join(root, "link.txt"))).toBe("target.txt");
     });
 
-    it("SIGINT during a running task cancels the run and restores pre-run state", async () => {
+    it("sIGINT during a running task cancels the run and restores pre-run state", async () => {
         expect.assertions(4);
 
         writeFileSync(join(root, "a.txt"), "seed\n");
@@ -1093,7 +1093,7 @@ describe("runStaged — integration", () => {
 
         const marker = join(root, "task-started.txt");
         // Long-running node command; cancelSignal will kill it when SIGINT fires.
-        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll('"', '\\"')}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
+        const longRunner = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(${JSON.stringify(marker).replaceAll('"', String.raw`\"`)}, 'go'); setTimeout(() => process.exit(0), 60000)"`;
 
         const preListeners = new Set(process.listeners("SIGINT"));
 

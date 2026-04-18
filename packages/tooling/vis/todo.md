@@ -34,6 +34,15 @@ commit or PR that landed the feature.
 
 ## Open — Tier 3
 
+### In-repo generators (`vis generate <template>`) — DELIVERED ✅
+
+Initial implementation landed. Supports both:
+
+- **Native** templates: TS/JS modules under `.vis/templates/<name>.ts` exporting `createTemplate({ about, options, produce })`. Programmatic, typed, no DSL. Public surface at `@visulima/vis/generate`.
+- **Moon-format** templates: directories with `template.yml` + Tera files. Auto-discovered from `.vis/templates/<name>/` and `.moon/templates/<name>/`. Hand-rolled Tera subset (~200 LOC) covers `{{var}}`, filters, `{% if/else/endif %}`, `{% for %}`, `{% include %}`. Errors with file:line on macros / set / extends / block (rewrite required).
+
+**Compat matrix in `docs/commands/generate.mdx`.** Phase 2 work: `extends`, `glob://` source, `object` variable type, `variables()` Tera function, Bingo template adapter (~80 LOC if/when Vite+ portability is requested).
+
 ### Webhook/notifier (`vis.config.ts` pipeline events)
 
 Lifecycle hooks exist in task-runner (`LifeCycleInterface`). Need a built-in
@@ -68,7 +77,7 @@ and documenting it.
 
 ---
 
-### In-repo generators (`vis generate <template>`)
+### In-repo generators — original design notes (delivered, kept for reference)
 
 `vis create` handles remote templates (via giget) for new repos.
 `vis generate` is for in-repo scaffolding — generate a new component,
@@ -229,8 +238,8 @@ of the use case. A full v1 can wait until there's clear user demand.
 
 ## Implementation order (if picking up this work)
 
-1. **In-repo generators** (`vis generate`) — medium effort, clear demand, moon-template-compatible means easy migration
-2. **SBOM** (`vis sbom`) — medium effort, no competitor has it, regulatory tailwind
+1. ~~**In-repo generators** (`vis generate`)~~ — **delivered**
+2. ~~**SBOM** (`vis sbom`)~~ — **delivered**
 3. **Toolchain** (`vis toolchain`) — medium-high effort, completes the moon parity story
 4. **Plugin API** — only when third-party demand materializes
 5. **Webhooks** — niche, CI providers cover this natively
