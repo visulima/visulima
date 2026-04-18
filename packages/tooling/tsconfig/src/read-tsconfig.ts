@@ -76,10 +76,12 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
     const { compilerOptions } = extendsConfig;
 
     if (compilerOptions) {
+        // eslint-disable-next-line sonarjs/deprecation -- `baseUrl` is deprecated in TS 5+ but we must still support it for backward compatibility
         const { baseUrl } = compilerOptions;
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         if (baseUrl && !baseUrl.startsWith(configDirectoryPlaceholder)) {
+            // eslint-disable-next-line sonarjs/deprecation -- see note above
             compilerOptions.baseUrl = resolveAndRelativize(fromDirectoryPath, extendsDirectoryPath, baseUrl);
         }
 
@@ -146,6 +148,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     if (config.compilerOptions) {
         const { compilerOptions } = config;
 
+        // eslint-disable-next-line sonarjs/deprecation -- `baseUrl` is deprecated in TS 5+ but we must still support it for backward compatibility
         if (compilerOptions.paths && !compilerOptions.baseUrl) {
             type WithImplicitBaseUrl = TsConfigJson.CompilerOptions & {
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
