@@ -9543,6 +9543,9 @@ importers:
       '@visulima/secret-scanner':
         specifier: workspace:*
         version: link:../secret-scanner
+      '@visulima/string':
+        specifier: workspace:*
+        version: link:../../data-manipulation/string
       '@visulima/task-runner':
         specifier: workspace:*
         version: link:../task-runner
@@ -9579,6 +9582,9 @@ importers:
       validate-npm-package-name:
         specifier: ^7.0.2
         version: 7.0.2
+      yaml:
+        specifier: catalog:prod
+        version: 2.8.3
       zeptomatch:
         specifier: catalog:dev
         version: 2.1.0
