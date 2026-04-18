@@ -14,7 +14,6 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
 
     #stderr: NodeJS.WriteStream;
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     #interactiveManager: InteractiveManager | undefined;
 
     #interactive = false;
@@ -37,7 +36,6 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
     }
 
     public setInteractiveManager(manager?: InteractiveManager): void {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#interactiveManager = manager;
     }
 
@@ -73,7 +71,6 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
         const groupSpaces: string = groups.map(() => "    ").join("");
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
             this.#interactiveManager.update(streamType, (groupSpaces + items.join("")).split("\n"), 0);
         } else {
             writeStream(groupSpaces + items.join(""), stream);

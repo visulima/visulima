@@ -67,16 +67,16 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const groupSpaces: string = groups.map(() => "   ").join("");
             const cGroup = grey(`[${groups.at(-1) as string}]`);
 
-            items.push(format(groupSpaces + (cGroup[0] as string), cGroup.slice(1) as unknown as string[]));
+            items.push(format(groupSpaces + cGroup[0], cGroup.slice(1) as unknown as string[]));
         }
 
         if (date) {
             const cDate = grey(this.styles.dateFormatter(typeof date === "string" ? new Date(date) : date));
 
             if (isNotBrowser) {
-                items.push(format(cDate[0] as string, cDate.slice(1) as unknown as string[]));
+                items.push(format(cDate[0], cDate.slice(1) as unknown as string[]));
             } else {
-                items.push([`${cDate[0] as string} `, ...cDate.slice(1)]);
+                items.push([`${cDate[0]} `, ...cDate.slice(1)]);
             }
         }
 
@@ -84,7 +84,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cBadge = colorized(badge);
 
             if (isNotBrowser) {
-                items.push(format(cBadge[0] as string, cBadge.slice(1) as unknown as string[]));
+                items.push(format(cBadge[0], cBadge.slice(1) as unknown as string[]));
             } else {
                 items.push([`${cBadge[0]} `, ...cBadge.slice(1)]);
             }
@@ -95,9 +95,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 const cBadgePlaceholder = grey(".".repeat(longestBadge.length));
 
                 if (isNotBrowser) {
-                    items.push(format(`${cBadgePlaceholder[0] as string} `, cBadgePlaceholder.slice(1) as unknown as string[]));
+                    items.push(format(`${cBadgePlaceholder[0]} `, cBadgePlaceholder.slice(1) as unknown as string[]));
                 } else {
-                    items.push([`${cBadgePlaceholder[0] as string} `, ...cBadgePlaceholder.slice(1)]);
+                    items.push([`${cBadgePlaceholder[0]} `, ...cBadgePlaceholder.slice(1)]);
                 }
             }
         }
@@ -110,14 +110,14 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
         if (repeated) {
             const cRepeated = white(`[${repeated}x]`);
 
-            repeatedMessage = isNotBrowser ? format(cRepeated[0] as string, cRepeated.slice(1) as unknown as string[]) : [cRepeated[0], ...cRepeated.slice(1)];
+            repeatedMessage = isNotBrowser ? format(cRepeated[0], cRepeated.slice(1) as unknown as string[]) : [cRepeated[0], ...cRepeated.slice(1)];
         }
 
         if (label) {
             const cLabel = colorized(this.#formatLabel(label));
 
             if (isNotBrowser) {
-                items.push(format(cLabel[0] as string, cLabel.slice(1) as unknown as string[]));
+                items.push(format(cLabel[0], cLabel.slice(1) as unknown as string[]));
             } else {
                 items.push([cLabel[0], ...cLabel.slice(1)]);
             }
@@ -138,7 +138,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
                 const cLabelSpacer = grey(".".repeat(lengthDiff));
 
                 if (isNotBrowser) {
-                    items.push(format(cLabelSpacer[0] as string, cLabelSpacer.slice(1) as unknown as string[]));
+                    items.push(format(cLabelSpacer[0], cLabelSpacer.slice(1) as unknown as string[]));
                 } else {
                     items.push([` ${cLabelSpacer[0]}`, ...cLabelSpacer.slice(1)]);
                 }
@@ -147,7 +147,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cSpacer = grey(".".repeat(longestLabel.length + 1));
 
             if (isNotBrowser) {
-                items.push(format(cSpacer[0] as string, cSpacer.slice(1) as unknown as string[]));
+                items.push(format(cSpacer[0], cSpacer.slice(1) as unknown as string[]));
             } else {
                 items.push([cSpacer[0], ...cSpacer.slice(1)]);
             }
@@ -157,7 +157,7 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cScope = grey(`[${scope.join(" > ")}]`);
 
             if (isNotBrowser) {
-                items.push(format(cScope[0] as string, cScope.slice(1) as unknown as string[]));
+                items.push(format(cScope[0], cScope.slice(1) as unknown as string[]));
             } else {
                 items.push([cScope[0], ...cScope.slice(1)]);
             }
@@ -167,9 +167,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cPrefix = grey(`${Array.isArray(scope) && scope.length > 0 ? ". " : " "}[${this.styles.underline.prefix ? underline(prefix) : prefix}] `);
 
             if (isNotBrowser) {
-                items.push(format(cPrefix[0] as string, cPrefix.slice(1) as unknown as string[]));
+                items.push(format(cPrefix[0], cPrefix.slice(1) as unknown as string[]));
             } else {
-                items.push([cPrefix[0] as string, ...cPrefix.slice(1)]);
+                items.push([cPrefix[0], ...cPrefix.slice(1)]);
             }
         }
 
@@ -189,9 +189,9 @@ class PrettyReporter<T extends string = string, L extends string = string> exten
             const cSuffix = grey(this.styles.underline.suffix ? underline(suffix) : suffix);
 
             if (isNotBrowser) {
-                items.push(format(`\n${cSuffix[0] as string}`, cSuffix.slice(1) as unknown as string[]));
+                items.push(format(`\n${cSuffix[0]}`, cSuffix.slice(1) as unknown as string[]));
             } else {
-                items.push([`\n${cSuffix[0] as string}`, ...cSuffix.slice(1)]);
+                items.push([`\n${cSuffix[0]}`, ...cSuffix.slice(1)]);
             }
         }
 
