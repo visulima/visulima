@@ -13,6 +13,10 @@ on: # yamllint disable-line rule:truthy
             - "beta"
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
 permissions:
     contents: "read" # for checkout
 
