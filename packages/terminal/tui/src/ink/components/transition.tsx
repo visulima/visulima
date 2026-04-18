@@ -150,6 +150,8 @@ const resolvePhase = (show: boolean, progress: number): TransitionPhase => {
     return progress <= 0 ? "exited" : "exiting";
 };
 
+type TransitionComponent = ((props: Props) => ReactElement | null) & { isAnimatable: true };
+
 /**
  * Animate a child's entry and exit using a TUI-friendly preset. Drive via
  * `show`; the component toggles between enter and exit, fires `onExit` once
@@ -164,7 +166,7 @@ const resolvePhase = (show: boolean, progress: number): TransitionPhase => {
  * @returns A `ReactElement` rendering the transitioning child, or `null`
  * once a hidden transition has fully completed.
  */
-export default function Transition({
+function Transition({
     children,
     distance = 4,
     duration = 240,
@@ -257,4 +259,6 @@ export default function Transition({
  * can apply the same marker to their own wrappers (`MyWrapper.isAnimatable
  * = true`) to opt them into animation orchestration.
  */
-Transition.isAnimatable = true as const;
+const TransitionWithMarker: TransitionComponent = Object.assign(Transition, { isAnimatable: true as const });
+
+export default TransitionWithMarker;
