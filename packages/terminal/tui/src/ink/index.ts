@@ -9,15 +9,10 @@
 
 // --- Component & hook barrels -----------------------------------------------
 
-export * from "./components";
-export * from "./hooks";
-
-// --- Clipboard --------------------------------------------------------------
-
 export type { ClipboardTarget } from "./clipboard";
 export { clearOsc52, isOsc52Supported, writeOsc52 } from "./clipboard";
 
-// --- Color primitives -------------------------------------------------------
+// --- Clipboard --------------------------------------------------------------
 
 export type { ColorBlindnessType, ColorMatrix } from "./color-matrix";
 export {
@@ -30,10 +25,15 @@ export {
     transformHexColor,
 } from "./color-matrix";
 
+// --- Color primitives -------------------------------------------------------
+
+export * from "./components";
+export type { DOMElement, StickyHeader } from "./dom";
+
 // --- DOM helpers ------------------------------------------------------------
 
-export type { DOMElement, StickyHeader } from "./dom";
 export { getPathToRoot, isNodeSelectable } from "./dom";
+export * from "./hooks";
 
 // --- IME --------------------------------------------------------------------
 

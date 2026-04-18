@@ -9,9 +9,9 @@ export type CellStyle = {
     readonly dim?: boolean;
 };
 
-const STYLE_BOLD = 1 << 0;
+const STYLE_BOLD = Math.trunc(1);
 const STYLE_DIM = 1 << 1;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future style flags
+
 const STYLE_ITALIC = 1 << 2;
 
 const SPACE_CODEPOINT = 0x20;
@@ -33,7 +33,7 @@ type ColorDecoder = (id: number) => CanvasColor;
 
 const createColorCoders = (): { decode: ColorDecoder; encode: ColorEncoder } => {
     const encoded = new Map<string, number>();
-    const decoded: Array<CanvasColor> = [undefined];
+    const decoded: CanvasColor[] = [undefined];
 
     return {
         decode: (id) => decoded[id],
@@ -110,9 +110,9 @@ export type CanvasBuffer = {
     readonly width: number;
 };
 
-const V_BAR_GLYPHS = [0x2581, 0x2582, 0x2583, 0x2584, 0x2585, 0x2586, 0x2587, 0x2588] as const; // ▁▂▃▄▅▆▇█
-const H_BAR_GLYPHS = [0x258F, 0x258E, 0x258D, 0x258C, 0x258B, 0x258A, 0x2589, 0x2588] as const; // ▏▎▍▌▋▊▉█
-const FULL_BLOCK = 0x2588;
+const V_BAR_GLYPHS = [0x25_81, 0x25_82, 0x25_83, 0x25_84, 0x25_85, 0x25_86, 0x25_87, 0x25_88] as const; // ▁▂▃▄▅▆▇█
+const H_BAR_GLYPHS = [0x25_8f, 0x25_8e, 0x25_8d, 0x25_8c, 0x25_8b, 0x25_8a, 0x25_89, 0x25_88] as const; // ▏▎▍▌▋▊▉█
+const FULL_BLOCK = 0x25_88;
 
 const flagsFromStyle = (style: CellStyle | undefined): number => {
     if (!style) {

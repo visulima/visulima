@@ -1,8 +1,8 @@
 /* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
+import type { SpinnerName } from "cli-spinners";
 import type { ReactElement, ReactNode } from "react";
 import type { LiteralUnion } from "type-fest";
-import type { SpinnerName } from "cli-spinners";
 
 import Box from "./box";
 import Spinner from "./spinner";

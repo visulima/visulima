@@ -77,18 +77,10 @@ const resolveTextColor = (
 
 /**
  * Focusable button. Triggers `onPress` on Enter / Space.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the button (bordered or ghost variant).
  */
-export default function Button({
-    accentColor = "blue",
-    autoFocus = false,
-    children,
-    isDisabled = false,
-    onPress,
-    variant = "primary",
-}: Props): ReactElement {
+export default function Button({ accentColor = "blue", autoFocus = false, children, isDisabled = false, onPress, variant = "primary" }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
 
     useInput(
@@ -142,12 +134,7 @@ export default function Button({
     const fillBackground = variant === "primary" && isFocused ? accentColor : undefined;
 
     return (
-        <Box
-            backgroundColor={fillBackground}
-            borderColor={borderColor}
-            borderStyle={BORDER_STYLE}
-            paddingX={1}
-        >
+        <Box backgroundColor={fillBackground} borderColor={borderColor} borderStyle={BORDER_STYLE} paddingX={1}>
             <Text bold={isFocused} color={textColor} dimColor={isDisabled}>
                 {children}
             </Text>

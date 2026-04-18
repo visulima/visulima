@@ -80,7 +80,7 @@ const initialFocusIndex = (options: ReadonlyArray<RadioOption>, selectedValue: s
 
     const index = options.findIndex((option) => option.value === selectedValue);
 
-    return index < 0 ? 0 : index;
+    return Math.max(index, 0);
 };
 
 /**
@@ -101,7 +101,7 @@ export default function RadioGroup({
     value,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [internal, setInternal] = useState<string | undefined>(defaultValue ?? options[0]?.value);
+    const [internal, setInternal] = useState(defaultValue ?? options[0]?.value);
     const current = value ?? internal;
     const [focusedIndex, setFocusedIndex] = useState<number>(() => initialFocusIndex(options, current));
     const focusedIndexRef = useRef(focusedIndex);
@@ -145,7 +145,7 @@ export default function RadioGroup({
                 }
 
                 const moveNext = (key.downArrow && orientation === "vertical") || (key.rightArrow && orientation === "horizontal") || input === "j";
-                const movePrev = (key.upArrow && orientation === "vertical") || (key.leftArrow && orientation === "horizontal") || input === "k";
+                const movePrevious = (key.upArrow && orientation === "vertical") || (key.leftArrow && orientation === "horizontal") || input === "k";
 
                 if (moveNext) {
                     const nextIndex = Math.min(total - 1, focusedIndexRef.current + 1);
@@ -159,7 +159,7 @@ export default function RadioGroup({
                     return;
                 }
 
-                if (movePrev) {
+                if (movePrevious) {
                     const nextIndex = Math.max(0, focusedIndexRef.current - 1);
 
                     setFocusedIndex(nextIndex);
@@ -210,9 +210,7 @@ export default function RadioGroup({
                         <Text bold={isItemFocused} color={color} dimColor={isDisabled}>
                             {option.label}
                         </Text>
-                        {option.description === undefined ? undefined : (
-                            <Text dimColor>{option.description}</Text>
-                        )}
+                        {option.description === undefined ? undefined : <Text dimColor>{option.description}</Text>}
                     </Box>
                 );
             })}

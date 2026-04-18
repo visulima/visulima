@@ -20,6 +20,13 @@ export type Props = {
     readonly accentColor?: LiteralUnion<AnsiColors, string>;
 
     /**
+     * Auto-focus the prompt on mount. Set to `false` if a parent already
+     * owns focus and routes input to this component.
+     * @default true
+     */
+    readonly autoFocus?: boolean;
+
+    /**
      * Optional body rendered between the header and the prompt line (e.g. a
      * rendered diff or command preview).
      */
@@ -29,13 +36,6 @@ export type Props = {
      * Accessible description of what approving will do.
      */
     readonly description?: string;
-
-    /**
-     * Auto-focus the prompt on mount. Set to `false` if a parent already
-     * owns focus and routes input to this component.
-     * @default true
-     */
-    readonly autoFocus?: boolean;
 
     /**
      * Disable input; use when a parent manages focus and input routing.
@@ -76,7 +76,7 @@ const RISK_LABEL: Record<ApprovalRisk, string> = {
     medium: "MEDIUM RISK",
 };
 
-const formatParamValue = (value: unknown): string => {
+const formatParameterValue = (value: unknown): string => {
     if (value === null) {
         return "null";
     }
@@ -99,8 +99,7 @@ const formatParamValue = (value: unknown): string => {
 /**
  * Three-way approval prompt for tool calls. Resolves via `onDecision`:
  * `y` / Enter → allow-once, `a` → allow-always, `n` / Esc → deny.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A bordered `ReactElement` containing the risk banner, params
  * preview, optional body, and the prompt line.
  */
@@ -145,7 +144,7 @@ export default function ApprovalPrompt({
         { isActive: !isDisabled && isFocused },
     );
 
-    const paramEntries = params === undefined ? [] : Object.entries(params);
+    const parameterEntries = params === undefined ? [] : Object.entries(params);
 
     return (
         <Box borderColor={riskColor} borderStyle="round" flexDirection="column" paddingX={1}>
@@ -160,35 +159,45 @@ export default function ApprovalPrompt({
                     <Text bold>{tool}</Text>
                 </Text>
             </Box>
-            {description === undefined ? undefined : (
-                <Box marginTop={1}>
-                    <Text>{description}</Text>
-                </Box>
-            )}
-            {paramEntries.length === 0 ? undefined : (
-                <Box flexDirection="column" marginTop={1}>
-                    {paramEntries.map(([name, value]) => (
-                        <Box key={name}>
-                            <Text color="cyan">
-                                {name}
-                                =
-                            </Text>
-                            <Text wrap="truncate-end">{formatParamValue(value)}</Text>
-                        </Box>
-                    ))}
-                </Box>
-            )}
+            {description === undefined
+                ? undefined
+                : (
+                    <Box marginTop={1}>
+                        <Text>{description}</Text>
+                    </Box>
+                )}
+            {parameterEntries.length === 0
+                ? undefined
+                : (
+                    <Box flexDirection="column" marginTop={1}>
+                        {parameterEntries.map(([name, value]) => (
+                            <Box key={name}>
+                                <Text color="cyan">
+                                    {name}
+                                    =
+                                </Text>
+                                <Text wrap="truncate-end">{formatParameterValue(value)}</Text>
+                            </Box>
+                        ))}
+                    </Box>
+                )}
             {children === undefined ? undefined : <Box marginTop={1}>{children}</Box>}
             <Box marginTop={1}>
                 <Text>
                     Allow? [
-                    <Text bold color={color}>y</Text>
+                    <Text bold color={color}>
+                        y
+                    </Text>
                     es /
                     {" "}
-                    <Text bold color={color}>a</Text>
+                    <Text bold color={color}>
+                        a
+                    </Text>
                     lways /
                     {" "}
-                    <Text bold color={color}>n</Text>
+                    <Text bold color={color}>
+                        n
+                    </Text>
                     o ]
                 </Text>
             </Box>

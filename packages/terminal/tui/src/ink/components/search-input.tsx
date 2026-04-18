@@ -20,15 +20,15 @@ export type Props = {
     readonly defaultValue?: string;
 
     /**
-     * Disable the input.
-     */
-    readonly isDisabled?: boolean;
-
-    /**
      * Optional icon rendered before the input.
      * @default "⌕"
      */
     readonly icon?: ReactNode;
+
+    /**
+     * Disable the input.
+     */
+    readonly isDisabled?: boolean;
 
     /**
      * Fired whenever the value changes.
@@ -54,8 +54,7 @@ export type Props = {
 
 /**
  * Search-styled text input with an icon and bordered container.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` wrapping `TextInput` with an icon column.
  */
 export default function SearchInput({

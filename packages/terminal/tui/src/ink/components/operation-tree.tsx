@@ -1,7 +1,6 @@
 /* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
-import { Fragment } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import Box from "./box";
@@ -100,18 +99,12 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
     const childPrefix = prefix + (isLast ? "   " : "│  ");
 
     return (
-        <Fragment>
+        <>
             <Box>
                 <Text dimColor>{prefix}</Text>
                 <Text dimColor>{connector}</Text>
                 <Box flexShrink={0}>
-                    <Text color={color}>
-                        {node.status === "running"
-                            ? showSpinner
-                                ? <Spinner type="dots" />
-                                : "…"
-                            : STATUS_ICON[node.status]}
-                    </Text>
+                    <Text color={color}>{node.status === "running" ? showSpinner ? <Spinner type="dots" /> : "…" : STATUS_ICON[node.status]}</Text>
                 </Box>
                 <Text> </Text>
                 <Box flexGrow={1} flexShrink={1} minWidth={0}>
@@ -124,52 +117,43 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
                         {node.label}
                     </Text>
                 </Box>
-                {node.durationMs === undefined ? undefined : (
-                    <Box flexShrink={0}>
-                        <Text dimColor>
-                            {" "}
-                            {formatDuration(node.durationMs)}
-                        </Text>
+                {node.durationMs === undefined
+                    ? undefined
+                    : (
+                        <Box flexShrink={0}>
+                            <Text dimColor>
+                                {" "}
+                                {formatDuration(node.durationMs)}
+                            </Text>
+                        </Box>
+                    )}
+            </Box>
+            {node.details === undefined
+                ? undefined
+                : (
+                    <Box>
+                        <Text dimColor>{childPrefix}</Text>
+                        <Text dimColor>{node.details}</Text>
                     </Box>
                 )}
-            </Box>
-            {node.details === undefined ? undefined : (
-                <Box>
-                    <Text dimColor>{childPrefix}</Text>
-                    <Text dimColor>{node.details}</Text>
-                </Box>
-            )}
             {node.children?.map((child, index, all) => (
-                <NodeLine
-                    isLast={index === all.length - 1}
-                    key={child.id}
-                    node={child}
-                    prefix={childPrefix}
-                    showSpinner={showSpinner}
-                />
+                <NodeLine isLast={index === all.length - 1} key={child.id} node={child} prefix={childPrefix} showSpinner={showSpinner} />
             ))}
-        </Fragment>
+        </>
     );
 };
 
 /**
  * Renders a tree of operations with per-node status. Perfect for agent
  * progress panels (reading → editing → running tests → done).
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the nested tree of operation rows.
  */
 export default function OperationTree({ nodes, showSpinner = true }: Props): ReactElement {
     return (
         <Box flexDirection="column">
             {nodes.map((node, index) => (
-                <NodeLine
-                    isLast={index === nodes.length - 1}
-                    key={node.id}
-                    node={node}
-                    prefix=""
-                    showSpinner={showSpinner}
-                />
+                <NodeLine isLast={index === nodes.length - 1} key={node.id} node={node} prefix="" showSpinner={showSpinner} />
             ))}
         </Box>
     );

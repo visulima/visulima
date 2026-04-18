@@ -28,6 +28,11 @@ export type Props = {
     readonly defaultValue?: Date;
 
     /**
+     * Override the way the selected date is rendered in the input row.
+     */
+    readonly formatValue?: (date: Date) => string;
+
+    /**
      * Disable the picker.
      */
     readonly isDisabled?: boolean;
@@ -57,11 +62,6 @@ export type Props = {
      * Controlled selected date.
      */
     readonly value?: Date;
-
-    /**
-     * Override the way the selected date is rendered in the input row.
-     */
-    readonly formatValue?: (date: Date) => string;
 };
 
 const defaultFormat = (date: Date): string => {
@@ -90,8 +90,8 @@ export default function DatePicker({
     value,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [internal, setInternal] = useState<Date | undefined>(defaultValue);
+    const [isOpen, setIsOpen] = useState(false);
+    const [internal, setInternal] = useState(defaultValue);
     const current = value ?? internal;
 
     useInput(
@@ -113,14 +113,11 @@ export default function DatePicker({
     // While the Calendar is open we still want Esc to dismiss without
     // committing — the Calendar itself doesn't handle Escape.
     useInput(
-        useCallback(
-            (_input, key) => {
-                if (key.escape) {
-                    setIsOpen(false);
-                }
-            },
-            [],
-        ),
+        useCallback((_input, key) => {
+            if (key.escape) {
+                setIsOpen(false);
+            }
+        }, []),
         { isActive: !isDisabled && isFocused && isOpen },
     );
 
@@ -140,29 +137,22 @@ export default function DatePicker({
         <Box flexDirection="column">
             <Box borderColor={isFocused ? accentColor : undefined} borderStyle="round" paddingX={1}>
                 <Text color={accentColor}>📅 </Text>
-                {current === undefined ? (
-                    <Text dimColor>{placeholder}</Text>
-                ) : (
-                    <Text bold>{formatValue(current)}</Text>
-                )}
-                {isFocused && !isOpen ? (
-                    <Box marginLeft={1}>
-                        <Text dimColor>(Enter to open)</Text>
-                    </Box>
-                ) : undefined}
+                {current === undefined ? <Text dimColor>{placeholder}</Text> : <Text bold>{formatValue(current)}</Text>}
+                {isFocused && !isOpen
+                    ? (
+                        <Box marginLeft={1}>
+                            <Text dimColor>(Enter to open)</Text>
+                        </Box>
+                    )
+                    : undefined}
             </Box>
-            {isOpen ? (
-                <Box marginTop={1}>
-                    <Calendar
-                        accentColor={accentColor}
-                        autoFocus
-                        defaultValue={current}
-                        maxDate={maxDate}
-                        minDate={minDate}
-                        onSubmit={handleCalendarSubmit}
-                    />
-                </Box>
-            ) : undefined}
+            {isOpen
+                ? (
+                    <Box marginTop={1}>
+                        <Calendar accentColor={accentColor} autoFocus defaultValue={current} maxDate={maxDate} minDate={minDate} onSubmit={handleCalendarSubmit} />
+                    </Box>
+                )
+                : undefined}
         </Box>
     );
 }

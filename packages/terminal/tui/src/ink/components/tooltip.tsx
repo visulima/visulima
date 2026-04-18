@@ -15,15 +15,15 @@ export type Props = {
     readonly children: ReactNode;
 
     /**
-     * Tooltip body content.
-     */
-    readonly content: ReactNode;
-
-    /**
      * Border color.
      * @default "gray"
      */
     readonly color?: LiteralUnion<AnsiColors, string>;
+
+    /**
+     * Tooltip body content.
+     */
+    readonly content: ReactNode;
 
     /**
      * Controls whether the tooltip is rendered.
@@ -51,20 +51,23 @@ const PLACEMENT_STYLE: Record<TooltipPlacement, { flexDirection: "column" | "row
  * a floating-layer concept, the tooltip lives inline in the layout. Hide it
  * by toggling `isVisible`.
  */
-export default function Tooltip({
-    children,
-    color = "gray",
-    content,
-    isVisible = true,
-    placement = "right",
-}: Props): ReactElement {
+export default function Tooltip({ children, color = "gray", content, isVisible = true, placement = "right" }: Props): ReactElement {
     const { flexDirection, orderFirst } = PLACEMENT_STYLE[placement];
 
-    const tooltip = !isVisible ? undefined : (
-        <Box borderColor={color} borderStyle="round" flexShrink={0} marginLeft={placement === "right" ? 1 : 0} marginRight={placement === "left" ? 1 : 0} paddingX={1}>
-            {typeof content === "string" ? <Text color={color}>{content}</Text> : content}
-        </Box>
-    );
+    const tooltip = isVisible
+        ? (
+            <Box
+                borderColor={color}
+                borderStyle="round"
+                flexShrink={0}
+                marginLeft={placement === "right" ? 1 : 0}
+                marginRight={placement === "left" ? 1 : 0}
+                paddingX={1}
+            >
+                {typeof content === "string" ? <Text color={color}>{content}</Text> : content}
+            </Box>
+        )
+        : undefined;
 
     return (
         <Box alignItems="center" flexDirection={flexDirection}>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * date-picker.tsx — Calendar and DatePicker
  *
@@ -26,16 +25,19 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Calendar (standalone)</Text>
+            <Text bold color="cyan">
+                Calendar (standalone)
+            </Text>
             <Calendar autoFocus onChange={setSelected} />
             {selected && (
                 <Text dimColor>
                     cursor:
-                    {" "}
                     {selected.toDateString()}
                 </Text>
             )}
-            <Text bold color="cyan">DatePicker (collapsed until focused)</Text>
+            <Text bold color="cyan">
+                DatePicker (collapsed until focused)
+            </Text>
             <DatePicker defaultValue={new Date()} onChange={setSelected} />
         </Box>
     );

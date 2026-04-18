@@ -13,9 +13,11 @@ export type ConfirmTone = "danger" | "info" | "warning";
 
 export type Props = {
     /**
-     * Body content (rendered between title and buttons).
+     * Auto-focus the dialog on mount. Set `false` if a parent already owns
+     * focus and routes input here.
+     * @default true
      */
-    readonly children?: ReactNode;
+    readonly autoFocus?: boolean;
 
     /**
      * Label for the cancel button.
@@ -24,17 +26,15 @@ export type Props = {
     readonly cancelLabel?: string;
 
     /**
+     * Body content (rendered between title and buttons).
+     */
+    readonly children?: ReactNode;
+
+    /**
      * Label for the confirm button.
      * @default "Confirm"
      */
     readonly confirmLabel?: string;
-
-    /**
-     * Auto-focus the dialog on mount. Set `false` if a parent already owns
-     * focus and routes input here.
-     * @default true
-     */
-    readonly autoFocus?: boolean;
 
     /**
      * Default button when opening the dialog.
@@ -58,15 +58,15 @@ export type Props = {
     readonly onConfirm: () => void;
 
     /**
+     * Heading rendered at the top of the dialog.
+     */
+    readonly title?: string;
+
+    /**
      * Controls the border color.
      * @default "info"
      */
     readonly tone?: ConfirmTone;
-
-    /**
-     * Heading rendered at the top of the dialog.
-     */
-    readonly title?: string;
 
     /**
      * Dialog width.
@@ -91,12 +91,7 @@ type ButtonLabelProps = {
  * Lives at module scope so it isn't recreated on every dialog render.
  */
 const ButtonLabel = ({ color, isFocused, label }: ButtonLabelProps): ReactElement => (
-    <Box
-        backgroundColor={isFocused ? color : undefined}
-        borderColor={isFocused ? color : undefined}
-        borderStyle="round"
-        paddingX={1}
-    >
+    <Box backgroundColor={isFocused ? color : undefined} borderColor={isFocused ? color : undefined} borderStyle="round" paddingX={1}>
         <Text bold={isFocused} color={isFocused ? "black" : undefined}>
             {label}
         </Text>
@@ -107,8 +102,7 @@ const ButtonLabel = ({ color, isFocused, label }: ButtonLabelProps): ReactElemen
  * Full-width modal-style confirm/cancel prompt. Unlike `ConfirmInput`, this
  * renders a visible two-button UI: ← / → to toggle focus, Enter to activate,
  * y/n as shortcuts, Esc to cancel.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A bordered `ReactElement` with optional title, body, and two
  * buttons (cancel / confirm).
  */
@@ -133,7 +127,7 @@ export default function ConfirmDialog({
         useCallback(
             (input, key) => {
                 if (key.leftArrow || key.rightArrow || input === "h" || input === "l") {
-                    setFocus((previous) => (previous === "confirm" ? "cancel" : "confirm"));
+                    setFocus((previous) => previous === "confirm" ? "cancel" : "confirm");
 
                     return;
                 }
@@ -163,19 +157,24 @@ export default function ConfirmDialog({
         { isActive: !isDisabled && isFocused },
     );
 
-
     return (
         <Box borderColor={color} borderStyle="round" flexDirection="column" paddingX={1} paddingY={1} width={width}>
-            {title === undefined ? undefined : (
-                <Box marginBottom={1}>
-                    <Text bold color={color}>{title}</Text>
-                </Box>
-            )}
-            {children === undefined ? undefined : (
-                <Box flexDirection="column" marginBottom={1}>
-                    {typeof children === "string" ? <Text>{children}</Text> : children}
-                </Box>
-            )}
+            {title === undefined
+                ? undefined
+                : (
+                    <Box marginBottom={1}>
+                        <Text bold color={color}>
+                            {title}
+                        </Text>
+                    </Box>
+                )}
+            {children === undefined
+                ? undefined
+                : (
+                    <Box flexDirection="column" marginBottom={1}>
+                        {typeof children === "string" ? <Text>{children}</Text> : children}
+                    </Box>
+                )}
             <Box gap={2} justifyContent="flex-end">
                 <ButtonLabel color={color} isFocused={focus === "cancel"} label={cancelLabel} />
                 <ButtonLabel color={color} isFocused={focus === "confirm"} label={confirmLabel} />

@@ -16,7 +16,7 @@ export type Props = {
      * pass a stable reference (or hash) so the canvas only re-renders when
      * the input data truly changes.
      */
-    readonly draw: (ctx: CanvasContext) => void;
+    readonly draw: (context: CanvasContext) => void;
 
     /**
      * Number of rows (character cells vertically).
@@ -39,8 +39,8 @@ export type Props = {
 };
 
 type RowCache = {
-    lines: Array<string>;
     hasRendered: boolean;
+    lines: string[];
 };
 
 /**
@@ -57,9 +57,9 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
     const rowCacheRef = useRef<RowCache | undefined>(undefined);
 
     // Reallocate the buffer whenever dimensions change.
-    if (!bufferRef.current || bufferRef.current.width !== width || bufferRef.current.height !== height) {
+    if (bufferRef.current?.width !== width || bufferRef.current.height !== height) {
         bufferRef.current = createCanvasBuffer(width, height);
-        rowCacheRef.current = { hasRendered: false, lines: Array.from({ length: height }, () => "") };
+        rowCacheRef.current = { hasRendered: false, lines: Array.from({ length: height }).fill("") };
     }
 
     const buffer = bufferRef.current;
@@ -81,14 +81,13 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
 
         // Return a new array identity so React sees a fresh reference; the
         // inner strings remain referentially stable for unchanged rows.
-        return cache.lines.slice();
+        return [...cache.lines];
         // eslint-disable-next-line react-hooks/exhaustive-deps -- version is the invalidation key; buffer dimensions trigger reallocation above
     }, [version, width, height]);
 
     return (
         <Box flexDirection="column" flexShrink={0} height={height} width={width}>
             {rows.map((line, index) => (
-                // eslint-disable-next-line react/no-array-index-key -- row index is stable for a given canvas size
                 <Fragment key={index}>
                     <Text wrap="truncate-end">{line}</Text>
                 </Fragment>

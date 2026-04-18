@@ -40,7 +40,6 @@ export type Props = {
 /**
  * Text with an animated highlight band that sweeps across the characters.
  * Perfect for "generating…" states.
- *
  * @param props.bandWidth Number of characters in the bright band.
  * @param props.color Color applied to characters outside the band.
  * @param props.highlightColor Color applied to characters inside the band.
@@ -48,13 +47,7 @@ export type Props = {
  * @param props.text Content to shimmer.
  * @returns A single `Text` element composed of per-character `Text` children.
  */
-export default function ShimmerText({
-    bandWidth = 3,
-    color,
-    highlightColor = "white",
-    interval = 60,
-    text,
-}: Props): ReactElement {
+export default function ShimmerText({ bandWidth = 3, color, highlightColor = "white", interval = 60, text }: Props): ReactElement {
     const { frame } = useAnimation({ interval });
 
     // Split the raw text into codepoints once per `text` change. The
@@ -81,7 +74,7 @@ export default function ShimmerText({
         return <Text color={color}>{text}</Text>;
     }
 
-    const parts: Array<ReactElement> = [];
+    const parts: ReactElement[] = [];
 
     for (const [index, char] of characters.entries()) {
         const offset = position - index;

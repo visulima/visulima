@@ -5,13 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Box from "./box";
 import Text from "./text";
 
-export type TransitionPreset =
-    | "fade"
-    | "reveal"
-    | "slide-down"
-    | "slide-left"
-    | "slide-right"
-    | "slide-up";
+export type TransitionPreset = "fade" | "reveal" | "slide-down" | "slide-left" | "slide-right" | "slide-up";
 
 export type TransitionPhase = "entered" | "entering" | "exited" | "exiting";
 
@@ -20,6 +14,13 @@ export type Props = {
      * Content to animate.
      */
     readonly children: ReactNode;
+
+    /**
+     * For slide presets, how many characters of offset to animate across.
+     * For the `reveal` preset, the maximum row count to scale through.
+     * @default 4
+     */
+    readonly distance?: number;
 
     /**
      * Duration of both enter and exit transitions, in milliseconds.
@@ -47,13 +48,6 @@ export type Props = {
     readonly show?: boolean;
 
     /**
-     * For slide presets, how many characters of offset to animate across.
-     * For the `reveal` preset, the maximum row count to scale through.
-     * @default 4
-     */
-    readonly distance?: number;
-
-    /**
      * Tick interval in milliseconds. Lower values yield smoother animation
      * at the cost of CPU.
      * @default 30
@@ -74,45 +68,38 @@ const renderFade: RenderProgress = (progress, children) => {
         return <Box />;
     }
 
-    return (
-        <Box>
-            {typeof children === "string" ? (
-                <Text dimColor={progress < 0.7}>{children}</Text>
-            ) : (
-                children
-            )}
-        </Box>
-    );
+    return <Box>{typeof children === "string" ? <Text dimColor={progress < 0.7}>{children}</Text> : children}</Box>;
 };
 
-const slideOffset = (progress: number, distance: number): number =>
-    Math.max(0, Math.min(distance, Math.round((1 - progress) * distance)));
+const slideOffset = (progress: number, distance: number): number => Math.max(0, Math.min(distance, Math.round((1 - progress) * distance)));
 
-const renderSlide = (axis: "x" | "y", sign: 1 | -1): RenderProgress => (progress, children, distance) => {
-    const offset = slideOffset(progress, distance);
+const renderSlide
+    = (axis: "x" | "y", sign: 1 | -1): RenderProgress =>
+        (progress, children, distance) => {
+            const offset = slideOffset(progress, distance);
 
-    if (progress >= 1) {
-        return <Box>{children}</Box>;
-    }
+            if (progress >= 1) {
+                return <Box>{children}</Box>;
+            }
 
-    if (progress <= 0) {
-        return <Box />;
-    }
+            if (progress <= 0) {
+                return <Box />;
+            }
 
-    if (axis === "x") {
-        return (
-            <Box paddingLeft={sign === 1 ? offset : 0} paddingRight={sign === -1 ? offset : 0}>
-                {children}
-            </Box>
-        );
-    }
+            if (axis === "x") {
+                return (
+                    <Box paddingLeft={sign === 1 ? offset : 0} paddingRight={sign === -1 ? offset : 0}>
+                        {children}
+                    </Box>
+                );
+            }
 
-    return (
-        <Box flexDirection="column" paddingBottom={sign === -1 ? offset : 0} paddingTop={sign === 1 ? offset : 0}>
-            {children}
-        </Box>
-    );
-};
+            return (
+                <Box flexDirection="column" paddingBottom={sign === -1 ? offset : 0} paddingTop={sign === 1 ? offset : 0}>
+                    {children}
+                </Box>
+            );
+        };
 
 const renderReveal: RenderProgress = (progress, children, distance) => {
     // Wraps content in a Box whose height grows from 0 to `distance` rows.
@@ -134,8 +121,8 @@ const renderReveal: RenderProgress = (progress, children, distance) => {
 };
 
 const PRESET_RENDERERS: Record<TransitionPreset, RenderProgress> = {
-    "fade": renderFade,
-    "reveal": renderReveal,
+    fade: renderFade,
+    reveal: renderReveal,
     "slide-down": renderSlide("y", -1),
     "slide-left": renderSlide("x", -1),
     "slide-right": renderSlide("x", 1),
@@ -159,34 +146,25 @@ type TransitionComponent = ((props: Props) => ReactElement | null) & { isAnimata
  *
  * **Fade preset note:** `dimColor` is only applied when the child is a plain
  * string. Non-string children (Box trees, other components) pass through
- * untouched during the transition — wrap them in `<Text>` if you need the
+ * untouched during the transition — wrap them in `&lt;Text>` if you need the
  * fade effect.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the transitioning child, or `null`
  * once a hidden transition has fully completed.
  */
-function Transition({
-    children,
-    distance = 4,
-    duration = 240,
-    onExit,
-    preset = "fade",
-    show = true,
-    tickInterval = 30,
-}: Props): ReactElement | null {
-    const [progress, setProgress] = useState<number>(show ? 1 : 0);
+function Transition({ children, distance = 4, duration = 240, onExit, preset = "fade", show = true, tickInterval = 30 }: Props): ReactElement | null {
+    const [progress, setProgress] = useState(show ? 1 : 0);
     const targetRef = useRef<0 | 1>(show ? 1 : 0);
-    const startRef = useRef<number>(Date.now());
-    const startProgressRef = useRef<number>(show ? 1 : 0);
-    const completedRef = useRef<boolean>(!show);
+    const startRef = useRef(Date.now());
+    const startProgressRef = useRef(show ? 1 : 0);
+    const completedRef = useRef(!show);
     const onExitRef = useRef(onExit);
 
     onExitRef.current = onExit;
 
     // Restart animation whenever `show` flips. The `animationKey` state forces
     // the interval-owning effect to re-fire without depending on `progress`.
-    const [animationKey, setAnimationKey] = useState<number>(0);
+    const [animationKey, setAnimationKey] = useState(0);
 
     useEffect(() => {
         const target = show ? 1 : 0;

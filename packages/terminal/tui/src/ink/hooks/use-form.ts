@@ -19,11 +19,11 @@ export type FieldConfig<V = unknown> = {
 
 export type FormSchema = Readonly<Record<string, FieldConfig<never>>>;
 
-export type FormValues<S extends Readonly<Record<string, FieldConfig<unknown>>>> = {
+export type FormValues<S extends Readonly<Record<string, FieldConfig>>> = {
     [K in keyof S]: S[K] extends FieldConfig<infer V> ? V : never;
 };
 
-export type UseFormOptions<S extends Readonly<Record<string, FieldConfig<unknown>>>> = {
+export type UseFormOptions<S extends Readonly<Record<string, FieldConfig>>> = {
     /**
      * Field declarations.
      */
@@ -35,7 +35,7 @@ export type UseFormOptions<S extends Readonly<Record<string, FieldConfig<unknown
     readonly onSubmit?: (values: FormValues<S>) => void | Promise<void>;
 };
 
-export type UseFormResult<S extends Readonly<Record<string, FieldConfig<unknown>>>> = {
+export type UseFormResult<S extends Readonly<Record<string, FieldConfig>>> = {
     /**
      * Map of fieldName -> validation error (if any).
      */
@@ -79,11 +79,11 @@ export type UseFormResult<S extends Readonly<Record<string, FieldConfig<unknown>
     readonly values: FormValues<S>;
 };
 
-const deriveInitialValues = <S extends Readonly<Record<string, FieldConfig<unknown>>>>(fields: S): FormValues<S> => {
+const deriveInitialValues = <S extends Readonly<Record<string, FieldConfig>>>(fields: S): FormValues<S> => {
     const values = {} as Record<string, unknown>;
 
     for (const name of Object.keys(fields)) {
-        values[name] = (fields[name] as FieldConfig<unknown>).initialValue;
+        values[name] = (fields[name] as FieldConfig).initialValue;
     }
 
     return values as FormValues<S>;
@@ -91,17 +91,17 @@ const deriveInitialValues = <S extends Readonly<Record<string, FieldConfig<unkno
 
 /**
  * Minimal headless form state machine. Tracks values, touched state, errors,
- * and submission in-flight. Pair with `<Form />` for default layout, or wire
+ * and submission in-flight. Pair with `&lt;Form />` for default layout, or wire
  * up your own inputs directly.
  */
-const useForm = <S extends Readonly<Record<string, FieldConfig<unknown>>>>(options: UseFormOptions<S>): UseFormResult<S> => {
+const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFormOptions<S>): UseFormResult<S> => {
     const { fields, onSubmit } = options;
     const initialValues = useMemo(() => deriveInitialValues(fields), [fields]);
 
-    const [values, setValues] = useState<FormValues<S>>(initialValues);
+    const [values, setValues] = useState(initialValues);
     const [errors, setErrors] = useState<Partial<Record<keyof S, string>>>({});
     const [touched, setTouchedState] = useState<Partial<Record<keyof S, boolean>>>({});
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const valuesRef = useRef(values);
 
@@ -148,12 +148,11 @@ const useForm = <S extends Readonly<Record<string, FieldConfig<unknown>>>>(optio
         [validateField],
     );
 
-    const setTouched = useCallback(
-        <K extends keyof S>(name: K, isTouched = true) => {
-            setTouchedState((previous) => ({ ...previous, [name]: isTouched }));
-        },
-        [],
-    );
+    const setTouched = useCallback(<K extends keyof S>(name: K, isTouched = true) => {
+        setTouchedState((previous) => {
+            return { ...previous, [name]: isTouched };
+        });
+    }, []);
 
     const reset = useCallback(() => {
         setValues(initialValues);
@@ -165,7 +164,7 @@ const useForm = <S extends Readonly<Record<string, FieldConfig<unknown>>>>(optio
         const nextErrors: Partial<Record<keyof S, string>> = {};
         const nextTouched: Partial<Record<keyof S, boolean>> = {};
 
-        for (const key of Object.keys(fields) as Array<keyof S>) {
+        for (const key of Object.keys(fields) as (keyof S)[]) {
             nextTouched[key] = true;
             const error = validateField(key, valuesRef.current[key]);
 

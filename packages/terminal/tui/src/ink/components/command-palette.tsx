@@ -17,14 +17,14 @@ export type CommandEntry = {
     readonly description?: string;
 
     /**
-     * Optional keywords to boost matching (not displayed).
-     */
-    readonly keywords?: ReadonlyArray<string>;
-
-    /**
      * Optional hotkey rendered on the right.
      */
     readonly hotkey?: string;
+
+    /**
+     * Optional icon rendered before the label.
+     */
+    readonly icon?: ReactNode;
 
     /**
      * Stable identifier returned by `onSelect`.
@@ -32,9 +32,9 @@ export type CommandEntry = {
     readonly id: string;
 
     /**
-     * Optional icon rendered before the label.
+     * Optional keywords to boost matching (not displayed).
      */
-    readonly icon?: ReactNode;
+    readonly keywords?: ReadonlyArray<string>;
 
     /**
      * Label shown in the list (and used as the primary match target).
@@ -96,7 +96,7 @@ const scoreCommand = (query: string, command: CommandEntry): number => {
         return 1;
     }
 
-    const haystacks = [command.label, command.description ?? "", ...(command.keywords ?? [])]
+    const haystacks = [command.label, command.description ?? "", ...command.keywords ?? []]
         .map((text) => text.toLowerCase())
         .filter((text) => text.length > 0);
 
@@ -120,7 +120,7 @@ const scoreCommand = (query: string, command: CommandEntry): number => {
         for (const char of needle) {
             const found = haystack.indexOf(char, haystackIndex);
 
-            if (found < 0) {
+            if (found === -1) {
                 matched = 0;
 
                 break;
@@ -153,15 +153,17 @@ export default function CommandPalette({
     placeholder = "Type a command or search...",
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus });
-    const [query, setQuery] = useState<string>("");
-    const [focusedIndex, setFocusedIndex] = useState<number>(0);
+    const [query, setQuery] = useState("");
+    const [focusedIndex, setFocusedIndex] = useState(0);
     const focusedIndexRef = useRef(focusedIndex);
 
     focusedIndexRef.current = focusedIndex;
 
     const filtered = useMemo(() => {
         const scored = commands
-            .map((command) => ({ command, score: scoreCommand(query, command) }))
+            .map((command) => {
+                return { command, score: scoreCommand(query, command) };
+            })
             .filter(({ score }) => score > 0);
 
         scored.sort((a, b) => b.score - a.score);
@@ -243,11 +245,7 @@ export default function CommandPalette({
                 <Text color={accentColor}>❯</Text>
                 <Text>
                     {" "}
-                    {query.length === 0 ? (
-                        <Text dimColor>{placeholder}</Text>
-                    ) : (
-                        query
-                    )}
+                    {query.length === 0 ? <Text dimColor>{placeholder}</Text> : query}
                 </Text>
                 <Text inverse> </Text>
             </Box>
@@ -259,10 +257,11 @@ export default function CommandPalette({
                 </Text>
             </Box>
             <Box flexDirection="column" marginTop={1}>
-                {filtered.length === 0 ? (
-                    <Text dimColor>{emptyText}</Text>
-                ) : (
-                    filtered.map((command, index) => {
+                {filtered.length === 0
+                    ? (
+                        <Text dimColor>{emptyText}</Text>
+                    )
+                    : filtered.map((command, index) => {
                         const isRowFocused = index === focusedIndex;
                         const color = isRowFocused ? accentColor : undefined;
 
@@ -270,37 +269,42 @@ export default function CommandPalette({
                             <Box flexDirection="column" key={command.id}>
                                 <Box>
                                     <Text color={color}>{isRowFocused ? "▸ " : "  "}</Text>
-                                    {command.icon === undefined ? undefined : (
-                                        <Text color={color}>
-                                            {command.icon}
-                                            {" "}
-                                        </Text>
-                                    )}
+                                    {command.icon === undefined
+                                        ? undefined
+                                        : (
+                                            <Text color={color}>
+                                                {command.icon}
+                                                {" "}
+                                            </Text>
+                                        )}
                                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                                         <Text bold={isRowFocused} color={color} wrap="truncate-end">
                                             {command.label}
                                         </Text>
                                     </Box>
-                                    {command.hotkey === undefined ? undefined : (
-                                        <Box flexShrink={0}>
-                                            <Text dimColor>
-                                                {" "}
-                                                {command.hotkey}
+                                    {command.hotkey === undefined
+                                        ? undefined
+                                        : (
+                                            <Box flexShrink={0}>
+                                                <Text dimColor>
+                                                    {" "}
+                                                    {command.hotkey}
+                                                </Text>
+                                            </Box>
+                                        )}
+                                </Box>
+                                {command.description === undefined
+                                    ? undefined
+                                    : (
+                                        <Box marginLeft={2}>
+                                            <Text dimColor wrap="truncate-end">
+                                                {command.description}
                                             </Text>
                                         </Box>
                                     )}
-                                </Box>
-                                {command.description === undefined ? undefined : (
-                                    <Box marginLeft={2}>
-                                        <Text dimColor wrap="truncate-end">
-                                            {command.description}
-                                        </Text>
-                                    </Box>
-                                )}
                             </Box>
                         );
-                    })
-                )}
+                    })}
             </Box>
         </Box>
     );

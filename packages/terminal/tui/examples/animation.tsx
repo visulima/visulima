@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * animation.tsx — Transition & AnimatePresence
  *
@@ -16,9 +15,7 @@ import React, { useState } from "react";
 const App = () => {
     const { exit } = useApp();
     const [visible, setVisible] = useState(true);
-    const [panels, setPanels] = useState<ReadonlyArray<{ id: number; text: string }>>([
-        { id: 1, text: "Welcome to the animation demo" },
-    ]);
+    const [panels, setPanels] = useState<ReadonlyArray<{ id: number; text: string }>>([{ id: 1, text: "Welcome to the animation demo" }]);
     const [nextId, setNextId] = useState(2);
 
     useInput((input, key) => {
@@ -26,19 +23,32 @@ const App = () => {
             exit();
         }
 
-        if (input === " ") {
-            setVisible((v) => !v);
-        } else if (input === "a") {
-            setPanels((current) => [...current, { id: nextId, text: `Panel #${nextId}` }]);
-            setNextId((n) => n + 1);
-        } else if (input === "x") {
-            setPanels((current) => current.slice(0, -1));
+        switch (input) {
+            case " ": {
+                setVisible((v) => !v);
+
+                break;
+            }
+            case "a": {
+                setPanels((current) => [...current, { id: nextId, text: `Panel #${nextId}` }]);
+                setNextId((n) => n + 1);
+
+                break;
+            }
+            case "x": {
+                setPanels((current) => current.slice(0, -1));
+
+                break;
+            }
+            // No default
         }
     });
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Transition presets</Text>
+            <Text bold color="cyan">
+                Transition presets
+            </Text>
             <Box flexDirection="column" gap={1}>
                 <Transition preset="fade" show={visible}>
                     <Text color="cyan">fade: this text fades in / out</Text>
@@ -54,7 +64,9 @@ const App = () => {
                     </Box>
                 </Transition>
             </Box>
-            <Text bold color="cyan">AnimatePresence</Text>
+            <Text bold color="cyan">
+                AnimatePresence
+            </Text>
             <Text dimColor>press `a` to add, `x` to remove; panels animate out before unmounting</Text>
             <AnimatePresence>
                 {panels.map((panel) => (

@@ -34,8 +34,7 @@ export type Props = {
 
 /**
  * Render a short pill-shaped label.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the tag in the requested variant.
  */
 export default function Tag({ children, color = "blue", icon, variant = "subtle" }: Props): ReactElement {
@@ -43,7 +42,14 @@ export default function Tag({ children, color = "blue", icon, variant = "subtle"
         return (
             <Box borderColor={color} borderStyle="round" paddingX={1}>
                 <Text color={color}>
-                    {icon === undefined ? undefined : <>{icon} </>}
+                    {icon === undefined
+                        ? undefined
+                        : (
+                            <>
+                                {icon}
+                                {" "}
+                            </>
+                        )}
                     {children}
                 </Text>
             </Box>
@@ -54,7 +60,14 @@ export default function Tag({ children, color = "blue", icon, variant = "subtle"
         return (
             <Text backgroundColor={color} color="black">
                 {" "}
-                {icon === undefined ? undefined : <>{icon} </>}
+                {icon === undefined
+                    ? undefined
+                    : (
+                        <>
+                            {icon}
+                            {" "}
+                        </>
+                    )}
                 {children}
                 {" "}
             </Text>
@@ -63,7 +76,14 @@ export default function Tag({ children, color = "blue", icon, variant = "subtle"
 
     return (
         <Text color={color}>
-            {icon === undefined ? undefined : <>{icon} </>}
+            {icon === undefined
+                ? undefined
+                : (
+                    <>
+                        {icon}
+                        {" "}
+                    </>
+                )}
             {children}
         </Text>
     );

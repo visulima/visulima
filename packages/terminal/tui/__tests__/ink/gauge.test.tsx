@@ -16,9 +16,7 @@ describe(Gauge, () => {
     it("should respect a custom formatter", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Gauge formatValue={(value) => `${value.toFixed(1)}%`} value={42} />,
-        );
+        const output = renderToString(<Gauge formatValue={(value) => `${value.toFixed(1)}%`} value={42} />);
 
         expect(output).toContain("42.0%");
     });
@@ -42,9 +40,7 @@ describe(Gauge, () => {
     it("should paint braille pixels for the arc and needle", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Gauge showValue={false} size="small" value={50} />,
-        );
+        const output = renderToString(<Gauge showValue={false} size="small" value={50} />);
 
         expect(output).toMatch(/[\u2800-\u28FF]/);
     });

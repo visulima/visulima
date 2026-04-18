@@ -2,7 +2,7 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AnimatePresence, Text, Transition, render } from "../../src/ink/index";
+import { AnimatePresence, render, Text, Transition } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
 
@@ -66,7 +66,7 @@ describe(Transition, () => {
             const [visible, setVisible] = React.useState(true);
 
             React.useEffect(() => {
-                const id = setTimeout(() => setVisible(false), 10);
+                const id = setTimeout(setVisible, 10, false);
 
                 return () => clearTimeout(id);
             }, []);
@@ -81,7 +81,7 @@ describe(Transition, () => {
         mount(<Harness />);
         await delay(120);
 
-        expect(onExit).toHaveBeenCalled();
+        expect(onExit).toHaveBeenCalledWith();
     });
 });
 
@@ -91,11 +91,13 @@ describe(AnimatePresence, () => {
 
         const Harness = ({ visible }: { visible: boolean }) => (
             <AnimatePresence>
-                {visible ? (
-                    <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
-                        <Text>panel-body</Text>
-                    </Transition>
-                ) : null}
+                {visible
+                    ? (
+                        <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
+                            <Text>panel-body</Text>
+                        </Transition>
+                    )
+                    : null}
             </AnimatePresence>
         );
 
@@ -103,7 +105,7 @@ describe(AnimatePresence, () => {
             const [visible, setVisible] = React.useState(true);
 
             React.useEffect(() => {
-                const id = setTimeout(() => setVisible(false), 10);
+                const id = setTimeout(setVisible, 10, false);
 
                 return () => clearTimeout(id);
             }, []);
@@ -114,11 +116,13 @@ describe(AnimatePresence, () => {
         const { getOutput } = mount(<Runner />);
 
         await delay(20);
+
         // At this point the removal has been requested but AnimatePresence
         // should still be rendering it (show=false, transitioning out).
         expect(getOutput()).toContain("panel-body");
 
         await delay(200);
+
         // After the exit transition finishes AnimatePresence unmounts it.
         expect(getOutput()).not.toContain("panel-body");
     });

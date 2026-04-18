@@ -67,7 +67,7 @@ export default function Collapsible({
     title,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [internal, setInternal] = useState<boolean>(defaultOpen);
+    const [internal, setInternal] = useState(defaultOpen);
     const open = isOpen ?? internal;
 
     useInput(
@@ -98,7 +98,13 @@ export default function Collapsible({
                     {title}
                 </Text>
             </Box>
-            {open ? <Box flexDirection="column" marginLeft={2}>{children}</Box> : undefined}
+            {open
+                ? (
+                    <Box flexDirection="column" marginLeft={2}>
+                        {children}
+                    </Box>
+                )
+                : undefined}
         </Box>
     );
 }

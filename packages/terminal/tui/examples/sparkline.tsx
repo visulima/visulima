@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * sparkline.tsx — inline mini-chart using Unicode blocks
  *
@@ -11,9 +10,7 @@ const MAX_SAMPLES = 30;
 
 const App = () => {
     const { exit } = useApp();
-    const [samples, setSamples] = useState<ReadonlyArray<number>>(
-        () => Array.from({ length: MAX_SAMPLES }, () => 50 + Math.random() * 50),
-    );
+    const [samples, setSamples] = useState<ReadonlyArray<number>>(() => Array.from({ length: MAX_SAMPLES }, () => 50 + Math.random() * 50));
 
     useInterval(() => {
         setSamples((current) => [...current.slice(1), 20 + Math.random() * 80]);
@@ -27,7 +24,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Sparkline (live)</Text>
+            <Text bold color="cyan">
+                Sparkline (live)
+            </Text>
             <Box gap={1}>
                 <Text>CPU</Text>
                 <Sparkline color="green" data={samples} />

@@ -30,8 +30,7 @@ const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
 /**
  * Scatter plot rendered on a braille pixel grid. Each sample lights one
  * sub-cell pixel; overlapping points merge into denser braille glyphs.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` containing the plot and an optional legend.
  */
 export default function ScatterPlot({
@@ -47,11 +46,13 @@ export default function ScatterPlot({
     width = 40,
 }: Props): ReactElement {
     const config = useMemo(() => {
-        const seriesList = series.map((input, index) => ({
-            color: pickSeriesColor(input, index, palette),
-            points: toPoints(input.data),
-            series: input,
-        }));
+        const seriesList = series.map((input, index) => {
+            return {
+                color: pickSeriesColor(input, index, palette),
+                points: toPoints(input.data),
+                series: input,
+            };
+        });
 
         const extents = computeExtents(seriesList);
 
@@ -69,8 +70,8 @@ export default function ScatterPlot({
     return (
         <Box flexDirection="column">
             <Canvas
-                draw={(ctx: CanvasContext) => {
-                    drawSeriesOnCanvas(ctx, "scatter", config);
+                draw={(context: CanvasContext) => {
+                    drawSeriesOnCanvas(context, "scatter", config);
                 }}
                 height={height}
                 version={[series, width, height, minX, maxX, minY, maxY, axisColor, palette]}

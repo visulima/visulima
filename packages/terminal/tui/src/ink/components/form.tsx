@@ -1,4 +1,3 @@
-/* eslint-disable react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
 import type { LiteralUnion } from "type-fest";
@@ -23,6 +22,11 @@ export type FormFieldProps = {
     readonly error?: string;
 
     /**
+     * When true, the field's label and description are dim.
+     */
+    readonly isDisabled?: boolean;
+
+    /**
      * Label rendered above the input.
      */
     readonly label: string;
@@ -31,11 +35,6 @@ export type FormFieldProps = {
      * Mark the field as required (adds a trailing `*`).
      */
     readonly required?: boolean;
-
-    /**
-     * When true, the field's label and description are dim.
-     */
-    readonly isDisabled?: boolean;
 };
 
 /**
@@ -47,19 +46,10 @@ export const FormField = ({ children, description, error, isDisabled = false, la
             <Text bold dimColor={isDisabled}>
                 {label}
             </Text>
-            {required ? (
-                <Text color="red">
-                    {" "}
-                    *
-                </Text>
-            ) : undefined}
+            {required ? <Text color="red"> *</Text> : undefined}
         </Box>
         <Box marginTop={0}>{children}</Box>
-        {error !== undefined ? (
-            <Text color="red">{error}</Text>
-        ) : description === undefined ? undefined : (
-            <Text dimColor>{description}</Text>
-        )}
+        {error === undefined ? description === undefined ? undefined : <Text dimColor>{description}</Text> : <Text color="red">{error}</Text>}
     </Box>
 );
 
@@ -71,15 +61,15 @@ export type Props = {
     readonly accentColor?: LiteralUnion<AnsiColors, string>;
 
     /**
-     * Fields composed via `<FormField />`.
-     */
-    readonly children: ReactNode;
-
-    /**
      * Render a border around the form.
      * @default true
      */
     readonly bordered?: boolean;
+
+    /**
+     * Fields composed via `&lt;FormField />`.
+     */
+    readonly children: ReactNode;
 
     /**
      * Optional description rendered under the title.
@@ -109,34 +99,36 @@ type FormComponent = ((props: Props) => ReactElement) & { Field: typeof FormFiel
  * and `FormField` for consistent label/error styling.
  */
 const Form: FormComponent = Object.assign(
-    function Form({
-        accentColor = "blue",
-        bordered = true,
-        children,
-        description,
-        footer,
-        title,
-        width,
-    }: Props): ReactElement {
+    ({ accentColor = "blue", bordered = true, children, description, footer, title, width }: Props): ReactElement => {
         const content = (
             <Box flexDirection="column">
-                {title === undefined ? undefined : (
-                    <Box marginBottom={1}>
-                        <Text bold color={accentColor}>{title}</Text>
-                    </Box>
-                )}
-                {description === undefined ? undefined : (
-                    <Box marginBottom={1}>
-                        <Text dimColor>{description}</Text>
-                    </Box>
-                )}
+                {title === undefined
+                    ? undefined
+                    : (
+                        <Box marginBottom={1}>
+                            <Text bold color={accentColor}>
+                                {title}
+                            </Text>
+                        </Box>
+                    )}
+                {description === undefined
+                    ? undefined
+                    : (
+                        <Box marginBottom={1}>
+                            <Text dimColor>{description}</Text>
+                        </Box>
+                    )}
                 <Box flexDirection="column">{children}</Box>
                 {footer === undefined ? undefined : <Box marginTop={1}>{footer}</Box>}
             </Box>
         );
 
         if (!bordered) {
-            return <Box flexDirection="column" width={width}>{content}</Box>;
+            return (
+                <Box flexDirection="column" width={width}>
+                    {content}
+                </Box>
+            );
         }
 
         return (

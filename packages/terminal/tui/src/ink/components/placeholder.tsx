@@ -40,16 +40,16 @@ export type Props = {
     readonly rows?: number;
 
     /**
-     * Relative widths of each row (0–1). The list is sampled cyclically.
-     * @default [1, 0.85, 0.6]
-     */
-    readonly widths?: ReadonlyArray<number>;
-
-    /**
      * Total width reference. When omitted, the block flexes to fill its
      * parent.
      */
     readonly width?: number;
+
+    /**
+     * Relative widths of each row (0–1). The list is sampled cyclically.
+     * @default [1, 0.85, 0.6]
+     */
+    readonly widths?: ReadonlyArray<number>;
 };
 
 const DEFAULT_WIDTHS = [1, 0.85, 0.6] as const;
@@ -57,8 +57,7 @@ const DEFAULT_WIDTHS = [1, 0.85, 0.6] as const;
 /**
  * Skeleton loading indicator. Renders a stack of solid blocks whose widths
  * vary to mimic text placeholders. Pair with `async` data fetching.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the skeleton rows.
  */
 export default function Placeholder({
@@ -67,8 +66,8 @@ export default function Placeholder({
     color = "gray",
     interval = 500,
     rows = 3,
-    widths = DEFAULT_WIDTHS,
     width,
+    widths = DEFAULT_WIDTHS,
 }: Props): ReactElement {
     const { frame } = useAnimation({ interval, isActive: animated });
     const { columns } = useWindowSize();
@@ -83,7 +82,7 @@ export default function Placeholder({
                 // Guard against an explicitly empty `widths` prop — modulo
                 // by zero would yield NaN and the nullish fallback would
                 // still force every row to full width, hiding the bug.
-                const ratio = widths.length > 0 ? (widths[index % widths.length] ?? 1) : 1;
+                const ratio = widths.length > 0 ? widths[index % widths.length] ?? 1 : 1;
                 const effectiveWidth = Math.max(1, Math.round(baseWidth * ratio));
                 const fill = character.repeat(effectiveWidth);
 

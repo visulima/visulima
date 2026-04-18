@@ -31,6 +31,12 @@ export type Props = {
     readonly height?: number;
 
     /**
+     * Optional upper bound for the axis. When omitted the chart uses the
+     * largest value in `data`.
+     */
+    readonly max?: number;
+
+    /**
      * Orientation of the bars.
      * @default "vertical"
      */
@@ -41,12 +47,6 @@ export type Props = {
      * @default ["cyan", "magenta", "yellow", "green", "blue", "red"]
      */
     readonly palette?: ReadonlyArray<LiteralUnion<AnsiColors, string>>;
-
-    /**
-     * Optional upper bound for the axis. When omitted the chart uses the
-     * largest value in `data`.
-     */
-    readonly max?: number;
 
     /**
      * Render labels underneath vertical bars (or to the left of horizontal bars).
@@ -67,14 +67,7 @@ export type Props = {
     readonly width?: number;
 };
 
-const DEFAULT_PALETTE: ReadonlyArray<LiteralUnion<AnsiColors, string>> = [
-    "cyan",
-    "magenta",
-    "yellow",
-    "green",
-    "blue",
-    "red",
-];
+const DEFAULT_PALETTE: ReadonlyArray<LiteralUnion<AnsiColors, string>> = ["cyan", "magenta", "yellow", "green", "blue", "red"];
 
 /**
  * Walk `data` once to find the maximum value. Avoids `Math.max(...values)`
@@ -95,7 +88,7 @@ const findMax = (data: ReadonlyArray<BarDatum>, userMax: number | undefined): nu
     let max = data[0]!.value;
 
     for (let index = 1; index < data.length; index += 1) {
-        const value = data[index]!.value;
+        const { value } = data[index]!;
 
         if (value > max) {
             max = value;
@@ -135,29 +128,33 @@ export default function BarChart({
 
                     return (
                         <Box gap={1} key={index}>
-                            {showLabels && datum.label !== undefined ? (
-                                <Box flexShrink={0} minWidth={8}>
-                                    <Text dimColor wrap="truncate-end">
-                                        {datum.label}
-                                    </Text>
-                                </Box>
-                            ) : undefined}
+                            {showLabels && datum.label !== undefined
+                                ? (
+                                    <Box flexShrink={0} minWidth={8}>
+                                        <Text dimColor wrap="truncate-end">
+                                            {datum.label}
+                                        </Text>
+                                    </Box>
+                                )
+                                : undefined}
                             <Box flexGrow={1} flexShrink={1}>
                                 <Canvas
-                                    draw={(ctx: CanvasContext) => {
-                                        ctx.clear();
-                                        ctx.drawHBar(0, 0, plotWidth, ratio, { color });
+                                    draw={(context: CanvasContext) => {
+                                        context.clear();
+                                        context.drawHBar(0, 0, plotWidth, ratio, { color });
                                     }}
                                     height={1}
                                     version={[datum.value, computedMax, color, plotWidth]}
                                     width={plotWidth}
                                 />
                             </Box>
-                            {showValues ? (
-                                <Box flexShrink={0}>
-                                    <Text>{String(datum.value)}</Text>
-                                </Box>
-                            ) : undefined}
+                            {showValues
+                                ? (
+                                    <Box flexShrink={0}>
+                                        <Text>{String(datum.value)}</Text>
+                                    </Box>
+                                )
+                                : undefined}
                         </Box>
                     );
                 })}
@@ -172,8 +169,8 @@ export default function BarChart({
     return (
         <Box flexDirection="column">
             <Canvas
-                draw={(ctx: CanvasContext) => {
-                    ctx.clear();
+                draw={(context: CanvasContext) => {
+                    context.clear();
 
                     data.forEach((datum, index) => {
                         const ratio = computedMax === 0 ? 0 : datum.value / computedMax;
@@ -181,7 +178,7 @@ export default function BarChart({
                         const x = index * (barWidth + gap);
 
                         for (let column = 0; column < barWidth; column += 1) {
-                            ctx.drawVBar(x + column, 0, height, ratio, { color });
+                            context.drawVBar(x + column, 0, height, ratio, { color });
                         }
                     });
                 }}
@@ -189,26 +186,30 @@ export default function BarChart({
                 version={[data, computedMax, palette, barWidth, gap, height]}
                 width={plotWidth}
             />
-            {showValues ? (
-                <Box>
-                    {data.map((datum, index) => (
-                        <Box key={index} width={barWidth + gap}>
-                            <Text dimColor>{String(datum.value).padEnd(barWidth + gap, " ")}</Text>
-                        </Box>
-                    ))}
-                </Box>
-            ) : undefined}
-            {showLabels ? (
-                <Box>
-                    {data.map((datum, index) => (
-                        <Box key={index} width={barWidth + gap}>
-                            <Text dimColor wrap="truncate-end">
-                                {(datum.label ?? "").padEnd(barWidth + gap, " ")}
-                            </Text>
-                        </Box>
-                    ))}
-                </Box>
-            ) : undefined}
+            {showValues
+                ? (
+                    <Box>
+                        {data.map((datum, index) => (
+                            <Box key={index} width={barWidth + gap}>
+                                <Text dimColor>{String(datum.value).padEnd(barWidth + gap, " ")}</Text>
+                            </Box>
+                        ))}
+                    </Box>
+                )
+                : undefined}
+            {showLabels
+                ? (
+                    <Box>
+                        {data.map((datum, index) => (
+                            <Box key={index} width={barWidth + gap}>
+                                <Text dimColor wrap="truncate-end">
+                                    {(datum.label ?? "").padEnd(barWidth + gap, " ")}
+                                </Text>
+                            </Box>
+                        ))}
+                    </Box>
+                )
+                : undefined}
         </Box>
     );
 }

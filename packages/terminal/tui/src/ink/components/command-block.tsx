@@ -31,6 +31,11 @@ export type Props = {
     readonly exitCode?: number;
 
     /**
+     * Max output rows rendered before truncation. Use `Infinity` to disable.
+     */
+    readonly maxOutputRows?: number;
+
+    /**
      * Command output. Either a string (rendered as-is) or arbitrary children.
      */
     readonly output?: ReactNode;
@@ -40,11 +45,6 @@ export type Props = {
      * @default "idle"
      */
     readonly status?: CommandStatus;
-
-    /**
-     * Max output rows rendered before truncation. Use `Infinity` to disable.
-     */
-    readonly maxOutputRows?: number;
 };
 
 const STATUS_COLOR: Record<CommandStatus, LiteralUnion<AnsiColors, string>> = {
@@ -101,19 +101,11 @@ const truncateOutput = (output: string, maxRows: number): string => {
  * Renders a shell command with its output and a status header. Designed for
  * coding-agent UIs that stream terminal operations.
  */
-export default function CommandBlock({
-    command,
-    cwd,
-    durationMs,
-    exitCode,
-    maxOutputRows = 12,
-    output,
-    status = "idle",
-}: Props): ReactElement {
+export default function CommandBlock({ command, cwd, durationMs, exitCode, maxOutputRows = 12, output, status = "idle" }: Props): ReactElement {
     const color = STATUS_COLOR[status];
     const statusIcon = resolveStatusIcon(status);
 
-    const trailing: Array<ReactNode> = [];
+    const trailing: ReactNode[] = [];
 
     if (durationMs !== undefined) {
         trailing.push(
@@ -141,27 +133,28 @@ export default function CommandBlock({
                 <Text color={color}>{statusIcon}</Text>
                 <Text> </Text>
                 <Box flexGrow={1} flexShrink={1} minWidth={0}>
-                    <Text bold wrap="truncate-end">{command}</Text>
-                </Box>
-                {cwd === undefined ? undefined : (
-                    <Text dimColor>
-                        {" "}
-                        @
-                        {" "}
-                        {cwd}
+                    <Text bold wrap="truncate-end">
+                        {command}
                     </Text>
-                )}
+                </Box>
+                {cwd === undefined
+                    ? undefined
+                    : (
+                        <Text dimColor>
+                            {" "}
+                            @
+                            {cwd}
+                        </Text>
+                    )}
                 {trailing.length === 0 ? undefined : <Box flexShrink={0}>{trailing}</Box>}
             </Box>
-            {output === undefined ? undefined : (
-                <Box flexDirection="column" marginTop={1}>
-                    {typeof output === "string" ? (
-                        <Text>{truncateOutput(output, maxOutputRows)}</Text>
-                    ) : (
-                        output
-                    )}
-                </Box>
-            )}
+            {output === undefined
+                ? undefined
+                : (
+                    <Box flexDirection="column" marginTop={1}>
+                        {typeof output === "string" ? <Text>{truncateOutput(output, maxOutputRows)}</Text> : output}
+                    </Box>
+                )}
         </Box>
     );
 }

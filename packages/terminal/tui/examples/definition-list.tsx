@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * definition-list.tsx — key/value pairs rendered inline and stacked
  *
@@ -18,7 +17,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={2} padding={1}>
-            <Text bold color="cyan">Inline layout</Text>
+            <Text bold color="cyan">
+                Inline layout
+            </Text>
             <DefinitionList
                 items={[
                     { description: "1.0.0-alpha.2", term: "Version" },
@@ -28,9 +29,10 @@ const App = () => {
                 ]}
                 termWidth={10}
             />
-            <Text bold color="cyan">Stacked layout</Text>
+            <Text bold color="cyan">
+                Stacked layout
+            </Text>
             <DefinitionList
-                layout="stacked"
                 items={[
                     {
                         description: "Custom terminal UI components with a native Rust diff engine.",
@@ -41,6 +43,7 @@ const App = () => {
                         term: "Can I migrate from Ink?",
                     },
                 ]}
+                layout="stacked"
             />
             <Text dimColor>Esc to quit</Text>
         </Box>

@@ -14,6 +14,11 @@ export type Props = {
     readonly color?: LiteralUnion<AnsiColors, string>;
 
     /**
+     * Optional icon/symbol (e.g. `✨`, `◈`) shown before the label.
+     */
+    readonly icon?: ReactNode;
+
+    /**
      * Short model identifier, e.g. `claude-opus-4.6`.
      */
     readonly model: string;
@@ -22,11 +27,6 @@ export type Props = {
      * Optional provider name rendered as a separate chip before the model.
      */
     readonly provider?: string;
-
-    /**
-     * Optional icon/symbol (e.g. `✨`, `◈`) shown before the label.
-     */
-    readonly icon?: ReactNode;
 
     /**
      * Visual style.
@@ -39,20 +39,16 @@ export type Props = {
  * Pill-shaped chip identifying the active model / provider. Pair with
  * `MessageBubble` to label assistant output.
  */
-export default function ModelBadge({
-    color = "magenta",
-    icon,
-    model,
-    provider,
-    variant = "solid",
-}: Props): ReactElement {
+export default function ModelBadge({ color = "magenta", icon, model, provider, variant = "solid" }: Props): ReactElement {
     const chip = (content: ReactNode): ReactElement => {
-        const renderedIcon = icon === undefined ? undefined : (
-            <>
-                {icon}
-                {" "}
-            </>
-        );
+        const renderedIcon = icon === undefined
+            ? undefined
+            : (
+                <>
+                    {icon}
+                    {" "}
+                </>
+            );
 
         if (variant === "outline") {
             return (

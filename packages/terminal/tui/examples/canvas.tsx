@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * canvas.tsx — Raw Canvas drawing API
  *
@@ -27,42 +26,44 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Canvas — press Space to advance the ball</Text>
+            <Text bold color="cyan">
+                Canvas — press Space to advance the ball
+            </Text>
             <Canvas
-                draw={(ctx) => {
-                    ctx.clear();
+                draw={(context) => {
+                    context.clear();
 
                     // Border
-                    ctx.drawRect(0, 0, ctx.width, 1, "═", { color: "gray" });
-                    ctx.drawRect(0, ctx.height - 1, ctx.width, 1, "═", { color: "gray" });
+                    context.drawRect(0, 0, context.width, 1, "═", { color: "gray" });
+                    context.drawRect(0, context.height - 1, context.width, 1, "═", { color: "gray" });
 
-                    for (let y = 1; y < ctx.height - 1; y += 1) {
-                        ctx.setCell(0, y, "║", { color: "gray" });
-                        ctx.setCell(ctx.width - 1, y, "║", { color: "gray" });
+                    for (let y = 1; y < context.height - 1; y += 1) {
+                        context.setCell(0, y, "║", { color: "gray" });
+                        context.setCell(context.width - 1, y, "║", { color: "gray" });
                     }
 
                     // Title
-                    ctx.drawText(2, 0, " Status ", { background: "gray", color: "black" });
+                    context.drawText(2, 0, " Status ", { background: "gray", color: "black" });
 
                     // Progress bar
                     const progress = (tick % 20) / 20;
 
-                    ctx.drawText(2, 2, `Loading: ${Math.round(progress * 100)}%`);
-                    ctx.drawHBar(2, 3, ctx.width - 4, progress, { color: "cyan" });
+                    context.drawText(2, 2, `Loading: ${Math.round(progress * 100)}%`);
+                    context.drawHBar(2, 3, context.width - 4, progress, { color: "cyan" });
 
                     // Vertical meters
                     for (let column = 0; column < 6; column += 1) {
                         const ratio = Math.abs(Math.sin((tick + column) / 3));
 
-                        ctx.drawVBar(ctx.width - 3 - column * 2, 5, ctx.height - 7, ratio, {
+                        context.drawVBar(context.width - 3 - column * 2, 5, context.height - 7, ratio, {
                             color: column % 2 === 0 ? "magenta" : "yellow",
                         });
                     }
 
                     // Bouncing ball
-                    const ballX = 2 + (tick % (ctx.width - 4));
+                    const ballX = 2 + (tick % (context.width - 4));
 
-                    ctx.setCell(ballX, ctx.height - 2, "●", { color: "red" });
+                    context.setCell(ballX, context.height - 2, "●", { color: "red" });
                 }}
                 height={12}
                 version={tick}

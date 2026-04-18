@@ -1,8 +1,6 @@
 /* eslint-disable react/function-component-definition */
-import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import type { LiteralUnion } from "type-fest";
 
 import Box from "./box";
 import Text from "./text";
@@ -52,19 +50,10 @@ export type Props = {
 
 /**
  * Ephemeral notification. Disappears automatically after `duration` ms.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A bordered `ReactElement` while visible; `null` once dismissed.
  */
-export default function Toast({
-    children,
-    duration = 4000,
-    onDismiss,
-    title,
-    variant = "info",
-    visible,
-    width,
-}: Props): ReactElement | null {
+export default function Toast({ children, duration = 4000, onDismiss, title, variant = "info", visible, width }: Props): ReactElement | null {
     const [internalVisible, setInternalVisible] = useState(true);
     const isVisible = visible ?? internalVisible;
     const onDismissRef = useRef(onDismiss);

@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * use-persistent-state.tsx — state backed by a pluggable storage
  *
  * This example uses the in-memory storage so it doesn't touch your disk.
  * In production, the default backend persists under
- * ~/.cache/visulima-tui/<namespace>.json.
+ * ~/.cache/visulima-tui/&lt;namespace>.json.
  *
  * Controls:
  *   ↑ / ↓      increment / decrement counter (persisted)
@@ -36,7 +35,7 @@ const App = () => {
             setCount((n) => Math.max(0, n - 1));
         } else if (key.tab) {
             setTheme((current) => {
-                const index = THEMES.indexOf(current as typeof THEMES[number]);
+                const index = THEMES.indexOf(current as (typeof THEMES)[number]);
 
                 return THEMES[(index + 1) % THEMES.length] ?? "light";
             });
@@ -48,7 +47,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">usePersistentState</Text>
+            <Text bold color="cyan">
+                usePersistentState
+            </Text>
             <Text>
                 counter:
                 {" "}

@@ -8,12 +8,7 @@ describe(Stepper, () => {
     it("should render all steps with labels", () => {
         expect.assertions(3);
 
-        const output = renderToString(
-            <Stepper
-                activeIndex={1}
-                steps={[{ label: "First" }, { label: "Second" }, { label: "Third" }]}
-            />,
-        );
+        const output = renderToString(<Stepper activeIndex={1} steps={[{ label: "First" }, { label: "Second" }, { label: "Third" }]} />);
 
         expect(output).toContain("First");
         expect(output).toContain("Second");
@@ -23,12 +18,7 @@ describe(Stepper, () => {
     it("should use the status icons derived from activeIndex", () => {
         expect.assertions(3);
 
-        const output = renderToString(
-            <Stepper
-                activeIndex={1}
-                steps={[{ label: "a" }, { label: "b" }, { label: "c" }]}
-            />,
-        );
+        const output = renderToString(<Stepper activeIndex={1} steps={[{ label: "a" }, { label: "b" }, { label: "c" }]} />);
 
         // completed
         expect(output).toContain("✔");
@@ -41,11 +31,7 @@ describe(Stepper, () => {
     it("should render an error icon for error steps", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Stepper
-                steps={[{ label: "oops", status: "error" }]}
-            />,
-        );
+        const output = renderToString(<Stepper steps={[{ label: "oops", status: "error" }]} />);
 
         expect(output).toContain("✖");
     });
@@ -53,13 +39,7 @@ describe(Stepper, () => {
     it("should render vertical layout with descriptions", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <Stepper
-                activeIndex={0}
-                orientation="vertical"
-                steps={[{ label: "Install", description: "Set up the environment" }]}
-            />,
-        );
+        const output = renderToString(<Stepper activeIndex={0} orientation="vertical" steps={[{ description: "Set up the environment", label: "Install" }]} />);
 
         expect(output).toContain("Install");
         expect(output).toContain("Set up the environment");
@@ -85,7 +65,7 @@ describe(Toast, () => {
         expect.assertions(1);
 
         const output = renderToString(
-            <Toast visible={false} variant="info">
+            <Toast variant="info" visible={false}>
                 hidden
             </Toast>,
         );

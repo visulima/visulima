@@ -12,12 +12,6 @@ import Text from "./text";
 
 export type GaugeThreshold = {
     /**
-     * Upper bound of this threshold segment (inclusive). Segments are sorted
-     * ascending and painted in order.
-     */
-    readonly max: number;
-
-    /**
      * Color used for the arc segment and, when the current value falls into
      * this segment, for the value readout.
      */
@@ -27,6 +21,12 @@ export type GaugeThreshold = {
      * Optional label used by the legend under the gauge.
      */
     readonly label?: string;
+
+    /**
+     * Upper bound of this threshold segment (inclusive). Segments are sorted
+     * ascending and painted in order.
+     */
+    readonly max: number;
 };
 
 export type GaugeSize = "large" | "medium" | "small";
@@ -39,10 +39,9 @@ export type Props = {
     readonly backgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
-     * Overall dimension preset.
-     * @default "medium"
+     * Format for the numeric readout. Defaults to rounding to an integer.
      */
-    readonly size?: GaugeSize;
+    readonly formatValue?: (value: number) => string;
 
     /**
      * Optional label rendered above the readout.
@@ -74,9 +73,10 @@ export type Props = {
     readonly showValue?: boolean;
 
     /**
-     * Format for the numeric readout. Defaults to rounding to an integer.
+     * Overall dimension preset.
+     * @default "medium"
      */
-    readonly formatValue?: (value: number) => string;
+    readonly size?: GaugeSize;
 
     /**
      * Color threshold ramp. When provided, segments of the arc are painted in
@@ -108,12 +108,7 @@ const defaultFormat = (value: number): string => String(Math.round(value));
  * Find the threshold segment that `ratio` lands in. `ratio` is in [0, 1] and
  * maps onto the [min, max] range.
  */
-const thresholdAtRatio = (
-    thresholds: ReadonlyArray<GaugeThreshold>,
-    min: number,
-    max: number,
-    ratio: number,
-): GaugeThreshold | undefined => {
+const thresholdAtRatio = (thresholds: ReadonlyArray<GaugeThreshold>, min: number, max: number, ratio: number): GaugeThreshold | undefined => {
     const value = min + (max - min) * ratio;
 
     for (const threshold of thresholds) {
@@ -169,11 +164,11 @@ export default function Gauge({
     return (
         <Box flexDirection="column">
             <Canvas
-                draw={(ctx: CanvasContext) => {
-                    ctx.clear();
+                draw={(context: CanvasContext) => {
+                    context.clear();
 
-                    const pixelWidth = ctx.width * 2;
-                    const pixelHeight = ctx.height * 4;
+                    const pixelWidth = context.width * 2;
+                    const pixelHeight = context.height * 4;
                     // Center at bottom middle of the grid.
                     const cx = pixelWidth / 2;
                     const cy = pixelHeight - 1;
@@ -193,7 +188,7 @@ export default function Gauge({
                             return existing;
                         }
 
-                        const grid = createBrailleGrid(ctx.width, ctx.height);
+                        const grid = createBrailleGrid(context.width, context.height);
 
                         gridsByColor.set(color, grid);
 
@@ -237,41 +232,47 @@ export default function Gauge({
                     needleGrid.plotLine(Math.round(cx), Math.round(cy), nx, ny);
 
                     for (const [color, grid] of gridsByColor) {
-                        grid.flush(ctx, { color });
+                        grid.flush(context, { color });
                     }
                 }}
                 height={rows}
                 version={[value, min, max, size, thresholds, backgroundColor]}
                 width={cols}
             />
-            {showValue || label ? (
-                <Box flexDirection="column">
-                    {label === undefined ? undefined : (
-                        <Box justifyContent="center">
-                            <Text dimColor>{label}</Text>
-                        </Box>
-                    )}
-                    {showValue ? (
-                        <Box justifyContent="center">
-                            <Text bold color={activeThreshold?.color ?? "white"}>
-                                {readout}
-                            </Text>
-                        </Box>
-                    ) : undefined}
-                </Box>
-            ) : undefined}
-            {showLegend && thresholds && thresholds.length > 0 ? (
-                <Box gap={2} justifyContent="center" marginTop={1}>
-                    {thresholds.map((threshold, index) => (
-                        <Box gap={1} key={index}>
-                            <Text color={threshold.color}>●</Text>
-                            <Text dimColor>
-                                {threshold.label ?? `≤ ${threshold.max}`}
-                            </Text>
-                        </Box>
-                    ))}
-                </Box>
-            ) : undefined}
+            {showValue || label
+                ? (
+                    <Box flexDirection="column">
+                        {label === undefined
+                            ? undefined
+                            : (
+                                <Box justifyContent="center">
+                                    <Text dimColor>{label}</Text>
+                                </Box>
+                            )}
+                        {showValue
+                            ? (
+                                <Box justifyContent="center">
+                                    <Text bold color={activeThreshold?.color ?? "white"}>
+                                        {readout}
+                                    </Text>
+                                </Box>
+                            )
+                            : undefined}
+                    </Box>
+                )
+                : undefined}
+            {showLegend && thresholds && thresholds.length > 0
+                ? (
+                    <Box gap={2} justifyContent="center" marginTop={1}>
+                        {thresholds.map((threshold, index) => (
+                            <Box gap={1} key={index}>
+                                <Text color={threshold.color}>●</Text>
+                                <Text dimColor>{threshold.label ?? `≤ ${threshold.max}`}</Text>
+                            </Box>
+                        ))}
+                    </Box>
+                )
+                : undefined}
         </Box>
     );
 }

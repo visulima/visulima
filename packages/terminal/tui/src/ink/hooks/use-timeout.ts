@@ -29,7 +29,7 @@ const useTimeout = (callback: () => void, delay: number, options?: UseTimeoutOpt
     const { isActive = true } = options ?? {};
     const callbackRef = useRef(callback);
     const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const [bump, setBump] = useState<number>(0);
+    const [bump, setBump] = useState(0);
 
     callbackRef.current = callback;
 

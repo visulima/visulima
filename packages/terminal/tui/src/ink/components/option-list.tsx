@@ -21,42 +21,35 @@ export type Props = {
     readonly accentColor?: LiteralUnion<AnsiColors, string>;
 
     /**
-     * Id of the row to highlight. No visual change if omitted.
-     */
-    readonly currentId?: string;
-
-    /**
      * Render the list with a border.
      */
     readonly bordered?: boolean;
 
     /**
-     * Entries to render.
+     * Id of the row to highlight. No visual change if omitted.
      */
-    readonly options: ReadonlyArray<OptionListEntry>;
+    readonly currentId?: string;
 
     /**
      * Icon width in characters for column alignment.
      * @default 2
      */
     readonly iconColumnWidth?: number;
+
+    /**
+     * Entries to render.
+     */
+    readonly options: ReadonlyArray<OptionListEntry>;
 };
 
 /**
  * Read-only presentational option list. Like `SelectInput` but without focus,
  * input handling, or scrolling — just a styled list of rows. Useful inside
  * modals, sidebars, or summary panels.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the list; bordered when requested.
  */
-export default function OptionList({
-    accentColor = "blue",
-    bordered = false,
-    currentId,
-    iconColumnWidth = 2,
-    options,
-}: Props): ReactElement {
+export default function OptionList({ accentColor = "blue", bordered = false, currentId, iconColumnWidth = 2, options }: Props): ReactElement {
     const list = (
         <Box flexDirection="column">
             {options.map((option) => {
@@ -67,26 +60,24 @@ export default function OptionList({
                     <Box flexDirection="column" key={option.id}>
                         <Box>
                             <Box flexShrink={0} width={iconColumnWidth}>
-                                <Text color={color}>
-                                    {option.icon ?? (isCurrent ? "▸" : " ")}
-                                </Text>
+                                <Text color={color}>{option.icon ?? (isCurrent ? "▸" : " ")}</Text>
                             </Box>
                             <Box flexGrow={1} flexShrink={1} minWidth={0}>
                                 <Text bold={isCurrent} color={color} wrap="truncate-end">
                                     {option.label}
                                 </Text>
                             </Box>
-                            {option.trailing === undefined ? undefined : (
-                                <Box flexShrink={0}>{option.trailing}</Box>
-                            )}
+                            {option.trailing === undefined ? undefined : <Box flexShrink={0}>{option.trailing}</Box>}
                         </Box>
-                        {option.description === undefined ? undefined : (
-                            <Box marginLeft={iconColumnWidth}>
-                                <Text dimColor wrap="truncate-end">
-                                    {option.description}
-                                </Text>
-                            </Box>
-                        )}
+                        {option.description === undefined
+                            ? undefined
+                            : (
+                                <Box marginLeft={iconColumnWidth}>
+                                    <Text dimColor wrap="truncate-end">
+                                        {option.description}
+                                    </Text>
+                                </Box>
+                            )}
                     </Box>
                 );
             })}

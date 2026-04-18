@@ -36,12 +36,7 @@ export type Props = {
  * Steady or blinking indicator dot. Pair with `StatusLine` or next to a
  * label to show a "live" / "recording" status.
  */
-export default function BlinkDot({
-    character = "●",
-    color = "red",
-    interval = 800,
-    isActive = true,
-}: Props): ReactElement {
+export default function BlinkDot({ character = "●", color = "red", interval = 800, isActive = true }: Props): ReactElement {
     const { frame } = useAnimation({ interval: Math.max(1, Math.floor(interval / 2)), isActive });
     // When the animation is paused, useAnimation freezes `frame` at 0 — the
     // dot stays solid. When running, even frames show the character and odd

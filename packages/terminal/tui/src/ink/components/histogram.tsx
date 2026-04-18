@@ -77,7 +77,7 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
         return [];
     }
 
-    const counts = Array.from({ length: thresholds.length - 1 }, () => 0);
+    const counts = Array.from({ length: thresholds.length - 1 }).fill(0);
     const lowerBound = thresholds[0]!;
     const upperBound = thresholds[thresholds.length - 1]!;
 
@@ -115,8 +115,7 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
 /**
  * Histogram built on top of BarChart. Bins the raw values (via explicit
  * thresholds or equal-width bins) and hands the counts off to BarChart.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering a BarChart of bucket counts.
  */
 export default function Histogram({
@@ -163,7 +162,9 @@ export default function Histogram({
 
     return (
         <BarChart
-            data={buckets.map((bucket) => ({ color, label: bucket.label, value: bucket.count }))}
+            data={buckets.map((bucket) => {
+                return { color, label: bucket.label, value: bucket.count };
+            })}
             height={height}
             orientation="vertical"
             showLabels

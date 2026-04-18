@@ -98,7 +98,7 @@ const keyToString = (input: string, key: Key): string | undefined => {
         return undefined;
     }
 
-    const parts: Array<string> = [];
+    const parts: string[] = [];
 
     if (key.ctrl) {
         parts.push("ctrl");
@@ -123,7 +123,6 @@ const normalizeStep = (step: KeyChordStep): string => step.trim().toLowerCase();
  * Invoke `callback` when the user types the given sequence of keys in order
  * (like Vim's `g d` or Emacs's `C-x C-s`). The chord resets automatically
  * after `resetAfter` ms of silence.
- *
  * @param sequence Ordered list of chord steps. Each step is compared against
  * a canonical key token (e.g. `"g"`, `"space"`, `"ctrl+s"`).
  * @param callback Invoked exactly once per successful chord match. Latest
@@ -133,8 +132,8 @@ const normalizeStep = (step: KeyChordStep): string => step.trim().toLowerCase();
  */
 const useKeyChord = (sequence: ReadonlyArray<KeyChordStep>, callback: () => void, options?: UseKeyChordOptions): void => {
     const { isActive = true, resetAfter = 1000 } = options ?? {};
-    const progressRef = useRef<number>(0);
-    const lastStepAtRef = useRef<number>(0);
+    const progressRef = useRef(0);
+    const lastStepAtRef = useRef(0);
     const callbackRef = useRef(callback);
 
     callbackRef.current = callback;

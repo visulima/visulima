@@ -18,16 +18,16 @@ export type StepperStep = {
 
 export type Props = {
     /**
-     * Index of the current step (used when steps do not provide a status).
-     * @default 0
-     */
-    readonly activeIndex?: number;
-
-    /**
      * Color used for active and completed steps.
      * @default "blue"
      */
     readonly accentColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
+     * Index of the current step (used when steps do not provide a status).
+     * @default 0
+     */
+    readonly activeIndex?: number;
 
     /**
      * Color used for errors.
@@ -72,17 +72,10 @@ const resolveStatus = (step: StepperStep, index: number, activeIndex: number): S
 
 /**
  * Step indicator for multi-stage flows.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the steps horizontally or vertically.
  */
-export default function Stepper({
-    accentColor = "blue",
-    activeIndex = 0,
-    errorColor = "red",
-    orientation = "horizontal",
-    steps,
-}: Props): ReactElement {
+export default function Stepper({ accentColor = "blue", activeIndex = 0, errorColor = "red", orientation = "horizontal", steps }: Props): ReactElement {
     if (orientation === "vertical") {
         return (
             <Box flexDirection="column">
@@ -102,16 +95,20 @@ export default function Stepper({
                                     {step.label}
                                 </Text>
                             </Box>
-                            {step.description === undefined ? undefined : (
-                                <Box marginLeft={2}>
-                                    <Text dimColor>{step.description}</Text>
-                                </Box>
-                            )}
-                            {isLast ? undefined : (
-                                <Box marginLeft={0}>
-                                    <Text dimColor>│</Text>
-                                </Box>
-                            )}
+                            {step.description === undefined
+                                ? undefined
+                                : (
+                                    <Box marginLeft={2}>
+                                        <Text dimColor>{step.description}</Text>
+                                    </Box>
+                                )}
+                            {isLast
+                                ? undefined
+                                : (
+                                    <Box marginLeft={0}>
+                                        <Text dimColor>│</Text>
+                                    </Box>
+                                )}
                         </Box>
                     );
                 })}
@@ -137,13 +134,7 @@ export default function Stepper({
                                 {step.label}
                             </Text>
                         </Box>
-                        {isLast ? undefined : (
-                            <Text dimColor>
-                                {" "}
-                                ──
-                                {" "}
-                            </Text>
-                        )}
+                        {isLast ? undefined : <Text dimColor> ── </Text>}
                     </Fragment>
                 );
             })}

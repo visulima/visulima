@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * use-interval.tsx — useInterval hook demo
  *
@@ -39,7 +38,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">useInterval</Text>
+            <Text bold color="cyan">
+                useInterval
+            </Text>
             <Text>
                 tick:
                 {" "}
@@ -47,7 +48,6 @@ const App = () => {
             </Text>
             <Text dimColor>
                 status:
-                {" "}
                 {running ? "running" : "paused"}
                 {" "}
                 — press Space to toggle, r to reset

@@ -2,16 +2,7 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-    Text,
-    createMemoryStorage,
-    render,
-    useHotkey,
-    useInterval,
-    useKeyChord,
-    usePersistentState,
-    useTimeout,
-} from "../../src/ink/index";
+import { createMemoryStorage, render, Text, useHotkey, useInterval, useKeyChord, usePersistentState, useTimeout } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -106,13 +97,7 @@ describe(useTimeout, () => {
 });
 
 describe(useHotkey, () => {
-    const Harness = ({
-        callback,
-        shortcut,
-    }: {
-        callback: () => void;
-        shortcut: Parameters<typeof useHotkey>[0];
-    }) => {
+    const Harness = ({ callback, shortcut }: { callback: () => void; shortcut: Parameters<typeof useHotkey>[0] }) => {
         useHotkey(shortcut, callback);
 
         return <Text>t</Text>;
@@ -159,15 +144,7 @@ describe(useHotkey, () => {
 });
 
 describe(useKeyChord, () => {
-    const Harness = ({
-        callback,
-        sequence,
-        resetAfter,
-    }: {
-        callback: () => void;
-        sequence: ReadonlyArray<string>;
-        resetAfter?: number;
-    }) => {
+    const Harness = ({ callback, resetAfter, sequence }: { callback: () => void; resetAfter?: number; sequence: ReadonlyArray<string> }) => {
         useKeyChord(sequence, callback, { resetAfter });
 
         return <Text>t</Text>;
@@ -209,9 +186,7 @@ describe(useKeyChord, () => {
         expect.assertions(1);
 
         const spy = vi.fn();
-        const { stdin } = mount(
-            <Harness callback={spy} resetAfter={30} sequence={["g", "d"]} />,
-        );
+        const { stdin } = mount(<Harness callback={spy} resetAfter={30} sequence={["g", "d"]} />);
 
         await delay(20);
         emitReadable(stdin, "g");
@@ -225,10 +200,10 @@ describe(useKeyChord, () => {
 
 describe(usePersistentState, () => {
     const Harness = ({
-        storage,
-        storageKey,
         initial,
         onExposeSet,
+        storage,
+        storageKey,
     }: {
         initial: string;
         onExposeSet: (setter: (v: string) => void, read: () => string) => void;

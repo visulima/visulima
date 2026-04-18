@@ -24,7 +24,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={2} padding={1}>
-            <Text bold color="cyan">Accordion (single open)</Text>
+            <Text bold color="cyan">
+                Accordion (single open)
+            </Text>
             <Accordion
                 autoFocus
                 items={[
@@ -45,7 +47,9 @@ const App = () => {
                     },
                 ]}
             />
-            <Text bold color="cyan">Collapsible (multi-row body)</Text>
+            <Text bold color="cyan">
+                Collapsible (multi-row body)
+            </Text>
             <Collapsible defaultOpen title="Release notes">
                 <Text>✔ Added Canvas + BarChart primitives</Text>
                 <Text>✔ Added Transition / AnimatePresence</Text>

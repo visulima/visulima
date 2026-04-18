@@ -76,11 +76,11 @@ const formatValue = (raw: string, mask: string, token: string, placeholderChar: 
         if (maskChar === token) {
             const rawChar = raw[rawIndex];
 
-            if (rawChar !== undefined) {
+            if (rawChar === undefined) {
+                output += placeholderChar;
+            } else {
                 output += rawChar;
                 rawIndex += 1;
-            } else {
-                output += placeholderChar;
             }
         } else {
             output += maskChar;
@@ -109,8 +109,8 @@ export default function MaskedInput({
     const maxLength = tokenIndex.length;
 
     const clampedDefault = defaultValue.slice(0, maxLength);
-    const [raw, setRaw] = useState<string>(clampedDefault);
-    const [cursor, setCursor] = useState<number>(clampedDefault.length);
+    const [raw, setRaw] = useState(clampedDefault);
+    const [cursor, setCursor] = useState(clampedDefault.length);
 
     const emit = useCallback(
         (next: string, nextCursor: number) => {
@@ -178,7 +178,7 @@ export default function MaskedInput({
                     return;
                 }
 
-                if (!input || input.length !== 1 || raw.length >= maxLength) {
+                if (input?.length !== 1 || raw.length >= maxLength) {
                     return;
                 }
 

@@ -46,17 +46,10 @@ export type Props = {
  * Automatically resets and replays when `text` changes. `onComplete`
  * fires exactly once per `text` value once it is fully revealed.
  */
-export default function StreamingText({
-    color,
-    cursor = "▊",
-    interval = 20,
-    onComplete,
-    showCursorWhenDone = false,
-    text,
-}: Props): ReactElement {
-    const [visibleLength, setVisibleLength] = useState<number>(0);
+export default function StreamingText({ color, cursor = "▊", interval = 20, onComplete, showCursorWhenDone = false, text }: Props): ReactElement {
+    const [visibleLength, setVisibleLength] = useState(0);
     const onCompleteRef = useRef(onComplete);
-    const hasCompletedRef = useRef<boolean>(false);
+    const hasCompletedRef = useRef(false);
 
     onCompleteRef.current = onComplete;
 

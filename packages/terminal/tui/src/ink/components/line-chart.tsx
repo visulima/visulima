@@ -60,15 +60,15 @@ export type LineChartProps = {
     readonly palette?: ReadonlyArray<LiteralUnion<AnsiColors, string>>;
 
     /**
+     * One or more line series.
+     */
+    readonly series: ReadonlyArray<LineSeries>;
+
+    /**
      * Render the legend row under the plot.
      * @default true
      */
     readonly showLegend?: boolean;
-
-    /**
-     * One or more line series.
-     */
-    readonly series: ReadonlyArray<LineSeries>;
 
     /**
      * Chart body width in character columns.
@@ -114,20 +114,16 @@ export const projectPoint = (
  * Shared drawing path used by LineChart and ScatterPlot. AreaChart wraps
  * this with a fill pass.
  */
-export const drawSeriesOnCanvas = (
-    ctx: CanvasContext,
-    mode: "line" | "scatter",
-    config: RenderConfig,
-): void => {
-    ctx.clear();
+export const drawSeriesOnCanvas = (context: CanvasContext, mode: "line" | "scatter", config: RenderConfig): void => {
+    context.clear();
 
     const { axisColor, seriesList } = config;
-    const pixelWidth = Math.max(1, ctx.width * 2);
-    const pixelHeight = Math.max(1, ctx.height * 4);
+    const pixelWidth = Math.max(1, context.width * 2);
+    const pixelHeight = Math.max(1, context.height * 4);
 
     // Dashed baseline at the bottom of the plot in axis color.
-    for (let cellX = 0; cellX < ctx.width; cellX += 2) {
-        ctx.setCell(cellX, ctx.height - 1, "·", { color: axisColor, dim: true });
+    for (let cellX = 0; cellX < context.width; cellX += 2) {
+        context.setCell(cellX, context.height - 1, "·", { color: axisColor, dim: true });
     }
 
     for (const { color, points } of seriesList) {
@@ -135,7 +131,7 @@ export const drawSeriesOnCanvas = (
             continue;
         }
 
-        const grid = createBrailleGrid(ctx.width, ctx.height);
+        const grid = createBrailleGrid(context.width, context.height);
 
         if (mode === "scatter") {
             for (const point of points) {
@@ -156,7 +152,7 @@ export const drawSeriesOnCanvas = (
             }
         }
 
-        grid.flush(ctx, { color });
+        grid.flush(context, { color });
     }
 };
 
@@ -170,16 +166,18 @@ export default function LineChart({
     maxY,
     minY,
     palette = DEFAULT_PALETTE,
-    showLegend = true,
     series,
+    showLegend = true,
     width = 40,
 }: LineChartProps): ReactElement {
     const config = useMemo<RenderConfig>(() => {
-        const seriesList = series.map((input, index) => ({
-            color: pickSeriesColor(input, index, palette),
-            points: toPoints(input.data),
-            series: input,
-        }));
+        const seriesList = series.map((input, index) => {
+            return {
+                color: pickSeriesColor(input, index, palette),
+                points: toPoints(input.data),
+                series: input,
+            };
+        });
 
         const extents = computeExtents(seriesList);
 
@@ -197,8 +195,8 @@ export default function LineChart({
     return (
         <Box flexDirection="column">
             <Canvas
-                draw={(ctx: CanvasContext) => {
-                    drawSeriesOnCanvas(ctx, "line", config);
+                draw={(context: CanvasContext) => {
+                    drawSeriesOnCanvas(context, "line", config);
                 }}
                 height={height}
                 version={[series, width, height, minY, maxY, axisColor, palette]}

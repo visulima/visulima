@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
+
 /**
  * form-controls.tsx — Button, Checkbox, Switch, RadioGroup, Divider demo
  *
@@ -28,19 +29,25 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Form controls</Text>
-            <Divider length={40} label="Button" />
+            <Text bold color="cyan">
+                Form controls
+            </Text>
+            <Divider label="Button" length={40} />
             <Button autoFocus onPress={() => setPressed((n) => n + 1)}>
                 Click me (
                 {pressed}
                 )
             </Button>
-            <Divider length={40} label="Checkbox & Switch" />
+            <Divider label="Checkbox & Switch" length={40} />
             <Box gap={2}>
-                <Checkbox isChecked={checked} onChange={setChecked}>Accept terms</Checkbox>
-                <Switch onChange={setEnabled} value={enabled}>Enabled</Switch>
+                <Checkbox isChecked={checked} onChange={setChecked}>
+                    Accept terms
+                </Checkbox>
+                <Switch onChange={setEnabled} value={enabled}>
+                    Enabled
+                </Switch>
             </Box>
-            <Divider length={40} label="Radio group" />
+            <Divider label="Radio group" length={40} />
             <RadioGroup
                 defaultValue="medium"
                 onChange={setSize}
