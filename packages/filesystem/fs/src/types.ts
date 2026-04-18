@@ -8,6 +8,102 @@ import type { FIND_UP_STOP } from "./constants";
 type ColorizeMethod = (value: string) => string;
 
 /**
+ * Options accepted by `jsonc-parser`'s `parse` function.
+ */
+export type JsoncParseOptions = {
+    /**
+     * Allow empty content as a valid input. Defaults to `false`.
+     */
+    allowEmptyContent?: boolean;
+
+    /**
+     * Allow trailing commas in arrays and objects. Defaults to `false`.
+     */
+    allowTrailingComma?: boolean;
+
+    /**
+     * Disallow JavaScript-style comments in the input. Defaults to `false` (comments allowed).
+     */
+    disallowComments?: boolean;
+};
+
+/**
+ * Formatting options for `jsonc-parser` edits.
+ */
+export type JsoncFormattingOptions = {
+    /**
+     * The line ending to use in the output.
+     */
+    eol?: string;
+
+    /**
+     * When `true`, insert a final newline when the output does not end with one.
+     */
+    insertFinalNewline?: boolean;
+
+    /**
+     * Indent with spaces (`true`) or tabs (`false`). Defaults to `true`.
+     */
+    insertSpaces?: boolean;
+
+    /**
+     * When `true`, attempt to keep the original line structure when applying edits.
+     */
+    keepLines?: boolean;
+
+    /**
+     * Indent size when {@link JsoncFormattingOptions.insertSpaces | insertSpaces} is `true`.
+     */
+    tabSize?: number;
+};
+
+/**
+ * Options accepted by the `ini` library's `stringify` / `encode` functions.
+ * Kept as a local definition so the types compile without the optional peer installed.
+ */
+export type IniEncodeOptions = {
+    /**
+     * Align `=` signs across the output.
+     */
+    align?: boolean;
+
+    /**
+     * Serialize array values using the `key[]` convention. Defaults to `true`.
+     */
+    bracketedArray?: boolean;
+
+    /**
+     * Append a trailing newline to every section.
+     */
+    newline?: boolean;
+
+    /**
+     * Target platform for section/key escaping. Defaults to the current platform.
+     */
+    platform?: string;
+
+    /**
+     * Name of the top-level section.
+     */
+    section?: string;
+
+    /**
+     * Sort keys alphabetically within sections.
+     */
+    sort?: boolean;
+
+    /**
+     * Write `key = value` with spaces around `=`. Defaults to `false`.
+     */
+    whitespace?: boolean;
+};
+
+/**
+ * Replacer accepted by `JSON5.stringify()`.
+ */
+export type Json5Replacer = (number | string)[] | ((this: unknown, key: string, value: unknown) => unknown) | null;
+
+/**
  * Options for the `glob` and `globSync` functions.
  *
  * Re-exported from [`tinyglobby`](https://github.com/SuperchupuDev/tinyglobby) (which is bundled into the built
@@ -95,7 +191,6 @@ export type ReadFileEncoding = "ascii" | "base64" | "base64url" | "hex" | "latin
 
 /**
  * Options for reading files.
- * @template C - The type of compression used.
  */
 export type ReadFileOptions<C> = {
     /**
@@ -337,7 +432,6 @@ export type RetryOptions = {
  * Options for reading YAML files.
  * Combines options from `yaml` library (DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions)
  * and custom {@link ReadFileOptions}.
- * @template C - The type of compression used.
  */
 
 export type ReadYamlOptions<C> = DocumentOptions & ParseOptions & ReadFileOptions<C> & SchemaOptions & ToJSOptions;
@@ -353,20 +447,170 @@ export type YamlReviver = (key: unknown, value: unknown) => unknown;
  * Options for writing YAML files.
  * Extends {@link WriteFileOptions} and includes options from the `yaml` library for stringification.
  */
-export type WriteYamlOptions = CreateNodeOptions
-    & DocumentOptions
-    & ParseOptions
-    & SchemaOptions
-    & ToStringOptions
-    & WriteFileOptions & {
-        /**
-         * Passed into `yaml.stringify` as the replacer argument.
-         */
-        replacer?: JsonReplacer;
+export type WriteYamlExtras = {
+    /**
+     * Passed into `yaml.stringify` as the replacer argument.
+     */
+    replacer?: JsonReplacer;
 
-        /**
-         * Passed into `yaml.stringify` as the space argument for indentation.
-         * Can be a number of spaces or a string (e.g., a tab character).
-         */
-        space?: number | string;
-    };
+    /**
+     * Passed into `yaml.stringify` as the space argument for indentation.
+     * Can be a number of spaces or a string (e.g., a tab character).
+     */
+    space?: number | string;
+};
+
+export type WriteYamlOptions = CreateNodeOptions & DocumentOptions & ParseOptions & SchemaOptions & ToStringOptions & WriteFileOptions & WriteYamlExtras;
+
+/**
+ * Options for reading TOML files.
+ * Uses `smol-toml`, which does not expose additional parse options.
+ */
+export type ReadTomlOptions<C> = ReadFileOptions<C>;
+
+/**
+ * Options for writing TOML files.
+ * Extends {@link WriteFileOptions}. `smol-toml` does not expose additional stringify options.
+ */
+// eslint-disable-next-line sonarjs/redundant-type-aliases
+export type WriteTomlOptions = WriteFileOptions;
+
+/**
+ * Extra options for JSONC parsing on top of file-reading and code-frame options.
+ */
+export type ReadJsoncExtras = {
+    /**
+     * A function to transform the string content before parsing.
+     * @param source The raw string content of the file.
+     * @returns The transformed string content.
+     */
+    beforeParse?: (source: string) => string;
+};
+
+/**
+ * Options for reading JSONC (JSON with comments) files.
+ * Combines options from `jsonc-parser` and custom {@link ReadFileOptions} and {@link CodeFrameOptions}.
+ */
+export type ReadJsoncOptions<C> = CodeFrameOptions & JsoncParseOptions & ReadFileOptions<C> & ReadJsoncExtras;
+
+/**
+ * Options for writing JSONC files with optional comment preservation.
+ * Extends {@link WriteFileOptions}.
+ */
+export type WriteJsoncOptions = WriteFileOptions & {
+    /**
+     * Detect indentation automatically if the file exists. Default: `false`.
+     */
+    detectIndent?: boolean;
+
+    /**
+     * Formatting options forwarded to `jsonc-parser` when modifying existing files.
+     */
+    formattingOptions?: JsoncFormattingOptions;
+
+    /**
+     * Indentation used when writing a fresh file (no existing file to preserve).
+     * Default: `"\t"`.
+     */
+    indent?: number | string;
+
+    /**
+     * When `true` and the file already exists, preserve existing comments and formatting
+     * by computing a minimal diff against the new data via `jsonc-parser`'s `modify` API. Default: `true`.
+     */
+    preserveComments?: boolean;
+
+    /**
+     * Passed into `JSON.stringify` when writing a fresh file.
+     */
+    replacer?: JsonReplacer;
+};
+
+/**
+ * Type for the `reviver` parameter of `JSON5.parse()`.
+ */
+export type Json5Reviver = (this: unknown, key: string, value: unknown) => unknown;
+
+/**
+ * Extra options for JSON5 parsing on top of file-reading and code-frame options.
+ */
+export type ReadJson5Extras = {
+    /**
+     * A function to transform the string content before parsing.
+     */
+    beforeParse?: (source: string) => string;
+};
+
+/**
+ * Options for reading JSON5 files.
+ */
+export type ReadJson5Options<C> = CodeFrameOptions & ReadFileOptions<C> & ReadJson5Extras;
+
+/**
+ * Options for writing JSON5 files.
+ * Extends {@link WriteFileOptions}.
+ */
+export type WriteJson5Options = WriteFileOptions & {
+    /**
+     * Detect indentation automatically if the file exists. Default: `false`.
+     */
+    detectIndent?: boolean;
+
+    /**
+     * Indentation for pretty-printing.
+     */
+    indent?: number | string;
+
+    /**
+     * Override the quote character used for strings. See `JSON5.stringify`.
+     */
+    quote?: string;
+
+    /**
+     * Passed into `JSON5.stringify`.
+     */
+    replacer?: Json5Replacer;
+};
+
+/**
+ * Options for reading INI files.
+ */
+export type ReadIniOptions<C> = ReadFileOptions<C> & {
+    /**
+     * Parse array values (keys ending with `[]`) into native arrays. Default: `true`.
+     */
+    bracketedArray?: boolean;
+};
+
+/**
+ * Supported INI line-ending values.
+ */
+export type IniLineEnding = "\n" | "\r\n";
+
+/**
+ * Extra options for INI writing on top of the `ini` encoder options and file-writing options.
+ */
+export type WriteIniExtras = {
+    /**
+     * Line ending to write. When omitted and {@link WriteIniOptions.preserveStyle | preserveStyle} is `true`,
+     * the line ending is auto-detected from the existing file. Falls back to `"\n"` otherwise.
+     */
+    eol?: IniLineEnding;
+
+    /**
+     * When `true` and the file already exists, auto-detect and preserve styling described on this type.
+     * Defaults to `true`. Explicit `whitespace` / `eol` values always win over detection.
+     */
+    preserveStyle?: boolean;
+};
+
+/**
+ * Options for writing INI files.
+ *
+ * Extends {@link WriteFileOptions} and `ini`'s {@link IniEncodeOptions}. When an existing file is present and
+ * {@link WriteIniOptions.preserveStyle | preserveStyle} is `true` (the default), the following styling is
+ * detected from that file and applied unless overridden: space around `=` (via {@link IniEncodeOptions.whitespace | whitespace}),
+ * line ending (via {@link WriteIniOptions.eol | eol}), and per-key original lines (including trailing
+ * whitespace and inline `;` / `#` comments) for unchanged values.
+ */
+export type WriteIniOptions = IniEncodeOptions & WriteFileOptions & WriteIniExtras;

@@ -1,0 +1,10 @@
+{
+    // This is a JSONC file with comments
+    "name": "jsonc-example",
+    /* Block comment */
+    "version": "1.0.0",
+    "features": [
+        "comments",
+        "trailing-commas",
+    ],
+}

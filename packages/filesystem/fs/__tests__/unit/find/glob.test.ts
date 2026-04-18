@@ -101,7 +101,7 @@ describe.each([
             matches = await matches;
         }
 
-        expect((matches as string[])).toHaveLength(2);
+        expect(matches as string[]).toHaveLength(2);
         expect((matches as string[]).every((entry) => entry.startsWith(fixture))).toBe(true);
     });
 

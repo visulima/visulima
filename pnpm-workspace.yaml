@@ -236,6 +236,7 @@ catalogs:
     html-entities: 2.6.0
     html-tags: ^5.1.0
     http-errors: ^2.0.1
+    ini: ^5.0.0
     is-ci: ^4.1.0
     is-fs-case-sensitive: ^2.0.0
     is-html: ^3.2.0
@@ -244,6 +245,8 @@ catalogs:
     jiti: ^2.6.1
     jsdom: 29.0.2
     json-schema: 0.4.0
+    json5: ^2.2.3
+    jsonc-parser: ^3.3.1
     marked: 18.0.0
     mediabunny: 1.40.1
     mjml: ^4.18.0
@@ -274,6 +277,7 @@ catalogs:
     safe-stable-stringify: ^2.5.0
     serve: ^14.2.6
     sharp: ^0.34.5
+    smol-toml: ^1.5.1
     sort-package-json: 3.6.1
     standard: ^17.1.2
     string-strip-html: ^13.5.3
@@ -428,12 +432,16 @@ catalogs:
     cors: 2.8.6
     github-slugger: 2.0.0
     handlebars: 4.7.9
+    ini: ^5.0.0
+    json5: ^2.2.3
+    jsonc-parser: ^3.3.1
     mjml: 4.18.0
     next: 16.2.3
     pkijs: 3.4.0
     rate-limiter-flexible: 11.0.0
     redoc: 2.5.2
     rotating-file-stream: 3.2.9
+    smol-toml: ^1.5.1
     swagger-ui-dist: 5.32.4
     yaml: 2.8.3
   prod:
@@ -684,6 +692,7 @@ catalogs:
     '@types/fs-extra': 11.0.4
     '@types/hast': 3.0.4
     '@types/http-errors': ^2.0.5
+    '@types/ini': ^4.1.1
     '@types/json-schema': 7.0.15
     '@types/jstoxml': ^5.0.0
     '@types/koa': 3.0.2
