@@ -80,10 +80,7 @@ const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial
     });
 
     return {
-        callClient<K extends keyof ClientFunctions>(
-            name: K,
-            ...args: Parameters<ClientFunctions[K]>
-        ): void {
+        callClient<K extends keyof ClientFunctions>(name: K, ...args: Parameters<ClientFunctions[K]>): void {
             server.ws.send({
                 data: {
                     args,

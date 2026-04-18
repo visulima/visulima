@@ -96,7 +96,7 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
             return;
         }
 
-        let entries: Dirent<string>[];
+        let entries: Dirent[];
 
         try {
             entries = await fs.readdir(directory, { encoding: "utf8", withFileTypes: true });
