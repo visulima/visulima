@@ -77,9 +77,9 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                        header: inverse.yellow(" Command Options "),
-                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                    }
+                          header: inverse.yellow(" Command Options "),
+                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                      }
                     : undefined,
                 { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {

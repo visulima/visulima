@@ -128,7 +128,7 @@ describe("nested commands", () => {
                 execute: vi.fn(),
                 name: "staging",
             });
-        }).toThrow("Command with path \"deploy staging\" already exists");
+        }).toThrow('Command with path "deploy staging" already exists');
     });
 
     it("should support runCommand with nested command paths", async () => {
@@ -222,6 +222,6 @@ describe("nested commands", () => {
                 execute: vi.fn(),
                 name: "test",
             });
-        }).toThrow("Command name \"-invalid\" must start with a letter");
+        }).toThrow('Command name "-invalid" must start with a letter');
     });
 });
