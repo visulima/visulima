@@ -292,7 +292,7 @@ class ErrorOverlay extends HTMLElement {
             balloonCount: root.querySelector("#__v_o__balloon_count"),
             balloonGroup: root.querySelector("#__v_o__balloon_group"),
             balloonText: root.querySelector("#__v_o__balloon_text"),
-            fileButton: root.querySelector("button[class*=\"underline\"]"),
+            fileButton: root.querySelector('button[class*="underline"]'),
             heading: root.querySelector("#__v_o__heading"),
             historyIndicator: root.querySelector("#__v_o__history_indicator"),
             historyLayerDepth: root.querySelector("#__v_o__history_layer_depth"),
@@ -493,7 +493,7 @@ class ErrorOverlay extends HTMLElement {
                         ? `${currentError.originalFilePath}:${currentError.originalFileLine}:${currentError.originalFileColumn}`
                         : "Unknown location",
                     currentError.message || "No error message available",
-                    ...codeFrame ? ["", codeFrame] : [],
+                    ...(codeFrame ? ["", codeFrame] : []),
                     "",
                     "## Stack Trace",
                     currentError.stack || "No stack trace available",
@@ -541,8 +541,8 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeFocusTrap() {
-        const FOCUSABLE_SELECTORS
-            = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])";
+        const FOCUSABLE_SELECTORS =
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
         this._addEventListener(this.root, "keydown", (event) => {
             if (event.key !== "Tab") {
@@ -696,8 +696,8 @@ class ErrorOverlay extends HTMLElement {
                 const stackElement = stackHost && stackHost.querySelector("div:last-child");
 
                 if (stackHost && stackElement) {
-                    const stackText
-                        = mode === "compiled"
+                    const stackText =
+                        mode === "compiled"
                             ? String(currentError.compiledStack || this.__v_oPayload.compiledStack || currentError.stack || "")
                             : String(currentError.originalStack || currentError.stack || this.__v_oPayload.originalStack || this.__v_oPayload.stack || "");
 
@@ -799,8 +799,8 @@ class ErrorOverlay extends HTMLElement {
                 modeSwitch.classList.add("hidden");
             }
 
-            const originalButton = this.root.querySelector("[data-flame-mode=\"original\"]");
-            const compiledButton = this.root.querySelector("[data-flame-mode=\"compiled\"]");
+            const originalButton = this.root.querySelector('[data-flame-mode="original"]');
+            const compiledButton = this.root.querySelector('[data-flame-mode="compiled"]');
 
             if (originalButton) {
                 originalButton.style.display = hasOriginal ? "" : "none";
@@ -815,7 +815,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                let codeFrame = "<div class=\"no-code-frame font-mono py-4 px-5\">No code frame could be generated.</div>";
+                let codeFrame = '<div class="no-code-frame font-mono py-4 px-5">No code frame could be generated.</div>';
 
                 // Try current error's code frame first
                 if (mode === "compiled" && currentError.compiledCodeFrameContent) {
@@ -1008,8 +1008,8 @@ class ErrorOverlay extends HTMLElement {
         const isDark = currentTheme === "dark";
 
         const rootElement = this.__elements?.root;
-        const darkButton = this.root.querySelector("[data-v-o-theme-click-value=\"dark\"]");
-        const lightButton = this.root.querySelector("[data-v-o-theme-click-value=\"light\"]");
+        const darkButton = this.root.querySelector('[data-v-o-theme-click-value="dark"]');
+        const lightButton = this.root.querySelector('[data-v-o-theme-click-value="light"]');
 
         if (isDark) {
             if (darkButton) {

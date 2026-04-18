@@ -145,9 +145,9 @@ const realignOriginalPosition = (compiledSource: string, compiledLine: number, c
     const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
 
     return (
-        tryTokenBasedSearch(candidateToken, originalLines)
-        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
-        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
+        tryTokenBasedSearch(candidateToken, originalLines) ||
+        tryLineSubstringSearch(compiledLineText.trim(), originalLines) ||
+        tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
     );
 };
 
