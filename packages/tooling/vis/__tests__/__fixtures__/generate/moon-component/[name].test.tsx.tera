@@ -1,0 +1,10 @@
+---
+if: withTest
+---
+import { render } from "@testing-library/react";
+import { {{ name | pascal_case }} } from "./{{ name | pascal_case }}";
+
+test("renders {{ name }}", () => {
+    const { getByText } = render(<{{ name | pascal_case }} label="ok" />);
+    expect(getByText("ok")).toBeTruthy();
+});

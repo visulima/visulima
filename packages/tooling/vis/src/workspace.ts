@@ -244,6 +244,20 @@ interface VisConfig {
      */
     generator?: {
         /**
+         * Authorization token forwarded to giget when fetching
+         * `git://`/`npm://` remote templates. Falls back to
+         * `GIGET_AUTH` / `GITHUB_TOKEN` / `GH_TOKEN` env vars.
+         */
+        auth?: string;
+
+        /**
+         * Prefer locally cached remote templates over re-downloading.
+         * Overridable per invocation via `--prefer-offline`.
+         * @default false
+         */
+        preferOffline?: boolean;
+
+        /**
          * Extra directories to scan for templates. Each directory is
          * checked for both native templates (`&lt;name>.ts`) and
          * moon-format directories (containing `template.yml`).
