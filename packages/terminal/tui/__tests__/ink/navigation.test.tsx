@@ -2,15 +2,7 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-    CommandPalette,
-    ContentSwitcher,
-    Menu,
-    OptionList,
-    Text,
-    Tooltip,
-    render,
-} from "../../src/ink/index";
+import { CommandPalette, ContentSwitcher, Menu, OptionList, render, Text, Tooltip } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
@@ -42,9 +34,9 @@ afterEach(async () => {
 
 describe(Menu, () => {
     const items = [
-        { id: "new", label: "New file", hotkey: "Ctrl+N" },
-        { id: "open", label: "Open", hotkey: "Ctrl+O" },
-        { id: "save", label: "Save", hotkey: "Ctrl+S" },
+        { hotkey: "Ctrl+N", id: "new", label: "New file" },
+        { hotkey: "Ctrl+O", id: "open", label: "Open" },
+        { hotkey: "Ctrl+S", id: "save", label: "Save" },
     ];
 
     it("should render all items and hotkeys", async () => {
@@ -80,7 +72,7 @@ describe(Menu, () => {
                 autoFocus
                 items={[
                     { id: "a", label: "A" },
-                    { id: "b", label: "B", isDisabled: true },
+                    { id: "b", isDisabled: true, label: "B" },
                     { id: "c", label: "C" },
                 ]}
                 onSelect={onSelect}
@@ -146,7 +138,7 @@ describe(Tooltip, () => {
 
 describe(CommandPalette, () => {
     const commands = [
-        { id: "new", label: "File: New", keywords: ["create"] },
+        { id: "new", keywords: ["create"], label: "File: New" },
         { id: "open", label: "File: Open" },
         { id: "format", label: "Format document" },
     ];
@@ -154,9 +146,7 @@ describe(CommandPalette, () => {
     it("should render all commands when no query is entered", async () => {
         expect.assertions(3);
 
-        const { getOutput } = await setup(
-            <CommandPalette commands={commands} onSelect={vi.fn()} />,
-        );
+        const { getOutput } = await setup(<CommandPalette commands={commands} onSelect={vi.fn()} />);
         const output = getOutput();
 
         expect(output).toContain("File: New");
@@ -167,9 +157,7 @@ describe(CommandPalette, () => {
     it("should filter commands as the user types", async () => {
         expect.assertions(2);
 
-        const { getOutput, stdin } = await setup(
-            <CommandPalette commands={commands} onSelect={vi.fn()} />,
-        );
+        const { getOutput, stdin } = await setup(<CommandPalette commands={commands} onSelect={vi.fn()} />);
 
         emitReadable(stdin, "for");
         await delay(50);
@@ -184,23 +172,20 @@ describe(CommandPalette, () => {
         expect.assertions(1);
 
         const onSelect = vi.fn();
-        const { stdin } = await setup(
-            <CommandPalette commands={commands} onSelect={onSelect} />,
-        );
+        const { stdin } = await setup(<CommandPalette commands={commands} onSelect={onSelect} />);
 
         emitReadable(stdin, "\r");
         await delay(50);
 
-        expect(onSelect).toHaveBeenCalled();
+        // The initial focused command is the first entry with an empty query.
+        expect(onSelect).toHaveBeenCalledWith("new", "");
     });
 
     it("should call onCancel on Escape", async () => {
         expect.assertions(1);
 
         const onCancel = vi.fn();
-        const { stdin } = await setup(
-            <CommandPalette commands={commands} onCancel={onCancel} onSelect={vi.fn()} />,
-        );
+        const { stdin } = await setup(<CommandPalette commands={commands} onCancel={onCancel} onSelect={vi.fn()} />);
 
         emitReadable(stdin, "\u001B");
         await delay(50);
@@ -211,17 +196,15 @@ describe(CommandPalette, () => {
 
 describe(ContentSwitcher, () => {
     const options = [
-        { id: "one", label: "One", content: <Text>First content</Text> },
-        { id: "two", label: "Two", content: <Text>Second content</Text> },
-        { id: "three", label: "Three", content: <Text>Third content</Text> },
+        { content: <Text>First content</Text>, id: "one", label: "One" },
+        { content: <Text>Second content</Text>, id: "two", label: "Two" },
+        { content: <Text>Third content</Text>, id: "three", label: "Three" },
     ];
 
     it("should render all segments and the first panel by default", async () => {
         expect.assertions(4);
 
-        const { getOutput } = await setup(
-            <ContentSwitcher autoFocus options={options} />,
-        );
+        const { getOutput } = await setup(<ContentSwitcher autoFocus options={options} />);
         const output = getOutput();
 
         expect(output).toContain("One");
@@ -234,9 +217,7 @@ describe(ContentSwitcher, () => {
         expect.assertions(2);
 
         const onChange = vi.fn();
-        const { getOutput, stdin } = await setup(
-            <ContentSwitcher autoFocus onChange={onChange} options={options} />,
-        );
+        const { getOutput, stdin } = await setup(<ContentSwitcher autoFocus onChange={onChange} options={options} />);
 
         emitReadable(stdin, "\u001B[C");
         await delay(50);
@@ -249,7 +230,7 @@ describe(ContentSwitcher, () => {
 describe(OptionList, () => {
     const options = [
         { id: "a", label: "First" },
-        { id: "b", label: "Second", description: "Second description" },
+        { description: "Second description", id: "b", label: "Second" },
         { id: "c", label: "Third" },
     ];
 

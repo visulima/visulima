@@ -2,7 +2,7 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Accordion, Button, Checkbox, Collapsible, RadioGroup, Switch, render } from "../../src/ink/index";
+import { Accordion, Button, Checkbox, Collapsible, RadioGroup, render, Switch, Text } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -155,9 +155,7 @@ describe(Switch, () => {
     it("should use custom labels", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(
-            <Switch autoFocus labels={["no", "yes"]} />,
-        );
+        const { getOutput } = await setup(<Switch autoFocus labels={["no", "yes"]} />);
         const output = getOutput();
 
         expect(output).toContain("no");
@@ -195,9 +193,7 @@ describe(RadioGroup, () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(
-            <RadioGroup autoFocus defaultValue="a" onChange={onChange} options={options} />,
-        );
+        const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
         await delay(50);
@@ -209,15 +205,7 @@ describe(RadioGroup, () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(
-            <RadioGroup
-                autoFocus
-                commitOnNavigate={false}
-                defaultValue="a"
-                onChange={onChange}
-                options={options}
-            />,
-        );
+        const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
         await delay(50);
@@ -229,15 +217,7 @@ describe(RadioGroup, () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(
-            <RadioGroup
-                autoFocus
-                commitOnNavigate={false}
-                defaultValue="a"
-                onChange={onChange}
-                options={options}
-            />,
-        );
+        const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
         await delay(50);
@@ -251,9 +231,7 @@ describe(RadioGroup, () => {
         expect.assertions(1);
 
         const onSubmit = vi.fn();
-        const { stdin } = await setup(
-            <RadioGroup autoFocus defaultValue="a" onSubmit={onSubmit} options={options} />,
-        );
+        const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onSubmit={onSubmit} options={options} />);
 
         emitReadable(stdin, "\r");
         await delay(50);
@@ -282,7 +260,7 @@ describe(Collapsible, () => {
 
         const { getOutput } = await setup(
             <Collapsible autoFocus defaultOpen title="Section">
-                visible body
+                <Text>visible body</Text>
             </Collapsible>,
         );
 
@@ -295,7 +273,7 @@ describe(Collapsible, () => {
         const onToggle = vi.fn();
         const { stdin } = await setup(
             <Collapsible autoFocus onToggle={onToggle} title="Section">
-                body
+                <Text>body</Text>
             </Collapsible>,
         );
 
@@ -308,8 +286,8 @@ describe(Collapsible, () => {
 
 describe(Accordion, () => {
     const items = [
-        { id: "1", title: "Panel One", content: "Body one" },
-        { id: "2", title: "Panel Two", content: "Body two" },
+        { content: <Text>Body one</Text>, id: "1", title: "Panel One" },
+        { content: <Text>Body two</Text>, id: "2", title: "Panel Two" },
     ];
 
     it("should render all panel titles", async () => {
@@ -325,9 +303,7 @@ describe(Accordion, () => {
     it("should start with defaultExpanded items open", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <Accordion autoFocus defaultExpanded={["1"]} items={items} />,
-        );
+        const { getOutput } = await setup(<Accordion autoFocus defaultExpanded={["1"]} items={items} />);
 
         expect(getOutput()).toContain("Body one");
     });
@@ -335,14 +311,7 @@ describe(Accordion, () => {
     it("should allow multiple panels open when allowMultiple is true", async () => {
         expect.assertions(2);
 
-        const { getOutput, stdin } = await setup(
-            <Accordion
-                allowMultiple
-                autoFocus
-                defaultExpanded={["1"]}
-                items={items}
-            />,
-        );
+        const { getOutput, stdin } = await setup(<Accordion allowMultiple autoFocus defaultExpanded={["1"]} items={items} />);
 
         emitReadable(stdin, "j");
         await delay(50);
