@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 
+import { ensureDirSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { cleanHuskyFromScript } from "../migrate/constants";
@@ -18,7 +19,7 @@ const COMMON_SH_SOURCE_RE = /^\. "\$\(dirname "\$0"\)\/common\.sh"\s*/m;
  */
 const detectHuskyDirectory = (root: string): string | undefined => {
     for (const directory of HUSKY_DIRECTORIES) {
-        if (existsSync(join(root, directory)) && statSync(join(root, directory)).isDirectory()) {
+        if (isAccessibleSync(join(root, directory)) && statSync(join(root, directory)).isDirectory()) {
             return directory;
         }
     }
@@ -51,7 +52,7 @@ const readHuskyHooks = (root: string, huskyDirectory: string): Map<string, strin
             continue;
         }
 
-        hooks.set(entry, readFileSync(entryPath, "utf8"));
+        hooks.set(entry, readFileSync(entryPath));
     }
 
     return hooks;
@@ -67,15 +68,15 @@ const transformHookScript = (content: string): string => content.replace(COMMON_
  * Detects the package manager used in the project.
  */
 const detectPackageManager = (root: string): PackageManagerType => {
-    if (existsSync(join(root, "pnpm-lock.yaml")) || existsSync(join(root, "pnpm-workspace.yaml"))) {
+    if (isAccessibleSync(join(root, "pnpm-lock.yaml")) || isAccessibleSync(join(root, "pnpm-workspace.yaml"))) {
         return "pnpm";
     }
 
-    if (existsSync(join(root, "yarn.lock"))) {
+    if (isAccessibleSync(join(root, "yarn.lock"))) {
         return "yarn";
     }
 
-    if (existsSync(join(root, "bun.lockb")) || existsSync(join(root, "bun.lock"))) {
+    if (isAccessibleSync(join(root, "bun.lockb")) || isAccessibleSync(join(root, "bun.lock"))) {
         return "bun";
     }
 
@@ -143,11 +144,11 @@ const processScript = (scripts: Record<string, string>, scriptName: string, scri
 const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScriptReferences: string[] } => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return { modified: false, removedScriptReferences: [] };
     }
 
-    const content = readFileSync(packageJsonPath, "utf8");
+    const content: string = readFileSync(packageJsonPath);
     const packageJson = JSON.parse(content) as Record<string, unknown>;
     const removedScriptReferences: string[] = [];
     const scripts = packageJson["scripts"] as Record<string, string> | undefined;
@@ -215,7 +216,7 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console)
     // Copy and transform hook scripts
     const targetDirectory = join(root, hooksDirectory);
 
-    mkdirSync(targetDirectory, { recursive: true });
+    ensureDirSync(targetDirectory);
 
     let migratedCount = 0;
 

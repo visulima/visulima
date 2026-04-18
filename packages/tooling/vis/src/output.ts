@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
-
 import { hyperlink } from "@visulima/ansi";
+import { readJsonSync } from "@visulima/fs";
 import isInCi from "is-in-ci";
 
 /**
@@ -137,7 +136,7 @@ const getVersion = (): string => {
     try {
         const pkgPath = new URL("../../package.json", import.meta.url);
 
-        return (JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string }).version;
+        return (readJsonSync(pkgPath) as { version: string }).version;
     } catch {
         return "0.0.0";
     }

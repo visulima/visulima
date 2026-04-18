@@ -99,9 +99,10 @@ const ignore: Command = {
         }
 
         let workspace;
+        let packageJsons;
 
         try {
-            ({ workspace } = discoverWorkspace(workspaceRoot, visConfig));
+            ({ packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig));
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
 
@@ -133,7 +134,7 @@ const ignore: Command = {
             // overlaps with the child-process round-trip. Saves
             // 20–50ms per deploy on warm CI runners.
             const reachablePromise = isRefReachable(workspaceRoot, baseRef);
-            const projectGraph = buildProjectGraph(workspaceRoot, workspace);
+            const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
             if (!(await reachablePromise)) {
                 debug(`base ref ${baseRef} not reachable — falling back to HEAD~1`);

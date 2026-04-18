@@ -9,10 +9,10 @@
  * - 500ms timeout prevents network from delaying exit
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
 
+import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 import { bold, cyan, dim, green, SYMBOLS, yellow } from "./output";
@@ -37,8 +37,8 @@ const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "
 
 const readCache = (): UpgradeCheckCache | undefined => {
     try {
-        if (existsSync(CACHE_FILE)) {
-            return JSON.parse(readFileSync(CACHE_FILE, "utf8")) as UpgradeCheckCache;
+        if (isAccessibleSync(CACHE_FILE)) {
+            return readJsonSync(CACHE_FILE) as UpgradeCheckCache;
         }
     } catch {
         // Corrupted cache, will be recreated
@@ -49,9 +49,7 @@ const readCache = (): UpgradeCheckCache | undefined => {
 
 const writeCache = (cache: UpgradeCheckCache): void => {
     try {
-        if (!existsSync(VIS_HOME)) {
-            mkdirSync(VIS_HOME, { recursive: true });
-        }
+        ensureDirSync(VIS_HOME);
 
         writeFileSync(CACHE_FILE, JSON.stringify(cache));
     } catch {

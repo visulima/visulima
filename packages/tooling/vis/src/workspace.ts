@@ -1043,6 +1043,13 @@ export interface VisProjectConfiguration extends ProjectConfiguration {
 export type ProjectOptionsIndex = Map<string, Record<string, VisTargetConfiguration>>;
 
 /**
+ * Parsed `package.json` files from the discovery pass, keyed by
+ * project name. {@link buildProjectGraph} consumes this to avoid
+ * re-parsing every `package.json` just to extract dependency info.
+ */
+export type PackageJsonIndex = Map<string, PackageJson>;
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
@@ -1050,11 +1057,13 @@ const discoverWorkspace = (
     config: VisConfig = {},
 ): {
     config: VisConfig;
+    packageJsons: PackageJsonIndex;
     projectOptions: ProjectOptionsIndex;
     workspace: WorkspaceConfiguration;
 } => {
     const projects: Record<string, VisProjectConfiguration> = {};
     const projectOptions: ProjectOptionsIndex = new Map();
+    const packageJsons: PackageJsonIndex = new Map();
 
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
     const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
@@ -1080,6 +1089,8 @@ const discoverWorkspace = (
         if (!pkg?.name) {
             continue;
         }
+
+        packageJsons.set(pkg.name, pkg);
 
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
         const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
@@ -1128,13 +1139,18 @@ const discoverWorkspace = (
         };
     }
 
-    return { config, projectOptions, workspace: { projects } };
+    return { config, packageJsons, projectOptions, workspace: { projects } };
 };
 
 /**
  * Builds the project dependency graph from package.json dependencies.
+ *
+ * If `packageJsons` is provided (e.g. from {@link discoverWorkspace}),
+ * each project's `package.json` is reused from memory instead of
+ * re-read + re-parsed off disk — on a 40-project monorepo that's 40
+ * fewer reads per `vis run`.
  */
-const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfiguration): ProjectGraph => {
+const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfiguration, packageJsons?: PackageJsonIndex): ProjectGraph => {
     const nodes: Record<string, ProjectGraphProjectNode> = {};
     const dependencies: Record<string, ProjectGraphDependency[]> = {};
     const projectNames = new Set(Object.keys(workspace.projects));
@@ -1148,7 +1164,7 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 
         dependencies[name] = [];
 
-        const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
+        const pkg = packageJsons?.get(name) ?? readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
 
         if (!pkg) {
             continue;

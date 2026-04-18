@@ -28,8 +28,8 @@ const affected: Command = {
         }
 
         const workspaceRoot = wsRoot;
-        const { workspace } = discoverWorkspace(workspaceRoot, visConfig);
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace);
+        const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
         const validScopes = new Set(["deep", "direct", "none"]);
         const downstreamValue = (options.downstream as string) ?? "deep";

@@ -8,9 +8,7 @@
  * - bun: CLI-only --ignore (no config file), vis provides the config layer
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
-import { isAccessibleSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
@@ -159,7 +157,7 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
         case "pnpm": {
             const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-            if (!existsSync(filePath)) {
+            if (!isAccessibleSync(filePath)) {
                 actions.push("pnpm-workspace.yaml not found. Cannot sync.");
                 break;
             }
@@ -184,7 +182,7 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
                 break;
             }
 
-            let content = readFileSync(filePath, "utf8");
+            let content = readFileSync(filePath);
 
             if (mergedCves.length > 0) {
                 const cveBlock = `  ignoreCves:\n${mergedCves.map((id) => `    - ${id}`).join("\n")}\n`;
@@ -225,7 +223,7 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
         case "yarn": {
             const filePath = join(workspaceRoot, ".yarnrc.yml");
 
-            if (!existsSync(filePath)) {
+            if (!isAccessibleSync(filePath)) {
                 actions.push(".yarnrc.yml not found. Cannot sync.");
                 break;
             }
@@ -241,7 +239,7 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
                 break;
             }
 
-            let content = readFileSync(filePath, "utf8");
+            let content = readFileSync(filePath);
 
             const advisoryBlock = `npmAuditIgnoreAdvisories:\n${merged.map((id) => `  - "${id}"`).join("\n")}\n`;
 

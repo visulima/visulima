@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { unlinkSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { backupFile } from "./backup";
@@ -36,9 +37,9 @@ interface SecretlintJsonConfig {
     rules?: SecretlintRule[];
 }
 
-const detectSecretlintConfig = (root: string): string | undefined => SECRETLINT_CONFIG_NAMES.find((name) => existsSync(join(root, name)));
+const detectSecretlintConfig = (root: string): string | undefined => SECRETLINT_CONFIG_NAMES.find((name) => isAccessibleSync(join(root, name)));
 
-const detectSecretlintIgnore = (root: string): string | undefined => SECRETLINT_IGNORE_NAMES.find((name) => existsSync(join(root, name)));
+const detectSecretlintIgnore = (root: string): string | undefined => SECRETLINT_IGNORE_NAMES.find((name) => isAccessibleSync(join(root, name)));
 
 /**
  * Extract the set of rule / preset IDs from a secretlint config. Only parses
@@ -90,7 +91,7 @@ const removeSecretlintConfigFiles = (root: string, dryRun: boolean, logger: Migr
     for (const name of [...SECRETLINT_CONFIG_NAMES, ...SECRETLINT_IGNORE_NAMES]) {
         const path = join(root, name);
 
-        if (!existsSync(path)) {
+        if (!isAccessibleSync(path)) {
             continue;
         }
 
@@ -109,13 +110,14 @@ const removeSecretlintConfigFiles = (root: string, dryRun: boolean, logger: Migr
 const convertIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
     const source = join(root, ".secretlintignore");
 
-    if (!existsSync(source)) {
+    if (!isAccessibleSync(source)) {
         return;
     }
 
     // secretlintignore is gitignore-style (paths/globs); .gitleaksignore is fingerprint-style.
     // Not a direct translation — we append paths as `--exclude` guidance only.
-    const lines = readFileSync(source, "utf8")
+    const content: string = readFileSync(source);
+    const lines = content
         .split(/\r?\n/)
         .map((l) => l.trim())
         .filter((l) => l && !l.startsWith("#"));
@@ -138,7 +140,7 @@ const convertIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
 const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return;
     }
 
@@ -204,11 +206,11 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     for (const rel of candidates) {
         const abs = join(root, rel);
 
-        if (!existsSync(abs)) {
+        if (!isAccessibleSync(abs)) {
             continue;
         }
 
-        const content = readFileSync(abs, "utf8");
+        const content = readFileSync(abs);
 
         if (!/\bsecretlint\b/.test(content)) {
             continue;

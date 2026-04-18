@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
+import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import type { LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
@@ -46,7 +47,7 @@ interface DuplicatePackage {
 const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
     const nodeModulesPath = join(workspaceRoot, "node_modules");
 
-    if (!existsSync(nodeModulesPath)) {
+    if (!isAccessibleSync(nodeModulesPath)) {
         return [];
     }
 
@@ -56,9 +57,9 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
     const rootPkgPath = join(workspaceRoot, "package.json");
     let devDeps = new Set<string>();
 
-    if (existsSync(rootPkgPath)) {
+    if (isAccessibleSync(rootPkgPath)) {
         try {
-            const pkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+            const pkg = readJsonSync(rootPkgPath) as {
                 devDependencies?: Record<string, string>;
             };
 
@@ -93,11 +94,11 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
             const pkgJsonPath = join(fullPath, "package.json");
 
             try {
-                if (!statSync(fullPath).isDirectory() || !existsSync(pkgJsonPath)) {
+                if (!statSync(fullPath).isDirectory() || !isAccessibleSync(pkgJsonPath)) {
                     continue;
                 }
 
-                const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as { version?: string };
+                const pkg = readJsonSync(pkgJsonPath) as { version?: string };
 
                 if (pkg.version) {
                     packages.push({
@@ -110,7 +111,7 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
                 // Recurse into nested node_modules (npm non-flat installs)
                 const nestedNm = join(fullPath, "node_modules");
 
-                if (existsSync(nestedNm)) {
+                if (isAccessibleSync(nestedNm)) {
                     scanDir(nestedNm, "");
                 }
             } catch {
@@ -147,7 +148,7 @@ const findDuplicateDependencies = (workspaceRoot: string, pmName: string): Dupli
     let lockContent: string;
 
     try {
-        lockContent = readFileSync(join(workspaceRoot, lockInfo.file), "utf8");
+        lockContent = readFileSync(join(workspaceRoot, lockInfo.file));
     } catch {
         return [];
     }

@@ -1,7 +1,7 @@
 import { rmSync } from "node:fs";
-import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
+import { join } from "@visulima/path";
 
 import { error as errorOutput, info } from "../output";
 import { detectPm, runInstall } from "../pm-runner";

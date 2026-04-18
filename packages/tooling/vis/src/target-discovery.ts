@@ -1,3 +1,5 @@
+import { createInterface } from "node:readline";
+
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 
 import type { ProjectOptionsIndex } from "./workspace";
@@ -149,8 +151,6 @@ export const promptTargetInteractively = async (targets: string[]): Promise<stri
     if (!process.stdin.isTTY || !process.stdout.isTTY) {
         return undefined;
     }
-
-    const { createInterface } = await import("node:readline");
 
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 

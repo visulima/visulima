@@ -1,4 +1,6 @@
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync } from "node:fs";
+
+import { isAccessibleSync } from "@visulima/fs";
 
 import type { MigrationReport } from "./types";
 
@@ -9,13 +11,13 @@ import type { MigrationReport } from "./types";
  * the backup path is recorded for the migration summary.
  */
 export const backupFile = (path: string, report?: MigrationReport): void => {
-    if (!existsSync(path)) {
+    if (!isAccessibleSync(path)) {
         return;
     }
 
     const backupPath = `${path}.bak`;
 
-    if (existsSync(backupPath) || (report?.backupsCreated.includes(backupPath) ?? false)) {
+    if (isAccessibleSync(backupPath) || (report?.backupsCreated.includes(backupPath) ?? false)) {
         return;
     }
 

@@ -15,9 +15,7 @@
  * @see https://bun.sh/docs/pm/overrides
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
-import { isAccessibleSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 import { coerce } from "semver";
@@ -179,11 +177,11 @@ const detectIndent = (content: string): string => {
 const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<string, string>): void => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         throw new Error(`pnpm-workspace.yaml not found at ${filePath}. Cannot write overrides for pnpm v10+.`);
     }
 
-    let content = readFileSync(filePath, "utf8");
+    let content = readFileSync(filePath);
 
     const overrideLines = Object.entries(sorted)
         .map(([key, value]) => `  '${key}': '${value}'`)
@@ -205,7 +203,7 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
  * rather than appended to the end of the file.
  */
 const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unknown>, sorted: Record<string, string>, pm: PackageManagerName): void => {
-    const raw = readFileSync(pkgJsonPath, "utf8");
+    const raw = readFileSync(pkgJsonPath);
     const indent = detectIndent(raw);
 
     if (pm === "pnpm") {
@@ -253,7 +251,7 @@ const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unkn
  * @returns Lists of added and updated package names.
  */
 const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo): ApplyOverridesResult => {
-    const raw = readFileSync(pkgJsonPath, "utf8");
+    const raw = readFileSync(pkgJsonPath);
     const pkgJson = JSON.parse(raw) as Record<string, unknown>;
 
     const { overrides: existing, source } = readOverrides(workspaceRoot, pkgJson, pm);
@@ -336,7 +334,7 @@ const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string
         const filePath = join(workspaceRoot, name);
 
         try {
-            return readFileSync(filePath, "utf8");
+            return readFileSync(filePath);
         } catch {
             continue;
         }

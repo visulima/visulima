@@ -4,8 +4,9 @@
  * Uses `node:readline` (same pattern as `vis init`) to keep dependencies minimal.
  */
 
-import { resolve } from "node:path";
 import { createInterface } from "node:readline";
+
+import { resolve } from "@visulima/path";
 
 import { bold, cyan, dim } from "../../output";
 import { randomName } from "./random-name";

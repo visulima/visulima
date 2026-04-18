@@ -6,8 +6,7 @@
  * so we translate the algorithm casing here.
  */
 
-import { readFileSync } from "node:fs";
-
+import { readFileSync } from "@visulima/fs";
 import type { LockFileEntry, LockFileIntegrityAlgorithm, LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
@@ -92,7 +91,7 @@ export const readLockfilePackages = (workspaceRoot: string): { packages: Map<str
         let content: string;
 
         try {
-            content = readFileSync(join(workspaceRoot, file), "utf8");
+            content = readFileSync(join(workspaceRoot, file));
         } catch {
             continue;
         }

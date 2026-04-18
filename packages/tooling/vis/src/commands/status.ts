@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { enforceProjectConstraints } from "@visulima/task-runner";
 
@@ -22,8 +23,8 @@ const status: Command = {
             throw new Error("Could not determine workspace root.");
         }
 
-        const { config, workspace } = discoverWorkspace(wsRoot, visConfig);
-        const projectGraph = buildProjectGraph(wsRoot, workspace);
+        const { config, packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
+        const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
         const projectCount = Object.keys(workspace.projects).length;
         const targetCount = new Set(Object.values(workspace.projects).flatMap((p) => Object.keys(p.targets ?? {}))).size;
 
@@ -40,7 +41,7 @@ const status: Command = {
         let cacheHitRate: string | undefined;
         const runsDir = join(wsRoot, ".task-runner", "runs");
 
-        if (existsSync(runsDir)) {
+        if (isAccessibleSync(runsDir)) {
             const files = readdirSync(runsDir)
                 .filter((f) => f.endsWith(".json"))
                 .sort();
@@ -49,7 +50,7 @@ const status: Command = {
 
             for (const file of files.slice(-20)) {
                 try {
-                    const data = JSON.parse(readFileSync(join(runsDir, file), "utf8")) as {
+                    const data = readJsonSync(join(runsDir, file)) as {
                         stats?: { cached?: number; total?: number };
                     };
 

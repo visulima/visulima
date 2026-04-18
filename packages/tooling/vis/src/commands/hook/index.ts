@@ -1,8 +1,9 @@
-import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, writeFileSync } from "node:fs";
 import { cwd } from "node:process";
 import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
@@ -67,7 +68,7 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
         return;
     }
 
-    if (!existsSync(join(root, hooksDirectory, "pre-commit"))) {
+    if (!isAccessibleSync(join(root, hooksDirectory, "pre-commit"))) {
         writeFileSync(join(root, hooksDirectory, "pre-commit"), "#!/usr/bin/env sh\n", { mode: 0o755 });
     }
 
@@ -103,12 +104,12 @@ const executeAdd = (what: string | undefined, hooksDirectory: string, logger: { 
     const root = cwd();
     const hookPath = join(root, hooksDirectory, "pre-commit");
 
-    if (!existsSync(join(root, hooksDirectory))) {
+    if (!isAccessibleSync(join(root, hooksDirectory))) {
         throw new Error(`Hooks directory ${hooksDirectory}/ does not exist. Run \`vis hook install\` first.`);
     }
 
-    if (existsSync(hookPath)) {
-        const existing = readFileSync(hookPath, "utf8");
+    if (isAccessibleSync(hookPath)) {
+        const existing: string = readFileSync(hookPath);
 
         if (existing.includes(SECRETS_HOOK_MARKER)) {
             logger.info(`Secrets hook already present in ${hookPath}.`);

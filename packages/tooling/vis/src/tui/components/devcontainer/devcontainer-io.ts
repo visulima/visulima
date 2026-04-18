@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 
+import { ensureDirSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { stripJsonComments } from "@visulima/fs/utils";
 import { dirname, join } from "@visulima/path";
 
@@ -17,11 +18,11 @@ export interface ReadResult {
 export const readDevcontainerJson = (workspaceRoot: string): ReadResult | null => {
     const filePath = join(workspaceRoot, ".devcontainer", "devcontainer.json");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return null;
     }
 
-    const raw = readFileSync(filePath, "utf8");
+    const raw = readFileSync(filePath);
     const stripped = stripJsonComments(raw);
     const hadComments = stripped !== raw;
 
@@ -45,6 +46,6 @@ export const writeDevcontainerJson = (workspaceRoot: string, config: Devcontaine
     const dir = outputPath ? dirname(outputPath) : join(workspaceRoot, ".devcontainer");
     const filePath = outputPath ?? join(dir, "devcontainer.json");
 
-    mkdirSync(dir, { recursive: true });
+    ensureDirSync(dir);
     writeFileSync(filePath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 };

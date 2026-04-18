@@ -1,9 +1,10 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
 import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 const VIS_HOME = join(homedir(), ".vis");
 
@@ -23,12 +24,12 @@ const cleanShellProfiles = (logger: Console): string[] => {
     const cleaned: string[] = [];
 
     for (const profile of SHELL_PROFILES) {
-        if (!existsSync(profile)) {
+        if (!isAccessibleSync(profile)) {
             continue;
         }
 
         try {
-            const content = readFileSync(profile, "utf8");
+            const content: string = readFileSync(profile);
             const lines = content.split("\n");
             const filtered = lines.filter((line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "));
 
@@ -51,7 +52,7 @@ const implode: Command = {
         ["vis implode --yes", "Non-interactive uninstall (CI)"],
     ],
     execute: async ({ logger, options }) => {
-        if (!existsSync(VIS_HOME)) {
+        if (!isAccessibleSync(VIS_HOME)) {
             logger.info("vis is not installed (no ~/.vis directory found).");
 
             return;
@@ -60,7 +61,7 @@ const implode: Command = {
         logger.info("This will remove:");
         logger.info(`  ${VIS_HOME}/`);
 
-        const shellFiles = SHELL_PROFILES.filter((p) => existsSync(p) && readFileSync(p, "utf8").includes(".vis"));
+        const shellFiles = SHELL_PROFILES.filter((p) => isAccessibleSync(p) && (readFileSync(p) as string).includes(".vis"));
 
         for (const file of shellFiles) {
             logger.info(`  Lines in ${file}`);

@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { unlinkSync, writeFileSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config";
@@ -23,7 +24,7 @@ interface MigrateLogger {
 /**
  * Check if a standalone lint-staged config file exists.
  */
-const hasStandaloneLintStagedConfig = (root: string): boolean => LINT_STAGED_ALL_CONFIG_FILES.some((file) => existsSync(join(root, file)));
+const hasStandaloneLintStagedConfig = (root: string): boolean => LINT_STAGED_ALL_CONFIG_FILES.some((file) => isAccessibleSync(join(root, file)));
 
 /**
  * Check if a standalone lint-staged config exists in a format that can't be
@@ -31,14 +32,14 @@ const hasStandaloneLintStagedConfig = (root: string): boolean => LINT_STAGED_ALL
  */
 const hasUnsupportedLintStagedConfig = (root: string): boolean => {
     for (const filename of LINT_STAGED_OTHER_CONFIG_FILES) {
-        if (existsSync(join(root, filename))) {
+        if (isAccessibleSync(join(root, filename))) {
             return true;
         }
     }
 
     const lintstagedrcPath = join(root, ".lintstagedrc");
 
-    return existsSync(lintstagedrcPath) && !isJsonFile(lintstagedrcPath);
+    return isAccessibleSync(lintstagedrcPath) && !isJsonFile(lintstagedrcPath);
 };
 
 /**
@@ -51,7 +52,7 @@ const hasStagedConfigInVisConfig = (root: string): boolean => {
         return false;
     }
 
-    const content = readFileSync(configPath, "utf8");
+    const content = readFileSync(configPath);
 
     return STAGED_KEY_RE.test(content);
 };
@@ -62,7 +63,7 @@ const hasStagedConfigInVisConfig = (root: string): boolean => {
 const detectLintStagedConfig = (root: string): string | undefined => {
     const packageJsonPath = join(root, "package.json");
 
-    if (existsSync(packageJsonPath)) {
+    if (isAccessibleSync(packageJsonPath)) {
         const pkg = readJsonFile<Record<string, unknown>>(packageJsonPath);
 
         if (pkg?.["lint-staged"]) {
@@ -71,7 +72,7 @@ const detectLintStagedConfig = (root: string): string | undefined => {
     }
 
     for (const file of LINT_STAGED_ALL_CONFIG_FILES) {
-        if (existsSync(join(root, file))) {
+        if (isAccessibleSync(join(root, file))) {
             return file;
         }
     }
@@ -119,7 +120,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
     const configPath = findVisConfigFile(root);
 
     if (configPath) {
-        const content = readFileSync(configPath, "utf8");
+        const content = readFileSync(configPath);
 
         // Try to insert after `defineConfig({` or `export default {`
         const snippet = generateStagedConfigSnippet(config);
@@ -166,11 +167,11 @@ const removeLintStagedFromPackageJson = (root: string): { configRemoved: boolean
     const packageJsonPath = join(root, "package.json");
     const result = { configRemoved: false, dependencyRemoved: false };
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return result;
     }
 
-    const content = readFileSync(packageJsonPath, "utf8");
+    const content = readFileSync(packageJsonPath);
     const pkg = JSON.parse(content) as Record<string, unknown>;
     let modified = false;
 
@@ -214,7 +215,7 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
     for (const file of LINT_STAGED_ALL_CONFIG_FILES) {
         const filePath = join(root, file);
 
-        if (existsSync(filePath)) {
+        if (isAccessibleSync(filePath)) {
             backupFile(filePath, report);
             unlinkSync(filePath);
 
@@ -232,11 +233,11 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
 const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => {
     const hookPath = join(root, hooksDirectory, "pre-commit");
 
-    if (!existsSync(hookPath)) {
+    if (!isAccessibleSync(hookPath)) {
         return false;
     }
 
-    const existing = readFileSync(hookPath, "utf8");
+    const existing = readFileSync(hookPath);
 
     if (existing.includes("vis staged")) {
         return false;
@@ -340,7 +341,7 @@ const rewriteHooks = (root: string, options: { silent?: boolean }, logger: Migra
     const hooksDirectories = [".vis-hooks", ".husky"];
 
     for (const hooksDirectory of hooksDirectories) {
-        if (existsSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {
+        if (isAccessibleSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {
             report.gitHooksConfigured = true;
 
             if (!options.silent) {

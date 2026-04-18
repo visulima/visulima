@@ -20,7 +20,7 @@ import isInCi from "is-in-ci";
 import { applyBranchScope, resolveCacheDirectory } from "../cache-directory";
 import { analyzeFlakiness, formatFlakinessTable } from "../flakiness";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../hooks";
-import { compareDuration, formatTimingSummary } from "../run-report";
+import { compareDuration, formatTimingSummary, loadRunSummaries } from "../run-report";
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import { appendToShellHistory } from "../shell-history";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../target-discovery";
@@ -260,6 +260,12 @@ interface ExecutorDependencies {
     affectedFiles?: string[];
 
     /**
+     * Host OS resolved once at run-start so the per-task executor
+     * doesn't call `os.platform()` on every invocation.
+     */
+    currentOs: ReturnType<typeof detectCurrentOs>;
+
+    /**
      * The directory the user launched `vis` from, captured before any
      * workspace/package discovery changes cwd. Surfaced to child tasks
      * as `INIT_CWD`, matching pnpm/npm/yarn convention so scripts can
@@ -296,172 +302,198 @@ interface ExecutorDependencies {
  * `envFile`, `runFromWorkspaceRoot`, `retryCount`/`retryDelay`, `mutex`,
  * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
-const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
-    const { affectedFiles, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, stdinRegistry, workspaceRoot } = deps;
 
-    const visOptions = getTaskOptions(task);
-    const currentOs = detectCurrentOs();
+/**
+ * Per-run env-file cache: (cwd, envFileSpec) → parsed env vars.
+ * With `envFile: true` or a shared config pointing at one dotenv
+ * path, every task would otherwise re-read + re-parse the same file.
+ */
+type EnvFileCache = Map<string, Record<string, string>>;
 
-    const resolvedCwd = resolveCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
+const loadEnvFileCached = (cache: EnvFileCache, cwd: string, envFileSpec: NonNullable<VisTargetOptions["envFile"]>): Record<string, string> => {
+    const key = `${cwd}\0${typeof envFileSpec === "string" ? envFileSpec : String(envFileSpec)}`;
+    const hit = cache.get(key);
 
-    const rawCommand = task.overrides["command"] as string | undefined;
-
-    if (!rawCommand) {
-        return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
+    if (hit) {
+        return hit;
     }
 
-    const commandWithArgs = appendForwardedArgs(rawCommand, task);
-    const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
+    const parsed = loadEnvFile(cwd, envFileSpec);
 
-    const customShell = resolveTargetShell(visOptions, currentOs);
-    const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+    cache.set(key, parsed);
 
-    const envFileVars = visOptions?.envFile ? loadEnvFile(resolvedCwd, visOptions.envFile) : undefined;
+    return parsed;
+};
 
-    const affectedFilesEnv: Record<string, string> = {};
+const createConcurrentExecutor = (deps: ExecutorDependencies) => {
+    const envFileCache: EnvFileCache = new Map();
 
-    if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
-        affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
-    }
+    return async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
+        const { affectedFiles, currentOs, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, stdinRegistry, workspaceRoot } = deps;
 
-    const mergedEnv: Record<string, string> = {
-        INIT_CWD: initCwd,
-        ...envFileVars,
-        ...execOptions.env,
-        ...affectedFilesEnv,
-    };
+        const visOptions = getTaskOptions(task);
 
-    // PTY stdio is enabled when either an interactive stdin registry is
-    // present (live TUI dev tasks) or the target config opts in via
-    // `options.pty`. In both cases output flows through TerminalBuffer,
-    // which normalizes ANSI escapes into a deterministic final frame.
-    const ptyOptIn = visOptions?.pty === true;
-    const ptyInteractive = Boolean(stdinRegistry);
-    const isPty = ptyInteractive || ptyOptIn;
+        const resolvedCwd = resolveCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
 
-    if (isPty) {
-        task.cache = false;
-    }
+        const rawCommand = task.overrides["command"] as string | undefined;
 
-    const output = isPty ? undefined : new OutputRingBuffer(MAX_OUTPUT_BYTES);
-    const termBuf = isPty ? new TerminalBuffer(MAX_OUTPUT_BYTES) : undefined;
-
-    // Held across the runOnce lifetime so the timeout watchdog can
-    // SIGTERM the child process when the wall-clock budget is exceeded.
-    let killCurrentProcess: ((signal?: string) => void) | undefined;
-
-    const onEvent = (event: ProcessEvent): void => {
-        if (event.kind === "started") {
-            killCurrentProcess = event.kill;
-
-            if (event.write && stdinRegistry) {
-                stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
-            }
+        if (!rawCommand) {
+            return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
         }
 
-        if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
+        const commandWithArgs = appendForwardedArgs(rawCommand, task);
+        const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
+
+        const customShell = resolveTargetShell(visOptions, currentOs);
+        const command = customShell ? `${customShell} -c ${singleQuoteEscape(commandWithAffected)}` : commandWithAffected;
+
+        const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;
+
+        const affectedFilesEnv: Record<string, string> = {};
+
+        if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
+            affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
+        }
+
+        const mergedEnv: Record<string, string> = {
+            INIT_CWD: initCwd,
+            ...envFileVars,
+            ...execOptions.env,
+            ...affectedFilesEnv,
+        };
+
+        // PTY stdio is enabled when either an interactive stdin registry is
+        // present (live TUI dev tasks) or the target config opts in via
+        // `options.pty`. In both cases output flows through TerminalBuffer,
+        // which normalizes ANSI escapes into a deterministic final frame.
+        const ptyOptIn = visOptions?.pty === true;
+        const ptyInteractive = Boolean(stdinRegistry);
+        const isPty = ptyInteractive || ptyOptIn;
+
+        if (isPty) {
+            task.cache = false;
+        }
+
+        const output = isPty ? undefined : new OutputRingBuffer(MAX_OUTPUT_BYTES);
+        const termBuf = isPty ? new TerminalBuffer(MAX_OUTPUT_BYTES) : undefined;
+
+        // Held across the runOnce lifetime so the timeout watchdog can
+        // SIGTERM the child process when the wall-clock budget is exceeded.
+        let killCurrentProcess: ((signal?: string) => void) | undefined;
+
+        const onEvent = (event: ProcessEvent): void => {
+            if (event.kind === "started") {
+                killCurrentProcess = event.kill;
+
+                if (event.write && stdinRegistry) {
+                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                }
+            }
+
+            if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
             // Stream the raw chunk to the lifecycle first so plugins
             // (notifiers, metrics, log shippers) see output as it
             // arrives — before we store it in a buffer for the
             // buffered `printTaskTerminalOutput` at task-end.
-            if (event.kind === "stdout") {
-                lifeCycle?.onTaskStdout?.(task, event.text);
-            } else {
-                lifeCycle?.onTaskStderr?.(task, event.text);
-            }
-
-            if (termBuf) {
-                termBuf.write(event.text);
-
-                // Stream to the live TUI only when a stdin registry is
-                // wired up; non-interactive PTY tasks are captured and
-                // flushed at task completion via terminalOutput.
-                if (ptyInteractive) {
-                    onOutputReplace?.(task.id, termBuf.toString());
+                if (event.kind === "stdout") {
+                    lifeCycle?.onTaskStdout?.(task, event.text);
+                } else {
+                    lifeCycle?.onTaskStderr?.(task, event.text);
                 }
-            } else {
-                const line = `${event.text}\n`;
 
-                output!.append(line);
-                onOutput?.(task.id, line);
+                if (termBuf) {
+                    termBuf.write(event.text);
+
+                    // Stream to the live TUI only when a stdin registry is
+                    // wired up; non-interactive PTY tasks are captured and
+                    // flushed at task completion via terminalOutput.
+                    if (ptyInteractive) {
+                        onOutputReplace?.(task.id, termBuf.toString());
+                    }
+                } else {
+                    const line = `${event.text}\n`;
+
+                    output!.append(line);
+                    onOutput?.(task.id, line);
+                }
             }
-        }
 
-        if (event.kind === "close" && stdinRegistry) {
-            stdinRegistry.delete(task.id);
-        }
-    };
+            if (event.kind === "close" && stdinRegistry) {
+                stdinRegistry.delete(task.id);
+            }
+        };
 
-    const runOnce = async (): Promise<{ code: number; terminalOutput: string }> => {
-        const requestedRetries = visOptions?.retryCount ?? 0;
-        const retryDelay = visOptions?.retryDelay;
-        // Global retry budget caps per-task retries from above. The budget
-        // grants up to the requested amount; when it's exhausted, tasks
-        // run with retries disabled so a single flaky task can't eat the
-        // entire CI wall clock.
-        const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
+        const runOnce = async (): Promise<{ code: number; terminalOutput: string }> => {
+            const requestedRetries = visOptions?.retryCount ?? 0;
+            const retryDelay = visOptions?.retryDelay;
+            // Global retry budget caps per-task retries from above. The budget
+            // grants up to the requested amount; when it's exhausted, tasks
+            // run with retries disabled so a single flaky task can't eat the
+            // entire CI wall clock.
+            const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
-        const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
-        let timedOut = false;
-        let timeoutHandle: NodeJS.Timeout | undefined;
+            const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
+            let timedOut = false;
+            let timeoutHandle: NodeJS.Timeout | undefined;
 
-        if (timeoutMs > 0) {
-            timeoutHandle = setTimeout(() => {
-                timedOut = true;
-                killCurrentProcess?.("SIGTERM");
-            }, timeoutMs);
-        }
+            if (timeoutMs > 0) {
+                timeoutHandle = setTimeout(() => {
+                    timedOut = true;
+                    killCurrentProcess?.("SIGTERM");
+                }, timeoutMs);
+            }
 
-        let result: Awaited<ReturnType<typeof runConcurrently>>;
+            let result: Awaited<ReturnType<typeof runConcurrently>>;
 
-        try {
-            result = await runConcurrently(
-                [
+            try {
+                result = await runConcurrently(
+                    [
+                        {
+                            command,
+                            cwd: resolvedCwd,
+                            env: mergedEnv,
+                            name: task.id,
+                            ...(isPty
+                                ? {
+                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                    stdin: "pty" as const,
+                                }
+                                : {}),
+                        },
+                    ],
                     {
-                        command,
-                        cwd: resolvedCwd,
-                        env: mergedEnv,
-                        name: task.id,
-                        ...(isPty
-                            ? {
-                                ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                stdin: "pty" as const,
-                            }
-                            : {}),
+                        killOthers: ["failure"],
+                        onEvent,
+                        ...(retryCount > 0 ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } } : {}),
                     },
-                ],
-                {
-                    killOthers: ["failure"],
-                    onEvent,
-                    ...(retryCount > 0 ? { restart: { delay: retryDelay ?? "exponential", tries: retryCount } } : {}),
-                },
-            );
-        } finally {
-            if (timeoutHandle) {
-                clearTimeout(timeoutHandle);
+                );
+            } finally {
+                if (timeoutHandle) {
+                    clearTimeout(timeoutHandle);
+                }
             }
-        }
 
-        const closeEvent = result.closeEvents[0];
-        const buffered = termBuf ? termBuf.toString() : output!.toString();
+            const closeEvent = result.closeEvents[0];
+            const buffered = termBuf ? termBuf.toString() : output!.toString();
 
-        if (timedOut) {
+            if (timedOut) {
             // Mark the result with a distinctive prefix so reporters and
             // CI log grep can surface timeouts separately from ordinary
             // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
+                return {
+                    code: 124,
+                    terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
+                };
+            }
+
             return {
-                code: 124,
-                terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
+                code: closeEvent?.exitCode ?? 1,
+                terminalOutput: buffered,
             };
-        }
-
-        return {
-            code: closeEvent?.exitCode ?? 1,
-            terminalOutput: buffered,
         };
-    };
 
-    return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
+        return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
+    };
 };
 
 /**
@@ -587,8 +619,8 @@ const run: Command = {
         // matches pnpm/npm/yarn semantics so scripts can resolve paths
         // relative to where the user actually ran the command.
         const invocationCwd = process.cwd();
-        const { config, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace);
+        const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
         let rawSelector = argument[0];
 
@@ -975,6 +1007,7 @@ const run: Command = {
             const mutexPool: MutexPool = new Map();
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
+                currentOs,
                 initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
@@ -1121,6 +1154,7 @@ const run: Command = {
 
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
+                currentOs,
                 initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
@@ -1128,7 +1162,7 @@ const run: Command = {
                 workspaceRoot,
             });
 
-            const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults }> => {
+            const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults; runHistory: Awaited<ReturnType<typeof loadRunSummaries>> }> => {
                 const runStart = Date.now();
 
                 const results = await defaultTaskRunner(initialTasks, runnerOptions, {
@@ -1156,12 +1190,18 @@ const run: Command = {
                 }
 
                 const timingLine = formatTimingSummary(results, durationMs);
-                const durationComparison = compareDuration(workspaceRoot, durationMs);
+
+                // Load historical summaries once here and share with
+                // the flakiness analyzer below — both consumers need
+                // the same files and duplicate reads dominate when
+                // the runs/ dir has accumulated hundreds of entries.
+                const runHistory = loadRunSummaries(workspaceRoot);
+                const durationComparison = compareDuration(workspaceRoot, durationMs, runHistory);
 
                 logger.info("");
                 logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
 
-                return { hasFailure, results };
+                return { hasFailure, results, runHistory };
             };
 
             const firstRun = await runOnce();
@@ -1269,7 +1309,10 @@ const run: Command = {
 
             if (hasFailure) {
                 if (options.flaky !== false) {
-                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 });
+                    // Reuse the history already loaded for the timing
+                    // comparison above — the runs/ directory hasn't
+                    // changed since this turn of the loop started.
+                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
 
                     if (flakyStats.length > 0) {
                         logger.info("");

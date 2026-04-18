@@ -1,3 +1,5 @@
+import { createInterface } from "node:readline";
+
 import { relative } from "@visulima/path";
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 
@@ -132,7 +134,6 @@ export const resolveSelector = async (
 
     if (!bestProject) {
         if (process.stdout.isTTY) {
-            const { createInterface } = await import("node:readline");
             const rl = createInterface({ input: process.stdin, output: process.stderr });
             const allNames = Object.keys(workspace.projects).sort();
 

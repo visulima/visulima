@@ -98,8 +98,8 @@ const taskWhy: Command = {
             throw new Error(`Invalid task ID "${taskId}" — expected format "project:target".`);
         }
 
-        const { workspace } = discoverWorkspace(wsRoot, visConfig);
-        const projectGraph = buildProjectGraph(wsRoot, workspace);
+        const { packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
+        const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
 
         const [projectName, targetName] = taskId.split(":", 2) as [string, string];
         const project = workspace.projects[projectName];

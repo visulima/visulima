@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { unlinkSync, writeFileSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config";
@@ -20,18 +21,18 @@ interface MigrateLogger {
 
 // Detection ---------------------------------------------------------
 
-const hasStandaloneNanoStagedConfig = (root: string): boolean => NANO_STAGED_ALL_CONFIG_FILES.some((file) => existsSync(join(root, file)));
+const hasStandaloneNanoStagedConfig = (root: string): boolean => NANO_STAGED_ALL_CONFIG_FILES.some((file) => isAccessibleSync(join(root, file)));
 
 const hasUnsupportedNanoStagedConfig = (root: string): boolean => {
     for (const filename of NANO_STAGED_OTHER_CONFIG_FILES) {
-        if (existsSync(join(root, filename))) {
+        if (isAccessibleSync(join(root, filename))) {
             return true;
         }
     }
 
     const nanoStagedRcPath = join(root, ".nanostagedrc");
 
-    return existsSync(nanoStagedRcPath) && !isJsonFile(nanoStagedRcPath);
+    return isAccessibleSync(nanoStagedRcPath) && !isJsonFile(nanoStagedRcPath);
 };
 
 const hasStagedConfigInVisConfig = (root: string): boolean => {
@@ -41,13 +42,13 @@ const hasStagedConfigInVisConfig = (root: string): boolean => {
         return false;
     }
 
-    return STAGED_KEY_RE.test(readFileSync(configPath, "utf8"));
+    return STAGED_KEY_RE.test(readFileSync(configPath));
 };
 
 const detectNanoStagedConfig = (root: string): string | undefined => {
     const packageJsonPath = join(root, "package.json");
 
-    if (existsSync(packageJsonPath)) {
+    if (isAccessibleSync(packageJsonPath)) {
         const pkg = readJsonFile<Record<string, unknown>>(packageJsonPath);
 
         if (pkg?.["nano-staged"]) {
@@ -56,7 +57,7 @@ const detectNanoStagedConfig = (root: string): string | undefined => {
     }
 
     for (const file of NANO_STAGED_ALL_CONFIG_FILES) {
-        if (existsSync(join(root, file))) {
+        if (isAccessibleSync(join(root, file))) {
             return file;
         }
     }
@@ -93,7 +94,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
     const configPath = findVisConfigFile(root);
 
     if (configPath) {
-        const content = readFileSync(configPath, "utf8");
+        const content = readFileSync(configPath);
         const snippet = generateStagedConfigSnippet(config);
         let updated: string | undefined;
 
@@ -132,11 +133,11 @@ const removeNanoStagedFromPackageJson = (root: string): { configRemoved: boolean
     const packageJsonPath = join(root, "package.json");
     const result = { configRemoved: false, dependencyRemoved: false };
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return result;
     }
 
-    const content = readFileSync(packageJsonPath, "utf8");
+    const content = readFileSync(packageJsonPath);
     const pkg = JSON.parse(content) as Record<string, unknown>;
     let modified = false;
 
@@ -175,7 +176,7 @@ const removeNanoStagedConfigFiles = (root: string, report: MigrationReport): voi
     for (const file of NANO_STAGED_ALL_CONFIG_FILES) {
         const filePath = join(root, file);
 
-        if (existsSync(filePath)) {
+        if (isAccessibleSync(filePath)) {
             backupFile(filePath, report);
             unlinkSync(filePath);
 
@@ -189,11 +190,11 @@ const removeNanoStagedConfigFiles = (root: string, report: MigrationReport): voi
 const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => {
     const hookPath = join(root, hooksDirectory, "pre-commit");
 
-    if (!existsSync(hookPath)) {
+    if (!isAccessibleSync(hookPath)) {
         return false;
     }
 
-    const existing = readFileSync(hookPath, "utf8");
+    const existing = readFileSync(hookPath);
 
     if (existing.includes("vis staged")) {
         return false;
@@ -286,7 +287,7 @@ const rewriteHooks = (root: string, options: { silent?: boolean }, logger: Migra
     const hooksDirectories = [".vis-hooks", ".husky"];
 
     for (const hooksDirectory of hooksDirectories) {
-        if (existsSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {
+        if (isAccessibleSync(join(root, hooksDirectory)) && rewritePreCommitHook(root, hooksDirectory)) {
             report.gitHooksConfigured = true;
 
             if (!options.silent) {

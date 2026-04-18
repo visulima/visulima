@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
 import { platform } from "node:os";
 
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { TargetConfiguration } from "@visulima/task-runner";
 
@@ -461,14 +461,14 @@ const resolveEnvCascade = (nodeEnv: string | undefined): string[] => {
 const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
     const absolutePath = envFile.startsWith("/") ? envFile : join(projectRoot, envFile);
 
-    if (!existsSync(absolutePath)) {
+    if (!isAccessibleSync(absolutePath)) {
         return {};
     }
 
     let contents: string;
 
     try {
-        contents = readFileSync(absolutePath, "utf8");
+        contents = readFileSync(absolutePath);
     } catch {
         return {};
     }

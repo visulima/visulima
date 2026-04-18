@@ -10,10 +10,10 @@
  * - Dimmed styling to avoid being intrusive
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
 
+import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 interface TipContext {
@@ -46,8 +46,8 @@ interface TipState {
 
 const readState = (): TipState => {
     try {
-        if (existsSync(STATE_FILE)) {
-            return JSON.parse(readFileSync(STATE_FILE, "utf8")) as TipState;
+        if (isAccessibleSync(STATE_FILE)) {
+            return readJsonSync(STATE_FILE) as TipState;
         }
     } catch {
         // Corrupted state, reset
@@ -58,9 +58,7 @@ const readState = (): TipState => {
 
 const writeState = (state: TipState): void => {
     try {
-        const dir = join(homedir(), ".vis");
-
-        mkdirSync(dir, { recursive: true });
+        ensureDirSync(join(homedir(), ".vis"));
         writeFileSync(STATE_FILE, JSON.stringify(state));
     } catch {
         // Non-critical, skip

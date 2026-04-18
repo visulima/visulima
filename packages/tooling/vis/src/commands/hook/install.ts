@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 
+import { ensureDirSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { InstallResult } from "./constants";
@@ -93,7 +94,7 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
         return { isError: true, message: String(stderr) };
     }
 
-    mkdirSync(internal(), { recursive: true });
+    ensureDirSync(internal());
     writeFileSync(internal(".gitignore"), "*");
     writeFileSync(internal("h"), hookScript(directory), { mode: 0o755 });
 

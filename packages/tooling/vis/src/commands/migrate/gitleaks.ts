@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { unlinkSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { backupFile } from "./backup";
@@ -41,24 +42,24 @@ interface GitleaksUpstreamFinding {
     Tags?: string[];
 }
 
-const detectGitleaksConfig = (root: string): string | undefined => GITLEAKS_CONFIG_NAMES.find((name) => existsSync(join(root, name)));
+const detectGitleaksConfig = (root: string): string | undefined => GITLEAKS_CONFIG_NAMES.find((name) => isAccessibleSync(join(root, name)));
 
 const detectGitleaksIgnore = (root: string): string | undefined => {
     const path = join(root, ".gitleaksignore");
 
-    return existsSync(path) ? path : undefined;
+    return isAccessibleSync(path) ? path : undefined;
 };
 
 const detectGitleaksBaseline = (root: string): string | undefined => {
     for (const name of GITLEAKS_BASELINE_CANDIDATES) {
         const path = join(root, name);
 
-        if (!existsSync(path)) {
+        if (!isAccessibleSync(path)) {
             continue;
         }
 
         try {
-            const parsed = JSON.parse(readFileSync(path, "utf8")) as unknown;
+            const parsed = JSON.parse(readFileSync(path)) as unknown;
 
             // Heuristic: gitleaks reports start with PascalCase RuleID
             if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object" && parsed[0] !== null && "RuleID" in parsed[0]) {
@@ -98,7 +99,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
 
     const target = join(root, ".secrets-baseline.json");
 
-    if (existsSync(target) && source !== target) {
+    if (isAccessibleSync(target) && source !== target) {
         addMigrationWarning(report, `.secrets-baseline.json already exists — leaving ${source} in place`);
 
         return;
@@ -129,7 +130,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
 const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return;
     }
 
@@ -196,11 +197,11 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     for (const rel of candidates) {
         const abs = join(root, rel);
 
-        if (!existsSync(abs)) {
+        if (!isAccessibleSync(abs)) {
             continue;
         }
 
-        const content = readFileSync(abs, "utf8");
+        const content = readFileSync(abs);
 
         if (!/\bgitleaks\b/.test(content)) {
             continue;
@@ -273,7 +274,8 @@ const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
         return;
     }
 
-    const lines = readFileSync(source, "utf8")
+    const content: string = readFileSync(source);
+    const lines = content
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter((line) => line.length > 0 && !line.startsWith("#"));
@@ -285,7 +287,7 @@ const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
     }
 
     const baselinePath = join(root, ".secrets-baseline.json");
-    const existing = existsSync(baselinePath) ? (readJsonFile<FingerprintFinding[]>(baselinePath) ?? []) : [];
+    const existing = isAccessibleSync(baselinePath) ? (readJsonFile<FingerprintFinding[]>(baselinePath) ?? []) : [];
     const seen = new Set(existing.map((f) => `${f.file}:${f.ruleId}:${String(f.startLine)}`));
     const merged = [...existing];
 
@@ -306,7 +308,7 @@ const migrateIgnoreFile = (root: string, dryRun: boolean, logger: MigrateLogger,
 
     backupFile(source, report);
 
-    if (existsSync(baselinePath)) {
+    if (isAccessibleSync(baselinePath)) {
         backupFile(baselinePath, report);
     }
 

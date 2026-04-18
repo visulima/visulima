@@ -1,3 +1,5 @@
+import { createInterface } from "node:readline";
+
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
@@ -2027,7 +2029,6 @@ const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], pa
 // --- Interactive selection ---
 
 const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<OutdatedEntry[]> => {
-    const { createInterface } = await import("node:readline");
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
     const ask = (question: string): Promise<string> =>

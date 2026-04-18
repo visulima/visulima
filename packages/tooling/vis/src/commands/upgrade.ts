@@ -2,6 +2,8 @@ import { execSync, spawnSync } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
 
+import pkg from "../../package.json";
+
 const upgrade: Command = {
     argument: {
         description: "Target version (defaults to latest)",
@@ -19,14 +21,7 @@ const upgrade: Command = {
 
         logger.info("info: checking for updates...");
 
-        // Get current version
-        let currentVersion: string;
-
-        try {
-            currentVersion = require("../../package.json").version;
-        } catch {
-            currentVersion = "unknown";
-        }
+        const currentVersion = pkg.version ?? "unknown";
 
         // Query npm registry for latest
         let latestVersion: string;

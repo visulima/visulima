@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { cyan, dim, green, red, yellow } from "@visulima/colorize";
+import { readFileSync } from "@visulima/fs";
 import { isAbsolute, relative, resolve } from "@visulima/path";
 import type { Finding, RuleInfo } from "@visulima/secret-scanner";
 
@@ -25,7 +25,7 @@ const groupByFile = (findings: Finding[]): Map<string, Finding[]> => {
 
 const loadLines = (file: string): string[] | undefined => {
     try {
-        return readFileSync(file, "utf8").split(/\r?\n/);
+        return readFileSync(file).split(/\r?\n/);
     } catch {
         return undefined;
     }

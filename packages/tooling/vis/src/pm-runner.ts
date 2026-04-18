@@ -3,9 +3,10 @@
  * Falls back to JS-based detection when native bindings are unavailable.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, parse as parsePath } from "node:path";
+import { readdirSync } from "node:fs";
 
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { dirname, join, parse as parsePath } from "@visulima/path";
 import { coerce, lt } from "semver";
 
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "./native-binding";
@@ -33,8 +34,8 @@ const readPackageManagerVersion = (cwd: string, pmName: string): string | undefi
     try {
         const pkgPath = join(cwd, "package.json");
 
-        if (existsSync(pkgPath)) {
-            const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { packageManager?: string };
+        if (isAccessibleSync(pkgPath)) {
+            const pkg = readJsonSync(pkgPath) as { packageManager?: string };
 
             if (pkg.packageManager?.startsWith(`${pmName}@`)) {
                 return pkg.packageManager.slice(pmName.length + 1);
@@ -48,38 +49,47 @@ const readPackageManagerVersion = (cwd: string, pmName: string): string | undefi
 };
 
 /**
- * Checks if a directory contains lockfiles or packageManager config for any PM.
+ * Checks if a directory contains lockfiles or packageManager config
+ * for any PM. Reads the listing once + probes a Set rather than
+ * `stat`-ing each candidate filename individually.
  */
 const detectPmInDir = (dir: string): PmInfo | undefined => {
-    if (existsSync(join(dir, "pnpm-lock.yaml")) || existsSync(join(dir, "pnpm-workspace.yaml"))) {
+    let entries: Set<string>;
+
+    try {
+        entries = new Set(readdirSync(dir));
+    } catch {
+        return undefined;
+    }
+
+    if (entries.has("pnpm-lock.yaml") || entries.has("pnpm-workspace.yaml")) {
         return { name: "pnpm", version: readPackageManagerVersion(dir, "pnpm") ?? "latest" };
     }
 
-    if (existsSync(join(dir, "yarn.lock"))) {
+    if (entries.has("yarn.lock")) {
         return { name: "yarn", version: readPackageManagerVersion(dir, "yarn") ?? "latest" };
     }
 
-    if (existsSync(join(dir, "bun.lock")) || existsSync(join(dir, "bun.lockb"))) {
+    if (entries.has("bun.lock") || entries.has("bun.lockb")) {
         return { name: "bun", version: readPackageManagerVersion(dir, "bun") ?? "latest" };
     }
 
-    if (existsSync(join(dir, "package-lock.json")) || existsSync(join(dir, "npm-shrinkwrap.json"))) {
+    if (entries.has("package-lock.json") || entries.has("npm-shrinkwrap.json")) {
         return { name: "npm", version: readPackageManagerVersion(dir, "npm") ?? "latest" };
     }
 
-    // Try packageManager field in package.json
+    if (!entries.has("package.json")) {
+        return undefined;
+    }
+
     try {
-        const pkgPath = join(dir, "package.json");
+        const pkg = readJsonSync(join(dir, "package.json")) as { packageManager?: string };
 
-        if (existsSync(pkgPath)) {
-            const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { packageManager?: string };
+        if (pkg.packageManager) {
+            const match = /^(pnpm|yarn|npm|bun)@(.+)$/.exec(pkg.packageManager);
 
-            if (pkg.packageManager) {
-                const match = /^(pnpm|yarn|npm|bun)@(.+)$/.exec(pkg.packageManager);
-
-                if (match) {
-                    return { name: match[1] as PmInfo["name"], version: match[2] as string };
-                }
+            if (match) {
+                return { name: match[1] as PmInfo["name"], version: match[2] as string };
             }
         }
     } catch {
@@ -116,7 +126,7 @@ const detectPmFallback = (cwd: string): PmInfo => {
 };
 
 const detectPm = (cwd: string): PmInfo => {
-    if (!existsSync(cwd)) {
+    if (!isAccessibleSync(cwd)) {
         throw new Error(`Could not detect package manager in ${cwd}. Directory does not exist.`);
     }
 

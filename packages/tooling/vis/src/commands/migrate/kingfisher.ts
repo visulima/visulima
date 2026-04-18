@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { backupFile } from "./backup";
@@ -37,9 +36,9 @@ interface KingfisherBaselineRecord {
     linenum: number;
 }
 
-const detectKingfisherBaseline = (root: string): string | undefined => KINGFISHER_BASELINE_CANDIDATES.find((name) => existsSync(join(root, name)));
+const detectKingfisherBaseline = (root: string): string | undefined => KINGFISHER_BASELINE_CANDIDATES.find((name) => isAccessibleSync(join(root, name)));
 
-const detectKingfisherRules = (root: string): string | undefined => KINGFISHER_RULES_CANDIDATES.find((name) => existsSync(join(root, name)));
+const detectKingfisherRules = (root: string): string | undefined => KINGFISHER_RULES_CANDIDATES.find((name) => isAccessibleSync(join(root, name)));
 
 // Kingfisher's baseline YAML has a flat, well-known shape:
 //
@@ -153,7 +152,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
     let records: KingfisherBaselineRecord[];
 
     try {
-        records = parseKingfisherBaseline(readFileSync(source, "utf8"));
+        records = parseKingfisherBaseline(readFileSync(source));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
@@ -170,7 +169,7 @@ const migrateBaseline = (root: string, dryRun: boolean, logger: MigrateLogger, r
 
     const target = join(root, ".secrets-baseline.json");
 
-    if (existsSync(target)) {
+    if (isAccessibleSync(target)) {
         addMigrationWarning(report, `.secrets-baseline.json already exists — leaving Kingfisher baseline at ${name} for manual merge.`);
 
         return;
@@ -203,7 +202,7 @@ const KINGFISHER_INVOCATION_RE = /\bkingfisher(?:\s+(?:scan|validate|rules|updat
 const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return;
     }
 
@@ -273,11 +272,11 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
     for (const rel of HOOK_CANDIDATES) {
         const abs = join(root, rel);
 
-        if (!existsSync(abs)) {
+        if (!isAccessibleSync(abs)) {
             continue;
         }
 
-        const content = readFileSync(abs, "utf8");
+        const content = readFileSync(abs);
 
         if (!/\bkingfisher\b/.test(content)) {
             continue;
@@ -301,12 +300,12 @@ const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, repo
 const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
 
 const hasKingfisherRef = (path: string): boolean => {
-    if (!existsSync(path)) {
+    if (!isAccessibleSync(path)) {
         return false;
     }
 
     try {
-        return /\bkingfisher\b/.test(readFileSync(path, "utf8"));
+        return /\bkingfisher\b/.test(readFileSync(path));
     } catch {
         return false;
     }

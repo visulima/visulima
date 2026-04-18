@@ -8,8 +8,8 @@
  * - apps/ and packages/ directories
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { info, success } from "../../../output";
 import type { ExecutionContext } from "./types";
@@ -136,9 +136,9 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     info("Scaffolding monorepo workspace...");
 
     // Create directory structure
-    mkdirSync(targetDir, { recursive: true });
-    mkdirSync(join(targetDir, "apps"), { recursive: true });
-    mkdirSync(join(targetDir, "packages"), { recursive: true });
+    ensureDirSync(targetDir);
+    ensureDirSync(join(targetDir, "apps"));
+    ensureDirSync(join(targetDir, "packages"));
 
     // Write root files
     writeFileSync(join(targetDir, "package.json"), rootPackageJson(projectName));

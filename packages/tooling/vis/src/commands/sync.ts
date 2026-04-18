@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
+import { writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { buildCodeownersLines, renderCodeowners } from "../codeowners";

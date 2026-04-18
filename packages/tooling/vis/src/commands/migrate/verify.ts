@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
-
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { MigrateLogger } from "./types";
@@ -29,14 +28,14 @@ interface PackageJson {
 const scanPackageJson = (root: string): VerificationIssue[] => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return [];
     }
 
     let pkg: PackageJson;
 
     try {
-        pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJson;
+        pkg = JSON.parse(readFileSync(packageJsonPath)) as PackageJson;
     } catch {
         return [];
     }
@@ -80,11 +79,11 @@ const scanHooks = (root: string): VerificationIssue[] => {
     for (const rel of HOOK_CANDIDATES) {
         const abs = join(root, rel);
 
-        if (!existsSync(abs)) {
+        if (!isAccessibleSync(abs)) {
             continue;
         }
 
-        const content = readFileSync(abs, "utf8");
+        const content = readFileSync(abs);
 
         if (/\bgitleaks\b/.test(content)) {
             issues.push({ detail: "gitleaks invocation still present in hook", kind: "hook", location: rel });
@@ -102,7 +101,7 @@ const scanConfigs = (root: string): VerificationIssue[] => {
     const issues: VerificationIssue[] = [];
 
     for (const name of SECRETLINT_CONFIG_FILES) {
-        if (existsSync(join(root, name))) {
+        if (isAccessibleSync(join(root, name))) {
             issues.push({ detail: "secretlint config should be removed after migration", kind: "config", location: name });
         }
     }

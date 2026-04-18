@@ -202,10 +202,10 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
         // execa may report `exitCode: undefined` (child killed by signal) or
         // leave an `isCanceled`/`isTerminated` flag. Without this guard, a
         // SIGTERM'd child under `cancelSignal` falls through as success.
-        if (result.isCanceled === true || result.isTerminated === true || typeof result.exitCode !== "number") {
-            const reason = result.isCanceled === true
+        if (result.isCanceled || result.isTerminated || typeof result.exitCode !== "number") {
+            const reason = result.isCanceled
                 ? "Task aborted by earlier failure."
-                : result.isTerminated === true
+                : result.isTerminated
                     ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
                     : merged.trim() || `Task exited without a numeric status code.`;
 

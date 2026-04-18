@@ -1,3 +1,7 @@
+import { writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { createInterface } from "node:readline";
+
 import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
 import { findMonorepoRootSync } from "@visulima/package";
@@ -14,9 +18,23 @@ const configLoaderPlugin: Plugin = {
             const cwdOption = toolbox.options?.cwd as string | undefined;
             let workspaceRoot: string;
 
-            workspaceRoot = cwdOption ? (await import("node:path")).resolve(process.cwd(), cwdOption) : findMonorepoRootSync(process.cwd()).path;
+            if (cwdOption) {
+                workspaceRoot = resolve(process.cwd(), cwdOption);
+            } else {
+                // bin.ts resolved + stashed the monorepo root for its
+                // own needs (terminal title). Reuse it instead of
+                // walking the directory tree a second time.
+                const cached = process.env["VIS_MONOREPO_ROOT"];
+
+                workspaceRoot = cached && cached.length > 0 ? cached : findMonorepoRootSync(process.cwd()).path;
+            }
 
             toolbox.workspaceRoot = workspaceRoot;
+
+            // Cache the config-file path so the three callers below
+            // (load, error handler, first-run hint) share one
+            // directory-scan instead of each running their own.
+            let configFilePath = findVisConfigFile(workspaceRoot);
 
             try {
                 toolbox.visConfig = await loadVisConfig(workspaceRoot);
@@ -44,7 +62,7 @@ const configLoaderPlugin: Plugin = {
                     return;
                 }
             } catch (configError: unknown) {
-                const configFile = findVisConfigFile(workspaceRoot);
+                const configFile = configFilePath;
 
                 if (configFile) {
                     const message = configError instanceof Error ? configError.message : String(configError);
@@ -87,9 +105,8 @@ const configLoaderPlugin: Plugin = {
             const command = process.argv[2] ?? "";
             const skipHint = new Set(["--help", "--version", "-h", "-V", "create", "help", "implode", "init"]);
 
-            if (!skipHint.has(command) && !findVisConfigFile(workspaceRoot) && !isInCi) {
+            if (!skipHint.has(command) && !configFilePath && !isInCi) {
                 if (process.stdin.isTTY) {
-                    const { createInterface } = await import("node:readline");
                     const rl = createInterface({ input: process.stdin, output: process.stderr });
                     const answer = await new Promise<string>((resolve) => {
                         rl.question(
@@ -107,9 +124,6 @@ const configLoaderPlugin: Plugin = {
                     const shouldInit = !answer.trim() || answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes";
 
                     if (shouldInit) {
-                        const { writeFileSync } = await import("node:fs");
-                        const { join } = await import("node:path");
-
                         const configPath = join(workspaceRoot, "vis.config.ts");
                         const content = [
                             'import { defineConfig } from "@visulima/vis/config";',
@@ -130,6 +144,7 @@ const configLoaderPlugin: Plugin = {
                         writeFileSync(configPath, content);
                         toolbox.logger.info(`\u2713 Created ${configPath}\n`);
                         toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                        configFilePath = configPath;
                     }
                 } else {
                     toolbox.logger.warn("No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.");
