@@ -49,6 +49,12 @@
         "write-file",
         "write-safe",
         "yaml",
+        "toml",
+        "jsonc",
+        "json5",
+        "ini",
+        "smol-toml",
+        "jsonc-parser",
         "size",
         "brotli",
         "gzip"
@@ -95,6 +101,22 @@
         "./yaml": {
             "types": "./dist/yaml.d.ts",
             "default": "./dist/yaml.js"
+        },
+        "./toml": {
+            "types": "./dist/toml.d.ts",
+            "default": "./dist/toml.js"
+        },
+        "./jsonc": {
+            "types": "./dist/jsonc.d.ts",
+            "default": "./dist/jsonc.js"
+        },
+        "./json5": {
+            "types": "./dist/json5.d.ts",
+            "default": "./dist/json5.js"
+        },
+        "./ini": {
+            "types": "./dist/ini.d.ts",
+            "default": "./dist/ini.js"
         },
         "./size": {
             "types": "./dist/size.d.ts",
@@ -156,6 +178,7 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@types/glob-parent": "^5.1.3",
+        "@types/ini": "catalog:types",
         "@types/is-glob": "^4.0.4",
         "@types/node": "catalog:types",
         "@types/picomatch": "^4.0.3",
@@ -169,8 +192,11 @@
         "eslint": "catalog:lint",
         "fast-safe-stringify": "catalog:dev",
         "glob-parent": "^6.0.2",
+        "ini": "catalog:dev",
         "is-fs-case-sensitive": "catalog:dev",
         "is-glob": "^4.0.3",
+        "json5": "catalog:dev",
+        "jsonc-parser": "catalog:dev",
         "picomatch": "^4.0.4",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
@@ -178,6 +204,7 @@
         "rimraf": "catalog:node",
         "safe-regex2": "catalog:dev",
         "semantic-release": "catalog:cli",
+        "smol-toml": "catalog:dev",
         "tempy": "catalog:dev",
         "tinyglobby": "^0.2.16",
         "typescript": "catalog:tsc",
@@ -185,9 +212,25 @@
         "yaml": "catalog:dev"
     },
     "peerDependencies": {
+        "ini": "catalog:peer",
+        "json5": "catalog:peer",
+        "jsonc-parser": "catalog:peer",
+        "smol-toml": "catalog:peer",
         "yaml": "catalog:peer"
     },
     "peerDependenciesMeta": {
+        "ini": {
+            "optional": true
+        },
+        "json5": {
+            "optional": true
+        },
+        "jsonc-parser": {
+            "optional": true
+        },
+        "smol-toml": {
+            "optional": true
+        },
         "yaml": {
             "optional": true
         }

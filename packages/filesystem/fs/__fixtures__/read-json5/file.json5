@@ -1,0 +1,10 @@
+{
+    // JSON5 supports comments
+    name: 'json5-example',
+    version: '1.0.0',
+    features: [
+        'unquoted-keys',
+        'single-quotes',
+        'trailing-commas',
+    ],
+}
