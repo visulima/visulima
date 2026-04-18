@@ -287,10 +287,7 @@ describe("postProcess — heuristic filters", () => {
     it("retains lock-file findings when `heuristics.lockFile: false`", async () => {
         expect.assertions(1);
 
-        const findings = [
-            sampleFinding({ file: "packages/foo/yarn.lock", ruleId: "a" }),
-            sampleFinding({ file: "pnpm-lock.yaml", ruleId: "b" }),
-        ];
+        const findings = [sampleFinding({ file: "packages/foo/yarn.lock", ruleId: "a" }), sampleFinding({ file: "pnpm-lock.yaml", ruleId: "b" })];
         const out = await postProcess(findings, preparedScan(), {
             config: { heuristics: { lockFile: false } },
         });

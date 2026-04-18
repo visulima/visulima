@@ -206,10 +206,10 @@ token: |
 
 Four post-detection heuristics run by default on every scan, dropping high-confidence placeholders before findings are returned. Each is individually toggleable via `config.heuristics.<name>: false` — turn one off if you need the raw match set (e.g. scanning a known-bad fixture intentionally containing UUID-shaped tokens).
 
-| Key                     | Default | Drops findings where …                                                                                             |
-| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| Key                     | Default | Drops findings where …                                                                                                                                            |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `lockFile`              | `true`  | file basename is a known lock file (28 entries: `yarn.lock`, `pnpm-lock.yaml`, `Cargo.lock`, `go.sum`, `flake.lock`, `gradle.lockfile`, `.terraform.lock.hcl`, …) |
-| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence or a single repeating character (`abcdefgh`, `12345678`, `AAAAAAAA`)                                  |
+| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence or a single repeating character (`abcdefgh`, `12345678`, `AAAAAAAA`)                                   |
 | `potentialUuid`         | `true`  | the secret matches the canonical 8-4-4-4-12 UUID shape — almost always an object identifier, not a credential                                                     |
 | `notAlphanumericString` | `true`  | the secret contains zero ASCII alphanumerics (`*****`, `------`, `//////`)                                                                                        |
 

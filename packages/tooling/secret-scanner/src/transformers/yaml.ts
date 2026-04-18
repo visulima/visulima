@@ -73,7 +73,7 @@ const isBlockScalarBody = (line: string, headerIndentLength: number): boolean =>
     return leading > headerIndentLength;
 };
 
-const escapeQuoted = (value: string): string => value.replaceAll("\\", String.raw`\\`).replaceAll("\"", String.raw`\"`);
+const escapeQuoted = (value: string): string => value.replaceAll("\\", String.raw`\\`).replaceAll('"', String.raw`\"`);
 
 /**
  * Reconstruct the per-line separator sequence (`\n`, `\r\n`, or `""` on the

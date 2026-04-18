@@ -60,15 +60,15 @@ export interface ScanOptions {
 
 ## `config` — rule source + validation
 
-| Option          | Type                          | Default | Description                                                                                     |
-| --------------- | ----------------------------- | ------- | ----------------------------------------------------------------------------------------------- |
-| `extendBundled` | `boolean`                     | `true`  | Layer the user ruleset on top of the bundled set. `false` replaces it entirely.                 |
+| Option          | Type                          | Default | Description                                                                                                               |
+| --------------- | ----------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `extendBundled` | `boolean`                     | `true`  | Layer the user ruleset on top of the bundled set. `false` replaces it entirely.                                           |
 | `heuristics`    | `object`                      | all on  | Toggle post-detection false-positive filters. See [heuristics](#heuristics--post-detection-false-positive-filters) below. |
-| `inline`        | `GitleaksConfig`              | —       | Pre-parsed config object. Fastest path, no file IO.                                             |
-| `path`          | `string`                      | —       | Path to a JSON file (gitleaks-compatible shape). Parsed once and cached.                        |
-| `minConfidence` | `"low" \| "medium" \| "high"` | —       | Drop rules below this author-declared confidence floor. See [Confidence](#minconfidence) below. |
-| `validate`      | `boolean`                     | `false` | Live-verify each finding against its provider's API after detection.                            |
-| `onlyVerified`  | `boolean`                     | `false` | With `validate: true`, drop every finding whose validation is not `"verified"`.                 |
+| `inline`        | `GitleaksConfig`              | —       | Pre-parsed config object. Fastest path, no file IO.                                                                       |
+| `path`          | `string`                      | —       | Path to a JSON file (gitleaks-compatible shape). Parsed once and cached.                                                  |
+| `minConfidence` | `"low" \| "medium" \| "high"` | —       | Drop rules below this author-declared confidence floor. See [Confidence](#minconfidence) below.                           |
+| `validate`      | `boolean`                     | `false` | Live-verify each finding against its provider's API after detection.                                                      |
+| `onlyVerified`  | `boolean`                     | `false` | With `validate: true`, drop every finding whose validation is not `"verified"`.                                           |
 
 ### Precedence
 
@@ -93,12 +93,12 @@ Every bundled gitleaks rule ships unlabeled, so `"medium"` or `"high"` drops the
 
 Four heuristics (ported from [detect-secrets](https://github.com/Yelp/detect-secrets)) run after rule detection and drop high-confidence placeholders before returning. All four default to **on**; set the individual key to `false` when you need the raw match set — typical only when scanning a curated fixture that legitimately contains UUID-shaped or all-dash values.
 
-| Key                     | Default | Drops findings where …                                                                                                                                           |
-| ----------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Key                     | Default | Drops findings where …                                                                                                                                                                                                                                                                    |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `lockFile`              | `true`  | file basename is a known lock file (28 entries: `yarn.lock`, `pnpm-lock.yaml`, `Cargo.lock`, `go.sum`, `flake.lock`, `gradle.lockfile`, `.terraform.lock.hcl`, …). Lock files are regenerated from manifests and churn constantly; scanning them almost always produces noise, not leaks. |
-| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence (`abcdefgh`, `12345678`) or a single repeating character (`AAAAAAAA`, `00000000`). Short secrets (<6 chars) are always allowed. |
-| `potentialUuid`         | `true`  | the secret matches the canonical 8-4-4-4-12 UUID shape. In practice UUIDs are object identifiers (trace, request, user) rather than credentials.                 |
-| `notAlphanumericString` | `true`  | the secret contains zero ASCII alphanumerics (`*****`, `------`, `//////`) — almost always a masked-out placeholder captured by a greedy regex.                  |
+| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence (`abcdefgh`, `12345678`) or a single repeating character (`AAAAAAAA`, `00000000`). Short secrets (<6 chars) are always allowed.                                                                                                |
+| `potentialUuid`         | `true`  | the secret matches the canonical 8-4-4-4-12 UUID shape. In practice UUIDs are object identifiers (trace, request, user) rather than credentials.                                                                                                                                          |
+| `notAlphanumericString` | `true`  | the secret contains zero ASCII alphanumerics (`*****`, `------`, `//////`) — almost always a masked-out placeholder captured by a greedy regex.                                                                                                                                           |
 
 ```typescript
 // Keep UUID-shaped findings when auditing a system that uses UUIDs as API keys.

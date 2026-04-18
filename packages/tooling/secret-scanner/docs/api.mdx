@@ -146,17 +146,12 @@ The transformer pads blank lines for every consumed block-scalar body line, so `
 The same predicates the [heuristic filter suite](./configuration.mdx#heuristics--post-detection-false-positive-filters) applies. Exported so custom pre-filters (editor plugins, CI gates, third-party wrappers) can reuse the logic without re-implementing the rules.
 
 ```typescript
-import {
-    isLockFile,
-    isNotAlphanumericString,
-    isPotentialUuid,
-    isSequentialString,
-} from "@visulima/secret-scanner";
+import { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "@visulima/secret-scanner";
 
-isLockFile("packages/foo/pnpm-lock.yaml");                // true
-isSequentialString("AAAAAAAA");                           // true
-isPotentialUuid("123e4567-e89b-12d3-a456-426614174000");  // true
-isNotAlphanumericString("*****");                         // true
+isLockFile("packages/foo/pnpm-lock.yaml"); // true
+isSequentialString("AAAAAAAA"); // true
+isPotentialUuid("123e4567-e89b-12d3-a456-426614174000"); // true
+isNotAlphanumericString("*****"); // true
 ```
 
 Each returns `true` when the input **should be dropped** as a likely false positive. See the [configuration reference](./configuration.mdx#heuristics--post-detection-false-positive-filters) for the full behaviour of each heuristic and the knobs to turn them off.

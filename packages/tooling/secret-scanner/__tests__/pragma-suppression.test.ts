@@ -46,19 +46,15 @@ describe("pragma suppression (end-to-end)", () => {
 
         expect.assertions(2);
 
-        const unsuppressed = await scanString(
-            "let x = TESTTOKEN_abcdefghij0123456789\n",
-            "file.ts",
-            { config: { extendBundled: false, inline: MINIMAL_CONFIG } },
-        );
+        const unsuppressed = await scanString("let x = TESTTOKEN_abcdefghij0123456789\n", "file.ts", {
+            config: { extendBundled: false, inline: MINIMAL_CONFIG },
+        });
 
         expect(unsuppressed).toHaveLength(1);
 
-        const suppressed = await scanString(
-            "let x = TESTTOKEN_abcdefghij0123456789 // pragma: allowlist secret\n",
-            "file.ts",
-            { config: { extendBundled: false, inline: MINIMAL_CONFIG } },
-        );
+        const suppressed = await scanString("let x = TESTTOKEN_abcdefghij0123456789 // pragma: allowlist secret\n", "file.ts", {
+            config: { extendBundled: false, inline: MINIMAL_CONFIG },
+        });
 
         expect(suppressed).toHaveLength(0);
     }, 30_000);
@@ -70,11 +66,7 @@ describe("pragma suppression (end-to-end)", () => {
 
         expect.assertions(1);
 
-        const content = [
-            "# pragma: allowlist nextline secret",
-            "let x = TESTTOKEN_abcdefghij0123456789",
-            "",
-        ].join("\n");
+        const content = ["# pragma: allowlist nextline secret", "let x = TESTTOKEN_abcdefghij0123456789", ""].join("\n");
 
         const findings = await scanString(content, "file.ts", {
             config: { extendBundled: false, inline: MINIMAL_CONFIG },
@@ -90,11 +82,7 @@ describe("pragma suppression (end-to-end)", () => {
 
         expect.assertions(1);
 
-        const content = [
-            "# pragma: allowlist nextline secret",
-            "unrelated line",
-            "let x = TESTTOKEN_abcdefghij0123456789",
-        ].join("\n");
+        const content = ["# pragma: allowlist nextline secret", "unrelated line", "let x = TESTTOKEN_abcdefghij0123456789"].join("\n");
 
         const findings = await scanString(content, "file.ts", {
             config: { extendBundled: false, inline: MINIMAL_CONFIG },
@@ -114,13 +102,7 @@ describe("yaml transformer × scanString integration", () => {
 
         // Secret intentionally split across two block-scalar lines — without
         // the transformer, neither line contains the full match.
-        const yamlSource = [
-            "config:",
-            "  token: |",
-            "    TESTTOKEN_abcdefghij",
-            "    0123456789extra",
-            "",
-        ].join("\n");
+        const yamlSource = ["config:", "  token: |", "    TESTTOKEN_abcdefghij", "    0123456789extra", ""].join("\n");
 
         const raw = await scanString(yamlSource, "config.yaml", {
             config: { extendBundled: false, inline: MINIMAL_CONFIG },
