@@ -133,6 +133,38 @@ jobs:
                   check-name: "Check Native Build"
                   allowed-conclusions: "success,skipped,neutral"
 
+            # Pull the host-matching binaries produced by build-native.yml so tests that require
+            # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
+            # the .node files only exist in the build-native runner — test runs fail at
+            # require('./<pkg>-native.linux-x64-gnu.node').
+            - name: "Download native build artifacts"
+              if: "matrix.os == 'ubuntu-latest'"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Distribute native artifacts to package roots"
+              if: "matrix.os == 'ubuntu-latest'"
+              shell: "bash"
+              run: |
+                  if [ ! -d artifacts ]; then
+                    echo "no native artifacts downloaded, skipping distribution"
+                    exit 0
+                  fi
+
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \; 2>/dev/null || true
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
+                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
+
+                  rm -rf artifacts/
+
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
               id: "files"
@@ -229,6 +261,38 @@ jobs:
                   wait-interval: 15 # seconds
                   check-name: "Check Native Build"
                   allowed-conclusions: "success,skipped,neutral"
+
+            # Pull the host-matching binaries produced by build-native.yml so tests that require
+            # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
+            # the .node files only exist in the build-native runner — test runs fail at
+            # require('./<pkg>-native.linux-x64-gnu.node').
+            - name: "Download native build artifacts"
+              if: "matrix.os == 'ubuntu-latest'"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Distribute native artifacts to package roots"
+              if: "matrix.os == 'ubuntu-latest'"
+              shell: "bash"
+              run: |
+                  if [ ! -d artifacts ]; then
+                    echo "no native artifacts downloaded, skipping distribution"
+                    exit 0
+                  fi
+
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \; 2>/dev/null || true
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
+                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
+
+                  rm -rf artifacts/
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
