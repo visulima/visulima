@@ -1,8 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { beforeAll, describe, expect, expectTypeOf, it } from "vitest";
 
 import { BANNED_WORDS } from "../src/banned-words";
 import { checkBannedWords } from "../src/checker";
+
+// V8's regex engine pays a steep one-time JIT cost the first time each compiled
+// alternation (Western, CJK, Middle Eastern, …) is exec'd against input — on
+// shared CI runners the first call into the CJK group alone can exceed 20s and
+// trip the default test timeout. Warm every group once up front so later `it`
+// blocks run in the single-digit millisecond range they were sized for.
+beforeAll(() => {
+    checkBannedWords("hello 你好 こんにちは 안녕하세요 مرحبا Привет नमस्ते");
+}, 120_000);
 
 describe(checkBannedWords, () => {
     describe("empty / clean input", () => {
