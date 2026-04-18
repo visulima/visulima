@@ -47,10 +47,10 @@ const docker: Command = {
             throw new Error("Could not determine workspace root. Run inside a monorepo.");
         }
 
-        const { workspace } = discoverWorkspace(wsRoot, visConfig);
+        const { packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
 
         if (subcommand === "scaffold") {
-            const projectGraph = buildProjectGraph(wsRoot, workspace);
+            const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
             const focusRaw = options.focus as string | undefined;
 
             if (!focusRaw) {

@@ -1,6 +1,5 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-
-import { join } from "@visulima/path";
+import type { LoadedRunSummary } from "./run-report";
+import { loadRunSummaries } from "./run-report";
 
 /**
  * Per-task flakiness statistics aggregated across multiple run summaries.
@@ -22,9 +21,9 @@ export interface TaskFlakiness {
 }
 
 interface RunSummaryFile {
-    id: string;
-    startTime: string;
-    tasks: {
+    id?: string;
+    startTime?: string;
+    tasks?: {
         cacheStatus: string;
         exitCode?: number;
         startTime?: string;
@@ -36,37 +35,29 @@ interface RunSummaryFile {
 /**
  * Reads all run summary files from `.task-runner/runs/` and computes
  * per-task flakiness statistics.
+ *
+ * Pass `summaries` (from {@link loadRunSummaries}) when the caller
+ * already loaded the history — avoids re-reading every JSON off disk
+ * just to get the same data.
  * @param workspaceRoot Absolute path to the workspace root.
  * @param options Filtering options.
  * @returns Flakiness stats sorted by rate (most flaky first).
  */
-export const analyzeFlakiness = (workspaceRoot: string, options: { minRuns?: number; since?: string } = {}): TaskFlakiness[] => {
-    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+export const analyzeFlakiness = (
+    workspaceRoot: string,
+    options: { minRuns?: number; since?: string } = {},
+    summaries?: LoadedRunSummary[],
+): TaskFlakiness[] => {
+    const history = (summaries ?? loadRunSummaries(workspaceRoot)) as unknown as RunSummaryFile[];
 
-    if (!existsSync(runsDir)) {
-        return [];
-    }
-
-    const files = readdirSync(runsDir)
-        .filter((f) => f.endsWith(".json"))
-        .sort();
-
-    if (files.length === 0) {
+    if (history.length === 0) {
         return [];
     }
 
     const stats = new Map<string, { failures: number; lastFailure?: string; project: string; successes: number; target: string; totalRuns: number }>();
 
-    for (const file of files) {
-        let summary: RunSummaryFile;
-
-        try {
-            summary = JSON.parse(readFileSync(join(runsDir, file), "utf8")) as RunSummaryFile;
-        } catch {
-            continue;
-        }
-
-        if (options.since && summary.startTime < options.since) {
+    for (const summary of history) {
+        if (options.since && (summary.startTime === undefined || summary.startTime < options.since)) {
             continue;
         }
 

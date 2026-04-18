@@ -10,10 +10,10 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
+import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
+import { isAbsolute, join, relative, resolve, sep } from "@visulima/path";
 
 import { bold, cyan, dim, info, note, success, warn } from "../../output";
 import { detectPm, runInstall } from "../../pm-runner";
@@ -35,9 +35,7 @@ import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackag
 const generateVscodeConfig = (projectDir: string): void => {
     const vscodeDir = join(projectDir, ".vscode");
 
-    if (!existsSync(vscodeDir)) {
-        mkdirSync(vscodeDir, { recursive: true });
-    }
+    ensureDirSync(vscodeDir);
 
     const settingsPath = join(vscodeDir, "settings.json");
     const defaultSettings = {
@@ -45,9 +43,9 @@ const generateVscodeConfig = (projectDir: string): void => {
         "editor.formatOnSave": true,
     };
 
-    if (existsSync(settingsPath)) {
+    if (isAccessibleSync(settingsPath)) {
         try {
-            const existing = JSON.parse(readFileSync(settingsPath, "utf8"));
+            const existing = readJsonSync(settingsPath) as Record<string, unknown>;
 
             writeFileSync(settingsPath, `${JSON.stringify({ ...defaultSettings, ...existing }, null, 4)}\n`);
             success("Merged .vscode/settings.json");
@@ -62,9 +60,9 @@ const generateVscodeConfig = (projectDir: string): void => {
     const extensionsPath = join(vscodeDir, "extensions.json");
     const defaultExtensions = { recommendations: ["oxc.oxc-vscode"] };
 
-    if (existsSync(extensionsPath)) {
+    if (isAccessibleSync(extensionsPath)) {
         try {
-            const existing = JSON.parse(readFileSync(extensionsPath, "utf8"));
+            const existing = readJsonSync(extensionsPath) as { recommendations?: string[] };
 
             writeFileSync(
                 extensionsPath,
@@ -90,12 +88,12 @@ const generateVscodeConfig = (projectDir: string): void => {
 const generateAiInstructions = (projectDir: string, pmName: string): void => {
     const aiDir = join(projectDir, ".ai");
 
-    mkdirSync(aiDir, { recursive: true });
+    ensureDirSync(aiDir);
 
     const instructionsPath = join(aiDir, "instructions");
 
     // Skip if the template already provided AI instructions
-    if (existsSync(instructionsPath)) {
+    if (isAccessibleSync(instructionsPath)) {
         return;
     }
 
@@ -425,7 +423,7 @@ const create: Command = {
         }
 
         // AI instructions
-        if (existsSync(targetDir)) {
+        if (isAccessibleSync(targetDir)) {
             generateAiInstructions(targetDir, pm.name);
         }
 
@@ -438,7 +436,7 @@ const create: Command = {
         let depsInstalled = false;
         const shouldInstall = createConfig?.install !== false;
 
-        if (shouldInstall && existsSync(join(targetDir, "package.json"))) {
+        if (shouldInstall && isAccessibleSync(join(targetDir, "package.json"))) {
             depsInstalled = installDependencies(targetDir, pm, logger, createConfig?.preferOffline);
         }
 

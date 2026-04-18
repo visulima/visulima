@@ -5,8 +5,10 @@
  * Creates a minimal Node.js CLI package with a bin entry point.
  */
 
-import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { chmodSync } from "node:fs";
+
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { info, success } from "../../../output";
 import type { ExecutionContext } from "./types";
@@ -90,9 +92,9 @@ export const executeGeneratorTemplate = (context: ExecutionContext, description:
     info("Scaffolding code generator...");
 
     // Create directory structure
-    mkdirSync(targetDir, { recursive: true });
-    mkdirSync(join(targetDir, "bin"), { recursive: true });
-    mkdirSync(join(targetDir, "src"), { recursive: true });
+    ensureDirSync(targetDir);
+    ensureDirSync(join(targetDir, "bin"));
+    ensureDirSync(join(targetDir, "src"));
 
     // Write files
     writeFileSync(join(targetDir, "package.json"), packageJson(projectName, description || `Code generator: ${projectName}`));

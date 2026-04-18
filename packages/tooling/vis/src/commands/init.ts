@@ -1,8 +1,9 @@
-import { existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { execSync } from "node:child_process";
 import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
+import { isAccessibleSync, writeFileSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../config";
 import { info, note, success, warn } from "../output";
@@ -16,15 +17,15 @@ import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../se
 const detectExistingTools = (cwd: string): string[] => {
     const found: string[] = [];
 
-    if (existsSync(join(cwd, "turbo.json"))) {
+    if (isAccessibleSync(join(cwd, "turbo.json"))) {
         found.push("turborepo");
     }
 
-    if (existsSync(join(cwd, "nx.json"))) {
+    if (isAccessibleSync(join(cwd, "nx.json"))) {
         found.push("nx");
     }
 
-    if (existsSync(join(cwd, ".moon"))) {
+    if (isAccessibleSync(join(cwd, ".moon"))) {
         found.push("moon");
     }
 
@@ -168,7 +169,6 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         if (shouldMigrate) {
             rl.close();
 
-            const { execSync } = await import("node:child_process");
             const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn exec" : pm.name === "bun" ? "bunx" : "npx";
 
             for (const tool of existingTools) {
@@ -185,7 +185,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             }
 
             // Only write the fallback config if no migration produced one.
-            if (existsSync(configPath)) {
+            if (isAccessibleSync(configPath)) {
                 success(`Migrated config written to ${configPath}`);
             } else {
                 const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });

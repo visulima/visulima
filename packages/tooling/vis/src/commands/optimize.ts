@@ -1,7 +1,8 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 
 import { getManifestData } from "@socketsecurity/registry";
 import type { Command } from "@visulima/cerebro";
+import { glob, isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
@@ -44,7 +45,7 @@ const collectDepsFromPkgJson = (pkgJsonPath: string, productionOnly: boolean): S
     const deps = new Set<string>();
 
     try {
-        const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {
+        const pkg = readJsonSync(pkgJsonPath) as {
             dependencies?: Record<string, string>;
             devDependencies?: Record<string, string>;
             optionalDependencies?: Record<string, string>;
@@ -79,12 +80,12 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
 
     const rootPkgPath = join(workspaceRoot, "package.json");
 
-    if (!existsSync(rootPkgPath)) {
+    if (!isAccessibleSync(rootPkgPath)) {
         return [];
     }
 
     try {
-        const pkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+        const pkg = readJsonSync(rootPkgPath) as {
             workspaces?: string[] | { packages?: string[] };
         };
 
@@ -231,10 +232,10 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
         }
 
         const codemod = factory({});
-        const sourceFiles = collectSourceFiles(workspaceRoot);
+        const sourceFiles = await collectSourceFiles(workspaceRoot);
 
         for (const filePath of sourceFiles) {
-            const source = readFileSync(filePath, "utf8");
+            const source: string = readFileSync(filePath);
 
             if (!source.includes(packageName)) {
                 continue;
@@ -259,41 +260,16 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
 };
 
 /** Collects .ts/.js/.tsx/.jsx source files, excluding node_modules and dist. */
-const collectSourceFiles = (dir: string): string[] => {
-    const files: string[] = [];
-    const SKIP = new Set([".git", ".next", ".nuxt", "coverage", "dist", "node_modules"]);
-    const EXTENSIONS = new Set([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
-
-    const walk = (current: string): void => {
-        try {
-            for (const entry of readdirSync(current, { withFileTypes: true })) {
-                if (entry.name.startsWith(".")) {
-                    continue;
-                }
-
-                const fullPath = join(current, entry.name);
-
-                if (entry.isDirectory()) {
-                    if (!SKIP.has(entry.name)) {
-                        walk(fullPath);
-                    }
-                } else {
-                    const extension = entry.name.slice(entry.name.lastIndexOf("."));
-
-                    if (EXTENSIONS.has(extension)) {
-                        files.push(fullPath);
-                    }
-                }
-            }
-        } catch {
-            // Skip inaccessible dirs
-        }
-    };
-
-    walk(dir);
-
-    return files;
-};
+const collectSourceFiles = async (dir: string): Promise<string[]> =>
+    glob("**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}", {
+        absolute: true,
+        cwd: dir,
+        // Matches the hand-rolled walker's SKIP set + "skip dotted
+        // entries" policy. `tinyglobby` (the engine) applies these as
+        // negative patterns during the walk so skipped subtrees are
+        // never descended into.
+        ignore: ["**/.*/**", "**/.*", "**/node_modules/**", "**/dist/**", "**/coverage/**", "**/.git/**", "**/.next/**", "**/.nuxt/**"],
+    });
 
 // ── Command ─────────────────────────────────────────────────────────
 

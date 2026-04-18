@@ -8,9 +8,10 @@
  * @see https://github.com/vltpkg/vltpkg/tree/main/src/security-archive
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 
+import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 // ── Constants ───────────────────────────────────────────────────────
@@ -118,11 +119,7 @@ const isPackageReportData = (o: unknown): o is PackageReportData =>
 // ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
 const ensureCacheDirectory = (): void => {
-    const cacheDirectory = getCacheDirectory();
-
-    if (!existsSync(cacheDirectory)) {
-        mkdirSync(cacheDirectory, { recursive: true });
-    }
+    ensureDirSync(getCacheDirectory());
 };
 
 const buildCacheKey = (name: string, version: string): string => `${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
@@ -132,8 +129,7 @@ const getCachedReport = (name: string, version: string): PackageReportData | und
     const filePath = join(getCacheDirectory(), `${key}.json`);
 
     try {
-        const raw = readFileSync(filePath, "utf8");
-        const entry = JSON.parse(raw) as CacheEntry;
+        const entry = readJsonSync(filePath) as CacheEntry;
 
         if (Date.now() - entry.createdAt > entry.ttlMs) {
             rmSync(filePath, { force: true });
@@ -489,7 +485,7 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
 const clearSocketCache = (): number => {
     const cacheDirectory = getCacheDirectory();
 
-    if (!existsSync(cacheDirectory)) {
+    if (!isAccessibleSync(cacheDirectory)) {
         return 0;
     }
 

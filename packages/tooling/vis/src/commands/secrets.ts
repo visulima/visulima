@@ -1,7 +1,6 @@
-import { existsSync } from "node:fs";
-
 import type { Command } from "@visulima/cerebro";
 import { dim, green, yellow } from "@visulima/colorize";
+import { isAccessibleSync } from "@visulima/fs";
 import { join, relative, resolve } from "@visulima/path";
 import type { Confidence, Finding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";
 import { inspectRuleset, listRequiredValidators, listRules, scan, scanFiles } from "@visulima/secret-scanner";
@@ -132,7 +131,7 @@ const printListValidators = async (scanOptions: ScanOptions, useColor: boolean):
 const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean): Promise<void> => {
     const baselinePath = join(root, DEFAULT_BASELINE);
 
-    if (!dryRun && existsSync(baselinePath)) {
+    if (!dryRun && isAccessibleSync(baselinePath)) {
         warn(`Detected existing ${DEFAULT_BASELINE} — refusing to overwrite. Delete it first to re-init.`);
         process.exit(1);
     }
@@ -376,7 +375,7 @@ const secrets: Command = {
         }
 
         const baselineFullPath = scanOptions.baseline ?? join(root, DEFAULT_BASELINE);
-        const showDiff = !flags.quiet && existsSync(baselineFullPath);
+        const showDiff = !flags.quiet && isAccessibleSync(baselineFullPath);
 
         if (flags.updateBaseline) {
             const count = writeBaseline(findings, baselineFullPath, root, { replace: flags.replaceBaseline });

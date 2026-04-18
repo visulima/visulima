@@ -1,4 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
+
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 
 import { backupFile } from "./backup";
 import type { MigrationReport } from "./types";
@@ -8,7 +10,7 @@ import type { MigrationReport } from "./types";
  */
 const readJsonFile = <T>(filePath: string): T | undefined => {
     try {
-        const content = readFileSync(filePath, "utf8");
+        const content = readFileSync(filePath);
 
         return JSON.parse(content) as T;
     } catch {
@@ -20,12 +22,12 @@ const readJsonFile = <T>(filePath: string): T | undefined => {
  * Checks if a file exists and contains valid JSON.
  */
 const isJsonFile = (filePath: string): boolean => {
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return false;
     }
 
     try {
-        JSON.parse(readFileSync(filePath, "utf8"));
+        JSON.parse(readFileSync(filePath));
 
         return true;
     } catch {
@@ -52,11 +54,11 @@ const detectJsonIndent = (content: string): number => {
  * `.bak` snapshot is taken before the write.
  */
 const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined, report?: MigrationReport): boolean => {
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return false;
     }
 
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
 
     let data: T;
 

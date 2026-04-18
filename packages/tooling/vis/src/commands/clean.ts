@@ -1,7 +1,8 @@
-import { existsSync, lstatSync, readdirSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
+import { lstatSync, readdirSync, unlinkSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
+import { isAccessibleSync } from "@visulima/fs";
+import { join } from "@visulima/path";
 
 import { loadNativeBindings } from "../native-binding";
 import { failure, info, success } from "../output";
@@ -60,7 +61,7 @@ const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadEr
     for (const name of LOCKFILE_NAMES) {
         const lockfile = join(cwd, name);
 
-        if (!existsSync(lockfile)) {
+        if (!isAccessibleSync(lockfile)) {
             continue;
         }
 

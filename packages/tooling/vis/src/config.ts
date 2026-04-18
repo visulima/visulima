@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
+import { copyFileSync, readdirSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
@@ -10,8 +10,11 @@ import { createJiti } from "jiti";
 import type { VisPlugin } from "./hooks";
 import type { VisConfig } from "./workspace";
 
-/** Supported config file names, checked in order. */
+/** Supported config file names, checked in priority order. */
 const CONFIG_FILES: string[] = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
+
+/** Set form of `CONFIG_FILES` — kept in sync, used for O(1) membership. */
+const CONFIG_FILE_SET = new Set(CONFIG_FILES);
 
 /**
  * Secure-by-default security settings based on npm supply chain best practices.
@@ -62,15 +65,28 @@ const applyDefaults = (config: VisConfig): VisConfig => {
 
 /**
  * Find the vis config file in a directory.
+ *
+ * Reads the directory listing once and intersects it with the known
+ * config filenames rather than `stat`-ing each candidate — one syscall
+ * instead of up to six. Priority order is preserved via
+ * `CONFIG_FILES` so `.ts` still wins over `.mjs` when both exist.
  * @param directory The directory to search in.
  * @returns The absolute path to the config file, or `undefined` if not found.
  */
 const findVisConfigFile = (directory: string): string | undefined => {
-    for (const file of CONFIG_FILES) {
-        const filePath = join(directory, file);
+    let entries: string[];
 
-        if (existsSync(filePath)) {
-            return filePath;
+    try {
+        entries = readdirSync(directory);
+    } catch {
+        return undefined;
+    }
+
+    const present = new Set(entries.filter((name) => CONFIG_FILE_SET.has(name)));
+
+    for (const file of CONFIG_FILES) {
+        if (present.has(file)) {
+            return join(directory, file);
         }
     }
 
@@ -92,7 +108,7 @@ const getConfigCachePath = (workspaceRoot: string): string | undefined => {
     // parent project's node_modules when the workspace root lacks package.json.
     const nodeModulesDir = join(workspaceRoot, "node_modules");
 
-    if (existsSync(nodeModulesDir)) {
+    if (isAccessibleSync(nodeModulesDir)) {
         const directCacheDir = join(nodeModulesDir, ".cache", "vis");
 
         ensureDirSync(directCacheDir);

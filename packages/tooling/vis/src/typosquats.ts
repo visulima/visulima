@@ -6,12 +6,12 @@
  * warn users before they install a potentially malicious package.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
 import { red, yellow } from "@visulima/colorize";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
+import { dirname, join, resolve } from "@visulima/path";
 
 import { warn } from "./output";
 
@@ -157,7 +157,7 @@ const loadBlocklist = (): Blocklist => {
     if (!cachedBlocklist) {
         const dataPath = resolve(dirname(fileURLToPath(import.meta.url)), "../data/typosquats.json");
 
-        cachedBlocklist = JSON.parse(readFileSync(dataPath, "utf8")) as Blocklist;
+        cachedBlocklist = readJsonSync(dataPath) as Blocklist;
     }
 
     return cachedBlocklist;
@@ -327,11 +327,11 @@ const parseAliasTarget = (value: string): string | undefined => {
  * Also extracts alias targets (e.g. "npm:reaact@^18" → "reaact").
  */
 const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return [];
     }
 
-    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+    const pkg = readJsonSync(packageJsonPath) as {
         dependencies?: Record<string, string>;
         devDependencies?: Record<string, string>;
         optionalDependencies?: Record<string, string>;

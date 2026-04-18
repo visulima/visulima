@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
-
+import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 /**
@@ -28,12 +27,12 @@ const readNodeVersionFile = (workspaceRoot: string): string | undefined => {
     for (const name of [".nvmrc", ".node-version"]) {
         const path = join(workspaceRoot, name);
 
-        if (!existsSync(path)) {
+        if (!isAccessibleSync(path)) {
             continue;
         }
 
         try {
-            const content = readFileSync(path, "utf8").trim();
+            const content = readFileSync(path).trim();
 
             return content.replace(/^v/, "");
         } catch {
@@ -126,7 +125,7 @@ export const checkRuntimeVersions = (workspaceRoot: string): RuntimeFinding[] =>
     let rootPkg: RootPackageJson = {};
 
     try {
-        rootPkg = JSON.parse(readFileSync(pkgPath, "utf8")) as RootPackageJson;
+        rootPkg = readJsonSync(pkgPath) as RootPackageJson;
     } catch {
         return findings;
     }

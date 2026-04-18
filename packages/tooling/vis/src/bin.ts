@@ -65,9 +65,14 @@ applyHeapTuning();
 // Inject VIS_VERSION for child processes before any commands run
 injectVersion();
 
-// Set terminal title to the project name from package.json
+// Set terminal title to the project name from package.json.
+// Stash the resolved root on an env var so `config-loader.ts`
+// doesn't have to walk the directory tree a second time.
 try {
     const rootDir = findMonorepoRootSync(process.cwd()).path;
+
+    process.env["VIS_MONOREPO_ROOT"] = rootDir;
+
     const rootPkg = readJsonSync(join(rootDir, "package.json")) as { name?: string };
 
     if (rootPkg.name) {

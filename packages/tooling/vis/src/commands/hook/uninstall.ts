@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 
+import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { InstallResult } from "./constants";
@@ -25,7 +26,7 @@ const uninstallHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallRes
 
     const internalDirectory = join(directory, "_");
 
-    if (existsSync(internalDirectory)) {
+    if (isAccessibleSync(internalDirectory)) {
         rmSync(internalDirectory, { force: true, recursive: true });
     }
 

@@ -9,8 +9,7 @@
  * to play nicely with monorepo setups.
  */
 
-import { relative } from "node:path";
-
+import { relative } from "@visulima/path";
 import { downloadTemplate } from "giget";
 
 import { info, warn } from "../../../output";

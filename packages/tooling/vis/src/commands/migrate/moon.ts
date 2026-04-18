@@ -1,5 +1,6 @@
-import { existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 
+import { isAccessibleSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
@@ -107,21 +108,21 @@ const renderVisConfig = (tasks: MoonTasksYaml): string => {
 const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
     const moonDir = join(workspaceRoot, ".moon");
 
-    if (!existsSync(moonDir)) {
+    if (!isAccessibleSync(moonDir)) {
         return undefined;
     }
 
     for (const name of ["tasks.yml", "tasks.yaml"]) {
         const filePath = join(moonDir, name);
 
-        if (existsSync(filePath)) {
+        if (isAccessibleSync(filePath)) {
             return filePath;
         }
     }
 
     const tasksDir = join(moonDir, "tasks");
 
-    if (existsSync(tasksDir)) {
+    if (isAccessibleSync(tasksDir)) {
         const entries = readdirSync(tasksDir)
             .filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"))
             .sort();

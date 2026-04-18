@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { readFileSync, unlinkSync, writeFileSync } from "node:fs";
 
+import { isAccessibleSync } from "@visulima/fs";
 import { join, relative as relativePath } from "@visulima/path";
 
 import { GitError, RestoreOriginalStateError } from "../errors";
@@ -320,7 +321,7 @@ export class GitWorkflow {
         this.merge = (["MERGE_HEAD", "MERGE_MODE", "MERGE_MSG"] as const).map((name) => {
             const target = join(this.gitDir, name);
 
-            if (existsSync(target)) {
+            if (isAccessibleSync(target)) {
                 return { body: readFileSync(target), existed: true, name };
             }
 
@@ -339,7 +340,7 @@ export class GitWorkflow {
             try {
                 if (entry.existed && entry.body !== null) {
                     writeFileSync(target, entry.body);
-                } else if (existsSync(target)) {
+                } else if (isAccessibleSync(target)) {
                     // File didn't exist pre-run but does now — remove to restore the original state.
                     unlinkSync(target);
                 }

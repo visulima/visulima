@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
+import { isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { isAbsolute, relative } from "@visulima/path";
 import type { Finding } from "@visulima/secret-scanner";
 import { fingerprint } from "@visulima/secret-scanner";
@@ -22,12 +21,12 @@ export const toRelativeFinding = (f: Finding, root: string): Finding => {
 };
 
 const readBaseline = (baselinePath: string): Finding[] => {
-    if (!existsSync(baselinePath)) {
+    if (!isAccessibleSync(baselinePath)) {
         return [];
     }
 
     try {
-        const parsed = JSON.parse(readFileSync(baselinePath, "utf8")) as unknown;
+        const parsed = readJsonSync(baselinePath) as unknown;
 
         return Array.isArray(parsed) ? (parsed as Finding[]) : [];
     } catch {

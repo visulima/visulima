@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
+import { isAccessibleSync, readFileSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { MigrateLogger, MigrationReport } from "./types";
@@ -31,7 +30,7 @@ export const writeVisConfig = (
 ): boolean => {
     const visConfigPath = join(workspaceRoot, "vis.config.ts");
 
-    if (existsSync(visConfigPath) && !options.dryRun) {
+    if (isAccessibleSync(visConfigPath) && !options.dryRun) {
         logger.warn("vis.config.ts already exists — refusing to overwrite. Remove it first or run with --dry-run.");
         report.warnings.push("vis.config.ts already exists; migration skipped writing the file.");
 
@@ -60,12 +59,12 @@ export const writeVisConfig = (
 export const readJsonConfig = <T>(workspaceRoot: string, fileName: string): T | undefined => {
     const filePath = join(workspaceRoot, fileName);
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return undefined;
     }
 
     try {
-        return JSON.parse(readFileSync(filePath, "utf8")) as T;
+        return JSON.parse(readFileSync(filePath)) as T;
     } catch (error) {
         throw new Error(`Failed to parse ${filePath}: ${(error as Error).message}`);
     }

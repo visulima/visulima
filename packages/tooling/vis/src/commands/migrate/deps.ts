@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { VisConfig } from "../../workspace";
@@ -60,7 +61,7 @@ const rewriteScripts = (scripts: Record<string, string>, report: MigrationReport
 const rewritePackageJson = (root: string, packageManager: PackageManagerType, overrides: Record<string, string>, report: MigrationReport): void => {
     const packageJsonPath = join(root, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
+    if (!isAccessibleSync(packageJsonPath)) {
         return;
     }
 
@@ -274,11 +275,11 @@ const insertCatalogEntries = (lines: string[], newEntries: string[], content: st
 const updatePnpmWorkspaceCatalog = (root: string, overrides: Record<string, string>): void => {
     const filePath = join(root, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath) || Object.keys(overrides).length === 0) {
+    if (!isAccessibleSync(filePath) || Object.keys(overrides).length === 0) {
         return;
     }
 
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
     const lines = content.split("\n");
     const { entries: existingEntries, indent } = parseCatalogEntries(lines);
 

@@ -1,9 +1,8 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { writeFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
-import { isAccessibleSync } from "@visulima/fs";
-import { resolve } from "@visulima/path";
+import { isAccessibleSync, readFileSync } from "@visulima/fs";
+import { join, resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "../native-binding";
 import { failure, info, success, warn } from "../output";
@@ -46,7 +45,7 @@ const findPackageJsonFiles = (root: string): string[] => {
         const rootPkgPath = join(root, "package.json");
 
         if (isAccessibleSync(rootPkgPath)) {
-            const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+            const rootPkg = JSON.parse(readFileSync(rootPkgPath)) as {
                 workspaces?: string[] | { packages?: string[] };
             };
             const patterns = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages;
@@ -106,7 +105,7 @@ const sortPackageJson: Command = {
 
         for (const filePath of files) {
             try {
-                const contents = readFileSync(filePath, "utf8");
+                const contents: string = readFileSync(filePath);
 
                 let sorted: string;
 

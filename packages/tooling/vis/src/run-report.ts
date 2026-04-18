@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
 
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import type { TaskResults } from "@visulima/task-runner";
 
@@ -60,44 +61,72 @@ export const formatTimingSummary = (results: TaskResults, durationMs: number): s
     return parts.join(" · ");
 };
 
-interface HistoricalRun {
-    duration: number;
-    startTime: string;
+/**
+ * Shape of a persisted run summary — only the fields this module + the
+ * flakiness analyzer consume. Kept narrow so both consumers can share
+ * one loader without pulling in the full `RunSummary` type from
+ * task-runner.
+ */
+export interface LoadedRunSummary {
+    [key: string]: unknown;
+    duration?: number;
+    startTime?: string;
+    tasks?: unknown[];
 }
+
+/**
+ * Reads every `.task-runner/runs/*.json` once and returns the parsed
+ * array. Callers that need to iterate historical runs (timing average,
+ * flakiness analysis) should call this once per command and feed the
+ * result into the downstream helpers rather than re-reading the
+ * directory multiple times.
+ *
+ * Corrupt or unreadable files are skipped silently — a single bad
+ * summary shouldn't take down the whole analysis.
+ */
+export const loadRunSummaries = (workspaceRoot: string): LoadedRunSummary[] => {
+    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+    if (!isAccessibleSync(runsDir)) {
+        return [];
+    }
+
+    const files = readdirSync(runsDir).filter((f) => f.endsWith(".json"));
+    const summaries: LoadedRunSummary[] = [];
+
+    for (const file of files) {
+        try {
+            summaries.push(readJsonSync(join(runsDir, file)) as LoadedRunSummary);
+        } catch {
+            // Corrupt summary — skip.
+        }
+    }
+
+    return summaries;
+};
 
 /**
  * Loads durations from historical run summaries and computes the
  * average. Returns the comparison string or `undefined` if no history.
- * @param workspaceRoot Workspace root path.
- * @param currentDurationMs Duration of the current run in ms.
- * @returns A human-readable comparison, e.g. "(1.2s faster than avg)" or `undefined`.
+ *
+ * Pass `summaries` (from {@link loadRunSummaries}) when the caller
+ * has already loaded the history for another purpose (e.g. flakiness
+ * analysis on a failing run) to avoid re-reading the same files.
  */
-export const compareDuration = (workspaceRoot: string, currentDurationMs: number): string | undefined => {
-    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+export const compareDuration = (workspaceRoot: string, currentDurationMs: number, summaries?: LoadedRunSummary[]): string | undefined => {
+    const history = summaries ?? loadRunSummaries(workspaceRoot);
 
-    if (!existsSync(runsDir)) {
-        return undefined;
-    }
-
-    const files = readdirSync(runsDir).filter((f) => f.endsWith(".json"));
-
-    if (files.length < 2) {
+    if (history.length < 2) {
         return undefined;
     }
 
     let totalDuration = 0;
     let count = 0;
 
-    for (const file of files) {
-        try {
-            const data = JSON.parse(readFileSync(join(runsDir, file), "utf8")) as HistoricalRun;
-
-            if (typeof data.duration === "number" && data.duration > 0) {
-                totalDuration += data.duration;
-                count += 1;
-            }
-        } catch {
-            continue;
+    for (const data of history) {
+        if (typeof data.duration === "number" && data.duration > 0) {
+            totalDuration += data.duration;
+            count += 1;
         }
     }
 

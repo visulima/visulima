@@ -1,5 +1,6 @@
-import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, lstatSync, readdirSync, rmSync } from "node:fs";
 
+import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { dirname, join, relative } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 
@@ -109,7 +110,7 @@ export const resolveFocusProjects = (focus: string[], projectGraph: ProjectGraph
 };
 
 const ensureDir = (path: string): void => {
-    mkdirSync(path, { recursive: true });
+    ensureDirSync(path);
 };
 
 const copyFileIfExists = (src: string, dest: string): boolean => {
@@ -245,11 +246,11 @@ export const pruneDockerContext = (options: PruneOptions): { removed: string[] }
     const { contextRoot, workspace, workspaceRoot } = options;
     const manifestPath = join(contextRoot, DOCKER_MANIFEST_FILENAME);
 
-    if (!existsSync(manifestPath)) {
+    if (!isAccessibleSync(manifestPath)) {
         throw new Error(`No ${DOCKER_MANIFEST_FILENAME} at ${contextRoot}. Run \`vis docker scaffold\` first.`);
     }
 
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { focus: string[]; projects: string[] };
+    const manifest = readJsonSync(manifestPath) as { focus: string[]; projects: string[] };
 
     if (!Array.isArray(manifest.projects)) {
         throw new TypeError(`Invalid ${DOCKER_MANIFEST_FILENAME}: "projects" must be an array.`);

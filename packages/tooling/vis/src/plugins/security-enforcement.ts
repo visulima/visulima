@@ -1,6 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
-
 import type { Plugin } from "@visulima/cerebro";
+import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { info, warn } from "../output";
@@ -20,14 +19,14 @@ const VERSION_REGEX = /(\d+\.\d+\.\d+)/;
 const resolveInstalledPackages = (workspaceRoot: string): { name: string; version: string }[] => {
     const pkgJsonPath = join(workspaceRoot, "package.json");
 
-    if (!existsSync(pkgJsonPath)) {
+    if (!isAccessibleSync(pkgJsonPath)) {
         return [];
     }
 
     const packages: { name: string; version: string }[] = [];
 
     try {
-        const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {
+        const pkg = readJsonSync(pkgJsonPath) as {
             dependencies?: Record<string, string>;
             devDependencies?: Record<string, string>;
         };
@@ -38,9 +37,9 @@ const resolveInstalledPackages = (workspaceRoot: string): { name: string; versio
             // Try to resolve actual installed version from node_modules
             const installedPkgPath = join(workspaceRoot, "node_modules", name, "package.json");
 
-            if (existsSync(installedPkgPath)) {
+            if (isAccessibleSync(installedPkgPath)) {
                 try {
-                    const installedPkg = JSON.parse(readFileSync(installedPkgPath, "utf8")) as { version?: string };
+                    const installedPkg = readJsonSync(installedPkgPath) as { version?: string };
 
                     if (installedPkg.version) {
                         packages.push({ name, version: installedPkg.version });

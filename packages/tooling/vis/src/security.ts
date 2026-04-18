@@ -13,10 +13,11 @@
  */
 
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, statSync } from "node:fs";
 
+import { isAccessibleSync, readFileSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
+import { join } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 import { error as errorOutput, info, note, warn } from "./output";
@@ -235,7 +236,7 @@ const previewPnpmSync = (config: VisConfig): string[] => {
 const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boolean>): string[] => {
     const nodeModulesPath = join(cwd, "node_modules");
 
-    if (!existsSync(nodeModulesPath)) {
+    if (!isAccessibleSync(nodeModulesPath)) {
         return [];
     }
 
@@ -245,7 +246,7 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
         let entries: string[];
 
         try {
-            entries = require("node:fs").readdirSync(dir) as string[];
+            entries = readdirSync(dir);
         } catch {
             return;
         }
@@ -266,11 +267,11 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
             const pkgJsonPath = join(fullPath, "package.json");
 
             try {
-                if (!require("node:fs").statSync(fullPath).isDirectory() || !existsSync(pkgJsonPath)) {
+                if (!statSync(fullPath).isDirectory() || !isAccessibleSync(pkgJsonPath)) {
                     continue;
                 }
 
-                const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
+                const pkg = readJsonSync(pkgJsonPath) as { scripts?: Record<string, string> };
                 const scripts = pkg.scripts ?? {};
 
                 if (!scripts.preinstall && !scripts.install && !scripts.postinstall && !scripts.prepare) {
@@ -312,7 +313,7 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
 // ── Build script enforcement ─────────────────────────────────────────
 
 /** Detects yarn berry vs classic via .yarnrc.yml presence. */
-const isYarnBerry = (cwd: string): boolean => existsSync(join(cwd, ".yarnrc.yml"));
+const isYarnBerry = (cwd: string): boolean => isAccessibleSync(join(cwd, ".yarnrc.yml"));
 
 interface EnforcementResult {
     extraArgs: string[];
@@ -343,7 +344,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
                 const pkgPath = join(workspaceRoot, "package.json");
 
                 try {
-                    const pkg = existsSync(pkgPath) ? JSON.parse(readFileSync(pkgPath, "utf8")) : {};
+                    const pkg = (isAccessibleSync(pkgPath) ? readJsonSync(pkgPath) : {}) as { trustedDependencies?: unknown[] };
 
                     if (!pkg.trustedDependencies?.length) {
                         result.warnings.push(
@@ -361,7 +362,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
         case "npm": {
             result.scriptsBlockedByDefault = false;
             const npmrcPath = join(workspaceRoot, ".npmrc");
-            const hasIgnoreScripts = existsSync(npmrcPath) && /^\s*ignore-scripts\s*=\s*true\s*$/m.test(readFileSync(npmrcPath, "utf8"));
+            const hasIgnoreScripts = isAccessibleSync(npmrcPath) && /^\s*ignore-scripts\s*=\s*true\s*$/m.test(readFileSync(npmrcPath));
 
             if (!hasIgnoreScripts && hasAllowList) {
                 result.warnings.push("npm does not block lifecycle scripts. vis will add --ignore-scripts automatically.");
@@ -395,7 +396,7 @@ const enforceScriptSecurity = (pm: PackageManagerName, workspaceRoot: string, co
             result.scriptsBlockedByDefault = false;
 
             if (isYarnBerry(workspaceRoot)) {
-                const content = readFileSync(join(workspaceRoot, ".yarnrc.yml"), "utf8");
+                const content = readFileSync(join(workspaceRoot, ".yarnrc.yml"));
 
                 if (/^\s*enableScripts\s*:\s*false\s*$/m.test(content)) {
                     result.scriptsBlockedByDefault = true;
@@ -438,9 +439,9 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
         case "bun": {
             const pkgPath = join(workspaceRoot, "package.json");
 
-            if (existsSync(pkgPath)) {
+            if (isAccessibleSync(pkgPath)) {
                 try {
-                    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+                    const pkg = readJsonSync(pkgPath) as { trustedDependencies?: string[] };
 
                     pkg.trustedDependencies = approved;
                     writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
@@ -455,7 +456,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
         case "npm": {
             const npmrcPath = join(workspaceRoot, ".npmrc");
-            let content = existsSync(npmrcPath) ? readFileSync(npmrcPath, "utf8") : "";
+            let content = isAccessibleSync(npmrcPath) ? readFileSync(npmrcPath) : "";
 
             if (/^\s*ignore-scripts\s*=\s*true\s*$/m.test(content)) {
                 actions.push(".npmrc already has ignore-scripts=true");
@@ -471,7 +472,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
         case "pnpm": {
             const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-            if (!existsSync(filePath)) {
+            if (!isAccessibleSync(filePath)) {
                 actions.push("pnpm-workspace.yaml not found. Cannot sync allowBuilds.");
                 break;
             }
@@ -504,7 +505,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
             const allowBuildsBlock = `allowBuilds:\n${block}\n`;
 
             // Normalize: ensure trailing newline so the regex can match the final body line.
-            let content = readFileSync(filePath, "utf8");
+            let content = readFileSync(filePath);
 
             if (!content.endsWith("\n")) {
                 content += "\n";
@@ -524,7 +525,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
         case "yarn": {
             if (isYarnBerry(workspaceRoot)) {
                 const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
-                let content = readFileSync(yarnrcPath, "utf8");
+                let content = readFileSync(yarnrcPath);
                 const hasKey = /^\s*enableScripts\s*:/m.test(content);
                 const hasFalse = /^\s*enableScripts\s*:\s*false\s*$/m.test(content);
 
@@ -541,7 +542,7 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
                 }
             } else {
                 const npmrcPath = join(workspaceRoot, ".npmrc");
-                let content = existsSync(npmrcPath) ? readFileSync(npmrcPath, "utf8") : "";
+                let content = isAccessibleSync(npmrcPath) ? readFileSync(npmrcPath) : "";
 
                 if (/^\s*ignore-scripts\s*=\s*true\s*$/m.test(content)) {
                     actions.push(".npmrc already has ignore-scripts=true");
@@ -563,7 +564,6 @@ const syncAllowBuildsToNativeConfig = (pm: PackageManagerName, workspaceRoot: st
 
 /** Expands glob patterns against installed node_modules. */
 const expandPatterns = (workspaceRoot: string, patterns: string[]): string[] => {
-    const { readdirSync, statSync } = require("node:fs") as typeof import("node:fs");
     const nodeModulesPath = join(workspaceRoot, "node_modules");
     const resolved: string[] = [];
 
@@ -632,12 +632,12 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
         const pkgDir = join(nodeModulesPath, pkg);
         const pkgJsonPath = join(pkgDir, "package.json");
 
-        if (!existsSync(pkgJsonPath)) {
+        if (!isAccessibleSync(pkgJsonPath)) {
             continue;
         }
 
         try {
-            const scripts = JSON.parse(readFileSync(pkgJsonPath, "utf8")).scripts ?? {};
+            const scripts = (readJsonSync(pkgJsonPath) as { scripts?: Record<string, string> }).scripts ?? {};
 
             for (const hook of ["preinstall", "install", "postinstall"] as const) {
                 if (scripts[hook]) {

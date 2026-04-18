@@ -1,8 +1,7 @@
 import { appendFile } from "node:fs/promises";
 import { homedir, platform } from "node:os";
-import { basename } from "node:path";
 
-import { join } from "@visulima/path";
+import { basename, join } from "@visulima/path";
 
 /**
  * Best-effort append of a command string to the user's shell history

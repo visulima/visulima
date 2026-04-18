@@ -1,6 +1,7 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
+import { ensureDirSync } from "@visulima/fs";
 import { dirname, resolve } from "@visulima/path";
 
 import { note, success } from "../output";
@@ -35,8 +36,8 @@ const sbom: Command = {
             throw new Error("Could not determine workspace root. Run inside a monorepo.");
         }
 
-        const { workspace } = discoverWorkspace(wsRoot, visConfig);
-        const projectGraph = buildProjectGraph(wsRoot, workspace);
+        const { packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
+        const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
 
         const focusRaw = options.focus as string | undefined;
         const focus = focusRaw
@@ -72,7 +73,7 @@ const sbom: Command = {
 
         const outPath = resolve(wsRoot, output);
 
-        mkdirSync(dirname(outPath), { recursive: true });
+        ensureDirSync(dirname(outPath));
         writeFileSync(outPath, serialized, "utf8");
 
         const componentCount = bom.components?.length ?? 0;

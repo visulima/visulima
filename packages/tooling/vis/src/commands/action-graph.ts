@@ -94,8 +94,8 @@ const actionGraph: Command = {
             throw new Error("Could not determine workspace root. Run inside a monorepo.");
         }
 
-        const { config, workspace } = discoverWorkspace(wsRoot, visConfig);
-        const projectGraph = buildProjectGraph(wsRoot, workspace);
+        const { config, packageJsons, workspace } = discoverWorkspace(wsRoot, visConfig);
+        const projectGraph = buildProjectGraph(wsRoot, workspace, packageJsons);
 
         const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), wsRoot);
         const { target } = selectorResult;

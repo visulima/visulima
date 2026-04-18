@@ -1,7 +1,8 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 
 import { xxh3Hash } from "@shared/xxh3";
+import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import type { AiAnalysisResult, AnalysisType } from "./ai-types";
@@ -31,11 +32,7 @@ interface CacheStats {
 // --- Helpers ---
 
 const ensureCacheDirectory = (): void => {
-    const cacheDirectory = getCacheDirectory();
-
-    if (!existsSync(cacheDirectory)) {
-        mkdirSync(cacheDirectory, { recursive: true });
-    }
+    ensureDirSync(getCacheDirectory());
 };
 
 // --- Public API ---
@@ -55,13 +52,12 @@ const buildCacheKey = (provider: string, analysisType: string, outdated: Pick<Ou
 const getCachedAnalysis = (cacheKey: string): AiAnalysisResult | undefined => {
     const filePath = join(getCacheDirectory(), `${cacheKey}.json`);
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return undefined;
     }
 
     try {
-        const raw = readFileSync(filePath, "utf8");
-        const entry = JSON.parse(raw) as CacheEntry;
+        const entry = readJsonSync(filePath) as CacheEntry;
 
         if (Date.now() - entry.createdAt > entry.ttlMs) {
             rmSync(filePath, { force: true });
@@ -102,7 +98,7 @@ const getTtlForAnalysisType = (analysisType: AnalysisType | string, configTtl?: 
 const getCacheStats = (): CacheStats => {
     const cacheDirectory = getCacheDirectory();
 
-    if (!existsSync(cacheDirectory)) {
+    if (!isAccessibleSync(cacheDirectory)) {
         return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
     }
 
@@ -135,7 +131,7 @@ const getCacheStats = (): CacheStats => {
 const clearCache = (): number => {
     const cacheDirectory = getCacheDirectory();
 
-    if (!existsSync(cacheDirectory)) {
+    if (!isAccessibleSync(cacheDirectory)) {
         return 0;
     }
 

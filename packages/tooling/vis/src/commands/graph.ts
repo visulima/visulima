@@ -463,8 +463,8 @@ const graph: Command = {
         }
 
         const workspaceRoot = wsRoot;
-        const { workspace } = discoverWorkspace(workspaceRoot, visConfig);
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace);
+        const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
         const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
         const format = (options.format as string | undefined) ?? (isTTY ? "tui" : "ascii");

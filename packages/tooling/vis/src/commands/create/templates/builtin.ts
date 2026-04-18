@@ -6,8 +6,8 @@
  * - `vis:library` scaffolds a minimal TypeScript library package
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { ensureDirSync, writeFileSync } from "@visulima/fs";
+import { join, relative } from "@visulima/path";
 
 import { info, success } from "../../../output";
 import { runDlx } from "../../../pm-runner";
@@ -118,9 +118,9 @@ const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): num
 
     info("Scaffolding library package...");
 
-    mkdirSync(targetDir, { recursive: true });
-    mkdirSync(join(targetDir, "src"), { recursive: true });
-    mkdirSync(join(targetDir, "__tests__"), { recursive: true });
+    ensureDirSync(targetDir);
+    ensureDirSync(join(targetDir, "src"));
+    ensureDirSync(join(targetDir, "__tests__"));
 
     writeFileSync(join(targetDir, "package.json"), libraryPackageJson(projectName));
     success("Created package.json");

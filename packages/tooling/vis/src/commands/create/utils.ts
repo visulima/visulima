@@ -6,9 +6,10 @@
  * - Target directory resolution
  */
 
-import { existsSync, readdirSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { readdirSync } from "node:fs";
 
+import { isAccessibleSync } from "@visulima/fs";
+import { basename, resolve } from "@visulima/path";
 import validate from "validate-npm-package-name";
 
 // ── Package name helpers ──────────────────────────────────────────
@@ -55,7 +56,7 @@ const IGNORED_FILES = new Set([".DS_Store", ".git", ".gitkeep", "Thumbs.db"]);
  * @returns `true` when `dir` does not exist or contains only ignored files.
  */
 export const isEmptyDir = (dir: string): boolean => {
-    if (!existsSync(dir)) {
+    if (!isAccessibleSync(dir)) {
         return true;
     }
 
