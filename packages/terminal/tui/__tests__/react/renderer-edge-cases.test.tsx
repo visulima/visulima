@@ -95,7 +95,7 @@ describe("renderer edge cases", () => {
         });
 
         it("should handle all 16 partial border permutations without crashing", () => {
-            expect.assertions(1);
+            expect.assertions(16);
 
             for (let i = 0; i < 16; i++) {
                 const top = Boolean(i & 8);

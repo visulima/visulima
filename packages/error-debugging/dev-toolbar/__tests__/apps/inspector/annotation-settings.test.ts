@@ -29,7 +29,7 @@ describe("annotation-settings", () => {
         });
 
         it("each color has required fields", () => {
-            expect.assertions(6);
+            expect.assertions(MARKER_COLORS.length * 6);
 
             for (const color of MARKER_COLORS) {
                 expect(color).toHaveProperty("name");
