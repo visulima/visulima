@@ -2,6 +2,8 @@ import { writeFile } from "node:fs/promises";
 
 import type { RunSummary } from "./run-summary";
 
+/* eslint-disable no-secrets/no-secrets -- Google Docs URL fragment has high entropy but is a public spec link. */
+
 /**
  * A single event in the Chrome Tracing JSON format. Chrome's
  * chrome://tracing viewer and Perfetto both accept an array of these.
@@ -10,9 +12,11 @@ import type { RunSummary } from "./run-summary";
  * - `ph: "X"` — "complete" span (has duration)
  * - `ph: "s"` / `ph: "f"` — flow start / finish (connects two spans)
  *
- * See https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU
+ * See the Chrome Trace Event Format spec on docs.google.com
+ * (document id: 1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU)
  * for the full specification.
  */
+/* eslint-enable no-secrets/no-secrets */
 export interface ChromeTraceEvent {
     args?: Record<string, unknown>;
     /** Event category — grouped in the viewer's search/filter UI. */
@@ -23,6 +27,7 @@ export interface ChromeTraceEvent {
     id?: number;
     /** Human label shown on the timeline. */
     name: string;
+
     /**
      * Event phase:
      * - `"X"` — complete (span with duration)
@@ -128,24 +133,26 @@ export const toChromeTrace = (summary: RunSummary): ChromeTraceEvent[] => {
 
             flowId += 1;
 
-            events.push({
-                cat: FLOW_CATEGORY,
-                id,
-                name: `${depId} → ${task.taskId}`,
-                ph: "s",
-                pid: PID,
-                tid: taskLane.get(depId) ?? 0,
-                ts: depEndUs,
-            });
-            events.push({
-                cat: FLOW_CATEGORY,
-                id,
-                name: `${depId} → ${task.taskId}`,
-                ph: "f",
-                pid: PID,
-                tid: taskLane.get(task.taskId) ?? 0,
-                ts: taskStartUs,
-            });
+            events.push(
+                {
+                    cat: FLOW_CATEGORY,
+                    id,
+                    name: `${depId} → ${task.taskId}`,
+                    ph: "s",
+                    pid: PID,
+                    tid: taskLane.get(depId) ?? 0,
+                    ts: depEndUs,
+                },
+                {
+                    cat: FLOW_CATEGORY,
+                    id,
+                    name: `${depId} → ${task.taskId}`,
+                    ph: "f",
+                    pid: PID,
+                    tid: taskLane.get(task.taskId) ?? 0,
+                    ts: taskStartUs,
+                },
+            );
         }
     }
 
@@ -166,7 +173,7 @@ export const toChromeTrace = (summary: RunSummary): ChromeTraceEvent[] => {
 /**
  * Writes a Chrome Tracing JSON file at `outputPath`. Consumers (e.g.
  * a CLI `--profile out.json` flag) call this after the run completes
- * with the RunSummary from {@link generateRunSummary}.
+ * with a RunSummary produced by the task orchestrator.
  */
 export const writeChromeTrace = async (summary: RunSummary, outputPath: string): Promise<void> => {
     const events = toChromeTrace(summary);

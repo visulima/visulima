@@ -29,6 +29,7 @@ import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
  */
 interface TaskHasher {
     hashTask: (task: Task) => Promise<TaskHashDetails>;
+
     /**
      * Rehashes a single file bypassing any in-memory cache. Optional to keep
      * external/custom hashers backward compatible; the orchestrator skips
@@ -50,17 +51,6 @@ interface TaskHasherOptions {
      */
     autoEnvVars?: boolean;
 
-    /**
-     * Optional persistent mtime/size-indexed file snapshot. When set,
-     * `#hashFile` consults the snapshot first and only re-reads file
-     * contents when the file's mtime or size has changed since the
-     * previous run. Cuts cold-cache fingerprint time dramatically on
-     * large workspaces where most source files don't change run-to-run.
-     *
-     * The caller is responsible for `load()`ing the snapshot before
-     * using the hasher and `save()`ing it after the run completes.
-     */
-    incrementalHasher?: IncrementalFileHasher;
     /** Additional environment variables to include in hash */
     envVars?: string[];
 
@@ -82,6 +72,18 @@ interface TaskHasherOptions {
      * These are workspace-root-relative paths (e.g., "pnpm-lock.yaml").
      */
     globalInputs?: string[];
+
+    /**
+     * Optional persistent mtime/size-indexed file snapshot. When set,
+     * `#hashFile` consults the snapshot first and only re-reads file
+     * contents when the file's mtime or size has changed since the
+     * previous run. Cuts cold-cache fingerprint time dramatically on
+     * large workspaces where most source files don't change run-to-run.
+     *
+     * The caller is responsible for `load()`ing the snapshot before
+     * using the hasher and `save()`ing it after the run completes.
+     */
+    incrementalHasher?: IncrementalFileHasher;
     /** Named input definitions */
     namedInputs?: NamedInputs;
     /** Project configurations keyed by project name */
@@ -176,7 +178,7 @@ const hashRuntimeValue = async (runtime: string): Promise<string> => {
 };
 
 /** Shell positional / special variables that are never real env state. */
-const SHELL_SPECIAL_VARS = new Set(["?", "$", "!", "0", "#", "*", "@", "-", "_"]);
+const SHELL_SPECIAL_VARS = new Set(["0", "!", "#", "$", "*", "-", "?", "@", "_"]);
 
 /**
  * Extracts the names of environment variables referenced inside a
@@ -187,7 +189,7 @@ const SHELL_SPECIAL_VARS = new Set(["?", "$", "!", "0", "#", "*", "@", "-", "_"]
  */
 const extractReferencedEnvVars = (command: string): string[] => {
     const found = new Set<string>();
-    const pattern = /\$(?:\{([^}]+)\}|([A-Z_a-z][\w]*))/g;
+    const pattern = /\$(?:\{([^}]+)\}|([A-Z_]\w*))/gi;
 
     let match: RegExpExecArray | null;
 
@@ -205,7 +207,7 @@ const extractReferencedEnvVars = (command: string): string[] => {
             continue;
         }
 
-        if (!/^[A-Z_a-z][\w]*$/.test(name)) {
+        if (!/^[A-Z_]\w*$/i.test(name)) {
             continue;
         }
 
@@ -223,9 +225,9 @@ const isFileSetInput = (input: InputDefinition): input is FileSetInput => "files
  * `{projectRoot}` / `{workspaceRoot}` tokens for downstream resolution.
  *
  * - Bare strings are returned unchanged.
- * - Object form `{ pattern, base: "workspace" }` → `{workspaceRoot}/<pattern>`
+ * - Object form `{ pattern, base: "workspace" }` → `{workspaceRoot}/&lt;pattern>`
  *   (or `!{workspaceRoot}/...` when `pattern` starts with `!`).
- * - Object form `{ pattern, base: "package" }` → `{projectRoot}/<pattern>`.
+ * - Object form `{ pattern, base: "package" }` → `{projectRoot}/&lt;pattern>`.
  */
 const normalizeFileset = (fileset: FileSetInput["fileset"]): string => {
     if (typeof fileset === "string") {
@@ -547,6 +549,8 @@ class InProcessTaskHasher implements TaskHasher {
                                     if (s.isFile()) {
                                         incremental.recordSnapshot(absPath, hash, s.mtimeMs, s.size);
                                     }
+
+                                    return undefined;
                                 })
                                 .catch(() => {
                                     // Best-effort — missing or unreadable
@@ -708,6 +712,7 @@ class InProcessTaskHasher implements TaskHasher {
      * @param filePath Absolute path to the file.
      * @returns The fresh xxh3 hash, or `undefined` if the file cannot be read.
      */
+    // eslint-disable-next-line class-methods-use-this
     public async rehashFile(filePath: string): Promise<string | undefined> {
         try {
             const content = await readFile(filePath);
