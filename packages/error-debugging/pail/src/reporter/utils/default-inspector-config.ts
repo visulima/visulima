@@ -19,7 +19,7 @@ const defaultInspectorConfig: Partial<Options> = {
             undefined: grey,
         };
 
-        if (styles[style] === undefined) {
+        if (!Object.hasOwn(styles, style)) {
             return string_;
         }
 

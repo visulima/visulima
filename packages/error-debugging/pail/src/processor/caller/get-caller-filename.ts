@@ -67,7 +67,7 @@ const getCallerFilename = (): {
             return accumulator;
         }, []);
 
-        const firstExternalFilePath = callers[0];
+        const firstExternalFilePath = callers.at(0);
 
         if (firstExternalFilePath) {
             return {
