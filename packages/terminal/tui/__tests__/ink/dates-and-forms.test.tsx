@@ -2,16 +2,7 @@ import delay from "delay";
 import React, { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-    Calendar,
-    ConfirmDialog,
-    DatePicker,
-    Form,
-    Placeholder,
-    Text,
-    render,
-    useForm,
-} from "../../src/ink/index";
+import { Calendar, ConfirmDialog, DatePicker, Form, Placeholder, render, Text, useForm } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
@@ -58,9 +49,7 @@ describe(Calendar, () => {
         expect.assertions(1);
 
         const onChange = vi.fn();
-        const { stdin } = await setup(
-            <Calendar autoFocus defaultValue={fixedDate} onChange={onChange} />,
-        );
+        const { stdin } = await setup(<Calendar autoFocus defaultValue={fixedDate} onChange={onChange} />);
 
         emitReadable(stdin, "\u001B[C"); // right arrow
         await delay(40);
@@ -74,9 +63,7 @@ describe(Calendar, () => {
         expect.assertions(1);
 
         const onSubmit = vi.fn();
-        const { stdin } = await setup(
-            <Calendar autoFocus defaultValue={fixedDate} onSubmit={onSubmit} />,
-        );
+        const { stdin } = await setup(<Calendar autoFocus defaultValue={fixedDate} onSubmit={onSubmit} />);
 
         emitReadable(stdin, "\r");
         await delay(40);
@@ -91,9 +78,7 @@ describe(Calendar, () => {
 
         const onChange = vi.fn();
         const max = new Date(2024, 5, 15);
-        const { stdin } = await setup(
-            <Calendar autoFocus defaultValue={fixedDate} maxDate={max} onChange={onChange} />,
-        );
+        const { stdin } = await setup(<Calendar autoFocus defaultValue={fixedDate} maxDate={max} onChange={onChange} />);
 
         emitReadable(stdin, "\u001B[C"); // right arrow → would be 16, blocked
         await delay(40);
@@ -114,9 +99,7 @@ describe(DatePicker, () => {
     it("should format the selected date", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <DatePicker defaultValue={new Date(2024, 0, 5)} />,
-        );
+        const output = renderToString(<DatePicker defaultValue={new Date(2024, 0, 5)} />);
 
         expect(output).toContain("2024-01-05");
     });
@@ -124,9 +107,7 @@ describe(DatePicker, () => {
     it("should open the calendar when Enter is pressed", async () => {
         expect.assertions(1);
 
-        const { getOutput, stdin } = await setup(
-            <DatePicker autoFocus defaultValue={new Date(2024, 5, 15)} />,
-        );
+        const { getOutput, stdin } = await setup(<DatePicker autoFocus defaultValue={new Date(2024, 5, 15)} />);
 
         emitReadable(stdin, "\r");
         await delay(50);
@@ -142,18 +123,20 @@ describe(Placeholder, () => {
         const output = renderToString(<Placeholder animated={false} rows={4} width={10} />);
         const lines = output.split("\n").filter((line) => line.includes("█"));
 
-        expect(lines.length).toBe(4);
+        expect(lines).toHaveLength(4);
     });
 
     it("should vary line widths when `widths` is provided", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Placeholder animated={false} rows={2} widths={[1, 0.5]} width={10} />,
-        );
-        const blockLines = output.split("\n").filter((line) => line.includes("█"));
-        const first = (blockLines[0] ?? "").match(/█+/)?.[0].length ?? 0;
-        const second = (blockLines[1] ?? "").match(/█+/)?.[0].length ?? 0;
+        // Use a plain-ASCII character to side-step Ink's width measurement of `█`
+        // (the default), which treats the block glyph as a 2-cell wide character
+        // and skews truncation in narrow boxes — hiding the relative-width signal
+        // we're trying to assert here.
+        const output = renderToString(<Placeholder animated={false} character="#" rows={2} width={10} widths={[1, 0.5]} />);
+        const blockLines = output.split("\n").filter((line) => line.includes("#"));
+        const first = (blockLines[0] ?? "").match(/#+/)?.[0].length ?? 0;
+        const second = (blockLines[1] ?? "").match(/#+/)?.[0].length ?? 0;
 
         expect(second).toBeLessThan(first);
     });
@@ -164,12 +147,7 @@ describe(ConfirmDialog, () => {
         expect.assertions(4);
 
         const output = renderToString(
-            <ConfirmDialog
-                onCancel={vi.fn()}
-                onConfirm={vi.fn()}
-                title="Delete project?"
-                tone="danger"
-            >
+            <ConfirmDialog onCancel={vi.fn()} onConfirm={vi.fn()} title="Delete project?" tone="danger">
                 This action cannot be undone.
             </ConfirmDialog>,
         );
@@ -185,7 +163,9 @@ describe(ConfirmDialog, () => {
 
         const onConfirm = vi.fn();
         const { stdin } = await setup(
-            <ConfirmDialog onCancel={vi.fn()} onConfirm={onConfirm}>body</ConfirmDialog>,
+            <ConfirmDialog onCancel={vi.fn()} onConfirm={onConfirm}>
+                body
+            </ConfirmDialog>,
         );
 
         emitReadable(stdin, "y");
@@ -199,7 +179,9 @@ describe(ConfirmDialog, () => {
 
         const onCancel = vi.fn();
         const { stdin } = await setup(
-            <ConfirmDialog onCancel={onCancel} onConfirm={vi.fn()}>body</ConfirmDialog>,
+            <ConfirmDialog onCancel={onCancel} onConfirm={vi.fn()}>
+                body
+            </ConfirmDialog>,
         );
 
         emitReadable(stdin, "\u001B");
@@ -261,10 +243,12 @@ describe(Form, () => {
 });
 
 describe(useForm, () => {
-    type Formlike = ReturnType<typeof useForm<{
-        email: { initialValue: string; validate: (v: unknown) => string | undefined };
-        name: { initialValue: string; validate: (v: unknown) => string | undefined };
-    }>>;
+    type Formlike = ReturnType<
+        typeof useForm<{
+            email: { initialValue: string; validate: (v: unknown) => string | undefined };
+            name: { initialValue: string; validate: (v: unknown) => string | undefined };
+        }>
+    >;
 
     type FormlikeRef = { current: Formlike | undefined };
 

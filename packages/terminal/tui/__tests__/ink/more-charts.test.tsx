@@ -1,15 +1,9 @@
 import React from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
-import {
-    AreaChart,
-    Heatmap,
-    Histogram,
-    LineChart,
-    ScatterPlot,
-} from "../../src/ink/index";
 import { createBrailleGrid } from "../../src/ink/canvas/braille";
 import { createCanvasBuffer } from "../../src/ink/canvas/buffer";
+import { AreaChart, Heatmap, Histogram, LineChart, ScatterPlot } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(createBrailleGrid, () => {
@@ -88,13 +82,7 @@ describe(LineChart, () => {
     it("should produce braille glyphs in the plot output", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <LineChart
-                series={[{ data: [1, 2, 3, 4, 5] }]}
-                showLegend={false}
-                width={10}
-            />,
-        );
+        const output = renderToString(<LineChart series={[{ data: [1, 2, 3, 4, 5] }]} showLegend={false} width={10} />);
 
         expect(output).toMatch(/[\u2800-\u28FF]/);
     });
@@ -104,6 +92,8 @@ describe(LineChart, () => {
 
         const output = renderToString(<LineChart series={[]} showLegend={false} />);
 
+        // `expectTypeOf` is a compile-time check that doesn't register a runtime
+        // assertion, so it doesn't satisfy `expect.assertions(1)`.
         expect(typeof output).toBe("string");
     });
 });
@@ -112,13 +102,7 @@ describe(AreaChart, () => {
     it("should render both fill glyphs and a line overlay", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <AreaChart
-                series={[{ data: [1, 4, 2, 6, 3] }]}
-                showLegend={false}
-                width={16}
-            />,
-        );
+        const output = renderToString(<AreaChart series={[{ data: [1, 4, 2, 6, 3] }]} showLegend={false} width={16} />);
 
         // Medium-density fill glyph
         expect(output).toMatch(/[▒▓░]/);
@@ -133,7 +117,14 @@ describe(ScatterPlot, () => {
         const output = renderToString(
             <ScatterPlot
                 series={[
-                    { data: [{ x: 0, y: 0 }, { x: 5, y: 5 }, { x: 9, y: 1 }], label: "pts" },
+                    {
+                        data: [
+                            { x: 0, y: 0 },
+                            { x: 5, y: 5 },
+                            { x: 9, y: 1 },
+                        ],
+                        label: "pts",
+                    },
                 ]}
                 showLegend={false}
                 width={12}
@@ -148,9 +139,7 @@ describe(Histogram, () => {
     it("should render a bucketed bar chart with labels", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <Histogram bins={4} data={[1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8]} />,
-        );
+        const output = renderToString(<Histogram bins={4} data={[1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8]} />);
 
         expect(output).toMatch(/[█▇▆▅▄▃▂▁]/);
         expect(output).toContain("-");
@@ -159,9 +148,7 @@ describe(Histogram, () => {
     it("should honor explicit thresholds", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Histogram data={[1, 2, 3, 4, 5]} thresholds={[0, 2, 4, 6]} />,
-        );
+        const output = renderToString(<Histogram data={[1, 2, 3, 4, 5]} thresholds={[0, 2, 4, 6]} />);
 
         expect(output).toContain("0-2");
     });
@@ -191,7 +178,10 @@ describe(Heatmap, () => {
         const output = renderToString(
             <Heatmap
                 columnLabels={["a", "b"]}
-                data={[[0, 1], [1, 0]]}
+                data={[
+                    [0, 1],
+                    [1, 0],
+                ]}
                 rowLabels={["x", "y"]}
             />,
         );

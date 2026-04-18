@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Divider, Kbd, Tag, Heading, Paragraph, Breadcrumb, DefinitionList, Sparkline, Card, LoadingIndicator } from "../../src/ink/index";
+import { Breadcrumb, Card, DefinitionList, Divider, Heading, Kbd, LoadingIndicator, Paragraph, Sparkline, Tag, Text } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(Divider, () => {
@@ -128,15 +128,7 @@ describe(Breadcrumb, () => {
     it("should render items separated by the separator", () => {
         expect.assertions(3);
 
-        const output = renderToString(
-            <Breadcrumb
-                items={[
-                    { label: "Home" },
-                    { label: "Docs" },
-                    { label: "Guide" },
-                ]}
-            />,
-        );
+        const output = renderToString(<Breadcrumb items={[{ label: "Home" }, { label: "Docs" }, { label: "Guide" }]} />);
 
         expect(output).toContain("Home");
         expect(output).toContain("Guide");
@@ -146,12 +138,7 @@ describe(Breadcrumb, () => {
     it("should respect a custom separator", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <Breadcrumb
-                items={[{ label: "a" }, { label: "b" }]}
-                separator="/"
-            />,
-        );
+        const output = renderToString(<Breadcrumb items={[{ label: "a" }, { label: "b" }]} separator="/" />);
 
         expect(output).toContain("/");
     });
@@ -164,8 +151,8 @@ describe(DefinitionList, () => {
         const output = renderToString(
             <DefinitionList
                 items={[
-                    { term: "Version", description: "1.0.0" },
-                    { term: "License", description: "MIT" },
+                    { description: "1.0.0", term: "Version" },
+                    { description: "MIT", term: "License" },
                 ]}
             />,
         );
@@ -177,12 +164,7 @@ describe(DefinitionList, () => {
     it("should render stacked layout", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <DefinitionList
-                layout="stacked"
-                items={[{ term: "Key", description: "Value" }]}
-            />,
-        );
+        const output = renderToString(<DefinitionList items={[{ description: "Value", term: "Key" }]} layout="stacked" />);
 
         expect(output).toContain("Key");
         expect(output).toContain("Value");
@@ -196,7 +178,7 @@ describe(Sparkline, () => {
         const output = renderToString(<Sparkline data={[1, 2, 3, 4, 5]} />);
         const glyphMatches = output.match(/[▁▂▃▄▅▆▇█]/g) ?? [];
 
-        expect(glyphMatches.length).toBe(5);
+        expect(glyphMatches).toHaveLength(5);
     });
 
     it("should render the lowest glyph when all values are equal", () => {
@@ -222,7 +204,7 @@ describe(Card, () => {
 
         const output = renderToString(
             <Card title="Card Title" width={30}>
-                <>Card body content</>
+                <Text>Card body content</Text>
             </Card>,
         );
 
@@ -236,7 +218,7 @@ describe(Card, () => {
 
         const output = renderToString(
             <Card subtitle="A small description" title="Hello" width={40}>
-                <>Body</>
+                <Text>Body</Text>
             </Card>,
         );
 

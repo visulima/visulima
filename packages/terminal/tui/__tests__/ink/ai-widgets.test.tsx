@@ -1,3 +1,4 @@
+import { strip as stripAnsi } from "@visulima/ansi";
 import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -9,11 +10,11 @@ import {
     MessageBubble,
     ModelBadge,
     OperationTree,
+    render,
     ShimmerText,
     StatusLine,
     StreamingText,
     Text,
-    render,
 } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
@@ -40,16 +41,17 @@ const mount = (jsx: React.JSX.Element) => {
 afterEach(async () => {
     currentUnmount?.();
     currentUnmount = undefined;
-    await delay(10);
+    // Give Ink's unmount a full microtask cycle to flush stdin listeners and release
+    // focus. A shorter delay lets residual focus state leak into the next test when
+    // the suite is run alongside other input-driven test files.
+    await delay(100);
 });
 
 describe(MessageBubble, () => {
     it("should render body content", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <MessageBubble>I'll fix the bug.</MessageBubble>,
-        );
+        const output = renderToString(<MessageBubble>I'll fix the bug.</MessageBubble>);
 
         expect(output).toContain("I'll fix the bug.");
     });
@@ -142,12 +144,7 @@ describe(OperationTree, () => {
     it("should render durations for nodes that provide them", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <OperationTree
-                nodes={[{ durationMs: 120, id: "1", label: "Fast", status: "completed" }]}
-                showSpinner={false}
-            />,
-        );
+        const output = renderToString(<OperationTree nodes={[{ durationMs: 120, id: "1", label: "Fast", status: "completed" }]} showSpinner={false} />);
 
         expect(output).toContain("120ms");
     });
@@ -157,14 +154,7 @@ describe(ApprovalPrompt, () => {
     it("should render tool, risk label, params and prompt", async () => {
         expect.assertions(4);
 
-        const { getOutput } = mount(
-            <ApprovalPrompt
-                onDecision={vi.fn()}
-                params={{ path: "auth.ts" }}
-                risk="medium"
-                tool="writeFile"
-            />,
-        );
+        const { getOutput } = mount(<ApprovalPrompt onDecision={vi.fn()} params={{ path: "auth.ts" }} risk="medium" tool="writeFile" />);
 
         await delay(20);
         const output = getOutput();
@@ -179,9 +169,7 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(
-            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
-        );
+        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
         await delay(20);
         emitReadable(stdin, "y");
@@ -194,9 +182,7 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(
-            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
-        );
+        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
         await delay(20);
         emitReadable(stdin, "a");
@@ -209,9 +195,7 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(
-            <ApprovalPrompt onDecision={onDecision} tool="writeFile" />,
-        );
+        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
         await delay(20);
         emitReadable(stdin, "n");
@@ -233,14 +217,7 @@ describe(CommandBlock, () => {
     it("should render output with success marker", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <CommandBlock
-                command="echo hi"
-                exitCode={0}
-                output="hi"
-                status="success"
-            />,
-        );
+        const output = renderToString(<CommandBlock command="echo hi" exitCode={0} output="hi" status="success" />);
 
         expect(output).toContain("hi");
         expect(output).toContain("✔");
@@ -249,9 +226,7 @@ describe(CommandBlock, () => {
     it("should render exit code in red on error", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <CommandBlock command="false" exitCode={1} status="error" />,
-        );
+        const output = renderToString(<CommandBlock command="false" exitCode={1} status="error" />);
 
         expect(output).toContain("exit");
         expect(output).toContain("1");
@@ -261,9 +236,7 @@ describe(CommandBlock, () => {
         expect.assertions(1);
 
         const lines = Array.from({ length: 20 }, (_, index) => `line ${index + 1}`).join("\n");
-        const output = renderToString(
-            <CommandBlock command="seq 20" maxOutputRows={5} output={lines} status="success" />,
-        );
+        const output = renderToString(<CommandBlock command="seq 20" maxOutputRows={5} output={lines} status="success" />);
 
         expect(output).toContain("more line");
     });
@@ -275,7 +248,10 @@ describe(ShimmerText, () => {
 
         const output = renderToString(<ShimmerText interval={100} text="Generating" />);
 
-        expect(output).toContain("Generating");
+        // ShimmerText emits per-character styling (each glyph gets its own color/bold
+        // wrapper), so the literal substring is interrupted by ANSI escapes. Strip
+        // them before the substring check.
+        expect(stripAnsi(output)).toContain("Generating");
     });
 
     it("should render nothing extra for empty text", () => {
@@ -299,9 +275,7 @@ describe(ModelBadge, () => {
     it("should include the provider when given", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <ModelBadge model="claude-opus-4" provider="anthropic" />,
-        );
+        const output = renderToString(<ModelBadge model="claude-opus-4" provider="anthropic" />);
 
         expect(output).toContain("anthropic");
         expect(output).toContain("claude-opus-4");
@@ -310,9 +284,7 @@ describe(ModelBadge, () => {
     it("should render outline variant with a border", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <ModelBadge model="claude-opus-4" variant="outline" />,
-        );
+        const output = renderToString(<ModelBadge model="claude-opus-4" variant="outline" />);
 
         expect(output).toContain("claude-opus-4");
         expect(output).toMatch(/[╭╮╯╰]/);
@@ -341,14 +313,7 @@ describe(StatusLine, () => {
     it("should render left, center, and right slots", () => {
         expect.assertions(3);
 
-        const output = renderToString(
-            <StatusLine
-                center="center-slot"
-                left="left-slot"
-                right="right-slot"
-            />,
-            { columns: 60 },
-        );
+        const output = renderToString(<StatusLine center="center-slot" left="left-slot" right="right-slot" />, { columns: 60 });
 
         expect(output).toContain("left-slot");
         expect(output).toContain("center-slot");
