@@ -1,14 +1,18 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { createServer } from "node:http";
+import { watch } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 
+import { serve } from "@hono/node-server";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
+import { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 
-import { collectCacheEntries } from "../commands/cache";
-import { analyzeFlakiness } from "../flakiness";
-import type { LoadedRunSummary } from "../run-report";
-import { loadRunSummaries } from "../run-report";
+import { collectCacheEntries } from "../commands/cache/handler";
+import { analyzeFlakiness } from "../report/flakiness";
+import { loadRunSummaries } from "../report/run-report";
+import type { LoadedRunSummary } from "../report/types";
+import { getVisRunsDir } from "../util/vis-paths";
 import { analyzeCacheMiss } from "./cache-diff";
 import { renderDashboardHtml } from "./html";
 import { computeDashboardMetrics } from "./metrics";
@@ -26,25 +30,12 @@ export interface RunningDashboard {
     close: () => Promise<void>;
 }
 
-const sendJson = (response: ServerResponse, status: number, body: unknown): void => {
-    response.writeHead(status, {
-        "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "no-store",
-    });
-    response.end(JSON.stringify(body));
-};
+interface ChangeEvent {
+    type: "run-added" | "run-updated";
+    id: string;
+}
 
-const sendHtml = (response: ServerResponse, status: number, body: string): void => {
-    response.writeHead(status, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-    });
-    response.end(body);
-};
-
-const sendNotFound = (response: ServerResponse): void => {
-    sendJson(response, 404, { error: "Not found" });
-};
+type ChangeListener = (event: ChangeEvent) => void;
 
 const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | undefined => {
     const safe = id.replaceAll(/[^\w.\-:]/g, "");
@@ -53,7 +44,7 @@ const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | unde
         return undefined;
     }
 
-    const path = join(workspaceRoot, ".task-runner", "runs", `${safe}.json`);
+    const path = join(getVisRunsDir(workspaceRoot), `${safe}.json`);
 
     if (!isAccessibleSync(path)) {
         return undefined;
@@ -66,170 +57,263 @@ const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | unde
     }
 };
 
-const handleRunsList = (workspaceRoot: string, response: ServerResponse): void => {
-    const summaries = loadRunSummaries(workspaceRoot) as unknown as {
-        id?: string;
-        startTime?: string;
-        endTime?: string;
-        duration?: number;
-        stats?: Record<string, number>;
-    }[];
+/**
+ * Watches `.task-runner/runs/` for newly landed summary files and fans
+ * out a single event to every connected SSE client. `fs.watch` fires
+ * multiple times for a single file write (create + content flushes),
+ * so we debounce 200ms to coalesce bursts — the UI only needs to know
+ * that something changed, not every syscall.
+ *
+ * If the directory doesn't exist yet (first run on a fresh workspace)
+ * we still create the watcher after the directory appears; callers
+ * without a runs dir fall back to manual refresh.
+ */
+const createRunsWatcher = async (workspaceRoot: string): Promise<{ subscribe: (listener: ChangeListener) => () => void; close: () => void }> => {
+    const listeners = new Set<ChangeListener>();
+    const runsDir = getVisRunsDir(workspaceRoot);
 
-    const list = summaries
-        .map((s) => ({
-            id: s.id,
-            startTime: s.startTime,
-            endTime: s.endTime,
-            duration: s.duration,
-            stats: s.stats,
-        }))
-        .sort((a, b) => (b.startTime ?? "").localeCompare(a.startTime ?? ""));
-
-    sendJson(response, 200, { runs: list });
-};
-
-const handleRunDetail = (workspaceRoot: string, id: string, response: ServerResponse): void => {
-    const run = readRunById(workspaceRoot, id);
-
-    if (!run) {
-        sendNotFound(response);
-
-        return;
+    try {
+        await mkdir(runsDir, { recursive: true });
+    } catch {
+        // Best effort — watcher creation below will skip if it still fails.
     }
 
-    sendJson(response, 200, run);
-};
+    let timer: NodeJS.Timeout | undefined;
+    let pending: ChangeEvent | undefined;
 
-const handleCacheMissDiff = (workspaceRoot: string, runId: string, taskId: string, response: ServerResponse): void => {
-    const run = readRunById(workspaceRoot, runId) as
-        | { tasks?: { taskId?: string }[]; id?: string }
-        | undefined;
+    const dispatch = (event: ChangeEvent): void => {
+        pending = event;
 
-    if (!run) {
-        sendNotFound(response);
+        if (timer) {
+            clearTimeout(timer);
+        }
 
-        return;
+        timer = setTimeout(() => {
+            timer = undefined;
+
+            if (!pending) {
+                return;
+            }
+
+            const current = pending;
+
+            pending = undefined;
+
+            for (const listener of listeners) {
+                try {
+                    listener(current);
+                } catch {
+                    // A single listener throwing shouldn't kill the watcher.
+                }
+            }
+        }, 200);
+    };
+
+    let watcher: ReturnType<typeof watch> | undefined;
+
+    try {
+        watcher = watch(runsDir, (eventType, filename) => {
+            if (!filename || typeof filename !== "string" || !filename.endsWith(".json")) {
+                return;
+            }
+
+            const id = filename.slice(0, -".json".length);
+
+            dispatch({ type: eventType === "rename" ? "run-added" : "run-updated", id });
+        });
+    } catch {
+        watcher = undefined;
     }
 
-    const task = run.tasks?.find((t) => t.taskId === taskId);
+    return {
+        subscribe: (listener) => {
+            listeners.add(listener);
 
-    if (!task) {
-        sendNotFound(response);
+            return () => {
+                listeners.delete(listener);
+            };
+        },
+        close: () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
 
-        return;
-    }
-
-    const history = loadRunSummaries(workspaceRoot);
-    const analysis = analyzeCacheMiss(history, run.id, task);
-
-    sendJson(response, 200, analysis);
+            watcher?.close();
+            listeners.clear();
+        },
+    };
 };
 
-const handleCache = async (cacheDirectory: string, response: ServerResponse): Promise<void> => {
-    if (!isAccessibleSync(cacheDirectory)) {
-        sendJson(response, 200, { directory: cacheDirectory, exists: false, entries: [], totalBytes: 0 });
-
-        return;
-    }
-
-    const entries = await collectCacheEntries(cacheDirectory);
-    const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
-    const now = Date.now();
-
-    sendJson(response, 200, {
-        directory: cacheDirectory,
-        exists: true,
-        totalBytes,
-        entries: entries.map((entry) => ({
-            hash: entry.hash,
-            sizeBytes: entry.sizeBytes,
-            ageMs: now - entry.mtimeMs,
-            mtimeIso: new Date(entry.mtimeMs).toISOString(),
-        })),
-    });
-};
-
-const handleMetrics = (workspaceRoot: string, response: ServerResponse): void => {
-    const summaries = loadRunSummaries(workspaceRoot);
-    const metrics = computeDashboardMetrics(summaries);
-    const flaky = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, summaries);
-
-    sendJson(response, 200, { metrics, flaky });
-};
-
-const handleRequest = async (
+/**
+ * Builds the Hono application for a given workspace. Exported so tests
+ * can exercise the routes via `app.request()` without spinning up a
+ * real socket.
+ */
+export const createDashboardApp = (
     options: DashboardServerOptions,
-    request: IncomingMessage,
-    response: ServerResponse,
-): Promise<void> => {
-    const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
-    const pathname = url.pathname;
+    subscribe: (listener: ChangeListener) => () => void,
+): Hono => {
+    const app = new Hono();
 
-    if (request.method !== "GET") {
-        response.writeHead(405);
-        response.end();
+    app.get("/", (c) => c.html(renderDashboardHtml()));
 
-        return;
-    }
+    app.get("/api/overview", (c) => {
+        const summaries = loadRunSummaries(options.workspaceRoot);
+        const metrics = computeDashboardMetrics(summaries);
+        const flaky = analyzeFlakiness(options.workspaceRoot, { minRuns: 2 }, summaries);
 
-    if (pathname === "/" || pathname === "/index.html") {
-        sendHtml(response, 200, renderDashboardHtml());
+        return c.json({ metrics, flaky });
+    });
 
-        return;
-    }
+    app.get("/api/runs", (c) => {
+        const summaries = loadRunSummaries(options.workspaceRoot) as unknown as {
+            id?: string;
+            startTime?: string;
+            endTime?: string;
+            duration?: number;
+            stats?: Record<string, number>;
+        }[];
 
-    if (pathname === "/api/overview") {
-        handleMetrics(options.workspaceRoot, response);
+        const runs = summaries
+            .map((s) => ({
+                id: s.id,
+                startTime: s.startTime,
+                endTime: s.endTime,
+                duration: s.duration,
+                stats: s.stats,
+            }))
+            .sort((a, b) => (b.startTime ?? "").localeCompare(a.startTime ?? ""));
 
-        return;
-    }
+        return c.json({ runs });
+    });
 
-    if (pathname === "/api/runs") {
-        handleRunsList(options.workspaceRoot, response);
+    app.get("/api/runs/:id", (c) => {
+        const run = readRunById(options.workspaceRoot, c.req.param("id"));
 
-        return;
-    }
+        if (!run) {
+            return c.json({ error: "Not found" }, 404);
+        }
 
-    const runMatch = /^\/api\/runs\/([^/]+)$/.exec(pathname);
+        return c.json(run);
+    });
 
-    if (runMatch) {
-        handleRunDetail(options.workspaceRoot, decodeURIComponent(runMatch[1]!), response);
+    app.get("/api/runs/:runId/tasks/:taskId/diff", (c) => {
+        const run = readRunById(options.workspaceRoot, c.req.param("runId")) as
+            | { tasks?: { taskId?: string }[]; id?: string }
+            | undefined;
 
-        return;
-    }
+        if (!run) {
+            return c.json({ error: "Run not found" }, 404);
+        }
 
-    const diffMatch = /^\/api\/runs\/([^/]+)\/tasks\/(.+)\/diff$/.exec(pathname);
+        const taskId = c.req.param("taskId");
+        const task = run.tasks?.find((t) => t.taskId === taskId);
 
-    if (diffMatch) {
-        handleCacheMissDiff(
-            options.workspaceRoot,
-            decodeURIComponent(diffMatch[1]!),
-            decodeURIComponent(diffMatch[2]!),
-            response,
-        );
+        if (!task) {
+            return c.json({ error: "Task not found" }, 404);
+        }
 
-        return;
-    }
+        const history = loadRunSummaries(options.workspaceRoot);
+        const analysis = analyzeCacheMiss(history, run.id, task);
 
-    if (pathname === "/api/cache") {
-        await handleCache(options.cacheDirectory, response);
+        return c.json(analysis);
+    });
 
-        return;
-    }
+    app.get("/api/cache", async (c) => {
+        if (!isAccessibleSync(options.cacheDirectory)) {
+            return c.json({ directory: options.cacheDirectory, exists: false, entries: [], totalBytes: 0 });
+        }
 
-    if (pathname === "/api/environment") {
-        sendJson(response, 200, {
+        const entries = await collectCacheEntries(options.cacheDirectory);
+        const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
+        const now = Date.now();
+
+        return c.json({
+            directory: options.cacheDirectory,
+            exists: true,
+            totalBytes,
+            entries: entries.map((entry) => ({
+                hash: entry.hash,
+                sizeBytes: entry.sizeBytes,
+                ageMs: now - entry.mtimeMs,
+                mtimeIso: new Date(entry.mtimeMs).toISOString(),
+            })),
+        });
+    });
+
+    app.get("/api/environment", (c) =>
+        c.json({
             workspaceRoot: options.workspaceRoot,
             cacheDirectory: options.cacheDirectory,
             node: process.version,
             platform: process.platform,
             arch: process.arch,
-        });
+        }),
+    );
 
-        return;
-    }
+    // Server-Sent Events: pushes `change` events when the runs directory
+    // gets a new summary. The UI uses these to invalidate TanStack Query
+    // caches without polling.
+    app.get("/api/events", (c) =>
+        streamSSE(c, async (stream) => {
+            const queue: ChangeEvent[] = [];
+            let resolveNext: (() => void) | undefined;
 
-    sendNotFound(response);
+            const unsubscribe = subscribe((event) => {
+                queue.push(event);
+
+                if (resolveNext) {
+                    const r = resolveNext;
+
+                    resolveNext = undefined;
+                    r();
+                }
+            });
+
+            stream.onAbort(() => {
+                unsubscribe();
+
+                if (resolveNext) {
+                    const r = resolveNext;
+
+                    resolveNext = undefined;
+                    r();
+                }
+            });
+
+            // Initial hello so clients know the stream is live.
+            await stream.writeSSE({ event: "ready", data: JSON.stringify({ ok: true }) });
+
+            const HEARTBEAT_MS = 15_000;
+
+            while (!stream.aborted) {
+                if (queue.length === 0) {
+                    const heartbeat = stream.sleep(HEARTBEAT_MS);
+                    const waiter = new Promise<void>((resolve) => {
+                        resolveNext = resolve;
+                    });
+
+                    await Promise.race([heartbeat, waiter]);
+
+                    if (stream.aborted) {
+                        break;
+                    }
+
+                    if (queue.length === 0) {
+                        await stream.writeSSE({ event: "heartbeat", data: "" });
+
+                        continue;
+                    }
+                }
+
+                const event = queue.shift()!;
+
+                await stream.writeSSE({ event: "change", data: JSON.stringify(event) });
+            }
+        }),
+    );
+
+    return app;
 };
 
 /**
@@ -241,25 +325,18 @@ const handleRequest = async (
  * history on the network without an explicit opt-in.
  */
 export const startDashboardServer = async (options: DashboardServerOptions): Promise<RunningDashboard> => {
-    const server = createServer((request, response) => {
-        handleRequest(options, request, response).catch((error: unknown) => {
-            sendJson(response, 500, { error: error instanceof Error ? error.message : String(error) });
-        });
+    const watcher = await createRunsWatcher(options.workspaceRoot);
+    const app = createDashboardApp(options, watcher.subscribe);
+
+    const server = serve({
+        fetch: app.fetch,
+        hostname: options.host,
+        port: options.port,
     });
 
     await new Promise<void>((resolve, reject) => {
-        const onError = (error: Error): void => {
-            server.off("listening", onListening);
-            reject(error);
-        };
-        const onListening = (): void => {
-            server.off("error", onError);
-            resolve();
-        };
-
-        server.once("error", onError);
-        server.once("listening", onListening);
-        server.listen(options.port, options.host);
+        server.once("listening", () => resolve());
+        server.once("error", (error) => reject(error));
     });
 
     const address = server.address() as AddressInfo;
@@ -272,6 +349,7 @@ export const startDashboardServer = async (options: DashboardServerOptions): Pro
         port: boundPort,
         close: (): Promise<void> =>
             new Promise((resolve, reject) => {
+                watcher.close();
                 server.close((error) => {
                     if (error) {
                         reject(error);

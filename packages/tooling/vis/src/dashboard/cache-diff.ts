@@ -1,4 +1,4 @@
-import type { LoadedRunSummary } from "../run-report";
+import type { LoadedRunSummary } from "../report/types";
 
 /**
  * A single field that changed between two task hash inputs.

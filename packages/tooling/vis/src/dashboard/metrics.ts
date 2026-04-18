@@ -1,4 +1,4 @@
-import type { LoadedRunSummary } from "../run-report";
+import type { LoadedRunSummary } from "../report/types";
 
 /**
  * High-level dashboard metrics derived from the persisted run history.
