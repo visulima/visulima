@@ -18,12 +18,13 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
     const empty = barWidth - filled;
 
     return (
-        <Box flexDirection="column" marginTop={1} paddingX={1}>
+        <Box flexDirection="column" paddingX={1}>
             <Box>
                 <Spinner type="dots" />
                 <Text>
                     {" "}
                     Checking
+                    {" "}
                     {String(total)}
                     {' '}
                     catalog dependencies
