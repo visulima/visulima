@@ -638,17 +638,17 @@ export interface TaskRunnerContext {
 /**
  * Input for a concurrent command -- either a string or a config object.
  */
-export type ConcurrentCommandInput
-    = | string
-        | {
-            command: string;
-            cwd?: string;
-            env?: Record<string, string>;
-            name?: string;
-            /** Initial PTY dimensions (only used when stdin is "pty"). */
-            ptySize?: { cols: number; rows: number };
-            stdin?: "inherit" | "null" | "pipe" | "pty";
-        };
+export type ConcurrentCommandInput =
+    | string
+    | {
+          command: string;
+          cwd?: string;
+          env?: Record<string, string>;
+          name?: string;
+          /** Initial PTY dimensions (only used when stdin is "pty"). */
+          ptySize?: { cols: number; rows: number };
+          stdin?: "inherit" | "null" | "pipe" | "pty";
+      };
 
 /**
  * Configuration for a single command to run concurrently.

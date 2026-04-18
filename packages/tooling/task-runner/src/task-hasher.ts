@@ -740,14 +740,14 @@ const computeTaskHash = (hashDetails: TaskHashDetails): string => {
 
         const implicitDeps = hashDetails.implicitDeps
             ? Object.keys(hashDetails.implicitDeps)
-                .toSorted()
-                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
+                  .toSorted()
+                  .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
             : undefined;
 
         const runtime = hashDetails.runtime
             ? Object.keys(hashDetails.runtime)
-                .toSorted()
-                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
+                  .toSorted()
+                  .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
             : undefined;
 
         return native.computeTaskHash({
