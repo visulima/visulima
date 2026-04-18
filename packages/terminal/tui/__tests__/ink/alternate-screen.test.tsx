@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import type { vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { render, Text } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * command-palette.tsx — CommandPalette fuzzy finder
  *
@@ -45,16 +44,13 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Command palette</Text>
-            <CommandPalette
-                commands={COMMANDS}
-                onCancel={exit}
-                onSelect={setPicked}
-            />
+            <Text bold color="cyan">
+                Command palette
+            </Text>
+            <CommandPalette commands={COMMANDS} onCancel={exit} onSelect={setPicked} />
             {picked !== undefined && (
                 <Text color="green">
                     selected:
-                    {" "}
                     {picked}
                 </Text>
             )}

@@ -24,26 +24,14 @@ export type HeatmapProps = {
     readonly character?: string;
 
     /**
-     * 2D matrix, rows × cols.
-     */
-    readonly data: ReadonlyArray<ReadonlyArray<number>>;
-
-    /**
-     * Color palette, lowest-to-highest intensity. Values are mapped into the
-     * palette by their position in the [min, max] range.
-     * @default ["#0b1e4f", "#1f3b96", "#3258c8", "#4e84ec", "#78b0ff"]
-     */
-    readonly palette?: ReadonlyArray<string>;
-
-    /**
      * Column labels rendered below the grid.
      */
     readonly columnLabels?: ReadonlyArray<string>;
 
     /**
-     * Row labels rendered to the left of the grid.
+     * 2D matrix, rows × cols.
      */
-    readonly rowLabels?: ReadonlyArray<string>;
+    readonly data: ReadonlyArray<ReadonlyArray<number>>;
 
     /**
      * Fixed maximum (for consistent scales across multiple heatmaps).
@@ -54,6 +42,18 @@ export type HeatmapProps = {
      * Fixed minimum.
      */
     readonly min?: number;
+
+    /**
+     * Color palette, lowest-to-highest intensity. Values are mapped into the
+     * palette by their position in the [min, max] range.
+     * @default ["#0b1e4f", "#1f3b96", "#3258c8", "#4e84ec", "#78b0ff"]
+     */
+    readonly palette?: ReadonlyArray<string>;
+
+    /**
+     * Row labels rendered to the left of the grid.
+     */
+    readonly rowLabels?: ReadonlyArray<string>;
 
     /**
      * Foreground color override (rarely needed since the character is a full block).
@@ -78,7 +78,7 @@ export default function Heatmap({
     rowLabels,
     textColor,
 }: HeatmapProps): ReactElement {
-    const { colWidth, cols, extent, rows } = useMemo(() => {
+    const { cols, colWidth, extent, rows } = useMemo(() => {
         const rowCount = data.length;
         const colCount = data.reduce((widest, row) => Math.max(widest, row.length), 0);
 
@@ -100,8 +100,8 @@ export default function Heatmap({
         }
 
         return {
-            colWidth: cellWidth,
             cols: colCount,
+            colWidth: cellWidth,
             extent: { max, min },
             rows: rowCount,
         };
@@ -112,17 +112,21 @@ export default function Heatmap({
 
     return (
         <Box>
-            {rowLabels === undefined ? undefined : (
-                <Box flexDirection="column" marginRight={1}>
-                    {Array.from({ length: rows }, (_, index) => (
-                        <Text dimColor key={index}>{rowLabels[index] ?? ""}</Text>
-                    ))}
-                </Box>
-            )}
+            {rowLabels === undefined
+                ? undefined
+                : (
+                    <Box flexDirection="column" marginRight={1}>
+                        {Array.from({ length: rows }, (_, index) => (
+                            <Text dimColor key={index}>
+                                {rowLabels[index] ?? ""}
+                            </Text>
+                        ))}
+                    </Box>
+                )}
             <Box flexDirection="column">
                 <Canvas
-                    draw={(ctx: CanvasContext) => {
-                        ctx.clear();
+                    draw={(context: CanvasContext) => {
+                        context.clear();
 
                         const { max, min } = extent;
                         const range = max - min || 1;
@@ -131,12 +135,13 @@ export default function Heatmap({
                         for (let row = 0; row < rows; row += 1) {
                             for (let col = 0; col < cols; col += 1) {
                                 const value = data[row]?.[col];
-                                const background = value === undefined
-                                    ? undefined
-                                    : palette[Math.max(0, Math.min(paletteLast, Math.round(((value - min) / range) * paletteLast)))];
+                                const background
+                                    = value === undefined
+                                        ? undefined
+                                        : palette[Math.max(0, Math.min(paletteLast, Math.round(((value - min) / range) * paletteLast)))];
 
                                 for (let offset = 0; offset < colWidth; offset += 1) {
-                                    ctx.setCell(col * colWidth + offset, row, character, {
+                                    context.setCell(col * colWidth + offset, row, character, {
                                         background,
                                         color: textColor,
                                     });
@@ -148,15 +153,19 @@ export default function Heatmap({
                     version={[data, palette, cellWidth, minOverride, maxOverride]}
                     width={width}
                 />
-                {columnLabels === undefined ? undefined : (
-                    <Box>
-                        {columnLabels.map((label, index) => (
-                            <Box key={index} width={colWidth}>
-                                <Text dimColor wrap="truncate-end">{label}</Text>
-                            </Box>
-                        ))}
-                    </Box>
-                )}
+                {columnLabels === undefined
+                    ? undefined
+                    : (
+                        <Box>
+                            {columnLabels.map((label, index) => (
+                                <Box key={index} width={colWidth}>
+                                    <Text dimColor wrap="truncate-end">
+                                        {label}
+                                    </Text>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
             </Box>
         </Box>
     );

@@ -63,8 +63,7 @@ export type Props = {
 /**
  * Keyboard-navigable accordion. Use arrow keys to move between panels and
  * Enter / Space to toggle.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the accordion column.
  */
 export default function Accordion({
@@ -153,11 +152,13 @@ export default function Accordion({
                                 {item.title}
                             </Text>
                         </Box>
-                        {isOpen ? (
-                            <Box flexDirection="column" marginBottom={1} marginLeft={4}>
-                                {item.content}
-                            </Box>
-                        ) : undefined}
+                        {isOpen
+                            ? (
+                                <Box flexDirection="column" marginBottom={1} marginLeft={4}>
+                                    {item.content}
+                                </Box>
+                            )
+                            : undefined}
                     </Box>
                 );
             })}

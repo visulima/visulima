@@ -10,26 +10,31 @@ import type { CanvasContext, CellStyle } from "./buffer";
  * ```
  * The braille block starts at U+2800; each lit pixel contributes one bit.
  */
-const BRAILLE_BASE = 0x2800;
+const BRAILLE_BASE = 0x28_00;
 
 // Bit layout for a (col, row) pixel inside a 2x4 cell (Unicode braille patterns).
 const BRAILLE_BITS: ReadonlyArray<number> = [
-    0x01, 0x08, // row 0: col 0, col 1
-    0x02, 0x10, // row 1
-    0x04, 0x20, // row 2
-    0x40, 0x80, // row 3
+    0x01,
+    0x08, // row 0: col 0, col 1
+    0x02,
+    0x10, // row 1
+    0x04,
+    0x20, // row 2
+    0x40,
+    0x80, // row 3
 ];
 
 export type BrailleGrid = {
     readonly cellHeight: number;
     readonly cellWidth: number;
     readonly clear: () => void;
+
     /**
      * Flush the accumulated pixels into the canvas, one braille character per
      * dirtied cell. Pass a color via `style` to apply it uniformly (mixing
      * colors across overlapping series requires a separate grid per series).
      */
-    readonly flush: (ctx: CanvasContext, style?: CellStyle) => void;
+    readonly flush: (context: CanvasContext, style?: CellStyle) => void;
     readonly pixelHeight: number;
     readonly pixelWidth: number;
     readonly plotLine: (x0: number, y0: number, x1: number, y1: number) => void;
@@ -115,17 +120,17 @@ export const createBrailleGrid = (cellWidth: number, cellHeight: number): Braill
             bits.fill(0);
             dirty.fill(0);
         },
-        flush: (ctx, style) => {
-            for (let index = 0; index < bits.length; index += 1) {
+        flush: (context, style) => {
+            for (const [index, bit] of bits.entries()) {
                 if (dirty[index] === 0) {
                     continue;
                 }
 
                 const cellX = index % cellWidth;
                 const cellY = Math.floor(index / cellWidth);
-                const codepoint = BRAILLE_BASE + bits[index]!;
+                const codepoint = BRAILLE_BASE + bit;
 
-                ctx.setCell(cellX, cellY, codepoint, style);
+                context.setCell(cellX, cellY, codepoint, style);
             }
         },
         pixelHeight,

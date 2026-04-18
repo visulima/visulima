@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * use-timeout.tsx — useTimeout hook demo
  *
@@ -35,12 +34,10 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">useTimeout</Text>
-            {fired ? (
-                <Text color="green">✔ timer fired (press r to restart)</Text>
-            ) : (
-                <Text>⏳ waiting 3 seconds…</Text>
-            )}
+            <Text bold color="cyan">
+                useTimeout
+            </Text>
+            {fired ? <Text color="green">✔ timer fired (press r to restart)</Text> : <Text>⏳ waiting 3 seconds…</Text>}
             <Text dimColor>r = reset · c = cancel</Text>
         </Box>
     );

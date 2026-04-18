@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
+
 /**
  * use-key-chord.tsx — multi-key sequence matcher
  *
@@ -25,10 +26,14 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">useKeyChord</Text>
+            <Text bold color="cyan">
+                useKeyChord
+            </Text>
             <Text dimColor>Try `g g`, `g d`, or `space f`. Partial chords reset after 1s.</Text>
             <Box borderColor="gray" borderStyle="round" flexDirection="column" paddingX={1}>
-                <Text bold dimColor>fired</Text>
+                <Text bold dimColor>
+                    fired
+                </Text>
                 {messages.length === 0 ? <Text dimColor>(none yet)</Text> : messages.map((m, index) => <Text key={index}>{m}</Text>)}
             </Box>
         </Box>

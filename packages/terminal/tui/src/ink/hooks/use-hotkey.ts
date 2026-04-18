@@ -59,34 +59,75 @@ const NAMED_KEYS = new Set<keyof Key>([
  * Parse a short string hotkey like `"ctrl+s"`, `"shift+tab"`, `"?"`, `"escape"`.
  */
 const parseShortcut = (shortcut: string): HotkeyDescriptor => {
-    const parts = shortcut.split("+").map((part) => part.trim()).filter((part) => part.length > 0);
+    const parts = shortcut
+        .split("+")
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
     const descriptor: { ctrl?: boolean; input?: string; meta?: boolean; name?: keyof Key; shift?: boolean } = {};
 
     for (const part of parts) {
         const lower = part.toLowerCase();
 
-        if (lower === "ctrl" || lower === "control") {
-            descriptor.ctrl = true;
-        } else if (lower === "shift") {
-            descriptor.shift = true;
-        } else if (lower === "meta" || lower === "cmd" || lower === "alt") {
-            descriptor.meta = true;
-        } else if (NAMED_KEYS.has(lower as keyof Key)) {
-            descriptor.name = lower as keyof Key;
-        } else if (lower === "enter") {
-            descriptor.name = "return";
-        } else if (lower === "esc") {
-            descriptor.name = "escape";
-        } else if (lower === "up") {
-            descriptor.name = "upArrow";
-        } else if (lower === "down") {
-            descriptor.name = "downArrow";
-        } else if (lower === "left") {
-            descriptor.name = "leftArrow";
-        } else if (lower === "right") {
-            descriptor.name = "rightArrow";
-        } else {
-            descriptor.input = part;
+        switch (lower) {
+            case "alt":
+            case "cmd":
+            case "meta": {
+                descriptor.meta = true;
+
+                break;
+            }
+            case "control":
+            case "ctrl": {
+                descriptor.ctrl = true;
+
+                break;
+            }
+            case "shift": {
+                descriptor.shift = true;
+
+                break;
+            }
+            default: {
+                if (NAMED_KEYS.has(lower as keyof Key)) {
+                    descriptor.name = lower as keyof Key;
+                } else {
+                    switch (lower) {
+                        case "down": {
+                            descriptor.name = "downArrow";
+
+                            break;
+                        }
+                        case "enter": {
+                            descriptor.name = "return";
+
+                            break;
+                        }
+                        case "esc": {
+                            descriptor.name = "escape";
+
+                            break;
+                        }
+                        case "left": {
+                            descriptor.name = "leftArrow";
+
+                            break;
+                        }
+                        case "right": {
+                            descriptor.name = "rightArrow";
+
+                            break;
+                        }
+                        case "up": {
+                            descriptor.name = "upArrow";
+
+                            break;
+                        }
+                        default: {
+                            descriptor.input = part;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -131,7 +172,7 @@ const useHotkey = (shortcut: HotkeyDescriptor | string, callback: () => void, op
                     callback();
                 }
             },
-            // eslint-disable-next-line react-hooks/exhaustive-deps -- descriptor is re-parsed per render; shortcut is the stable source of truth
+
             [shortcut, callback],
         ),
         { isActive: options?.isActive ?? true },

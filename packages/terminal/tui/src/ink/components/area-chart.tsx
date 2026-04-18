@@ -50,15 +50,15 @@ export type Props = {
     readonly palette?: ReadonlyArray<LiteralUnion<AnsiColors, string>>;
 
     /**
+     * Series to plot.
+     */
+    readonly series: ReadonlyArray<LineSeries>;
+
+    /**
      * Render the legend below the plot.
      * @default true
      */
     readonly showLegend?: boolean;
-
-    /**
-     * Series to plot.
-     */
-    readonly series: ReadonlyArray<LineSeries>;
 
     /**
      * Chart body width in character columns.
@@ -86,16 +86,18 @@ export default function AreaChart({
     maxY,
     minY,
     palette = DEFAULT_PALETTE,
-    showLegend = true,
     series,
+    showLegend = true,
     width = 40,
 }: Props): ReactElement {
     const prepared = useMemo(() => {
-        const list = series.map((input, index) => ({
-            color: pickSeriesColor(input, index, palette),
-            points: toPoints(input.data),
-            series: input,
-        }));
+        const list = series.map((input, index) => {
+            return {
+                color: pickSeriesColor(input, index, palette),
+                points: toPoints(input.data),
+                series: input,
+            };
+        });
 
         const extents = computeExtents(list);
 
@@ -113,11 +115,11 @@ export default function AreaChart({
     return (
         <Box flexDirection="column">
             <Canvas
-                draw={(ctx: CanvasContext) => {
-                    ctx.clear();
+                draw={(context: CanvasContext) => {
+                    context.clear();
 
-                    const pixelWidth = ctx.width * 2;
-                    const pixelHeight = ctx.height * 4;
+                    const pixelWidth = context.width * 2;
+                    const pixelHeight = context.height * 4;
                     const config = {
                         xMax: prepared.xMax,
                         xMin: prepared.xMin,
@@ -133,7 +135,7 @@ export default function AreaChart({
 
                         // Sample the line once per character column and fill from
                         // that row down to the baseline.
-                        for (let cellX = 0; cellX < ctx.width; cellX += 1) {
+                        for (let cellX = 0; cellX < context.width; cellX += 1) {
                             // Find the data point that projects into this column.
                             // Linear scan is fine for reasonable point counts;
                             // larger datasets should pre-resample. One
@@ -157,15 +159,15 @@ export default function AreaChart({
                                 continue;
                             }
 
-                            for (let cellY = sampleY + 1; cellY < ctx.height; cellY += 1) {
-                                ctx.setCell(cellX, cellY, glyph, { color, dim: true });
+                            for (let cellY = sampleY + 1; cellY < context.height; cellY += 1) {
+                                context.setCell(cellX, cellY, glyph, { color, dim: true });
                             }
                         }
                     }
 
                     // Dashed baseline.
-                    for (let cellX = 0; cellX < ctx.width; cellX += 2) {
-                        ctx.setCell(cellX, ctx.height - 1, "·", { color: axisColor, dim: true });
+                    for (let cellX = 0; cellX < context.width; cellX += 2) {
+                        context.setCell(cellX, context.height - 1, "·", { color: axisColor, dim: true });
                     }
 
                     // Line overlay using braille.
@@ -174,7 +176,7 @@ export default function AreaChart({
                             continue;
                         }
 
-                        const grid = createBrailleGrid(ctx.width, ctx.height);
+                        const grid = createBrailleGrid(context.width, context.height);
                         let previous = projectPoint(points[0]!, config, pixelWidth, pixelHeight);
 
                         grid.plotPoint(previous.px, previous.py);
@@ -186,7 +188,7 @@ export default function AreaChart({
                             previous = current;
                         }
 
-                        grid.flush(ctx, { bold: true, color });
+                        grid.flush(context, { bold: true, color });
                     }
                 }}
                 height={height}

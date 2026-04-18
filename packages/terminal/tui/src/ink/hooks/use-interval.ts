@@ -20,7 +20,6 @@ export type UseIntervalResult = {
  * A React hook that invokes `callback` every `interval` ms. The callback
  * reference is captured in a ref so it always sees the latest closure; only
  * `interval` and `isActive` cause the timer to be rebuilt.
- *
  * @param callback Invoked on every tick. Latest closure is captured in a ref.
  * @param interval Tick period in milliseconds. Invalid values pause the timer.
  * @param options Optional `isActive` flag to pause without unmounting.

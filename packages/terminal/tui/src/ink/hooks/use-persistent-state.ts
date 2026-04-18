@@ -21,17 +21,17 @@ export type PersistentStorage = {
 
 export type UsePersistentStateOptions = {
     /**
-     * Custom storage backend. When omitted, the default is a file on disk at
-     * `~/.cache/visulima-tui/<namespace>.json`.
-     */
-    readonly storage?: PersistentStorage;
-
-    /**
      * Namespace used by the default file storage. Separates keys across
      * independent applications sharing the user's home directory.
      * @default "tui"
      */
     readonly namespace?: string;
+
+    /**
+     * Custom storage backend. When omitted, the default is a file on disk at
+     * `~/.cache/visulima-tui/&lt;namespace>.json`.
+     */
+    readonly storage?: PersistentStorage;
 };
 
 /**
@@ -91,7 +91,7 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
         read: (key) => load()[key],
         write: (key, value) => {
             const directory = path.dirname(filePath);
-            const tempPath = `${filePath}.tmp.${process.pid}`;
+            const temporaryPath = `${filePath}.tmp.${process.pid}`;
 
             try {
                 mkdirSync(directory, { recursive: true });
@@ -104,11 +104,11 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
                 // rename — prevents readers from ever seeing a half-written
                 // file, and guarantees we either keep the old contents or
                 // see the new ones.
-                writeFileSync(tempPath, JSON.stringify(current, null, 2), {
+                writeFileSync(temporaryPath, JSON.stringify(current, null, 2), {
                     encoding: "utf8",
                     flag: "w",
                 });
-                renameSync(tempPath, filePath);
+                renameSync(temporaryPath, filePath);
             } catch (error) {
                 reportError("write", error);
             }
@@ -140,19 +140,14 @@ const readInitial = <T>(storage: PersistentStorage, key: string, fallback: T): T
  * never replaced. Mutating `options.storage` on subsequent renders has no
  * effect — remount the hook (e.g. via a `key` prop) if you need to swap
  * backends at runtime.
- *
  * @param key Unique identifier within the backend namespace.
  * @param initialValue Value used when the backend has no entry for `key`.
  * @param options Optional storage backend + namespace overrides.
  * @returns A `[value, setValue]` tuple. Writes flush synchronously after
  * the React state update.
  */
-const usePersistentState = <T>(
-    key: string,
-    initialValue: T,
-    options?: UsePersistentStateOptions,
-): readonly [T, (value: T | ((previous: T) => T)) => void] => {
-    const storageRef = useRef<PersistentStorage>(options?.storage ?? createFileStorage(options?.namespace ?? "tui"));
+const usePersistentState = <T>(key: string, initialValue: T, options?: UsePersistentStateOptions): readonly [T, (value: T | ((previous: T) => T)) => void] => {
+    const storageRef = useRef(options?.storage ?? createFileStorage(options?.namespace ?? "tui"));
 
     const [value, setValue] = useState<T>(() => readInitial(storageRef.current, key, initialValue));
 

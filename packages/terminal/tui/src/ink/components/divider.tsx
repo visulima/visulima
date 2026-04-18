@@ -50,15 +50,7 @@ export type Props = {
 /**
  * Horizontal or vertical divider line, optionally with a centered label.
  */
-export default function Divider({
-    character,
-    color,
-    dimColor = false,
-    label,
-    labelPadding = 1,
-    length,
-    orientation = "horizontal",
-}: Props): ReactElement {
+export default function Divider({ character, color, dimColor = false, label, labelPadding = 1, length, orientation = "horizontal" }: Props): ReactElement {
     const { columns } = useWindowSize();
     const char = character ?? (orientation === "horizontal" ? "─" : "│");
 

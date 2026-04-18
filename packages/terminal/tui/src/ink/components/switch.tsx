@@ -55,8 +55,7 @@ export type Props = {
 
 /**
  * Focusable on/off switch. Toggles with Space or Enter.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering two labeled segments plus an optional
  * trailing label.
  */
@@ -71,7 +70,7 @@ export default function Switch({
     value,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [internal, setInternal] = useState<boolean>(defaultValue);
+    const [internal, setInternal] = useState(defaultValue);
     const current = value ?? internal;
 
     useInput(
@@ -103,30 +102,24 @@ export default function Switch({
     return (
         <Box gap={1}>
             <Box gap={0}>
-                <Text
-                    backgroundColor={current ? undefined : "gray"}
-                    color={current ? undefined : "black"}
-                    dimColor={isDisabled}
-                >
+                <Text backgroundColor={current ? undefined : "gray"} color={current ? undefined : "black"} dimColor={isDisabled}>
                     {" "}
                     {off}
                     {" "}
                 </Text>
-                <Text
-                    backgroundColor={current ? accentColor : undefined}
-                    color={current ? "black" : undefined}
-                    dimColor={isDisabled}
-                >
+                <Text backgroundColor={current ? accentColor : undefined} color={current ? "black" : undefined} dimColor={isDisabled}>
                     {" "}
                     {on}
                     {" "}
                 </Text>
             </Box>
-            {children === undefined ? undefined : (
-                <Text color={focusColor} dimColor={isDisabled}>
-                    {children}
-                </Text>
-            )}
+            {children === undefined
+                ? undefined
+                : (
+                    <Text color={focusColor} dimColor={isDisabled}>
+                        {children}
+                    </Text>
+                )}
         </Box>
     );
 }

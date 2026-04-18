@@ -33,14 +33,14 @@ export type Props = {
     readonly defaultChecked?: boolean;
 
     /**
-     * Disable input and dim the label.
-     */
-    readonly isDisabled?: boolean;
-
-    /**
      * Controlled checked state. When provided, `onChange` should update the parent.
      */
     readonly isChecked?: boolean;
+
+    /**
+     * Disable input and dim the label.
+     */
+    readonly isDisabled?: boolean;
 
     /**
      * Fired when the checkbox toggles.
@@ -64,7 +64,7 @@ export default function Checkbox({
     onChange,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
-    const [internalChecked, setInternalChecked] = useState<boolean>(defaultChecked);
+    const [internalChecked, setInternalChecked] = useState(defaultChecked);
     const checked = isChecked ?? internalChecked;
 
     useInput(
@@ -95,11 +95,13 @@ export default function Checkbox({
                 {isFocused ? "▸ " : "  "}
                 {checked ? CHECKED_ICON : UNCHECKED_ICON}
             </Text>
-            {children === undefined ? undefined : (
-                <Text color={isFocused ? accentColor : undefined} dimColor={isDisabled}>
-                    {children}
-                </Text>
-            )}
+            {children === undefined
+                ? undefined
+                : (
+                    <Text color={isFocused ? accentColor : undefined} dimColor={isDisabled}>
+                        {children}
+                    </Text>
+                )}
         </Box>
     );
 }

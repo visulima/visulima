@@ -19,15 +19,7 @@ export { default as useConsoleCapture } from "./use-console-capture";
 export { default as useCursor } from "./use-cursor";
 export { default as useFocus } from "./use-focus";
 export { default as useFocusManager } from "./use-focus-manager";
-export type {
-    FieldConfig,
-    FieldValidator,
-    FormSchema,
-    FormValues,
-    UseFormOptions,
-    UseFormResult,
-    ValidationResult,
-} from "./use-form";
+export type { FieldConfig, FieldValidator, FormSchema, FormValues, UseFormOptions, UseFormResult, ValidationResult } from "./use-form";
 export { default as useForm } from "./use-form";
 export type { HotkeyDescriptor, UseHotkeyOptions } from "./use-hotkey";
 export { default as useHotkey } from "./use-hotkey";

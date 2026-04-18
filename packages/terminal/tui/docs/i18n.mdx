@@ -38,33 +38,31 @@ Initialize `i18next` **before your first render** so `I18nextProvider` receives 
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 
-await i18next
-    .use(initReactI18next)
-    .init({
-        fallbackLng: "en",
-        // Detect from the user's shell env — see "Locale detection" below.
-        lng: resolveLocale(),
-        interpolation: {
-            // Safe: React renders strings directly, no HTML escaping needed.
-            escapeValue: false,
-        },
-        resources: {
-            en: {
-                translation: {
-                    greeting: "Hello, {{name}}!",
-                    items_one: "{{count}} item",
-                    items_other: "{{count}} items",
-                },
-            },
-            fr: {
-                translation: {
-                    greeting: "Bonjour, {{name}} !",
-                    items_one: "{{count}} élément",
-                    items_other: "{{count}} éléments",
-                },
+await i18next.use(initReactI18next).init({
+    fallbackLng: "en",
+    // Detect from the user's shell env — see "Locale detection" below.
+    lng: resolveLocale(),
+    interpolation: {
+        // Safe: React renders strings directly, no HTML escaping needed.
+        escapeValue: false,
+    },
+    resources: {
+        en: {
+            translation: {
+                greeting: "Hello, {{name}}!",
+                items_one: "{{count}} item",
+                items_other: "{{count}} items",
             },
         },
-    });
+        fr: {
+            translation: {
+                greeting: "Bonjour, {{name}} !",
+                items_one: "{{count}} élément",
+                items_other: "{{count}} éléments",
+            },
+        },
+    },
+});
 
 export default i18next;
 
@@ -112,10 +110,7 @@ Detect from environment variables instead:
 
 ```ts
 const resolveLocale = (): string => {
-    const raw = process.env["LC_ALL"]
-        ?? process.env["LC_MESSAGES"]
-        ?? process.env["LANG"]
-        ?? "en";
+    const raw = process.env["LC_ALL"] ?? process.env["LC_MESSAGES"] ?? process.env["LANG"] ?? "en";
 
     // Normalize "en_US.UTF-8" → "en-US", then return just the base ("en").
     const locale = raw.split(".")[0]!.replace("_", "-");
@@ -177,9 +172,9 @@ locales/
 ```
 
 ```tsx
-t("items", { count: 0 });   // "0 items"
-t("items", { count: 1 });   // "1 item"
-t("items", { count: 42 });  // "42 items"
+t("items", { count: 0 }); // "0 items"
+t("items", { count: 1 }); // "1 item"
+t("items", { count: 42 }); // "42 items"
 ```
 
 Polish, Arabic, Russian, and others use more plural forms — i18next picks the correct one automatically.
@@ -219,10 +214,10 @@ Some localized strings include emoji or other wide characters that change a line
 
 ## Alternatives
 
-| Library | When to reach for it |
-| --- | --- |
+| Library                                                    | When to reach for it                                                                                                                                                                                           |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[`react-intl`](https://formatjs.github.io/) (FormatJS)** | You want [ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages/) strictly; you already use FormatJS tooling. Pure-JS, works in Node. Requires full-ICU in older Node versions. |
-| **[`@lingui/react`](https://lingui.dev/)** | You want compile-time message catalogs, smaller runtime. Uses `"use client"` directives harmless in Node/TUI contexts. |
+| **[`@lingui/react`](https://lingui.dev/)**                 | You want compile-time message catalogs, smaller runtime. Uses `"use client"` directives harmless in Node/TUI contexts.                                                                                         |
 
 Both integrate the same way: wrap your app in their provider and use their hook in components.
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /**
  * navigation.tsx — Menu, Tooltip, ContentSwitcher, OptionList
  *
@@ -31,7 +30,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">Menu</Text>
+            <Text bold color="cyan">
+                Menu
+            </Text>
             <Menu
                 autoFocus
                 onSelect={setLastPicked}
@@ -56,18 +57,23 @@ const App = () => {
                 ]}
                 title="Application"
             />
-            {lastPicked === undefined ? undefined : (
-                <Text dimColor>
-                    last picked:
-                    {" "}
-                    {lastPicked}
-                </Text>
-            )}
-            <Text bold color="cyan">Tooltip (press `h` to toggle)</Text>
+            {lastPicked === undefined
+                ? undefined
+                : (
+                    <Text dimColor>
+                        last picked:
+                        {lastPicked}
+                    </Text>
+                )}
+            <Text bold color="cyan">
+                Tooltip (press `h` to toggle)
+            </Text>
             <Tooltip content="This prints a greeting" isVisible={showTooltip}>
                 <Text color="yellow">$ hello</Text>
             </Tooltip>
-            <Text bold color="cyan">ContentSwitcher</Text>
+            <Text bold color="cyan">
+                ContentSwitcher
+            </Text>
             <ContentSwitcher
                 options={[
                     { content: <Text>Everything is healthy 🟢</Text>, id: "dashboard", label: "Dashboard" },
@@ -75,13 +81,15 @@ const App = () => {
                     { content: <Text>3 active incidents</Text>, id: "alerts", label: "Alerts" },
                 ]}
             />
-            <Text bold color="cyan">OptionList (read-only)</Text>
+            <Text bold color="cyan">
+                OptionList (read-only)
+            </Text>
             <OptionList
                 currentId="medium"
                 options={[
-                    { id: "small", label: "Small", description: "~100 ms" },
-                    { id: "medium", label: "Medium", description: "~500 ms" },
-                    { id: "large", label: "Large", description: "~2 s" },
+                    { description: "~100 ms", id: "small", label: "Small" },
+                    { description: "~500 ms", id: "medium", label: "Medium" },
+                    { description: "~2 s", id: "large", label: "Large" },
                 ]}
             />
         </Box>

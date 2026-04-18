@@ -22,15 +22,15 @@ export type Props = {
     readonly autoFocus?: boolean;
 
     /**
-     * Color used to mark the currently selected day.
-     * @default "green"
-     */
-    readonly selectedColor?: LiteralUnion<AnsiColors, string>;
-
-    /**
      * Initial focused day when uncontrolled. Defaults to `value` or today.
      */
     readonly defaultValue?: Date;
+
+    /**
+     * First day of the week: 0 = Sunday, 1 = Monday.
+     * @default 1
+     */
+    readonly firstDayOfWeek?: 0 | 1;
 
     /**
      * When true, disable input and render the grid dim.
@@ -58,31 +58,18 @@ export type Props = {
     readonly onSubmit?: (date: Date) => void;
 
     /**
+     * Color used to mark the currently selected day.
+     * @default "green"
+     */
+    readonly selectedColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
      * Controlled selected date.
      */
     readonly value?: Date;
-
-    /**
-     * First day of the week: 0 = Sunday, 1 = Monday.
-     * @default 1
-     */
-    readonly firstDayOfWeek?: 0 | 1;
 };
 
-const MONTH_NAMES = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-] as const;
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const;
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
 
@@ -103,8 +90,7 @@ const shiftMonth = (date: Date, delta: number): Date => {
     return new Date(targetYear, targetMonth, day);
 };
 
-const isSameDay = (a: Date, b: Date): boolean =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const isSameDay = (a: Date, b: Date): boolean => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
 const isOutOfRange = (date: Date, minDate: Date | undefined, maxDate: Date | undefined): boolean => {
     if (minDate !== undefined && date < startOfDay(minDate)) {
@@ -125,7 +111,7 @@ const buildWeeks = (year: number, month: number, firstDayOfWeek: 0 | 1): Readonl
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const cells: Array<Date | undefined> = [];
+    const cells: (Date | undefined)[] = [];
 
     for (let index = 0; index < leadingBlanks; index += 1) {
         cells.push(undefined);
@@ -139,7 +125,7 @@ const buildWeeks = (year: number, month: number, firstDayOfWeek: 0 | 1): Readonl
         cells.push(undefined);
     }
 
-    const weeks: Array<ReadonlyArray<Date | undefined>> = [];
+    const weeks: ReadonlyArray<Date | undefined>[] = [];
 
     for (let row = 0; row < cells.length; row += 7) {
         weeks.push(cells.slice(row, row + 7));
@@ -151,8 +137,7 @@ const buildWeeks = (year: number, month: number, firstDayOfWeek: 0 | 1): Readonl
 /**
  * Month-grid date picker. Arrow keys move focus by one day, page up/down move
  * by month. Enter submits; Space or Enter selects.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A bordered `ReactElement` containing the month header, weekday
  * labels, and the day grid.
  */
@@ -172,15 +157,13 @@ export default function Calendar({
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
     const today = useMemo(() => startOfDay(new Date()), []);
     const initial = startOfDay(value ?? defaultValue ?? today);
-    const [internalCursor, setInternalCursor] = useState<Date>(initial);
+    const [internalCursor, setInternalCursor] = useState(initial);
     const cursor = value ? startOfDay(value) : internalCursor;
     const cursorRef = useRef(cursor);
 
     cursorRef.current = cursor;
 
-    const weekdayLabels = useMemo(() => {
-        return [...WEEKDAYS.slice(firstDayOfWeek), ...WEEKDAYS.slice(0, firstDayOfWeek)];
-    }, [firstDayOfWeek]);
+    const weekdayLabels = useMemo(() => [...WEEKDAYS.slice(firstDayOfWeek), ...WEEKDAYS.slice(0, firstDayOfWeek)], [firstDayOfWeek]);
 
     const weeks = useMemo(() => buildWeeks(cursor.getFullYear(), cursor.getMonth(), firstDayOfWeek), [cursor, firstDayOfWeek]);
 
@@ -208,7 +191,7 @@ export default function Calendar({
                     return;
                 }
 
-                const current = cursorRef.current;
+                const { current } = cursorRef;
 
                 if (key.leftArrow) {
                     moveCursor(new Date(current.getFullYear(), current.getMonth(), current.getDate() - 1));
@@ -236,7 +219,9 @@ export default function Calendar({
     return (
         <Box borderColor={isFocused ? accentColor : undefined} borderStyle="round" flexDirection="column" paddingX={1}>
             <Box justifyContent="center">
-                <Text bold color={accentColor}>{monthLabel}</Text>
+                <Text bold color={accentColor}>
+                    {monthLabel}
+                </Text>
             </Box>
             <Box marginTop={1}>
                 {weekdayLabels.map((name) => (

@@ -20,15 +20,15 @@ export type Props = {
     readonly columnGap?: number;
 
     /**
+     * Entries to render.
+     */
+    readonly items: ReadonlyArray<DefinitionItem>;
+
+    /**
      * Inline items display on the same row; stacked items display with the term above the description.
      * @default "inline"
      */
     readonly layout?: "inline" | "stacked";
-
-    /**
-     * Entries to render.
-     */
-    readonly items: ReadonlyArray<DefinitionItem>;
 
     /**
      * Color applied to the term.
@@ -43,15 +43,9 @@ export type Props = {
 };
 
 /**
- * Key/value style definition list. Equivalent to the HTML `<dl>` element.
+ * Key/value style definition list. Equivalent to the HTML `&lt;dl>` element.
  */
-export default function DefinitionList({
-    columnGap = 2,
-    items,
-    layout = "inline",
-    termColor = "cyan",
-    termWidth,
-}: Props): ReactElement {
+export default function DefinitionList({ columnGap = 2, items, layout = "inline", termColor = "cyan", termWidth }: Props): ReactElement {
     if (layout === "stacked") {
         return (
             <Box flexDirection="column" gap={1}>

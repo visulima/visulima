@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { BarChart, Canvas } from "../../src/ink/index";
 import { createCanvasBuffer, serializeRow } from "../../src/ink/canvas/buffer";
+import { BarChart, Canvas } from "../../src/ink/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe(createCanvasBuffer, () => {
@@ -140,9 +140,9 @@ describe(Canvas, () => {
 
         renderToString(<Canvas draw={draw} height={3} version="v0" width={5} />);
 
-        const ctx = draw.mock.calls[0]?.[0];
+        const context = draw.mock.calls[0]?.[0];
 
-        expect(ctx).toMatchObject({ height: 3, width: 5 });
+        expect(context).toMatchObject({ height: 3, width: 5 });
     });
 
     it("should render the painted content", () => {
@@ -150,8 +150,8 @@ describe(Canvas, () => {
 
         const output = renderToString(
             <Canvas
-                draw={(ctx) => {
-                    ctx.drawText(0, 0, "hello");
+                draw={(context) => {
+                    context.drawText(0, 0, "hello");
                 }}
                 height={1}
                 version="v1"
@@ -165,8 +165,8 @@ describe(Canvas, () => {
     it("should reuse cached rows when version is unchanged", () => {
         expect.assertions(1);
 
-        const draw = vi.fn((ctx) => {
-            ctx.drawText(0, 0, "x");
+        const draw = vi.fn((context) => {
+            context.drawText(0, 0, "x");
         });
 
         // First render paints; second render should still call draw (the
@@ -218,9 +218,7 @@ describe(BarChart, () => {
     it("should render block characters in the plot area", () => {
         expect.assertions(1);
 
-        const output = renderToString(
-            <BarChart data={[{ value: 1 }, { value: 1 }]} height={4} />,
-        );
+        const output = renderToString(<BarChart data={[{ value: 1 }, { value: 1 }]} height={4} />);
 
         expect(output).toMatch(/[█▇▆▅▄▃▂▁]/);
     });

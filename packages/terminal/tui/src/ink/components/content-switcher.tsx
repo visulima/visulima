@@ -58,8 +58,7 @@ export type Props = {
  * Segmented control that flips between mutually exclusive content. More
  * compact than `Tabs`: the selected segment is highlighted as a pill, and
  * only the active segment's content is rendered.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` with a segmented header row and the active
  * panel's content beneath it.
  */
@@ -74,7 +73,7 @@ export default function ContentSwitcher({
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
     const initialId = defaultValue ?? options[0]?.id;
-    const [internal, setInternal] = useState<string | undefined>(initialId);
+    const [internal, setInternal] = useState(initialId);
     const current = value ?? internal;
 
     const currentIndex = useMemo(() => {
@@ -84,7 +83,7 @@ export default function ContentSwitcher({
 
         const index = options.findIndex((option) => option.id === current);
 
-        return index < 0 ? 0 : index;
+        return Math.max(index, 0);
     }, [options, current]);
 
     const commit = useCallback(
@@ -139,30 +138,29 @@ export default function ContentSwitcher({
                     const color = isActive ? "black" : undefined;
 
                     return (
-                        <Text
-                            backgroundColor={background}
-                            color={color}
-                            dimColor={isDisabled && !isActive}
-                            key={option.id}
-                        >
+                        <Text backgroundColor={background} color={color} dimColor={isDisabled && !isActive} key={option.id}>
                             {" "}
-                            {option.icon === undefined ? undefined : (
-                                <>
-                                    {option.icon}
-                                    {" "}
-                                </>
-                            )}
+                            {option.icon === undefined
+                                ? undefined
+                                : (
+                                    <>
+                                        {option.icon}
+                                        {" "}
+                                    </>
+                                )}
                             {option.label}
                             {" "}
                         </Text>
                     );
                 })}
             </Box>
-            {activeOption === undefined ? undefined : (
-                <Box flexDirection="column" marginTop={1}>
-                    {activeOption.content}
-                </Box>
-            )}
+            {activeOption === undefined
+                ? undefined
+                : (
+                    <Box flexDirection="column" marginTop={1}>
+                        {activeOption.content}
+                    </Box>
+                )}
         </Box>
     );
 }

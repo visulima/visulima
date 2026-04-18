@@ -1,5 +1,5 @@
-/* eslint-disable unicorn/prefer-top-level-await */
 // @ts-nocheck
+
 /**
  * Internationalization with react-i18next.
  *
@@ -146,7 +146,9 @@ function Demo() {
 
     return (
         <Box borderColor="cyan" borderStyle="round" flexDirection="column" paddingX={1} paddingY={1}>
-            <Text bold color="cyan">{t("title")}</Text>
+            <Text bold color="cyan">
+                {t("title")}
+            </Text>
             <Text>{t("greeting", { name: "Ada" })}</Text>
             <Text dimColor>{t("status", { state: i18n.language })}</Text>
             <Text>

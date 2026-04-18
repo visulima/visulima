@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
+
 /**
  * form.tsx — Form + FormField + useForm + MaskedInput + SearchInput + ConfirmDialog
  *
@@ -12,21 +13,7 @@
  * Run: node --import @oxc-node/core/register examples/form.tsx
  */
 import type { FieldConfig } from "@visulima/tui";
-import {
-    Box,
-    Button,
-    ConfirmDialog,
-    Form,
-    FormField,
-    MaskedInput,
-    render,
-    SearchInput,
-    Text,
-    TextInput,
-    useApp,
-    useForm,
-    useInput,
-} from "@visulima/tui";
+import { Box, Button, ConfirmDialog, Form, FormField, MaskedInput, render, SearchInput, Text, TextInput, useApp, useForm, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {
@@ -61,18 +48,10 @@ const App = () => {
         <Box flexDirection="column" gap={1} padding={1}>
             <Form description="All fields required." title="Create account" width={60}>
                 <FormField error={form.touched.name ? form.errors.name : undefined} label="Name" required>
-                    <TextInput
-                        onChange={(value) => form.setValue("name", value)}
-                        onSubmit={() => form.setTouched("name")}
-                        placeholder="Jane Doe"
-                    />
+                    <TextInput onChange={(value) => form.setValue("name", value)} onSubmit={() => form.setTouched("name")} placeholder="Jane Doe" />
                 </FormField>
                 <FormField error={form.touched.email ? form.errors.email : undefined} label="Email" required>
-                    <TextInput
-                        onChange={(value) => form.setValue("email", value)}
-                        onSubmit={() => form.setTouched("email")}
-                        placeholder="jane@example.com"
-                    />
+                    <TextInput onChange={(value) => form.setValue("email", value)} onSubmit={() => form.setTouched("email")} placeholder="jane@example.com" />
                 </FormField>
                 <FormField description="US format: (555) 123-4567" label="Phone">
                     <MaskedInput mask="(###) ###-####" />
@@ -83,12 +62,7 @@ const App = () => {
                 <Button onPress={() => void form.submit()}>Submit</Button>
             </Form>
             {showConfirm && (
-                <ConfirmDialog
-                    onCancel={() => setShowConfirm(false)}
-                    onConfirm={exit}
-                    title="All set?"
-                    tone="info"
-                >
+                <ConfirmDialog onCancel={() => setShowConfirm(false)} onConfirm={exit} title="All set?" tone="info">
                     <Box flexDirection="column">
                         <Text>
                             Submit as

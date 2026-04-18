@@ -94,7 +94,7 @@ describe(LineChart, () => {
 
         // `expectTypeOf` is a compile-time check that doesn't register a runtime
         // assertion, so it doesn't satisfy `expect.assertions(1)`.
-        expect(typeof output).toBe("string");
+        expectTypeOf(output).toBeString();
     });
 });
 

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
+
 /**
  * use-hotkey.tsx — useHotkey demo (string + descriptor shortcuts)
  *
@@ -27,7 +28,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column" gap={1} padding={1}>
-            <Text bold color="cyan">useHotkey</Text>
+            <Text bold color="cyan">
+                useHotkey
+            </Text>
             <Text dimColor>Press ?, Ctrl+S, Ctrl+R, or Esc</Text>
             {helpOpen && (
                 <Box borderColor="yellow" borderStyle="round" flexDirection="column" paddingX={1}>
@@ -39,7 +42,9 @@ const App = () => {
                 </Box>
             )}
             <Box borderColor="gray" borderStyle="round" flexDirection="column" paddingX={1}>
-                <Text bold dimColor>log</Text>
+                <Text bold dimColor>
+                    log
+                </Text>
                 {log.length === 0 ? <Text dimColor>(empty)</Text> : log.map((message, index) => <Text key={index}>{message}</Text>)}
             </Box>
         </Box>

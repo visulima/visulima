@@ -12,7 +12,7 @@ type AnimatableProps = {
 export type Props = {
     /**
      * Keyed children. Any child that accepts a `show: boolean` prop and calls
-     * `onExit` when its exit transition finishes (such as `<Transition />`) is
+     * `onExit` when its exit transition finishes (such as `&lt;Transition />`) is
      * orchestrated automatically. Other children render as-is.
      */
     readonly children: ReactNode;
@@ -30,7 +30,7 @@ type Slot = {
  * because tracking identity across renders requires it.
  */
 const getKey = (element: ReactElement): string | undefined => {
-    const key = element.key;
+    const { key } = element;
 
     return key == null ? undefined : String(key);
 };
@@ -39,7 +39,7 @@ const getKey = (element: ReactElement): string | undefined => {
  * Type-guard used to narrow a child to something AnimatePresence can drive.
  * Matches two cases:
  * 1. The element's component type carries a static `isAnimatable = true`
- *    marker (this is how built-in `<Transition />` is recognized — consumers
+ *    marker (this is how built-in `&lt;Transition />` is recognized — consumers
  *    can opt in their own wrappers the same way).
  * 2. The element's props object already declares a `show` key, letting
  *    inline components participate without a marker.
@@ -56,7 +56,7 @@ const isAnimatable = (element: ReactElement): element is ReactElement<Animatable
 
 /**
  * Orchestrates enter / exit animations for keyed children. Wrap a dynamic
- * list of `<Transition />` (or any component accepting `show` + `onExit`) to
+ * list of `&lt;Transition />` (or any component accepting `show` + `onExit`) to
  * keep outgoing children mounted until their exit animation finishes.
  */
 export default function AnimatePresence({ children }: Props): ReactElement {

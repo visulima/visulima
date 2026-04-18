@@ -11,16 +11,6 @@ import Text from "./text";
 
 export type MenuItem = {
     /**
-     * When true, renders the item dimmed and skips it during navigation.
-     */
-    readonly isDisabled?: boolean;
-
-    /**
-     * Identifier returned by `onSelect`.
-     */
-    readonly id: string;
-
-    /**
      * Optional hotkey rendered on the right side of the row (e.g. `"Ctrl+S"`).
      */
     readonly hotkey?: string;
@@ -29,6 +19,16 @@ export type MenuItem = {
      * Optional icon rendered before the label.
      */
     readonly icon?: ReactNode;
+
+    /**
+     * Identifier returned by `onSelect`.
+     */
+    readonly id: string;
+
+    /**
+     * When true, renders the item dimmed and skips it during navigation.
+     */
+    readonly isDisabled?: boolean;
 
     /**
      * Human-readable label.
@@ -55,6 +55,12 @@ export type Props = {
     readonly autoFocus?: boolean;
 
     /**
+     * Render a border around the menu.
+     * @default true
+     */
+    readonly bordered?: boolean;
+
+    /**
      * Flat list of items. Ignored if `sections` is provided.
      */
     readonly items?: ReadonlyArray<MenuItem>;
@@ -70,20 +76,14 @@ export type Props = {
     readonly sections?: ReadonlyArray<MenuSection>;
 
     /**
-     * Render a border around the menu.
-     * @default true
-     */
-    readonly bordered?: boolean;
-
-    /**
      * Optional title rendered at the top of the menu.
      */
     readonly title?: string;
 };
 
-type FlatRow =
-    | { readonly kind: "item"; readonly item: MenuItem; readonly sectionId: string | undefined }
-    | { readonly kind: "section-header"; readonly sectionId: string; readonly title: string };
+type FlatRow
+    = | { readonly item: MenuItem; readonly kind: "item"; readonly sectionId: string | undefined }
+        | { readonly kind: "section-header"; readonly sectionId: string; readonly title: string };
 
 const flatten = (items: ReadonlyArray<MenuItem> | undefined, sections: ReadonlyArray<MenuSection> | undefined): ReadonlyArray<FlatRow> => {
     if (sections && sections.length > 0) {
@@ -137,24 +137,15 @@ const firstEnabledIndex = (rows: ReadonlyArray<FlatRow>): number => {
 /**
  * Dropdown / context menu with optional sections and disabled items.
  * Keyboard: ↑/↓ (or j/k) to navigate, Enter to select, Esc to cancel.
- *
- * @param props - See {@link Props}.
+ * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the menu, optionally wrapped in a
  * rounded border when `bordered` is true.
  */
-export default function Menu({
-    accentColor = "blue",
-    autoFocus = false,
-    bordered = true,
-    items,
-    onSelect,
-    sections,
-    title,
-}: Props): ReactElement {
+export default function Menu({ accentColor = "blue", autoFocus = false, bordered = true, items, onSelect, sections, title }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus });
     const rows = useMemo(() => flatten(items, sections), [items, sections]);
     const initialIndex = useMemo(() => firstEnabledIndex(rows), [rows]);
-    const [focusedIndex, setFocusedIndex] = useState<number>(initialIndex);
+    const [focusedIndex, setFocusedIndex] = useState(initialIndex);
     const focusedIndexRef = useRef(focusedIndex);
 
     focusedIndexRef.current = focusedIndex;
@@ -162,9 +153,9 @@ export default function Menu({
     // Re-clamp focus when the set of rows changes underneath us — otherwise a
     // stale index can land on a removed/disabled row and Enter hits nothing.
     useEffect(() => {
-        const current = focusedIndexRef.current;
+        const { current } = focusedIndexRef;
         const row = rows[current];
-        const stillValid = row !== undefined && row.kind === "item" && !row.item.isDisabled;
+        const stillValid = row?.kind === "item" && !row.item.isDisabled;
 
         if (!stillValid) {
             const next = firstEnabledIndex(rows);
@@ -200,18 +191,20 @@ export default function Menu({
 
     const content = (
         <Box flexDirection="column">
-            {title === undefined ? undefined : (
-                <Box marginBottom={1}>
-                    <Text bold color={accentColor}>{title}</Text>
-                </Box>
-            )}
+            {title === undefined
+                ? undefined
+                : (
+                    <Box marginBottom={1}>
+                        <Text bold color={accentColor}>
+                            {title}
+                        </Text>
+                    </Box>
+                )}
             {rows.map((row, index) => {
                 if (row.kind === "section-header") {
                     return (
                         <Box key={`header:${row.sectionId}`} marginTop={index === 0 ? 0 : 1}>
-                            <Text dimColor>
-                                {row.title.toUpperCase()}
-                            </Text>
+                            <Text dimColor>{row.title.toUpperCase()}</Text>
                         </Box>
                     );
                 }
@@ -225,25 +218,29 @@ export default function Menu({
                         <Text color={color} dimColor={item.isDisabled}>
                             {isRowFocused ? "▸ " : "  "}
                         </Text>
-                        {item.icon === undefined ? undefined : (
-                            <Text color={color} dimColor={item.isDisabled}>
-                                {item.icon}
-                                {" "}
-                            </Text>
-                        )}
+                        {item.icon === undefined
+                            ? undefined
+                            : (
+                                <Text color={color} dimColor={item.isDisabled}>
+                                    {item.icon}
+                                    {" "}
+                                </Text>
+                            )}
                         <Box flexGrow={1} flexShrink={1} minWidth={0}>
                             <Text bold={isRowFocused} color={color} dimColor={item.isDisabled} wrap="truncate-end">
                                 {item.label}
                             </Text>
                         </Box>
-                        {item.hotkey === undefined ? undefined : (
-                            <Box flexShrink={0}>
-                                <Text dimColor>
-                                    {" "}
-                                    {item.hotkey}
-                                </Text>
-                            </Box>
-                        )}
+                        {item.hotkey === undefined
+                            ? undefined
+                            : (
+                                <Box flexShrink={0}>
+                                    <Text dimColor>
+                                        {" "}
+                                        {item.hotkey}
+                                    </Text>
+                                </Box>
+                            )}
                     </Box>
                 );
             })}
