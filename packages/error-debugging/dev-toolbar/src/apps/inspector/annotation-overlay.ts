@@ -31,8 +31,6 @@ import { originalSetTimeout, unfreezeAll } from "./freeze-animations";
 import type { AnnotationPalette } from "./theme-palette";
 import { getAnnotationPalette } from "./theme-palette";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 const MARKER_CLASS = "__vdt_annotation_marker";
 const FORM_ID = "__vdt_annotation_form";
 const DETAIL_ID = "__vdt_annotation_detail";
@@ -1345,8 +1343,8 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     // "+" badge in top-right corner
     const badge = document.createElement("div");
 
-    badge.style.cssText
-        = "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
+    badge.style.cssText =
+        "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
     badge.textContent = "+";
     outline.append(badge);
     document.body.append(outline);
@@ -1682,7 +1680,7 @@ interface AnnotationElement extends Element {
 }
 
 const removeAnnotationDetail = (): void => {
-    const element = document.querySelector<AnnotationElement>(`#${DETAIL_ID}`);
+    const element = document.querySelector(`#${DETAIL_ID}`) as AnnotationElement;
 
     // Unmark the marker
     if (element?.annotationId) {
