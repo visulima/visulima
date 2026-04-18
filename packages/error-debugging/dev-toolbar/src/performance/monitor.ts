@@ -228,7 +228,7 @@ class PerformanceMonitor {
         const entries = performance.getEntriesByType("navigation");
 
         if (entries.length > 0 && entries[0]) {
-            const navEntry = entries[0];
+            const navEntry = entries[0] as PerformanceNavigationTiming;
 
             this.vitals.ttfb = Math.round(navEntry.responseStart - navEntry.requestStart);
             this.emit();

@@ -35,7 +35,7 @@ const App = () => {
             },
             name: {
                 initialValue: "",
-                validate: (value) => ((value as string).length >= 2 ? undefined : "must have ≥ 2 chars"),
+                validate: (value) => ((value).length >= 2 ? undefined : "must have ≥ 2 chars"),
             },
         },
         onSubmit: (values) => {

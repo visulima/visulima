@@ -1,5 +1,15 @@
 import type { Command } from "@visulima/cerebro";
-import type { ConcurrentCommandInput, LifeCycleInterface, LogMode, ProcessEvent, TargetConfiguration, Task, TaskResults, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
+import type {
+    ConcurrentCommandInput,
+    LifeCycleInterface,
+    LogMode,
+    ProcessEvent,
+    TargetConfiguration,
+    Task,
+    TaskResults,
+    TaskRunnerOptions,
+    TaskTarget,
+} from "@visulima/task-runner";
 import {
     CompositeLifeCycle,
     createLogReporter,
@@ -391,10 +401,10 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             }
 
             if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
-            // Stream the raw chunk to the lifecycle first so plugins
-            // (notifiers, metrics, log shippers) see output as it
-            // arrives — before we store it in a buffer for the
-            // buffered `printTaskTerminalOutput` at task-end.
+                // Stream the raw chunk to the lifecycle first so plugins
+                // (notifiers, metrics, log shippers) see output as it
+                // arrives — before we store it in a buffer for the
+                // buffered `printTaskTerminalOutput` at task-end.
                 if (event.kind === "stdout") {
                     lifeCycle?.onTaskStdout?.(task, event.text);
                 } else {
@@ -477,9 +487,9 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const buffered = termBuf ? termBuf.toString() : output!.toString();
 
             if (timedOut) {
-            // Mark the result with a distinctive prefix so reporters and
-            // CI log grep can surface timeouts separately from ordinary
-            // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
+                // Mark the result with a distinctive prefix so reporters and
+                // CI log grep can surface timeouts separately from ordinary
+                // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
                 return {
                     code: 124,
                     terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
@@ -526,7 +536,10 @@ const parseEnvConcurrency = (raw: string | undefined): { invalid: string } | { v
  * can `cat .task-runner/last-summary.json` directly. This view is the
  * "glance at what happened" companion to `vis run --last-details`.
  */
-const renderLastRunSummary = async (workspaceRoot: string, logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void }): Promise<void> => {
+const renderLastRunSummary = async (
+    workspaceRoot: string,
+    logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void },
+): Promise<void> => {
     const summary = await readLastRunSummary(workspaceRoot);
 
     if (!summary) {

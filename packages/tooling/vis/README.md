@@ -212,9 +212,9 @@ vis staged --force-kill             # kill in-flight tasks with SIGKILL on fast-
 
 #### Environment variables
 
-| Variable                  | Description                                                                                             |
-| ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `VIS_STAGED_CONCURRENT`   | Concurrency fallback when `--concurrent` is not passed. Same value shape as the flag (`true`, `false`, or an integer). Useful in CI so you don't repeat the flag on every invocation. |
+| Variable                | Description                                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VIS_STAGED_CONCURRENT` | Concurrency fallback when `--concurrent` is not passed. Same value shape as the flag (`true`, `false`, or an integer). Useful in CI so you don't repeat the flag on every invocation. |
 
 #### How it behaves
 

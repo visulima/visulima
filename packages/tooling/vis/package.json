@@ -43,6 +43,10 @@
             "types": "./dist/config.d.ts",
             "default": "./dist/config.js"
         },
+        "./generate": {
+            "types": "./dist/generate/index.d.ts",
+            "default": "./dist/generate/index.js"
+        },
         "./schemas/project.schema.json": "./schemas/project.schema.json",
         "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
         "./package.json": "./package.json"
@@ -91,6 +95,7 @@
         "@visulima/package": "workspace:*",
         "@visulima/path": "workspace:*",
         "@visulima/secret-scanner": "workspace:*",
+        "@visulima/string": "workspace:*",
         "@visulima/task-runner": "workspace:*",
         "@visulima/tui": "workspace:*",
         "execa": "catalog:dev",
@@ -103,6 +108,7 @@
         "react": "catalog:frontend",
         "semver": "^7.7.4",
         "validate-npm-package-name": "^7.0.2",
+        "yaml": "catalog:prod",
         "zeptomatch": "catalog:dev"
     },
     "devDependencies": {

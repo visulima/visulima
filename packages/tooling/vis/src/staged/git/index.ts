@@ -5,7 +5,16 @@ import { join, relative as relativePath } from "@visulima/path";
 
 import { GitError, RestoreOriginalStateError } from "../errors";
 import type { RunOptions } from "../types";
-import { capturePatch, checkoutPaths, getFiles, getIntentToAddPaths, getPartiallyStagedFiles, getUntrackedFiles, removeFromIndex, updateIndexAgain } from "./diff";
+import {
+    capturePatch,
+    checkoutPaths,
+    getFiles,
+    getIntentToAddPaths,
+    getPartiallyStagedFiles,
+    getUntrackedFiles,
+    removeFromIndex,
+    updateIndexAgain,
+} from "./diff";
 import { assertGitVersion, getGitDirectory, getWorkTree, git, headTreeSha, isGitRepo, writeIndexTree } from "./exec";
 import { applyBackupStash, createBackupStash, createHideAllStash, dropBackupStash, popHideAllStash } from "./stash";
 
@@ -156,10 +165,7 @@ export class GitWorkflow {
             if (newFiles.length > 0) {
                 const pathspec = `${newFiles.join("\u0000")}\u0000`;
 
-                await git(
-                    ["add", "--pathspec-from-file=-", "--pathspec-file-nul", "--"],
-                    { cwd: this.workTree, input: pathspec },
-                );
+                await git(["add", "--pathspec-from-file=-", "--pathspec-file-nul", "--"], { cwd: this.workTree, input: pathspec });
             }
         }
 

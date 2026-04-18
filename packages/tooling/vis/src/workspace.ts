@@ -238,6 +238,26 @@ interface VisConfig {
     fileGroups?: Record<string, string[]>;
 
     /**
+     * Configuration for the `vis generate` in-repo scaffolding command.
+     * Points at additional template directories beyond the defaults
+     * (`.vis/templates/` and `.moon/templates/`).
+     */
+    generator?: {
+        /**
+         * Extra directories to scan for templates. Each directory is
+         * checked for both native templates (`&lt;name>.ts`) and
+         * moon-format directories (containing `template.yml`).
+         * @example
+         * ```
+         * generator: {
+         *   templates: ["./tools/generators", "./packages/scaffolding/templates"],
+         * }
+         * ```
+         */
+        templates?: string[];
+    };
+
+    /**
      * Named input patterns inherited by every project target. Equivalent
      * to task-runner's `namedInputs` but configurable from the vis config.
      */

@@ -105,9 +105,7 @@ export const runTasks = async (patterns: ReadonlyArray<PatternDescriptor>, rende
             // A task that failed only because cancellation reached it counts as "skipped", not "failed" —
             // the caller already has the root-cause failure from the task that triggered the cancel, and
             // surfacing cancellation-fallout as extra failedCommands entries is noise.
-            const classified: CommandOutcome = outcome.status === "failed" && abortController.signal.aborted
-                ? { ...outcome, status: "skipped" }
-                : outcome;
+            const classified: CommandOutcome = outcome.status === "failed" && abortController.signal.aborted ? { ...outcome, status: "skipped" } : outcome;
 
             renderer.commandEnd({
                 commandId: command.id,
