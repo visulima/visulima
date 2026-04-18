@@ -91,6 +91,7 @@ vis hook install
 | Command                 | Alias  | Description                                                          |
 | ----------------------- | ------ | -------------------------------------------------------------------- |
 | `vis create [template]` |        | Scaffold a new project from templates, npm packages, or git repos    |
+| `vis generate [name]`   |        | Scaffold files from an in-repo template (native TS or moon-format)   |
 | `vis init`              |        | Initialize vis.config.ts with security defaults                      |
 | `vis run <target>`      |        | Run a target across workspace projects with caching                  |
 | `vis affected <target>` |        | Run tasks only on projects affected by git changes                   |
