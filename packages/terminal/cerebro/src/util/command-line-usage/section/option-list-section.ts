@@ -36,7 +36,6 @@ class OptionListSection extends BaseSection {
             });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const table = createTable({
             showHeader: false,
             style: {
