@@ -359,20 +359,22 @@ describe(writeLastRunSummary, () => {
         await rm(workspaceRoot, { force: true, recursive: true });
     });
 
-    const makeSummary = (id: string): RunSummary => ({
-        duration: 123,
-        endTime: new Date().toISOString(),
-        environment: {
-            arch: process.arch,
-            nodeVersion: process.version,
-            platform: process.platform,
-        },
-        id,
-        startTime: new Date().toISOString(),
-        stats: { cached: 0, failed: 0, skipped: 0, succeeded: 0, total: 0 },
-        taskGraph: { dependencies: {}, roots: [] },
-        tasks: [],
-    });
+    const makeSummary = (id: string): RunSummary => {
+        return {
+            duration: 123,
+            endTime: new Date().toISOString(),
+            environment: {
+                arch: process.arch,
+                nodeVersion: process.version,
+                platform: process.platform,
+            },
+            id,
+            startTime: new Date().toISOString(),
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 0, total: 0 },
+            taskGraph: { dependencies: {}, roots: [] },
+            tasks: [],
+        };
+    };
 
     it("persists to a stable path and overwrites on repeat runs", async () => {
         expect.assertions(3);

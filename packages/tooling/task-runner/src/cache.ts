@@ -189,9 +189,7 @@ class Cache {
             assertSafeNamespace(options.cacheNamespace);
         }
 
-        this.#cacheDirectory = options.cacheNamespace && options.cacheNamespace.length > 0
-            ? join(baseDirectory, "ns", options.cacheNamespace)
-            : baseDirectory;
+        this.#cacheDirectory = options.cacheNamespace && options.cacheNamespace.length > 0 ? join(baseDirectory, "ns", options.cacheNamespace) : baseDirectory;
         this.#maxCacheAge = options.maxCacheAge ?? DEFAULT_MAX_CACHE_AGE;
         this.#maxCacheSize = options.maxCacheSize ? parseCacheSize(options.maxCacheSize) : undefined;
     }

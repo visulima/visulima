@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { createLogReporter, LogReporter } from "../src/log-reporter";
 import type { Task } from "../src/types";
 
-const makeTask = (project: string, target: string): Task => ({
-    id: `${project}:${target}`,
-    outputs: [],
-    overrides: {},
-    target: { project, target },
-});
+const makeTask = (project: string, target: string): Task => {
+    return {
+        id: `${project}:${target}`,
+        outputs: [],
+        overrides: {},
+        target: { project, target },
+    };
+};
 
 const capture = () => {
     let output = "";

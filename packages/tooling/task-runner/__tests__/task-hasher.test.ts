@@ -363,7 +363,7 @@ describe(InProcessTaskHasher, () => {
                     root: "packages/lib-a",
                     targets: {
                         build: {
-                            inputs: [{ fileset: { pattern: "tsconfig.base.json", base: "workspace" } }],
+                            inputs: [{ fileset: { base: "workspace", pattern: "tsconfig.base.json" } }],
                         },
                     },
                 },
@@ -476,10 +476,7 @@ describe(InProcessTaskHasher, () => {
                     root: "packages/lib-a",
                     targets: {
                         build: {
-                            inputs: [
-                                "{projectRoot}/**/*",
-                                { fileset: { pattern: "!packages/lib-a/dist", base: "workspace" } },
-                            ],
+                            inputs: ["{projectRoot}/**/*", { fileset: { base: "workspace", pattern: "!packages/lib-a/dist" } }],
                         },
                     },
                 },

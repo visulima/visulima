@@ -25,7 +25,10 @@ const prefixLines = (text: string, label: string): string => {
         return trailing;
     }
 
-    return `${body.split("\n").map((line) => `[${label}] ${line}`).join("\n")}${trailing}`;
+    return `${body
+        .split("\n")
+        .map((line) => `[${label}] ${line}`)
+        .join("\n")}${trailing}`;
 };
 
 /**

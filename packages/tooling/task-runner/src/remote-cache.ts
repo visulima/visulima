@@ -34,6 +34,7 @@ export type RemoteCacheCompression = "brotli" | "gzip";
 export interface RemoteCacheSigning {
     /** Shared secret. Must be at least 16 characters. */
     secret: string;
+
     /**
      * Reject downloads whose signature doesn't match or is missing.
      * Set to `true` once every upload on your server is signed.
@@ -51,6 +52,7 @@ interface RemoteCacheOptions {
      * for Turborepo protocol compatibility.
      */
     compression?: RemoteCacheCompression;
+
     /**
      * Called when a fire-and-forget upload fails.
      * Since uploads are non-blocking, errors are silently swallowed by default.
@@ -59,6 +61,7 @@ interface RemoteCacheOptions {
     onUploadError?: (hash: string, error: unknown) => void;
     /** Whether to enable remote cache reads */
     read?: boolean;
+
     /**
      * HMAC-SHA256 signing for upload integrity. When set, every
      * uploaded artifact carries an `X-Artifact-Signature` header;
@@ -247,11 +250,7 @@ class RemoteCache {
             // Extract the archive to the cache entry directory
             await mkdir(entryDirectory, { recursive: true });
 
-            if (this.#compression === "brotli") {
-                await extractTarBrotli(archivePath, entryDirectory);
-            } else {
-                await extractTarGz(archivePath, entryDirectory);
-            }
+            await (this.#compression === "brotli" ? extractTarBrotli(archivePath, entryDirectory) : extractTarGz(archivePath, entryDirectory));
 
             await rm(archivePath, { force: true });
 
@@ -281,11 +280,7 @@ class RemoteCache {
             await stat(join(entryDirectory, ".commit"));
 
             // Compressed tarball of the cache entry, algorithm per config.
-            if (this.#compression === "brotli") {
-                await createTarBrotli(entryDirectory, archivePath);
-            } else {
-                await createTarGz(entryDirectory, archivePath);
-            }
+            await (this.#compression === "brotli" ? createTarBrotli(entryDirectory, archivePath) : createTarGz(entryDirectory, archivePath));
 
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
             const { size } = await stat(archivePath);

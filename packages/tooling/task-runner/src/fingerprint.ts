@@ -19,6 +19,7 @@ export interface TaskFingerprint {
     fileHashes: Record<string, string>;
     /** Paths of files that were probed but didn't exist (ENOENT) */
     missingFiles: string[];
+
     /**
      * Workspace-relative paths that were both read **and** written
      * during execution. Populated when the tracker emits
