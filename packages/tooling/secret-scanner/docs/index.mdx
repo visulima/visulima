@@ -33,15 +33,7 @@ Use it as a library, through the [`vis secrets`](../vis/index.mdx) CLI, or as a 
 ## Quick Start
 
 ```typescript
-import {
-    scan,
-    scanFiles,
-    scanString,
-    listRules,
-    inspectRuleset,
-    fingerprint,
-    transformYamlBlockScalars,
-} from "@visulima/secret-scanner";
+import { scan, scanFiles, scanString, listRules, inspectRuleset, fingerprint, transformYamlBlockScalars } from "@visulima/secret-scanner";
 
 // Scan a directory (respects .gitignore)
 const findings = await scan([process.cwd()], { redact: true });
