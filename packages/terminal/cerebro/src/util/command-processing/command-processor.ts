@@ -59,7 +59,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     const toolbox = new EmptyToolbox(command.name, command as unknown as ICommand) as unknown as IToolbox<TLogger>;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { _all, positionals } = parsedArgs;
+    const { _all, _unknown, positionals } = parsedArgs;
 
     const hasBooleanValues = Object.keys(booleanValues).length > 0;
     const mergedAll: Record<string, unknown> = hasBooleanValues
@@ -72,6 +72,12 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     }
 
     toolbox.argument = ((positionals as Record<string, unknown> | undefined)?.[POSITIONALS_KEY] as string[] | undefined) ?? [];
+
+    // Expose the tail that command-line-args could not match (typically
+    // everything after a `--` separator) so commands can forward it to
+    // inner tools without peeking at `process.argv`. `stopAtFirstUnknown`
+    // is set above, so this is the authoritative passthrough buffer.
+    toolbox.rawUnknown = ((_unknown as string[] | undefined) ?? []).slice();
 
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 
