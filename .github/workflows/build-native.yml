@@ -32,7 +32,8 @@ jobs:
             task-runner: "${{ steps.changes.outputs.task-runner }}"
             tui: "${{ steps.changes.outputs.tui }}"
             vis: "${{ steps.changes.outputs.vis }}"
-            any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' }}"
+            secret-scanner: "${{ steps.changes.outputs.secret-scanner }}"
+            any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' || steps.changes.outputs.secret-scanner == 'true' }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
@@ -123,8 +124,9 @@ jobs:
                   persist-credentials: false
 
             # --- Cache per package ---
+            # Caches always restore (keyed by source hash) so test.yml can download
+            # the resulting artifacts even for PRs that don't touch native sources.
             - name: "Cache task-runner native build"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
               id: "cache-task-runner"
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
@@ -132,7 +134,6 @@ jobs:
                   key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**') }}"
 
             - name: "Cache tui native build"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
               id: "cache-tui"
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
@@ -140,7 +141,6 @@ jobs:
                   key: "native-tui-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/terminal/tui/native/Cargo.toml', 'packages/terminal/tui/native/Cargo.lock', 'packages/terminal/tui/native/build.rs', 'packages/terminal/tui/native/src/**') }}"
 
             - name: "Cache vis native build"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
               id: "cache-vis"
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
@@ -148,7 +148,6 @@ jobs:
                   key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**') }}"
 
             - name: "Cache secret-scanner native build"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true'"
               id: "cache-secret-scanner"
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
@@ -207,30 +206,32 @@ jobs:
               with:
                   version: "0.14.1"
 
-            # --- Build each changed package ---
+            # --- Build each package when cache missed ---
+            # Cache keys are derived from native sources, so cache hits short-circuit
+            # unchanged packages. Removing the files-changed gate ensures that PRs
+            # whose diff misses native sources still produce artifacts for test.yml.
             - name: "Build task-runner native"
-              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/task-runner"
 
             - name: "Build tui native"
-              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true') && steps.cache-tui.outputs.cache-hit != 'true'"
+              if: "steps.cache-tui.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/terminal/tui"
 
             - name: "Build vis native"
-              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true') && steps.cache-vis.outputs.cache-hit != 'true'"
+              if: "steps.cache-vis.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/vis"
 
             - name: "Build secret-scanner native"
-              if: "(github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true') && steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+              if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/secret-scanner"
 
             # --- Upload artifacts per package ---
             - name: "Upload task-runner artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
                   name: "bindings-task-runner-${{ matrix.settings.target }}"
@@ -238,7 +239,6 @@ jobs:
                   if-no-files-found: "error"
 
             - name: "Upload tui artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
                   name: "bindings-tui-${{ matrix.settings.target }}"
@@ -246,7 +246,6 @@ jobs:
                   if-no-files-found: "error"
 
             - name: "Upload vis artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
                   name: "bindings-vis-${{ matrix.settings.target }}"
@@ -254,7 +253,6 @@ jobs:
                   if-no-files-found: "error"
 
             - name: "Upload secret-scanner artifact"
-              if: "github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
                   name: "bindings-secret-scanner-${{ matrix.settings.target }}"
