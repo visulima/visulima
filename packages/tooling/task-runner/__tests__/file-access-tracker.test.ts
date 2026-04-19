@@ -141,10 +141,10 @@ describe(FileAccessTracker, () => {
             expect(result.output).toContain("test_value_123");
         });
 
-        it.skipIf(!new FileAccessTracker(tmpdir()).isSupported())("emits a write access when a file is modified", async () => {
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isSupported())("emits a write access when a file is modified", async () => {
             expect.assertions(1);
 
-            const tracker = new FileAccessTracker(workspaceRoot);
+            const tracker = new FileAccessTracker(workspaceRoot, []);
             const target = join(workspaceRoot, "out.txt");
 
             // sh -c 'echo hi > out.txt' — openat(O_WRONLY|O_CREAT|O_TRUNC)
@@ -153,10 +153,10 @@ describe(FileAccessTracker, () => {
             expect(result.accesses.some((a) => a.path === target && a.type === "write")).toBe(true);
         });
 
-        it.skipIf(!new FileAccessTracker(tmpdir()).isSupported())("records both read and write for a self-modifying command", async () => {
+        it.skipIf(!new FileAccessTracker(tmpdir(), []).isSupported())("records both read and write for a self-modifying command", async () => {
             expect.assertions(2);
 
-            const tracker = new FileAccessTracker(workspaceRoot);
+            const tracker = new FileAccessTracker(workspaceRoot, []);
             const target = join(workspaceRoot, "roundtrip.txt");
 
             await writeFile(target, "before");
