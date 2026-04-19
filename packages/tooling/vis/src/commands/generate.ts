@@ -103,9 +103,20 @@ const generate: Command = {
         }
 
         // Split args on `--`; everything after becomes option overrides.
-        const dashIndex = args.indexOf("--");
-        const ownArgs = dashIndex === -1 ? args : args.slice(0, dashIndex);
-        const extraArguments = dashIndex === -1 ? [] : args.slice(dashIndex + 1);
+        // cerebro runs command-line-args with `stopAtFirstUnknown` so the
+        // `--`-separated tail never reaches `toolbox.argument` — it gets
+        // silently dropped into `_unknown`. Read `process.argv` directly
+        // to recover the passthrough tokens.
+        const rawArgv = process.argv.slice(2);
+        const argvDashIndex = rawArgv.indexOf("--");
+        const passthroughArgv = argvDashIndex === -1 ? [] : rawArgv.slice(argvDashIndex + 1);
+
+        // Support the legacy code path too in case cerebro ever starts
+        // forwarding the `--` tail; `args` would then carry it.
+        const legacyDashIndex = args.indexOf("--");
+        const legacyExtras = legacyDashIndex === -1 ? [] : args.slice(legacyDashIndex + 1);
+        const ownArgs = legacyDashIndex === -1 ? args : args.slice(0, legacyDashIndex);
+        const extraArguments = [...legacyExtras, ...passthroughArgv];
         const { overrides } = parsePassthroughOverrides(extraArguments);
 
         let template: Template | undefined;

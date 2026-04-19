@@ -330,10 +330,19 @@ const create: Command = {
         } else {
             // ── Non-interactive mode ─────────────────────────────
             // Split args on "--" separator — everything after it is forwarded to the template.
-            const dashIndex = args.indexOf("--");
-            const ownArgs = dashIndex === -1 ? args : args.slice(0, dashIndex);
+            // cerebro's `stopAtFirstUnknown` drops the `--` tail into `_unknown`
+            // which never reaches `toolbox.argument`. Recover it from
+            // `process.argv` directly so `vis create vite my-app -- --template react-ts`
+            // actually forwards the tail to the underlying create-vite.
+            const rawArgv = process.argv.slice(2);
+            const argvDashIndex = rawArgv.indexOf("--");
+            const passthroughArgv = argvDashIndex === -1 ? [] : rawArgv.slice(argvDashIndex + 1);
 
-            extraArgs = dashIndex === -1 ? [] : args.slice(dashIndex + 1);
+            const legacyDashIndex = args.indexOf("--");
+            const ownArgs = legacyDashIndex === -1 ? args : args.slice(0, legacyDashIndex);
+            const legacyExtras = legacyDashIndex === -1 ? [] : args.slice(legacyDashIndex + 1);
+
+            extraArgs = [...legacyExtras, ...passthroughArgv];
 
             templateInput = ownArgs[0] as string;
             projectName = ownArgs[1] as string | undefined;
