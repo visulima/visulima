@@ -83,7 +83,7 @@ const generate: Command = {
         ["vis generate git://github.com/org/template#main", "Fetch and run a remote template"],
         ["vis generate --list", "Show discovered templates"],
     ],
-    execute: async ({ argument, options, visConfig, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, options, rawUnknown, visConfig, workspaceRoot: wsRoot }) => {
         const cwd = (options.cwd as string) || wsRoot || process.cwd();
         const workspaceRoot = wsRoot ?? cwd;
         const generatorConfig = (visConfig as { generator?: { auth?: string; preferOffline?: boolean; templates?: string[] } } | undefined)?.generator;
@@ -102,22 +102,27 @@ const generate: Command = {
             return;
         }
 
-        // Split args on `--`; everything after becomes option overrides.
-        // cerebro runs command-line-args with `stopAtFirstUnknown` so the
-        // `--`-separated tail never reaches `toolbox.argument` — it gets
-        // silently dropped into `_unknown`. Read `process.argv` directly
-        // to recover the passthrough tokens.
-        const rawArgv = process.argv.slice(2);
-        const argvDashIndex = rawArgv.indexOf("--");
-        const passthroughArgv = argvDashIndex === -1 ? [] : rawArgv.slice(argvDashIndex + 1);
+        // `rawUnknown` is cerebro's buffer of tokens command-line-args
+        // couldn't assign — populated from the `--`-separated tail
+        // (`vis generate pkg -- --foo=bar`). Fall back to an argv walk
+        // on older cerebro versions that don't surface the field yet.
+        let passthrough: string[] = [...(rawUnknown ?? [])];
 
-        // Support the legacy code path too in case cerebro ever starts
-        // forwarding the `--` tail; `args` would then carry it.
+        if (passthrough.length === 0) {
+            const rawArgv = process.argv.slice(2);
+            const argvDashIndex = rawArgv.indexOf("--");
+
+            if (argvDashIndex !== -1) {
+                passthrough = rawArgv.slice(argvDashIndex + 1);
+            }
+        }
+
+        // Legacy safety net: if a future cerebro ever started forwarding
+        // the tail into `args`, keep honoring it.
         const legacyDashIndex = args.indexOf("--");
         const legacyExtras = legacyDashIndex === -1 ? [] : args.slice(legacyDashIndex + 1);
         const ownArgs = legacyDashIndex === -1 ? args : args.slice(0, legacyDashIndex);
-        const extraArguments = [...legacyExtras, ...passthroughArgv];
-        const { overrides } = parsePassthroughOverrides(extraArguments);
+        const { overrides } = parsePassthroughOverrides([...legacyExtras, ...passthrough]);
 
         let template: Template | undefined;
         let templateName: string | undefined;

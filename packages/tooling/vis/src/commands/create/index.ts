@@ -273,7 +273,7 @@ const create: Command = {
         ["vis create user/repo my-project", "Clone a GitHub template"],
         ["vis create --list", "Show available templates"],
     ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }) => {
         const args: string[] = Array.isArray(argument) ? argument : argument ? [argument] : [];
         const createConfig = visConfig?.create;
 
@@ -329,14 +329,21 @@ const create: Command = {
             );
         } else {
             // ── Non-interactive mode ─────────────────────────────
-            // Split args on "--" separator — everything after it is forwarded to the template.
-            // cerebro's `stopAtFirstUnknown` drops the `--` tail into `_unknown`
-            // which never reaches `toolbox.argument`. Recover it from
-            // `process.argv` directly so `vis create vite my-app -- --template react-ts`
-            // actually forwards the tail to the underlying create-vite.
-            const rawArgv = process.argv.slice(2);
-            const argvDashIndex = rawArgv.indexOf("--");
-            const passthroughArgv = argvDashIndex === -1 ? [] : rawArgv.slice(argvDashIndex + 1);
+            // Split args on "--" separator — everything after it is
+            // forwarded to the underlying create-* package. `rawUnknown`
+            // is cerebro's native buffer for tokens that command-line-args
+            // couldn't assign; we still fall back to `process.argv` so
+            // the command works on older cerebro builds.
+            let passthroughArgv: string[] = [...(rawUnknown ?? [])];
+
+            if (passthroughArgv.length === 0) {
+                const rawArgv = process.argv.slice(2);
+                const argvDashIndex = rawArgv.indexOf("--");
+
+                if (argvDashIndex !== -1) {
+                    passthroughArgv = rawArgv.slice(argvDashIndex + 1);
+                }
+            }
 
             const legacyDashIndex = args.indexOf("--");
             const ownArgs = legacyDashIndex === -1 ? args : args.slice(0, legacyDashIndex);
