@@ -6,6 +6,7 @@ import { Calendar, ConfirmDialog, DatePicker, Form, Placeholder, render, Text, u
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
+import waitFor from "../helpers/wait-for";
 
 let currentUnmount: (() => void) | undefined;
 
@@ -52,7 +53,7 @@ describe(Calendar, () => {
         const { stdin } = await setup(<Calendar autoFocus defaultValue={fixedDate} onChange={onChange} />);
 
         emitReadable(stdin, "\u001B[C"); // right arrow
-        await delay(40);
+        await waitFor(() => onChange.mock.calls.length > 0);
 
         const callArgs = onChange.mock.calls[0]?.[0] as Date | undefined;
 
@@ -66,7 +67,7 @@ describe(Calendar, () => {
         const { stdin } = await setup(<Calendar autoFocus defaultValue={fixedDate} onSubmit={onSubmit} />);
 
         emitReadable(stdin, "\r");
-        await delay(40);
+        await waitFor(() => onSubmit.mock.calls.length > 0);
 
         const callArgs = onSubmit.mock.calls[0]?.[0] as Date | undefined;
 
@@ -110,7 +111,7 @@ describe(DatePicker, () => {
         const { getOutput, stdin } = await setup(<DatePicker autoFocus defaultValue={new Date(2024, 5, 15)} />);
 
         emitReadable(stdin, "\r");
-        await delay(50);
+        await waitFor(() => getOutput().includes("June 2024"));
 
         expect(getOutput()).toContain("June 2024");
     });

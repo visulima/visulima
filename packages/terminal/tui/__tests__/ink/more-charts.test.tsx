@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { createBrailleGrid } from "../../src/ink/canvas/braille";
 import { createCanvasBuffer } from "../../src/ink/canvas/buffer";
@@ -92,9 +92,7 @@ describe(LineChart, () => {
 
         const output = renderToString(<LineChart series={[]} showLegend={false} />);
 
-        // `expectTypeOf` is a compile-time check that doesn't register a runtime
-        // assertion, so it doesn't satisfy `expect.assertions(1)`.
-        expectTypeOf(output).toBeString();
+        expect(typeof output).toBe("string");
     });
 });
 
