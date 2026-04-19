@@ -173,7 +173,7 @@ const migrate: Command = {
 
         if (action === "moon") {
             logger.info("── Migrating moon ──");
-            migrateMoon(root, { dryRun }, logger, report);
+            migrateMoon(root, { copyTemplates: Boolean(options.copyTemplates), dryRun }, logger, report);
             logger.info("");
         }
 
@@ -202,6 +202,12 @@ const migrate: Command = {
     options: [
         { defaultValue: false, description: "Preview changes without applying", name: "dry-run", type: Boolean },
         { alias: "y", defaultValue: false, description: "Skip the confirmation prompt", name: "yes", type: Boolean },
+        {
+            defaultValue: false,
+            description: "For `vis migrate moon`: copy .moon/templates/* into .vis/templates/* so vis generate works without .moon/",
+            name: "copy-templates",
+            type: Boolean,
+        },
     ],
 };
 

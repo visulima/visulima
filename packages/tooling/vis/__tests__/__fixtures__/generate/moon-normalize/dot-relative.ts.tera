@@ -1,0 +1,5 @@
+---
+to: "./out//foo.ts"
+force: true
+---
+content

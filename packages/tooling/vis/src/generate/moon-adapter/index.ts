@@ -197,6 +197,18 @@ const yamlVariableToVariable = (variable: MoonVariableYaml): Variable => {
     }
 };
 
+/**
+ * Canonicalise a path produced by frontmatter `to:` or bracket
+ * interpolation: strip a leading `./`, convert `\` to `/`, collapse
+ * runs of `/`. The runner flattens the `files` tree with `/` as the
+ * only separator — any mismatch between the adapter's `meta` key and
+ * the runner's `file.path` silently drops per-file metadata.
+ */
+const normalizeDestinationPath = (path: string): string => path
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "")
+    .replaceAll(/\/+/g, "/");
+
 const flattenFiles = (root: CreationDirectory, path: string, value: CreationFile): void => {
     const segments = path.split("/").filter(Boolean);
 
@@ -393,7 +405,7 @@ export const loadMoonTemplate = (templateDir: string, name: string): Template =>
                 body = renderTemplate(split.body, { filename: sourcePath, partials: partialMap, scope });
             }
 
-            const destinationPath = frontmatterTo ?? interpolateFilename(stripRawSuffix(sourcePath), scope);
+            const destinationPath = normalizeDestinationPath(frontmatterTo ?? interpolateFilename(stripRawSuffix(sourcePath), scope));
 
             flattenFiles(tree, destinationPath, body);
 

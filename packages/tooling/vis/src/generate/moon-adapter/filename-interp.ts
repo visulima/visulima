@@ -11,6 +11,7 @@
  */
 
 import { applyFilter } from "./filters";
+import { splitCommaOutsideQuotes, stripQuotes } from "./util";
 
 const BRACKET_PATTERN = /\[([^\]]+)\]/g;
 
@@ -38,16 +39,13 @@ const parseFilterCall = (chunk: string): { args: string[]; name: string } => {
         return { args: [], name };
     }
 
-    // Naive split on commas at the top level — sufficient for moon's
-    // single-string-arg filter usage. Strip surrounding quotes if present.
-    const args = argsRaw.split(",").map((s) => {
-        const t = s.trim();
+    // Quote-aware split — `path_join("a,b", "c")` yields two args, not
+    // three. Strip matching quote wrappers per arg.
+    const args = splitCommaOutsideQuotes(argsRaw).map((raw) => {
+        const trimmedArg = raw.trim();
+        const unquoted = stripQuotes(trimmedArg);
 
-        if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
-            return t.slice(1, -1);
-        }
-
-        return t;
+        return unquoted ?? trimmedArg;
     });
 
     return { args, name };

@@ -119,3 +119,22 @@ describe("moon adapter — error paths", () => {
         expect(() => loadMoonTemplate(join(here, "../__fixtures__/generate/does-not-exist"), "x")).toThrow();
     });
 });
+
+describe("moon adapter — destination path normalization", () => {
+    const MOON_NORMALIZE = join(here, "../__fixtures__/generate/moon-normalize");
+
+    it("should normalise `./path` and collapsed slashes so filesMeta keys match the runner's flattened paths", async () => {
+        expect.assertions(3);
+
+        const template = loadMoonTemplate(MOON_NORMALIZE, "normalize");
+        const creation = await template.produce({ builtins: baseBuiltins, options: {} });
+        const files = flatten(creation.files ?? {});
+
+        // The runner will see `out/foo.ts` (flattened, no leading `./`, single `/`).
+        expect(files["out/foo.ts"]).toBeDefined();
+        expect(creation.filesMeta?.["out/foo.ts"]).toStrictEqual({ force: true });
+        // The unnormalised key MUST NOT leak through, otherwise the
+        // runner's force lookup misses.
+        expect(creation.filesMeta?.["./out//foo.ts"]).toBeUndefined();
+    });
+});
