@@ -6,6 +6,7 @@ import { CommandPalette, ContentSwitcher, Menu, OptionList, render, Text, Toolti
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
+import waitFor from "../helpers/wait-for";
 
 let currentUnmount: (() => void) | undefined;
 
@@ -160,7 +161,7 @@ describe(CommandPalette, () => {
         const { getOutput, stdin } = await setup(<CommandPalette commands={commands} onSelect={vi.fn()} />);
 
         emitReadable(stdin, "for");
-        await delay(50);
+        await waitFor(() => getOutput().includes("Format document") && !getOutput().includes("File: New"));
 
         const output = getOutput();
 

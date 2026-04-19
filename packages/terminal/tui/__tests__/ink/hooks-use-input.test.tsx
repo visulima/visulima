@@ -29,25 +29,28 @@ describe("hooks-use-input", () => {
                 });
 
             // Wait for the app to be ready (ink-term waits for __READY__ internally)
-            await waitFor(() => ps.output.includes("__READY__"), 5000);
+            await waitFor(() => ps.output.includes("__READY__"), 10_000);
 
             // Send 5 delete keys with enough delay between them for React concurrent
             // scheduler to process each update. The fixture has a 30ms blocking useMemo
-            // per deferred update, so we need generous delays (400ms for CI).
+            // per deferred update, so we need generous delays for CI — 600ms gives React
+            // headroom to retire each transition before the next keypress arrives.
             for (let index = 0; index < 5; index++) {
                 ps.write("\u001B[3~");
-                await sleep(400);
+                await sleep(600);
             }
 
-            // Wait for both query and deferredQuery to be empty (fixture signals __SYNCED__)
-            await waitFor(() => ps.output.includes("__SYNCED__"), 10_000);
+            // Wait for both query and deferredQuery to be empty (fixture signals __SYNCED__).
+            // The bump to 20s covers observed CI runs where the concurrent scheduler
+            // takes longer than 10s to drain queued transitions under load.
+            await waitFor(() => ps.output.includes("__SYNCED__"), 20_000);
 
             ps.write("\r");
             await ps.waitForExit();
 
-            expect(ps.output).toContain("FINAL query:\"\" deferred:\"\"");
+            expect(ps.output).toContain('FINAL query:"" deferred:""');
         },
-        30_000,
+        60_000,
     );
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {

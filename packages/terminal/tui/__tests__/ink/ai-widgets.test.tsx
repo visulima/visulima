@@ -19,6 +19,7 @@ import {
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
+import waitFor from "../helpers/wait-for";
 
 let currentUnmount: (() => void) | undefined;
 
@@ -173,7 +174,7 @@ describe(ApprovalPrompt, () => {
 
         await delay(20);
         emitReadable(stdin, "y");
-        await delay(40);
+        await waitFor(() => onDecision.mock.calls.length > 0);
 
         expect(onDecision).toHaveBeenCalledWith("allow-once");
     });
@@ -186,7 +187,7 @@ describe(ApprovalPrompt, () => {
 
         await delay(20);
         emitReadable(stdin, "a");
-        await delay(40);
+        await waitFor(() => onDecision.mock.calls.length > 0);
 
         expect(onDecision).toHaveBeenCalledWith("allow-always");
     });
@@ -199,7 +200,7 @@ describe(ApprovalPrompt, () => {
 
         await delay(20);
         emitReadable(stdin, "n");
-        await delay(40);
+        await waitFor(() => onDecision.mock.calls.length > 0);
 
         expect(onDecision).toHaveBeenCalledWith("deny");
     });
