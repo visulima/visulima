@@ -22,5 +22,5 @@ export default defineConfig({
         },
     },
     transformer,
-    isolatedDeclarationTransformer,
+    //isolatedDeclarationTransformer,
 }) as BuildConfig;
