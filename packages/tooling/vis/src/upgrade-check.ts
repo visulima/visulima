@@ -38,7 +38,7 @@ const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "
 const readCache = (): UpgradeCheckCache | undefined => {
     try {
         if (isAccessibleSync(CACHE_FILE)) {
-            return readJsonSync(CACHE_FILE) as UpgradeCheckCache;
+            return readJsonSync(CACHE_FILE) as unknown as UpgradeCheckCache;
         }
     } catch {
         // Corrupted cache, will be recreated

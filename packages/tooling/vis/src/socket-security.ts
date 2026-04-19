@@ -129,7 +129,7 @@ const getCachedReport = (name: string, version: string): PackageReportData | und
     const filePath = join(getCacheDirectory(), `${key}.json`);
 
     try {
-        const entry = readJsonSync(filePath) as CacheEntry;
+        const entry = readJsonSync(filePath) as unknown as CacheEntry;
 
         if (Date.now() - entry.createdAt > entry.ttlMs) {
             rmSync(filePath, { force: true });

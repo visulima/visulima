@@ -9,7 +9,7 @@ import type { GraphNode } from "./GraphStore";
 interface ProjectDetailPanelProps {
     focused: boolean;
     node: GraphNode | null;
-    scrollRef?: React.RefObject<ScrollViewRef>;
+    scrollRef?: React.RefObject<ScrollViewRef | null>;
 }
 
 const ProjectDetailPanel = ({ focused, node, scrollRef }: ProjectDetailPanelProps): React.JSX.Element => {
