@@ -126,21 +126,35 @@ const generate: Command = {
         const input = ownArgs[0];
 
         // ── Remote source ────────────────────────────────────────
+        let remoteCleanup: (() => void) | undefined;
+
         if (input && isRemoteSource(input)) {
-            const { directory } = await fetchRemoteTemplate(input, {
+            const fetched = await fetchRemoteTemplate(input, {
                 auth: generatorConfig?.auth,
                 preferOffline: Boolean(options.preferOffline) || generatorConfig?.preferOffline,
             });
-            const discovered = discoverTemplates({ extraDirectories: [directory], workspaceRoot });
-            const remoteTemplate = discovered.find((t) => t.path.startsWith(directory));
 
-            if (!remoteTemplate) {
-                throw new Error(`Downloaded template at ${directory} contains no template.yml or *.ts entrypoint.`);
+            remoteCleanup = fetched.cleanup;
+
+            try {
+                const discovered = discoverTemplates({ extraDirectories: [fetched.directory], workspaceRoot });
+                const remoteTemplate = discovered.find((t) => t.path.startsWith(fetched.directory));
+
+                if (!remoteTemplate) {
+                    throw new Error(`Downloaded template at ${fetched.directory} contains no template.yml or *.ts entrypoint.`);
+                }
+
+                // Load into memory BEFORE we let the tmp dir go — the moon
+                // adapter pre-reads every template file at load time, so
+                // the Template returned by `load()` is fully self-contained.
+                template = await remoteTemplate.load();
+                templateName = remoteTemplate.name;
+                templateDestination = template.destination;
+            } catch (error) {
+                remoteCleanup();
+                remoteCleanup = undefined;
+                throw error;
             }
-
-            template = await remoteTemplate.load();
-            templateName = remoteTemplate.name;
-            templateDestination = template.destination;
         } else {
             const discovered = discoverTemplates({
                 extraDirectories: generatorConfig?.templates ?? [],
@@ -152,7 +166,18 @@ const generate: Command = {
                 throw new Error("No templates found. Create one at .vis/templates/<name>.ts or .vis/templates/<name>/template.yml.");
             }
 
-            const wanted = input ?? (await pickInteractive(discovered));
+            let wanted: string;
+
+            if (input) {
+                wanted = input;
+            } else if (options.noInteractive || !process.stdin.isTTY) {
+                throw new Error(
+                    "No template specified. Pass a template name (see `vis generate --list`) or run interactively in a terminal.",
+                );
+            } else {
+                wanted = await pickInteractive(discovered);
+            }
+
             const match = discovered.find((t) => t.name === wanted);
 
             if (!match) {
@@ -197,19 +222,23 @@ const generate: Command = {
         });
 
         // ── Run ──────────────────────────────────────────────────
-        await runTemplate(template, {
-            cwd,
-            destination,
-            dryRun,
-            force,
-            options: collectedOptions,
-            skipScripts,
-            workspaceRoot,
-        });
+        try {
+            await runTemplate(template, {
+                cwd,
+                destination,
+                dryRun,
+                force,
+                options: collectedOptions,
+                skipScripts,
+                workspaceRoot,
+            });
 
-        if (!dryRun) {
-            process.stderr.write("\n");
-            success(`Template '${templateName}' applied.`);
+            if (!dryRun) {
+                process.stderr.write("\n");
+                success(`Template '${templateName}' applied.`);
+            }
+        } finally {
+            remoteCleanup?.();
         }
     },
     group: "Scaffold & Config",

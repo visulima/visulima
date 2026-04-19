@@ -10,7 +10,7 @@
  * downloadTemplate call.
  */
 
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
@@ -35,6 +35,12 @@ interface FetchOptions {
 }
 
 export interface FetchResult {
+    /**
+     * Release the tmp directory once the caller has finished loading
+     * the template into memory. No-op when the directory was supplied
+     * externally via `targetDirectory`.
+     */
+    cleanup: () => void;
     /** Absolute directory containing the downloaded template. */
     directory: string;
 }
@@ -48,7 +54,20 @@ export interface FetchResult {
  * ```
  */
 export const fetchRemoteTemplate = async (source: string, options: FetchOptions = {}): Promise<FetchResult> => {
+    const ownDirectory = options.targetDirectory === undefined;
     const directory = options.targetDirectory ?? mkdtempSync(join(tmpdir(), "vis-generate-"));
+
+    const cleanup = (): void => {
+        if (!ownDirectory) {
+            return;
+        }
+
+        try {
+            rmSync(directory, { force: true, recursive: true });
+        } catch {
+            // Best-effort cleanup. The OS will reap the tmp dir on reboot.
+        }
+    };
 
     info(`Downloading ${source}…`);
 
@@ -60,8 +79,10 @@ export const fetchRemoteTemplate = async (source: string, options: FetchOptions 
             preferOffline: options.preferOffline,
         });
 
-        return { directory: result.dir };
+        return { cleanup, directory: result.dir };
     } catch (error) {
+        cleanup();
+
         const message = error instanceof Error ? error.message : String(error);
 
         warn(`Failed to download template: ${message}`);

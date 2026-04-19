@@ -205,4 +205,32 @@ describe(renderTemplate, () => {
         expect(renderTemplate(`{{ base | path_join("sub", "file.ts") }}`, { filename: "x", scope: { base: "src" } })).toBe("src/sub/file.ts");
         expect(renderTemplate(`{{ target | path_relative("/a/b") }}`, { filename: "x", scope: { target: "/a/b/c/d" } })).toBe("c/d");
     });
+
+    it("should detect circular partial includes instead of stack-overflowing", () => {
+        expect.assertions(2);
+
+        const partials = new Map([
+            ["a", parseTemplate('hello {% include "b" %}', "a")],
+            ["b", parseTemplate('world {% include "a" %}', "b")],
+        ]);
+        const template = `{% include "a" %}`;
+
+        expect(() => renderTemplate(template, { filename: "root", partials, scope: {} })).toThrow(/Circular partial include/);
+        expect(() => renderTemplate(template, { filename: "root", partials, scope: {} })).toThrow(/a → b → a/);
+    });
+
+    it("should allow the same partial to be included twice from different sites", () => {
+        expect.assertions(1);
+
+        const partials = new Map([["h", parseTemplate("x", "h")]]);
+        const template = `{% include "h" %} and {% include "h" %}`;
+
+        expect(renderTemplate(template, { filename: "root", partials, scope: {} })).toBe("x and x");
+    });
+
+    it("should handle quoted commas inside filter args", () => {
+        expect.assertions(1);
+
+        expect(renderTemplate(`{{ base | path_join("a,b", "c") }}`, { filename: "x", scope: { base: "src" } })).toBe("src/a,b/c");
+    });
 });

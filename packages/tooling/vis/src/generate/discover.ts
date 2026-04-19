@@ -21,6 +21,20 @@ import type { DiscoveredTemplate } from "./types";
 const NATIVE_EXTENSIONS = [".ts", ".mts", ".cts", ".js", ".mjs", ".cjs"];
 const TEMPLATE_YML = "template.yml";
 
+/**
+ * Suffix blocklist applied after the language extension is stripped.
+ * Folks drop shared types, sourcemaps, and colocated tests into
+ * `.vis/templates/`; those must NOT be mis-identified as templates
+ * (importing a `.d.ts` or `.test.ts` via jiti would throw with a
+ * confusing message).
+ *
+ * Each entry is the suffix BEFORE the language extension, e.g.
+ * `package.d.ts` → base `package.d` → match `.d`. We also reject
+ * sourcemaps and type-declaration files outright.
+ */
+const BLOCKED_BASE_SUFFIXES = [".d", ".test", ".spec", ".config", ".bench", ".stories"];
+const BLOCKED_FULL_EXTENSIONS = [".d.ts", ".d.mts", ".d.cts", ".js.map", ".mjs.map", ".cjs.map", ".ts.map"];
+
 const stripExtension = (filename: string): string => {
     for (const ext of NATIVE_EXTENSIONS) {
         if (filename.endsWith(ext)) {
@@ -31,7 +45,19 @@ const stripExtension = (filename: string): string => {
     return filename;
 };
 
-const isNativeFile = (filename: string): boolean => NATIVE_EXTENSIONS.some((ext) => filename.endsWith(ext));
+const isNativeFile = (filename: string): boolean => {
+    if (BLOCKED_FULL_EXTENSIONS.some((ext) => filename.endsWith(ext))) {
+        return false;
+    }
+
+    if (!NATIVE_EXTENSIONS.some((ext) => filename.endsWith(ext))) {
+        return false;
+    }
+
+    const base = stripExtension(filename);
+
+    return !BLOCKED_BASE_SUFFIXES.some((suffix) => base.endsWith(suffix));
+};
 
 interface DiscoverOptions {
     /** Extra template directories from `vis.config.ts` `generator.templates`. */

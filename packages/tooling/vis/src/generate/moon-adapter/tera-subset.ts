@@ -23,6 +23,7 @@
  */
 
 import { applyFilter } from "./filters";
+import { splitCommaOutsideQuotes } from "./util";
 
 type QuoteChar = '"' | "'";
 
@@ -79,12 +80,12 @@ const tokenize = (source: string): Token[] => {
 
 // ── AST ──────────────────────────────────────────────────────────
 
-type Node =
-    | { type: "text"; value: string }
-    | { expression: string; line: number; type: "expr" }
-    | { alternate?: Node[]; condition: string; consequent: Node[]; line: number; type: "if" }
-    | { binding: string; body: Node[]; collection: string; line: number; type: "for" }
-    | { line: number; name: string; type: "include" };
+type Node
+    = | { type: "text"; value: string }
+        | { expression: string; line: number; type: "expr" }
+        | { alternate?: Node[]; condition: string; consequent: Node[]; line: number; type: "if" }
+        | { binding: string; body: Node[]; collection: string; line: number; type: "for" }
+        | { line: number; name: string; type: "include" };
 
 const UNSUPPORTED_KEYWORDS = new Set(["block", "endblock", "endfilter", "endmacro", "extends", "filter", "import", "macro", "set"]);
 
@@ -123,8 +124,8 @@ const parse = (tokens: Token[], filename: string): Node[] => {
             if (UNSUPPORTED_KEYWORDS.has(head)) {
                 error(
                     token.line,
-                    `Tera feature "{% ${head} %}" is not supported. Supported: if/else/endif, for/endfor, include. ` +
-                        "Rewrite the template to avoid macros, set, extends, block, and import.",
+                    `Tera feature "{% ${head} %}" is not supported. Supported: if/else/endif, for/endfor, include. `
+                    + "Rewrite the template to avoid macros, set, extends, block, and import.",
                 );
             }
 
@@ -323,7 +324,7 @@ const parseFilterCall = (chunk: string): { args: string[]; name: string } => {
         return { args: [], name };
     }
 
-    return { args: argsRaw.split(",").map((s) => s.trim()), name };
+    return { args: splitCommaOutsideQuotes(argsRaw).map((s) => s.trim()), name };
 };
 
 const evaluatePrimary = (token: string, scope: Record<string, unknown>, line: number, filename: string, strict: boolean = true): unknown => {
@@ -553,6 +554,13 @@ const matchingParen = (input: string): number => {
 interface RenderOptions {
     /** Source filename — used in error messages. */
     filename: string;
+
+    /**
+     * Internal: set of partial names currently on the include stack.
+     * Used to detect cycles — if an include re-enters a partial that's
+     * already resolving, we throw instead of stack-overflowing.
+     */
+    includeStack?: Set<string>;
     /** Map of partial name → already-resolved AST. */
     partials?: Map<string, Node[]>;
     /** Variable scope (built-in vars merged with user options). */
@@ -611,7 +619,21 @@ const renderNodes = (nodes: Node[], options: RenderOptions): string => {
                 );
             }
 
-            output += renderNodes(ast, { ...options, filename: `<partial:${node.name}>` });
+            const stack = options.includeStack ?? new Set<string>();
+
+            if (stack.has(node.name)) {
+                const chain = [...stack, node.name].join(" → ");
+
+                throw new Error(`${options.filename}:${node.line}: Circular partial include detected: ${chain}`);
+            }
+
+            stack.add(node.name);
+
+            try {
+                output += renderNodes(ast, { ...options, filename: `<partial:${node.name}>`, includeStack: stack });
+            } finally {
+                stack.delete(node.name);
+            }
         }
     }
 

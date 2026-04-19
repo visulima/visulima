@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { cpSync, mkdirSync, readdirSync } from "node:fs";
 
 import { isAccessibleSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
@@ -144,7 +144,95 @@ const findMoonTasksFile = (workspaceRoot: string): string | undefined => {
  * @param logger Logger for user feedback.
  * @param report Migration report to append manual steps and warnings.
  */
-export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
+
+/**
+ * Enumerate the moon template directories (each containing a
+ * `template.yml`). Returns an empty list when `.moon/templates/`
+ * doesn't exist — callers should treat that as "no templates to
+ * migrate", not an error.
+ */
+const findMoonTemplates = (workspaceRoot: string): string[] => {
+    const moonTemplatesDirectory = join(workspaceRoot, ".moon", "templates");
+
+    if (!isAccessibleSync(moonTemplatesDirectory)) {
+        return [];
+    }
+
+    const names: string[] = [];
+
+    try {
+        for (const entry of readdirSync(moonTemplatesDirectory, { withFileTypes: true })) {
+            if (!entry.isDirectory()) {
+                continue;
+            }
+
+            if (isAccessibleSync(join(moonTemplatesDirectory, entry.name, "template.yml"))) {
+                names.push(entry.name);
+            }
+        }
+    } catch {
+        // Unreadable directory — fall through to an empty result.
+    }
+
+    return names.sort();
+};
+
+/**
+ * Copy each `.moon/templates/&lt;name>/` into `.vis/templates/&lt;name>/`.
+ * Skips when the target already exists; logs each decision via
+ * `report.manualSteps` so the user can review.
+ */
+const copyMoonTemplatesToVis = (
+    workspaceRoot: string,
+    names: string[],
+    dryRun: boolean,
+    logger: MigrateLogger,
+    report: MigrationReport,
+): void => {
+    const moonRoot = join(workspaceRoot, ".moon", "templates");
+    const visRoot = join(workspaceRoot, ".vis", "templates");
+
+    if (!dryRun) {
+        mkdirSync(visRoot, { recursive: true });
+    }
+
+    for (const name of names) {
+        const source = join(moonRoot, name);
+        const target = join(visRoot, name);
+
+        if (isAccessibleSync(target)) {
+            report.warnings.push(`Template "${name}" already exists at .vis/templates/${name} — left untouched. Remove or rename either copy to resolve.`);
+            continue;
+        }
+
+        if (dryRun) {
+            logger.info(`Would copy .moon/templates/${name} → .vis/templates/${name}`);
+            continue;
+        }
+
+        try {
+            cpSync(source, target, { recursive: true });
+            logger.info(`Copied .moon/templates/${name} → .vis/templates/${name}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+
+            report.warnings.push(`Failed to copy template "${name}": ${message}`);
+        }
+    }
+
+    if (!dryRun && names.length > 0) {
+        report.manualSteps.push(
+            `Copied ${String(names.length)} template${names.length === 1 ? "" : "s"} from .moon/templates/ to .vis/templates/. Remove the .moon/templates/ directory when ready.`,
+        );
+    }
+};
+
+export const migrateMoon = (
+    workspaceRoot: string,
+    options: { copyTemplates?: boolean; dryRun?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): void => {
     const tasksFile = findMoonTasksFile(workspaceRoot);
 
     if (!tasksFile) {
@@ -217,4 +305,28 @@ export const migrateMoon = (workspaceRoot: string, options: { dryRun?: boolean }
     report.manualSteps.push(
         "Scoped `.moon/tasks/<scope>.yml` files map to vis's `taskDefaults` with a `scope` block. Only the first scope file was parsed — review the generated file.",
     );
+
+    // ── Templates ────────────────────────────────────────────────────
+    // `.moon/templates/` auto-discovers in `vis generate` with no config
+    // change needed, so for most users the migration is zero-effort.
+    // Still, call it out explicitly so the user knows. `--copy-templates`
+    // physically moves them into `.vis/templates/` for users who want to
+    // uninstall moon.
+    const templates = findMoonTemplates(workspaceRoot);
+
+    if (templates.length === 0) {
+        return;
+    }
+
+    const list = templates.map((n) => `"${n}"`).join(", ");
+
+    if (options.copyTemplates) {
+        copyMoonTemplatesToVis(workspaceRoot, templates, Boolean(options.dryRun), logger, report);
+    } else {
+        report.manualSteps.push(
+            `Detected ${String(templates.length)} template${templates.length === 1 ? "" : "s"} under .moon/templates/ (${list}). `
+            + "They are already usable via `vis generate <name>` — vis auto-discovers moon-format template directories at runtime. "
+            + "To decouple from moon entirely, re-run `vis migrate moon --copy-templates` to physically move them to .vis/templates/.",
+        );
+    }
 };

@@ -97,4 +97,26 @@ describe(discoverTemplates, () => {
 
         expect(results).toStrictEqual([]);
     });
+
+    it("should ignore .d.ts, .test.ts, .spec.ts, .config.ts, and *.map siblings", () => {
+        expect.assertions(2);
+
+        const directory = join(workspace, ".vis", "templates");
+
+        mkdirSync(directory, { recursive: true });
+
+        const body = "export default { about: { name: 'x', description: '' }, produce: () => ({ files: {} }) };\n";
+
+        writeFileSync(join(directory, "package.ts"), body);
+        writeFileSync(join(directory, "package.d.ts"), "export const x = 1;\n");
+        writeFileSync(join(directory, "package.test.ts"), "test('x', () => {});\n");
+        writeFileSync(join(directory, "package.spec.ts"), "test('x', () => {});\n");
+        writeFileSync(join(directory, "package.config.ts"), "export const config = {};\n");
+        writeFileSync(join(directory, "package.js.map"), "{}\n");
+
+        const results = discoverTemplates({ workspaceRoot: workspace });
+
+        expect(results).toHaveLength(1);
+        expect(results[0]?.name).toBe("package");
+    });
 });
