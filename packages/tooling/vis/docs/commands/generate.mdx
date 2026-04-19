@@ -207,10 +207,10 @@ Chain with `|`: `{{ name | snake_case | upper_case }}`.
 
 Supported:
 
-- `{{ var }}`, `{{ obj.field }}`, `{{ var | filter | filter(arg) }}`
-- `{% if expr %}` / `{% else %}` / `{% endif %}` — `expr` may be a variable, `not var`, or `lhs == "rhs"` / `!=`.
-- `{% for x in collection %}` / `{% endfor %}` — `collection` must be an array.
-- `{% include "name" %}` — pulls in a partial (any file whose path contains `partial`).
+- `{{ var }}`, `{{ obj.field }}`, `{{ var | filter | filter(arg) }}` — unknown variables throw with file:line (so typos surface instead of silently empty output).
+- `{% if expr %}` / `{% else %}` / `{% endif %}` — `expr` supports variables, `not var`, `a == "b"`, `a != "b"`, `a and b`, `a or b`, and parentheses. Undefined variables evaluate as falsy. `and` / `or` short-circuit.
+- `{% for x in collection %}` / `{% endfor %}` — `collection` must be an array; missing/null collections render as empty.
+- `{% include "name" %}` — pulls in a partial. Partials are any file whose **basename starts with `_`** (e.g. `_header.tera`) or whose path includes a `partials/` segment. Partials are not emitted. They can be referenced by bare basename (`header`), with or without the leading underscore, or by full path (`partials/header`, `layouts/header`).
 
 **Unsupported** (errors with file:line and a clear hint):
 

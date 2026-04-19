@@ -43,6 +43,8 @@ Initial implementation landed. Supports both:
 
 **Compat matrix in `docs/commands/generate.mdx`.** Phase 2 work: `extends`, `glob://` source, `object` variable type, `variables()` Tera function, Bingo template adapter (~80 LOC if/when Vite+ portability is requested).
 
+**Known limitation — `--` passthrough**: `vis generate <name> -- --foo=bar` (and the same pattern in `vis create`) does not currently forward args past `--` because cerebro / command-line-args drops unknown tokens. The examples in `docs/commands/generate.mdx` and `docs/commands/create.mdx` advertise this pattern. Fix options: (a) pass `partial: true` to the command-line-args parser, (b) declare `argument.multiple` on the commands and filter-split inside `execute`, or (c) accept that only prompts / defaults / config overrides work and drop the docs line. Tracked to resolve alongside the next cerebro bump.
+
 ### Webhook/notifier (`vis.config.ts` pipeline events)
 
 Lifecycle hooks exist in task-runner (`LifeCycleInterface`). Need a built-in
