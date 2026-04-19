@@ -1,91 +1,91 @@
 {
     "weeklyDownloads": {
-        "ansi": 137,
-        "api-platform": 49,
-        "boxen": 95526,
-        "bytes": 121,
-        "cerebro": 372,
-        "colorize": 1092,
-        "command-line-args": 13,
-        "connect": 156,
-        "content-safety": 113,
-        "crud": 143,
-        "deep-clone": 239,
-        "dev-toolbar": 128,
-        "disposable-email-domains": 16,
-        "email": 22,
-        "error": 3042,
-        "error-handler": 46,
-        "find-cache-dir": 1511,
-        "fmt": 211,
-        "fs": 12933,
-        "health-check": 108,
-        "html": 115,
-        "humanizer": 484,
-        "inspector": 95,
-        "is-ansi-color-supported": 1080,
-        "iso-locale": 128,
-        "jsdoc-open-api": 441,
-        "object": 125,
-        "ono": 140,
-        "package": 7461,
-        "packem": 384,
-        "pagination": 161,
-        "pail": 390,
-        "path": 12821,
-        "prisma-dmmf-transformer": 158,
-        "redact": 1231,
-        "source-map": 224,
-        "storage": 19,
-        "storage-client": 118,
-        "string": 117,
-        "tabular": 4405,
-        "tsconfig": 251,
-        "vite-overlay": 2860
+        "ansi": 156,
+        "api-platform": 41,
+        "boxen": 95401,
+        "bytes": 116,
+        "cerebro": 403,
+        "colorize": 1180,
+        "command-line-args": 9,
+        "connect": 163,
+        "content-safety": 111,
+        "crud": 153,
+        "deep-clone": 233,
+        "dev-toolbar": 122,
+        "disposable-email-domains": 9,
+        "email": 17,
+        "error": 3085,
+        "error-handler": 43,
+        "find-cache-dir": 1543,
+        "fmt": 245,
+        "fs": 13266,
+        "health-check": 111,
+        "html": 108,
+        "humanizer": 519,
+        "inspector": 108,
+        "is-ansi-color-supported": 1165,
+        "iso-locale": 126,
+        "jsdoc-open-api": 476,
+        "object": 120,
+        "ono": 132,
+        "package": 7627,
+        "packem": 506,
+        "pagination": 167,
+        "pail": 418,
+        "path": 13145,
+        "prisma-dmmf-transformer": 159,
+        "redact": 1214,
+        "source-map": 252,
+        "storage": 13,
+        "storage-client": 115,
+        "string": 123,
+        "tabular": 4698,
+        "tsconfig": 278,
+        "vite-overlay": 2894
     },
     "totalDownloads": {
-        "ansi": 4060,
-        "api-platform": 9498,
-        "boxen": 3194057,
-        "bytes": 1713,
-        "cerebro": 48535,
-        "colorize": 60732,
-        "command-line-args": 1211,
-        "connect": 13183,
-        "content-safety": 660,
-        "crud": 13161,
-        "deep-clone": 10620,
-        "dev-toolbar": 1074,
-        "disposable-email-domains": 1301,
-        "email": 1681,
-        "error": 67269,
-        "error-handler": 2770,
-        "find-cache-dir": 75852,
-        "fmt": 37435,
-        "fs": 345371,
+        "ansi": 4083,
+        "api-platform": 9488,
+        "boxen": 3197200,
+        "bytes": 1719,
+        "cerebro": 48580,
+        "colorize": 60853,
+        "command-line-args": 1212,
+        "connect": 13199,
+        "content-safety": 663,
+        "crud": 13179,
+        "deep-clone": 10623,
+        "dev-toolbar": 1077,
+        "disposable-email-domains": 1302,
+        "email": 1683,
+        "error": 67346,
+        "error-handler": 2775,
+        "find-cache-dir": 75904,
+        "fmt": 37482,
+        "fs": 345990,
         "health-check": 3507,
-        "html": 834,
-        "humanizer": 44783,
-        "inspector": 42200,
-        "is-ansi-color-supported": 57970,
-        "iso-locale": 899,
-        "jsdoc-open-api": 21879,
-        "object": 2366,
-        "ono": 2417,
-        "package": 269933,
-        "packem": 72582,
-        "pagination": 12731,
-        "pail": 52950,
-        "path": 323453,
-        "prisma-dmmf-transformer": 15216,
-        "redact": 20435,
-        "source-map": 36086,
-        "storage": 1143,
-        "storage-client": 1372,
-        "string": 8118,
-        "tabular": 44939,
-        "tsconfig": 49555,
-        "vite-overlay": 21525
+        "html": 837,
+        "humanizer": 44829,
+        "inspector": 42227,
+        "is-ansi-color-supported": 58092,
+        "iso-locale": 904,
+        "jsdoc-open-api": 21942,
+        "object": 2369,
+        "ono": 2421,
+        "package": 270251,
+        "packem": 72701,
+        "pagination": 12745,
+        "pail": 52995,
+        "path": 324069,
+        "prisma-dmmf-transformer": 15228,
+        "redact": 20481,
+        "source-map": 36132,
+        "storage": 1144,
+        "storage-client": 1375,
+        "string": 8133,
+        "tabular": 45287,
+        "tsconfig": 49603,
+        "vite-overlay": 21593
     },
     "monthlyChart": {
         "ansi": [
@@ -367,7 +367,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 330
+                "downloads": 354
             }
         ],
         "api-platform": [
@@ -649,7 +649,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 275
+                "downloads": 279
             }
         ],
         "boxen": [
@@ -931,7 +931,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 224790
+                "downloads": 227962
             }
         ],
         "bytes": [
@@ -1213,7 +1213,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 249
+                "downloads": 255
             }
         ],
         "cerebro": [
@@ -1495,7 +1495,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1195
+                "downloads": 1245
             }
         ],
         "colorize": [
@@ -1777,7 +1777,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 2803
+                "downloads": 2932
             }
         ],
         "command-line-args": [
@@ -2059,7 +2059,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 136
+                "downloads": 137
             }
         ],
         "connect": [
@@ -2341,7 +2341,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 308
+                "downloads": 324
             }
         ],
         "content-safety": [
@@ -2623,7 +2623,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 249
+                "downloads": 252
             }
         ],
         "crud": [
@@ -2905,7 +2905,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 284
+                "downloads": 302
             }
         ],
         "deep-clone": [
@@ -3187,7 +3187,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 484
+                "downloads": 494
             }
         ],
         "dev-toolbar": [
@@ -3469,7 +3469,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 266
+                "downloads": 269
             }
         ],
         "disposable-email-domains": [
@@ -3751,7 +3751,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 141
+                "downloads": 142
             }
         ],
         "email": [
@@ -4033,7 +4033,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 154
+                "downloads": 156
             }
         ],
         "error": [
@@ -4315,7 +4315,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 5946
+                "downloads": 6036
             }
         ],
         "error-handler": [
@@ -4597,7 +4597,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 235
+                "downloads": 240
             }
         ],
         "find-cache-dir": [
@@ -4879,7 +4879,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 4332
+                "downloads": 4392
             }
         ],
         "fmt": [
@@ -5161,7 +5161,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 477
+                "downloads": 525
             }
         ],
         "fs": [
@@ -5443,7 +5443,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 30537
+                "downloads": 31182
             }
         ],
         "health-check": [
@@ -5725,7 +5725,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 159
+                "downloads": 162
             }
         ],
         "html": [
@@ -6007,7 +6007,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 241
+                "downloads": 244
             }
         ],
         "humanizer": [
@@ -6289,7 +6289,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1490
+                "downloads": 1545
             }
         ],
         "inspector": [
@@ -6571,7 +6571,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 334
+                "downloads": 364
             }
         ],
         "is-ansi-color-supported": [
@@ -6853,7 +6853,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 2804
+                "downloads": 2928
             }
         ],
         "iso-locale": [
@@ -7135,7 +7135,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 261
+                "downloads": 266
             }
         ],
         "jsdoc-open-api": [
@@ -7417,7 +7417,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1764
+                "downloads": 1833
             }
         ],
         "object": [
@@ -7699,7 +7699,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 276
+                "downloads": 280
             }
         ],
         "ono": [
@@ -7981,7 +7981,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 355
+                "downloads": 359
             }
         ],
         "package": [
@@ -8263,7 +8263,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 20292
+                "downloads": 20646
             }
         ],
         "packem": [
@@ -8545,7 +8545,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1916
+                "downloads": 2062
             }
         ],
         "pagination": [
@@ -8827,7 +8827,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 373
+                "downloads": 388
             }
         ],
         "pail": [
@@ -9109,7 +9109,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1301
+                "downloads": 1350
             }
         ],
         "path": [
@@ -9391,7 +9391,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 30283
+                "downloads": 30916
             }
         ],
         "prisma-dmmf-transformer": [
@@ -9673,7 +9673,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 373
+                "downloads": 387
             }
         ],
         "redact": [
@@ -9955,7 +9955,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 2476
+                "downloads": 2525
             }
         ],
         "source-map": [
@@ -10237,7 +10237,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1096
+                "downloads": 1142
             }
         ],
         "storage": [
@@ -10519,7 +10519,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 155
+                "downloads": 156
             }
         ],
         "storage-client": [
@@ -10801,7 +10801,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 254
+                "downloads": 257
             }
         ],
         "string": [
@@ -11083,7 +11083,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 356
+                "downloads": 371
             }
         ],
         "tabular": [
@@ -11365,7 +11365,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 7362
+                "downloads": 7710
             }
         ],
         "tsconfig": [
@@ -11647,7 +11647,7 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 1201
+                "downloads": 1250
             }
         ],
         "vite-overlay": [
@@ -11929,11 +11929,11 @@
             },
             {
                 "month": "2026-04",
-                "downloads": 5559
+                "downloads": 5627
             }
         ]
     },
     "stars": 38,
     "contributors": 10,
-    "fetchedAt": "2026-04-18T19:30:19.159Z"
+    "fetchedAt": "2026-04-19T11:15:23.584Z"
 }
