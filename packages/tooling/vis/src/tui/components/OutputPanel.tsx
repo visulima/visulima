@@ -27,7 +27,7 @@ interface OutputPanelProps {
     /** Whether interactive input mode is active (keystrokes forwarded to PTY). */
     interactiveMode?: boolean;
     output: string;
-    scrollRef?: React.RefObject<ScrollViewRef>;
+    scrollRef?: React.RefObject<ScrollViewRef | null>;
     /** Whether to show "&lt;enter> full screen" hint in bottom border. */
     showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;

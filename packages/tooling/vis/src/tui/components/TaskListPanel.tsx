@@ -121,7 +121,7 @@ interface TaskListPanelProps {
     parallelSlots?: number;
     pinnedTaskIds: [string | null, string | null];
     rows: TaskRowData[];
-    scrollRef: React.RefObject<ScrollViewRef>;
+    scrollRef: React.RefObject<ScrollViewRef | null>;
     selectedIndex: number;
     title: string;
 }

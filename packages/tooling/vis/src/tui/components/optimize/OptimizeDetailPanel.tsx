@@ -7,7 +7,7 @@ import type { OptimizeEntry } from "./OptimizeStore";
 interface OptimizeDetailPanelProps {
     entry: OptimizeEntry | null;
     focused: boolean;
-    scrollRef?: React.RefObject<ScrollViewRef>;
+    scrollRef?: React.RefObject<ScrollViewRef | null>;
 }
 
 const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelProps): React.JSX.Element => {

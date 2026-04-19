@@ -7,7 +7,7 @@ interface PreviewPanelProps {
     readonly hadComments: boolean;
     readonly jsonPreview: string;
     readonly mode: "create" | "edit";
-    readonly scrollRef: React.RefObject<ScrollViewRef>;
+    readonly scrollRef: React.RefObject<ScrollViewRef | null>;
 }
 
 const PreviewPanel = ({ focused, hadComments, jsonPreview, mode, scrollRef }: PreviewPanelProps): React.JSX.Element => (

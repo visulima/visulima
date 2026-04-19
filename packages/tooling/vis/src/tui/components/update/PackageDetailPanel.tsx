@@ -49,7 +49,7 @@ interface PackageDetailPanelProps {
     entry: OutdatedEntry | null;
     focused: boolean;
     recommendation?: AiRecommendation;
-    scrollRef?: React.RefObject<ScrollViewRef>;
+    scrollRef?: React.RefObject<ScrollViewRef | null>;
 }
 
 const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scrollRef }: PackageDetailPanelProps): React.JSX.Element => {

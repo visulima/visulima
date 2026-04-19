@@ -47,7 +47,7 @@ interface TipState {
 const readState = (): TipState => {
     try {
         if (isAccessibleSync(STATE_FILE)) {
-            return readJsonSync(STATE_FILE) as TipState;
+            return readJsonSync(STATE_FILE) as unknown as TipState;
         }
     } catch {
         // Corrupted state, reset
