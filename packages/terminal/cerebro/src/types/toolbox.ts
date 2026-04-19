@@ -104,6 +104,31 @@ export interface Toolbox<
     options: TOptions;
 
     /**
+     * Raw tokens that command-line-args could not assign to a defined
+     * option — typically everything after a `--` separator, since
+     * cerebro runs the parser with `stopAtFirstUnknown: true`.
+     *
+     * Use this for passthrough patterns like
+     * `my-cmd foo bar -- --flag=value --other`, where everything after
+     * `--` is forwarded to an inner tool (`create-vite`, a template
+     * runner, etc.). Empty array when there was no `--` segment.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "create",
+     *   argument: { name: "template", type: String },
+     *   execute: ({ argument, rawUnknown }) => {
+     *     // `vis create vite my-app -- --template react-ts`
+     *     // → argument === ["vite", "my-app"]
+     *     // → rawUnknown === ["--template", "react-ts"]
+     *     spawnSync("npm", ["create", "vite", ...rawUnknown]);
+     *   },
+     * });
+     * ```
+     */
+    rawUnknown: ReadonlyArray<string>;
+
+    /**
      * This is the instance of the CLI that is running the command.
      */
     runtime: ICli<TLogger>;
