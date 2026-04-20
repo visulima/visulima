@@ -1,12 +1,10 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const indexUrl = resolve(here, "..", "index.js");
+import { scan } from "../src/index";
 
 let tmpDir: string;
 
@@ -18,31 +16,15 @@ afterEach(async () => {
     await rm(tmpDir, { force: true, recursive: true });
 });
 
-const loadNative = async (): Promise<typeof import("../src/index") | undefined> => {
-    try {
-        await import(indexUrl);
-
-        return await import("../src/index.js");
-    } catch {
-        return undefined;
-    }
-};
-
 describe("suppression", () => {
     it("baseline JSON suppresses matching findings", async () => {
         expect.assertions(2);
-
-        const nativeMod = await loadNative();
-
-        if (!nativeMod) {
-            return;
-        }
 
         const leakFile = resolve(tmpDir, "leak.env");
 
         await writeFile(leakFile, 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 
-        const findings = await nativeMod.scan([tmpDir]);
+        const findings = await scan([tmpDir]);
 
         expect(findings.length).toBeGreaterThan(0);
 
@@ -54,7 +36,7 @@ describe("suppression", () => {
         await writeFile(baselinePath, JSON.stringify(findings));
 
         try {
-            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
+            const filtered = await scan([tmpDir], { baseline: baselinePath });
 
             expect(filtered).toHaveLength(0);
         } finally {
@@ -65,18 +47,12 @@ describe("suppression", () => {
     it("content-hash fingerprint survives line shifts in the source file", async () => {
         expect.assertions(3);
 
-        const nativeMod = await loadNative();
-
-        if (!nativeMod) {
-            return;
-        }
-
         const leakFile = resolve(tmpDir, "leak.env");
         const secretLine = 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n';
 
         await writeFile(leakFile, secretLine);
 
-        const originalFindings = await nativeMod.scan([tmpDir]);
+        const originalFindings = await scan([tmpDir]);
 
         expect(originalFindings.length).toBeGreaterThan(0);
         expect(originalFindings[0]?.startLine).toBe(1);
@@ -92,7 +68,7 @@ describe("suppression", () => {
         await writeFile(leakFile, `\n\n\n\n${secretLine}`);
 
         try {
-            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
+            const filtered = await scan([tmpDir], { baseline: baselinePath });
 
             expect(filtered).toHaveLength(0);
         } finally {
@@ -103,17 +79,11 @@ describe("suppression", () => {
     it("accepts legacy line-based baselines for backwards compatibility", async () => {
         expect.assertions(1);
 
-        const nativeMod = await loadNative();
-
-        if (!nativeMod) {
-            return;
-        }
-
         const leakFile = resolve(tmpDir, "leak.env");
 
         await writeFile(leakFile, 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
 
-        const fresh = await nativeMod.scan([tmpDir]);
+        const fresh = await scan([tmpDir]);
 
         // Simulate a pre-content-hash baseline: keep the raw Finding shape but
         // strip the `secret` field to model older writers that sometimes left
@@ -126,7 +96,7 @@ describe("suppression", () => {
         await writeFile(baselinePath, JSON.stringify(legacyEntries));
 
         try {
-            const filtered = await nativeMod.scan([tmpDir], { baseline: baselinePath });
+            const filtered = await scan([tmpDir], { baseline: baselinePath });
 
             expect(filtered).toHaveLength(0);
         } finally {
