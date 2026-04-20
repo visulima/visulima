@@ -9,68 +9,39 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 // real native addon.
 vi.unmock("../src/core/native-binding.js");
 
-async function loadBinding() {
-    try {
-        return await import("../src/core/native-binding");
-    } catch {
-        return null;
-    }
-}
+// eslint-disable-next-line import/first -- vi.unmock must be called before importing the module
+import { Renderer, TerminalGuard, terminalSize } from "../src/core/native-binding";
 
 describe("native-binding", () => {
-    it("should export Renderer constructor", async () => {
-        const binding = await loadBinding();
-
-        if (!binding) {
-            return; // native addon not available (local dev without compiled .node)
-        }
-
+    it("should export Renderer constructor", () => {
         expect.assertions(1);
 
-        expect(binding.Renderer).toBeDefined();
+        expect(Renderer).toBeDefined();
 
-        expectTypeOf(binding.Renderer).toBeFunction();
+        expectTypeOf(Renderer).toBeFunction();
     });
 
-    it("should export TerminalGuard constructor", async () => {
-        const binding = await loadBinding();
-
-        if (!binding) {
-            return;
-        }
-
+    it("should export TerminalGuard constructor", () => {
         expect.assertions(1);
 
-        expect(binding.TerminalGuard).toBeDefined();
+        expect(TerminalGuard).toBeDefined();
 
-        expectTypeOf(binding.TerminalGuard).toBeFunction();
+        expectTypeOf(TerminalGuard).toBeFunction();
     });
 
-    it("should export terminalSize function", async () => {
-        const binding = await loadBinding();
-
-        if (!binding) {
-            return;
-        }
-
+    it("should export terminalSize function", () => {
         expect.assertions(1);
 
-        expect(binding.terminalSize).toBeDefined();
+        expect(terminalSize).toBeDefined();
 
-        expectTypeOf(binding.terminalSize).toBeFunction();
+        expectTypeOf(terminalSize).toBeFunction();
     });
 
-    it("should return valid terminal size", async () => {
-        const binding = await loadBinding();
-
-        if (!binding) {
-            return;
-        }
-
+    it("should return valid terminal size", () => {
         let size;
 
         try {
-            size = binding.terminalSize();
+            size = terminalSize();
         } catch {
             // In CI environments without a TTY, terminalSize() may throw
             // "Resource temporarily unavailable (os error 35)". This is an
@@ -89,16 +60,10 @@ describe("native-binding", () => {
         expect(size.rows).toBeGreaterThan(0);
     });
 
-    it("should create a Renderer instance", async () => {
-        const binding = await loadBinding();
-
-        if (!binding) {
-            return;
-        }
-
+    it("should create a Renderer instance", () => {
         expect.assertions(3);
 
-        const renderer = new binding.Renderer(80, 24);
+        const renderer = new Renderer(80, 24);
 
         expect(renderer).toBeDefined();
         expect(renderer.width).toBe(80);

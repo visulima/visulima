@@ -16,13 +16,17 @@ const setup = async (jsx: React.JSX.Element) => {
     const { unmount } = render(jsx, { debug: true, stdin, stdout });
 
     currentUnmount = unmount;
-    await delay(30);
 
     const getOutput = () => {
         const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
         return (calls.at(-1)?.[0] ?? "") as string;
     };
+
+    // Wait until the component has produced output, then give useEffect
+    // time to attach stdin listeners (setRawMode + useInput).
+    await waitFor(() => getOutput().length > 0);
+    await delay(50);
 
     return { getOutput, stdin };
 };
@@ -170,7 +174,7 @@ describe(ConfirmDialog, () => {
         );
 
         emitReadable(stdin, "y");
-        await delay(40);
+        await waitFor(() => onConfirm.mock.calls.length > 0);
 
         expect(onConfirm).toHaveBeenCalledTimes(1);
     });
@@ -186,7 +190,7 @@ describe(ConfirmDialog, () => {
         );
 
         emitReadable(stdin, "\u001B");
-        await delay(40);
+        await waitFor(() => onCancel.mock.calls.length > 0);
 
         expect(onCancel).toHaveBeenCalledTimes(1);
     });
@@ -203,7 +207,7 @@ describe(ConfirmDialog, () => {
         );
 
         emitReadable(stdin, "\r");
-        await delay(40);
+        await waitFor(() => onCancel.mock.calls.length > 0);
 
         expect(onCancel).toHaveBeenCalledTimes(1);
     });
