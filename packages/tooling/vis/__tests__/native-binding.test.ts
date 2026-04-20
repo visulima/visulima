@@ -2,23 +2,17 @@ import { beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { loadNativeBindings } from "../src/native-binding";
 
-// Evaluated at describe-registration time so `describe.skipIf` gates correctly.
-// Cannot rely on the `native` let below — it is populated in beforeAll, which
-// runs after describes are registered.
-const nativeAvailable = loadNativeBindings() !== undefined;
-
 describe("native-binding", () => {
     describe(loadNativeBindings, () => {
         it("should return the native bindings when addon is available", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             vi.resetModules();
             const { loadNativeBindings } = await import("../src/native-binding");
             const result = loadNativeBindings();
 
-            // In dev environment with compiled .node file, should be available
-            // In CI without native build, should be undefined
-            expect(result === undefined || typeof result === "object").toBe(true);
+            expect(result).toBeDefined();
+            expect(typeof result).toBe("object");
         });
 
         it("should cache the result after the first attempt", async () => {
@@ -60,7 +54,7 @@ describe("native addon integration", () => {
         native = loadNativeBindings();
     });
 
-    describe.skipIf(!nativeAvailable)("nATIVE_BINDING_VERSION", () => {
+    describe("nATIVE_BINDING_VERSION", () => {
         it("should export NATIVE_BINDING_VERSION as a number", () => {
             // expectTypeOf is a compile-time check and does not count toward assertions.
             expect.assertions(1);
@@ -80,7 +74,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("detectPackageManager", () => {
+    describe("detectPackageManager", () => {
         it("should detect a package manager in the workspace root", () => {
             // expectTypeOf is a compile-time check and does not count toward assertions.
             expect.assertions(1);
@@ -103,7 +97,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveInstall", () => {
+    describe("resolveInstall", () => {
         it("should resolve pnpm install with frozen lockfile", () => {
             expect.assertions(2);
 
@@ -193,7 +187,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveAdd", () => {
+    describe("resolveAdd", () => {
         it("should resolve pnpm add with -D flag", () => {
             expect.assertions(3);
 
@@ -275,7 +269,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveRemove", () => {
+    describe("resolveRemove", () => {
         it("should resolve npm uninstall", () => {
             expect.assertions(2);
 
@@ -308,7 +302,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveDedupe", () => {
+    describe("resolveDedupe", () => {
         it("should resolve pnpm dedupe --check", () => {
             expect.assertions(2);
 
@@ -344,7 +338,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveWhy", () => {
+    describe("resolveWhy", () => {
         it("should resolve pnpm why with --json", () => {
             expect.assertions(2);
 
@@ -427,7 +421,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveDlx", () => {
+    describe("resolveDlx", () => {
         it("should resolve pnpm dlx", () => {
             expect.assertions(2);
 
@@ -489,7 +483,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveExec", () => {
+    describe("resolveExec", () => {
         it("should resolve pnpm exec", () => {
             expect.assertions(2);
 
@@ -560,7 +554,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveOutdated", () => {
+    describe("resolveOutdated", () => {
         it("should resolve pnpm outdated with --format json", () => {
             expect.assertions(2);
 
@@ -603,7 +597,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolvePmCommand", () => {
+    describe("resolvePmCommand", () => {
         it("should map pnpm cache dir to store path", () => {
             expect.assertions(2);
 
@@ -686,7 +680,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("resolveLink / resolveUnlink", () => {
+    describe("resolveLink / resolveUnlink", () => {
         it("should resolve link with target", () => {
             expect.assertions(1);
 
@@ -790,7 +784,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("execPmCommand", () => {
+    describe("execPmCommand", () => {
         it("should execute allowed binaries", () => {
             expect.assertions(2);
 
@@ -809,7 +803,7 @@ describe("native addon integration", () => {
         });
     });
 
-    describe.skipIf(!nativeAvailable)("whichBin", () => {
+    describe("whichBin", () => {
         it("should find node", () => {
             expect.assertions(1);
 
