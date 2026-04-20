@@ -202,8 +202,7 @@ leaked = "${secret2}"
         expect(findings).toHaveLength(0);
     });
 
-    // TODO: fails on macOS — excludePatterns via JS matcher not applied when cwd == scanRoot
-    it.todo("scanFiles respects excludeFromFiles and excludePatterns via JS matcher", async () => {
+    it("scanFiles respects excludeFromFiles and excludePatterns via JS matcher", async () => {
         expect.assertions(1);
 
         await writeFile(resolve(tmpDir, "leak.env"), 'token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"\n');
@@ -506,7 +505,7 @@ leaked = "${secret2}"
         expect(findings).toHaveLength(0);
     });
 
-    // TODO: fails on macOS — (?i) inline flag in path regex not supported by this build
+    // TODO: path-only rules (no regex/keywords) produce no findings — investigate Rust-side handling
     it.todo("two path-only rules on the same file coexist (not collapsed by span-dedup)", async () => {
         expect.assertions(2);
 
@@ -517,8 +516,8 @@ leaked = "${secret2}"
                 extendBundled: false,
                 inline: {
                     rules: [
-                        { description: "kdbx by extension", id: "kdbx-a", path: String.raw`(?i)\.kdbx$` },
-                        { description: "export convention", id: "kdbx-b", path: String.raw`(?i)vault-export\.kdbx$` },
+                        { description: "kdbx by extension", id: "kdbx-a", path: String.raw`\.kdbx$` },
+                        { description: "export convention", id: "kdbx-b", path: String.raw`vault-export\.kdbx$` },
                     ],
                 },
             },

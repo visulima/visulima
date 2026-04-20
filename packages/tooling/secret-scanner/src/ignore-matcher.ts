@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
 import ignoreModule from "ignore";
@@ -63,9 +63,30 @@ export const filterIgnoredFiles = (files: string[], matcher: IgnoreMatcher | und
         return files;
     }
 
+    // On macOS, process.cwd() resolves symlinks (/private/var/…) while
+    // mkdtemp & path.resolve keep the un-resolved form (/var/…). Use
+    // realpathSync on the cwd so relative() produces a clean relative path
+    // instead of one starting with "../".
+    let resolvedCwd: string;
+
+    try {
+        resolvedCwd = realpathSync(cwd);
+    } catch {
+        resolvedCwd = cwd;
+    }
+
     return files.filter((file) => {
-        const absolute = isAbsolute(file) ? file : resolve(cwd, file);
-        const relativePath = relative(cwd, absolute);
+        const absolute = isAbsolute(file) ? file : resolve(resolvedCwd, file);
+
+        let realAbsolute: string;
+
+        try {
+            realAbsolute = realpathSync(absolute);
+        } catch {
+            realAbsolute = absolute;
+        }
+
+        const relativePath = relative(resolvedCwd, realAbsolute);
 
         if (relativePath === "" || relativePath.startsWith("..")) {
             return true;
