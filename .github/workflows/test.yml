@@ -123,7 +123,6 @@ jobs:
                   bun-version: "${{ matrix.bun_version }}"
 
             - name: "Wait for Build Native workflow"
-              if: "matrix.os == 'ubuntu-latest'"
               uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
               timeout-minutes: 30
               with:
@@ -138,7 +137,6 @@ jobs:
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
             - name: "Download native build artifacts"
-              if: "matrix.os == 'ubuntu-latest'"
               uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
               with:
                   workflow: "build-native.yml"
@@ -150,7 +148,6 @@ jobs:
                   allow_forks: false
 
             - name: "Distribute native artifacts to package roots"
-              if: "matrix.os == 'ubuntu-latest'"
               shell: "bash"
               run: |
                   if [ ! -d artifacts ]; then
@@ -252,7 +249,6 @@ jobs:
                   run-npm-audit: false
 
             - name: "Wait for Build Native workflow"
-              if: "matrix.os == 'ubuntu-latest'"
               uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
               timeout-minutes: 30
               with:
@@ -267,7 +263,6 @@ jobs:
             # the .node files only exist in the build-native runner — test runs fail at
             # require('./<pkg>-native.linux-x64-gnu.node').
             - name: "Download native build artifacts"
-              if: "matrix.os == 'ubuntu-latest'"
               uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
               with:
                   workflow: "build-native.yml"
@@ -279,7 +274,6 @@ jobs:
                   allow_forks: false
 
             - name: "Distribute native artifacts to package roots"
-              if: "matrix.os == 'ubuntu-latest'"
               shell: "bash"
               run: |
                   if [ ! -d artifacts ]; then
