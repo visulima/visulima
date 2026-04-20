@@ -23,7 +23,7 @@ import waitFor from "../helpers/wait-for";
 
 let currentUnmount: (() => void) | undefined;
 
-const mount = (jsx: React.JSX.Element) => {
+const mount = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
     const stdin = createStdin();
     const { unmount } = render(jsx, { debug: true, stdin, stdout });
@@ -35,6 +35,11 @@ const mount = (jsx: React.JSX.Element) => {
 
         return (calls.at(-1)?.[0] ?? "") as string;
     };
+
+    // Wait until the component has produced output, then give useEffect
+    // time to attach stdin listeners (setRawMode + useInput).
+    await waitFor(() => getOutput().length > 0);
+    await delay(50);
 
     return { getOutput, stdin };
 };
@@ -155,9 +160,8 @@ describe(ApprovalPrompt, () => {
     it("should render tool, risk label, params and prompt", async () => {
         expect.assertions(4);
 
-        const { getOutput } = mount(<ApprovalPrompt onDecision={vi.fn()} params={{ path: "auth.ts" }} risk="medium" tool="writeFile" />);
+        const { getOutput } = await mount(<ApprovalPrompt onDecision={vi.fn()} params={{ path: "auth.ts" }} risk="medium" tool="writeFile" />);
 
-        await delay(20);
         const output = getOutput();
 
         expect(output).toContain("writeFile");
@@ -170,9 +174,8 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
+        const { stdin } = await mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
-        await delay(20);
         emitReadable(stdin, "y");
         await waitFor(() => onDecision.mock.calls.length > 0);
 
@@ -183,9 +186,8 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
+        const { stdin } = await mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
-        await delay(20);
         emitReadable(stdin, "a");
         await waitFor(() => onDecision.mock.calls.length > 0);
 
@@ -196,9 +198,8 @@ describe(ApprovalPrompt, () => {
         expect.assertions(1);
 
         const onDecision = vi.fn();
-        const { stdin } = mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
+        const { stdin } = await mount(<ApprovalPrompt onDecision={onDecision} tool="writeFile" />);
 
-        await delay(20);
         emitReadable(stdin, "n");
         await waitFor(() => onDecision.mock.calls.length > 0);
 
