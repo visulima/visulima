@@ -1,21 +1,4 @@
-import { createRequire } from "node:module";
-
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-
-// Detect whether the compiled .node binary is loadable for the current platform.
-// In the build-native.yml workflow the binary is always downloaded before these
-// tests run, so it should be present.  Locally (without a compiled binary) the
-// tests still pass but assert the graceful-fallback path instead.
-const esmRequire = createRequire(import.meta.url);
-
-let nativeBinaryPresent: boolean;
-
-try {
-    esmRequire("../index.js");
-    nativeBinaryPresent = true;
-} catch {
-    nativeBinaryPresent = false;
-}
 
 // We need to isolate module state between tests since native-binding.ts
 // uses module-level caching (loadAttempted flag).
@@ -23,7 +6,7 @@ try {
 
 describe("native-binding", () => {
     describe("loadNativeBindings", () => {
-        it.skipIf(!nativeBinaryPresent)("should load the native addon when the binary is compiled", async () => {
+        it("should load the native addon when the binary is compiled", async () => {
             expect.assertions(1);
 
             vi.resetModules();
@@ -37,17 +20,6 @@ describe("native-binding", () => {
             expectTypeOf(result!.hashCommand).toBeFunction();
             expectTypeOf(result!.hashFile).toBeFunction();
             expectTypeOf(result!.runConcurrent).toBeFunction();
-        });
-
-        it.skipIf(nativeBinaryPresent)("should return undefined when native addon is not available", async () => {
-            expect.assertions(1);
-
-            vi.resetModules();
-
-            const { loadNativeBindings } = await import("../src/native-binding");
-            const result = loadNativeBindings();
-
-            expect(result).toBeUndefined();
         });
 
         it("should cache the result after the first attempt", async () => {
@@ -65,7 +37,7 @@ describe("native-binding", () => {
     });
 
     describe("isNativeAvailable", () => {
-        it.skipIf(!nativeBinaryPresent)("should return true when native addon is compiled", async () => {
+        it("should return true when native addon is compiled", async () => {
             expect.assertions(1);
 
             vi.resetModules();
@@ -73,16 +45,6 @@ describe("native-binding", () => {
             const { isNativeAvailable } = await import("../src/native-binding");
 
             expect(isNativeAvailable()).toBe(true);
-        });
-
-        it.skipIf(nativeBinaryPresent)("should return false when native addon is not available", async () => {
-            expect.assertions(1);
-
-            vi.resetModules();
-
-            const { isNativeAvailable } = await import("../src/native-binding");
-
-            expect(isNativeAvailable()).toBe(false);
         });
 
         it("should be consistent with loadNativeBindings", async () => {
