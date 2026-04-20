@@ -53,103 +53,83 @@ export interface BannedWordsResult {
 }
 
 /**
- * Escapes special regex characters in a string.
- * @param string_ String to escape
- * @returns Escaped string safe for use in RegExp constructor
+ * Language groups — CJK languages use substring matching (no word boundaries),
+ * all others use tokenized word-boundary matching.
  * @internal
  */
-const escapeRegExp = (string_: string): string => string_.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+const CJK_LANGUAGES = new Set(["ja", "ko", "zh"]);
 
 /**
- * Language groups for splitting regex compilation.
- * Grouping by geographic/script similarity for better performance.
+ * Pre-compiled token regex for splitting text into word tokens.
+ * Matches sequences of Unicode letters or digits.
  * @internal
  */
-const LANGUAGE_GROUPS = {
-    cjk: new Set(["ja", "ko", "zh"]),
-    eastern: new Set(["pl", "ru"]),
-    middleEast: new Set(["ar", "az", "fa", "tr"]),
-    southAsian: new Set(["hi"]),
-    western: new Set(["de", "en", "es", "fr", "ga", "it", "nl", "pt", "sv"]),
-} as const;
+const WORD_TOKEN_RE = /[\p{L}\p{N}]+/gu;
 
 /**
- * Builds optimized regex patterns split by language groups for better performance.
+ * Detects whether a string contains any CJK (Chinese, Japanese, Korean) characters.
+ * Latin transliterations from CJK word lists are routed to the tokenized matcher
+ * so they respect word boundaries (e.g. "ass" from the Korean list must not match
+ * inside "class").
+ * @internal
+ */
+const HAS_CJK_CHAR_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+interface Token {
+    end: number;
+    start: number;
+    text: string;
+}
+
+/**
+ * Builds lookup tables for efficient banned word matching.
  * @remarks
- * This function:
- * - Splits patterns into 5 geographic/script groups to reduce regex size
- * - Normalizes all words to NFC Unicode form
- * - Sorts patterns by length (longest first) to match phrases before individual words
- * - Creates a language lookup map for match attribution
- * - Produces smaller, faster-compiling regexes than a single giant pattern
- * @returns Object containing compiled regexes and word-to-language mapping
+ * Uses Map/Set for O(1) lookup instead of giant regex alternations,
+ * avoiding V8's steep JIT compilation cost for massive patterns.
  * @internal
  */
-/* eslint-disable sonarjs/cognitive-complexity */
-const buildRegexGroups = (): {
-    regexGroups: { name: string; regex: RegExp }[];
-    wordToLanguage: Map<string, string>;
+const buildLookupTables = (): {
+    cjkEntries: { language: string; word: string }[];
+    maxPhraseTokens: number;
+    nonCjkPhrases: Map<string, string>;
+    nonCjkSingleWords: Map<string, string>;
 } => {
-    const wordToLanguage = new Map<string, string>();
-    const groupPatterns: Record<string, string[]> = {
-        cjk: [],
-        eastern: [],
-        middleEast: [],
-        southAsian: [],
-        western: [],
-    };
+    const nonCjkSingleWords = new Map<string, string>();
+    const nonCjkPhrases = new Map<string, string>();
+    const cjkEntries: { language: string; word: string }[] = [];
+    let maxPhraseTokens = 1;
 
     for (const [lang, words] of Object.entries(BANNED_WORDS)) {
-        // Determine which group this language belongs to
-        let groupName = "";
-
-        for (const [group, langs] of Object.entries(LANGUAGE_GROUPS)) {
-            if (langs.has(lang)) {
-                groupName = group;
-                break;
-            }
-        }
-
-        if (!groupName) {
-            continue;
-        }
-
-        const isCjk = LANGUAGE_GROUPS.cjk.has(lang);
+        const isCjk = CJK_LANGUAGES.has(lang);
 
         for (const word of words) {
             const normalized = word.normalize("NFC").toLowerCase();
 
-            if (!wordToLanguage.has(normalized)) {
-                wordToLanguage.set(normalized, lang);
+            if (isCjk && HAS_CJK_CHAR_RE.test(normalized)) {
+                // Native-script CJK: substring matching (no word boundaries)
+                cjkEntries.push({ language: lang, word: normalized });
+            } else {
+                // Latin-script (including transliterated CJK): word-boundary matching
+                const tokens = normalized.split(/\s+/);
 
-                const escaped = escapeRegExp(normalized);
-
-                if (isCjk) {
-                    groupPatterns[groupName]?.push(escaped);
+                if (tokens.length === 1) {
+                    if (!nonCjkSingleWords.has(normalized)) {
+                        nonCjkSingleWords.set(normalized, lang);
+                    }
                 } else {
-                    groupPatterns[groupName]?.push(String.raw`(?<![\p{L}\p{N}])${escaped}(?![\p{L}\p{N}])`);
+                    if (!nonCjkPhrases.has(normalized)) {
+                        nonCjkPhrases.set(normalized, lang);
+                        maxPhraseTokens = Math.max(maxPhraseTokens, tokens.length);
+                    }
                 }
             }
         }
     }
 
-    const regexGroups: { name: string; regex: RegExp }[] = [];
-
-    for (const [groupName, patterns] of Object.entries(groupPatterns)) {
-        if (patterns.length > 0) {
-            patterns.sort((a, b) => b.length - a.length);
-            regexGroups.push({
-                name: groupName,
-                regex: new RegExp(patterns.join("|"), "giu"),
-            });
-        }
-    }
-
-    return { regexGroups, wordToLanguage };
+    return { cjkEntries, maxPhraseTokens, nonCjkPhrases, nonCjkSingleWords };
 };
-/* eslint-enable sonarjs/cognitive-complexity */
 
-const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups();
+const { cjkEntries, maxPhraseTokens, nonCjkPhrases, nonCjkSingleWords } = buildLookupTables();
 
 /**
  * Checks text for banned words across all configured languages.
@@ -162,12 +142,11 @@ const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups()
  * - Normalizes text to NFC Unicode form for consistent matching
  * - Handles multi-word phrases
  * - Respects word boundaries (except for CJK scripts)
- * - Uses pre-compiled regexes split by script type for optimal performance
+ * - Uses Set-based lookup for near-instant initialization and O(1) per-word matching
  * - Returns empty results for empty or whitespace-only input
  *
- * For performance, the implementation splits patterns into 5 geographic/script groups
- * (Western, Eastern European, Middle Eastern, South Asian, CJK), significantly
- * reducing regex compilation time and JIT overhead.
+ * For performance, CJK scripts (Chinese, Japanese, Korean) use substring matching
+ * without word boundaries, while all other scripts use tokenized word-boundary matching.
  * @example
  * Basic usage:
  * ```typescript
@@ -212,23 +191,70 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     }
 
     const normalized = text.normalize("NFC");
+    const lowerNormalized = normalized.toLowerCase();
     const matches: BannedWordMatch[] = [];
 
-    for (const { regex } of regexGroups) {
-        regex.lastIndex = 0;
-        let match: RegExpExecArray | null;
+    // --- Non-CJK: tokenized word-boundary matching ---
+    WORD_TOKEN_RE.lastIndex = 0;
+
+    const tokens: Token[] = [];
+    let tokenMatch: RegExpExecArray | null;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((tokenMatch = WORD_TOKEN_RE.exec(lowerNormalized)) !== null) {
+        tokens.push({ end: tokenMatch.index + tokenMatch[0].length, start: tokenMatch.index, text: tokenMatch[0] });
+    }
+
+    // Single-word matches
+    for (const token of tokens) {
+        const lang = nonCjkSingleWords.get(token.text);
+
+        if (lang) {
+            matches.push({
+                endIndex: token.end,
+                language: lang,
+                startIndex: token.start,
+                word: normalized.slice(token.start, token.end),
+            });
+        }
+    }
+
+    // Multi-word phrase matches (sliding window)
+    for (let i = 0; i < tokens.length; i++) {
+        for (let len = 2; len <= maxPhraseTokens && i + len <= tokens.length; len++) {
+            const phrase = tokens
+                .slice(i, i + len)
+                .map((t) => t.text)
+                .join(" ");
+            const lang = nonCjkPhrases.get(phrase);
+
+            if (lang) {
+                const start = tokens[i]!.start;
+                const end = tokens[i + len - 1]!.end;
+
+                matches.push({
+                    endIndex: end,
+                    language: lang,
+                    startIndex: start,
+                    word: normalized.slice(start, end),
+                });
+            }
+        }
+    }
+
+    // --- CJK: substring matching (no word boundaries) ---
+    for (const { language, word } of cjkEntries) {
+        let pos = 0;
 
         // eslint-disable-next-line no-cond-assign
-        while ((match = regex.exec(normalized)) !== null) {
-            const matchedText = match[0].toLowerCase();
-            const language = cachedWordToLanguage.get(matchedText) ?? "unknown";
-
+        while ((pos = lowerNormalized.indexOf(word, pos)) !== -1) {
             matches.push({
-                endIndex: match.index + match[0].length,
+                endIndex: pos + word.length,
                 language,
-                startIndex: match.index,
-                word: match[0],
+                startIndex: pos,
+                word: normalized.slice(pos, pos + word.length),
             });
+            pos += 1;
         }
     }
 
