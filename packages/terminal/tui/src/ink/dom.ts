@@ -256,6 +256,13 @@ export const createNode = (nodeName: ElementNames): DOMElement => {
     return node;
 };
 
+// When structural changes happen on a subtree containing an already-rendered
+// ink-static-render leaf, dirty its *parent* rather than the leaf so the cache
+// is preserved. Otherwise dirty the node itself.
+const markNodeAndParentIfStaticAsDirty = (node: DOMElement): void => {
+    markNodeAsDirty(node.nodeName === "ink-static-render" && node.cachedRender ? node.parentNode : node);
+};
+
 export const appendChildNode = (node: DOMElement, childNode: DOMElement): void => {
     if (childNode.parentNode) {
         removeChildNode(childNode.parentNode, childNode);
@@ -268,9 +275,7 @@ export const appendChildNode = (node: DOMElement, childNode: DOMElement): void =
         node.yogaNode?.insertChild(childNode.yogaNode, node.yogaNode.getChildCount());
     }
 
-    if (node.nodeName === "ink-text" || node.nodeName === "ink-virtual-text") {
-        markNodeAsDirty(node);
-    }
+    markNodeAndParentIfStaticAsDirty(node);
 };
 
 export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, beforeChildNode: DOMNode): void => {
@@ -298,9 +303,7 @@ export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, before
         }
     }
 
-    if (node.nodeName === "ink-text" || node.nodeName === "ink-virtual-text") {
-        markNodeAsDirty(node);
-    }
+    markNodeAndParentIfStaticAsDirty(node);
 };
 
 export const removeChildNode = (node: DOMElement, removeNode: DOMNode): void => {
@@ -322,9 +325,7 @@ export const removeChildNode = (node: DOMElement, removeNode: DOMNode): void => 
         node.childNodes.splice(index, 1);
     }
 
-    if (node.nodeName === "ink-text" || node.nodeName === "ink-virtual-text") {
-        markNodeAsDirty(node);
-    }
+    markNodeAndParentIfStaticAsDirty(node);
 };
 
 export const setAttribute = (node: DOMElement, key: string, value: DOMNodeAttribute): void => {
@@ -388,12 +389,18 @@ const findClosestYogaNode = (node?: DOMNode): YogaNode | undefined => {
 };
 
 export const markNodeAsDirty = (node?: DOMNode): void => {
-    // Mark closest Yoga node as dirty to measure text dimensions again
-    const yogaNode = findClosestYogaNode(node);
+    // Yoga measurement only needs re-running when text content changes
+    // (non-text nodes derive dimensions from children via layout).
+    if (node?.nodeName === "#text" || node?.nodeName === "ink-text" || node?.nodeName === "ink-virtual-text") {
+        const yogaNode = findClosestYogaNode(node);
 
-    yogaNode?.markDirty();
+        yogaNode?.markDirty();
+    }
 
-    // Walk up the tree clearing caches that depend on this subtree
+    // Walk up the tree clearing caches that depend on this subtree.
+    // Preserve an ancestor ink-static-render's cachedRender when walking
+    // *through* it (i.e. it isn't the origin node) — structural changes
+    // below a clean static-render leaf shouldn't blow its cache.
     let current = node;
 
     while (current) {
@@ -401,7 +408,13 @@ export const markNodeAsDirty = (node?: DOMNode): void => {
             current.internal_textCache = undefined;
         }
 
-        if ("cachedRender" in current) {
+        if ("childNodes" in current) {
+            const shouldPreserveStaticCache = current !== node && current.nodeName === "ink-static-render" && Boolean(current.cachedRender);
+
+            if (shouldPreserveStaticCache) {
+                break;
+            }
+
             current.cachedRender = undefined;
         }
 
