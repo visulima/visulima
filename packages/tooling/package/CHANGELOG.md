@@ -1,3 +1,29 @@
+## @visulima/package [5.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.7...@visulima/package@5.0.0-alpha.8) (2026-04-21)
+
+### Features
+
+* Add CycloneDX 1.6 SBOM generation with `vis sbom` command ([#611](https://github.com/visulima/visulima/issues/611)) ([1e95276](https://github.com/visulima/visulima/commit/1e9527630958722a0f0f7e79d18bb23b5a57e0df))
+* **package:** add lockfile utilities ([12f9076](https://github.com/visulima/visulima/commit/12f9076ba1570bec2f2d43b58fcd31701634434e))
+
+### Bug Fixes
+
+* **package:** hoist regexes, rewrite lockfile parser, resolve eslint issues ([585ed7f](https://github.com/visulima/visulima/commit/585ed7f16b3f42996bb030a8bae5f1f37a50c316))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **package:** apply formatter and lint fixes ([a0f4acf](https://github.com/visulima/visulima/commit/a0f4acfb15beb256edd3b62958b4e3db039757a9))
+* **package:** apply pending changes ([919b214](https://github.com/visulima/visulima/commit/919b214f9659a5b4ff95ec8b35a70c10af3c4853))
+* **package:** apply pending lint and source updates ([2fd1c04](https://github.com/visulima/visulima/commit/2fd1c044d9528500943368c01f9b24fd2280058c))
+* **package:** enforce curly braces and apply lint fixes ([0df50ba](https://github.com/visulima/visulima/commit/0df50ba4f45bac67dabeb78ebfc3d555ba5aec56))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.9
+
 ## @visulima/package [5.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.6...@visulima/package@5.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes
