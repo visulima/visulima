@@ -1,3 +1,32 @@
+## @visulima/vite-overlay [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.11...@visulima/vite-overlay@2.0.0-alpha.12) (2026-04-21)
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and formatting issues ([7d0ada8](https://github.com/visulima/visulima/commit/7d0ada8787bf624df5a7d504448a4d1b69165aba))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **vite-overlay:** cast function plugin through unknown for Plugin type ([4eeeb04](https://github.com/visulima/visulima/commit/4eeeb04a0e39fe9a5369daca5907bb96313f35ae))
+* **vite-overlay:** resolve eslint and formatting issues ([6d62d6e](https://github.com/visulima/visulima/commit/6d62d6efd40ffd2c7517ef404875dc80de662260))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* remove unused deprecated aliases ([#612](https://github.com/visulima/visulima/issues/612)) ([24ee546](https://github.com/visulima/visulima/commit/24ee546bcb2c17b8915622e4878797c00aa1d813))
+* **vite-overlay:** apply formatter and lint fixes ([bb14233](https://github.com/visulima/visulima/commit/bb142339d2a6dae661df8af1ae51d48dceaeb680))
+* **vite-overlay:** apply pending changes ([82aa656](https://github.com/visulima/visulima/commit/82aa65600f7c178d0ab0c279b4dc2f08dffec6cd))
+* **vite-overlay:** apply pending lint and source updates ([1b07e38](https://github.com/visulima/visulima/commit/1b07e381e4dbf9b4f8e0b3fa348e2dede8149cfe))
+* **vite-overlay:** enforce curly braces and apply lint fixes ([7345554](https://github.com/visulima/visulima/commit/7345554634876ddbd01a4fae2171113a04ab7f4a))
+
+### Code Refactoring
+
+* replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.10
+
 ## @visulima/vite-overlay [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.10...@visulima/vite-overlay@2.0.0-alpha.11) (2026-04-08)
 
 ### Bug Fixes
