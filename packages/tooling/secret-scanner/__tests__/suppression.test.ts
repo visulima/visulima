@@ -2,9 +2,14 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { scan } from "../src/index";
+import { scan, scanString } from "../src/index";
+
+// Warm the Rust regex JIT (full bundled ruleset) once so tests don't timeout.
+beforeAll(async () => {
+    await scanString("warmup", "warmup.txt");
+}, 120_000);
 
 let tmpDir: string;
 
