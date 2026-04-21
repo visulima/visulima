@@ -61,6 +61,16 @@ yarn add @visulima/vis
 pnpm add @visulima/vis
 ```
 
+### Cold start (no Node? no manager?)
+
+One-liner bootstrap that installs a version manager, Node LTS, and `vis` in one go:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.sh | bash
+```
+
+Pass `--yes --manager=proto` for non-interactive / CI usage. See [`vis toolchain` docs](./docs/commands/toolchain.mdx#cold-start--no-node-no-manager) for details.
+
 ## Quick Start
 
 ```bash
