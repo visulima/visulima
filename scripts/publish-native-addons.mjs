@@ -7,9 +7,15 @@
  * This ensures all platform-specific packages are available on npm when users install
  * the main package and npm resolves optionalDependencies.
  *
- * Auth is handled by @anolilab/semantic-release-pnpm which writes .npmrc with the
- * registry token into the package root before this script runs. pnpm walks up from
- * npm/<platform>/ and finds it automatically.
+ * Auth: @anolilab/semantic-release-pnpm's verifyConditions writes .npmrc into the
+ * package root (context.cwd). We mirror its own publish.ts pattern and run
+ * `pnpm publish <path>` from that same package root so pnpm picks up the .npmrc
+ * naturally — no NPM_CONFIG_USERCONFIG juggling needed.
+ *
+ * Running pnpm directly from the npm/<platform>/ subdir does NOT work inside a
+ * pnpm workspace: pnpm's auth lookup from a nested package dir can miss the
+ * workspace-internal .npmrc and fall through to an unauthenticated default,
+ * producing ENEEDAUTH.
  *
  * Run from the package directory (semantic-release does this automatically):
  *   node ../../../scripts/publish-native-addons.mjs <version>
@@ -28,7 +34,6 @@ if (!version) {
     process.exit(1);
 }
 
-// Determine npm tag from version string
 let npmTag = "latest";
 
 if (version.includes("-alpha.")) {
@@ -40,13 +45,13 @@ if (version.includes("-alpha.")) {
 }
 
 const npmDir = join(currentDir, "npm");
-
 const platformDirs = (await readdir(npmDir, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
 console.log(`Publishing native addons at version ${version} with tag ${npmTag}`);
 
 for (const dir of platformDirs) {
-    const pkgPath = join(npmDir, dir, "package.json");
+    const platformPath = join(npmDir, dir);
+    const pkgPath = join(platformPath, "package.json");
     let pkg;
     let originalVersion;
 
@@ -57,13 +62,12 @@ for (const dir of platformDirs) {
         continue;
     }
 
-    // Update version to match the main package
     pkg.version = version;
     writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + "\n");
 
     try {
-        const output = execFileSync("pnpm", ["publish", "--tag", npmTag, "--access", "public", "--no-git-checks"], {
-            cwd: join(npmDir, dir),
+        const output = execFileSync("pnpm", ["publish", platformPath, "--tag", npmTag, "--access", "public", "--no-git-checks"], {
+            cwd: currentDir,
             encoding: "utf-8",
             env: process.env,
             stdio: "pipe",
@@ -77,7 +81,6 @@ for (const dir of platformDirs) {
         if (message.includes("You cannot publish over the previously published versions")) {
             console.warn(`${pkg.name}@${version} already published, skipping`);
         } else {
-            // Restore original version before re-throwing so the working tree stays clean
             pkg.version = originalVersion;
             writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + "\n");
             throw error;
