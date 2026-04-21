@@ -169,6 +169,40 @@
                 "sortScripts": { "type": "boolean", "default": false }
             }
         },
+        "toolchain": {
+            "type": "object",
+            "description": "Toolchain (Node / pnpm / python / ...) management. Delegates to proto / mise / fnm / volta / asdf / nvm.",
+            "additionalProperties": false,
+            "properties": {
+                "autoInstall": {
+                    "type": "boolean",
+                    "description": "Call `<manager> install` automatically on engines.node mismatch.",
+                    "default": true
+                },
+                "preferredManager": {
+                    "type": "string",
+                    "enum": ["proto", "mise", "fnm", "volta", "asdf", "nvm", "none"],
+                    "description": "Explicit manager override, bypasses auto-detection."
+                },
+                "tools": {
+                    "type": "object",
+                    "description": "Override engines/packageManager-derived pins.",
+                    "additionalProperties": false,
+                    "properties": {
+                        "bun": { "type": "string" },
+                        "deno": { "type": "string" },
+                        "go": { "type": "string" },
+                        "node": { "type": "string" },
+                        "npm": { "type": "string" },
+                        "pnpm": { "type": "string" },
+                        "python": { "type": "string" },
+                        "ruby": { "type": "string" },
+                        "rust": { "type": "string" },
+                        "yarn": { "type": "string" }
+                    }
+                }
+            }
+        },
         "staged": {
             "description": "Staged file patterns and commands (replaces lint-staged). Accepts string, string[], {title, task}, or mixed arrays. Function-form tasks are supported at runtime but are not JSON-schema-representable.",
             "type": "object",

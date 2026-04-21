@@ -106,6 +106,7 @@ vis hook install
 | `vis clean`             |        | Remove build artifacts, caches, and node_modules                     |
 | `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                       |
 | `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)               |
+| `vis toolchain <cmd>`   |        | Inspect / delegate to the version manager (proto, mise, fnm, volta…) |
 | `vis staged`            |        | Run tasks on staged files (built-in `lint-staged` replacement)       |
 | `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint` |
 

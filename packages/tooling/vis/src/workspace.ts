@@ -560,6 +560,48 @@ interface VisConfig {
 
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
+
+    /**
+     * Toolchain (Node / pnpm / python / rust / ...) management. vis
+     * delegates to whichever version manager (proto, mise, fnm, volta,
+     * asdf, nvm) the developer already has — it does not ship its own.
+     */
+    toolchain?: {
+        /**
+         * Call `<manager> install` automatically when `vis run` / `vis ci`
+         * detect an engines.node mismatch. Defaults to `true` when a
+         * manager is detected, `false` otherwise.
+         */
+        autoInstall?: boolean;
+
+        /**
+         * Explicit manager override, bypasses auto-detection. Useful in
+         * CI where the runner image only has one manager available.
+         */
+        preferredManager?: "asdf" | "fnm" | "mise" | "none" | "nvm" | "proto" | "volta";
+
+        /**
+         * Override engines/packageManager-derived pins. Takes precedence
+         * over `.nvmrc`, `.prototools`, etc.
+         * @example
+         * ```
+         * toolchain: { tools: { node: ">=22.13", pnpm: "10.32.1" } }
+         * ```
+         */
+        tools?: {
+            bun?: string;
+            deno?: string;
+            go?: string;
+            node?: string;
+            npm?: string;
+            pnpm?: string;
+            python?: string;
+            ruby?: string;
+            rust?: string;
+            yarn?: string;
+        };
+    };
+
     /** Terminal UI configuration */
     tui?: {
         /**
