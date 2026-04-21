@@ -43,3 +43,18 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Install scripts. Served with a plain-text content type so `curl | bash`
+# and `irm | iex` see the body directly, and a short cache so a fix can
+# roll out quickly without waiting a day.
+[[headers]]
+  for = "/install.sh"
+  [headers.values]
+    Content-Type = "text/x-shellscript; charset=utf-8"
+    Cache-Control = "public, max-age=300, must-revalidate"
+
+[[headers]]
+  for = "/install.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=300, must-revalidate"

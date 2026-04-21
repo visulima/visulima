@@ -7,7 +7,7 @@
     One-liner bootstrap for new users on Windows who may not have Node,
     npm, or any version manager installed:
 
-        irm https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.ps1 | iex
+        irm https://visulima.dev/install.ps1 | iex
 
     To pass arguments, use the scriptblock form:
 
@@ -197,8 +197,9 @@ else {
 
     switch ($Manager) {
         'proto' {
+            # `proto install <tool> lts` resolves the LTS alias. npm
+            # ships with node, so no separate install step is needed.
             & proto install node lts
-            & proto install npm
         }
         'fnm' {
             & fnm install --lts

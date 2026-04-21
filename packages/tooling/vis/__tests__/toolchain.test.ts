@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { chmodSync } from "node:fs";
+
 import {
     buildInstallInvocation,
     buildUseInvocation,
@@ -10,6 +12,7 @@ import {
     pickPrimaryManager,
     findInstalledManagers,
     getToolchainStatus,
+    isOnPath,
     parseExpectedTools,
     parseUseArgument,
     resolveManagerFor,
@@ -682,5 +685,99 @@ describe("SUPPORTED_MANAGERS", () => {
 
         expect(unique.size).toBe(SUPPORTED_MANAGERS.length);
         expect(SUPPORTED_MANAGERS).toContain("corepack");
+    });
+});
+
+describe(isOnPath, () => {
+    it("should find a binary placed on PATH", () => {
+        expect.assertions(1);
+
+        const binary = join(tmpDirectory, "fake-bin");
+
+        writeFileSync(binary, "#!/bin/sh\n", { mode: 0o755 });
+
+        if (process.platform !== "win32") {
+            chmodSync(binary, 0o755);
+        }
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            process.env["PATH"] = tmpDirectory;
+
+            const resolved = isOnPath("fake-bin");
+
+            // On Linux/macOS isOnPath returns the full path. On Windows
+            // it would look for fake-bin.{EXE,BAT,CMD,COM} — since our
+            // fixture has no extension, skip the assertion there.
+            if (process.platform === "win32") {
+                expect(resolved === undefined || typeof resolved === "string").toBe(true);
+            } else {
+                expect(resolved).toBe(binary);
+            }
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+
+    it("should return undefined when the binary is not on PATH", () => {
+        expect.assertions(1);
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            process.env["PATH"] = tmpDirectory;
+
+            expect(isOnPath("definitely-does-not-exist-abc123")).toBeUndefined();
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+
+    it("should return undefined when PATH is unset", () => {
+        expect.assertions(1);
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            delete process.env["PATH"];
+
+            expect(isOnPath("node")).toBeUndefined();
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+
+    it("should skip empty PATH entries", () => {
+        expect.assertions(1);
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            // Leading/trailing separator produces empty segments.
+            process.env["PATH"] = `:${tmpDirectory}:`;
+
+            // Shouldn't crash on the empty segments and should still
+            // fall through to "not found".
+            expect(isOnPath("definitely-does-not-exist-abc123")).toBeUndefined();
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
     });
 });

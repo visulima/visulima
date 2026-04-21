@@ -5,7 +5,7 @@
 # One-liner bootstrap for new users who may not have Node, npm, or any
 # version manager on the machine:
 #
-#   curl -fsSL https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.sh | bash
+#   curl -fsSL https://visulima.dev/install.sh | bash
 #
 # The script:
 #
@@ -180,8 +180,9 @@ install_node_via_manager() {
     case "$manager" in
         proto)
             info "Installing Node LTS via proto..."
+            # `proto install <tool> lts` resolves the LTS alias server-side.
+            # npm ships with node, so no separate install step is needed.
             proto install node lts
-            proto install npm
             ;;
         fnm)
             info "Installing Node LTS via fnm..."

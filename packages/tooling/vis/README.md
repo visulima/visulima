@@ -68,13 +68,13 @@ One-liner bootstrap that installs a version manager, Node LTS, and `vis` in one 
 **Linux / macOS / WSL** (bash):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.sh | bash
+curl -fsSL https://visulima.dev/install.sh | bash
 ```
 
 **Windows** (PowerShell 5.1+):
 
 ```powershell
-irm https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.ps1 | iex
+irm https://visulima.dev/install.ps1 | iex
 ```
 
 Pass `--yes --manager=proto` (POSIX) or `-Yes -Manager proto` (PowerShell) for non-interactive / CI usage. See [`vis toolchain` docs](./docs/commands/toolchain.mdx#cold-start--no-node-no-manager) for details.

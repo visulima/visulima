@@ -6,3 +6,7 @@ public/assets
 
 !src/data
 src/content/docs/packages
+
+# Install scripts copied from packages/tooling/vis/scripts at build time.
+public/install.sh
+public/install.ps1

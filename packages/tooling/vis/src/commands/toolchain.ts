@@ -1,7 +1,9 @@
 import { spawnSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
+import { join } from "@visulima/path";
 
 import { error as errorOutput, info, note, success, warn } from "../output";
 import {
@@ -393,13 +395,42 @@ const executeUse = (
         return;
     }
 
-    // nvm (the only other zero-args case) is a shell function, so we
-    // can't shell out safely.
+    // nvm is a shell function — we can't `nvm use` from a subprocess,
+    // but we can still be useful: write `.nvmrc` so the next shell
+    // reopen (or manual `nvm use`) picks up the pinned version.
+    if (invocation.args.length === 0 && manager.name === "nvm" && spec.tool === "node") {
+        const nvmrcPath = join(workspaceRoot, ".nvmrc");
+
+        info(`${dim("→")} Writing ${nvmrcPath}...`);
+
+        if (options.dryRun) {
+            note(`  Would write ${spec.version} to .nvmrc`);
+
+            return;
+        }
+
+        try {
+            writeFileSync(nvmrcPath, `${spec.version}\n`);
+        } catch (cause: unknown) {
+            errorOutput(`Failed to write .nvmrc: ${(cause as Error).message}`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        success(`Wrote ${spec.version} to .nvmrc.`);
+        note("  nvm is a shell function — run `nvm use` to activate it in this shell.");
+
+        return;
+    }
+
+    // Any other zero-args path is an unhandled manager — refuse
+    // loudly rather than claiming success.
     if (invocation.args.length === 0) {
-        info(`${dim("→")} ${invocation.configChange?.hint ?? `Edit ${invocation.configChange?.file ?? "config"} manually`}`);
+        errorOutput(`${manager.name} cannot pin ${spec.tool} from a subprocess. ${invocation.configChange?.hint ?? ""}`);
 
         if (invocation.configChange) {
-            note(`  ${invocation.configChange.file} update required.`);
+            note(`  Edit ${invocation.configChange.file} by hand and rerun \`vis toolchain status\` to verify.`);
         }
 
         process.exitCode = 1;

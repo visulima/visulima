@@ -135,10 +135,15 @@ const MANAGER_CONFIG_FILES: Record<DetectableManager, readonly string[]> = {
 };
 
 /**
- * Reads `PATH` and returns `true` if `binary` is executable. Cheaper than
- * spawning `which` because we only stat candidate paths.
+ * Reads `PATH` and returns the resolved absolute path for `binary` if
+ * any entry on PATH contains it (and, on Windows, with any of the
+ * PATHEXT extensions). Cheaper than spawning `which` because we only
+ * stat candidate paths.
+ *
+ * Exported for testing; most callers use {@link findInstalledManagers}
+ * or {@link resolveToolBinary} instead.
  */
-const isOnPath = (binary: string): string | undefined => {
+export const isOnPath = (binary: string): string | undefined => {
     const pathEnv = process.env["PATH"];
 
     if (!pathEnv) {
@@ -270,6 +275,18 @@ export const findInstalledManagers = (workspaceRoot: string, options?: { refresh
 
         const configFiles = configFilesFor(name, workspaceRoot);
         const installed = Boolean(binary) || nvmInstalled;
+
+        // Corepack's "config file" is a `packageManager` field in
+        // package.json — which virtually every modern pnpm/yarn
+        // workspace has. Listing it as a detected manager just because
+        // that field exists produces noisy "corepack — referenced but
+        // not installed" warnings on workspaces that don't actually
+        // use corepack (pnpm 10+ self-activates). Only surface
+        // corepack when the binary is genuinely on PATH — per-tool
+        // resolution still picks it for npm pins via preferenceFor.
+        if (name === "corepack" && !installed) {
+            continue;
+        }
 
         if (!installed && configFiles.length === 0) {
             continue;
