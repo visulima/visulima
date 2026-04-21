@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/interactive-manager",
-    "version": "1.0.0-alpha.1",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

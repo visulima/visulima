@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/secret-scanner",
-    "version": "0.0.0-alpha.0",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}
