@@ -249,7 +249,7 @@
     },
     "dependencies": {
         "@visulima/colorize": "2.0.0-alpha.8",
-        "@visulima/interactive-manager": "0.0.0",
+        "@visulima/interactive-manager": "workspace:*",
         "type-fest": "catalog:prod"
     },
     "devDependencies": {
