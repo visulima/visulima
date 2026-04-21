@@ -16,13 +16,17 @@ const setup = async (jsx: React.JSX.Element) => {
     const { unmount } = render(jsx, { debug: true, stdin, stdout });
 
     currentUnmount = unmount;
-    await delay(50);
 
     const getOutput = () => {
         const { calls } = (stdout.write as ReturnType<typeof vi.fn>).mock;
 
         return (calls.at(-1)?.[0] ?? "") as string;
     };
+
+    // Wait until the component has produced output, then give useEffect
+    // time to attach stdin listeners (setRawMode + useInput).
+    await waitFor(() => getOutput().length > 0);
+    await delay(50);
 
     return { getOutput, stdin };
 };
@@ -59,7 +63,7 @@ describe(Menu, () => {
         const { stdin } = await setup(<Menu autoFocus items={items} onSelect={onSelect} />);
 
         emitReadable(stdin, "\r");
-        await delay(40);
+        await waitFor(() => onSelect.mock.calls.length > 0);
 
         expect(onSelect).toHaveBeenCalledWith("new");
     });
@@ -81,9 +85,9 @@ describe(Menu, () => {
         );
 
         emitReadable(stdin, "j");
-        await delay(40);
+        await delay(50);
         emitReadable(stdin, "\r");
-        await delay(40);
+        await waitFor(() => onSelect.mock.calls.length > 0);
 
         // Jumped from 'A' over disabled 'B' to 'C'
         expect(onSelect).toHaveBeenCalledWith("c");
@@ -176,7 +180,7 @@ describe(CommandPalette, () => {
         const { stdin } = await setup(<CommandPalette commands={commands} onSelect={onSelect} />);
 
         emitReadable(stdin, "\r");
-        await delay(50);
+        await waitFor(() => onSelect.mock.calls.length > 0);
 
         // The initial focused command is the first entry with an empty query.
         expect(onSelect).toHaveBeenCalledWith("new", "");
@@ -189,7 +193,7 @@ describe(CommandPalette, () => {
         const { stdin } = await setup(<CommandPalette commands={commands} onCancel={onCancel} onSelect={vi.fn()} />);
 
         emitReadable(stdin, "\u001B");
-        await delay(50);
+        await waitFor(() => onCancel.mock.calls.length > 0);
 
         expect(onCancel).toHaveBeenCalledTimes(1);
     });
@@ -221,7 +225,7 @@ describe(ContentSwitcher, () => {
         const { getOutput, stdin } = await setup(<ContentSwitcher autoFocus onChange={onChange} options={options} />);
 
         emitReadable(stdin, "\u001B[C");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.length > 0);
 
         expect(onChange).toHaveBeenCalledWith("two");
         expect(getOutput()).toContain("Second content");

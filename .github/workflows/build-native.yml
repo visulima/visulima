@@ -75,14 +75,12 @@ jobs:
                         - 'packages/tooling/secret-scanner/index.js'
                         - '.github/workflows/build-native.yml'
 
-    # Build all changed packages per target, test inline on native-runnable targets
+    # Build all changed packages per target, test inline on native-runnable targets.
+    # Always runs so that test.yml can download artifacts for every PR — caches
+    # prevent recompilation when native sources are unchanged.
     build:
         name: "Build native - ${{ matrix.settings.target }}"
         needs: "files-changed"
-        if: |
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            needs.files-changed.outputs.any-changed == 'true'
         strategy:
             fail-fast: false
             matrix:
