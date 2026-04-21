@@ -1067,9 +1067,6 @@ catalogs:
     cli-color:
       specifier: ^2.0.4
       version: 2.0.4
-    cli-spinners:
-      specifier: 3.4.0
-      version: 3.4.0
     cli-truncate:
       specifier: 6.0.0
       version: 6.0.0
@@ -8688,6 +8685,9 @@ importers:
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.63(900afb037bde05eb0189a39b16007f4a)
+      '@visulima/spinner':
+        specifier: workspace:*
+        version: link:../spinner
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.4(@vitest/browser@4.1.4)(vitest@4.1.4)
@@ -8703,9 +8703,6 @@ importers:
       cli-boxes:
         specifier: catalog:prod
         version: 4.0.1
-      cli-spinners:
-        specifier: catalog:prod
-        version: 3.4.0
       code-excerpt:
         specifier: catalog:prod
         version: 4.0.0
