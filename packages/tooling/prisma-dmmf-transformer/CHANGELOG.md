@@ -1,3 +1,10 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.9...@visulima/prisma-dmmf-transformer@3.0.0-alpha.10) (2026-04-21)
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.8...@visulima/prisma-dmmf-transformer@3.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
