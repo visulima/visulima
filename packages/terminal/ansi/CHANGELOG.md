@@ -1,3 +1,9 @@
+## @visulima/ansi [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.11...@visulima/ansi@4.0.0-alpha.12) (2026-04-21)
+
+### Miscellaneous Chores
+
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+
 ## @visulima/ansi [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.10...@visulima/ansi@4.0.0-alpha.11) (2026-04-21)
 
 ### Miscellaneous Chores
