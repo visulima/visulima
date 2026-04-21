@@ -62,7 +62,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/interactive-manager": "0.0.0"
+        "@visulima/interactive-manager": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
