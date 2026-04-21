@@ -1,6 +1,6 @@
 {
     "name": "@visulima/html",
-    "version": "1.0.0-alpha.9",
+    "version": "1.0.0-alpha.10",
     "description": "Functions for HTML, such as escaping or unescaping HTML entities",
     "keywords": [
         "visulima",
