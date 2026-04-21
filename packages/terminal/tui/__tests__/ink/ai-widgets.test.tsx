@@ -37,9 +37,10 @@ const mount = async (jsx: React.JSX.Element) => {
     };
 
     // Wait until the component has produced output, then give useEffect
-    // time to attach stdin listeners (setRawMode + useInput).
+    // time to attach stdin listeners (setRawMode + useInput). On loaded CI
+    // runners React concurrent mode can defer effects for 100 ms+.
     await waitFor(() => getOutput().length > 0);
-    await delay(50);
+    await delay(150);
 
     return { getOutput, stdin };
 };
