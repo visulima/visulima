@@ -1,3 +1,12 @@
+## @visulima/ansi [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.9...@visulima/ansi@4.0.0-alpha.10) (2026-04-21)
+
+### Miscellaneous Chores
+
+* **ansi:** apply pending changes ([cd52fc6](https://github.com/visulima/visulima/commit/cd52fc6bed679efc5203d1f67f0b125d86d44aca))
+* **ansi:** enforce curly braces and apply lint fixes ([bdf29eb](https://github.com/visulima/visulima/commit/bdf29ebe46f6a2506171d5bffe30cf431be61308))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/ansi [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.8...@visulima/ansi@4.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
