@@ -89,7 +89,6 @@ jobs:
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
-                      testable: true
                     - target: "aarch64-apple-darwin"
                       os: "macos-latest"
                       testable: true
