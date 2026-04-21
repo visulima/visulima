@@ -1,3 +1,22 @@
+## @visulima/error [6.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.9...@visulima/error@6.0.0-alpha.10) (2026-04-21)
+
+### Bug Fixes
+
+* **error, secret-scanner:** fix build and test failures ([c2c438f](https://github.com/visulima/visulima/commit/c2c438fc442ea2d3052a86e7b35b0e2327475ebf))
+* **error:** disable isolated declarations to unblock Windows CI ([9400798](https://github.com/visulima/visulima/commit/9400798af74f780f1dde89de48692b31fb020d3e))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **error:** apply pending changes ([37bdcfa](https://github.com/visulima/visulima/commit/37bdcfa0d59c309623cae748a1d6151f39c8bdc6))
+* **error:** enforce curly braces and apply lint fixes ([d96e5d5](https://github.com/visulima/visulima/commit/d96e5d5673b3a6dc847051135358a293cf7de268))
+* **error:** update packem config ([3e8d5db](https://github.com/visulima/visulima/commit/3e8d5dbc710d90bb5d0b5cc00c304322db150548))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Continuous Integration
+
+* disable isolatedDeclarationTransformer ([b34aa64](https://github.com/visulima/visulima/commit/b34aa648561299524b9f2c273815b6e5456fd12a))
+
 ## @visulima/error [6.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.8...@visulima/error@6.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
