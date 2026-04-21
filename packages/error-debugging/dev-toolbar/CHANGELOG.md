@@ -1,3 +1,28 @@
+## @visulima/dev-toolbar [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.9...@visulima/dev-toolbar@1.0.0-alpha.10) (2026-04-21)
+
+### Bug Fixes
+
+* **dev-toolbar:** resolve type errors in annotation overlay and perf monitor ([b201aa6](https://github.com/visulima/visulima/commit/b201aa6605a9fa030ce74f58743e10a042183156))
+* **tui:** inline component and hook barrel exports in ink entry ([1cf8dd2](https://github.com/visulima/visulima/commit/1cf8dd25c91a2001268fb9d964d95df649bf7832))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **dev-toolbar:** apply formatter and type refinements ([167c654](https://github.com/visulima/visulima/commit/167c654ae2f7c57a4ff7d0c84f5196de4a72c8d7))
+* **dev-toolbar:** apply pending changes ([e16638c](https://github.com/visulima/visulima/commit/e16638c00907a4612fa53f74f141bd3aac9f6ca9))
+* **dev-toolbar:** apply pending lint and source updates ([ece08e1](https://github.com/visulima/visulima/commit/ece08e16c85e927d1eead02eea69f15d5ea1a3dc))
+* **dev-toolbar:** enforce curly braces and apply lint fixes ([1b6797e](https://github.com/visulima/visulima/commit/1b6797ec1844979a7bb3ac3aa094e42a4fe3a68b))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Code Refactoring
+
+* replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
+
+### Tests
+
+* **tui, dev-toolbar:** fix expect.assertions counts on looped assertions ([898bc59](https://github.com/visulima/visulima/commit/898bc59ef217f7c8ee2aa7fdf7da3d355c028b13))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.8...@visulima/dev-toolbar@1.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
