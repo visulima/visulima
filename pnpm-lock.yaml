@@ -2707,7 +2707,7 @@ importers:
         specifier: 5.0.0-alpha.10
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: 3.0.0-alpha.10
+        specifier: 3.0.0-alpha.11
         version: link:../../tooling/prisma-dmmf-transformer
       http-errors:
         specifier: catalog:prod
@@ -2958,7 +2958,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.0.0-alpha.9
+        specifier: 5.0.0-alpha.10
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -5008,7 +5008,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.10
+        specifier: 6.0.0-alpha.11
         version: link:../error
       ai:
         specifier: ^4.0.0 || ^5.0.0
@@ -5473,7 +5473,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.10
+        specifier: 6.0.0-alpha.11
         version: link:../error
       fastest-levenshtein:
         specifier: catalog:prod
@@ -6027,7 +6027,7 @@ importers:
         version: 25.6.0
       '@visulima/fs':
         specifier: 5.0.0-alpha.9
-        version: link:../fs
+        version: 5.0.0-alpha.9(ini@6.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.8.3)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.63(900afb037bde05eb0189a39b16007f4a)
@@ -6114,7 +6114,7 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       '@visulima/error':
-        specifier: 6.0.0-alpha.10
+        specifier: 6.0.0-alpha.11
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
@@ -6438,7 +6438,7 @@ importers:
         specifier: catalog:dev
         version: 2.3.3
       '@visulima/fs':
-        specifier: 5.0.0-alpha.9
+        specifier: 5.0.0-alpha.10
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0-alpha.10
@@ -8026,7 +8026,7 @@ importers:
         version: 25.6.0
       '@visulima/error':
         specifier: 6.0.0-alpha.10
-        version: link:../../error-debugging/error
+        version: 6.0.0-alpha.10(ai@6.0.168(zod@4.3.6))
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.63(900afb037bde05eb0189a39b16007f4a)
@@ -8207,7 +8207,7 @@ importers:
         version: 25.6.0
       '@visulima/ansi':
         specifier: 4.0.0-alpha.10
-        version: link:../ansi
+        version: 4.0.0-alpha.10
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.63(900afb037bde05eb0189a39b16007f4a)
@@ -8895,7 +8895,7 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.0.0-alpha.9
+        specifier: 5.0.0-alpha.10
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.9
@@ -9380,7 +9380,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.0.0-alpha.9
+        specifier: 5.0.0-alpha.10
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0-alpha.9
@@ -19188,6 +19188,10 @@ packages:
     peerDependencies:
       vinxi: ^0.5.5
 
+  '@visulima/ansi@4.0.0-alpha.10':
+    resolution: {integrity: sha512-N+3icwMCL/5ldwTEJgo3nifaKhJupE9KT4G26O0g1nY4xD3dV2EL5CtHcJWV7T8dAl6HmHlWoA6LwjYYD8MAgQ==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+
   '@visulima/ansi@4.0.0-alpha.8':
     resolution: {integrity: sha512-L+QUXECGfBGKfVwYxdFnko5nbfdFfNQT9z+zu8meel2QCUGhYsh0jfBodikEfTGNJdBS98PwMy8hmDWHbn4A0g==}
     engines: {node: '>=22.13 <=25.x'}
@@ -19250,6 +19254,16 @@ packages:
     resolution: {integrity: sha512-BsCKXf26Cyhz3Il2ZycZRHJmUUykk3PETkmowsOgWjCgnkAmv6OyWnrIrEaREFHkg+CnpTOZb/SizjkvT6vd/Q==}
     engines: {node: '>=20.19 <=25.*'}
 
+  '@visulima/error@6.0.0-alpha.10':
+    resolution: {integrity: sha512-VdCM2xbMuITolRtEiUGMyKm1XwPL/NQTUv3Dc70eiq0MOwT0jp+bn8gyy7NC+y10bzoJrVHM+D83dkZygjkURg==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ai: 6.0.168
+    peerDependenciesMeta:
+      ai:
+        optional: true
+
   '@visulima/error@6.0.0-alpha.8':
     resolution: {integrity: sha512-YEg3QqzevFk7/QVEN/VV7+4jESDlEjvjBp4XMACeLTjeer8Gi7qT7zknnOH1zl8rzGl6+IaZMMosZggEpiL4vQ==}
     engines: {node: '>=22.13 <=25.x'}
@@ -19290,6 +19304,28 @@ packages:
     peerDependencies:
       yaml: 2.8.3
     peerDependenciesMeta:
+      yaml:
+        optional: true
+
+  '@visulima/fs@5.0.0-alpha.9':
+    resolution: {integrity: sha512-ukRKCLD0JK2THwKyiOYRdqoHR1iyCxRQjZnIRZScKP+dQeV86HeJHuWQcJ7pEzqfFpr45EAtXU8O5mNGDzrfxg==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ini: ^6.0.0
+      json5: ^2.2.3
+      jsonc-parser: ^3.3.1
+      smol-toml: ^1.6.1
+      yaml: 2.8.3
+    peerDependenciesMeta:
+      ini:
+        optional: true
+      json5:
+        optional: true
+      jsonc-parser:
+        optional: true
+      smol-toml:
+        optional: true
       yaml:
         optional: true
 
@@ -19482,6 +19518,11 @@ packages:
 
   '@visulima/path@3.0.0-alpha.8':
     resolution: {integrity: sha512-253RZhRFYK0Tz7lieziJYn4iwMFm3iB8tcStK8MANf0k620Nf+qAwve+pjrTvHEukNlu89Gm1RKRvKKfKoD0gA==}
+    engines: {node: '>=22.13 <=25.x'}
+    os: [darwin, linux, win32]
+
+  '@visulima/path@3.0.0-alpha.9':
+    resolution: {integrity: sha512-zj5501zodIsW62PftZ3G1WzlJ9lSV4sX+zOaO3gtf8gVdUFWTqivYYg9VFGeNQUmAENjOk9hkmVpQNFZua3n6w==}
     engines: {node: '>=22.13 <=25.x'}
     os: [darwin, linux, win32]
 
@@ -45197,6 +45238,10 @@ snapshots:
       recast: 0.23.11
       vinxi: 0.5.11(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.4)(@types/node@25.6.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(jiti@2.6.1)(mysql2@3.22.0(@types/node@25.6.0))(rolldown@1.0.0-rc.15)(srvx@0.11.15)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
 
+  '@visulima/ansi@4.0.0-alpha.10':
+    dependencies:
+      type-fest: 5.6.0
+
   '@visulima/ansi@4.0.0-alpha.8':
     dependencies:
       type-fest: 5.5.0
@@ -45253,6 +45298,10 @@ snapshots:
 
   '@visulima/css-style-inject@1.0.0-alpha.15': {}
 
+  '@visulima/error@6.0.0-alpha.10(ai@6.0.168(zod@4.3.6))':
+    optionalDependencies:
+      ai: 6.0.168(zod@4.3.6)
+
   '@visulima/error@6.0.0-alpha.8(ai@6.0.154(zod@4.3.6))':
     optionalDependencies:
       ai: 6.0.154(zod@4.3.6)
@@ -45275,6 +45324,17 @@ snapshots:
       '@visulima/path': 3.0.0-alpha.8
       type-fest: 5.5.0
     optionalDependencies:
+      yaml: 2.8.3
+
+  '@visulima/fs@5.0.0-alpha.9(ini@6.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.8.3)':
+    dependencies:
+      '@visulima/path': 3.0.0-alpha.9
+      type-fest: 5.6.0
+    optionalDependencies:
+      ini: 6.0.0
+      json5: 2.2.3
+      jsonc-parser: 3.3.1
+      smol-toml: 1.6.1
       yaml: 2.8.3
 
   '@visulima/humanizer@2.0.5': {}
@@ -45657,6 +45717,8 @@ snapshots:
   '@visulima/path@2.0.5': {}
 
   '@visulima/path@3.0.0-alpha.8': {}
+
+  '@visulima/path@3.0.0-alpha.9': {}
 
   '@visulima/prisma-dmmf-transformer@3.0.0-alpha.8(@prisma/client@6.19.2(prisma@6.19.2(typescript@6.0.3))(typescript@6.0.3))(prisma@6.19.2(typescript@6.0.3))':
     dependencies:
@@ -49112,7 +49174,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.1(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
@@ -59990,7 +60052,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.1(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
