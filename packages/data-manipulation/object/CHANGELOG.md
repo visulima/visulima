@@ -1,3 +1,12 @@
+## @visulima/object [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.9...@visulima/object@3.0.0-alpha.10) (2026-04-21)
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **object:** apply pending changes ([0420964](https://github.com/visulima/visulima/commit/0420964a5ddbc16a02e5e2a80d65efaf0464fcca))
+
 ## @visulima/object [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.8...@visulima/object@3.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
