@@ -1,3 +1,12 @@
+## @visulima/html [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.8...@visulima/html@1.0.0-alpha.9) (2026-04-21)
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **html:** apply pending changes ([6a79de6](https://github.com/visulima/visulima/commit/6a79de644efc546fae8d67be6208196ed3fd4ac3))
+* **html:** apply pending lint and source updates ([71d3af2](https://github.com/visulima/visulima/commit/71d3af23f31b5eaac262ac5231a73d9ca82ddc82))
+
 ## @visulima/html [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.7...@visulima/html@1.0.0-alpha.8) (2026-04-15)
 
 ### Bug Fixes
