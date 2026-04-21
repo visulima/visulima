@@ -112,6 +112,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
     ) => {
         const { isScreenReaderEnabled } = useContext(accessibilityContext);
         const label = ariaLabel ? <ink-text>{ariaLabel}</ink-text> : undefined;
+        const accessibility = role || ariaState ? { role, state: ariaState } : undefined;
 
         if (isScreenReaderEnabled && ariaHidden) {
             return null;
@@ -119,10 +120,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
 
         const boxElement = (
             <ink-box
-                internal_accessibility={{
-                    role,
-                    state: ariaState,
-                }}
+                internal_accessibility={accessibility}
                 opaque={opaque}
                 ref={ref}
                 scrollbar={scrollbar}

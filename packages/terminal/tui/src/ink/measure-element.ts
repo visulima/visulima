@@ -43,10 +43,10 @@ const measureElement = (node: DOMElement): Output => {
     const position = getAbsolutePosition(node);
 
     return {
-        height: node.yogaNode?.getComputedHeight() ?? 0,
-        width: node.yogaNode?.getComputedWidth() ?? 0,
-        x: position?.x ?? 0,
-        y: position?.y ?? 0,
+        height: Math.round(node.yogaNode?.getComputedHeight() ?? 0),
+        width: Math.round(node.yogaNode?.getComputedWidth() ?? 0),
+        x: Math.round(position?.x ?? 0),
+        y: Math.round(position?.y ?? 0),
     };
 };
 
@@ -66,7 +66,7 @@ export const getInnerWidth = (node: DOMElement): number => {
     const borderLeft = yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
     const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
 
-    return width - borderLeft - borderRight;
+    return Math.round(width - borderLeft - borderRight);
 };
 
 /**
@@ -83,7 +83,7 @@ export const getInnerHeight = (node: DOMElement): number => {
     const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
     const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
 
-    return height - borderTop - borderBottom;
+    return Math.round(height - borderTop - borderBottom);
 };
 
 /**
@@ -126,7 +126,12 @@ export const getBoundingBox = (node: DOMElement): { height: number; width: numbe
         parent = parent.parentNode;
     }
 
-    return { height, width, x, y };
+    return {
+        height: Math.round(height),
+        width: Math.round(width),
+        x: Math.round(x),
+        y: Math.round(y),
+    };
 };
 
 /**
@@ -379,7 +384,7 @@ export const getRelativeTop = (node: DOMElement, ancestor?: DOMElement): number 
         return undefined;
     }
 
-    return top;
+    return Math.round(top);
 };
 
 /**
@@ -408,7 +413,7 @@ export const getRelativeLeft = (node: DOMElement, ancestor?: DOMElement): number
         return undefined;
     }
 
-    return left;
+    return Math.round(left);
 };
 
 /**
@@ -475,14 +480,14 @@ export const collectSortedFragments = (node: DOMNode): { fragments: TextFragment
                 const text = getText(currentNode);
 
                 fragments.push({
-                    height: currentNode.yogaNode?.getComputedHeight() ?? 0,
+                    height: Math.round(currentNode.yogaNode?.getComputedHeight() ?? 0),
                     node: currentNode,
                     text,
-                    visualX,
-                    visualY,
-                    width: currentNode.yogaNode?.getComputedWidth() ?? 0,
-                    x,
-                    y,
+                    visualX: Math.round(visualX),
+                    visualY: Math.round(visualY),
+                    width: Math.round(currentNode.yogaNode?.getComputedWidth() ?? 0),
+                    x: Math.round(x),
+                    y: Math.round(y),
                 });
 
                 return { h: 0, hasContent: true, v: 0 };
@@ -558,5 +563,9 @@ export const collectSortedFragments = (node: DOMNode): { fragments: TextFragment
         return a.x - b.x;
     });
 
-    return { fragments, removedHorizontal: h, removedVertical: v };
+    return {
+        fragments,
+        removedHorizontal: Math.round(h),
+        removedVertical: Math.round(v),
+    };
 };

@@ -24,8 +24,8 @@ const applyPaddingToStyledLines = (node: DOMElement, lines: StyledLine[]): Style
     const yogaNode = node.childNodes[0]?.yogaNode;
 
     if (yogaNode) {
-        const offsetX = yogaNode.getComputedLeft();
-        const offsetY = yogaNode.getComputedTop();
+        const offsetX = Math.round(yogaNode.getComputedLeft());
+        const offsetY = Math.round(yogaNode.getComputedTop());
 
         if (offsetX > 0) {
             const { StyledLine: SL } = require("./styled-line") as typeof import("./styled-line");

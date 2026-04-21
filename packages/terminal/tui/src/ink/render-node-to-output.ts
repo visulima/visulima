@@ -25,8 +25,8 @@ const applyPaddingToText = (node: DOMElement, text: string): string => {
     const yogaNode = node.childNodes[0]?.yogaNode;
 
     if (yogaNode) {
-        const offsetX = yogaNode.getComputedLeft();
-        const offsetY = yogaNode.getComputedTop();
+        const offsetX = Math.round(yogaNode.getComputedLeft());
+        const offsetY = Math.round(yogaNode.getComputedTop());
 
         text = "\n".repeat(offsetY) + indentString(text, offsetX);
     }
@@ -205,8 +205,8 @@ const renderNodeToOutput = (
     // Render caching: if this node has a cached render result (a Region),
     // composite it directly and skip the entire subtree traversal.
     if (node.cachedRender) {
-        const x = offsetX + (node.yogaNode?.getComputedLeft() ?? 0);
-        const y = offsetY + (node.yogaNode?.getComputedTop() ?? 0);
+        const x = Math.round(offsetX + (node.yogaNode?.getComputedLeft() ?? 0));
+        const y = Math.round(offsetY + (node.yogaNode?.getComputedTop() ?? 0));
 
         output.addRegionTree(node.cachedRender, x, y);
 
@@ -283,19 +283,21 @@ const renderNodeToOutput = (
         }
 
         // Left and top positions in Yoga are relative to their parent node
-        const x = offsetX + yogaNode.getComputedLeft();
-        const y = offsetY + yogaNode.getComputedTop();
+        const computedLeft = yogaNode.getComputedLeft();
+        const computedTop = yogaNode.getComputedTop();
+        const x = Math.round(offsetX + computedLeft);
+        const y = Math.round(offsetY + computedTop);
 
         // Absolute offsets track the true screen position (for correct nested clip calculation)
-        const absX = (absoluteOffsetX ?? offsetX) + yogaNode.getComputedLeft();
-        const absY = (absoluteOffsetY ?? offsetY) + yogaNode.getComputedTop();
+        const absX = Math.round((absoluteOffsetX ?? offsetX) + computedLeft);
+        const absY = Math.round((absoluteOffsetY ?? offsetY) + computedTop);
 
         // Visibility optimization: skip rendering nodes entirely outside the clip region
         const currentClip = output.getCurrentClip();
 
         if (currentClip) {
-            const nodeWidth = yogaNode.getComputedWidth();
-            const nodeHeight = yogaNode.getComputedHeight();
+            const nodeWidth = Math.round(yogaNode.getComputedWidth());
+            const nodeHeight = Math.round(yogaNode.getComputedHeight());
 
             const nodeRight = absX + nodeWidth;
             const nodeBottom = absY + nodeHeight;
@@ -370,8 +372,8 @@ const renderNodeToOutput = (
 
             if (clipHorizontally || clipVertically) {
                 // Only fetch border widths for the axes that need clipping
-                const nodeW = yogaNode.getComputedWidth();
-                const nodeH = yogaNode.getComputedHeight();
+                const nodeW = Math.round(yogaNode.getComputedWidth());
+                const nodeH = Math.round(yogaNode.getComputedHeight());
 
                 const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : x;
                 const regionW = clipHorizontally ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT) : nodeW;
@@ -439,8 +441,8 @@ const renderNodeToOutput = (
                 const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
                 const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
                 const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
-                const innerWidth = yogaNode.getComputedWidth() - borderLeft - borderRight;
-                const innerHeight = yogaNode.getComputedHeight() - borderTop - borderBottom;
+                const innerWidth = Math.round(yogaNode.getComputedWidth() - borderLeft - borderRight);
+                const innerHeight = Math.round(yogaNode.getComputedHeight() - borderTop - borderBottom);
 
                 const { clientHeight, clientWidth, scrollHeight, scrollLeft, scrollTop, scrollWidth } = node.internal_scrollState;
 
@@ -519,8 +521,8 @@ export const renderToStatic = (node: DOMElement, options?: { skipStaticElements?
         return;
     }
 
-    const width = node.yogaNode.getComputedWidth();
-    const height = node.yogaNode.getComputedHeight();
+    const width = Math.round(node.yogaNode.getComputedWidth());
+    const height = Math.round(node.yogaNode.getComputedHeight());
 
     if (width <= 0 || height <= 0) {
         return;

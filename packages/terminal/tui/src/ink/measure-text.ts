@@ -71,6 +71,17 @@ export const clearStringWidthCache = (): void => {
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
 export const inkCharacterWidth = (text: string): number => {
+    // Fast path: printable ASCII single characters always have width 1.
+    // Avoids the cache lookup + stringWidth call for the vast majority of
+    // characters in typical output.
+    if (text.length === 1) {
+        const code = text.codePointAt(0);
+
+        if (code !== undefined && code >= 32 && code < 127) {
+            return 1;
+        }
+    }
+
     const cached = widthCache.get(text);
 
     if (cached !== undefined) {

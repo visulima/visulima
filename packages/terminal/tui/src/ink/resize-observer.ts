@@ -40,8 +40,8 @@ class ResizeObserver {
         let lastMeasuredSize = element.internal_lastMeasuredSize;
 
         if (lastMeasuredSize === undefined && element.yogaNode) {
-            const width = element.yogaNode.getComputedWidth();
-            const height = element.yogaNode.getComputedHeight();
+            const width = Math.round(element.yogaNode.getComputedWidth());
+            const height = Math.round(element.yogaNode.getComputedHeight());
 
             // Avoid spurious measurements when layout isn't available (NaN != NaN causes bugs)
             if (!Number.isNaN(width) && !Number.isNaN(height)) {
@@ -94,8 +94,8 @@ export function measureAndExtractObservers(node: DOMElement, observerEntries: Ma
     const hasObservers = node.resizeObservers && node.resizeObservers.size > 0;
 
     if ((hasObservers || forceCache) && node.yogaNode) {
-        const width = node.yogaNode.getComputedWidth();
-        const height = node.yogaNode.getComputedHeight();
+        const width = Math.round(node.yogaNode.getComputedWidth());
+        const height = Math.round(node.yogaNode.getComputedHeight());
 
         if (!Number.isNaN(width) && !Number.isNaN(height)) {
             const lastSize = node.internal_lastMeasuredSize;

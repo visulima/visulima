@@ -52,12 +52,12 @@ const calculateScrollDimensions = (node: DOMElement): { scrollHeight: number; sc
     const scrollHeight = maxBottom - top + yogaNode.getComputedPadding(Yoga.EDGE_BOTTOM);
     const scrollWidth = maxRight - left + yogaNode.getComputedPadding(Yoga.EDGE_RIGHT);
 
-    return { scrollHeight, scrollWidth };
+    return { scrollHeight: Math.round(scrollHeight), scrollWidth: Math.round(scrollWidth) };
 };
 
-export const getScrollHeight = (node: DOMElement): number => node.internal_scrollState?.scrollHeight ?? 0;
+export const getScrollHeight = (node: DOMElement): number => Math.round(node.internal_scrollState?.scrollHeight ?? 0);
 
-export const getScrollWidth = (node: DOMElement): number => node.internal_scrollState?.scrollWidth ?? 0;
+export const getScrollWidth = (node: DOMElement): number => Math.round(node.internal_scrollState?.scrollWidth ?? 0);
 
 export const calculateScroll = (node: DOMElement): void => {
     const { yogaNode } = node;
@@ -105,10 +105,10 @@ export const calculateScroll = (node: DOMElement): void => {
  * Get the effective scroll top position from the pre-computed scroll state.
  * Falls back to computing from style if scroll state hasn't been calculated yet.
  */
-export const getScrollTop = (node: DOMElement): number => node.internal_scrollState?.scrollTop ?? 0;
+export const getScrollTop = (node: DOMElement): number => Math.round(node.internal_scrollState?.scrollTop ?? 0);
 
 /**
  * Get the effective scroll left position from the pre-computed scroll state.
  * Falls back to computing from style if scroll state hasn't been calculated yet.
  */
-export const getScrollLeft = (node: DOMElement): number => node.internal_scrollState?.scrollLeft ?? 0;
+export const getScrollLeft = (node: DOMElement): number => Math.round(node.internal_scrollState?.scrollLeft ?? 0);
