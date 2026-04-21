@@ -276,19 +276,30 @@ success "vis $(vis --version 2>/dev/null || echo '?') installed."
 # ── Optional: toolchain install in current workspace ────────────────
 
 if [ "$RUN_TOOLCHAIN_INSTALL" = "1" ]; then
-    # Only run if we're in a directory with a recognisable workspace.
+    # Walk up from CWD looking for workspace pin files — stop at the git
+    # root (or the filesystem root when we're not in a git checkout).
     WORKSPACE_MARKERS=".nvmrc .node-version .prototools .mise.toml .tool-versions vis.config.ts vis.config.js"
     FOUND_MARKER=""
+    SEARCH_DIR="$PWD"
 
-    for marker in $WORKSPACE_MARKERS; do
-        if [ -f "$marker" ] || [ -f "../$marker" ]; then
-            FOUND_MARKER="$marker"
+    while [ "$SEARCH_DIR" != "/" ] && [ -n "$SEARCH_DIR" ]; do
+        for marker in $WORKSPACE_MARKERS; do
+            if [ -f "$SEARCH_DIR/$marker" ]; then
+                FOUND_MARKER="$SEARCH_DIR/$marker"
+                break 2
+            fi
+        done
+
+        # Stop at the git root so we don't wander out of the repo.
+        if [ -d "$SEARCH_DIR/.git" ]; then
             break
         fi
+
+        SEARCH_DIR="$(dirname "$SEARCH_DIR")"
     done
 
     if [ -n "$FOUND_MARKER" ]; then
-        info "Found $FOUND_MARKER in the current directory — running \`vis toolchain install\`..."
+        info "Found $FOUND_MARKER — running \`vis toolchain install\`..."
 
         if vis toolchain install; then
             success "Workspace toolchain matches all pins."
@@ -296,7 +307,7 @@ if [ "$RUN_TOOLCHAIN_INSTALL" = "1" ]; then
             warn "\`vis toolchain install\` exited non-zero. Check the output above."
         fi
     else
-        info "${dim}(skipping \`vis toolchain install\` — no workspace pin files here)${reset}"
+        info "${dim}(skipping \`vis toolchain install\` — no workspace pin files found)${reset}"
     fi
 fi
 

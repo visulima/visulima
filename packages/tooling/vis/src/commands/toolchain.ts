@@ -10,14 +10,17 @@ import {
     findInstalledManagers,
     getToolchainStatus,
     parseUseArgument,
+    pickPrimaryManager,
     resolveManagerFor,
     resolveToolBinary,
+    SUPPORTED_MANAGERS,
+    writePackageManagerField,
     type DetectedManager,
-    type ResolvedManager,
     type RuntimeTool,
     type ToolchainConfig,
     type ToolchainStatus,
     type ToolStatus,
+    type VersionManagerName,
 } from "../toolchain";
 
 const KNOWN_TOOLS: readonly RuntimeTool[] = ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
@@ -28,26 +31,53 @@ const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
 const warnIcon = yellow("⚠");
 
 const renderManagerLine = (manager: DetectedManager): string => {
-    const ver = manager.version ? ` v${manager.version}` : "";
-    const cfg = manager.configFiles.length > 0 ? ` (${manager.configFiles.join(", ")})` : "";
-
     if (manager.installed) {
+        const ver = manager.version ? ` v${manager.version}` : "";
+        const cfg = manager.configFiles.length > 0 ? ` (${manager.configFiles.join(", ")})` : "";
+
         return `${icon(true)} ${manager.name}${ver}${cfg}`;
     }
 
-    return `${warnIcon} ${manager.name} — referenced by ${manager.configFiles.join(", ") || "config"} but not installed`;
+    // findInstalledManagers only emits uninstalled entries when the
+    // manager was named by a config file, so configFiles is non-empty
+    // on this branch.
+    return `${warnIcon} ${manager.name} — referenced by ${manager.configFiles.join(", ")} but not installed`;
 };
 
-const renderToolManager = (manager: ResolvedManager): string => {
-    if (manager.name === "self-activate") {
-        return dim("→ self-activate");
+/**
+ * The trailing "→ manager" hint on a tool row. Only shown when it adds
+ * information — for matching tools and self-activate pins, the row
+ * already tells the user everything they need.
+ */
+const renderToolManager = (tool: ToolStatus): string => {
+    if (tool.matches) {
+        return "";
     }
+
+    const { manager } = tool;
 
     if (manager.name === "none") {
         return dim("→ (no manager)");
     }
 
+    if (manager.name === "self-activate") {
+        return "";
+    }
+
     return manager.installed ? dim(`→ ${manager.name}`) : dim(`→ ${manager.name} (missing)`);
+};
+
+/**
+ * Pick the icon for a tool row: green check when the actual version
+ * satisfies the pin, warn when something's installed but drifted, red
+ * cross when the tool isn't on PATH at all.
+ */
+const toolIcon = (tool: ToolStatus): string => {
+    if (tool.matches) {
+        return icon(true);
+    }
+
+    return tool.actual ? warnIcon : icon(false);
 };
 
 const printStatus = (status: ToolchainStatus): void => {
@@ -56,7 +86,7 @@ const printStatus = (status: ToolchainStatus): void => {
 
     if (status.detected.length === 0) {
         info(`  ${icon(false)} No version manager detected`);
-        note("  Install one of: proto, mise, fnm, volta, asdf, nvm, corepack");
+        note(`  Install one of: ${SUPPORTED_MANAGERS.join(", ")}`);
     } else {
         for (const manager of status.detected) {
             info(`  ${renderManagerLine(manager)}`);
@@ -76,16 +106,13 @@ const printStatus = (status: ToolchainStatus): void => {
     for (const tool of status.tools) {
         const expected = `${tool.expected.tool} ${tool.expected.version}`;
         const actualText = tool.actual ? `actual ${tool.actual}` : "not installed";
-        const source = dim(`[${tool.expected.source}]`);
-        const managerText = renderToolManager(tool.manager);
+        // Only emit the source tag when the row is actionable — for
+        // green rows the source is noise.
+        const source = tool.matches ? "" : dim(` [${tool.expected.source}]`);
+        const managerText = renderToolManager(tool);
+        const suffix = managerText === "" ? "" : ` ${managerText}`;
 
-        if (tool.matches) {
-            info(`  ${icon(true)} ${expected} — ${actualText} ${source} ${managerText}`);
-        } else if (tool.actual) {
-            info(`  ${warnIcon} ${expected} — ${actualText} ${source} ${managerText}`);
-        } else {
-            info(`  ${icon(false)} ${expected} — ${actualText} ${source} ${managerText}`);
-        }
+        info(`  ${toolIcon(tool)} ${expected} — ${actualText}${source}${suffix}`);
 
         if (tool.manager.note) {
             note(`     ${tool.manager.note}`);
@@ -141,13 +168,13 @@ const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
 };
 
 /**
- * Groups mismatched tools by which manager will install them, so we
- * can run the install command once per manager (proto/mise/fnm/asdf
- * read their own config and don't need per-tool args) and per-tool
- * for volta/corepack (which pin individual tools).
+ * Groups mismatched tools by which manager will install them. proto /
+ * mise / fnm / asdf each read their own config and install everything
+ * in one shot, so one invocation per bucket is enough. volta and
+ * corepack pin per-tool, so the caller iterates the bucket.
  */
-const groupByManager = (tools: readonly ToolStatus[]): Map<ResolvedManager["name"], ToolStatus[]> => {
-    const groups = new Map<ResolvedManager["name"], ToolStatus[]>();
+const groupByManager = (tools: readonly ToolStatus[]): Map<VersionManagerName, ToolStatus[]> => {
+    const groups = new Map<VersionManagerName, ToolStatus[]>();
 
     for (const tool of tools) {
         const bucket = groups.get(tool.manager.name);
@@ -179,7 +206,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
     }
 
     if (status.detected.length === 0) {
-        errorOutput("No version manager detected. Install one of: proto, mise, fnm, volta, asdf, nvm, corepack.");
+        errorOutput(`No version manager detected. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
         process.exitCode = 1;
 
         return;
@@ -191,9 +218,30 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
 
     for (const [managerName, tools] of groups) {
         if (managerName === "self-activate") {
+            // The pin is "real" when the packageManager field already
+            // matches. If the source is `engines.pnpm` or vis.config.ts,
+            // the field may not exist yet — write it so pnpm/yarn have
+            // something to self-activate from.
             for (const { expected } of tools) {
-                info(`${dim("$")} (${expected.tool} will self-activate on next invocation)`);
-                note(`  ${expected.tool} ${expected.version} — pinned via packageManager field, no install needed`);
+                if (expected.source !== "packageManager") {
+                    info(`${dim("$")} Writing packageManager=${expected.tool}@${expected.version}`);
+
+                    if (!options.dryRun) {
+                        try {
+                            writePackageManagerField(workspaceRoot, expected);
+                            ranAnything = true;
+                        } catch (cause: unknown) {
+                            errorOutput((cause as Error).message);
+                            exitCode = 1;
+                        }
+                    } else {
+                        ranAnything = true;
+                    }
+                } else {
+                    info(`${dim("$")} (${expected.tool} will self-activate from packageManager on next invocation)`);
+                }
+
+                note(`  ${expected.tool} ${expected.version} — no install needed`);
             }
 
             continue;
@@ -293,7 +341,7 @@ const executeUse = (
     const manager = resolveManagerFor(spec, detected, toolchainConfig);
 
     if (manager.name === "none") {
-        errorOutput(`No manager can pin ${spec.tool}. Install proto, mise, or volta first.`);
+        errorOutput(`No manager can pin ${spec.tool}. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
         process.exitCode = 1;
 
         return;
@@ -315,19 +363,43 @@ const executeUse = (
         return;
     }
 
+    // self-activate: write packageManager ourselves so the pin is real,
+    // not a suggestion. pnpm 10+ / yarn berry pick it up on next run.
+    if (manager.name === "self-activate") {
+        info(`${dim("→")} Writing packageManager field to package.json...`);
+
+        if (options.dryRun) {
+            note(`  Would set packageManager: "${spec.tool}@${spec.version}"`);
+
+            return;
+        }
+
+        try {
+            const written = writePackageManagerField(workspaceRoot, spec);
+
+            if (!written) {
+                errorOutput(`Refusing to pin non-package-manager tool ${spec.tool} via the packageManager field.`);
+                process.exitCode = 1;
+
+                return;
+            }
+
+            success(`Set packageManager: "${written}" — ${spec.tool} will activate this version on next invocation.`);
+        } catch (cause: unknown) {
+            errorOutput((cause as Error).message);
+            process.exitCode = 1;
+        }
+
+        return;
+    }
+
+    // nvm (the only other zero-args case) is a shell function, so we
+    // can't shell out safely.
     if (invocation.args.length === 0) {
-        // self-activate / nvm — no shell-out, user (or vis) edits config.
         info(`${dim("→")} ${invocation.configChange?.hint ?? `Edit ${invocation.configChange?.file ?? "config"} manually`}`);
 
         if (invocation.configChange) {
             note(`  ${invocation.configChange.file} update required.`);
-        }
-
-        if (manager.name === "self-activate") {
-            // self-activate is "it just works" — nothing to do, just report.
-            success(`No install needed — ${spec.tool} ${spec.version} will activate on next invocation.`);
-
-            return;
         }
 
         process.exitCode = 1;
@@ -388,28 +460,9 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
 };
 
 const executeDetect = (workspaceRoot: string, toolchainConfig: ToolchainConfig | undefined): void => {
-    const detected = findInstalledManagers(workspaceRoot);
+    const primary = pickPrimaryManager(workspaceRoot, toolchainConfig);
 
-    if (detected.length === 0) {
-        process.stdout.write("none\n");
-
-        return;
-    }
-
-    // Honour an explicit override if the user set one.
-    if (toolchainConfig?.preferredManager && toolchainConfig.preferredManager !== "none") {
-        process.stdout.write(`${toolchainConfig.preferredManager}\n`);
-
-        return;
-    }
-
-    // Prefer a manager that has a workspace config and is installed.
-    const primary
-        = detected.find((d) => d.installed && d.configFiles.length > 0)
-            ?? detected.find((d) => d.installed)
-            ?? detected[0];
-
-    process.stdout.write(`${primary?.name ?? "none"}\n`);
+    process.stdout.write(`${primary.name}\n`);
 };
 
 /**

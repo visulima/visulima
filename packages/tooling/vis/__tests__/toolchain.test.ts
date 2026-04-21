@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -6,13 +6,16 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
     buildInstallInvocation,
     buildUseInvocation,
-    detectVersionManager,
+    clearToolchainCache,
+    pickPrimaryManager,
     findInstalledManagers,
     getToolchainStatus,
     parseExpectedTools,
     parseUseArgument,
     resolveManagerFor,
     satisfies,
+    SUPPORTED_MANAGERS,
+    writePackageManagerField,
     type DetectedManager,
 } from "../src/toolchain";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
@@ -21,6 +24,10 @@ let tmpDirectory: string;
 
 beforeEach(() => {
     tmpDirectory = createTemporaryDirectory("vis-toolchain-");
+    // Each test gets a fresh tmp dir, but PATH mutations in one test
+    // could leak into the cached scan of a dir we *may* reuse. Clearing
+    // before each test keeps results deterministic.
+    clearToolchainCache();
 });
 
 afterEach(() => {
@@ -310,7 +317,7 @@ describe(findInstalledManagers, () => {
     });
 });
 
-describe(detectVersionManager, () => {
+describe(pickPrimaryManager, () => {
     it("should return { name: 'none' } when nothing is detected", () => {
         expect.assertions(2);
 
@@ -321,7 +328,7 @@ describe(detectVersionManager, () => {
             process.env["PATH"] = tmpDirectory;
             delete process.env["NVM_DIR"];
 
-            const manager = detectVersionManager(tmpDirectory);
+            const manager = pickPrimaryManager(tmpDirectory);
 
             expect(manager.name).toBe("none");
             expect(manager.installed).toBe(false);
@@ -348,7 +355,7 @@ describe(detectVersionManager, () => {
         try {
             process.env["PATH"] = tmpDirectory;
 
-            const manager = detectVersionManager(tmpDirectory, { preferredManager: "mise" });
+            const manager = pickPrimaryManager(tmpDirectory, { preferredManager: "mise" });
 
             expect(manager.name).toBe("mise");
             expect(manager.installed).toBe(false);
@@ -589,5 +596,91 @@ describe(getToolchainStatus, () => {
         // Regardless of what's installed in the sandbox, manager must be
         // named (never undefined), even if "none" or "not installed".
         expect(node?.manager.name).toBeDefined();
+    });
+});
+
+describe(writePackageManagerField, () => {
+    it("should write packageManager for pnpm and preserve indentation", () => {
+        expect.assertions(3);
+
+        const pkgPath = join(tmpDirectory, "package.json");
+
+        writeFileSync(pkgPath, `{\n  "name": "demo",\n  "version": "1.0.0"\n}\n`);
+
+        const written = writePackageManagerField(tmpDirectory, {
+            source: "vis.config.ts",
+            tool: "pnpm",
+            version: "10.32.1",
+        });
+
+        expect(written).toBe("pnpm@10.32.1");
+
+        const contents = readFileSync(pkgPath, "utf8");
+        const parsed = JSON.parse(contents) as { packageManager: string };
+
+        expect(parsed.packageManager).toBe("pnpm@10.32.1");
+        // 2-space indent preserved.
+        expect(contents).toContain(`\n  "packageManager"`);
+    });
+
+    it("should overwrite an existing packageManager value", () => {
+        expect.assertions(1);
+
+        const pkgPath = join(tmpDirectory, "package.json");
+
+        writeFileSync(pkgPath, JSON.stringify({ name: "demo", packageManager: "pnpm@9.0.0" }));
+
+        writePackageManagerField(tmpDirectory, {
+            source: "packageManager",
+            tool: "pnpm",
+            version: "10.32.1",
+        });
+
+        const parsed = JSON.parse(readFileSync(pkgPath, "utf8")) as { packageManager: string };
+
+        expect(parsed.packageManager).toBe("pnpm@10.32.1");
+    });
+
+    it("should refuse to write non-package-manager tools", () => {
+        expect.assertions(2);
+
+        const pkgPath = join(tmpDirectory, "package.json");
+
+        writeFileSync(pkgPath, JSON.stringify({ name: "demo" }));
+
+        const result = writePackageManagerField(tmpDirectory, {
+            source: "vis.config.ts",
+            tool: "node",
+            version: "22.13.0",
+        });
+
+        expect(result).toBeUndefined();
+
+        const parsed = JSON.parse(readFileSync(pkgPath, "utf8")) as { packageManager?: string };
+
+        expect(parsed.packageManager).toBeUndefined();
+    });
+
+    it("should throw when package.json is missing", () => {
+        expect.assertions(1);
+
+        expect(() =>
+            writePackageManagerField(tmpDirectory, {
+                source: "vis.config.ts",
+                tool: "pnpm",
+                version: "10.32.1",
+            }),
+        ).toThrow(/does not exist/);
+    });
+});
+
+describe("SUPPORTED_MANAGERS", () => {
+    it("should list every detectable manager exactly once", () => {
+        expect.assertions(2);
+
+        const unique = new Set(SUPPORTED_MANAGERS);
+
+        expect(unique.size).toBe(SUPPORTED_MANAGERS.length);
+        expect(SUPPORTED_MANAGERS).toContain("corepack");
     });
 });

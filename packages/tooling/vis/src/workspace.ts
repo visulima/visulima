@@ -564,16 +564,10 @@ interface VisConfig {
     /**
      * Toolchain (Node / pnpm / python / rust / ...) management. vis
      * delegates to whichever version manager (proto, mise, fnm, volta,
-     * asdf, nvm) the developer already has — it does not ship its own.
+     * asdf, nvm, corepack) the developer already has — it does not ship
+     * its own.
      */
     toolchain?: {
-        /**
-         * Call `<manager> install` automatically when `vis run` / `vis ci`
-         * detect an engines.node mismatch. Defaults to `true` when a
-         * manager is detected, `false` otherwise.
-         */
-        autoInstall?: boolean;
-
         /**
          * Explicit manager override, bypasses auto-detection. Useful in
          * CI where the runner image only has one manager available.

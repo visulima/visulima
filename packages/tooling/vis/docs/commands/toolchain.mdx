@@ -102,11 +102,6 @@ import { defineConfig } from "@visulima/vis";
 
 export default defineConfig({
     toolchain: {
-        // Default: true when a manager is detected, false otherwise. When
-        // true, `vis run` / `vis ci` call the right manager on engines.node
-        // mismatch instead of bailing.
-        autoInstall: true,
-
         // Explicit override. Does NOT include "self-activate" — that's
         // resolved automatically for pnpm/yarn packageManager pins.
         preferredManager: "proto",

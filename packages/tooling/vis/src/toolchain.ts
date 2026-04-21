@@ -12,8 +12,15 @@
 import { execFileSync } from "node:child_process";
 import { delimiter, sep } from "node:path";
 
-import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
+
+/**
+ * Managers vis can auto-detect and delegate to. Kept as a single source
+ * of truth so error messages and docs don't drift out of sync with the
+ * code.
+ */
+export const SUPPORTED_MANAGERS = ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"] as const;
 
 export type VersionManagerName = "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "self-activate" | "volta";
 
@@ -53,12 +60,6 @@ export interface DetectedManager {
 }
 
 export interface ToolchainConfig {
-    /**
-     * When `true`, `vis run` / `vis ci` will call `<manager> install` on
-     * engines.node mismatch instead of bailing. Defaults to `true` iff
-     * a manager is detected and no explicit value is set.
-     */
-    readonly autoInstall?: boolean;
     /** Explicit manager override, useful in CI. */
     readonly preferredManager?: VersionManagerName;
     /** Overrides for engines/packageManager-derived pins. */
@@ -231,7 +232,34 @@ const configFilesFor = (name: DetectableManager, workspaceRoot: string): readonl
     return MANAGER_CONFIG_FILES[name].filter((file) => isAccessibleSync(join(workspaceRoot, file)));
 };
 
-export const findInstalledManagers = (workspaceRoot: string): readonly DetectedManager[] => {
+/**
+ * Cache keyed by workspace root. Each detection runs `isOnPath` 7× and
+ * spawns up to 7 `--version` subprocesses (each with a 2s timeout), so
+ * repeating the work within a single vis invocation adds noticeable
+ * latency — especially to `status`, which calls
+ * `getToolchainStatus` + `resolveManagerFor` + `executeDetect`.
+ *
+ * The cache lives for the lifetime of the process. Callers that need a
+ * fresh scan (e.g. a future `--refresh` flag, or tests that mutate PATH
+ * between calls on the same workspace root) can pass
+ * `{ refresh: true }` or call {@link clearToolchainCache}.
+ */
+const detectionCache = new Map<string, readonly DetectedManager[]>();
+
+/** Clears the memoised detection cache. Useful in tests. */
+export const clearToolchainCache = (): void => {
+    detectionCache.clear();
+};
+
+export const findInstalledManagers = (workspaceRoot: string, options?: { refresh?: boolean }): readonly DetectedManager[] => {
+    if (!options?.refresh) {
+        const cached = detectionCache.get(workspaceRoot);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
     const results: DetectedManager[] = [];
 
     for (const name of MANAGER_ORDER) {
@@ -256,58 +284,50 @@ export const findInstalledManagers = (workspaceRoot: string): readonly DetectedM
         });
     }
 
-    return results;
+    const frozen = Object.freeze(results);
+
+    detectionCache.set(workspaceRoot, frozen);
+
+    return frozen;
 };
 
 /**
- * Picks the best version manager for this workspace. Order:
+ * Picks the "primary" manager for the workspace — the one `vis toolchain
+ * detect` names and the one used as a display hint in the status view.
+ * Priority:
  *
- *   1. `config.preferredManager` (explicit user override).
- *   2. First detected manager that (a) is installed AND (b) has a
- *      workspace-local config file.
- *   3. First installed manager — even without local config, the user
- *      clearly uses it.
- *   4. First manager with a matching local config file (so we can at
- *      least point the user at an installer).
+ *   1. `config.preferredManager` (explicit user override). Reported as
+ *      `installed: false` when the named manager isn't on PATH.
+ *   2. First detected manager that is installed AND has a workspace-local
+ *      config file.
+ *   3. First installed manager — even without a local config file.
+ *   4. First manager referenced by a local config file, installed or not
+ *      (so we can still point the user at an installer).
  *   5. `{ name: "none", ... }` — nothing recognised.
+ *
+ * For per-tool delegation use {@link resolveManagerFor}; this helper is
+ * only useful when the CLI needs a single name to show.
  */
-export const detectVersionManager = (workspaceRoot: string, config?: ToolchainConfig): DetectedManager => {
-    const detected = findInstalledManagers(workspaceRoot);
+export const pickPrimaryManager = (
+    workspaceRoot: string,
+    config?: ToolchainConfig,
+    detected?: readonly DetectedManager[],
+): DetectedManager => {
+    const found = detected ?? findInstalledManagers(workspaceRoot);
 
     if (config?.preferredManager && config.preferredManager !== "none") {
-        const match = detected.find((d) => d.name === config.preferredManager);
-
-        if (match) {
-            return match;
-        }
-
-        // User pinned a manager we couldn't find — surface it as "not installed".
-        return {
-            configFiles: [],
-            installed: false,
-            name: config.preferredManager,
-        };
+        return (
+            found.find((d) => d.name === config.preferredManager)
+            ?? { configFiles: [], installed: false, name: config.preferredManager }
+        );
     }
 
-    const withConfig = detected.find((d) => d.installed && d.configFiles.length > 0);
-
-    if (withConfig) {
-        return withConfig;
-    }
-
-    const anyInstalled = detected.find((d) => d.installed);
-
-    if (anyInstalled) {
-        return anyInstalled;
-    }
-
-    const configOnly = detected.find((d) => d.configFiles.length > 0);
-
-    if (configOnly) {
-        return configOnly;
-    }
-
-    return { configFiles: [], installed: false, name: "none" };
+    return (
+        found.find((d) => d.installed && d.configFiles.length > 0)
+        ?? found.find((d) => d.installed)
+        ?? found.find((d) => d.configFiles.length > 0)
+        ?? { configFiles: [], installed: false, name: "none" }
+    );
 };
 
 // ── Pin discovery ───────────────────────────────────────────────────
@@ -854,8 +874,12 @@ export const resolveManagerFor = (
 };
 
 const canHandle = (name: VersionManagerName, tool: RuntimeTool): boolean => {
-    if (name === "none" || name === "self-activate") {
-        return name === "self-activate" && (tool === "pnpm" || tool === "yarn");
+    if (name === "none") {
+        return false;
+    }
+
+    if (name === "self-activate") {
+        return tool === "pnpm" || tool === "yarn";
     }
 
     return MANAGER_CAPABILITIES[name].includes(tool);
@@ -1074,6 +1098,45 @@ export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): 
     }
 
     return isOnPath(tool);
+};
+
+/**
+ * Writes `<spec.tool>@<spec.version>` into `package.json`'s
+ * `packageManager` field. Used by the self-activate path of
+ * `vis toolchain use <pnpm|yarn>@<version>` — pnpm 10+ and yarn berry
+ * read this field on their next invocation and switch to the pinned
+ * version without any external manager.
+ *
+ * Preserves existing indentation and trailing newline so diffs stay
+ * clean.
+ * @returns the `<pm>@<version>` string that was written, or undefined
+ *          if the tool isn't a JS package manager (we refuse to write
+ *          non-PM tools into the packageManager field).
+ */
+export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec): string | undefined => {
+    if (spec.tool !== "pnpm" && spec.tool !== "yarn" && spec.tool !== "npm" && spec.tool !== "bun") {
+        return undefined;
+    }
+
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        throw new Error(`Cannot pin ${spec.tool}: ${pkgPath} does not exist.`);
+    }
+
+    const raw = readFileSync(pkgPath);
+    const indentMatch = /\n([ \t]+)/.exec(raw);
+    const indent = indentMatch?.[1] ?? "    ";
+    const pkg = JSON.parse(raw) as Record<string, unknown>;
+    const value = `${spec.tool}@${spec.version}`;
+
+    pkg.packageManager = value;
+
+    const trailingNewline = raw.endsWith("\n") ? "\n" : "";
+
+    writeFileSync(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
+
+    return value;
 };
 
 /**

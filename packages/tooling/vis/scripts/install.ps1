@@ -253,16 +253,28 @@ Write-Ok "vis $visVersion installed."
 if (-not $NoToolchainInstall) {
     $markers = @('.nvmrc', '.node-version', '.prototools', '.mise.toml', '.tool-versions', 'vis.config.ts', 'vis.config.js')
     $found = $null
+    $searchDir = (Get-Location).Path
 
-    foreach ($marker in $markers) {
-        if ((Test-Path -Path $marker) -or (Test-Path -Path (Join-Path '..' $marker))) {
-            $found = $marker
-            break
+    # Walk up to the git root (or filesystem root) looking for any pin file.
+    while ($searchDir -and $searchDir -ne [System.IO.Path]::GetPathRoot($searchDir)) {
+        foreach ($marker in $markers) {
+            $candidate = Join-Path $searchDir $marker
+
+            if (Test-Path -Path $candidate) {
+                $found = $candidate
+                break
+            }
         }
+
+        if ($found) { break }
+
+        if (Test-Path -Path (Join-Path $searchDir '.git')) { break }
+
+        $searchDir = Split-Path -Path $searchDir -Parent
     }
 
     if ($found) {
-        Write-Info "Found $found in the current directory — running ``vis toolchain install``..."
+        Write-Info "Found $found — running ``vis toolchain install``..."
 
         try {
             & vis toolchain install
@@ -279,7 +291,7 @@ if (-not $NoToolchainInstall) {
         }
     }
     else {
-        Write-Dim "(skipping ``vis toolchain install`` — no workspace pin files here)"
+        Write-Dim "(skipping ``vis toolchain install`` — no workspace pin files found)"
     }
 }
 

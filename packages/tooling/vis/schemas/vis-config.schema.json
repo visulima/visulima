@@ -171,14 +171,9 @@
         },
         "toolchain": {
             "type": "object",
-            "description": "Toolchain (Node / pnpm / python / ...) management. Delegates to proto / mise / fnm / volta / asdf / nvm.",
+            "description": "Toolchain (Node / pnpm / python / ...) management. Delegates to proto / mise / fnm / volta / asdf / nvm / corepack.",
             "additionalProperties": false,
             "properties": {
-                "autoInstall": {
-                    "type": "boolean",
-                    "description": "Call `<manager> install` automatically on engines.node mismatch.",
-                    "default": true
-                },
                 "preferredManager": {
                     "type": "string",
                     "enum": ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack", "none"],
