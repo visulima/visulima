@@ -145,7 +145,9 @@ Corepack remains useful for **npm version pinning** (npm itself doesn't self-swi
 
 ## Cold start — no Node, no manager
 
-`vis` is a Node CLI, so a truly empty machine can't run it until something installs Node. The supported bootstrap is the published install script:
+`vis` is a Node CLI, so a truly empty machine can't run it until something installs Node. Two bootstrap scripts cover the cold-start flow.
+
+### Linux & macOS (and WSL)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.sh | bash
@@ -159,22 +161,50 @@ The script:
 4. Installs `@visulima/vis` globally via pnpm (if present) or npm.
 5. If the current directory has workspace pin files (`.nvmrc`, `.prototools`, etc.), runs `vis toolchain install` to match them.
 
-### Non-interactive mode
+### Windows (PowerShell 5.1+)
 
-CI agents / Docker layers should pass `--yes` and `--manager=<name>`:
+```powershell
+irm https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.ps1 | iex
+```
+
+Same flow as the POSIX script, but with the Windows-native installers:
+
+- `proto` via `irm https://moonrepo.dev/install/proto.ps1 | iex` (vendor PowerShell installer)
+- `fnm` via `winget install Schniz.fnm` (or `scoop install fnm`)
+- `volta` via `winget install Volta.Volta` (or `scoop install volta`)
+
+`mise` and the Unix `nvm` are not supported on native Windows — use WSL with `install.sh` for those.
+
+### Passing arguments
+
+The pipe-into-shell form doesn't pass arguments. Use the scriptblock form to pass flags:
+
+```bash
+# bash
+curl -fsSL <url>/install.sh | bash -s -- --yes --manager=proto --no-toolchain-install
+```
+
+```powershell
+# PowerShell
+& ([scriptblock]::Create((irm '<url>/install.ps1'))) -Yes -Manager proto -NoToolchainInstall
+```
+
+### Docker / CI examples
 
 ```dockerfile
+# Linux / macOS images
 RUN curl -fsSL https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.sh \
     | bash -s -- --yes --manager=proto --no-toolchain-install
 ```
 
+```dockerfile
+# Windows images (PowerShell)
+RUN powershell -Command "& ([scriptblock]::Create((irm 'https://raw.githubusercontent.com/visulima/visulima/main/packages/tooling/vis/scripts/install.ps1'))) -Yes -Manager proto -NoToolchainInstall"
+```
+
 ### Already have Node?
 
-If Node is on PATH the script skips the manager install step and goes straight to `npm install -g @visulima/vis`. In that case you can also just run that command directly — `install.sh` is a convenience, not a requirement.
-
-### Windows
-
-Run `npm install -g @visulima/vis` from a shell where Node is already available (for example after installing [volta](https://volta.sh/) or [fnm](https://github.com/Schniz/fnm)). The install script assumes POSIX paths and is not supported on native Windows cmd/PowerShell.
+If Node is on PATH both scripts skip the manager install step and go straight to `npm install -g @visulima/vis`. In that case you can also just run that command directly — the install scripts are a convenience, not a requirement.
 
 ## Why not embed a runtime manager?
 
