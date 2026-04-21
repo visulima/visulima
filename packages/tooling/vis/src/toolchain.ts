@@ -15,7 +15,7 @@ import { delimiter, sep } from "node:path";
 import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-export type VersionManagerName = "asdf" | "fnm" | "mise" | "none" | "nvm" | "proto" | "volta";
+export type VersionManagerName = "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "self-activate" | "volta";
 
 export type RuntimeTool = "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
 
@@ -65,30 +65,67 @@ export interface ToolchainConfig {
     readonly tools?: Partial<Record<RuntimeTool, string>>;
 }
 
+/**
+ * Which manager is responsible for a given tool, and whether we can act
+ * on it right now. `self-activate` means the PM binary itself (pnpm 10+,
+ * yarn berry) will switch on next invocation from the `packageManager`
+ * field — no external manager needed.
+ */
+export interface ResolvedManager {
+    readonly installed: boolean;
+    readonly name: VersionManagerName;
+    /** Human-readable reason when installed === false (e.g. "not on PATH"). */
+    readonly note?: string;
+}
+
 export interface ToolStatus {
     /** What is actually running in this process (node) or on PATH (others). */
     readonly actual?: string;
     readonly expected: ToolSpec;
+    /** Which manager vis would delegate to for this specific tool. */
+    readonly manager: ResolvedManager;
     /** `true` when `actual` satisfies `expected.version`. */
     readonly matches: boolean;
 }
 
 export interface ToolchainStatus {
-    readonly manager: DetectedManager;
+    /** Every manager we found (installed or referenced by config). */
+    readonly detected: readonly DetectedManager[];
     readonly tools: readonly ToolStatus[];
 }
 
 // ── Manager detection ───────────────────────────────────────────────
 
 /**
- * Managers checked, in priority order. When several are installed, the
- * first one with a workspace-local config file wins; if none of them
- * have one, the first installed manager wins.
+ * Managers we try to auto-detect. `self-activate` isn't detected — it's
+ * the pnpm/yarn binary handling `packageManager` itself, so it appears
+ * only as a per-tool resolution, never as a workspace-level manager.
  */
-const MANAGER_ORDER: readonly Exclude<VersionManagerName, "none">[] = ["proto", "mise", "fnm", "volta", "asdf", "nvm"];
+type DetectableManager = Exclude<VersionManagerName, "none" | "self-activate">;
 
-const MANAGER_CONFIG_FILES: Record<Exclude<VersionManagerName, "none">, readonly string[]> = {
+/**
+ * Tools each manager is capable of installing. Drives per-tool
+ * resolution in {@link resolveManagerFor}. Corepack is scoped to pnpm/
+ * yarn/npm; fnm / nvm are Node-only; volta is Node + JS package managers;
+ * proto / mise / asdf are catch-all.
+ */
+const MANAGER_CAPABILITIES: Record<DetectableManager, readonly RuntimeTool[]> = {
+    asdf: ["bun", "deno", "go", "node", "python", "ruby", "rust"],
+    corepack: ["npm", "pnpm", "yarn"],
+    fnm: ["node"],
+    mise: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    nvm: ["node"],
+    proto: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    volta: ["node", "npm", "pnpm", "yarn"],
+};
+
+const MANAGER_ORDER: readonly DetectableManager[] = ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"];
+
+const MANAGER_CONFIG_FILES: Record<DetectableManager, readonly string[]> = {
     asdf: [".tool-versions"],
+    // Corepack's config is the `packageManager` field in package.json; we
+    // detect that separately in `corepackConfigFiles`.
+    corepack: [] as const,
     fnm: [".nvmrc", ".node-version"],
     mise: [".mise.toml", ".config/mise.toml", "mise.toml"],
     nvm: [".nvmrc"],
@@ -150,11 +187,10 @@ const queryManagerVersion = (binary: string, args: readonly string[] = ["--versi
 };
 
 /**
- * Detects volta by checking for `volta` on PATH and/or a `volta` field
- * in the root package.json. Volta doesn't use a sidecar config file, so
- * we treat package.json as its config source.
+ * Volta and corepack both read package.json instead of a sidecar config
+ * file. Volta looks at `volta.<tool>`; corepack looks at `packageManager`.
  */
-const voltaConfigFiles = (workspaceRoot: string): readonly string[] => {
+const pkgFieldConfigFiles = (workspaceRoot: string, field: "packageManager" | "volta"): readonly string[] => {
     const pkgPath = join(workspaceRoot, "package.json");
 
     if (!isAccessibleSync(pkgPath)) {
@@ -162,9 +198,14 @@ const voltaConfigFiles = (workspaceRoot: string): readonly string[] => {
     }
 
     try {
-        const pkg = readJsonSync(pkgPath) as { volta?: Record<string, string> };
+        const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
+        const value = pkg[field];
 
-        if (pkg.volta && Object.keys(pkg.volta).length > 0) {
+        if (field === "volta" && typeof value === "object" && value !== null && Object.keys(value as Record<string, unknown>).length > 0) {
+            return ["package.json"];
+        }
+
+        if (field === "packageManager" && typeof value === "string" && value.length > 0) {
             return ["package.json"];
         }
     } catch {
@@ -178,6 +219,18 @@ const voltaConfigFiles = (workspaceRoot: string): readonly string[] => {
  * Walks the configured manager order and records which ones are (a)
  * installed and (b) have workspace-local config files.
  */
+const configFilesFor = (name: DetectableManager, workspaceRoot: string): readonly string[] => {
+    if (name === "volta") {
+        return pkgFieldConfigFiles(workspaceRoot, "volta");
+    }
+
+    if (name === "corepack") {
+        return pkgFieldConfigFiles(workspaceRoot, "packageManager");
+    }
+
+    return MANAGER_CONFIG_FILES[name].filter((file) => isAccessibleSync(join(workspaceRoot, file)));
+};
+
 export const findInstalledManagers = (workspaceRoot: string): readonly DetectedManager[] => {
     const results: DetectedManager[] = [];
 
@@ -187,10 +240,7 @@ export const findInstalledManagers = (workspaceRoot: string): readonly DetectedM
         // installed when $NVM_DIR exists.
         const nvmInstalled = name === "nvm" && Boolean(process.env["NVM_DIR"]);
 
-        const configFiles = (name === "volta" ? voltaConfigFiles(workspaceRoot) : MANAGER_CONFIG_FILES[name]).filter((file) =>
-            isAccessibleSync(join(workspaceRoot, file)),
-        );
-
+        const configFiles = configFilesFor(name, workspaceRoot);
         const installed = Boolean(binary) || nvmInstalled;
 
         if (!installed && configFiles.length === 0) {
@@ -688,18 +738,138 @@ export const satisfies = (actual: string, range: string): boolean => {
     return true;
 };
 
+/**
+ * Which managers, in preferred order, could satisfy a pin from the given
+ * source. Drives {@link resolveManagerFor}. The source tells us a lot
+ * about intent — e.g. a `.prototools` entry means the user wants proto,
+ * a `packageManager` field for pnpm/yarn means "let the PM self-activate"
+ * first.
+ */
+const preferenceFor = (source: PinSource, tool: RuntimeTool): readonly VersionManagerName[] => {
+    switch (source) {
+        case ".mise.toml": {
+            return ["mise"];
+        }
+        case ".node-version":
+        case ".nvmrc": {
+            return ["fnm", "nvm", "volta", "proto", "mise", "asdf"];
+        }
+        case ".prototools": {
+            return ["proto"];
+        }
+        case ".tool-versions": {
+            // mise reads asdf-format .tool-versions too.
+            return ["asdf", "mise"];
+        }
+        case "packageManager": {
+            if (tool === "pnpm" || tool === "yarn") {
+                // pnpm 10+ and yarn berry self-activate from this field.
+                return ["self-activate", "volta", "proto", "mise", "corepack"];
+            }
+
+            if (tool === "npm") {
+                return ["volta", "proto", "mise", "asdf", "corepack"];
+            }
+
+            if (tool === "bun") {
+                return ["proto", "mise", "asdf"];
+            }
+
+            return ["volta", "proto", "mise"];
+        }
+        case "volta": {
+            return ["volta"];
+        }
+        case "engines":
+        case "vis.config.ts":
+        default: {
+            // Catch-all pins — walk every capable manager.
+            return ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"];
+        }
+    }
+};
+
+/**
+ * Picks the manager vis should delegate to for a specific tool pin.
+ * Walks `preferenceFor(source, tool)` and returns the first candidate
+ * that is installed AND capable. Falls back to the first capable
+ * manager (installed or not) so the status report can still name
+ * something. Returns `{ name: "none" }` when truly nothing can help.
+ */
+export const resolveManagerFor = (
+    spec: ToolSpec,
+    detected: readonly DetectedManager[],
+    config?: ToolchainConfig,
+): ResolvedManager => {
+    if (config?.preferredManager && config.preferredManager !== "none") {
+        const override = detected.find((d) => d.name === config.preferredManager);
+
+        if (override && canHandle(config.preferredManager, spec.tool)) {
+            return { installed: override.installed, name: override.name };
+        }
+    }
+
+    const preference = preferenceFor(spec.source, spec.tool);
+
+    for (const name of preference) {
+        if (name === "self-activate") {
+            // Only meaningful for pnpm/yarn when PM binary is installed.
+            if ((spec.tool === "pnpm" || spec.tool === "yarn") && isOnPath(spec.tool)) {
+                return {
+                    installed: true,
+                    name: "self-activate",
+                    note: `${spec.tool} will activate ${spec.version} from the packageManager field on next invocation`,
+                };
+            }
+
+            continue;
+        }
+
+        if (!canHandle(name, spec.tool)) {
+            continue;
+        }
+
+        const match = detected.find((d) => d.name === name);
+
+        if (match?.installed) {
+            return { installed: true, name };
+        }
+    }
+
+    // Fallback: first capable manager, even if uninstalled, so we can at
+    // least suggest it.
+    for (const name of preference) {
+        if (name === "self-activate" || !canHandle(name, spec.tool)) {
+            continue;
+        }
+
+        return { installed: false, name, note: `${name} can install ${spec.tool} — run \`vis toolchain install\` after adding it to PATH` };
+    }
+
+    return { installed: false, name: "none", note: "No manager knows how to install this tool" };
+};
+
+const canHandle = (name: VersionManagerName, tool: RuntimeTool): boolean => {
+    if (name === "none" || name === "self-activate") {
+        return name === "self-activate" && (tool === "pnpm" || tool === "yarn");
+    }
+
+    return MANAGER_CAPABILITIES[name].includes(tool);
+};
+
 export const getToolchainStatus = (workspaceRoot: string, config?: ToolchainConfig): ToolchainStatus => {
-    const manager = detectVersionManager(workspaceRoot, config);
+    const detected = findInstalledManagers(workspaceRoot);
     const expectedTools = parseExpectedTools(workspaceRoot, config);
 
     const tools: ToolStatus[] = expectedTools.map((expected) => {
         const actual = queryToolVersion(expected.tool);
         const matches = actual !== undefined && satisfies(actual, expected.version);
+        const manager = resolveManagerFor(expected, detected, config);
 
-        return { actual, expected, matches };
+        return { actual, expected, manager, matches };
     });
 
-    return { manager, tools };
+    return { detected, tools };
 };
 
 // ── Install / use commands ──────────────────────────────────────────
@@ -719,6 +889,19 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
     switch (manager) {
         case "asdf": {
             return { args: ["install"], bin: "asdf" };
+        }
+        case "corepack": {
+            if (!spec) {
+                return { args: ["install"], bin: "corepack", hint: "reads the packageManager field in package.json" };
+            }
+
+            // `corepack install` without args reads packageManager. For
+            // an explicit pin we prepare+activate so the shim works
+            // immediately.
+            return {
+                args: ["prepare", `${spec.tool}@${spec.version}`, "--activate"],
+                bin: "corepack",
+            };
         }
         case "fnm": {
             if (spec && spec.tool === "node") {
@@ -742,6 +925,17 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
         }
         case "proto": {
             return { args: ["install"], bin: "proto" };
+        }
+        case "self-activate": {
+            // pnpm 10+ / yarn berry activate from the packageManager field
+            // on next invocation. There's nothing for vis to run — the
+            // next `pnpm <anything>` does the switch. We emit an empty
+            // invocation so the caller knows it's a no-op.
+            return {
+                args: [],
+                bin: spec?.tool ?? "pnpm",
+                hint: `${spec?.tool ?? "pnpm"} will self-activate on next invocation — no install needed`,
+            };
         }
         case "volta": {
             if (!spec) {
@@ -778,6 +972,17 @@ export const buildUseInvocation = (manager: VersionManagerName, spec: ToolSpec):
                 configChange: { file: ".tool-versions", hint: `Pins ${spec.tool} ${spec.version}` },
             };
         }
+        case "corepack": {
+            if (spec.tool !== "npm" && spec.tool !== "pnpm" && spec.tool !== "yarn") {
+                return undefined;
+            }
+
+            return {
+                args: ["use", `${spec.tool}@${spec.version}`],
+                bin: "corepack",
+                configChange: { file: "package.json", hint: `Writes packageManager: "${spec.tool}@${spec.version}"` },
+            };
+        }
         case "fnm": {
             if (spec.tool === "node") {
                 return { args: ["use", spec.version], bin: "fnm" };
@@ -811,6 +1016,19 @@ export const buildUseInvocation = (manager: VersionManagerName, spec: ToolSpec):
                 args: ["pin", spec.tool, spec.version],
                 bin: "proto",
                 configChange: { file: ".prototools", hint: `Pins ${spec.tool} ${spec.version}` },
+            };
+        }
+        case "self-activate": {
+            // Edit the packageManager field directly — pnpm/yarn pick it
+            // up on their next run. Returning an invocation with no args
+            // tells the caller to fall back to writing package.json.
+            return {
+                args: [],
+                bin: spec.tool,
+                configChange: {
+                    file: "package.json",
+                    hint: `Set packageManager: "${spec.tool}@${spec.version}" — ${spec.tool} will self-activate on next invocation`,
+                },
             };
         }
         case "volta": {

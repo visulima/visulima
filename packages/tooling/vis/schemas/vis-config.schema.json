@@ -181,8 +181,8 @@
                 },
                 "preferredManager": {
                     "type": "string",
-                    "enum": ["proto", "mise", "fnm", "volta", "asdf", "nvm", "none"],
-                    "description": "Explicit manager override, bypasses auto-detection."
+                    "enum": ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack", "none"],
+                    "description": "Explicit manager override, bypasses auto-detection. Note: self-activate is resolved automatically for pnpm/yarn + packageManager pins and is not a valid override."
                 },
                 "tools": {
                     "type": "object",

@@ -577,8 +577,12 @@ interface VisConfig {
         /**
          * Explicit manager override, bypasses auto-detection. Useful in
          * CI where the runner image only has one manager available.
+         *
+         * Note: `self-activate` is resolved automatically for pnpm/yarn
+         * pins from the `packageManager` field (pnpm 10+, yarn berry)
+         * and is not a valid override here.
          */
-        preferredManager?: "asdf" | "fnm" | "mise" | "none" | "nvm" | "proto" | "volta";
+        preferredManager?: "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "volta";
 
         /**
          * Override engines/packageManager-derived pins. Takes precedence
