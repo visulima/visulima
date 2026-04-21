@@ -1,6 +1,6 @@
 {
     "name": "@visulima/dev-toolbar",
-    "version": "1.0.0-alpha.9",
+    "version": "1.0.0-alpha.10",
     "exports": {
         ".": "./src/index.ts",
         "./vite": "./src/vite-plugin.ts",
