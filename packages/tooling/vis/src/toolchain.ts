@@ -646,22 +646,26 @@ export const parseExpectedTools = (workspaceRoot: string, config?: ToolchainConf
 // ── Status ──────────────────────────────────────────────────────────
 
 /**
- * Returns the version of a runtime tool on PATH. For `node` we use
- * `process.versions.node` so the reported version always matches the
- * shell that launched vis.
+ * Returns the version of a runtime tool on PATH. For `node` we prefer
+ * `node --version` via the PATH-resolved binary over
+ * `process.versions.node` — after a user runs `vis toolchain install`,
+ * the shim may point at a newer Node than the one vis itself is running
+ * on, and the status report should reflect what *subsequent* shell
+ * invocations will see. `process.versions.node` is only the fallback
+ * when there's no `node` on PATH (rare; vis needs one to have booted).
  */
 const queryToolVersion = (tool: RuntimeTool): string | undefined => {
+    const binary = isOnPath(tool);
+
+    if (binary) {
+        return queryManagerVersion(binary);
+    }
+
     if (tool === "node") {
         return process.versions.node;
     }
 
-    const binary = isOnPath(tool);
-
-    if (!binary) {
-        return undefined;
-    }
-
-    return queryManagerVersion(binary);
+    return undefined;
 };
 
 /**
