@@ -1,3 +1,14 @@
+## @visulima/storage [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.12...@visulima/storage@1.0.0-alpha.13) (2026-04-21)
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.10
+
 ## @visulima/storage [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.11...@visulima/storage@1.0.0-alpha.12) (2026-04-21)
 
 ### Bug Fixes
