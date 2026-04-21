@@ -1,6 +1,6 @@
 {
     "name": "@visulima/crud",
-    "version": "3.0.0-alpha.10",
+    "version": "3.0.0-alpha.11",
     "description": "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
     "keywords": [
         "anolilab",
@@ -92,7 +92,7 @@
     },
     "dependencies": {
         "@visulima/pagination": "5.0.0-alpha.10",
-        "@visulima/prisma-dmmf-transformer": "3.0.0-alpha.9",
+        "@visulima/prisma-dmmf-transformer": "3.0.0-alpha.10",
         "http-errors": "catalog:prod",
         "path-to-regexp": "catalog:prod"
     },
