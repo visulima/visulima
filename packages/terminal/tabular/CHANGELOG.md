@@ -1,3 +1,24 @@
+## @visulima/tabular [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.9...@visulima/tabular@4.0.0-alpha.10) (2026-04-21)
+
+### Bug Fixes
+
+* **tabular:** resolve eslint and formatting issues ([1d6f3ce](https://github.com/visulima/visulima/commit/1d6f3cee1134c67a8c0c671b829668efb9a94670))
+* **tabular:** resolve eslint and formatting issues ([7e31ca4](https://github.com/visulima/visulima/commit/7e31ca4e292193d8adf94cd47fa6a23a32936ad6))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **tabular:** apply pending changes ([8e15081](https://github.com/visulima/visulima/commit/8e150817cb763be80b43ec5ff3789d108817480c))
+* **tabular:** enforce curly braces and apply lint fixes ([4330604](https://github.com/visulima/visulima/commit/43306043ca17bb0c1dfcff94b4849ef493e536af))
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.0.0-alpha.10
+
 ## @visulima/tabular [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.8...@visulima/tabular@4.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
