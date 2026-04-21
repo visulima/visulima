@@ -94,6 +94,10 @@ jobs:
                   find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
                   cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
 
+                  # secret-scanner: move matching .node files and distribute to npm packages
+                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \;
+                  cd packages/tooling/secret-scanner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
                   rm -rf artifacts/
 
             - name: "Build Production"
@@ -120,4 +124,4 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**'"
+              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**,packages/tooling/secret-scanner/npm/**'"
