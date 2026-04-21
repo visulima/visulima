@@ -1,3 +1,27 @@
+## @visulima/command-line-args [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.7...@visulima/command-line-args@2.0.0-alpha.8) (2026-04-21)
+
+### Bug Fixes
+
+* **command-line-args:** resolve eslint and formatting issues ([3b4eff6](https://github.com/visulima/visulima/commit/3b4eff6c21e2cb8c8c2fd66d5629cc6d757bc149))
+* **command-line-args:** resolve eslint and formatting issues ([389f5f5](https://github.com/visulima/visulima/commit/389f5f5d93b257bc4277cbe0155f729dd502fc9a))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **command-line-args:** apply formatter and lint fixes ([b19c9c8](https://github.com/visulima/visulima/commit/b19c9c89f2ebf163673301530ad3019852cdc564))
+* **command-line-args:** apply pending changes ([f01a173](https://github.com/visulima/visulima/commit/f01a1738b1a28edcc9e90f6ea4e2453d079f0c7a))
+* **command-line-args:** apply pending lint and source updates ([4da3c08](https://github.com/visulima/visulima/commit/4da3c08f0a33e0cdab91f4e7f7339cb3c1be6d16))
+* **command-line-args:** enforce curly braces and apply lint fixes ([e155340](https://github.com/visulima/visulima/commit/e155340c67d4287a749a340bfe916e383906eadf))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* remove unused deprecated aliases ([#612](https://github.com/visulima/visulima/issues/612)) ([24ee546](https://github.com/visulima/visulima/commit/24ee546bcb2c17b8915622e4878797c00aa1d813))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.10
+
 ## @visulima/command-line-args [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.6...@visulima/command-line-args@2.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes
