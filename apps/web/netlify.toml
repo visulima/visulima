@@ -45,16 +45,27 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 # Install scripts. Served with a plain-text content type so `curl | bash`
-# and `irm | iex` see the body directly, and a short cache so a fix can
-# roll out quickly without waiting a day.
+# and `irm | iex` see the body directly.
+#
+# Caching:
+#   - `Cache-Control` keeps browsers/curl from redownloading the same
+#     body on retries within an hour.
+#   - `Netlify-CDN-Cache-Control` lets the edge cache hold the script for
+#     a full day and serve stale copies while it revalidates in the
+#     background. That's where the real bandwidth saving comes from —
+#     one origin hit per edge per day instead of per request. When we
+#     need to push a fix fast, trigger a Netlify cache purge (or redeploy)
+#     and the edges refresh on next access.
 [[headers]]
   for = "/install.sh"
   [headers.values]
     Content-Type = "text/x-shellscript; charset=utf-8"
-    Cache-Control = "public, max-age=300, must-revalidate"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
 
 [[headers]]
   for = "/install.ps1"
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
-    Cache-Control = "public, max-age=300, must-revalidate"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
