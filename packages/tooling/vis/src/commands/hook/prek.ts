@@ -2,11 +2,12 @@ import { spawnSync } from "node:child_process";
 import { unlinkSync, writeFileSync } from "node:fs";
 
 import { ensureDirSync, isAccessibleSync, readFileSync } from "@visulima/fs";
+import { readTomlSync } from "@visulima/fs/toml";
 import { join } from "@visulima/path";
 import { parse as parseYaml } from "yaml";
 
 import type { InstallResult } from "./constants";
-import { PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES, PREK_UNSUPPORTED_CONFIG_FILES } from "./constants";
+import { PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES } from "./constants";
 import { installHooks } from "./install";
 
 interface PrekHookEntry {
@@ -74,19 +75,6 @@ const shellQuote = (value: string): string => `'${value.replaceAll("'", String.r
  */
 const detectPrekConfig = (root: string): string | undefined => {
     for (const file of PREK_CONFIG_FILES) {
-        if (isAccessibleSync(join(root, file))) {
-            return file;
-        }
-    }
-
-    return undefined;
-};
-
-/**
- * Locate a prek config file we cannot parse (TOML). Returns the first match.
- */
-const detectUnsupportedPrekConfig = (root: string): string | undefined => {
-    for (const file of PREK_UNSUPPORTED_CONFIG_FILES) {
         if (isAccessibleSync(join(root, file))) {
             return file;
         }
@@ -268,7 +256,7 @@ const convertPrekConfig = (config: PrekConfig): ConversionResult => {
 };
 
 /**
- * Parse a prek config file. Returns undefined if the file is empty or malformed.
+ * Parse a prek YAML config. Returns undefined if the content is empty or malformed.
  */
 const parsePrekConfig = (content: string): PrekConfig | undefined => {
     const parsed = parseYaml(content) as unknown;
@@ -278,6 +266,28 @@ const parsePrekConfig = (content: string): PrekConfig | undefined => {
     }
 
     return undefined;
+};
+
+/**
+ * Load a prek config file from disk, dispatching to the YAML or TOML parser
+ * based on the extension. TOML parsing is delegated to `@visulima/fs/toml`
+ * (which wraps smol-toml), so we hit the same implementation the rest of the
+ * codebase uses for TOML.
+ */
+const loadPrekConfig = (configPath: string): PrekConfig | undefined => {
+    if (configPath.endsWith(".toml")) {
+        const parsed = readTomlSync(configPath) as unknown;
+
+        if (parsed && typeof parsed === "object") {
+            return parsed as PrekConfig;
+        }
+
+        return undefined;
+    }
+
+    const content: string = readFileSync(configPath);
+
+    return parsePrekConfig(content);
 };
 
 /**
@@ -309,26 +319,17 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
     const configFile = detectPrekConfig(root);
 
     if (!configFile) {
-        const unsupported = detectUnsupportedPrekConfig(root);
-
-        if (unsupported) {
-            return {
-                isError: true,
-                message: `Found ${unsupported}, but vis cannot parse TOML prek configs. Run \`prek util toml-to-yaml\` first, then retry.`,
-            };
-        }
-
-        return { isError: true, message: "No prek configuration found (.pre-commit-config.yaml or .pre-commit-config.yml)" };
+        return { isError: true, message: "No prek configuration found (.pre-commit-config.yaml, .pre-commit-config.yml, or prek.toml)" };
     }
 
     logger.info(`Found prek config at ${configFile}`);
 
     const configPath = join(root, configFile);
-    const content: string = readFileSync(configPath);
-    const config = parsePrekConfig(content);
+    const rawContent: string = readFileSync(configPath);
+    const config = loadPrekConfig(configPath);
 
     if (!config) {
-        return { isError: true, message: `Could not parse ${configFile} as YAML` };
+        return { isError: true, message: `Could not parse ${configFile}` };
     }
 
     const { droppedFilters, manualSteps, scripts, skippedHooks } = convertPrekConfig(config);
@@ -376,7 +377,7 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
     const backupPath = `${configPath}.bak`;
 
     if (!isAccessibleSync(backupPath)) {
-        writeFileSync(backupPath, content, "utf8");
+        writeFileSync(backupPath, rawContent, "utf8");
     }
 
     unlinkSync(configPath);
@@ -414,4 +415,4 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
 };
 
 export type { ConversionResult, PrekConfig, PrekHookEntry, PrekRepoEntry, SkippedHook };
-export { buildHookCommand, convertPrekConfig, detectPrekConfig, detectUnsupportedPrekConfig, mapPrekStage, migrateFromPrek, parsePrekConfig, resolveStages };
+export { buildHookCommand, convertPrekConfig, detectPrekConfig, loadPrekConfig, mapPrekStage, migrateFromPrek, parsePrekConfig, resolveStages };

@@ -9,7 +9,7 @@ import { join } from "@visulima/path";
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 import { installHooks } from "./install";
 import { detectHuskyDirectory, migrateFromHusky } from "./migrate";
-import { detectPrekConfig, detectUnsupportedPrekConfig, migrateFromPrek } from "./prek";
+import { detectPrekConfig, migrateFromPrek } from "./prek";
 import { uninstallHooks } from "./uninstall";
 
 /**
@@ -31,7 +31,6 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
-    const prekUnsupported = detectUnsupportedPrekConfig(root);
 
     if (huskyDirectory && prekConfig) {
         throw new Error(`Found both husky (${huskyDirectory}/) and prek (${prekConfig}). Remove or migrate one before running \`vis hook install\`.`);
@@ -85,10 +84,6 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
         return;
     }
 
-    if (prekUnsupported) {
-        logger.warn(`Found ${prekUnsupported} — vis cannot parse TOML prek configs. Run \`prek util toml-to-yaml\` first, then retry.`);
-    }
-
     logger.info(`Installing git hooks in ${hooksDirectory}/...`);
 
     const result = installHooks(hooksDirectory);
@@ -120,13 +115,7 @@ const executeMigrate = (hooksDirectory: string, logger: { info: (message: string
     }
 
     if (!huskyDirectory && !prekConfig) {
-        const prekUnsupported = detectUnsupportedPrekConfig(root);
-
-        if (prekUnsupported) {
-            throw new Error(`Found ${prekUnsupported}, but vis cannot parse TOML prek configs. Run \`prek util toml-to-yaml\` first, then retry.`);
-        }
-
-        throw new Error("No husky (.husky/) or prek (.pre-commit-config.yaml) configuration found to migrate.");
+        throw new Error("No husky (.husky/) or prek (.pre-commit-config.yaml / prek.toml) configuration found to migrate.");
     }
 
     const result = huskyDirectory ? migrateFromHusky(root, hooksDirectory, logger as Console) : migrateFromPrek(root, hooksDirectory, logger);

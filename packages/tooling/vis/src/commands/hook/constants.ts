@@ -18,10 +18,8 @@ const HOOKS = [
 const DEFAULT_HOOKS_DIRECTORY = ".vis-hooks";
 
 // prek / pre-commit framework config files that we know how to parse.
-// `prek.toml` is deliberately excluded — tell users to run `prek util toml-to-yaml` first.
-const PREK_CONFIG_FILES = [".pre-commit-config.yaml", ".pre-commit-config.yml"] as const;
-
-const PREK_UNSUPPORTED_CONFIG_FILES = ["prek.toml"] as const;
+// YAML files are listed first so they take precedence when both formats exist.
+const PREK_CONFIG_FILES = [".pre-commit-config.yaml", ".pre-commit-config.yml", "prek.toml"] as const;
 
 // Legacy pre-commit.com stage names → canonical git hook names.
 const PREK_STAGE_ALIASES: Readonly<Record<string, string>> = {
@@ -56,13 +54,4 @@ interface InstallResult {
 }
 
 export type { InstallResult };
-export {
-    DEFAULT_HOOKS_DIRECTORY,
-    HOOKS,
-    PREK_CONFIG_FILES,
-    PREK_STAGE_ALIASES,
-    PREK_STAGES_WITH_GIT_ARGS,
-    PREK_SUPPORTED_STAGES,
-    PREK_TRANSLATABLE_LANGUAGES,
-    PREK_UNSUPPORTED_CONFIG_FILES,
-};
+export { DEFAULT_HOOKS_DIRECTORY, HOOKS, PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES };

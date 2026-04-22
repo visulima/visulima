@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PrekConfig } from "../src/commands/hook/prek";
-import { buildHookCommand, convertPrekConfig, detectPrekConfig, detectUnsupportedPrekConfig, mapPrekStage, migrateFromPrek, parsePrekConfig, resolveStages } from "../src/commands/hook/prek";
+import { buildHookCommand, convertPrekConfig, detectPrekConfig, loadPrekConfig, mapPrekStage, migrateFromPrek, parsePrekConfig, resolveStages } from "../src/commands/hook/prek";
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -95,13 +95,21 @@ describe(detectPrekConfig, () => {
         expect(detectPrekConfig(temporary.root)).toBeUndefined();
     });
 
-    it("does not match prek.toml", () => {
-        expect.assertions(2);
+    it("detects prek.toml when no YAML is present", () => {
+        expect.assertions(1);
 
         writeFileSync(join(temporary.root, "prek.toml"), "");
 
-        expect(detectPrekConfig(temporary.root)).toBeUndefined();
-        expect(detectUnsupportedPrekConfig(temporary.root)).toBe("prek.toml");
+        expect(detectPrekConfig(temporary.root)).toBe("prek.toml");
+    });
+
+    it("prefers YAML over prek.toml when both are present", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(temporary.root, ".pre-commit-config.yaml"), "repos: []");
+        writeFileSync(join(temporary.root, "prek.toml"), "");
+
+        expect(detectPrekConfig(temporary.root)).toBe(".pre-commit-config.yaml");
     });
 });
 
@@ -553,20 +561,88 @@ describe(migrateFromPrek, () => {
         }
     });
 
-    it.skipIf(process.platform === "win32")("errors with TOML guidance when prek.toml is the only config", () => {
-        expect.assertions(2);
+    it.skipIf(process.platform === "win32")("migrates a prek.toml config end-to-end", () => {
+        expect.assertions(4);
 
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
-            writeFileSync(join(root, "prek.toml"), "");
+            writeFileSync(
+                join(root, "prek.toml"),
+                `[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "lint-staged"
+name = "lint staged files"
+entry = "pnpm exec lint-staged"
+language = "system"
+pass_filenames = false
+stages = ["pre-commit"]
+`,
+            );
 
             const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
 
-            expect(result.isError).toBe(true);
-            expect(result.message).toContain("toml-to-yaml");
+            expect(result.isError).toBe(false);
+            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("pnpm exec lint-staged");
+            expect(existsSync(join(root, "prek.toml"))).toBe(false);
+            expect(existsSync(join(root, "prek.toml.bak"))).toBe(true);
         } finally {
             cleanup();
         }
+    });
+});
+
+// ─── loadPrekConfig ─────────────────────────────────────────────────
+
+describe(loadPrekConfig, () => {
+    let temporary: { cleanup: () => void; root: string };
+
+    beforeEach(() => {
+        temporary = createTemporaryDirectory();
+    });
+
+    afterEach(() => {
+        temporary.cleanup();
+    });
+
+    it("loads a YAML config by extension", () => {
+        expect.assertions(1);
+
+        const path = join(temporary.root, ".pre-commit-config.yaml");
+
+        writeFileSync(
+            path,
+            `repos:
+  - repo: local
+    hooks:
+      - id: a
+        entry: echo hi
+        language: system
+`,
+        );
+
+        expect(loadPrekConfig(path)?.repos?.[0]?.hooks?.[0]?.id).toBe("a");
+    });
+
+    it("loads a TOML config by extension via @visulima/fs/toml", () => {
+        expect.assertions(1);
+
+        const path = join(temporary.root, "prek.toml");
+
+        writeFileSync(
+            path,
+            `[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "b"
+entry = "echo hi"
+language = "system"
+`,
+        );
+
+        expect(loadPrekConfig(path)?.repos?.[0]?.hooks?.[0]?.id).toBe("b");
     });
 });
