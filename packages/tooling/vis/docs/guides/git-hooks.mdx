@@ -62,7 +62,7 @@ vis hook migrate
 
 Since vis hook scripts are plain shell, only hooks that don't need a managed toolchain can be translated directly. The migrator:
 
-1. Parses `.pre-commit-config.yaml` (or `.pre-commit-config.yml`)
+1. Parses `.pre-commit-config.yaml`, `.pre-commit-config.yml`, or `prek.toml` (YAML takes precedence when both are present)
 2. For each `local` hook with `language: system`, `script`, or `fail`: writes one shell script per stage (e.g. `.vis-hooks/pre-commit`, `.vis-hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
 3. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
 4. Prepends `set -e` to each script when top-level `fail_fast: true` is set.
@@ -75,7 +75,7 @@ Anything the migrator can't translate is surfaced as a warning:
 - File filters (`types`, `types_or`, `exclude_types`, `files`, `exclude`) — dropped, the commands run against all staged files. If you relied on the filtering, move the logic inside the hook command (e.g. via `vis staged` or by filtering inside the tool itself).
 - Hook-scoped `additional_dependencies` — recorded as a manual follow-up.
 
-TOML configs (`prek.toml`) aren't parsed directly — run `prek util yaml-to-toml` in reverse (`prek util toml-to-yaml`) and re-run the migrator.
+TOML configs (`prek.toml`) are parsed via `@visulima/fs/toml` (which wraps `smol-toml`), so both formats work out of the box.
 
 ## Disabling Hooks
 

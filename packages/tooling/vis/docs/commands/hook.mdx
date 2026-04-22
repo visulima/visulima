@@ -42,7 +42,7 @@ vis hook migrate
 The command auto-detects the source:
 
 - **husky** — reads `.husky/` or `.config/husky/`, copies shell scripts, uninstalls the husky npm package, and cleans `package.json` references.
-- **prek / pre-commit** — reads `.pre-commit-config.yaml` (or `.yml`), converts eligible `local` hooks to shell scripts under the hooks directory, backs up the original config as `.bak`, and attempts `prek uninstall` if the binary is on your PATH.
+- **prek / pre-commit** — reads `.pre-commit-config.yaml`, `.yml`, or `prek.toml`, converts eligible `local` hooks to shell scripts under the hooks directory, backs up the original config as `.bak`, and attempts `prek uninstall` if the binary is on your PATH.
 
 If both a husky directory and a prek config are present, the command errors and asks you to remove one first.
 
@@ -62,7 +62,7 @@ Only `local` hooks with `language: system`, `language: script`, or `language: fa
 | Top-level `fail_fast: true` | prepends `set -e` to each generated script |
 | `manual` stage | skipped silently (not a real git hook) |
 | `minimum_pre_commit_version`, `ci`, `default_language_version`, `default_install_hook_types` | ignored |
-| `prek.toml` | not parsed — run `prek util toml-to-yaml` first |
+| `prek.toml` (native format) | parsed via `@visulima/fs/toml`; YAML takes precedence if both are present |
 
 ## Options
 
