@@ -1,3 +1,14 @@
+## @visulima/error [6.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.12...@visulima/error@6.0.0-alpha.13) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.10
+
 ## @visulima/error [6.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.11...@visulima/error@6.0.0-alpha.12) (2026-04-21)
 
 ### Miscellaneous Chores
