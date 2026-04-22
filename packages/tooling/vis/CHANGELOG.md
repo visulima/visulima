@@ -1,3 +1,13 @@
+## @visulima/vis [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.6...@visulima/vis@1.0.0-alpha.7) (2026-04-22)
+
+### Bug Fixes
+
+* added [@bomb](https://github.com/bomb).sh/tab ([8be4063](https://github.com/visulima/visulima/commit/8be40636caff4e7eb4776869bb71e11cc6c76298))
+
+### Miscellaneous Chores
+
+* added [@bomb](https://github.com/bomb).sh/tab to exclude ([6e3839e](https://github.com/visulima/visulima/commit/6e3839e5973bac479d6b2e0cb2c3d3c59db3d416))
+
 ## @visulima/vis [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.5...@visulima/vis@1.0.0-alpha.6) (2026-04-22)
 
 ### Features
