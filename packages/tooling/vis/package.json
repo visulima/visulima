@@ -107,7 +107,9 @@
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
+        "react-reconciler": ">=0.33.0",
         "semver": "^7.7.4",
+        "smol-toml": "catalog:peer",
         "validate-npm-package-name": "^7.0.2",
         "yaml": "catalog:prod",
         "zeptomatch": "catalog:dev"
@@ -127,6 +129,7 @@
         "@types/jstoxml": "catalog:types",
         "@types/node": "catalog:types",
         "@types/react": "catalog:types",
+        "@types/react-reconciler": "catalog:types",
         "@types/semver": "^7.7.1",
         "@types/validate-npm-package-name": "^4.0.2",
         "@visulima/packem": "catalog:dev",
