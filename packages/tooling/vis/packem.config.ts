@@ -25,6 +25,8 @@ export default defineConfig({
             unused: {
                 exclude: [
                     "@bomb.sh/tab",
+                    "react-reconciler",
+                    "smol-toml",
                     "@visulima/vis-binding-darwin-arm64",
                     "@visulima/vis-binding-darwin-x64",
                     "@visulima/vis-binding-linux-arm64-gnu",

@@ -15,9 +15,24 @@ import { runRun } from "./run";
 import { uninstallHooks } from "./uninstall";
 import { runValidate } from "./validate";
 
+interface HookLogger {
+    info: (message: string) => void;
+    warn: (message: string) => void;
+}
+
 /**
- * Prompts the user with a yes/no question. Returns true for "y" or "yes".
+ * Option describing the hooks directory, shared by every `vis hook *` subcommand.
  */
+const hooksDirectoryOption = {
+    defaultValue: DEFAULT_HOOKS_DIRECTORY,
+    description: "Custom hooks directory",
+    name: "hooks-dir",
+    type: String,
+} as const;
+
+const resolveHooksDirectory = (options: Record<string, unknown>): string =>
+    (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
+
 const confirmPrompt = (question: string): Promise<boolean> =>
     new Promise((resolve) => {
         const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -30,7 +45,7 @@ const confirmPrompt = (question: string): Promise<boolean> =>
         });
     });
 
-const executeInstall = async (hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): Promise<void> => {
+const executeInstall = async (hooksDirectory: string, logger: HookLogger): Promise<void> => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -108,7 +123,7 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
     logger.info("Git hooks installed successfully.");
 };
 
-const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
+const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: HookLogger): void => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -145,7 +160,7 @@ ${SECRETS_HOOK_MARKER}
 pnpm exec vis secrets --staged --quiet || exit 1
 `;
 
-const executeAdd = (what: string | undefined, hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
+const executeAdd = (what: string | undefined, hooksDirectory: string, logger: HookLogger): void => {
     if (what !== "secrets") {
         throw new Error(`Unknown hook add target "${String(what)}". Currently supported: "secrets".`);
     }
@@ -185,7 +200,7 @@ const executeAdd = (what: string | undefined, hooksDirectory: string, logger: { 
     logger.info(`Created ${hookPath} with a secrets-scan pre-commit check.`);
 };
 
-const executeUninstall = (hooksDirectory: string, logger: { info: (message: string) => void }): void => {
+const executeUninstall = (hooksDirectory: string, logger: HookLogger): void => {
     logger.info("Removing git hooks...");
 
     const result = uninstallHooks(hooksDirectory);
@@ -203,117 +218,170 @@ const executeUninstall = (hooksDirectory: string, logger: { info: (message: stri
     logger.info("Git hooks removed successfully.");
 };
 
-const hook: Command = {
-    argument: {
-        description: "Action to perform: install, uninstall, migrate, list, validate, run, or add <target>",
-        name: "action",
+const sharedHookEnv = [
+    {
+        defaultValue: undefined,
+        description: "Set to 0 to disable git hooks, set to 2 for debug output",
+        name: "VIS_GIT_HOOKS",
         type: String,
     },
-    description: "Manage git hooks for the workspace. Supports migrating from husky (.husky/) or prek / pre-commit (.pre-commit-config.yaml).",
-    env: [
-        {
-            defaultValue: undefined,
-            description: "Set to 0 to disable git hooks, set to 2 for debug output",
-            name: "VIS_GIT_HOOKS",
-            type: String,
-        },
-    ],
+] as const;
+
+const hookInstall: Command = {
+    commandPath: ["hook"],
+    description: "Install git hooks for the workspace (migrates husky / prek on prompt)",
+    env: [...sharedHookEnv],
     examples: [
         ["vis hook install", "Install git hooks in .vis-hooks/"],
-        ["vis hook uninstall", "Remove git hooks and reset core.hooksPath"],
-        ["vis hook migrate", "Migrate from husky or prek to vis hooks (auto-detected)"],
-        ["vis hook migrate --dry-run", "Preview what a migration would write without touching disk"],
-        ["vis hook list", "Show configured hooks grouped by stage"],
-        ["vis hook validate", "Sanity-check installed hooks and the bundled runner"],
-        ["vis hook run pre-commit --all-files", "Run the pre-commit hooks against every tracked file"],
-        ["vis hook run pre-commit --from-ref=main --to-ref=HEAD", "Run pre-commit hooks on files changed between two refs"],
-        ["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
-    execute: async ({ argument, logger, options }) => {
-        const action = argument[0] ?? "install";
-        const hooksDirectory = (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
-
-        switch (action) {
-            case "add": {
-                executeAdd(argument[1] as string | undefined, hooksDirectory, logger);
-                break;
-            }
-
-            case "install": {
-                await executeInstall(hooksDirectory, logger);
-                break;
-            }
-
-            case "list": {
-                runList(hooksDirectory, logger);
-                break;
-            }
-
-            case "migrate": {
-                executeMigrate(hooksDirectory, Boolean(options.dryRun), logger);
-                break;
-            }
-
-            case "run": {
-                runRun(hooksDirectory, {
-                    allFiles: Boolean(options.allFiles),
-                    fromRef: options.fromRef as string | undefined,
-                    stage: argument[1] as string | undefined,
-                    toRef: options.toRef as string | undefined,
-                }, logger);
-                break;
-            }
-
-            case "uninstall": {
-                executeUninstall(hooksDirectory, logger);
-                break;
-            }
-
-            case "validate": {
-                runValidate(hooksDirectory, logger);
-                break;
-            }
-
-            default: {
-                throw new Error(`Unknown action "${action}". Use "install", "uninstall", "migrate", "list", "validate", "run", or "add <target>".`);
-            }
-        }
+    execute: async ({ logger, options }) => {
+        await executeInstall(resolveHooksDirectory(options), logger);
     },
     group: "Scaffold & Config",
-    name: "hook",
+    name: "install",
+    options: [hooksDirectoryOption],
+};
+
+const hookUninstall: Command = {
+    commandPath: ["hook"],
+    description: "Remove git hooks and reset core.hooksPath",
+    env: [...sharedHookEnv],
+    examples: [["vis hook uninstall", "Remove git hooks and reset core.hooksPath"]],
+    execute: ({ logger, options }) => {
+        executeUninstall(resolveHooksDirectory(options), logger);
+    },
+    group: "Scaffold & Config",
+    name: "uninstall",
+    options: [hooksDirectoryOption],
+};
+
+const hookMigrate: Command = {
+    commandPath: ["hook"],
+    description: "Migrate from husky or prek to vis hooks (auto-detected)",
+    env: [...sharedHookEnv],
+    examples: [
+        ["vis hook migrate", "Migrate from husky or prek to vis hooks (auto-detected)"],
+        ["vis hook migrate --dry-run", "Preview what a migration would write without touching disk"],
+    ],
+    execute: ({ logger, options }) => {
+        executeMigrate(resolveHooksDirectory(options), Boolean(options.dryRun), logger);
+    },
+    group: "Scaffold & Config",
+    name: "migrate",
     options: [
-        {
-            defaultValue: DEFAULT_HOOKS_DIRECTORY,
-            description: "Custom hooks directory",
-            name: "hooks-dir",
-            type: String,
-        },
+        hooksDirectoryOption,
         {
             defaultValue: false,
             description: "Preview migrate without writing files",
             name: "dry-run",
             type: Boolean,
         },
+    ],
+};
+
+const hookList: Command = {
+    commandPath: ["hook"],
+    description: "Show configured hooks grouped by stage",
+    env: [...sharedHookEnv],
+    examples: [["vis hook list", "Show configured hooks grouped by stage"]],
+    execute: ({ logger, options }) => {
+        runList(resolveHooksDirectory(options), logger);
+    },
+    group: "Scaffold & Config",
+    name: "list",
+    options: [hooksDirectoryOption],
+};
+
+const hookValidate: Command = {
+    commandPath: ["hook"],
+    description: "Sanity-check installed hooks and the bundled runner",
+    env: [...sharedHookEnv],
+    examples: [["vis hook validate", "Sanity-check installed hooks and the bundled runner"]],
+    execute: ({ logger, options }) => {
+        runValidate(resolveHooksDirectory(options), logger);
+    },
+    group: "Scaffold & Config",
+    name: "validate",
+    options: [hooksDirectoryOption],
+};
+
+const hookRun: Command = {
+    argument: {
+        description: "Hook stage to run (e.g. pre-commit, commit-msg). Defaults to pre-commit.",
+        name: "stage",
+        type: String,
+    },
+    commandPath: ["hook"],
+    description: "Run a specific hook stage against tracked files",
+    env: [...sharedHookEnv],
+    examples: [
+        ["vis hook run pre-commit --all-files", "Run the pre-commit hooks against every tracked file"],
+        ["vis hook run pre-commit --from-ref=main --to-ref=HEAD", "Run pre-commit hooks on files changed between two refs"],
+        ["vis hook run pre-commit --last-commit", "Shortcut for --from-ref HEAD~1 --to-ref HEAD"],
+    ],
+    execute: ({ argument, logger, options }) => {
+        runRun(
+            resolveHooksDirectory(options),
+            {
+                allFiles: Boolean(options.allFiles),
+                fromRef: options.fromRef as string | undefined,
+                lastCommit: Boolean(options.lastCommit),
+                stage: argument[0] as string | undefined,
+                toRef: options.toRef as string | undefined,
+            },
+            logger,
+        );
+    },
+    group: "Scaffold & Config",
+    name: "run",
+    options: [
+        hooksDirectoryOption,
         {
             defaultValue: false,
-            description: "For `vis hook run`: run against every tracked file",
+            description: "Run against every tracked file",
             name: "all-files",
             type: Boolean,
         },
         {
             defaultValue: undefined,
-            description: "For `vis hook run`: include files changed since this ref",
+            description: "Include files changed since this ref",
             name: "from-ref",
             type: String,
         },
         {
             defaultValue: undefined,
-            description: "For `vis hook run`: include files changed up to this ref",
+            description: "Include files changed up to this ref",
             name: "to-ref",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Shortcut for --from-ref HEAD~1 --to-ref HEAD",
+            name: "last-commit",
+            type: Boolean,
         },
     ],
 };
 
-export default hook;
+const hookAdd: Command = {
+    argument: {
+        description: "Target to add (currently: `secrets`)",
+        name: "target",
+        type: String,
+    },
+    commandPath: ["hook"],
+    description: "Add a managed hook snippet (e.g. `vis secrets --staged`)",
+    env: [...sharedHookEnv],
+    examples: [["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"]],
+    execute: ({ argument, logger, options }) => {
+        executeAdd(argument[0] as string | undefined, resolveHooksDirectory(options), logger);
+    },
+    group: "Scaffold & Config",
+    name: "add",
+    options: [hooksDirectoryOption],
+};
+
+const hookCommands: Command[] = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
+
+export default hookCommands;
