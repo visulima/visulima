@@ -1,3 +1,17 @@
+## @visulima/api-platform [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.9...@visulima/api-platform@4.0.0-alpha.10) (2026-04-22)
+
+### Bug Fixes
+
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending changes ([f09bec8](https://github.com/visulima/visulima/commit/f09bec80b104f2488e3313f4ff8800e6768a54b8))
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/api-platform [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.8...@visulima/api-platform@4.0.0-alpha.9) (2026-04-09)
 
 ## @visulima/api-platform [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.7...@visulima/api-platform@4.0.0-alpha.8) (2026-04-08)
