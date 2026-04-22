@@ -89,9 +89,10 @@ Hooks don't only fire at commit time. `vis hook run` replays the same stage scri
 vis hook run pre-commit                                 # default — staged files
 vis hook run pre-commit --all-files                     # everything tracked by git
 vis hook run pre-commit --from-ref=main --to-ref=HEAD   # files changed between refs
+vis hook run pre-commit --last-commit                   # shortcut for --from-ref HEAD~1 --to-ref HEAD
 ```
 
-These flags map to env vars (`VIS_HOOK_ALL_FILES`, `VIS_HOOK_FROM_REF`, `VIS_HOOK_TO_REF`) that the bundled runner picks up to swap `git diff --cached` for `git ls-files` or `git diff <from> <to>`.
+These flags map to env vars (`VIS_HOOK_ALL_FILES`, `VIS_HOOK_FROM_REF`, `VIS_HOOK_TO_REF`) that the bundled runner picks up to swap `git diff --cached` for `git ls-files` or `git diff <from> <to>`. `--all-files` takes precedence if combined with a ref-range flag.
 
 ## Listing + validating hooks
 
