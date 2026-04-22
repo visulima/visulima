@@ -2,8 +2,8 @@
 // Copies the vis install scripts into `apps/web/public/` so Netlify serves
 // them directly at:
 //
-//   https://visulima.dev/install.sh
-//   https://visulima.dev/install.ps1
+//   https://visulima.com/install.sh
+//   https://visulima.com/install.ps1
 //
 // Run before `vite build` / `vite dev` so the files are always in sync
 // with whatever is on the branch being deployed. That way a bad commit
@@ -12,6 +12,7 @@
 
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const filename = fileURLToPath(import.meta.url);
@@ -27,14 +28,20 @@ if (!existsSync(DESTINATION)) {
     mkdirSync(DESTINATION, { recursive: true });
 }
 
+const missing = SCRIPTS.filter((script) => !existsSync(path.join(SOURCE, script)));
+
+if (missing.length > 0) {
+    // Fail hard: a missing install script means visulima.com/<script>
+    // 404s silently. Better to break the build than to ship a broken
+    // cold-start flow.
+    console.error(`[copy-install-scripts] Missing source file(s): ${missing.join(", ")}`);
+    console.error(`[copy-install-scripts]   expected under ${SOURCE}`);
+    process.exit(1);
+}
+
 for (const script of SCRIPTS) {
     const source = path.join(SOURCE, script);
     const destination = path.join(DESTINATION, script);
-
-    if (!existsSync(source)) {
-        console.warn(`[copy-install-scripts] Skipping ${script} — not found at ${source}`);
-        continue;
-    }
 
     copyFileSync(source, destination);
     console.log(`[copy-install-scripts] ${script} → public/${script}`);

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -286,6 +286,66 @@ describe(findInstalledManagers, () => {
             expect(proto).toBeDefined();
             expect(proto?.installed).toBe(false);
             expect(proto?.configFiles).toContain(".prototools");
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+
+    it("should surface corepack when packageManager is pinned but pnpm/yarn are not on PATH", () => {
+        expect.assertions(2);
+
+        // Empty tmpDirectory + tmpDirectory/bin added to PATH means no
+        // pnpm / yarn / corepack binaries anywhere.
+        writeFileSync(join(tmpDirectory, "package.json"), JSON.stringify({ packageManager: "pnpm@10.32.1" }));
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            process.env["PATH"] = tmpDirectory;
+            clearToolchainCache();
+
+            const managers = findInstalledManagers(tmpDirectory);
+            const corepack = managers.find((m) => m.name === "corepack");
+
+            // Corepack is the actionable manager for npm/pnpm/yarn when
+            // self-activate can't satisfy the pin.
+            expect(corepack).toBeDefined();
+            expect(corepack?.installed).toBe(false);
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+
+    it("should not surface corepack when packageManager is pinned AND pnpm is on PATH (self-activate path)", () => {
+        expect.assertions(1);
+
+        const binDir = join(tmpDirectory, "bin");
+
+        mkdirSync(binDir, { recursive: true });
+        writeFileSync(join(binDir, "pnpm"), "#!/bin/sh\n", { mode: 0o755 });
+        writeFileSync(join(tmpDirectory, "package.json"), JSON.stringify({ packageManager: "pnpm@10.32.1" }));
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            // Keep the real PATH so `node --version` still works for
+            // other tests, but prepend our bin dir so pnpm is visible.
+            process.env["PATH"] = `${binDir}:${originalPath ?? ""}`;
+            clearToolchainCache();
+
+            const managers = findInstalledManagers(tmpDirectory);
+
+            // With pnpm on PATH, self-activate handles the pin, so
+            // corepack is noise and should be suppressed.
+            expect(managers.find((m) => m.name === "corepack")).toBeUndefined();
         } finally {
             if (originalPath === undefined) {
                 delete process.env["PATH"];
@@ -674,6 +734,50 @@ describe(writePackageManagerField, () => {
                 version: "10.32.1",
             }),
         ).toThrow(/does not exist/);
+    });
+
+    it("should throw a scoped error when package.json is malformed JSON", () => {
+        expect.assertions(2);
+
+        const pkgPath = join(tmpDirectory, "package.json");
+
+        writeFileSync(pkgPath, '{ "name": "demo", invalid json here');
+
+        try {
+            writePackageManagerField(tmpDirectory, {
+                source: "vis.config.ts",
+                tool: "pnpm",
+                version: "10.32.1",
+            });
+            expect.fail("expected throw");
+        } catch (cause: unknown) {
+            const message = (cause as Error).message;
+
+            // Surfaces the file path so the user can go fix it, and
+            // chains the underlying parser error.
+            expect(message).toContain("package.json");
+            expect(message).toContain("not valid JSON");
+        }
+    });
+
+    it("should default to 2-space indent when none is detected", () => {
+        expect.assertions(1);
+
+        const pkgPath = join(tmpDirectory, "package.json");
+
+        // Single-line file — no indent for the detector to pick up.
+        writeFileSync(pkgPath, `{"name":"demo"}`);
+
+        writePackageManagerField(tmpDirectory, {
+            source: "vis.config.ts",
+            tool: "pnpm",
+            version: "10.32.1",
+        });
+
+        const contents = readFileSync(pkgPath, "utf8");
+
+        // Two-space indent, matching JS-ecosystem convention.
+        expect(contents).toContain(`\n  "packageManager"`);
     });
 });
 

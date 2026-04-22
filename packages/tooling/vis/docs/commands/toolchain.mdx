@@ -145,7 +145,7 @@ Corepack remains useful for **npm version pinning** (npm itself doesn't self-swi
 ### Linux & macOS (and WSL)
 
 ```bash
-curl -fsSL https://visulima.dev/install.sh | bash
+curl -fsSL https://visulima.com/install.sh | bash
 ```
 
 The script:
@@ -156,10 +156,15 @@ The script:
 4. Installs `@visulima/vis` globally via pnpm (if present) or npm.
 5. If the current directory has workspace pin files (`.nvmrc`, `.prototools`, etc.), runs `vis toolchain install` to match them.
 
+> **Note on piping.** When you run `curl … | bash`, stdin isn't a TTY and the
+> interactive manager-picker prompt is skipped — the script uses **proto** by
+> default. Override with `--manager=fnm|mise|volta` or the `VIS_MANAGER` env
+> var if you want something else.
+
 ### Windows (PowerShell 5.1+)
 
 ```powershell
-irm https://visulima.dev/install.ps1 | iex
+irm https://visulima.com/install.ps1 | iex
 ```
 
 Same flow as the POSIX script, but with the Windows-native installers:
@@ -188,13 +193,13 @@ curl -fsSL <url>/install.sh | bash -s -- --yes --manager=proto --no-toolchain-in
 
 ```dockerfile
 # Linux / macOS images
-RUN curl -fsSL https://visulima.dev/install.sh \
+RUN curl -fsSL https://visulima.com/install.sh \
     | bash -s -- --yes --manager=proto --no-toolchain-install
 ```
 
 ```dockerfile
 # Windows images (PowerShell)
-RUN powershell -Command "& ([scriptblock]::Create((irm 'https://visulima.dev/install.ps1'))) -Yes -Manager proto -NoToolchainInstall"
+RUN powershell -Command "& ([scriptblock]::Create((irm 'https://visulima.com/install.ps1'))) -Yes -Manager proto -NoToolchainInstall"
 ```
 
 ### Already have Node?

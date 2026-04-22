@@ -5,7 +5,7 @@
 # One-liner bootstrap for new users who may not have Node, npm, or any
 # version manager on the machine:
 #
-#   curl -fsSL https://visulima.dev/install.sh | bash
+#   curl -fsSL https://visulima.com/install.sh | bash
 #
 # The script:
 #
@@ -47,11 +47,15 @@ err()     { printf '%s%serror:%s %s\n'   "$bold" "$red"    "$reset" "$1" >&2; }
 success() { printf '%s%s✓%s %s\n'        "$bold" "$green"  "$reset" "$1" >&2; }
 
 # ── Argument parsing ────────────────────────────────────────────────
+#
+# Each flag has a matching environment variable so `FOO=x curl ... | bash`
+# works too — handy for CI where it's easier to export than to wrangle
+# `bash -s --` argument forwarding.
 
-MANAGER_CHOICE="proto"
-RUN_TOOLCHAIN_INSTALL=1
-ASSUME_YES=0
-VIS_VERSION="latest"
+MANAGER_CHOICE="${VIS_MANAGER:-proto}"
+RUN_TOOLCHAIN_INSTALL="${VIS_RUN_TOOLCHAIN_INSTALL:-1}"
+ASSUME_YES="${VIS_YES:-0}"
+VIS_VERSION="${VIS_VERSION:-latest}"
 
 print_help() {
     cat <<'USAGE' >&2
@@ -163,20 +167,35 @@ install_volta() {
 }
 
 install_manager() {
-    case "$1" in
+    local manager="$1"
+
+    # Temporarily disable -e so a vendor-script failure lets us surface
+    # a scoped, vis-authored error instead of bailing with the vendor's
+    # raw output and no context.
+    set +e
+    case "$manager" in
         proto) install_proto ;;
         fnm)   install_fnm ;;
         mise)  install_mise ;;
         volta) install_volta ;;
         *)
-            err "Unknown manager: $1. Supported: proto, fnm, mise, volta."
+            err "Unknown manager: $manager. Supported: proto, fnm, mise, volta."
             exit 1 ;;
     esac
+    local status=$?
+    set -e
+
+    if [ "$status" -ne 0 ]; then
+        err "Failed to install ${manager} (vendor installer exited ${status})."
+        err "Check your network and re-run the script, or install ${manager} manually and retry."
+        exit "$status"
+    fi
 }
 
 install_node_via_manager() {
     local manager="$1"
 
+    set +e
     case "$manager" in
         proto)
             info "Installing Node LTS via proto..."
@@ -186,8 +205,7 @@ install_node_via_manager() {
             ;;
         fnm)
             info "Installing Node LTS via fnm..."
-            fnm install --lts
-            fnm default lts-latest
+            fnm install --lts && fnm default lts-latest
             eval "$(fnm env)" || true
             ;;
         mise)
@@ -200,6 +218,14 @@ install_node_via_manager() {
             volta install node@lts
             ;;
     esac
+    local status=$?
+    set -e
+
+    if [ "$status" -ne 0 ]; then
+        err "Failed to install Node LTS via ${manager} (exit ${status})."
+        err "Most common cause is a network / proxy issue. Try again, or run \`${manager} install node\` manually."
+        exit "$status"
+    fi
 }
 
 # ── Main flow ───────────────────────────────────────────────────────

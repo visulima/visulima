@@ -350,6 +350,11 @@ const executeUse = (
     }
 
     if (!manager.installed) {
+        // Note: `self-activate` is never reached here — `resolveManagerFor`
+        // only returns it with `installed: true` (pnpm/yarn binary on
+        // PATH). When neither is on PATH, resolution falls through to a
+        // capable runtime manager (volta/proto/mise) with `installed: false`,
+        // which is what this branch surfaces.
         errorOutput(`The best manager for ${spec.tool} (${manager.name}) is not on PATH. ${manager.note ?? ""}`);
         process.exitCode = 1;
 

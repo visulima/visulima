@@ -7,7 +7,7 @@
     One-liner bootstrap for new users on Windows who may not have Node,
     npm, or any version manager installed:
 
-        irm https://visulima.dev/install.ps1 | iex
+        irm https://visulima.com/install.ps1 | iex
 
     To pass arguments, use the scriptblock form:
 

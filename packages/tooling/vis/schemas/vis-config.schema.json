@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://visulima.dev/schemas/vis-config.schema.json",
+    "$id": "https://visulima.com/schemas/vis-config.schema.json",
     "title": "vis.config.ts",
     "description": "Workspace configuration for @visulima/vis. Used by defineConfig() in vis.config.ts. This schema is for non-TypeScript editors; TypeScript users get autocomplete from defineConfig() types.",
     "type": "object",

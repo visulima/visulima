@@ -47,7 +47,10 @@
 # Install scripts. Served with a plain-text content type so `curl | bash`
 # and `irm | iex` see the body directly.
 #
-# Caching:
+# Caching — see https://docs.netlify.com/platform/caching/ for the split
+# between client-side `Cache-Control` and CDN-specific
+# `Netlify-CDN-Cache-Control`:
+#
 #   - `Cache-Control` keeps browsers/curl from redownloading the same
 #     body on retries within an hour.
 #   - `Netlify-CDN-Cache-Control` lets the edge cache hold the script for

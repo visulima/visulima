@@ -266,6 +266,11 @@ export const findInstalledManagers = (workspaceRoot: string, options?: { refresh
     }
 
     const results: DetectedManager[] = [];
+    // pnpm / yarn self-activate from the `packageManager` field, so if
+    // either binary is on PATH we don't need corepack to satisfy that
+    // pin. Used below to decide whether listing corepack as "missing"
+    // is actionable or just noise.
+    const pnpmOrYarnOnPath = Boolean(isOnPath("pnpm")) || Boolean(isOnPath("yarn"));
 
     for (const name of MANAGER_ORDER) {
         const binary = name === "nvm" ? undefined : isOnPath(name);
@@ -281,11 +286,22 @@ export const findInstalledManagers = (workspaceRoot: string, options?: { refresh
         // workspace has. Listing it as a detected manager just because
         // that field exists produces noisy "corepack — referenced but
         // not installed" warnings on workspaces that don't actually
-        // use corepack (pnpm 10+ self-activates). Only surface
-        // corepack when the binary is genuinely on PATH — per-tool
-        // resolution still picks it for npm pins via preferenceFor.
+        // use corepack (pnpm 10+ self-activates).
+        //
+        // Surface corepack when:
+        //   (a) the binary is genuinely on PATH, OR
+        //   (b) `packageManager` is pinned AND self-activate can't help
+        //       — i.e. no pnpm/yarn binary is installed yet, so the
+        //       user needs corepack (or a manual install) to resolve it.
+        //
+        // Case (b) is the "CI container with only Node" scenario where
+        // corepack really is the missing piece.
         if (name === "corepack" && !installed) {
-            continue;
+            const hasPackageManagerPin = configFiles.length > 0;
+
+            if (!hasPackageManagerPin || pnpmOrYarnOnPath) {
+                continue;
+            }
         }
 
         if (!installed && configFiles.length === 0) {
@@ -1143,8 +1159,25 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
 
     const raw = readFileSync(pkgPath);
     const indentMatch = /\n([ \t]+)/.exec(raw);
-    const indent = indentMatch?.[1] ?? "    ";
-    const pkg = JSON.parse(raw) as Record<string, unknown>;
+    // Default to 2 spaces — the JS-ecosystem norm, and what
+    // `sort-package-json` / prettier both emit. Only fall back to this
+    // when the current file has no detectable indent (e.g. `{}` on one
+    // line).
+    const indent = indentMatch?.[1] ?? "  ";
+
+    let pkg: Record<string, unknown>;
+
+    try {
+        pkg = JSON.parse(raw) as Record<string, unknown>;
+    } catch (cause: unknown) {
+        // JSON.parse throws SyntaxError with a useless "Unexpected
+        // token X at position Y" — prepend the file path and hint so
+        // the user can act on it instead of getting a bare stack.
+        throw new Error(
+            `${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(cause as Error).message}`,
+        );
+    }
+
     const value = `${spec.tool}@${spec.version}`;
 
     pkg.packageManager = value;
