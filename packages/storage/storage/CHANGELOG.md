@@ -1,3 +1,17 @@
+## @visulima/storage [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.14...@visulima/storage@1.0.0-alpha.15) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.11
+* **@visulima/fs:** upgraded to 5.0.0-alpha.12
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.11
+* **@visulima/path:** upgraded to 3.0.0-alpha.10
+
 ## @visulima/storage [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.13...@visulima/storage@1.0.0-alpha.14) (2026-04-21)
 
 ### Miscellaneous Chores
