@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/find-ai-runner",
-    "version": "1.0.0-alpha.4",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

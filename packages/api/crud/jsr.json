@@ -1,8 +1,0 @@
-{
-    "name": "@visulima/crud",
-    "version": "3.0.0-alpha.12",
-    "exports": {
-        ".": "./src/index.ts",
-        "./next": "./src/next/index.ts"
-    }
-}
