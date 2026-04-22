@@ -1,3 +1,56 @@
+## @visulima/tui [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.2...@visulima/tui@1.0.0-alpha.3) (2026-04-22)
+
+### Features
+
+* Add comprehensive Ink UI component library with 40+ components ([#614](https://github.com/visulima/visulima/issues/614)) ([24b00a8](https://github.com/visulima/visulima/commit/24b00a8855b1ddb509b85c4a3e0f9f3d76323f76))
+* **tui:** port ink upstream PR 115/119/123/125 ([2232485](https://github.com/visulima/visulima/commit/22324855fbcca38bc263d46194ccf30522ecc599))
+
+### Bug Fixes
+
+* **ci:** always run native build job so artifacts are available ([51f3428](https://github.com/visulima/visulima/commit/51f34285bc04a0f6347609db240814862646c1cc))
+* **ci:** publish native addons via local semantic-release plugin ([974beb2](https://github.com/visulima/visulima/commit/974beb2d021e7b2afc86b958bd2137be88d2f464))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* Replace resetTerminal with clearScreenAndHomeCursor to preserve scrollback ([#605](https://github.com/visulima/visulima/issues/605)) ([6a79e4d](https://github.com/visulima/visulima/commit/6a79e4d8350b90ec553ad5fbcf825d9ac30ece66))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+* **tui:** declare static props on Form/Transition for isolatedDeclarations ([c30b9f1](https://github.com/visulima/visulima/commit/c30b9f148cf4ea75e54a9e358fea085a34f680e8))
+* **tui:** fixed types ([abe7106](https://github.com/visulima/visulima/commit/abe7106aa1f55340d1b218f4b338709a0317c671))
+* **tui:** floor text node width when calling wrapOrTruncateStyledChars ([1d06086](https://github.com/visulima/visulima/commit/1d06086404c54b46baec8f688fc1e39228a0ab75))
+* **tui:** inline component and hook barrel exports in ink entry ([1cf8dd2](https://github.com/visulima/visulima/commit/1cf8dd25c91a2001268fb9d964d95df649bf7832))
+* **tui:** narrow ANSI_CODES type and cast yoga Node remove call ([87b2c67](https://github.com/visulima/visulima/commit/87b2c6787d44ae630a0eece56b3b2df395a7c63b))
+* **tui:** rename components to kebab-case, fix broken test assertions, protect fixtures from auto-format ([caa2e86](https://github.com/visulima/visulima/commit/caa2e86f7500467e56c89b3671d0e33b6b5d0173))
+* **tui:** type histogram bucket counts as number[] ([883eca4](https://github.com/visulima/visulima/commit/883eca42cf74df3db8409a5f921d75371ba79070))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* remove unused deprecated aliases ([#612](https://github.com/visulima/visulima/issues/612)) ([24ee546](https://github.com/visulima/visulima/commit/24ee546bcb2c17b8915622e4878797c00aa1d813))
+* **tui:** apply formatter and lint fixes ([e70da36](https://github.com/visulima/visulima/commit/e70da3672d1c06cbbe2a6294c86535d770dc04bf))
+* **tui:** apply pending changes ([f432dc8](https://github.com/visulima/visulima/commit/f432dc8aae2c4f26b43132d956067b770d4a9548))
+* **tui:** apply pending lint and source updates ([7fe85fe](https://github.com/visulima/visulima/commit/7fe85fe0261d2d792762971c56a98fe1c03040a6))
+* **tui:** enforce curly braces and apply lint fixes ([ffab48f](https://github.com/visulima/visulima/commit/ffab48f89720a8e906d863bb3539c86bee9783a5))
+
+### Code Refactoring
+
+* replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
+* **tui:** switch spinner to @visulima/spinner ([0c2e2f4](https://github.com/visulima/visulima/commit/0c2e2f498e8c2f4bee46b257dfc1f61d5924a012))
+
+### Tests
+
+* **secret-scanner:** add per-file JIT warmup and extended timeouts ([3255e63](https://github.com/visulima/visulima/commit/3255e636cb554e3bfb40e8c4cafd6108034f9acf))
+* **tui, dev-toolbar:** fix expect.assertions counts on looped assertions ([898bc59](https://github.com/visulima/visulima/commit/898bc59ef217f7c8ee2aa7fdf7da3d355c028b13))
+* **tui:** fix 15 broken ink component tests ([c1e25a0](https://github.com/visulima/visulima/commit/c1e25a00d0fbd4532df0802a07452dc803e93f79))
+* **tui:** move expect.assertions past platform-guard early returns ([f3ce2e3](https://github.com/visulima/visulima/commit/f3ce2e3eecac57192f4b91582ca990e4256b4538))
+* **tui:** move remaining expect.assertions past platform guards ([c227075](https://github.com/visulima/visulima/commit/c2270756cfdc87fa083ea1f8f90d6ece76951540))
+* **tui:** stabilize flaky ink input and chart tests ([183be7b](https://github.com/visulima/visulima/commit/183be7b2a1cfcdf4fa6f57f6ee02b5b8d62b29a4))
+* **tui:** stabilize flaky ink input tests and remove native guard ([445abd8](https://github.com/visulima/visulima/commit/445abd85a0b44707f28122e8b1921564af728f33))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.10
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.1
+
 ## @visulima/tui [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.1...@visulima/tui@1.0.0-alpha.2) (2026-04-09)
 
 ### Features
