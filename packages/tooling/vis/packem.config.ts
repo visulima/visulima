@@ -24,6 +24,7 @@ export default defineConfig({
         dependencies: {
             unused: {
                 exclude: [
+                    "@bomb.sh/tab",
                     "@visulima/vis-binding-darwin-arm64",
                     "@visulima/vis-binding-darwin-x64",
                     "@visulima/vis-binding-linux-arm64-gnu",
