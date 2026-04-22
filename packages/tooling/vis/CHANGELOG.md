@@ -1,3 +1,30 @@
+## @visulima/vis [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.7...@visulima/vis@1.0.0-alpha.8) (2026-04-22)
+
+### Features
+
+* **vis:** add --last-commit shortcut for hook run ([a841c8e](https://github.com/visulima/visulima/commit/a841c8ebfaf69d196cdc3115757c65705204d850))
+* **vis:** migrate prek hooks to vis ([92fec22](https://github.com/visulima/visulima/commit/92fec22f61d1882eecd78ff139e4632f55ee3e00))
+* **vis:** parse prek.toml via @visulima/fs/toml ([4599680](https://github.com/visulima/visulima/commit/459968089e8968f58edea35c5e2d801cdfbd2913))
+* **vis:** translate remote prek hooks, file filters, and deps ([2705c8f](https://github.com/visulima/visulima/commit/2705c8f99e287bb93d0865361f376bafa8043736))
+* **vis:** vis hook run/list/validate, migrate --dry-run, runner extras ([bce23d9](https://github.com/visulima/visulima/commit/bce23d912790f9fc2eafa7ce4596e66d0a70e97e))
+
+### Bug Fixes
+
+* added missing deps ([de0522f](https://github.com/visulima/visulima/commit/de0522f18286b23489cf6a51007ef3a4e7c5fd76))
+
+### Documentation
+
+* **vis:** document --last-commit and nested hook/migrate/cache commands ([a1f14d7](https://github.com/visulima/visulima/commit/a1f14d7ff5c1bfa2b038501f3c83c458746d3f31))
+
+### Code Refactoring
+
+* **vis:** split hook/migrate/cache into nested cerebro commands ([42c04fc](https://github.com/visulima/visulima/commit/42c04fc90b16b1538eddb77cf00b1d5d20372dba))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.0-alpha.4
+
 ## @visulima/vis [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.6...@visulima/vis@1.0.0-alpha.7) (2026-04-22)
 
 ### Bug Fixes
