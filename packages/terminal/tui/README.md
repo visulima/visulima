@@ -54,15 +54,15 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 ## Install
 
 ```sh
-npm install @visulima/tui
+npm install @visulima/tui react react-reconciler
 ```
 
 ```sh
-yarn add @visulima/tui
+yarn add @visulima/tui react react-reconciler
 ```
 
 ```sh
-pnpm add @visulima/tui
+pnpm add @visulima/tui react react-reconciler
 ```
 
 ## Quick Start
