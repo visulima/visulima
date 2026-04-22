@@ -6,7 +6,20 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PrekConfig } from "../src/commands/hook/prek";
-import { buildHookCommand, convertPrekConfig, detectPrekConfig, loadPrekConfig, mapPrekStage, migrateFromPrek, parsePrekConfig, resolveStages } from "../src/commands/hook/prek";
+import {
+    buildHookCommand,
+    buildRunnerInvocation,
+    convertPrekConfig,
+    detectPrekConfig,
+    loadPrekConfig,
+    mapPrekStage,
+    mergeAdditionalDependencies,
+    migrateFromPrek,
+    normalizeRepoKey,
+    parseAdditionalDep,
+    parsePrekConfig,
+    resolveStages,
+} from "../src/commands/hook/prek";
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -164,12 +177,14 @@ describe(resolveStages, () => {
 // ─── buildHookCommand ───────────────────────────────────────────────
 
 describe(buildHookCommand, () => {
-    it("emits entry verbatim with quoted args", () => {
-        expect.assertions(1);
+    it("routes pre-commit hooks through the runner with entry + args passed via argv", () => {
+        expect.assertions(3);
 
         const command = buildHookCommand({ args: ["--foo", "bar baz"], entry: "pnpm exec lint-staged" }, "pre-commit");
 
-        expect(command).toBe("pnpm exec lint-staged '--foo' 'bar baz'");
+        expect(command).toContain("node \"$(dirname \"$0\")/.builtins/prek-runner.mjs\"");
+        expect(command).toContain("-- pnpm exec lint-staged");
+        expect(command).toContain("'--foo' 'bar baz'");
     });
 
     it("forwards \"$@\" for commit-msg stage with pass_filenames default", () => {
@@ -178,14 +193,6 @@ describe(buildHookCommand, () => {
         const command = buildHookCommand({ entry: "pnpm exec commitlint --edit" }, "commit-msg");
 
         expect(command).toBe('pnpm exec commitlint --edit "$@"');
-    });
-
-    it("omits \"$@\" for pre-commit stage (shell cannot compute staged files)", () => {
-        expect.assertions(1);
-
-        const command = buildHookCommand({ entry: "pnpm exec lint-staged" }, "pre-commit");
-
-        expect(command).toBe("pnpm exec lint-staged");
     });
 
     it("omits \"$@\" when pass_filenames is false even for commit-msg", () => {
@@ -204,12 +211,31 @@ describe(buildHookCommand, () => {
         expect(command).toBe("echo 'do not use console.log'; exit 1");
     });
 
-    it("escapes embedded single quotes in args", () => {
+    it("escapes embedded single quotes in args when routed via the runner", () => {
         expect.assertions(1);
 
         const command = buildHookCommand({ args: ["it's fine"], entry: "echo" }, "pre-commit");
 
-        expect(command).toBe(String.raw`echo 'it'\''s fine'`);
+        expect(command).toContain(String.raw`'it'\''s fine'`);
+    });
+
+    it("emits a --builtin dispatch when a builtin id is supplied", () => {
+        expect.assertions(2);
+
+        const command = buildHookCommand({ args: ["--fix=lf"], id: "mixed-line-ending" }, "pre-commit", "mixed-line-ending");
+
+        expect(command).toContain("--builtin mixed-line-ending");
+        expect(command).toContain("-- '--fix=lf'");
+    });
+
+    it("emits filter flags with single-quoted regex to prevent shell injection", () => {
+        expect.assertions(2);
+
+        const command = buildRunnerInvocation({ exclude: "'; rm -rf /", files: String.raw`\.ts$` });
+
+        expect(command).toContain(String.raw`--files '\.ts$'`);
+        // Embedded single quote is escaped via '\'' — never breaks out of the quoted string.
+        expect(command).toContain(String.raw`--exclude ''\''; rm -rf /'`);
     });
 });
 
@@ -244,15 +270,15 @@ describe(convertPrekConfig, () => {
         expect(result.skippedHooks).toHaveLength(0);
     });
 
-    it("skips remote repos with a reason", () => {
+    it("skips remote repos with no bundled equivalent", () => {
         expect.assertions(3);
 
         const config: PrekConfig = {
             repos: [
                 {
-                    hooks: [{ id: "trailing-whitespace" }],
-                    repo: "https://github.com/pre-commit/pre-commit-hooks",
-                    rev: "v4.5.0",
+                    hooks: [{ id: "some-python-hook" }],
+                    repo: "https://github.com/psf/black",
+                    rev: "24.1.0",
                 },
             ],
         };
@@ -261,7 +287,27 @@ describe(convertPrekConfig, () => {
 
         expect(result.scripts.size).toBe(0);
         expect(result.skippedHooks).toHaveLength(1);
-        expect(result.skippedHooks[0]?.reason).toContain("requires the prek binary");
+        expect(result.skippedHooks[0]?.reason).toContain("has no bundled equivalent");
+    });
+
+    it("translates known remote hooks via the bundled runner", () => {
+        expect.assertions(3);
+
+        const config: PrekConfig = {
+            repos: [
+                {
+                    hooks: [{ id: "trailing-whitespace" }, { id: "end-of-file-fixer" }],
+                    repo: "https://github.com/pre-commit/pre-commit-hooks",
+                    rev: "v4.5.0",
+                },
+            ],
+        };
+
+        const result = convertPrekConfig(config);
+
+        expect(result.skippedHooks).toHaveLength(0);
+        expect(result.scripts.get("pre-commit")).toContain("--builtin trailing-whitespace");
+        expect(result.scripts.get("pre-commit")).toContain("--builtin end-of-file-fixer");
     });
 
     it("skips local hooks with non-translatable languages", () => {
@@ -289,15 +335,15 @@ describe(convertPrekConfig, () => {
         expect(result.skippedHooks[0]?.reason).toContain("isolated toolchain");
     });
 
-    it("records a manual step when additional_dependencies is present on a translatable hook", () => {
-        expect.assertions(2);
+    it("collects additional_dependencies as structured deps (not manual steps)", () => {
+        expect.assertions(3);
 
         const config: PrekConfig = {
             repos: [
                 {
                     hooks: [
                         {
-                            additional_dependencies: ["@commitlint/cli"],
+                            additional_dependencies: ["@commitlint/cli", "lodash@4.17.21"],
                             entry: "commitlint",
                             id: "commitlint",
                             language: "system",
@@ -311,12 +357,39 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.manualSteps).toHaveLength(1);
-        expect(result.manualSteps[0]).toContain("@commitlint/cli");
+        expect(result.additionalDeps).toHaveLength(2);
+        expect(result.additionalDeps[0]).toStrictEqual({ hookId: "commitlint", name: "@commitlint/cli", raw: "@commitlint/cli", version: "latest" });
+        expect(result.additionalDeps[1]).toStrictEqual({ hookId: "commitlint", name: "lodash", raw: "lodash@4.17.21", version: "4.17.21" });
     });
 
-    it("records dropped file filters without discarding the hook", () => {
-        expect.assertions(2);
+    it("routes pip-style additional_dependencies to manual steps", () => {
+        expect.assertions(3);
+
+        const config: PrekConfig = {
+            repos: [
+                {
+                    hooks: [
+                        {
+                            additional_dependencies: ["black==24.1.0"],
+                            entry: "black",
+                            id: "black",
+                            language: "system",
+                        },
+                    ],
+                    repo: "local",
+                },
+            ],
+        };
+
+        const result = convertPrekConfig(config);
+
+        expect(result.additionalDeps).toHaveLength(0);
+        expect(result.manualSteps).toHaveLength(1);
+        expect(result.manualSteps[0]).toContain("pip-style");
+    });
+
+    it("preserves file filters via the runner invocation", () => {
+        expect.assertions(3);
 
         const config: PrekConfig = {
             repos: [
@@ -327,7 +400,34 @@ describe(convertPrekConfig, () => {
                             files: String.raw`\.ts$`,
                             id: "eslint",
                             language: "system",
-                            types: ["javascript"],
+                            types: ["typescript"],
+                        },
+                    ],
+                    repo: "local",
+                },
+            ],
+        };
+
+        const result = convertPrekConfig(config);
+        const script = result.scripts.get("pre-commit") ?? "";
+
+        expect(script).toContain(String.raw`--files '\.ts$'`);
+        expect(script).toContain("--types 'typescript'");
+        expect(script).toContain("-- pnpm exec eslint");
+    });
+
+    it("warns on unsupported types without suppressing the hook", () => {
+        expect.assertions(2);
+
+        const config: PrekConfig = {
+            repos: [
+                {
+                    hooks: [
+                        {
+                            entry: "echo",
+                            id: "exotic",
+                            language: "system",
+                            types: ["rust", "swift"],
                         },
                     ],
                     repo: "local",
@@ -337,8 +437,8 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.droppedFilters.some((note) => note.includes("eslint"))).toBe(true);
-        expect(result.scripts.get("pre-commit")).toContain("pnpm exec eslint");
+        expect(result.droppedFilters.some((note) => note.includes("rust"))).toBe(true);
+        expect(result.scripts.has("pre-commit")).toBe(true);
     });
 
     it("merges multiple hooks into the same stage script in declaration order", () => {
@@ -514,7 +614,7 @@ describe(migrateFromPrek, () => {
         }
     });
 
-    it.skipIf(process.platform === "win32")("warns about skipped remote repos but still migrates local hooks", () => {
+    it.skipIf(process.platform === "win32")("warns about skipped remote repos with no bundled equivalent", () => {
         expect.assertions(3);
 
         const { cleanup, root } = createTemporaryGitRepo();
@@ -523,10 +623,10 @@ describe(migrateFromPrek, () => {
             writeFileSync(
                 join(root, ".pre-commit-config.yaml"),
                 `repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  - repo: https://github.com/psf/black
+    rev: 24.1.0
     hooks:
-      - id: trailing-whitespace
+      - id: black
   - repo: local
     hooks:
       - id: local-hook
@@ -540,10 +640,211 @@ describe(migrateFromPrek, () => {
 
             expect(result.isError).toBe(false);
             expect(existsSync(join(root, ".vis-hooks", "pre-commit"))).toBe(true);
-            expect(logger.warnings.some((w) => w.includes("trailing-whitespace"))).toBe(true);
+            expect(logger.warnings.some((w) => w.includes("black"))).toBe(true);
         } finally {
             cleanup();
         }
+    });
+
+    it.skipIf(process.platform === "win32")("writes the prek-runner when a translated hook uses it", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            writeFileSync(
+                join(root, ".pre-commit-config.yaml"),
+                `repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-json
+`,
+            );
+
+            const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
+
+            expect(result.isError).toBe(false);
+            expect(existsSync(join(root, ".vis-hooks", ".builtins", "prek-runner.mjs"))).toBe(true);
+            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("--builtin trailing-whitespace");
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("merges additional_dependencies into devDependencies", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            writeFileSync(join(root, "package.json"), `${JSON.stringify({ name: "fixture", version: "0.0.0" }, undefined, 4)}\n`);
+            writeFileSync(
+                join(root, ".pre-commit-config.yaml"),
+                `repos:
+  - repo: local
+    hooks:
+      - id: commitlint
+        entry: pnpm exec commitlint --edit
+        language: system
+        additional_dependencies: ['@commitlint/cli', 'lodash@4.17.21']
+        stages: [commit-msg]
+`,
+            );
+
+            migrateFromPrek(root, ".vis-hooks", noopLogger);
+
+            const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+            expect(pkg.devDependencies).toBeDefined();
+            expect(pkg.devDependencies["@commitlint/cli"]).toBe("latest");
+            expect(pkg.devDependencies.lodash).toBe("4.17.21");
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("does not clobber an already-declared dependency", () => {
+        expect.assertions(2);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            writeFileSync(
+                join(root, "package.json"),
+                `${JSON.stringify({ devDependencies: { lodash: "3.0.0" }, name: "fixture", version: "0.0.0" }, undefined, 4)}\n`,
+            );
+            writeFileSync(
+                join(root, ".pre-commit-config.yaml"),
+                `repos:
+  - repo: local
+    hooks:
+      - id: a
+        entry: echo hi
+        language: system
+        additional_dependencies: ['lodash@4.17.21']
+`,
+            );
+
+            const logger = collectLogger();
+
+            migrateFromPrek(root, ".vis-hooks", logger);
+
+            const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+            expect(pkg.devDependencies.lodash).toBe("3.0.0");
+            expect(logger.messages.some((m) => m.includes("Skipped"))).toBe(true);
+        } finally {
+            cleanup();
+        }
+    });
+});
+
+// ─── parseAdditionalDep ─────────────────────────────────────────────
+
+describe(parseAdditionalDep, () => {
+    it("handles bare package names", () => {
+        expect.assertions(1);
+
+        expect(parseAdditionalDep("lodash")).toStrictEqual({ name: "lodash", version: "latest" });
+    });
+
+    it("handles name@version", () => {
+        expect.assertions(1);
+
+        expect(parseAdditionalDep("lodash@4.17.21")).toStrictEqual({ name: "lodash", version: "4.17.21" });
+    });
+
+    it("handles scoped packages", () => {
+        expect.assertions(1);
+
+        expect(parseAdditionalDep("@commitlint/cli@19.0.0")).toStrictEqual({ name: "@commitlint/cli", version: "19.0.0" });
+    });
+
+    it("handles scoped packages without a version", () => {
+        expect.assertions(1);
+
+        expect(parseAdditionalDep("@scope/pkg")).toStrictEqual({ name: "@scope/pkg", version: "latest" });
+    });
+
+    it("rejects pip-style pins", () => {
+        expect.assertions(3);
+
+        expect(parseAdditionalDep("black==24.1.0")).toBeUndefined();
+        expect(parseAdditionalDep("foo>=1.0")).toBeUndefined();
+        expect(parseAdditionalDep("bar~=2.0")).toBeUndefined();
+    });
+
+    it("falls back to latest when the version suffix is empty", () => {
+        expect.assertions(2);
+
+        expect(parseAdditionalDep("lodash@")).toStrictEqual({ name: "lodash", version: "latest" });
+        expect(parseAdditionalDep("@scope/pkg@")).toStrictEqual({ name: "@scope/pkg", version: "latest" });
+    });
+});
+
+// ─── normalizeRepoKey ───────────────────────────────────────────────
+
+describe(normalizeRepoKey, () => {
+    it("normalises https, git, and ssh GitHub URLs", () => {
+        expect.assertions(3);
+
+        expect(normalizeRepoKey("https://github.com/pre-commit/pre-commit-hooks")).toBe("pre-commit/pre-commit-hooks");
+        expect(normalizeRepoKey("git@github.com:pre-commit/pre-commit-hooks.git")).toBe("pre-commit/pre-commit-hooks");
+        expect(normalizeRepoKey("https://github.com/pre-commit/pre-commit-hooks.git")).toBe("pre-commit/pre-commit-hooks");
+    });
+
+    it("returns the input unchanged for non-GitHub URLs", () => {
+        expect.assertions(1);
+
+        expect(normalizeRepoKey("https://gitlab.com/foo/bar")).toBe("https://gitlab.com/foo/bar");
+    });
+});
+
+// ─── mergeAdditionalDependencies ────────────────────────────────────
+
+describe(mergeAdditionalDependencies, () => {
+    let temporary: { cleanup: () => void; root: string };
+
+    beforeEach(() => {
+        temporary = createTemporaryDirectory();
+    });
+
+    afterEach(() => {
+        temporary.cleanup();
+    });
+
+    it("adds new deps to devDependencies", () => {
+        expect.assertions(2);
+
+        writeFileSync(join(temporary.root, "package.json"), `${JSON.stringify({ name: "x", version: "0.0.0" }, undefined, 4)}\n`);
+
+        const result = mergeAdditionalDependencies(temporary.root, [{ hookId: "a", name: "foo", raw: "foo", version: "latest" }]);
+
+        expect(result.added).toStrictEqual(["foo"]);
+        expect(JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8")).devDependencies.foo).toBe("latest");
+    });
+
+    it("does nothing when package.json is missing", () => {
+        expect.assertions(1);
+
+        const result = mergeAdditionalDependencies(temporary.root, [{ hookId: "a", name: "foo", raw: "foo", version: "1.0.0" }]);
+
+        expect(result.added).toStrictEqual([]);
+    });
+
+    it("preserves the existing JSON indent when it is 2 spaces", () => {
+        expect.assertions(1);
+
+        const packageJson = { name: "x", version: "0.0.0" };
+
+        writeFileSync(join(temporary.root, "package.json"), `${JSON.stringify(packageJson, undefined, 2)}\n`);
+        mergeAdditionalDependencies(temporary.root, [{ hookId: "a", name: "foo", raw: "foo", version: "1.0.0" }]);
+
+        const text: string = readFileSync(join(temporary.root, "package.json"), "utf8");
+
+        expect(text).toContain("\n  \"devDependencies\"");
     });
 
     it.skipIf(process.platform === "win32")("errors when config is missing", () => {
