@@ -15,7 +15,7 @@ import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
 import auditCommand from "./commands/audit";
-import cacheCommand from "./commands/cache";
+import cacheCommands from "./commands/cache";
 import checkCommand from "./commands/check";
 import ciCommand from "./commands/ci";
 import cleanCommand from "./commands/clean";
@@ -28,7 +28,7 @@ import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
 import generateCommand from "./commands/generate";
 import graphCommand from "./commands/graph";
-import hookCommand from "./commands/hook";
+import hookCommands from "./commands/hook";
 import ignoreCommand from "./commands/ignore";
 import implodeCommand from "./commands/implode";
 import infoCommand from "./commands/info";
@@ -36,7 +36,7 @@ import initCommand from "./commands/init";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import listCommand from "./commands/list";
-import migrateCommand from "./commands/migrate";
+import migrateCommands from "./commands/migrate";
 import optimizeCommand from "./commands/optimize";
 // outdated is now an alias of check
 import pmCommand from "./commands/pm";
@@ -115,6 +115,12 @@ cli.addGlobalOption({
 cli.addPlugin(configLoaderPlugin);
 cli.addPlugin(securityEnforcementPlugin);
 
+// Flat top-level commands must be registered before any nested commands that
+// share their leaf name (cerebro's addCommand throws DUPLICATE_COMMAND for a
+// flat command when a nested command with the same leaf name is already
+// registered). The nested-command blocks (hook/migrate/cache) therefore come
+// last, after every flat command.
+
 // Workspace commands
 cli.addCommand(runCommand);
 cli.addCommand(ciCommand);
@@ -123,12 +129,10 @@ cli.addCommand(actionGraphCommand);
 cli.addCommand(affectedCommand);
 cli.addCommand(taskWhyCommand);
 cli.addCommand(ignoreCommand);
-cli.addCommand(hookCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
 cli.addCommand(aiCommand);
 cli.addCommand(analyzeCommand);
-cli.addCommand(migrateCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
 cli.addCommand(statusCommand);
@@ -153,7 +157,6 @@ cli.addCommand(pmCommand);
 // Project & environment commands
 cli.addCommand(initCommand);
 cli.addCommand(cleanCommand);
-cli.addCommand(cacheCommand);
 cli.addCommand(createCommand);
 cli.addCommand(generateCommand);
 cli.addCommand(devcontainerCommand);
@@ -167,6 +170,21 @@ cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 cli.addCommand(sbomCommand);
 cli.addCommand(secretsCommand);
+
+// Nested commands — registered last so leaf-name collisions with flat
+// top-level commands (list, install, add, run, clean) don't trip the
+// duplicate-name guard in cerebro's addCommand.
+for (const command of hookCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of migrateCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of cacheCommands) {
+    cli.addCommand(command);
+}
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

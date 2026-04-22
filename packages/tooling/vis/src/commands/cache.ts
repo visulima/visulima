@@ -439,104 +439,147 @@ const runSize = async (cacheDirectory: string, format: string): Promise<void> =>
     info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
 };
 
-const cache: Command = {
-    argument: {
-        description: "Action to perform: list, clean, prune, or size",
-        name: "action",
-        type: String,
-    },
-    description: "Manage the task runner cache (list, clean, prune, size)",
-    examples: [
-        ["vis cache list", "List all cache entries"],
-        ["vis cache clean", "Remove all cache entries"],
-        ["vis cache clean --dry-run", "Preview what clean would remove"],
-        ["vis cache prune", "Remove old and oversized entries"],
-        ["vis cache prune --max-age-days=3 --max-size=500MB", "Prune with custom limits"],
-        ["vis cache size --format=json", "Print total size as JSON"],
-    ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        const workspaceRoot = wsRoot ?? process.cwd();
-        const action = argument[0] ?? "list";
+/**
+ * Shared option describing the cache-directory override. Used by every
+ * subcommand so `--cache-dir` is accepted consistently.
+ */
+const cacheDirectoryOption = {
+    description: "Cache directory (overrides config and default). Relative paths are resolved against the workspace root.",
+    name: "cache-dir",
+    type: String,
+} as const;
+
+/**
+ * Resolves the cache directory for a subcommand, honouring `--cache-dir`,
+ * `visConfig.taskRunnerOptions.cacheDirectory`, and the default.
+ */
+const resolveCacheDirectoryFromContext = (
+    workspaceRoot: string | undefined,
+    options: Record<string, unknown>,
+    visConfig: Record<string, unknown> | undefined,
+): { cacheDirectory: string; workspaceRoot: string } => {
+    const resolvedWorkspaceRoot = workspaceRoot ?? process.cwd();
+    const taskRunnerOptions = ((visConfig ?? {}) as { taskRunnerOptions?: { cacheDirectory?: string } }).taskRunnerOptions ?? {};
+
+    return {
+        cacheDirectory: resolveCacheDirectory(resolvedWorkspaceRoot, options.cacheDir as string | undefined, taskRunnerOptions.cacheDirectory),
+        workspaceRoot: resolvedWorkspaceRoot,
+    };
+};
+
+const cacheList: Command = {
+    commandPath: ["cache"],
+    description: "List all cache entries",
+    examples: [["vis cache list", "List all cache entries"]],
+    execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
+        const { cacheDirectory } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
         const format = (options.format as string) ?? "table";
 
-        const taskRunnerOptions = (visConfig?.taskRunnerOptions ?? {}) as {
-            cacheDirectory?: string;
-        };
-
-        const cacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir as string | undefined, taskRunnerOptions.cacheDirectory);
-
-        switch (action) {
-            case "clean": {
-                await runClean(cacheDirectory, workspaceRoot, {
-                    dryRun: Boolean(options.dryRun),
-                    force: Boolean(options.force),
-                });
-                break;
-            }
-
-            case "list": {
-                await runList(cacheDirectory, format, logger);
-                break;
-            }
-
-            case "prune": {
-                await runPrune(cacheDirectory, workspaceRoot, {
-                    maxCacheAgeDays: typeof options.maxAgeDays === "number" ? options.maxAgeDays : undefined,
-                    maxCacheSize: options.maxSize as string | undefined,
-                });
-                break;
-            }
-
-            case "size": {
-                await runSize(cacheDirectory, format);
-                break;
-            }
-
-            default: {
-                failure(`Unknown action "${action}". Use "list", "clean", "prune", or "size".`);
-                process.exitCode = 1;
-            }
-        }
+        await runList(cacheDirectory, format, logger);
     },
     group: "Workspace",
-    name: "cache",
+    name: "list",
     options: [
-        {
-            description: "Cache directory (overrides config and default). Relative paths are resolved against the workspace root.",
-            name: "cache-dir",
-            type: String,
-        },
+        cacheDirectoryOption,
         {
             description: "Output format: table or json (default: table)",
             name: "format",
             type: String,
         },
+    ],
+};
+
+const cacheClean: Command = {
+    commandPath: ["cache"],
+    description: "Remove all cache entries",
+    examples: [
+        ["vis cache clean", "Remove all cache entries"],
+        ["vis cache clean --dry-run", "Preview what clean would remove"],
+    ],
+    execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
+        const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+        await runClean(cacheDirectory, workspaceRoot, {
+            dryRun: Boolean(options.dryRun),
+            force: Boolean(options.force),
+        });
+    },
+    group: "Workspace",
+    name: "clean",
+    options: [
+        cacheDirectoryOption,
         {
             defaultValue: false,
-            description: "For clean: preview without deleting",
+            description: "Preview without deleting",
             name: "dry-run",
             type: Boolean,
         },
         {
             defaultValue: false,
-            description: "For clean: skip the confirmation prompt for out-of-workspace cache directories",
+            description: "Skip the confirmation prompt for out-of-workspace cache directories",
             name: "force",
             type: Boolean,
         },
+    ],
+};
+
+const cachePrune: Command = {
+    commandPath: ["cache"],
+    description: "Remove old and oversized cache entries",
+    examples: [
+        ["vis cache prune", "Remove old and oversized entries"],
+        ["vis cache prune --max-age-days=3 --max-size=500MB", "Prune with custom limits"],
+    ],
+    execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
+        const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+        await runPrune(cacheDirectory, workspaceRoot, {
+            maxCacheAgeDays: typeof options.maxAgeDays === "number" ? options.maxAgeDays : undefined,
+            maxCacheSize: options.maxSize as string | undefined,
+        });
+    },
+    group: "Workspace",
+    name: "prune",
+    options: [
+        cacheDirectoryOption,
         {
-            description: "For prune: remove entries older than N days",
+            description: "Remove entries older than N days",
             name: "max-age-days",
             type: Number,
         },
         {
-            description: "For prune: evict oldest entries until cache is under this size (e.g. 500MB)",
+            description: "Evict oldest entries until cache is under this size (e.g. 500MB)",
             name: "max-size",
             type: String,
         },
     ],
 };
 
-export default cache;
+const cacheSize: Command = {
+    commandPath: ["cache"],
+    description: "Print the cache directory's on-disk footprint",
+    examples: [["vis cache size --format=json", "Print total size as JSON"]],
+    execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
+        const { cacheDirectory } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+        const format = (options.format as string) ?? "table";
+
+        await runSize(cacheDirectory, format);
+    },
+    group: "Workspace",
+    name: "size",
+    options: [
+        cacheDirectoryOption,
+        {
+            description: "Output format: table or json (default: table)",
+            name: "format",
+            type: String,
+        },
+    ],
+};
+
+const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize];
+
+export default cacheCommands;
 // Internals exposed for unit tests. `DEFAULT_CACHE_DIRECTORY_NAME`,
 // `resolveCacheDirectory`, and `isCacheDirectoryInsideWorkspace` live in
 // `../cache-directory` — import them from there instead of re-exporting here.
