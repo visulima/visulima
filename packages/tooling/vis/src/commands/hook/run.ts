@@ -7,6 +7,7 @@ import { join } from "@visulima/path";
 interface RunOptions {
     allFiles?: boolean;
     fromRef?: string;
+    lastCommit?: boolean;
     stage?: string;
     toRef?: string;
 }
@@ -31,29 +32,38 @@ const runHookStage = (root: string, hooksDirectory: string, options: RunOptions,
         throw new Error(`No script found at ${hooksDirectory}/${stage}. Install or migrate hooks first.`);
     }
 
+    // --last-commit is a shortcut for --from-ref HEAD~1 --to-ref HEAD, matching
+    // prek's convenience flag. Error if the user mixes it with explicit refs.
+    if (options.lastCommit && (options.fromRef || options.toRef)) {
+        throw new Error("--last-commit cannot be combined with --from-ref or --to-ref");
+    }
+
+    const fromRef = options.lastCommit ? "HEAD~1" : options.fromRef;
+    const toRef = options.lastCommit ? "HEAD" : options.toRef;
+
+    if (fromRef && !toRef) {
+        throw new Error("--from-ref requires --to-ref");
+    }
+
+    if (toRef && !fromRef) {
+        throw new Error("--to-ref requires --from-ref");
+    }
+
     const env: NodeJS.ProcessEnv = { ...process.env };
 
     if (options.allFiles) {
         env["VIS_HOOK_ALL_FILES"] = "1";
     }
 
-    if (options.fromRef) {
-        env["VIS_HOOK_FROM_REF"] = options.fromRef;
+    if (fromRef) {
+        env["VIS_HOOK_FROM_REF"] = fromRef;
     }
 
-    if (options.toRef) {
-        env["VIS_HOOK_TO_REF"] = options.toRef;
+    if (toRef) {
+        env["VIS_HOOK_TO_REF"] = toRef;
     }
 
-    if (options.fromRef && !options.toRef) {
-        throw new Error("--from-ref requires --to-ref");
-    }
-
-    if (options.toRef && !options.fromRef) {
-        throw new Error("--to-ref requires --from-ref");
-    }
-
-    logger.info(`Running ${hooksDirectory}/${stage}${options.allFiles ? " (--all-files)" : ""}${options.fromRef ? ` (${options.fromRef}..${options.toRef})` : ""}`);
+    logger.info(`Running ${hooksDirectory}/${stage}${options.allFiles ? " (--all-files)" : ""}${fromRef ? ` (${fromRef}..${toRef})` : ""}`);
 
     const result = spawnSync("sh", ["-e", scriptPath], { cwd: root, env, stdio: "inherit" });
 

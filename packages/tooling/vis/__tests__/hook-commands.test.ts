@@ -184,6 +184,30 @@ describe(runHookStage, () => {
         ).toThrow(/--from-ref requires --to-ref/);
     });
 
+    it.skipIf(process.platform === "win32")("translates --last-commit into HEAD~1..HEAD env vars", () => {
+        expect.assertions(1);
+
+        writeHookScript(
+            temporary.root,
+            "pre-commit",
+            "#!/usr/bin/env sh\nif [ \"$VIS_HOOK_FROM_REF\" = \"HEAD~1\" ] && [ \"$VIS_HOOK_TO_REF\" = \"HEAD\" ]; then exit 7; else exit 0; fi\n",
+        );
+
+        const code = runHookStage(temporary.root, ".vis-hooks", { lastCommit: true, stage: "pre-commit" }, noopLogger);
+
+        expect(code).toBe(7);
+    });
+
+    it.skipIf(process.platform === "win32")("rejects --last-commit combined with explicit refs", () => {
+        expect.assertions(1);
+
+        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\nexit 0\n");
+
+        expect(() =>
+            runHookStage(temporary.root, ".vis-hooks", { fromRef: "main", lastCommit: true, stage: "pre-commit", toRef: "HEAD" }, noopLogger),
+        ).toThrow(/--last-commit cannot be combined/);
+    });
+
     it.skipIf(process.platform === "win32")("runs the named stage script and returns its exit code", () => {
         expect.assertions(1);
 
