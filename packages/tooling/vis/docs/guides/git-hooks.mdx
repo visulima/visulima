@@ -60,22 +60,26 @@ If your project uses [prek](https://github.com/j178/prek) (a Rust reimplementati
 vis hook migrate
 ```
 
-Since vis hook scripts are plain shell, only hooks that don't need a managed toolchain can be translated directly. The migrator:
+vis hook scripts are plain shell, so anything that needs a managed toolchain still has to run via prek. The migrator covers everything else:
 
-1. Parses `.pre-commit-config.yaml`, `.pre-commit-config.yml`, or `prek.toml` (YAML takes precedence when both are present)
-2. For each `local` hook with `language: system`, `script`, or `fail`: writes one shell script per stage (e.g. `.vis-hooks/pre-commit`, `.vis-hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
-3. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
-4. Prepends `set -e` to each script when top-level `fail_fast: true` is set.
-5. Backs up the original config as `.pre-commit-config.yaml.bak`, removes the original, and runs `prek uninstall` if the binary is on your PATH.
+1. Parses `.pre-commit-config.yaml`, `.pre-commit-config.yml`, or `prek.toml` (YAML takes precedence when both are present).
+2. For each `local` hook with `language: system`, `script`, or `fail`, writes one shell script per stage (e.g. `.vis-hooks/pre-commit`, `.vis-hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
+3. Preserves `files`/`exclude` regex and `types`/`types_or`/`exclude_types` filters by routing the invocation through a bundled Node helper (`.vis-hooks/.builtins/prek-runner.mjs`) that replicates pre-commit's file-selection semantics. User strings pass via argv — never interpolated into the shell — so even hostile regex patterns can't break out.
+4. Translates a curated set of remote hooks from `pre-commit/pre-commit-hooks` to bundled builtins so prek doesn't need to stay installed just for them: `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending`. Each is a faithful JavaScript port of the upstream Python implementation.
+5. Merges each hook's `additional_dependencies` into the project's `package.json` `devDependencies`. Pip-style pins (`name==x.y.z`) are surfaced as a manual step instead of written to the manifest.
+6. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
+7. Prepends `set -e` to each script when top-level `fail_fast: true` is set.
+8. Backs up the original config as `.pre-commit-config.yaml.bak` (or `.yml.bak` / `prek.toml.bak`), removes the original, and runs `prek uninstall` if the binary is on your PATH.
 
-Anything the migrator can't translate is surfaced as a warning:
+Anything that can't be translated is surfaced as a warning:
 
-- Remote repo entries (`repo: https://...`) — these need the prek binary to run; either keep prek installed for them or reimplement the hooks as local `system` entries.
-- Local hooks with language-specific toolchains (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, ...).
-- File filters (`types`, `types_or`, `exclude_types`, `files`, `exclude`) — dropped, the commands run against all staged files. If you relied on the filtering, move the logic inside the hook command (e.g. via `vis staged` or by filtering inside the tool itself).
-- Hook-scoped `additional_dependencies` — recorded as a manual follow-up.
+- Remote repo entries that aren't in the bundled dictionary — keep prek installed for those, or reimplement the hook as a local `system` entry.
+- Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, ...).
+- `types` entries that aren't in the runner's built-in pygments-derived extension map (`javascript`, `typescript`, `jsx`, `tsx`, `json`, `yaml`, `markdown`, `html`, `css`, `shell`, `toml`, `python`). The filter is still applied for supported types; unsupported ones are ignored with a warning.
 
 TOML configs (`prek.toml`) are parsed via `@visulima/fs/toml` (which wraps `smol-toml`), so both formats work out of the box.
+
+Commit `.vis-hooks/.builtins/` along with the rest of the hooks directory so teammates get the same runner and builtin implementations.
 
 ## Disabling Hooks
 

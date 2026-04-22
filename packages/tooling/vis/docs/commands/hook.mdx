@@ -48,21 +48,36 @@ If both a husky directory and a prek config are present, the command errors and 
 
 #### What migrates from prek
 
-Only `local` hooks with `language: system`, `language: script`, or `language: fail` are translated — everything else needs the prek binary to run and is surfaced as a warning or manual step.
+Local hooks with `language: system`, `language: script`, or `language: fail`, plus a curated set of remote hooks from `pre-commit/pre-commit-hooks`, are translated to plain shell + a small bundled Node runner. Everything else still needs the prek binary and is surfaced as a warning or manual step.
 
 | prek feature | migration behavior |
 | --- | --- |
-| Remote `repo: https://...` entries | skipped with a warning |
-| `language: python` / `node` / `golang` / `rust` / `ruby` / `docker` / `pygrep` / etc. | skipped with a warning |
-| `additional_dependencies` | recorded as a manual follow-up step |
-| `types` / `types_or` / `exclude_types` / `files` / `exclude` | dropped (scripts run unconditionally) |
+| Local `system` / `script` / `fail` hooks | routed through `.vis-hooks/.builtins/prek-runner.mjs`, which handles staged-file discovery, filters, and chunked argv dispatch |
+| Remote hooks from `pre-commit/pre-commit-hooks` — `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending` | translated to bundled builtins (no prek binary required at runtime) |
+| Other remote `repo: https://...` entries | skipped with a warning |
+| Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, etc.) | skipped with a warning |
+| `files` / `exclude` (regex filters) | preserved — passed as argv flags to the runner, so user strings can't escape into the outer shell |
+| `types` / `types_or` / `exclude_types` | preserved for the common types (`javascript`, `typescript`, `jsx`, `tsx`, `json`, `yaml`, `markdown`, `html`, `css`, `shell`, `toml`, `python`); unknown types warn and are skipped |
+| `always_run`, `pass_filenames: false` | forwarded to the runner as flags |
+| `additional_dependencies` | merged into `package.json` `devDependencies`; pip-style pins (`name==x`) are surfaced as a manual step instead |
 | `stages` (including legacy `commit`/`push`/`merge-commit` aliases) | translated to per-stage hook files |
 | `default_stages` | used as the fallback when a hook omits `stages` |
-| `pass_filenames: true` | forwards `"$@"` for `commit-msg`/`prepare-commit-msg`/`pre-rebase`/`post-*`; dropped otherwise |
+| `pass_filenames: true` on `commit-msg`/`prepare-commit-msg`/`pre-rebase`/`post-*` | forwards git's own argument as `"$@"` (bypasses the runner since pre-commit's filter semantics don't apply) |
 | Top-level `fail_fast: true` | prepends `set -e` to each generated script |
 | `manual` stage | skipped silently (not a real git hook) |
 | `minimum_pre_commit_version`, `ci`, `default_language_version`, `default_install_hook_types` | ignored |
 | `prek.toml` (native format) | parsed via `@visulima/fs/toml`; YAML takes precedence if both are present |
+
+#### The bundled runner
+
+When a migration emits a hook that needs staged-file discovery or a built-in, the migrator writes `.vis-hooks/.builtins/prek-runner.mjs` — a small Node helper that:
+
+- reads staged files from `git diff --cached --name-only --diff-filter=ACM -z` (null-separated, safe for names with spaces/newlines)
+- applies `--files`/`--exclude` regex and `--types`/`--types-or`/`--exclude-types` filters in JavaScript (pre-commit semantics)
+- chunks the file list to a conservative 32 KiB argv budget to stay under ARG_MAX on all platforms
+- either dispatches to a named `--builtin` or execs the hook's entry with filtered files as trailing argv
+
+All user-supplied values (regex patterns, filenames, hook args) travel via `process.argv`, never as interpolated shell strings. Commit `.vis-hooks/.builtins/` alongside the rest of the hooks directory so teammates get the same behavior.
 
 ## Options
 
