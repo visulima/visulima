@@ -1,3 +1,5 @@
+## @visulima/email [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.15...@visulima/email@1.0.0-alpha.16) (2026-04-22)
+
 ## @visulima/email [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.14...@visulima/email@1.0.0-alpha.15) (2026-04-22)
 
 ## @visulima/email [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.13...@visulima/email@1.0.0-alpha.14) (2026-04-22)
