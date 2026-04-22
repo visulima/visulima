@@ -1,3 +1,18 @@
+## @visulima/find-ai-runner [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.4...@visulima/find-ai-runner@1.0.0-alpha.5) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Tests
+
+* **find-ai-runner:** fix vitest lint warnings and cli test error ([44fc93c](https://github.com/visulima/visulima/commit/44fc93cb6d267b711be99652d2925817d262a2cd))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.3...@visulima/find-ai-runner@1.0.0-alpha.4) (2026-04-15)
 
 ### Bug Fixes
