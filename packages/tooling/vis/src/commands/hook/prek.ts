@@ -9,7 +9,7 @@ import { parse as parseYaml } from "yaml";
 import type { InstallResult } from "./constants";
 import { PREK_CONFIG_FILES, PREK_STAGE_ALIASES, PREK_STAGES_WITH_GIT_ARGS, PREK_SUPPORTED_STAGES, PREK_TRANSLATABLE_LANGUAGES } from "./constants";
 import { installHooks } from "./install";
-import { BUILTIN_HOOK_IDS, PREK_RUNNER_FILENAME, PREK_RUNNER_SOURCE, TYPES_EXTENSION_MAP } from "./prek-builtins";
+import { BUILTIN_HOOK_IDS, KNOWN_TYPE_TAGS, PREK_RUNNER_FILENAME, PREK_RUNNER_SOURCE } from "./prek-builtins";
 
 interface PrekHookEntry {
     additional_dependencies?: string[];
@@ -29,6 +29,7 @@ interface PrekHookEntry {
     stages?: string[];
     types?: string[];
     types_or?: string[];
+    verbose?: boolean;
 }
 
 interface PrekRepoEntry {
@@ -160,15 +161,17 @@ const parseAdditionalDep = (spec: string): { name: string; version: string } | u
 
 /**
  * Names in `types` / `types_or` / `exclude_types` that aren't in the runner's
- * pygments-derived table. The runner silently ignores them; we surface a
- * warning so the user knows their filter is incomplete.
+ * recognised tag set (extensions + shebang interpreters + metadata tags).
+ * Surfaced as a warning so users know their filter is incomplete.
  */
+const KNOWN_TAG_SET = new Set<string>(KNOWN_TYPE_TAGS);
+
 const unknownTypes = (entry: PrekHookEntry): string[] => {
     const unknown: string[] = [];
 
     for (const list of [entry.types, entry.types_or, entry.exclude_types]) {
         for (const type of list ?? []) {
-            if (!(type in TYPES_EXTENSION_MAP)) {
+            if (!KNOWN_TAG_SET.has(type)) {
                 unknown.push(type);
             }
         }
@@ -389,10 +392,16 @@ const convertPrekConfig = (config: PrekConfig): ConversionResult => {
                     continue;
                 }
 
-                const command = buildHookCommand(hook, stage, builtin);
+                let command = buildHookCommand(hook, stage, builtin);
 
                 if (command.startsWith(RUNNER_INVOCATION_HEAD)) {
                     usesRunner = true;
+                }
+
+                // Per-hook verbose: wrap the command so the shell prints it
+                // before executing and restores the previous setting after.
+                if (hook.verbose) {
+                    command = `(set -x; ${command})`;
                 }
 
                 const header = `# ${hookId}${hook.name ? `: ${hook.name}` : ""}`;
@@ -557,11 +566,16 @@ const detachPrek = (root: string, logger: MigrateLogger): void => {
     }
 };
 
+interface MigrateOptions {
+    dryRun?: boolean;
+}
+
 /**
  * Migrates a prek / pre-commit framework configuration to vis hooks.
  */
-const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLogger): InstallResult => {
+const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLogger, options: MigrateOptions = {}): InstallResult => {
     const configFile = detectPrekConfig(root);
+    const dryRun = options.dryRun === true;
 
     if (!configFile) {
         return { isError: true, message: "No prek configuration found (.pre-commit-config.yaml, .pre-commit-config.yml, or prek.toml)" };
@@ -583,66 +597,95 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
         return { isError: true, message: `${configFile} has no hooks to migrate` };
     }
 
-    // If core.hooksPath points to a prek-managed dir, unset it so installHooks can take over.
-    const existingPath = spawnSync("git", ["config", "--local", "core.hooksPath"], { cwd: root, encoding: "utf8" });
+    if (!dryRun) {
+        // If core.hooksPath points to a prek-managed dir, unset it so installHooks can take over.
+        const existingPath = spawnSync("git", ["config", "--local", "core.hooksPath"], { cwd: root, encoding: "utf8" });
 
-    if (existingPath.status === 0) {
-        const current = existingPath.stdout?.toString().trim();
+        if (existingPath.status === 0) {
+            const current = existingPath.stdout?.toString().trim();
 
-        if (current && (current.includes(".prek") || current.includes("prek-hooks"))) {
-            spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"], { cwd: root });
+            if (current && (current.includes(".prek") || current.includes("prek-hooks"))) {
+                spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"], { cwd: root });
+            }
         }
-    }
 
-    const installResult = installHooks(hooksDirectory);
+        const installResult = installHooks(hooksDirectory);
 
-    if (installResult.isError) {
-        return installResult;
-    }
+        if (installResult.isError) {
+            return installResult;
+        }
 
-    if (installResult.message) {
-        logger.info(installResult.message);
+        if (installResult.message) {
+            logger.info(installResult.message);
+        }
     }
 
     const targetDirectory = join(root, hooksDirectory);
 
-    ensureDirSync(targetDirectory);
+    if (!dryRun) {
+        ensureDirSync(targetDirectory);
+    }
 
     if (usesRunner) {
-        writeRunnerAssets(root, hooksDirectory);
-        logger.info(`  Wrote ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME}`);
+        if (dryRun) {
+            logger.info(`  (would write) ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME}`);
+        } else {
+            writeRunnerAssets(root, hooksDirectory);
+            logger.info(`  Wrote ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME}`);
+        }
     }
 
     let migratedCount = 0;
 
     for (const [stage, body] of scripts) {
-        writeFileSync(join(targetDirectory, stage), body, { mode: 0o755 });
+        if (dryRun) {
+            logger.info(`  (would write) ${hooksDirectory}/${stage} (${body.split("\n").length} lines)`);
+        } else {
+            writeFileSync(join(targetDirectory, stage), body, { mode: 0o755 });
+            logger.info(`  Wrote ${hooksDirectory}/${stage}`);
+        }
+
         migratedCount += 1;
-        logger.info(`  Wrote ${hooksDirectory}/${stage}`);
     }
 
-    const { added, skipped: skippedDeps } = mergeAdditionalDependencies(root, additionalDeps);
+    const { added, skipped: skippedDeps } = dryRun
+        ? {
+            added: additionalDeps.map((d) => d.name),
+            skipped: [] as string[],
+        }
+        : mergeAdditionalDependencies(root, additionalDeps);
 
     if (added.length > 0) {
-        logger.info(`Added ${added.length} package${added.length === 1 ? "" : "s"} to devDependencies: ${added.join(", ")}`);
-        logger.info("Run your package manager's install (e.g. `pnpm install`) to pick up the new devDependencies.");
+        const verb = dryRun ? "would add" : "Added";
+
+        logger.info(`${verb} ${added.length} package${added.length === 1 ? "" : "s"} to devDependencies: ${added.join(", ")}`);
+
+        if (!dryRun) {
+            logger.info("Run your package manager's install (e.g. `pnpm install`) to pick up the new devDependencies.");
+        }
     }
 
     if (skippedDeps.length > 0) {
         logger.info(`Skipped ${skippedDeps.length} already-declared package${skippedDeps.length === 1 ? "" : "s"}: ${skippedDeps.join(", ")}`);
     }
 
-    detachPrek(root, logger);
+    if (!dryRun) {
+        detachPrek(root, logger);
+    }
 
     // Back up and remove the prek config so it doesn't confuse future runs.
     const backupPath = `${configPath}.bak`;
 
-    if (!isAccessibleSync(backupPath)) {
-        writeFileSync(backupPath, rawContent, "utf8");
-    }
+    if (dryRun) {
+        logger.info(`  (would remove) ${configFile} and back it up to ${configFile}.bak`);
+    } else {
+        if (!isAccessibleSync(backupPath)) {
+            writeFileSync(backupPath, rawContent, "utf8");
+        }
 
-    unlinkSync(configPath);
-    logger.info(`Removed ${configFile} (backup at ${configFile}.bak)`);
+        unlinkSync(configPath);
+        logger.info(`Removed ${configFile} (backup at ${configFile}.bak)`);
+    }
 
     // Surface everything we couldn't translate so the user can act on it.
     if (skippedHooks.length > 0) {
@@ -669,13 +712,15 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
         }
     }
 
+    const verbose = dryRun ? "would migrate" : "Migration complete:";
+
     return {
         isError: false,
-        message: `Migration complete: ${migratedCount} stage script${migratedCount === 1 ? "" : "s"} written to ${hooksDirectory}/`,
+        message: `${verbose} ${migratedCount} stage script${migratedCount === 1 ? "" : "s"} ${dryRun ? "into" : "written to"} ${hooksDirectory}/`,
     };
 };
 
-export type { AdditionalDep, ConversionResult, PrekConfig, PrekHookEntry, PrekRepoEntry, SkippedHook };
+export type { AdditionalDep, ConversionResult, MigrateOptions, PrekConfig, PrekHookEntry, PrekRepoEntry, SkippedHook };
 export {
     buildHookCommand,
     buildRunnerInvocation,

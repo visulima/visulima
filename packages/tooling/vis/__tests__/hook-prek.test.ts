@@ -427,7 +427,7 @@ describe(convertPrekConfig, () => {
                             entry: "echo",
                             id: "exotic",
                             language: "system",
-                            types: ["rust", "swift"],
+                            types: ["haskell", "ocaml"],
                         },
                     ],
                     repo: "local",
@@ -437,7 +437,7 @@ describe(convertPrekConfig, () => {
 
         const result = convertPrekConfig(config);
 
-        expect(result.droppedFilters.some((note) => note.includes("rust"))).toBe(true);
+        expect(result.droppedFilters.some((note) => note.includes("haskell"))).toBe(true);
         expect(result.scripts.has("pre-commit")).toBe(true);
     });
 
@@ -541,6 +541,25 @@ describe(convertPrekConfig, () => {
 
         expect(result.scripts.has("pre-commit")).toBe(true);
         expect(result.scripts.has("pre-push")).toBe(true);
+    });
+
+    it("wraps the emitted command in `set -x` when verbose is true", () => {
+        expect.assertions(2);
+
+        const config: PrekConfig = {
+            repos: [
+                {
+                    hooks: [{ entry: "echo hi", id: "noisy", language: "system", verbose: true }],
+                    repo: "local",
+                },
+            ],
+        };
+
+        const result = convertPrekConfig(config);
+        const script = result.scripts.get("pre-commit") ?? "";
+
+        expect(script).toContain("(set -x;");
+        expect(script).toContain("echo hi");
     });
 });
 
@@ -945,5 +964,41 @@ language = "system"
         );
 
         expect(loadPrekConfig(path)?.repos?.[0]?.hooks?.[0]?.id).toBe("b");
+    });
+});
+
+// ─── migrateFromPrek --dry-run ──────────────────────────────────────
+
+describe("migrateFromPrek --dry-run", () => {
+    it.skipIf(process.platform === "win32")("does not write any files but still reports the plan", () => {
+        expect.assertions(5);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            writeFileSync(
+                join(root, ".pre-commit-config.yaml"),
+                `repos:
+  - repo: local
+    hooks:
+      - id: lint-staged
+        entry: pnpm exec lint-staged
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+`,
+            );
+
+            const logger = collectLogger();
+            const result = migrateFromPrek(root, ".vis-hooks", logger, { dryRun: true });
+
+            expect(result.isError).toBe(false);
+            expect(result.message).toContain("would migrate");
+            expect(existsSync(join(root, ".vis-hooks", "pre-commit"))).toBe(false);
+            expect(existsSync(join(root, ".pre-commit-config.yaml"))).toBe(true);
+            expect(logger.messages.some((m) => m.includes("(would write)"))).toBe(true);
+        } finally {
+            cleanup();
+        }
     });
 });
