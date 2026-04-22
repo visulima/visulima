@@ -81,6 +81,23 @@ TOML configs (`prek.toml`) are parsed via `@visulima/fs/toml` (which wraps `smol
 
 Commit `.vis-hooks/.builtins/` along with the rest of the hooks directory so teammates get the same runner and builtin implementations.
 
+## Running hooks manually
+
+Hooks don't only fire at commit time. `vis hook run` replays the same stage script against any file set, which is handy for CI and for one-off checks:
+
+```bash
+vis hook run pre-commit                                 # default — staged files
+vis hook run pre-commit --all-files                     # everything tracked by git
+vis hook run pre-commit --from-ref=main --to-ref=HEAD   # files changed between refs
+```
+
+These flags map to env vars (`VIS_HOOK_ALL_FILES`, `VIS_HOOK_FROM_REF`, `VIS_HOOK_TO_REF`) that the bundled runner picks up to swap `git diff --cached` for `git ls-files` or `git diff <from> <to>`.
+
+## Listing + validating hooks
+
+- `vis hook list` — prints each stage's hook blocks with their first command line. Useful when you forget what's installed.
+- `vis hook validate` — checks `core.hooksPath`, dispatcher scripts, per-stage shell syntax (`sh -n`), executable bits, and the bundled runner (`node --check`) if any script references it. Exits non-zero on errors.
+
 ## Disabling Hooks
 
 Temporarily disable hooks using the environment variable:

@@ -29,7 +29,7 @@ const PREK_STAGE_ALIASES: Readonly<Record<string, string>> = {
 };
 
 // Stages we emit scripts for. `manual` is intentionally absent — it is not a git hook.
-const PREK_SUPPORTED_STAGES = new Set<string>([
+const PREK_SUPPORTED_STAGES: ReadonlySet<string> = new Set<string>([
     "commit-msg",
     "post-checkout",
     "post-commit",
@@ -43,10 +43,10 @@ const PREK_SUPPORTED_STAGES = new Set<string>([
 ]);
 
 // Stages where git passes a path/argument to the hook — we forward "$@" when pass_filenames is true.
-const PREK_STAGES_WITH_GIT_ARGS = new Set<string>(["commit-msg", "post-checkout", "post-merge", "post-rewrite", "pre-rebase", "prepare-commit-msg"]);
+const PREK_STAGES_WITH_GIT_ARGS: ReadonlySet<string> = new Set<string>(["commit-msg", "post-checkout", "post-merge", "post-rewrite", "pre-rebase", "prepare-commit-msg"]);
 
 // Hook `language` values we can translate to plain shell. Everything else needs the prek binary.
-const PREK_TRANSLATABLE_LANGUAGES = new Set<string>(["fail", "script", "system"]);
+const PREK_TRANSLATABLE_LANGUAGES: ReadonlySet<string> = new Set<string>(["fail", "script", "system"]);
 
 interface InstallResult {
     isError: boolean;

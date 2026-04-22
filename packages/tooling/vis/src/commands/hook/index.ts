@@ -8,9 +8,12 @@ import { join } from "@visulima/path";
 
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 import { installHooks } from "./install";
+import { runList } from "./list";
 import { detectHuskyDirectory, migrateFromHusky } from "./migrate";
 import { detectPrekConfig, migrateFromPrek } from "./prek";
+import { runRun } from "./run";
 import { uninstallHooks } from "./uninstall";
+import { runValidate } from "./validate";
 
 /**
  * Prompts the user with a yes/no question. Returns true for "y" or "yes".
@@ -105,7 +108,7 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
     logger.info("Git hooks installed successfully.");
 };
 
-const executeMigrate = (hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
+const executeMigrate = (hooksDirectory: string, dryRun: boolean, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -118,7 +121,13 @@ const executeMigrate = (hooksDirectory: string, logger: { info: (message: string
         throw new Error("No husky (.husky/) or prek (.pre-commit-config.yaml / prek.toml) configuration found to migrate.");
     }
 
-    const result = huskyDirectory ? migrateFromHusky(root, hooksDirectory, logger as Console) : migrateFromPrek(root, hooksDirectory, logger);
+    if (dryRun) {
+        logger.info("(dry-run) no files will be written");
+    }
+
+    const result = huskyDirectory
+        ? migrateFromHusky(root, hooksDirectory, logger as Console, { dryRun })
+        : migrateFromPrek(root, hooksDirectory, logger, { dryRun });
 
     if (result.isError) {
         throw new Error(result.message);
@@ -196,7 +205,7 @@ const executeUninstall = (hooksDirectory: string, logger: { info: (message: stri
 
 const hook: Command = {
     argument: {
-        description: "Action to perform: install, uninstall, migrate, or add <target>",
+        description: "Action to perform: install, uninstall, migrate, list, validate, run, or add <target>",
         name: "action",
         type: String,
     },
@@ -213,6 +222,11 @@ const hook: Command = {
         ["vis hook install", "Install git hooks in .vis-hooks/"],
         ["vis hook uninstall", "Remove git hooks and reset core.hooksPath"],
         ["vis hook migrate", "Migrate from husky or prek to vis hooks (auto-detected)"],
+        ["vis hook migrate --dry-run", "Preview what a migration would write without touching disk"],
+        ["vis hook list", "Show configured hooks grouped by stage"],
+        ["vis hook validate", "Sanity-check installed hooks and the bundled runner"],
+        ["vis hook run pre-commit --all-files", "Run the pre-commit hooks against every tracked file"],
+        ["vis hook run pre-commit --from-ref=main --to-ref=HEAD", "Run pre-commit hooks on files changed between two refs"],
         ["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
@@ -231,8 +245,23 @@ const hook: Command = {
                 break;
             }
 
+            case "list": {
+                runList(hooksDirectory, logger);
+                break;
+            }
+
             case "migrate": {
-                executeMigrate(hooksDirectory, logger);
+                executeMigrate(hooksDirectory, Boolean(options.dryRun), logger);
+                break;
+            }
+
+            case "run": {
+                runRun(hooksDirectory, {
+                    allFiles: Boolean(options.allFiles),
+                    fromRef: options.fromRef as string | undefined,
+                    stage: argument[1] as string | undefined,
+                    toRef: options.toRef as string | undefined,
+                }, logger);
                 break;
             }
 
@@ -241,8 +270,13 @@ const hook: Command = {
                 break;
             }
 
+            case "validate": {
+                runValidate(hooksDirectory, logger);
+                break;
+            }
+
             default: {
-                throw new Error(`Unknown action "${action}". Use "install", "uninstall", "migrate", or "add <target>".`);
+                throw new Error(`Unknown action "${action}". Use "install", "uninstall", "migrate", "list", "validate", "run", or "add <target>".`);
             }
         }
     },
@@ -253,6 +287,30 @@ const hook: Command = {
             defaultValue: DEFAULT_HOOKS_DIRECTORY,
             description: "Custom hooks directory",
             name: "hooks-dir",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Preview migrate without writing files",
+            name: "dry-run",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "For `vis hook run`: run against every tracked file",
+            name: "all-files",
+            type: Boolean,
+        },
+        {
+            defaultValue: undefined,
+            description: "For `vis hook run`: include files changed since this ref",
+            name: "from-ref",
+            type: String,
+        },
+        {
+            defaultValue: undefined,
+            description: "For `vis hook run`: include files changed up to this ref",
+            name: "to-ref",
             type: String,
         },
     ],

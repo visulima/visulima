@@ -177,8 +177,13 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
 /**
  * Migrates from husky to vis hooks.
  */
-const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console): InstallResult => {
+interface HuskyMigrateOptions {
+    dryRun?: boolean;
+}
+
+const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console, options: HuskyMigrateOptions = {}): InstallResult => {
     const huskyDirectory = detectHuskyDirectory(root);
+    const dryRun = options.dryRun === true;
 
     if (!huskyDirectory) {
         return { isError: true, message: "No husky installation found (.husky/ or .config/husky/)" };
@@ -186,78 +191,90 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console)
 
     logger.info(`Found husky at ${huskyDirectory}/`);
 
-    // Read existing husky hooks
     const huskyHooks = readHuskyHooks(root, huskyDirectory);
 
     if (huskyHooks.size === 0) {
         logger.info("No user-defined hooks found in husky directory.");
     }
 
-    // Install vis hooks first (sets up core.hooksPath and dispatcher scripts)
-    // Temporarily unset core.hooksPath if it points to husky so installHooks doesn't skip
+    if (!dryRun) {
+        const checkResult = spawnSync("git", ["config", "--local", "core.hooksPath"]);
+        const existingPath = checkResult.status === 0 ? checkResult.stdout?.toString().trim() : "";
 
-    const checkResult = spawnSync("git", ["config", "--local", "core.hooksPath"]);
-    const existingPath = checkResult.status === 0 ? checkResult.stdout?.toString().trim() : "";
+        if (existingPath && (existingPath === ".husky/_" || existingPath.startsWith(".husky"))) {
+            spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"]);
+        }
 
-    if (existingPath && (existingPath === ".husky/_" || existingPath.startsWith(".husky"))) {
-        spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"]);
+        const installResult = installHooks(hooksDirectory);
+
+        if (installResult.isError) {
+            return installResult;
+        }
+
+        if (installResult.message) {
+            logger.info(installResult.message);
+        }
     }
 
-    const installResult = installHooks(hooksDirectory);
-
-    if (installResult.isError) {
-        return installResult;
-    }
-
-    if (installResult.message) {
-        logger.info(installResult.message);
-    }
-
-    // Copy and transform hook scripts
     const targetDirectory = join(root, hooksDirectory);
 
-    ensureDirSync(targetDirectory);
+    if (!dryRun) {
+        ensureDirSync(targetDirectory);
+    }
 
     let migratedCount = 0;
 
     for (const [hookName, content] of huskyHooks) {
         if (hookName === "common.sh") {
-            // Copy common.sh as-is since hooks may still reference it
-            writeFileSync(join(targetDirectory, hookName), content, { mode: 0o755 });
-            logger.info("  Copied common.sh");
+            if (dryRun) {
+                logger.info(`  (would copy) common.sh`);
+            } else {
+                writeFileSync(join(targetDirectory, hookName), content, { mode: 0o755 });
+                logger.info("  Copied common.sh");
+            }
+
             continue;
         }
 
-        const transformed = transformHookScript(content);
+        if (dryRun) {
+            logger.info(`  (would migrate) ${hookName}`);
+        } else {
+            const transformed = transformHookScript(content);
 
-        writeFileSync(join(targetDirectory, hookName), transformed, { mode: 0o755 });
-        migratedCount += 1;
-        logger.info(`  Migrated ${hookName}`);
-    }
-
-    // Uninstall husky package
-    uninstallHuskyPackage(root, logger);
-
-    // Clean husky references from package.json scripts
-    const packageResult = cleanPackageJsonScripts(root);
-
-    if (packageResult.modified) {
-        logger.info("Updated package.json scripts:");
-
-        for (const reference of packageResult.removedScriptReferences) {
-            logger.info(`  ${reference}`);
+            writeFileSync(join(targetDirectory, hookName), transformed, { mode: 0o755 });
+            logger.info(`  Migrated ${hookName}`);
         }
+
+        migratedCount += 1;
     }
 
-    // Remove husky directory
-    const huskyFullPath = join(root, huskyDirectory);
+    if (dryRun) {
+        logger.info(`  (would remove) husky npm package and clean package.json scripts`);
+        logger.info(`  (would remove) ${huskyDirectory}/ directory`);
+    } else {
+        uninstallHuskyPackage(root, logger);
 
-    rmSync(huskyFullPath, { force: true, recursive: true });
-    logger.info(`Removed ${huskyDirectory}/`);
+        const packageResult = cleanPackageJsonScripts(root);
+
+        if (packageResult.modified) {
+            logger.info("Updated package.json scripts:");
+
+            for (const reference of packageResult.removedScriptReferences) {
+                logger.info(`  ${reference}`);
+            }
+        }
+
+        const huskyFullPath = join(root, huskyDirectory);
+
+        rmSync(huskyFullPath, { force: true, recursive: true });
+        logger.info(`Removed ${huskyDirectory}/`);
+    }
+
+    const verb = dryRun ? "would migrate" : "Migration complete:";
 
     return {
         isError: false,
-        message: `Migration complete: ${migratedCount} hook${migratedCount === 1 ? "" : "s"} migrated from ${huskyDirectory}/ to ${hooksDirectory}/`,
+        message: `${verb} ${migratedCount} hook${migratedCount === 1 ? "" : "s"} ${dryRun ? "from" : "migrated from"} ${huskyDirectory}/ to ${hooksDirectory}/`,
     };
 };
 
