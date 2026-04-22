@@ -1,3 +1,9 @@
+## @visulima/tui [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.3...@visulima/tui@1.0.0-alpha.4) (2026-04-22)
+
+### Bug Fixes
+
+* updated install script ([bdeaece](https://github.com/visulima/visulima/commit/bdeaeced0357901dfd92cf1e5a4345cc8924ad65))
+
 ## @visulima/tui [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.2...@visulima/tui@1.0.0-alpha.3) (2026-04-22)
 
 ### Features
