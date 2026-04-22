@@ -55,9 +55,10 @@ Execute a stage's hook script manually, useful for CI or one-off checks. Environ
 vis hook run pre-commit                                          # run pre-commit against staged files
 vis hook run pre-commit --all-files                              # run against every tracked file
 vis hook run pre-commit --from-ref=main --to-ref=HEAD            # run against files changed between two refs
+vis hook run pre-commit --last-commit                            # shortcut for --from-ref HEAD~1 --to-ref HEAD
 ```
 
-`--all-files` maps to `VIS_HOOK_ALL_FILES=1`; `--from-ref`/`--to-ref` map to `VIS_HOOK_FROM_REF`/`VIS_HOOK_TO_REF`. The runner swaps `git diff --cached` for `git ls-files` or `git diff <from> <to>` accordingly. Stage defaults to `pre-commit` when omitted.
+`--all-files` maps to `VIS_HOOK_ALL_FILES=1`; `--from-ref`/`--to-ref` map to `VIS_HOOK_FROM_REF`/`VIS_HOOK_TO_REF`. The runner swaps `git diff --cached` for `git ls-files` or `git diff <from> <to>` accordingly. Stage defaults to `pre-commit` when omitted. `--all-files` wins if combined with `--from-ref`/`--to-ref` or `--last-commit`.
 
 ### migrate
 
@@ -117,6 +118,7 @@ All user-supplied values (regex patterns, filenames, hook args) travel via `proc
 | `--all-files` | `false`      | `run`      | Run against every tracked file (sets `VIS_HOOK_ALL_FILES=1`)          |
 | `--from-ref`  | —            | `run`      | Run against files changed since this ref (sets `VIS_HOOK_FROM_REF`)   |
 | `--to-ref`    | —            | `run`      | Run against files changed up to this ref (sets `VIS_HOOK_TO_REF`)     |
+| `--last-commit` | `false`    | `run`      | Shortcut for `--from-ref HEAD~1 --to-ref HEAD`                        |
 
 ## Environment Variables
 
