@@ -5,7 +5,7 @@ description: "Manage git hooks for your workspace"
 
 # vis hook
 
-Manage git hooks for your workspace. Supports installing, uninstalling, and migrating from husky.
+Manage git hooks for your workspace. Supports installing, uninstalling, and migrating from husky or prek (pre-commit framework).
 
 ## Usage
 
@@ -33,13 +33,36 @@ vis hook uninstall
 
 ### migrate
 
-Migrate existing husky hooks to vis:
+Migrate an existing husky or prek (pre-commit framework) setup to vis:
 
 ```bash
 vis hook migrate
 ```
 
-The migration automatically detects your husky directory, copies hook scripts, and prompts for confirmation.
+The command auto-detects the source:
+
+- **husky** — reads `.husky/` or `.config/husky/`, copies shell scripts, uninstalls the husky npm package, and cleans `package.json` references.
+- **prek / pre-commit** — reads `.pre-commit-config.yaml` (or `.yml`), converts eligible `local` hooks to shell scripts under the hooks directory, backs up the original config as `.bak`, and attempts `prek uninstall` if the binary is on your PATH.
+
+If both a husky directory and a prek config are present, the command errors and asks you to remove one first.
+
+#### What migrates from prek
+
+Only `local` hooks with `language: system`, `language: script`, or `language: fail` are translated — everything else needs the prek binary to run and is surfaced as a warning or manual step.
+
+| prek feature | migration behavior |
+| --- | --- |
+| Remote `repo: https://...` entries | skipped with a warning |
+| `language: python` / `node` / `golang` / `rust` / `ruby` / `docker` / `pygrep` / etc. | skipped with a warning |
+| `additional_dependencies` | recorded as a manual follow-up step |
+| `types` / `types_or` / `exclude_types` / `files` / `exclude` | dropped (scripts run unconditionally) |
+| `stages` (including legacy `commit`/`push`/`merge-commit` aliases) | translated to per-stage hook files |
+| `default_stages` | used as the fallback when a hook omits `stages` |
+| `pass_filenames: true` | forwards `"$@"` for `commit-msg`/`prepare-commit-msg`/`pre-rebase`/`post-*`; dropped otherwise |
+| Top-level `fail_fast: true` | prepends `set -e` to each generated script |
+| `manual` stage | skipped silently (not a real git hook) |
+| `minimum_pre_commit_version`, `ci`, `default_language_version`, `default_install_hook_types` | ignored |
+| `prek.toml` | not parsed — run `prek util toml-to-yaml` first |
 
 ## Options
 
