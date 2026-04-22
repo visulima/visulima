@@ -1,3 +1,33 @@
+## @visulima/cerebro [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.10...@visulima/cerebro@3.0.0-alpha.11) (2026-04-22)
+
+### Features
+
+* **cerebro:** expose rawUnknown on the Toolbox ([0d92cdf](https://github.com/visulima/visulima/commit/0d92cdf22270db5420af8b639b135b75e043de08))
+
+### Bug Fixes
+
+* **cerebro:** cast positionals argument to string array ([432ac5d](https://github.com/visulima/visulima/commit/432ac5dab63a71583e3d170dc1c014dc735d6a1d))
+* **cerebro:** resolve eslint and formatting issues ([d362f80](https://github.com/visulima/visulima/commit/d362f8011afa2fdf7195544a05468ad425904c27))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **cerebro:** apply formatter and lint fixes ([25aedfa](https://github.com/visulima/visulima/commit/25aedfa32a9476e8a127580e2a4154bca512342d))
+* **cerebro:** apply formatter and lint fixes ([f2d19a1](https://github.com/visulima/visulima/commit/f2d19a167b8ebef07e2c2cce241673a6c34a8112))
+* **cerebro:** apply pending changes ([5502fd8](https://github.com/visulima/visulima/commit/5502fd8399ef704bf9d5c192642aef35b73275ef))
+* **cerebro:** apply pending lint and source updates ([727956c](https://github.com/visulima/visulima/commit/727956c737b9a1f811bc71c5343bcc56f91e5097))
+* **cerebro:** enforce curly braces and apply lint fixes ([79f5b19](https://github.com/visulima/visulima/commit/79f5b19bf8f1c6e6f4d2c47f4a160bfcf44b6bb4))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.10
+* **@visulima/pail:** upgraded to 4.0.0-alpha.11
+
 ## @visulima/cerebro [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.9...@visulima/cerebro@3.0.0-alpha.10) (2026-04-08)
 
 ### Features
