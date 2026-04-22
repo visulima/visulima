@@ -1,3 +1,29 @@
+## @visulima/error-handler [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.11...@visulima/error-handler@2.0.0-alpha.12) (2026-04-22)
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and formatting issues ([7d0ada8](https://github.com/visulima/visulima/commit/7d0ada8787bf624df5a7d504448a4d1b69165aba))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **error-handler:** remove unused [@ts-expect-error](https://github.com/ts-expect-error) on end() overload ([a8eb6a6](https://github.com/visulima/visulima/commit/a8eb6a6ab8d42c1a6881dda5c605a4d20dde069f))
+* **error-handler:** resolve eslint and formatting issues ([324f5d8](https://github.com/visulima/visulima/commit/324f5d89f1bcceac4fbe44c6002040aa63be1ec9))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **error-handler:** apply formatter and lint fixes ([9ab7d48](https://github.com/visulima/visulima/commit/9ab7d48758f89b434e8c463c45f94eedc4619ab9))
+* **error-handler:** enforce curly braces and apply lint fixes ([ced1569](https://github.com/visulima/visulima/commit/ced1569c34fde28975eda76e5e84db6d87059865))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Continuous Integration
+
+* disable isolatedDeclarationTransformer ([d5845d8](https://github.com/visulima/visulima/commit/d5845d888012fbe20a020cb2c02ec57269356e56))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.10
+
 ## @visulima/error-handler [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.10...@visulima/error-handler@2.0.0-alpha.11) (2026-04-08)
 
 ### Bug Fixes
