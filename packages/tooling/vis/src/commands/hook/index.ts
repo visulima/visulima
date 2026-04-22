@@ -9,6 +9,7 @@ import { join } from "@visulima/path";
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 import { installHooks } from "./install";
 import { detectHuskyDirectory, migrateFromHusky } from "./migrate";
+import { detectPrekConfig, detectUnsupportedPrekConfig, migrateFromPrek } from "./prek";
 import { uninstallHooks } from "./uninstall";
 
 /**
@@ -26,9 +27,15 @@ const confirmPrompt = (question: string): Promise<boolean> =>
         });
     });
 
-const executeInstall = async (hooksDirectory: string, logger: { info: (message: string) => void }): Promise<void> => {
+const executeInstall = async (hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): Promise<void> => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
+    const prekConfig = detectPrekConfig(root);
+    const prekUnsupported = detectUnsupportedPrekConfig(root);
+
+    if (huskyDirectory && prekConfig) {
+        throw new Error(`Found both husky (${huskyDirectory}/) and prek (${prekConfig}). Remove or migrate one before running \`vis hook install\`.`);
+    }
 
     if (huskyDirectory) {
         logger.info(`Existing husky installation found at ${huskyDirectory}/`);
@@ -54,6 +61,34 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
         return;
     }
 
+    if (prekConfig) {
+        logger.info(`Existing prek configuration found at ${prekConfig}`);
+
+        const shouldMigrate = await confirmPrompt("Would you like to migrate your prek hooks to vis?");
+
+        if (shouldMigrate) {
+            const migrateResult = migrateFromPrek(root, hooksDirectory, logger);
+
+            if (migrateResult.isError) {
+                throw new Error(migrateResult.message);
+            }
+
+            if (migrateResult.message) {
+                logger.info(migrateResult.message);
+            }
+
+            return;
+        }
+
+        logger.info("Aborting install. Remove the prek config first or run 'vis hook migrate' to migrate.");
+
+        return;
+    }
+
+    if (prekUnsupported) {
+        logger.warn(`Found ${prekUnsupported} — vis cannot parse TOML prek configs. Run \`prek util toml-to-yaml\` first, then retry.`);
+    }
+
     logger.info(`Installing git hooks in ${hooksDirectory}/...`);
 
     const result = installHooks(hooksDirectory);
@@ -75,10 +110,26 @@ const executeInstall = async (hooksDirectory: string, logger: { info: (message: 
     logger.info("Git hooks installed successfully.");
 };
 
-const executeMigrate = (hooksDirectory: string, logger: { info: (message: string) => void }): void => {
+const executeMigrate = (hooksDirectory: string, logger: { info: (message: string) => void; warn: (message: string) => void }): void => {
     const root = cwd();
+    const huskyDirectory = detectHuskyDirectory(root);
+    const prekConfig = detectPrekConfig(root);
 
-    const result = migrateFromHusky(root, hooksDirectory, logger as Console);
+    if (huskyDirectory && prekConfig) {
+        throw new Error(`Found both husky (${huskyDirectory}/) and prek (${prekConfig}). Migrate one at a time — rename or remove one before retrying.`);
+    }
+
+    if (!huskyDirectory && !prekConfig) {
+        const prekUnsupported = detectUnsupportedPrekConfig(root);
+
+        if (prekUnsupported) {
+            throw new Error(`Found ${prekUnsupported}, but vis cannot parse TOML prek configs. Run \`prek util toml-to-yaml\` first, then retry.`);
+        }
+
+        throw new Error("No husky (.husky/) or prek (.pre-commit-config.yaml) configuration found to migrate.");
+    }
+
+    const result = huskyDirectory ? migrateFromHusky(root, hooksDirectory, logger as Console) : migrateFromPrek(root, hooksDirectory, logger);
 
     if (result.isError) {
         throw new Error(result.message);
@@ -160,7 +211,7 @@ const hook: Command = {
         name: "action",
         type: String,
     },
-    description: "Manage git hooks for the workspace",
+    description: "Manage git hooks for the workspace. Supports migrating from husky (.husky/) or prek / pre-commit (.pre-commit-config.yaml).",
     env: [
         {
             defaultValue: undefined,
@@ -172,7 +223,7 @@ const hook: Command = {
     examples: [
         ["vis hook install", "Install git hooks in .vis-hooks/"],
         ["vis hook uninstall", "Remove git hooks and reset core.hooksPath"],
-        ["vis hook migrate", "Migrate from husky to vis hooks"],
+        ["vis hook migrate", "Migrate from husky or prek to vis hooks (auto-detected)"],
         ["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],

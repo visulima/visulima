@@ -52,6 +52,31 @@ The migration:
 3. Prompts for confirmation before making changes
 4. Removes the husky directory after migration
 
+## Migrating from prek / pre-commit
+
+If your project uses [prek](https://github.com/j178/prek) (a Rust reimplementation of the Python pre-commit framework) or pre-commit itself, the same command detects a `.pre-commit-config.yaml` and converts the eligible hooks to plain shell scripts:
+
+```bash
+vis hook migrate
+```
+
+Since vis hook scripts are plain shell, only hooks that don't need a managed toolchain can be translated directly. The migrator:
+
+1. Parses `.pre-commit-config.yaml` (or `.pre-commit-config.yml`)
+2. For each `local` hook with `language: system`, `script`, or `fail`: writes one shell script per stage (e.g. `.vis-hooks/pre-commit`, `.vis-hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
+3. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
+4. Prepends `set -e` to each script when top-level `fail_fast: true` is set.
+5. Backs up the original config as `.pre-commit-config.yaml.bak`, removes the original, and runs `prek uninstall` if the binary is on your PATH.
+
+Anything the migrator can't translate is surfaced as a warning:
+
+- Remote repo entries (`repo: https://...`) — these need the prek binary to run; either keep prek installed for them or reimplement the hooks as local `system` entries.
+- Local hooks with language-specific toolchains (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, ...).
+- File filters (`types`, `types_or`, `exclude_types`, `files`, `exclude`) — dropped, the commands run against all staged files. If you relied on the filtering, move the logic inside the hook command (e.g. via `vis staged` or by filtering inside the tool itself).
+- Hook-scoped `additional_dependencies` — recorded as a manual follow-up.
+
+TOML configs (`prek.toml`) aren't parsed directly — run `prek util yaml-to-toml` in reverse (`prek util toml-to-yaml`) and re-run the migrator.
+
 ## Disabling Hooks
 
 Temporarily disable hooks using the environment variable:
