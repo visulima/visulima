@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vis",
-    "version": "1.0.0-alpha.7",
+    "version": "1.0.0-alpha.8",
     "description": "A CLI task runner for monorepo workspaces, powered by @visulima/task-runner",
     "keywords": [
         "visulima",
@@ -98,7 +98,7 @@
         "@visulima/secret-scanner": "1.0.0-alpha.1",
         "@visulima/string": "3.0.0-alpha.11",
         "@visulima/task-runner": "1.0.0-alpha.7",
-        "@visulima/tui": "1.0.0-alpha.3",
+        "@visulima/tui": "1.0.0-alpha.4",
         "execa": "catalog:dev",
         "giget": "^3.2.0",
         "hookable": "^6.1.1",
