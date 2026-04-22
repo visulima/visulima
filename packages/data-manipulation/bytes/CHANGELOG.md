@@ -1,3 +1,16 @@
+## @visulima/bytes [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.9...@visulima/bytes@3.0.0-alpha.10) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **bytes:** apply pending changes ([6dd9d3d](https://github.com/visulima/visulima/commit/6dd9d3d625daca8973b453a37de7b428f933c70b))
+* **bytes:** apply pending lint and source updates ([4d74f0f](https://github.com/visulima/visulima/commit/4d74f0f1e0ed5cfd74e973f9ba5dc6492cd94f5e))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/bytes [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.8...@visulima/bytes@3.0.0-alpha.9) (2026-04-15)
 
 ### Bug Fixes
