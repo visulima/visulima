@@ -1,3 +1,13 @@
+## @visulima/content-safety [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.7...@visulima/content-safety@1.0.0-alpha.8) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
 ## @visulima/content-safety [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.6...@visulima/content-safety@1.0.0-alpha.7) (2026-04-21)
 
 ### Performance Improvements
