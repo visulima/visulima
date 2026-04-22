@@ -1,3 +1,21 @@
+## @visulima/boxen [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.9...@visulima/boxen@3.0.0-alpha.10) (2026-04-22)
+
+### Bug Fixes
+
+* **boxen:** resolve eslint and formatting issues ([cff5767](https://github.com/visulima/visulima/commit/cff5767dcd4fb3327fbd59b8d2f41faf73a66292))
+* **pail, boxen:** resolve eslint unsafe type issues ([d6e852e](https://github.com/visulima/visulima/commit/d6e852e63f4572a12c31ac44a4ae687c743cf7db))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+
+### Miscellaneous Chores
+
+* **boxen:** apply formatter and lint fixes ([91844ef](https://github.com/visulima/visulima/commit/91844ef7df194964535500cf0fa5799ae7e16d06))
+* **boxen:** apply pending changes ([4cde666](https://github.com/visulima/visulima/commit/4cde666adba97af439798cc44ad72d74bbaa385f))
+* **boxen:** enforce curly braces and apply lint fixes ([c7228d8](https://github.com/visulima/visulima/commit/c7228d840b2df4dcb149c71bda00408f933dbe5e))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/boxen [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.8...@visulima/boxen@3.0.0-alpha.9) (2026-04-08)
 
 ### Bug Fixes
