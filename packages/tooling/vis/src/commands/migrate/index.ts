@@ -10,6 +10,7 @@ import { migrateNanoStaged } from "./nano-staged";
 import { migrateNx } from "./nx";
 import { confirm } from "./prompt";
 import { migrateSecretlint } from "./secretlint";
+import { printSummary } from "./summary";
 import { migrateTurborepo } from "./turborepo";
 import type { MigrationReport } from "./types";
 import { createMigrationReport } from "./types";
@@ -19,76 +20,6 @@ interface Logger {
     info: (message: string) => void;
     warn: (message: string) => void;
 }
-
-const printSummary = (report: MigrationReport, logger: Logger): void => {
-    logger.info("── Migration Summary ──");
-
-    const counts: [string, number][] = [
-        ["Staged configs merged into vis.config.ts", report.mergedStagedConfigCount],
-        ["Lint-staged configs inlined", report.inlinedLintStagedConfigCount],
-        ["Config files removed", report.removedConfigCount],
-        ["Packages removed", report.removedPackageCount],
-        ["Scripts rewritten", report.rewrittenScriptCount],
-    ];
-
-    for (const [label, count] of counts) {
-        if (count > 0) {
-            logger.info(`  ${label}: ${String(count)}`);
-        }
-    }
-
-    if (report.gitHooksConfigured) {
-        logger.info("  Pre-commit hook updated to use vis staged");
-    }
-
-    const perMigrationEntries = Object.entries(report.perMigration);
-
-    if (perMigrationEntries.length > 0) {
-        logger.info("");
-        logger.info("By migration:");
-
-        for (const [name, bucket] of perMigrationEntries) {
-            const parts: string[] = [];
-
-            if (bucket.removedConfigCount > 0) {
-                parts.push(`${String(bucket.removedConfigCount)} config(s) removed`);
-            }
-
-            if (bucket.removedPackageCount > 0) {
-                parts.push(`${String(bucket.removedPackageCount)} package(s) removed`);
-            }
-
-            if (bucket.rewrittenScriptCount > 0) {
-                parts.push(`${String(bucket.rewrittenScriptCount)} script(s) rewritten`);
-            }
-
-            logger.info(`  ${name}: ${parts.join(", ") || "no changes"}`);
-        }
-    }
-
-    if (report.backupsCreated.length > 0) {
-        logger.info("");
-        logger.info(`Created ${String(report.backupsCreated.length)} .bak file(s) for rollback. Remove them once you're happy.`);
-    }
-
-    if (report.warnings.length > 0) {
-        logger.info("");
-        logger.warn("Warnings:");
-
-        for (const warning of report.warnings) {
-            logger.warn(`  - ${warning}`);
-        }
-    }
-
-    if (report.manualSteps.length > 0) {
-        logger.info("");
-        logger.info("Manual steps required:");
-
-        for (const step of report.manualSteps) {
-            logger.info(`  - ${step}`);
-        }
-    }
-};
 
 interface MigrationContext {
     config: Record<string, unknown>;
@@ -140,41 +71,6 @@ const sharedMigrateOptions = [
     { defaultValue: false, description: "Preview changes without applying", name: "dry-run", type: Boolean },
     { alias: "y", defaultValue: false, description: "Skip the confirmation prompt", name: "yes", type: Boolean },
 ] as const;
-
-const migrateAll: Command = {
-    commandPath: ["migrate"],
-    description: "Run all built-in migrations (deps, lint-staged, nano-staged)",
-    examples: [["vis migrate all", "Run all built-in migrations"]],
-    execute: ({ logger, options, visConfig, workspaceRoot }) => {
-        const ctx = buildContext({ logger, options, visConfig: visConfig as Record<string, unknown> | undefined, workspaceRoot });
-
-        announceDryRun(ctx);
-
-        logger.info("── Migrating dependencies and scripts ──");
-        migrateDeps(
-            ctx.root,
-            ctx.packageManager,
-            ctx.config as Record<string, unknown> & { overrides?: Record<string, string> },
-            { dryRun: ctx.dryRun },
-            logger,
-            ctx.report,
-        );
-        logger.info("");
-
-        logger.info("── Migrating lint-staged ──");
-        migrateLintStaged(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
-        logger.info("");
-
-        logger.info("── Migrating nano-staged ──");
-        migrateNanoStaged(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
-        logger.info("");
-
-        printSummary(ctx.report, logger);
-    },
-    group: "Scaffold & Config",
-    name: "all",
-    options: [...sharedMigrateOptions],
-};
 
 const migrateDepsCmd: Command = {
     commandPath: ["migrate"],
@@ -419,7 +315,6 @@ const migrateVerify: Command = {
 };
 
 const migrateCommands: Command[] = [
-    migrateAll,
     migrateDepsCmd,
     migrateLintStagedCmd,
     migrateNanoStagedCmd,
