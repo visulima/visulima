@@ -37,6 +37,8 @@ import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import listCommand from "./commands/list";
 import migrateCommands from "./commands/migrate";
+import { isBareMigrateInvocation } from "./commands/migrate/detect-bare";
+import { runMigrateInteractive } from "./commands/migrate/interactive";
 import optimizeCommand from "./commands/optimize";
 // outdated is now an alias of check
 import pmCommand from "./commands/pm";
@@ -189,9 +191,40 @@ for (const command of cacheCommands) {
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));
 
-try {
-    await cli.run();
-} catch {
-    // errorHandlerPlugin already rendered the error
-    process.exitCode = process.exitCode || 1;
+if (isBareMigrateInvocation(process.argv.slice(2))) {
+    const { loadVisConfig } = await import("./config");
+    const workspaceRoot = process.env["VIS_MONOREPO_ROOT"] || process.cwd();
+
+    let visConfig: Awaited<ReturnType<typeof loadVisConfig>> | undefined;
+
+    try {
+        visConfig = await loadVisConfig(workspaceRoot);
+    } catch {
+        visConfig = undefined;
+    }
+
+    try {
+        await runMigrateInteractive({
+            logger: {
+                info: (message: string) => {
+                    process.stdout.write(`${message}\n`);
+                },
+                warn: (message: string) => {
+                    process.stderr.write(`${message}\n`);
+                },
+            },
+            visConfig,
+            workspaceRoot,
+        });
+    } catch (error) {
+        process.stderr.write(`${(error as Error).message}\n`);
+        process.exitCode = 1;
+    }
+} else {
+    try {
+        await cli.run();
+    } catch {
+        // errorHandlerPlugin already rendered the error
+        process.exitCode = process.exitCode || 1;
+    }
 }

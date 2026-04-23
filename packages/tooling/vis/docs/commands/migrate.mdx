@@ -10,8 +10,14 @@ Translates configuration from competing monorepo tools into vis format. Non-dest
 ## Usage
 
 ```bash
+vis migrate              # interactive TUI — pick which migrations to run
 vis migrate <type> [options]
 ```
+
+Running `vis migrate` with no subcommand opens an interactive terminal UI that
+auto-detects every migration applicable to the current workspace, lets you
+toggle each one on or off, and shows a per-migration preview of what will
+change before you apply.
 
 ## Migration Types
 
@@ -82,15 +88,6 @@ Merges lint-staged config into `vis.config.ts` staged block:
 
 ```bash
 vis migrate lint-staged
-```
-
-### all
-
-Runs `deps` + `lint-staged` (does **not** auto-run turborepo/nx/moon — those are opt-in). Omitting the `<type>` argument defaults to `all`:
-
-```bash
-vis migrate        # equivalent to vis migrate all
-vis migrate all
 ```
 
 ## Options
