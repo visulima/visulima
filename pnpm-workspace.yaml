@@ -175,7 +175,7 @@ catalogs:
     '@visulima/fs': 5.0.0-alpha.4
     '@visulima/humanizer': 3.0.0-alpha.6
     '@visulima/inspector': 2.0.0-alpha.4
-    '@visulima/packem': 2.0.0-alpha.63
+    '@visulima/packem': 2.0.0-alpha.64
     '@visulima/path': 3.0.0-alpha.5
     '@visulima/redact': 3.0.0-alpha.5
     '@visulima/string': 3.0.0-alpha.6
