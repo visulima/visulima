@@ -249,10 +249,10 @@
     },
     "dependencies": {
         "@visulima/colorize": "2.0.0-alpha.10",
-        "@visulima/interactive-manager": "1.0.0-alpha.2",
-        "type-fest": "catalog:prod"
+        "@visulima/interactive-manager": "1.0.0-alpha.2"
     },
     "devDependencies": {
+        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",

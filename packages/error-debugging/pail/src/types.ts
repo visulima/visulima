@@ -75,26 +75,26 @@ export type ExtendedRfc5424LogLevels = "alert" | "critical" | "debug" | "emergen
  * for different kinds of log messages. Each type has associated styling
  * and log level configuration.
  */
-export type DefaultLogTypes =
-    | "alert"
-    | "await"
-    | "complete"
-    | "critical"
-    | "debug"
-    | "emergency"
-    | "error"
-    | "info"
-    | "log"
-    | "notice"
-    | "pending"
-    | "start"
-    | "stop"
-    | "success"
-    | "trace"
-    | "wait"
-    | "warn"
-    | "warning"
-    | "watch";
+export type DefaultLogTypes
+    = | "alert"
+        | "await"
+        | "complete"
+        | "critical"
+        | "debug"
+        | "emergency"
+        | "error"
+        | "info"
+        | "log"
+        | "notice"
+        | "pending"
+        | "start"
+        | "stop"
+        | "success"
+        | "trace"
+        | "wait"
+        | "warn"
+        | "warning"
+        | "watch";
 
 /**
  * Logger Function Type.

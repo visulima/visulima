@@ -91,36 +91,36 @@ const useLogger = (c: PailHonoContext): WideEvent => {
  * });
  * ```
  */
-export const pailMiddleware =
-    <T extends string = string>(options: HonoMiddlewareOptions<T>): PailHonoMiddleware =>
-    async (c: PailHonoContext, next: PailHonoNext): Promise<void> => {
+export const pailMiddleware
+    = <T extends string = string>(options: HonoMiddlewareOptions<T>): PailHonoMiddleware =>
+        async (c: PailHonoContext, next: PailHonoNext): Promise<void> => {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const requestId = c.req.header("x-request-id") ?? crypto.randomUUID();
-        const safeHeaders = extractSafeHeaders(c.req.raw.headers);
+            const requestId = c.req.header("x-request-id") ?? crypto.randomUUID();
+            const safeHeaders = extractSafeHeaders(c.req.raw.headers);
 
-        const { finish, logger, skipped } = createMiddlewareLogger(options, {
-            headers: safeHeaders,
-            method: c.req.method,
-            path: c.req.path,
-            requestId,
-        });
+            const { finish, logger, skipped } = createMiddlewareLogger(options, {
+                headers: safeHeaders,
+                method: c.req.method,
+                path: c.req.path,
+                requestId,
+            });
 
-        if (skipped) {
-            await next();
+            if (skipped) {
+                await next();
 
-            return;
-        }
+                return;
+            }
 
-        c.set("log", logger);
+            c.set("log", logger);
 
-        try {
-            await next();
-            finish({ status: c.res.status });
-        } catch (error) {
-            finish({ error: error instanceof Error ? error : new Error(String(error)) });
-            throw error;
-        }
-    };
+            try {
+                await next();
+                finish({ status: c.res.status });
+            } catch (error) {
+                finish({ error: error instanceof Error ? error : new Error(String(error)) });
+                throw error;
+            }
+        };
 
 export { useLogger };
 export type { HonoMiddlewareOptions, PailHonoContext, PailHonoMiddleware, PailHonoNext };
