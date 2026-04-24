@@ -203,8 +203,8 @@ export class Mail {
      * ```
      */
     public async draft(message: SendableMessage | DraftMailMessage): Promise<string> {
-        let emailOptions: EmailOptions =
-            message instanceof MailMessage || message instanceof DraftMailMessage
+        let emailOptions: EmailOptions
+            = message instanceof MailMessage || message instanceof DraftMailMessage
                 ? await this.buildDraftFromMessage(message)
                 : await this.buildDraftFromOptions(message);
 
@@ -321,7 +321,7 @@ export class Mail {
      * @returns An async iterable that yields receipts for each sent message.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async *sendMany(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, options?: { signal?: AbortSignal }): AsyncIterable<Receipt> {
+    public async* sendMany(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, options?: { signal?: AbortSignal }): AsyncIterable<Receipt> {
         const providerName = this.provider.name;
         let processedCount = 0;
         let successCount = 0;

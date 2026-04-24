@@ -26,7 +26,7 @@ describe(parseAddress, () => {
     it("should parse email with quoted name", () => {
         expect.assertions(1);
 
-        const addr3 = parseAddress('"John Doe" <john@example.com>');
+        const addr3 = parseAddress("\"John Doe\" <john@example.com>");
 
         expect(addr3).toStrictEqual({
             email: "john@example.com",
@@ -57,9 +57,9 @@ describe(parseAddress, () => {
     it("should parse quoted local part", () => {
         expect.assertions(1);
 
-        const addr7 = parseAddress('"test@test"@example.com');
+        const addr7 = parseAddress("\"test@test\"@example.com");
 
-        expect(addr7).toStrictEqual({ email: '"test@test"@example.com' });
+        expect(addr7).toStrictEqual({ email: "\"test@test\"@example.com" });
     });
 
     it("should parse domain literal", () => {
@@ -116,9 +116,9 @@ describe(parseAddress, () => {
     it("should handle complex quoted string cases", () => {
         expect.assertions(7);
 
-        const addr1 = parseAddress('"user with spaces"@example.com');
+        const addr1 = parseAddress("\"user with spaces\"@example.com");
 
-        expect(addr1).toStrictEqual({ email: '"user with spaces"@example.com' });
+        expect(addr1).toStrictEqual({ email: "\"user with spaces\"@example.com" });
 
         const addr2 = parseAddress(String.raw`"user\"quote"@example.com`);
 
@@ -128,17 +128,17 @@ describe(parseAddress, () => {
 
         expect(addr3).toStrictEqual({ email: String.raw`"user\\backslash"@example.com` });
 
-        const addr4 = parseAddress('".user.name."@example.com');
+        const addr4 = parseAddress("\".user.name.\"@example.com");
 
-        expect(addr4).toStrictEqual({ email: '".user.name."@example.com' });
+        expect(addr4).toStrictEqual({ email: "\".user.name.\"@example.com" });
 
-        const addr5 = parseAddress('"user@domain"@example.com');
+        const addr5 = parseAddress("\"user@domain\"@example.com");
 
-        expect(addr5).toStrictEqual({ email: '"user@domain"@example.com' });
+        expect(addr5).toStrictEqual({ email: "\"user@domain\"@example.com" });
 
         // Test invalid quoted strings
-        expect(parseAddress('"unterminated@example.com')).toBeUndefined();
-        expect(parseAddress('unterminated"@example.com')).toBeUndefined();
+        expect(parseAddress("\"unterminated@example.com")).toBeUndefined();
+        expect(parseAddress("unterminated\"@example.com")).toBeUndefined();
     });
 
     it("should handle domain literal cases", () => {
@@ -180,11 +180,11 @@ describe(parseAddress, () => {
     it("should handle complex name parsing", () => {
         expect.assertions(5);
 
-        const addr1 = parseAddress('John "Johnny" Doe <john@example.com>');
+        const addr1 = parseAddress("John \"Johnny\" Doe <john@example.com>");
 
         expect(addr1).toStrictEqual({
             email: "john@example.com",
-            name: 'John "Johnny" Doe',
+            name: "John \"Johnny\" Doe",
         });
 
         const addr2 = parseAddress("José María <jose@example.com>");
@@ -194,7 +194,7 @@ describe(parseAddress, () => {
             name: "José María",
         });
 
-        const addr3 = parseAddress('"Doe, John" <john@example.com>');
+        const addr3 = parseAddress("\"Doe, John\" <john@example.com>");
 
         expect(addr3).toStrictEqual({
             email: "john@example.com",

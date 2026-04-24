@@ -95,7 +95,7 @@ const httpProvider: ProviderFactory<HttpEmailConfig> = defineProvider((options_:
                 return;
             }
 
-            if (!(await this.isAvailable())) {
+            if (!await this.isAvailable()) {
                 throw new EmailError(PROVIDER_NAME, "API endpoint not available");
             }
 
@@ -198,12 +198,12 @@ const httpProvider: ProviderFactory<HttpEmailConfig> = defineProvider((options_:
                 const responseBody = (result.data as { body?: Record<string, unknown> })?.body;
 
                 if (responseBody && typeof responseBody === "object") {
-                    messageId =
-                        (responseBody.id as string | undefined) ??
-                        (responseBody.messageId as string | undefined) ??
-                        ((responseBody.data &&
-                            typeof responseBody.data === "object" &&
-                            ((responseBody.data as { id?: string }).id ?? (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
+                    messageId
+                        = (responseBody.id as string | undefined)
+                            ?? (responseBody.messageId as string | undefined)
+                            ?? ((responseBody.data
+                                && typeof responseBody.data === "object"
+                                && ((responseBody.data as { id?: string }).id ?? (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
                 }
 
                 messageId ??= generateMessageId();
@@ -239,12 +239,12 @@ const httpProvider: ProviderFactory<HttpEmailConfig> = defineProvider((options_:
                 });
 
                 return Boolean(
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof result.data.statusCode === "number" &&
-                    result.data.statusCode >= 200 &&
-                    result.data.statusCode < 300,
+                    result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof result.data.statusCode === "number"
+                    && result.data.statusCode >= 200
+                    && result.data.statusCode < 300,
                 );
             } catch {
                 return false;
