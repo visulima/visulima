@@ -77,7 +77,7 @@ const binData = (data: ReadonlyArray<number>, thresholds: ReadonlyArray<number>)
         return [];
     }
 
-    const counts: number[] = Array.from({ length: thresholds.length - 1 }, () => 0);
+    const counts: number[] = Array.from({ length: thresholds.length - 1 }).fill(0);
     const lowerBound = thresholds[0]!;
     const upperBound = thresholds[thresholds.length - 1]!;
 

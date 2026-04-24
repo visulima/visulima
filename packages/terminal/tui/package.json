@@ -103,12 +103,12 @@
         "patch-console": "catalog:prod",
         "scheduler": "catalog:prod",
         "shiki": "catalog:syntax",
-        "type-fest": "catalog:prod",
         "ws": "catalog:prod",
         "yoga-layout": "catalog:prod",
         "yoga-layout-prebuilt": "catalog:prod"
     },
     "devDependencies": {
+        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
