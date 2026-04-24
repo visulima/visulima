@@ -84,11 +84,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@prisma/generator-helper": "catalog:backend",
-        "type-fest": "catalog:prod"
+        "@prisma/generator-helper": "catalog:backend"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
+        "type-fest": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
