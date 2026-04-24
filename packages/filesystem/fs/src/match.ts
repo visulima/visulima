@@ -1,4 +1,3 @@
-import type { PicomatchOptions } from "picomatch";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import picomatch from "picomatch";
 
@@ -7,7 +6,7 @@ import picomatch from "picomatch";
  *
  * Passed straight through to [`picomatch`](https://github.com/micromatch/picomatch#options); see its documentation for the full list.
  */
-export type MatchOptions = PicomatchOptions;
+export type MatchOptions = picomatch.PicomatchOptions;
 
 /**
  * Tests whether a path matches one or more glob patterns.

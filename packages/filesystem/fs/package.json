@@ -168,11 +168,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "3.0.0-alpha.10",
-        "type-fest": "catalog:prod"
+        "@visulima/path": "3.0.0-alpha.10"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
+        "type-fest": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
