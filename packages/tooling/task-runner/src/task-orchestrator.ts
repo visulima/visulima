@@ -574,8 +574,8 @@ class TaskOrchestrator {
             return undefined;
         }
 
-        const hasAnyAccess =
-            Object.keys(fingerprint.fileHashes).length > 0 || Object.keys(fingerprint.directoryListings).length > 0 || fingerprint.missingFiles.length > 0;
+        const hasAnyAccess
+            = Object.keys(fingerprint.fileHashes).length > 0 || Object.keys(fingerprint.directoryListings).length > 0 || fingerprint.missingFiles.length > 0;
 
         if (hasAnyAccess) {
             return undefined;

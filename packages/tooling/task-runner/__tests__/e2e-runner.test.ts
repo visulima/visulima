@@ -55,30 +55,30 @@ const makeTask = (id: string, projectRoot: string, outputs: string[] = []): Task
  * verbatim so tests can assert on the actual process output, not a
  * synthesized string.
  */
-const createNodeExecutor =
-    (workspaceRoot: string, commandsByTaskId: Record<string, string>): TaskExecutor =>
-    async (task) => {
-        const script = commandsByTaskId[task.id];
+const createNodeExecutor
+    = (workspaceRoot: string, commandsByTaskId: Record<string, string>): TaskExecutor =>
+        async (task) => {
+            const script = commandsByTaskId[task.id];
 
-        if (!script) {
-            throw new Error(`No script registered for task ${task.id}`);
-        }
+            if (!script) {
+                throw new Error(`No script registered for task ${task.id}`);
+            }
 
-        try {
-            const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
-                cwd: workspaceRoot,
-            });
+            try {
+                const { stdout } = await execFileAsync(process.execPath, ["-e", script], {
+                    cwd: workspaceRoot,
+                });
 
-            return { code: 0, terminalOutput: stdout };
-        } catch (error) {
-            const err = error as NodeJS.ErrnoException & { code?: number | string; stderr?: string; stdout?: string };
-            // execFile rejection carries the child's exit code on `code`
-            // when the process exited non-zero.
-            const code = typeof err.code === "number" ? err.code : 1;
+                return { code: 0, terminalOutput: stdout };
+            } catch (error) {
+                const err = error as NodeJS.ErrnoException & { code?: number | string; stderr?: string; stdout?: string };
+                // execFile rejection carries the child's exit code on `code`
+                // when the process exited non-zero.
+                const code = typeof err.code === "number" ? err.code : 1;
 
-            return { code, terminalOutput: `${err.stdout ?? ""}${err.stderr ?? ""}` };
-        }
-    };
+                return { code, terminalOutput: `${err.stdout ?? ""}${err.stderr ?? ""}` };
+            }
+        };
 
 const createContext = (
     workspaceRoot: string,
