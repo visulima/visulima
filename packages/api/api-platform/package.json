@@ -174,11 +174,11 @@
         "lodash.merge": "catalog:prod",
         "schema-dts": "catalog:prod",
         "ts-japi": "catalog:prod",
-        "type-fest": "catalog:dev",
         "yaml": "catalog:prod",
         "zod-to-ts": "^1.2.0"
     },
     "devDependencies": {
+        "type-fest": "catalog:dev",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -337,15 +337,5 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "sources": [
-        "src/index-browser.tsx",
-        "src/index-server.ts",
-        "src/framework/cli/index.ts",
-        "src/framework/cli/commander/index.ts",
-        "src/framework/next/index-browser.tsx",
-        "src/framework/next/index-server.ts",
-        "src/framework/next/routes/pages/swagger/index.tsx",
-        "src/framework/next/routes/pages/redoc/index.tsx"
-    ]
+    }
 }
