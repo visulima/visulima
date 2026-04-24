@@ -47,7 +47,7 @@ const Overview = () => {
     // It's better if useLoaderData() is generically typed or the loader itself provides a typed response.
     const allBlogs: BlogEntry[] = (allBlogsRaw ?? []) as unknown as BlogEntry[];
 
-    const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
+    const { includeCategories, pageIndex = 1 } = routeApi.useSearch() as { includeCategories?: string[]; pageIndex?: number };
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
     const sortedBlogs = allBlogs.toSorted((a, b) => {
