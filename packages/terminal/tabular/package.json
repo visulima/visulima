@@ -96,7 +96,6 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "jiti": "catalog:dev",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",

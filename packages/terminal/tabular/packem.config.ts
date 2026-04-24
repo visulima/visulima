@@ -1,5 +1,4 @@
 import typedocBuilder from "@visulima/packem/builder/typedoc";
-import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import type { BuildConfig } from "@visulima/packem/config";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
@@ -11,6 +10,9 @@ export default defineConfig({
         // typedoc: typedocBuilder,
     },
     rollup: {
+        dts: {
+            oxc: true,
+        },
         license: {
             path: "./LICENSE.md",
         },
@@ -19,7 +21,6 @@ export default defineConfig({
         },
     },
     transformer,
-    isolatedDeclarationTransformer,
     typedoc: {
         excludeInternal: true,
         excludePrivate: true,
