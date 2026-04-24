@@ -1,5 +1,7 @@
 import type { ColorizeType } from "@visulima/colorize";
-import { bold, cyan, green, grey, magenta, red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { bold, cyan, green, grey, magenta, red, yellow } = colorize;
 import { describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
