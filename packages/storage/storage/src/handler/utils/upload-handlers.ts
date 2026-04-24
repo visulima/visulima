@@ -4,7 +4,7 @@ import type { Readable } from "node:stream";
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import pick from "../../utils/primitives/pick";
-import type { IncomingMessageWithBody, UploadResponse } from "../../utils/types";
+import type { IncomingMessageWithBody, ResponseBody, UploadResponse } from "../../utils/types";
 import type { ResponseFile, ResponseList } from "../types";
 import { convertHeadersToString } from "./response-builder";
 
@@ -82,7 +82,7 @@ export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends 
         if (typeof next === "function") {
             next();
         } else {
-            send(response, { body, headers, statusCode });
+            send(response, { body: body as ResponseBody, headers, statusCode });
         }
     }
 };
