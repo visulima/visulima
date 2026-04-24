@@ -50,7 +50,7 @@ describe("option-processor", () => {
 
             expect(() => {
                 addNegatableOptions(command);
-            }).toThrow('Cannot add negated option "no-input" to command "test" because it is not a boolean.');
+            }).toThrow("Cannot add negated option \"no-input\" to command \"test\" because it is not a boolean.");
         });
 
         it("should not duplicate existing options", () => {
