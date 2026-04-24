@@ -35,7 +35,7 @@ describe("server middleware", () => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
             mockRequest.on.mockImplementation((event: string, callback: Function) => {
                 if (event === "data") {
-                    callback('{"file": "src/index.ts", "line": 10, "column": 5}');
+                    callback("{\"file\": \"src/index.ts\", \"line\": 10, \"column\": 5}");
                 } else if (event === "end") {
                     callback();
                 }
