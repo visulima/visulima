@@ -9,7 +9,9 @@
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
-import { red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { red, yellow } = colorize;
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { dirname, join, resolve } from "@visulima/path";
 

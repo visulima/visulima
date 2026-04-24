@@ -1,7 +1,9 @@
 import { readdirSync, statSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
-import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { cyan, dim, magenta, red, yellow } = colorize;
 import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import type { LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
