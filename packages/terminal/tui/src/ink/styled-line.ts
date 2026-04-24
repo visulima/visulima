@@ -921,7 +921,12 @@ export class StyledLine {
         if (index === currentOffset && spanIndex > 0) {
             const previousSpan = this.spans[spanIndex - 1]!;
 
-            if (previousSpan.formatFlags === formatFlags && previousSpan.fgColor === fgColor && previousSpan.bgColor === bgColor && previousSpan.link === link) {
+            if (
+                previousSpan.formatFlags === formatFlags
+                && previousSpan.fgColor === fgColor
+                && previousSpan.bgColor === bgColor
+                && previousSpan.link === link
+            ) {
                 previousSpan.length += 1;
 
                 if (span.length === 1) {
