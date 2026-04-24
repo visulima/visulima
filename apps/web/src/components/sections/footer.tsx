@@ -1,6 +1,5 @@
 import DiscordLogoIcon from "@icons-pack/react-simple-icons/icons/SiDiscord.mjs";
 import GitHubLogoIcon from "@icons-pack/react-simple-icons/icons/SiGithub.mjs";
-import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import type { FC } from "react";
@@ -64,11 +63,6 @@ const Footer: FC = () => (
         <div className="relative container mx-auto grid grid-cols-2 gap-y-8 p-0 sm:grid-cols-3 md:grid-cols-4">
             <LineGrid mode="dark" />
 
-            <HighlightLink className="border-0" href="https://x.com/visaborned" mode="dark" rel="noopener noreferrer" target="_blank">
-                <TwitterLogoIcon />
-                <span className="grow">Twitter (X)</span>
-                <ExternalLink />
-            </HighlightLink>
             <HighlightLink className="border-0" href="https://github.com/visulima" mode="dark" rel="noopener noreferrer" target="_blank">
                 <GitHubLogoIcon />
                 <span className="grow">GitHub</span>
@@ -89,7 +83,7 @@ const Footer: FC = () => (
                     <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-white/30">{menu.title}</h2>
                     <div className="flex flex-col space-y-2 text-sm">
                         {menu.links.map((link: TanstackLink | ExternalLinkType) =>
-                            (link as ExternalLinkType).href ? (
+                            ((link as ExternalLinkType).href ? (
                                 <a
                                     className="text-white/50 transition-colors hover:text-white"
                                     href={(link as ExternalLinkType).href}
@@ -102,7 +96,7 @@ const Footer: FC = () => (
                                 <Link className="text-white/50 transition-colors hover:text-white" key={link.title} to={(link as TanstackLink).to}>
                                     {link.title}
                                 </Link>
-                            ),
+                            )),
                         )}
                     </div>
                 </div>

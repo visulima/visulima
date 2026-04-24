@@ -2,7 +2,6 @@
 
 import DiscordLogoIcon from "@icons-pack/react-simple-icons/icons/SiDiscord.mjs";
 import GitHubLogoIcon from "@icons-pack/react-simple-icons/icons/SiGithub.mjs";
-import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
@@ -460,9 +459,6 @@ const Navbar = () => {
                 </NavigationMenuList>
                 <SearchButton />
                 <ThemeToggle />
-                <a className="text-white transition-colors hover:text-white/80" href="https://x.com/visaborned" rel="noreferrer" target="_blank">
-                    <TwitterLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Follow us on X" />
-                </a>
                 <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
                     <GitHubLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Star us on GitHub" />
                 </a>
