@@ -1,6 +1,8 @@
 import { pathToFileURL } from "node:url";
 
-import { cyan, dim, green, red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { cyan, dim, green, red, yellow } = colorize;
 import { readFileSync } from "@visulima/fs";
 import { isAbsolute, relative, resolve } from "@visulima/path";
 import type { Finding, RuleInfo } from "@visulima/secret-scanner";

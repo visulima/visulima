@@ -1,7 +1,9 @@
 import { execSync } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
-import { red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { red, yellow } = colorize;
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";

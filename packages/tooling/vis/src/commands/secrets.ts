@@ -1,5 +1,7 @@
 import type { Command } from "@visulima/cerebro";
-import { dim, green, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { dim, green, yellow } = colorize;
 import { isAccessibleSync } from "@visulima/fs";
 import { join, relative, resolve } from "@visulima/path";
 import type { Confidence, Finding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";

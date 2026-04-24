@@ -1,5 +1,7 @@
 import type { Command } from "@visulima/cerebro";
-import { dim, green, red, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { dim, green, red, yellow } = colorize;
 import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
 
