@@ -45,60 +45,52 @@ describe.skipIf(!INTEGRATION)("remote template fetch (network, gated by VITEST_I
         expect(isRemoteSource(REMOTE_SOURCE)).toBe(true);
     });
 
-    it(
-        "fetches, discovers, loads, and renders a moon-format template from GitHub",
-        { timeout: 60_000 },
-        async () => {
-            expect.assertions(4);
+    it("fetches, discovers, loads, and renders a moon-format template from GitHub", { timeout: 60_000 }, async () => {
+        expect.assertions(4);
 
-            const fetched = await fetchRemoteTemplate(REMOTE_SOURCE, { preferOffline: false });
+        const fetched = await fetchRemoteTemplate(REMOTE_SOURCE, { preferOffline: false });
 
-            try {
-                const discovered = discoverTemplates({ extraDirectories: [fetched.directory], workspaceRoot: fetched.directory });
-                const remote = discovered.find((t) => t.path.startsWith(fetched.directory));
+        try {
+            const discovered = discoverTemplates({ extraDirectories: [fetched.directory], workspaceRoot: fetched.directory });
+            const remote = discovered.find((t) => t.path.startsWith(fetched.directory));
 
-                expect(remote).toBeDefined();
-                expect(remote?.source).toBe("config");
+            expect(remote).toBeDefined();
+            expect(remote?.source).toBe("config");
 
-                const template = await remote!.load();
-                const creation = await template.produce({
-                    builtins: {
-                        dest_dir: "/tmp",
-                        dest_rel_dir: ".",
-                        working_dir: "/tmp",
-                        workspace_root: "/tmp",
-                    },
-                    options: { name: "Button", style: "primary", withTest: false },
-                });
+            const template = await remote!.load();
+            const creation = await template.produce({
+                builtins: {
+                    dest_dir: "/tmp",
+                    dest_rel_dir: ".",
+                    working_dir: "/tmp",
+                    workspace_root: "/tmp",
+                },
+                options: { name: "Button", style: "primary", withTest: false },
+            });
 
-                const files = flatten(creation.files ?? {});
+            const files = flatten(creation.files ?? {});
 
-                expect(files["Button.tsx"]).toContain("export const Button");
-                // The `.raw` fixture file proves passthrough survives the
-                // network round-trip.
-                expect(files["README.md"]).toContain("{{ raw }}");
-            } finally {
-                fetched.cleanup();
-            }
-        },
-    );
-
-    it(
-        "cleanup removes the fetched tmp directory",
-        { timeout: 60_000 },
-        async () => {
-            expect.assertions(2);
-
-            const { existsSync } = await import("node:fs");
-            const fetched = await fetchRemoteTemplate(REMOTE_SOURCE);
-
-            expect(existsSync(fetched.directory)).toBe(true);
-
+            expect(files["Button.tsx"]).toContain("export const Button");
+            // The `.raw` fixture file proves passthrough survives the
+            // network round-trip.
+            expect(files["README.md"]).toContain("{{ raw }}");
+        } finally {
             fetched.cleanup();
+        }
+    });
 
-            expect(existsSync(fetched.directory)).toBe(false);
-        },
-    );
+    it("cleanup removes the fetched tmp directory", { timeout: 60_000 }, async () => {
+        expect.assertions(2);
+
+        const { existsSync } = await import("node:fs");
+        const fetched = await fetchRemoteTemplate(REMOTE_SOURCE);
+
+        expect(existsSync(fetched.directory)).toBe(true);
+
+        fetched.cleanup();
+
+        expect(existsSync(fetched.directory)).toBe(false);
+    });
 });
 
 describe.skipIf(INTEGRATION)("remote template fetch — skipped when VITEST_INTEGRATION is unset", () => {

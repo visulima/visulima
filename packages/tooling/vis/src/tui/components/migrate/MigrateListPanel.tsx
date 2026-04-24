@@ -17,9 +17,9 @@ const MigrationRow = ({ checked, isSelected, item }: MigrationRowProps): React.J
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={checked ? "white" : "gray"}>
-                {" "}
+                {' '}
                 {checkbox}
-                {" "}
+                {' '}
             </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
@@ -29,7 +29,7 @@ const MigrationRow = ({ checked, isSelected, item }: MigrationRowProps): React.J
             <Text dimColor>
                 {" "}
                 {previewCount}
-                {" "}
+                {' '}
                 change
                 {previewCount === 1 ? "" : "s"}
                 {" "}
@@ -48,7 +48,15 @@ interface MigrateListPanelProps {
     viewportHeight: number;
 }
 
-const MigrateListPanel = ({ checkedItems, focused, isDryRun, items, scrollOffset, selectedIndex, viewportHeight }: MigrateListPanelProps): React.JSX.Element => {
+const MigrateListPanel = ({
+    checkedItems,
+    focused,
+    isDryRun,
+    items,
+    scrollOffset,
+    selectedIndex,
+    viewportHeight,
+}: MigrateListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
     const checkedCount = items.filter((item) => checkedItems.has(item.entry.id)).length;
 
@@ -67,7 +75,7 @@ const MigrateListPanel = ({ checkedItems, focused, isDryRun, items, scrollOffset
                 </Text>
                 <Text wrap="truncate">
                     {items.length}
-                    {" "}
+                    {' '}
                     applicable
                 </Text>
                 {checkedCount > 0 && (
@@ -77,11 +85,7 @@ const MigrateListPanel = ({ checkedItems, focused, isDryRun, items, scrollOffset
                         {" selected"}
                     </Text>
                 )}
-                {isDryRun && (
-                    <Text color="yellow">
-                        {" (dry-run)"}
-                    </Text>
-                )}
+                {isDryRun && <Text color="yellow">{" (dry-run)"}</Text>}
             </Box>
 
             <Box flexDirection="row" flexGrow={1} overflow="hidden">

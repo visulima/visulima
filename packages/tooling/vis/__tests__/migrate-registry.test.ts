@@ -46,17 +46,7 @@ describe("migrate registry", () => {
 
             // Keep in sync with migrateCommands in commands/migrate/index.ts (minus "verify",
             // which is a read-only audit and not surfaced in the TUI).
-            expect(ids).toStrictEqual([
-                "deps",
-                "gitleaks",
-                "kingfisher",
-                "lint-staged",
-                "moon",
-                "nano-staged",
-                "nx",
-                "secretlint",
-                "turborepo",
-            ]);
+            expect(ids).toStrictEqual(["deps", "gitleaks", "kingfisher", "lint-staged", "moon", "nano-staged", "nx", "secretlint", "turborepo"]);
         });
 
         it("gives every entry a non-empty title and description", () => {

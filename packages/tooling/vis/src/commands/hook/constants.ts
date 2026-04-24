@@ -43,7 +43,14 @@ const PREK_SUPPORTED_STAGES: ReadonlySet<string> = new Set<string>([
 ]);
 
 // Stages where git passes a path/argument to the hook — we forward "$@" when pass_filenames is true.
-const PREK_STAGES_WITH_GIT_ARGS: ReadonlySet<string> = new Set<string>(["commit-msg", "post-checkout", "post-merge", "post-rewrite", "pre-rebase", "prepare-commit-msg"]);
+const PREK_STAGES_WITH_GIT_ARGS: ReadonlySet<string> = new Set<string>([
+    "commit-msg",
+    "post-checkout",
+    "post-merge",
+    "post-rewrite",
+    "pre-rebase",
+    "prepare-commit-msg",
+]);
 
 // Hook `language` values we can translate to plain shell. Everything else needs the prek binary.
 const PREK_TRANSLATABLE_LANGUAGES: ReadonlySet<string> = new Set<string>(["fail", "script", "system"]);

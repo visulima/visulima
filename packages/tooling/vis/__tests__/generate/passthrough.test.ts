@@ -108,10 +108,7 @@ describe("argv-level recovery walks (simulates the fix)", () => {
     it("returns everything after the first `--`", () => {
         expect.assertions(1);
 
-        expect(recoverPassthrough(["generate", "package", "--dry-run", "--", "--name=x", "--style=primary"])).toStrictEqual([
-            "--name=x",
-            "--style=primary",
-        ]);
+        expect(recoverPassthrough(["generate", "package", "--dry-run", "--", "--name=x", "--style=primary"])).toStrictEqual(["--name=x", "--style=primary"]);
     });
 
     it("treats only the first `--` as the separator", () => {

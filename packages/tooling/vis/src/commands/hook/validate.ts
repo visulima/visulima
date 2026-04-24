@@ -124,10 +124,17 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
             const runnerError = runNodeCheck(runnerPath);
 
             if (runnerError) {
-                issues.push({ kind: "error", message: `prek-runner.mjs has a syntax error: ${runnerError}`, path: join(hooksDirectory, ".builtins", PREK_RUNNER_FILENAME) });
+                issues.push({
+                    kind: "error",
+                    message: `prek-runner.mjs has a syntax error: ${runnerError}`,
+                    path: join(hooksDirectory, ".builtins", PREK_RUNNER_FILENAME),
+                });
             }
         } else {
-            issues.push({ kind: "error", message: `Hook scripts reference ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME} but the file is missing. Re-run \`vis hook migrate\`.` });
+            issues.push({
+                kind: "error",
+                message: `Hook scripts reference ${hooksDirectory}/.builtins/${PREK_RUNNER_FILENAME} but the file is missing. Re-run \`vis hook migrate\`.`,
+            });
         }
     }
 

@@ -80,23 +80,23 @@ If both a husky directory and a prek config are present, the command errors and 
 
 Local hooks with `language: system`, `language: script`, or `language: fail`, plus a curated set of remote hooks from `pre-commit/pre-commit-hooks`, are translated to plain shell + a small bundled Node runner. Everything else still needs the prek binary and is surfaced as a warning or manual step.
 
-| prek feature | migration behavior |
-| --- | --- |
-| Local `system` / `script` / `fail` hooks | routed through `.vis-hooks/.builtins/prek-runner.mjs`, which handles staged-file discovery, filters, and chunked argv dispatch |
-| Remote hooks from `pre-commit/pre-commit-hooks` — `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending` | translated to bundled builtins (no prek binary required at runtime) |
-| Other remote `repo: https://...` entries | skipped with a warning |
-| Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, etc.) | skipped with a warning |
-| `files` / `exclude` (regex filters) | preserved — passed as argv flags to the runner, so user strings can't escape into the outer shell |
-| `types` / `types_or` / `exclude_types` | preserved for the common types (`javascript`, `typescript`, `jsx`, `tsx`, `json`, `yaml`, `markdown`, `html`, `css`, `shell`, `toml`, `python`); unknown types warn and are skipped |
-| `always_run`, `pass_filenames: false` | forwarded to the runner as flags |
-| `additional_dependencies` | merged into `package.json` `devDependencies`; pip-style pins (`name==x`) are surfaced as a manual step instead |
-| `stages` (including legacy `commit`/`push`/`merge-commit` aliases) | translated to per-stage hook files |
-| `default_stages` | used as the fallback when a hook omits `stages` |
-| `pass_filenames: true` on `commit-msg`/`prepare-commit-msg`/`pre-rebase`/`post-*` | forwards git's own argument as `"$@"` (bypasses the runner since pre-commit's filter semantics don't apply) |
-| Top-level `fail_fast: true` | prepends `set -e` to each generated script |
-| `manual` stage | skipped silently (not a real git hook) |
-| `minimum_pre_commit_version`, `ci`, `default_language_version`, `default_install_hook_types` | ignored |
-| `prek.toml` (native format) | parsed via `@visulima/fs/toml`; YAML takes precedence if both are present |
+| prek feature                                                                                                                                            | migration behavior                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local `system` / `script` / `fail` hooks                                                                                                                | routed through `.vis-hooks/.builtins/prek-runner.mjs`, which handles staged-file discovery, filters, and chunked argv dispatch                                                      |
+| Remote hooks from `pre-commit/pre-commit-hooks` — `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending` | translated to bundled builtins (no prek binary required at runtime)                                                                                                                 |
+| Other remote `repo: https://...` entries                                                                                                                | skipped with a warning                                                                                                                                                              |
+| Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, etc.)                                     | skipped with a warning                                                                                                                                                              |
+| `files` / `exclude` (regex filters)                                                                                                                     | preserved — passed as argv flags to the runner, so user strings can't escape into the outer shell                                                                                   |
+| `types` / `types_or` / `exclude_types`                                                                                                                  | preserved for the common types (`javascript`, `typescript`, `jsx`, `tsx`, `json`, `yaml`, `markdown`, `html`, `css`, `shell`, `toml`, `python`); unknown types warn and are skipped |
+| `always_run`, `pass_filenames: false`                                                                                                                   | forwarded to the runner as flags                                                                                                                                                    |
+| `additional_dependencies`                                                                                                                               | merged into `package.json` `devDependencies`; pip-style pins (`name==x`) are surfaced as a manual step instead                                                                      |
+| `stages` (including legacy `commit`/`push`/`merge-commit` aliases)                                                                                      | translated to per-stage hook files                                                                                                                                                  |
+| `default_stages`                                                                                                                                        | used as the fallback when a hook omits `stages`                                                                                                                                     |
+| `pass_filenames: true` on `commit-msg`/`prepare-commit-msg`/`pre-rebase`/`post-*`                                                                       | forwards git's own argument as `"$@"` (bypasses the runner since pre-commit's filter semantics don't apply)                                                                         |
+| Top-level `fail_fast: true`                                                                                                                             | prepends `set -e` to each generated script                                                                                                                                          |
+| `manual` stage                                                                                                                                          | skipped silently (not a real git hook)                                                                                                                                              |
+| `minimum_pre_commit_version`, `ci`, `default_language_version`, `default_install_hook_types`                                                            | ignored                                                                                                                                                                             |
+| `prek.toml` (native format)                                                                                                                             | parsed via `@visulima/fs/toml`; YAML takes precedence if both are present                                                                                                           |
 
 #### The bundled runner
 
@@ -111,24 +111,24 @@ All user-supplied values (regex patterns, filenames, hook args) travel via `proc
 
 ## Options
 
-| Option        | Default      | Applies to | Description                                                           |
-| ------------- | ------------ | ---------- | --------------------------------------------------------------------- |
-| `--hooks-dir` | `.vis-hooks` | all        | Custom hooks directory                                                |
-| `--dry-run`   | `false`      | `migrate`  | Preview what would be written without touching disk                   |
-| `--all-files` | `false`      | `run`      | Run against every tracked file (sets `VIS_HOOK_ALL_FILES=1`)          |
-| `--from-ref`  | —            | `run`      | Run against files changed since this ref (sets `VIS_HOOK_FROM_REF`)   |
-| `--to-ref`    | —            | `run`      | Run against files changed up to this ref (sets `VIS_HOOK_TO_REF`)     |
-| `--last-commit` | `false`    | `run`      | Shortcut for `--from-ref HEAD~1 --to-ref HEAD`                        |
+| Option          | Default      | Applies to | Description                                                         |
+| --------------- | ------------ | ---------- | ------------------------------------------------------------------- |
+| `--hooks-dir`   | `.vis-hooks` | all        | Custom hooks directory                                              |
+| `--dry-run`     | `false`      | `migrate`  | Preview what would be written without touching disk                 |
+| `--all-files`   | `false`      | `run`      | Run against every tracked file (sets `VIS_HOOK_ALL_FILES=1`)        |
+| `--from-ref`    | —            | `run`      | Run against files changed since this ref (sets `VIS_HOOK_FROM_REF`) |
+| `--to-ref`      | —            | `run`      | Run against files changed up to this ref (sets `VIS_HOOK_TO_REF`)   |
+| `--last-commit` | `false`      | `run`      | Shortcut for `--from-ref HEAD~1 --to-ref HEAD`                      |
 
 ## Environment Variables
 
-| Variable                | Description                                                                                               |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- |
-| `VIS_GIT_HOOKS=0`       | Disable git hooks                                                                                         |
-| `VIS_GIT_HOOKS=2`       | Enable debug output for hooks                                                                             |
-| `VIS_HOOK_ALL_FILES=1`  | Tells the bundled runner to discover files via `git ls-files` instead of `git diff --cached`              |
-| `VIS_HOOK_FROM_REF=…`   | Paired with `VIS_HOOK_TO_REF`, runs the hook against files changed between the two refs                   |
-| `VIS_HOOK_TO_REF=…`     | Paired with `VIS_HOOK_FROM_REF` (above)                                                                   |
+| Variable               | Description                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| `VIS_GIT_HOOKS=0`      | Disable git hooks                                                                            |
+| `VIS_GIT_HOOKS=2`      | Enable debug output for hooks                                                                |
+| `VIS_HOOK_ALL_FILES=1` | Tells the bundled runner to discover files via `git ls-files` instead of `git diff --cached` |
+| `VIS_HOOK_FROM_REF=…`  | Paired with `VIS_HOOK_TO_REF`, runs the hook against files changed between the two refs      |
+| `VIS_HOOK_TO_REF=…`    | Paired with `VIS_HOOK_FROM_REF` (above)                                                      |
 
 ## Supported Hooks
 

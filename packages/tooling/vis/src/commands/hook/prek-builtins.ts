@@ -73,11 +73,7 @@ const BUILTIN_HOOK_IDS: ReadonlyArray<string> = ["check-json", "check-merge-conf
 
 // Tags recognised by the runner (extension-based + shebang-derived + metadata).
 // Used by the migrator to warn about truly unknown `types` entries.
-const KNOWN_TYPE_TAGS: ReadonlyArray<string> = [
-    ...Object.keys(TYPES_EXTENSION_MAP),
-    ...Object.values(SHEBANG_INTERPRETER_MAP).flat(),
-    ...METADATA_TYPE_TAGS,
-];
+const KNOWN_TYPE_TAGS: ReadonlyArray<string> = [...Object.keys(TYPES_EXTENSION_MAP), ...Object.values(SHEBANG_INTERPRETER_MAP).flat(), ...METADATA_TYPE_TAGS];
 
 // The runner source is stored as an array of string lines to avoid template
 // literal interpolation hazards at the TS→JS string boundary. Plain string

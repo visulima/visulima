@@ -30,11 +30,16 @@ interface MigrationContext {
     root: string;
 }
 
-const buildContext = (toolbox: { logger: Logger; options: Record<string, unknown>; visConfig?: Record<string, unknown>; workspaceRoot?: string }): MigrationContext => {
+const buildContext = (toolbox: {
+    logger: Logger;
+    options: Record<string, unknown>;
+    visConfig?: Record<string, unknown>;
+    workspaceRoot?: string;
+}): MigrationContext => {
     const root = toolbox.workspaceRoot ?? process.cwd();
 
     return {
-        config: (toolbox.visConfig ?? {}),
+        config: toolbox.visConfig ?? {},
         dryRun: Boolean(toolbox.options.dryRun),
         logger: toolbox.logger,
         packageManager: detectPackageManager(root),
