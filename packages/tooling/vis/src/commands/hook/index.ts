@@ -30,8 +30,7 @@ const hooksDirectoryOption = {
     type: String,
 } as const;
 
-const resolveHooksDirectory = (options: Record<string, unknown>): string =>
-    (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
+const resolveHooksDirectory = (options: Record<string, unknown>): string => (options.hooksDir as string | undefined) ?? DEFAULT_HOOKS_DIRECTORY;
 
 const confirmPrompt = (question: string): Promise<boolean> =>
     new Promise((resolve) => {

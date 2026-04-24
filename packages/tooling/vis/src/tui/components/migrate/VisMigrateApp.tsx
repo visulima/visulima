@@ -260,23 +260,33 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
 
     const footerItems: React.JSX.Element[] = [
         <Box gap={1} key="q">
-            <Text bold color="white">q</Text>
+            <Text bold color="white">
+                q
+            </Text>
             <Text dimColor>QUIT</Text>
         </Box>,
         <Box gap={1} key="?">
-            <Text bold color="white">?</Text>
+            <Text bold color="white">
+                ?
+            </Text>
             <Text dimColor>HELP</Text>
         </Box>,
         <Box gap={1} key="nav">
-            <Text bold color="white">↑↓</Text>
+            <Text bold color="white">
+                ↑↓
+            </Text>
             <Text dimColor>NAV</Text>
         </Box>,
         <Box gap={1} key="sp">
-            <Text bold color="white">Space</Text>
+            <Text bold color="white">
+                Space
+            </Text>
             <Text dimColor>CHECK</Text>
         </Box>,
         <Box gap={1} key="a">
-            <Text bold color="white">a</Text>
+            <Text bold color="white">
+                a
+            </Text>
             <Text dimColor>ALL</Text>
         </Box>,
     ];
@@ -284,7 +294,9 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
     if (!isDryRun && state.checkedItems.size > 0) {
         footerItems.push(
             <Box gap={1} key="u">
-                <Text bold color="green">u</Text>
+                <Text bold color="green">
+                    u
+                </Text>
                 <Text dimColor>APPLY</Text>
             </Box>,
         );
@@ -292,7 +304,9 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
 
     footerItems.push(
         <Box gap={1} key="tab">
-            <Text bold color="white">Tab</Text>
+            <Text bold color="white">
+                Tab
+            </Text>
             <Text dimColor>PANEL</Text>
         </Box>,
     );
@@ -309,11 +323,17 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
         <Dialog
             footer={(
                 <Text dimColor>
-                    <Text bold color="white">↑↓</Text>
+                    <Text bold color="white">
+                        ↑↓
+                    </Text>
                     {" scroll  "}
-                    <Text bold color="white">?</Text>
+                    <Text bold color="white">
+                        ?
+                    </Text>
                     /
-                    <Text bold color="white">Esc</Text>
+                    <Text bold color="white">
+                        Esc
+                    </Text>
                     {" close"}
                 </Text>
             )}
@@ -323,49 +343,73 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
             width={52}
         >
             <Box flexDirection="column" marginBottom={1}>
-                <Text bold color="white">NAVIGATION</Text>
+                <Text bold color="white">
+                    NAVIGATION
+                </Text>
                 <Text>
-                    <Text bold color="white">{" ↑/k"}</Text>
+                    <Text bold color="white">
+                        {" ↑/k"}
+                    </Text>
                     <Text dimColor> Move up</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" ↓/j"}</Text>
+                    <Text bold color="white">
+                        {" ↓/j"}
+                    </Text>
                     <Text dimColor> Move down</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" Tab"}</Text>
+                    <Text bold color="white">
+                        {" Tab"}
+                    </Text>
                     <Text dimColor> Switch panel</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" →/←"}</Text>
+                    <Text bold color="white">
+                        {" →/←"}
+                    </Text>
                     <Text dimColor> Focus detail/list</Text>
                 </Text>
             </Box>
             <Box flexDirection="column" marginBottom={1}>
-                <Text bold color="white">SELECTION</Text>
+                <Text bold color="white">
+                    SELECTION
+                </Text>
                 <Text>
-                    <Text bold color="white">{" Space"}</Text>
+                    <Text bold color="white">
+                        {" Space"}
+                    </Text>
                     <Text dimColor> Toggle migration</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" a"}</Text>
+                    <Text bold color="white">
+                        {" a"}
+                    </Text>
                     <Text dimColor> Toggle all</Text>
                 </Text>
             </Box>
             <Box flexDirection="column">
-                <Text bold color="white">ACTIONS</Text>
+                <Text bold color="white">
+                    ACTIONS
+                </Text>
                 {!isDryRun && (
                     <Text>
-                        <Text bold color="white">{" u"}</Text>
+                        <Text bold color="white">
+                            {" u"}
+                        </Text>
                         <Text dimColor> Apply selected migrations</Text>
                     </Text>
                 )}
                 <Text>
-                    <Text bold color="white">{" q"}</Text>
+                    <Text bold color="white">
+                        {" q"}
+                    </Text>
                     <Text dimColor> Quit</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" ?"}</Text>
+                    <Text bold color="white">
+                        {" ?"}
+                    </Text>
                     <Text dimColor> Toggle help</Text>
                 </Text>
             </Box>
@@ -377,11 +421,17 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
         <Box alignItems="center" flexDirection="column">
             <Text dimColor>
                 {"Press "}
-                <Text bold color="white">u</Text>
+                <Text bold color="white">
+                    u
+                </Text>
                 {" or "}
-                <Text bold color="white">Enter</Text>
+                <Text bold color="white">
+                    Enter
+                </Text>
                 {" to confirm, "}
-                <Text bold color="white">Esc</Text>
+                <Text bold color="white">
+                    Esc
+                </Text>
                 {" to cancel"}
             </Text>
         </Box>
@@ -398,13 +448,13 @@ const VisMigrateApp = ({ autoExitSeconds = 0, isDryRun, store }: VisMigrateAppPr
             {checkedItems.map((item) => (
                 <Box gap={1} key={item.entry.id}>
                     <Text>
-                        {" "}
+                        {' '}
                         {item.entry.title}
                     </Text>
                     <Text dimColor>
                         (
                         {item.preview.length}
-                        {" "}
+                        {' '}
                         change
                         {item.preview.length === 1 ? "" : "s"}
                         )

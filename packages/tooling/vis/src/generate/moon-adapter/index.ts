@@ -204,10 +204,7 @@ const yamlVariableToVariable = (variable: MoonVariableYaml): Variable => {
  * only separator — any mismatch between the adapter's `meta` key and
  * the runner's `file.path` silently drops per-file metadata.
  */
-const normalizeDestinationPath = (path: string): string => path
-    .replaceAll("\\", "/")
-    .replace(/^\.\//, "")
-    .replaceAll(/\/+/g, "/");
+const normalizeDestinationPath = (path: string): string => path.replaceAll("\\", "/").replace(/^\.\//, "").replaceAll(/\/+/g, "/");
 
 const flattenFiles = (root: CreationDirectory, path: string, value: CreationFile): void => {
     const segments = path.split("/").filter(Boolean);

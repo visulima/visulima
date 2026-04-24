@@ -47,7 +47,7 @@ const renderFallbackTable = (items: MigrateItem[], logger: InteractiveLogger): v
 
 export const runMigrateInteractive = async (toolbox: InteractiveToolbox): Promise<void> => {
     const root = toolbox.workspaceRoot ?? process.cwd();
-    const visConfig = (toolbox.visConfig ?? {});
+    const visConfig = toolbox.visConfig ?? {};
     const context = buildProbeContext(root, visConfig);
     const applicable = getApplicableMigrations(context);
 

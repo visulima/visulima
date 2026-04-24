@@ -2,106 +2,104 @@
 
 ### Features
 
-* **vis:** add --last-commit shortcut for hook run ([a841c8e](https://github.com/visulima/visulima/commit/a841c8ebfaf69d196cdc3115757c65705204d850))
-* **vis:** migrate prek hooks to vis ([92fec22](https://github.com/visulima/visulima/commit/92fec22f61d1882eecd78ff139e4632f55ee3e00))
-* **vis:** parse prek.toml via @visulima/fs/toml ([4599680](https://github.com/visulima/visulima/commit/459968089e8968f58edea35c5e2d801cdfbd2913))
-* **vis:** translate remote prek hooks, file filters, and deps ([2705c8f](https://github.com/visulima/visulima/commit/2705c8f99e287bb93d0865361f376bafa8043736))
-* **vis:** vis hook run/list/validate, migrate --dry-run, runner extras ([bce23d9](https://github.com/visulima/visulima/commit/bce23d912790f9fc2eafa7ce4596e66d0a70e97e))
+- **vis:** add --last-commit shortcut for hook run ([a841c8e](https://github.com/visulima/visulima/commit/a841c8ebfaf69d196cdc3115757c65705204d850))
+- **vis:** migrate prek hooks to vis ([92fec22](https://github.com/visulima/visulima/commit/92fec22f61d1882eecd78ff139e4632f55ee3e00))
+- **vis:** parse prek.toml via @visulima/fs/toml ([4599680](https://github.com/visulima/visulima/commit/459968089e8968f58edea35c5e2d801cdfbd2913))
+- **vis:** translate remote prek hooks, file filters, and deps ([2705c8f](https://github.com/visulima/visulima/commit/2705c8f99e287bb93d0865361f376bafa8043736))
+- **vis:** vis hook run/list/validate, migrate --dry-run, runner extras ([bce23d9](https://github.com/visulima/visulima/commit/bce23d912790f9fc2eafa7ce4596e66d0a70e97e))
 
 ### Bug Fixes
 
-* added missing deps ([de0522f](https://github.com/visulima/visulima/commit/de0522f18286b23489cf6a51007ef3a4e7c5fd76))
+- added missing deps ([de0522f](https://github.com/visulima/visulima/commit/de0522f18286b23489cf6a51007ef3a4e7c5fd76))
 
 ### Documentation
 
-* **vis:** document --last-commit and nested hook/migrate/cache commands ([a1f14d7](https://github.com/visulima/visulima/commit/a1f14d7ff5c1bfa2b038501f3c83c458746d3f31))
+- **vis:** document --last-commit and nested hook/migrate/cache commands ([a1f14d7](https://github.com/visulima/visulima/commit/a1f14d7ff5c1bfa2b038501f3c83c458746d3f31))
 
 ### Code Refactoring
 
-* **vis:** split hook/migrate/cache into nested cerebro commands ([42c04fc](https://github.com/visulima/visulima/commit/42c04fc90b16b1538eddb77cf00b1d5d20372dba))
-
+- **vis:** split hook/migrate/cache into nested cerebro commands ([42c04fc](https://github.com/visulima/visulima/commit/42c04fc90b16b1538eddb77cf00b1d5d20372dba))
 
 ### Dependencies
 
-* **@visulima/tui:** upgraded to 1.0.0-alpha.4
+- **@visulima/tui:** upgraded to 1.0.0-alpha.4
 
 ## @visulima/vis [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.6...@visulima/vis@1.0.0-alpha.7) (2026-04-22)
 
 ### Bug Fixes
 
-* added [@bomb](https://github.com/bomb).sh/tab ([8be4063](https://github.com/visulima/visulima/commit/8be40636caff4e7eb4776869bb71e11cc6c76298))
+- added [@bomb](https://github.com/bomb).sh/tab ([8be4063](https://github.com/visulima/visulima/commit/8be40636caff4e7eb4776869bb71e11cc6c76298))
 
 ### Miscellaneous Chores
 
-* added [@bomb](https://github.com/bomb).sh/tab to exclude ([6e3839e](https://github.com/visulima/visulima/commit/6e3839e5973bac479d6b2e0cb2c3d3c59db3d416))
+- added [@bomb](https://github.com/bomb).sh/tab to exclude ([6e3839e](https://github.com/visulima/visulima/commit/6e3839e5973bac479d6b2e0cb2c3d3c59db3d416))
 
 ## @visulima/vis [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.5...@visulima/vis@1.0.0-alpha.6) (2026-04-22)
 
 ### Features
 
-* Add comprehensive workspace configuration and command infrastructure ([#609](https://github.com/visulima/visulima/issues/609)) ([f4347bf](https://github.com/visulima/visulima/commit/f4347bfdcdd1b228cd9d842a927e446aaf23f035))
-* Add CycloneDX 1.6 SBOM generation with `vis sbom` command ([#611](https://github.com/visulima/visulima/issues/611)) ([1e95276](https://github.com/visulima/visulima/commit/1e9527630958722a0f0f7e79d18bb23b5a57e0df))
-* Add CycloneDX SBOM schema validation and TypeScript types ([#610](https://github.com/visulima/visulima/issues/610)) ([bd37e64](https://github.com/visulima/visulima/commit/bd37e6454f43116af94b5b6ae59d70d2cbe51d45))
-* Migrate pnpm config from .npmrc to pnpm-workspace.yaml for v11 ([#608](https://github.com/visulima/visulima/issues/608)) ([af9321c](https://github.com/visulima/visulima/commit/af9321ccd2bacefbbda95248aea155c76c5d53ad))
-* **secret-scanner:** regroup ScanOptions, add weak-passwords preset, polish SARIF ([1ddbfac](https://github.com/visulima/visulima/commit/1ddbfac6781408d750856003b5b5f53408afa5b3))
-* **secret-scanner:** rust-native secret scanner with vis integration ([926a583](https://github.com/visulima/visulima/commit/926a5830efca68d9956f053496b0a5efb359eccd))
-* **task-runner:** output globs, auto-writes, parallel cache IO ([137f53f](https://github.com/visulima/visulima/commit/137f53f7f5a4d8c16df511c9d145b2c158025a32))
-* **vis, staged:** add env-var concurrency + fast-fail SIGKILL ([8fc5ae3](https://github.com/visulima/visulima/commit/8fc5ae3147901560f4b06848187da61d7a98819d))
-* **vis, staged:** case-insensitive globs, auto-stage, parseConcurrent extraction ([671fa42](https://github.com/visulima/visulima/commit/671fa424f57cb1a94ef3d95be3d60b8632201675))
-* **vis:** add `vis migrate kingfisher` for MongoDB Kingfisher users ([d7d8a5e](https://github.com/visulima/visulima/commit/d7d8a5e43c3d1d588180fcbe37e6789f68fa8d74))
-* **vis:** add built-in staged-files workflow ([34c005a](https://github.com/visulima/visulima/commit/34c005a2fef371bda48139a5aba8c8858a1c8a42)), closes [#990](https://github.com/visulima/visulima/issues/990) [#1713](https://github.com/visulima/visulima/issues/1713) [#1722](https://github.com/visulima/visulima/issues/1722) [#33](https://github.com/visulima/visulima/issues/33)
-* **vis:** add cache command for task runner cache ([#607](https://github.com/visulima/visulima/issues/607)) ([6752769](https://github.com/visulima/visulima/commit/67527692562b3dd9c03bb6a67c084ff1e694a560))
-* **vis:** add info command for registry metadata lookup ([6e9c43d](https://github.com/visulima/visulima/commit/6e9c43d480445ff5b932193c44bbd9556cca3180))
-* **vis:** add vis generate scaffolding command ([5e0bea1](https://github.com/visulima/visulima/commit/5e0bea179dd93bac8a5663e9d51a843c8f626c1b))
-* **vis:** OTel plugin, --last-details, per-instance hook errors ([79c660f](https://github.com/visulima/visulima/commit/79c660f92e6982248dacd5e2bba0f113df338baf))
-* **vis:** plugin API, task metadata, watch ergonomics, and run polish ([065c0dc](https://github.com/visulima/visulima/commit/065c0dc646f7e2769dcab9c01e0db52b401fcf99)), closes [#324](https://github.com/visulima/visulima/issues/324)
-* **vis:** update secrets command for new scanner API + docs ([00bb0f0](https://github.com/visulima/visulima/commit/00bb0f057237e0ce88043f2c120d23b84f59d818))
+- Add comprehensive workspace configuration and command infrastructure ([#609](https://github.com/visulima/visulima/issues/609)) ([f4347bf](https://github.com/visulima/visulima/commit/f4347bfdcdd1b228cd9d842a927e446aaf23f035))
+- Add CycloneDX 1.6 SBOM generation with `vis sbom` command ([#611](https://github.com/visulima/visulima/issues/611)) ([1e95276](https://github.com/visulima/visulima/commit/1e9527630958722a0f0f7e79d18bb23b5a57e0df))
+- Add CycloneDX SBOM schema validation and TypeScript types ([#610](https://github.com/visulima/visulima/issues/610)) ([bd37e64](https://github.com/visulima/visulima/commit/bd37e6454f43116af94b5b6ae59d70d2cbe51d45))
+- Migrate pnpm config from .npmrc to pnpm-workspace.yaml for v11 ([#608](https://github.com/visulima/visulima/issues/608)) ([af9321c](https://github.com/visulima/visulima/commit/af9321ccd2bacefbbda95248aea155c76c5d53ad))
+- **secret-scanner:** regroup ScanOptions, add weak-passwords preset, polish SARIF ([1ddbfac](https://github.com/visulima/visulima/commit/1ddbfac6781408d750856003b5b5f53408afa5b3))
+- **secret-scanner:** rust-native secret scanner with vis integration ([926a583](https://github.com/visulima/visulima/commit/926a5830efca68d9956f053496b0a5efb359eccd))
+- **task-runner:** output globs, auto-writes, parallel cache IO ([137f53f](https://github.com/visulima/visulima/commit/137f53f7f5a4d8c16df511c9d145b2c158025a32))
+- **vis, staged:** add env-var concurrency + fast-fail SIGKILL ([8fc5ae3](https://github.com/visulima/visulima/commit/8fc5ae3147901560f4b06848187da61d7a98819d))
+- **vis, staged:** case-insensitive globs, auto-stage, parseConcurrent extraction ([671fa42](https://github.com/visulima/visulima/commit/671fa424f57cb1a94ef3d95be3d60b8632201675))
+- **vis:** add `vis migrate kingfisher` for MongoDB Kingfisher users ([d7d8a5e](https://github.com/visulima/visulima/commit/d7d8a5e43c3d1d588180fcbe37e6789f68fa8d74))
+- **vis:** add built-in staged-files workflow ([34c005a](https://github.com/visulima/visulima/commit/34c005a2fef371bda48139a5aba8c8858a1c8a42)), closes [#990](https://github.com/visulima/visulima/issues/990) [#1713](https://github.com/visulima/visulima/issues/1713) [#1722](https://github.com/visulima/visulima/issues/1722) [#33](https://github.com/visulima/visulima/issues/33)
+- **vis:** add cache command for task runner cache ([#607](https://github.com/visulima/visulima/issues/607)) ([6752769](https://github.com/visulima/visulima/commit/67527692562b3dd9c03bb6a67c084ff1e694a560))
+- **vis:** add info command for registry metadata lookup ([6e9c43d](https://github.com/visulima/visulima/commit/6e9c43d480445ff5b932193c44bbd9556cca3180))
+- **vis:** add vis generate scaffolding command ([5e0bea1](https://github.com/visulima/visulima/commit/5e0bea179dd93bac8a5663e9d51a843c8f626c1b))
+- **vis:** OTel plugin, --last-details, per-instance hook errors ([79c660f](https://github.com/visulima/visulima/commit/79c660f92e6982248dacd5e2bba0f113df338baf))
+- **vis:** plugin API, task metadata, watch ergonomics, and run polish ([065c0dc](https://github.com/visulima/visulima/commit/065c0dc646f7e2769dcab9c01e0db52b401fcf99)), closes [#324](https://github.com/visulima/visulima/issues/324)
+- **vis:** update secrets command for new scanner API + docs ([00bb0f0](https://github.com/visulima/visulima/commit/00bb0f057237e0ce88043f2c120d23b84f59d818))
 
 ### Bug Fixes
 
-* **ci:** publish native addons via local semantic-release plugin ([974beb2](https://github.com/visulima/visulima/commit/974beb2d021e7b2afc86b958bd2137be88d2f464))
-* **tooling:** resolve eslint and formatting issues ([399d292](https://github.com/visulima/visulima/commit/399d29282be5b29bb26b4e5b24d45e2a6cdeeca3))
-* **tui:** inline component and hook barrel exports in ink entry ([1cf8dd2](https://github.com/visulima/visulima/commit/1cf8dd25c91a2001268fb9d964d95df649bf7832))
-* **vis:** add missing space and drop extra line in update progress UI ([db1bac1](https://github.com/visulima/visulima/commit/db1bac1ecff50eac682a5cb33958cd30e4da2bf6))
-* **vis:** filter truncated SBOM hashes that fail CycloneDX 1.6 schema validation ([34c7b22](https://github.com/visulima/visulima/commit/34c7b2268f68eac1095835aa65e21f998c3a63dc))
-* **vis:** fixed types ([ff39190](https://github.com/visulima/visulima/commit/ff39190d92644bf592cbb1df81d69c224ede2bff))
-* **vis:** harden vis generate edge cases and migrate moon templates ([ed37000](https://github.com/visulima/visulima/commit/ed3700059e34c2fb563890edf49fd6050ddfad37))
-* **vis:** recover -- passthrough in generate and create commands ([688e6a9](https://github.com/visulima/visulima/commit/688e6a9b58766b341cc510d048669b753a30345a))
-* **vis:** resolve type errors across commands, tui and utils ([187d460](https://github.com/visulima/visulima/commit/187d4607732799ac1711d2097f90666674850c75))
+- **ci:** publish native addons via local semantic-release plugin ([974beb2](https://github.com/visulima/visulima/commit/974beb2d021e7b2afc86b958bd2137be88d2f464))
+- **tooling:** resolve eslint and formatting issues ([399d292](https://github.com/visulima/visulima/commit/399d29282be5b29bb26b4e5b24d45e2a6cdeeca3))
+- **tui:** inline component and hook barrel exports in ink entry ([1cf8dd2](https://github.com/visulima/visulima/commit/1cf8dd25c91a2001268fb9d964d95df649bf7832))
+- **vis:** add missing space and drop extra line in update progress UI ([db1bac1](https://github.com/visulima/visulima/commit/db1bac1ecff50eac682a5cb33958cd30e4da2bf6))
+- **vis:** filter truncated SBOM hashes that fail CycloneDX 1.6 schema validation ([34c7b22](https://github.com/visulima/visulima/commit/34c7b2268f68eac1095835aa65e21f998c3a63dc))
+- **vis:** fixed types ([ff39190](https://github.com/visulima/visulima/commit/ff39190d92644bf592cbb1df81d69c224ede2bff))
+- **vis:** harden vis generate edge cases and migrate moon templates ([ed37000](https://github.com/visulima/visulima/commit/ed3700059e34c2fb563890edf49fd6050ddfad37))
+- **vis:** recover -- passthrough in generate and create commands ([688e6a9](https://github.com/visulima/visulima/commit/688e6a9b58766b341cc510d048669b753a30345a))
+- **vis:** resolve type errors across commands, tui and utils ([187d460](https://github.com/visulima/visulima/commit/187d4607732799ac1711d2097f90666674850c75))
 
 ### Documentation
 
-* **vis:** correct vis generate partial detection and lock CLI surface ([45b40a0](https://github.com/visulima/visulima/commit/45b40a072ffd61274309b3dbe63a3413e764cb9d))
+- **vis:** correct vis generate partial detection and lock CLI surface ([45b40a0](https://github.com/visulima/visulima/commit/45b40a072ffd61274309b3dbe63a3413e764cb9d))
 
 ### Miscellaneous Chores
 
-* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
-* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
-* remove unused deprecated aliases ([#612](https://github.com/visulima/visulima/issues/612)) ([24ee546](https://github.com/visulima/visulima/commit/24ee546bcb2c17b8915622e4878797c00aa1d813))
-* **vis:** apply pending lint and source updates ([f1f3a92](https://github.com/visulima/visulima/commit/f1f3a92c952d129cdcedae137de4b0e77ea787b4))
-* **vis:** apply prettier and declare staged killSignal option ([23af135](https://github.com/visulima/visulima/commit/23af1357f19c22f3d4a67962ab2e28ac2ce64af1))
-* **vis:** bump @eslint-react/eslint-plugin + fix revealed issues ([1c19670](https://github.com/visulima/visulima/commit/1c1967040e627d29857768150a992ff1e77fd3c1))
-* **vis:** enforce curly braces and apply lint fixes ([9cf1d21](https://github.com/visulima/visulima/commit/9cf1d21f53bdb09fd93b30c7f9de758f16f8960d))
-* **vis:** tighten toolbox, cache, and TUI typings ([a761ad7](https://github.com/visulima/visulima/commit/a761ad76d9200e1751e4ac1c7efd6619d1d1cde0))
+- **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+- bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+- remove unused deprecated aliases ([#612](https://github.com/visulima/visulima/issues/612)) ([24ee546](https://github.com/visulima/visulima/commit/24ee546bcb2c17b8915622e4878797c00aa1d813))
+- **vis:** apply pending lint and source updates ([f1f3a92](https://github.com/visulima/visulima/commit/f1f3a92c952d129cdcedae137de4b0e77ea787b4))
+- **vis:** apply prettier and declare staged killSignal option ([23af135](https://github.com/visulima/visulima/commit/23af1357f19c22f3d4a67962ab2e28ac2ce64af1))
+- **vis:** bump @eslint-react/eslint-plugin + fix revealed issues ([1c19670](https://github.com/visulima/visulima/commit/1c1967040e627d29857768150a992ff1e77fd3c1))
+- **vis:** enforce curly braces and apply lint fixes ([9cf1d21](https://github.com/visulima/visulima/commit/9cf1d21f53bdb09fd93b30c7f9de758f16f8960d))
+- **vis:** tighten toolbox, cache, and TUI typings ([a761ad7](https://github.com/visulima/visulima/commit/a761ad76d9200e1751e4ac1c7efd6619d1d1cde0))
 
 ### Code Refactoring
 
-* replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
-* **vis, staged:** move env-var concurrency fallback to the CLI layer ([31cb567](https://github.com/visulima/visulima/commit/31cb56767158e53f02ce2c5602a0221a774995b0))
-* **vis:** read passthrough from toolbox.rawUnknown ([8d73d9c](https://github.com/visulima/visulima/commit/8d73d9c00924e02b98965d4cd89c8672a4fdffb8))
-* **vis:** use @visulima/fs helpers, remove compiled artifacts from src ([dc03e7c](https://github.com/visulima/visulima/commit/dc03e7c053e8d7fb747cde38924efce6f489ca7f))
+- replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
+- **vis, staged:** move env-var concurrency fallback to the CLI layer ([31cb567](https://github.com/visulima/visulima/commit/31cb56767158e53f02ce2c5602a0221a774995b0))
+- **vis:** read passthrough from toolbox.rawUnknown ([8d73d9c](https://github.com/visulima/visulima/commit/8d73d9c00924e02b98965d4cd89c8672a4fdffb8))
+- **vis:** use @visulima/fs helpers, remove compiled artifacts from src ([dc03e7c](https://github.com/visulima/visulima/commit/dc03e7c053e8d7fb747cde38924efce6f489ca7f))
 
 ### Tests
 
-* **vis:** add gated remote template integration test ([a626e56](https://github.com/visulima/visulima/commit/a626e5675630db044230400794a02d37ecbc0d31)), closes [visulima/visulima#alpha](https://github.com/visulima/visulima/issues/alpha)
-* **vis:** remove native binding guard from tests ([40e8707](https://github.com/visulima/visulima/commit/40e870700930b1284701d0a33a72e589e1d3facd))
-
+- **vis:** add gated remote template integration test ([a626e56](https://github.com/visulima/visulima/commit/a626e5675630db044230400794a02d37ecbc0d31)), closes [visulima/visulima#alpha](https://github.com/visulima/visulima/issues/alpha)
+- **vis:** remove native binding guard from tests ([40e8707](https://github.com/visulima/visulima/commit/40e870700930b1284701d0a33a72e589e1d3facd))
 
 ### Dependencies
 
-* **@visulima/cerebro:** upgraded to 3.0.0-alpha.11
-* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.1
-* **@visulima/tui:** upgraded to 1.0.0-alpha.3
+- **@visulima/cerebro:** upgraded to 3.0.0-alpha.11
+- **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.1
+- **@visulima/tui:** upgraded to 1.0.0-alpha.3
 
 ## @visulima/vis [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.4...@visulima/vis@1.0.0-alpha.5) (2026-04-09)
 

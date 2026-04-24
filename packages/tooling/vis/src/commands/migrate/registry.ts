@@ -119,14 +119,7 @@ const MIGRATIONS: MigrationEntry[] = [
             const { lines, logger } = createCapturingLogger();
             const report = createMigrationReport();
 
-            migrateDeps(
-                root,
-                packageManager,
-                visConfig as Record<string, unknown> & { overrides?: Record<string, string> },
-                { dryRun: true },
-                logger,
-                report,
-            );
+            migrateDeps(root, packageManager, visConfig as Record<string, unknown> & { overrides?: Record<string, string> }, { dryRun: true }, logger, report);
 
             return lines;
         },
