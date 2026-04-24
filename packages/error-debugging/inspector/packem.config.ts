@@ -1,5 +1,4 @@
 import type { BuildConfig } from "@visulima/packem/config";
-import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
 
@@ -10,6 +9,9 @@ export default defineConfig({
         typeScriptVersion: ">=5.0",
     },
     rollup: {
+        dts: {
+            oxc: true,
+        },
         license: {
             path: "./LICENSE.md",
         },
@@ -25,6 +27,5 @@ export default defineConfig({
         },
     },
     transformer,
-    isolatedDeclarationTransformer,
     cjsInterop: true,
 }) as BuildConfig;
