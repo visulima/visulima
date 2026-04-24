@@ -70,11 +70,11 @@
         "@visulima/fs": "5.0.0-alpha.12",
         "@visulima/path": "3.0.0-alpha.10",
         "jsonc-parser": "catalog:prod",
-        "resolve-pkg-maps": "catalog:prod",
-        "type-fest": "catalog:prod"
+        "resolve-pkg-maps": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
+        "type-fest": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
