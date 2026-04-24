@@ -51,7 +51,7 @@ const serializersMiddleware
                 };
             }
 
-            return next();
+            await next();
         };
 
 export default serializersMiddleware;
