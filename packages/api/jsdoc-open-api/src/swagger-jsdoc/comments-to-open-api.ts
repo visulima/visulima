@@ -44,8 +44,8 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
 
                 errorString += verbose
                     ? (parsed.errors as ExtendedYAMLError[])
-                          .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``)
-                          .join("\n")
+                        .map((error) => `${error.toString()}\nImbedded within:\n\`\`\`\n  ${error.annotation?.replaceAll("\n", "\n  ") as string}\n\`\`\``)
+                        .join("\n")
                     : parsed.errors.map((error) => error.toString()).join("\n");
 
                 throw new Error(errorString);
