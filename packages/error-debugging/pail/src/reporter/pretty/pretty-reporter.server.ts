@@ -1,6 +1,8 @@
 import { stderr, stdout } from "node:process";
 
-import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { bgGrey, cyan, green, greenBright, grey, red, underline, white } = colorize;
 import type { RenderErrorOptions } from "@visulima/error/error";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error/error";

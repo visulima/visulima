@@ -1,4 +1,6 @@
-import { bold, underline } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { bold, underline } = colorize;
 
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 
