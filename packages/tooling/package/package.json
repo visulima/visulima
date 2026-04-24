@@ -122,10 +122,10 @@
         "@visulima/path": "3.0.0-alpha.10",
         "json5": "catalog:prod",
         "normalize-package-data": "catalog:prod",
-        "type-fest": "catalog:prod",
         "yaml": "catalog:prod"
     },
     "devDependencies": {
+        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
