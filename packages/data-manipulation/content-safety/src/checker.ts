@@ -116,11 +116,9 @@ const buildLookupTables = (): {
                     if (!nonCjkSingleWords.has(normalized)) {
                         nonCjkSingleWords.set(normalized, lang);
                     }
-                } else {
-                    if (!nonCjkPhrases.has(normalized)) {
-                        nonCjkPhrases.set(normalized, lang);
-                        maxPhraseTokens = Math.max(maxPhraseTokens, tokens.length);
-                    }
+                } else if (!nonCjkPhrases.has(normalized)) {
+                    nonCjkPhrases.set(normalized, lang);
+                    maxPhraseTokens = Math.max(maxPhraseTokens, tokens.length);
                 }
             }
         }
@@ -221,16 +219,16 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
 
     // Multi-word phrase matches (sliding window)
     for (let i = 0; i < tokens.length; i++) {
-        for (let len = 2; len <= maxPhraseTokens && i + len <= tokens.length; len++) {
+        for (let length_ = 2; length_ <= maxPhraseTokens && i + length_ <= tokens.length; length_++) {
             const phrase = tokens
-                .slice(i, i + len)
+                .slice(i, i + length_)
                 .map((t) => t.text)
                 .join(" ");
             const lang = nonCjkPhrases.get(phrase);
 
             if (lang) {
-                const start = tokens[i]!.start;
-                const end = tokens[i + len - 1]!.end;
+                const { start } = tokens[i]!;
+                const { end } = tokens[i + length_ - 1]!;
 
                 matches.push({
                     endIndex: end,
