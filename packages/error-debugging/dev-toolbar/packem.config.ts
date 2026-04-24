@@ -1,6 +1,5 @@
 import cssnanoMinifier from "@visulima/packem/css/minifier/cssnano";
 import tailwindcssLoader from "@visulima/packem/css/loader/tailwindcss";
-import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
 import { defineConfig } from "@visulima/packem/config";
 import transformer from "@visulima/packem/transformer/esbuild";
 import { createPreactPreset } from "@visulima/packem/config/preset/preact";
@@ -9,9 +8,11 @@ import { createPreactPreset } from "@visulima/packem/config/preset/preact";
 export default defineConfig({
     runtime: "node",
     preset: createPreactPreset(),
-    isolatedDeclarationTransformer,
-    externals: ["virtual:visulima-dev-toolbar-options", /^virtual:visulima-dev-toolbar-path:/],
+    externals: ["virtual:visulima-dev-toolbar-options", /^virtual:visulima-dev-toolbar-path:/, "vite"],
     rollup: {
+        dts: {
+            oxc: true,
+        },
         css: {
             mode: "inline",
             minifier: cssnanoMinifier,

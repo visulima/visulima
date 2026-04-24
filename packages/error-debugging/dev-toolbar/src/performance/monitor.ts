@@ -229,8 +229,8 @@ class PerformanceMonitor {
 
         if (entries.length > 0 && entries[0]) {
             const navEntry = entries[0] as PerformanceEntry & {
-                responseStart: number;
                 requestStart: number;
+                responseStart: number;
             };
 
             this.vitals.ttfb = Math.round(navEntry.responseStart - navEntry.requestStart);
