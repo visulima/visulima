@@ -16,6 +16,7 @@ import {
     resolveManagerFor,
     resolveToolBinary,
     SUPPORTED_MANAGERS,
+    updateEnginesField,
     writePackageManagerField,
     type DetectedManager,
     type RuntimeTool,
@@ -392,6 +393,14 @@ const executeUse = (
             }
 
             success(`Set packageManager: "${written}" — ${spec.tool} will activate this version on next invocation.`);
+
+            if (options.engines !== false) {
+                const updated = updateEnginesField(workspaceRoot, spec);
+
+                if (updated) {
+                    success(`Updated package.json engines.${spec.tool} → ${updated}.`);
+                }
+            }
         } catch (cause: unknown) {
             errorOutput((cause as Error).message);
             process.exitCode = 1;
@@ -462,6 +471,22 @@ const executeUse = (
     }
 
     success(`Pinned ${spec.tool} to ${spec.version}.`);
+
+    // Mirror the pin into engines.<tool> when the project already
+    // declares one — keeps the "engines is the source of truth" CI
+    // story in sync with the manager-specific pin. Skipped when
+    // `--no-engines` is passed.
+    if (options.engines !== false) {
+        try {
+            const updated = updateEnginesField(workspaceRoot, spec);
+
+            if (updated) {
+                success(`Updated package.json engines.${spec.tool} → ${updated}.`);
+            }
+        } catch (cause: unknown) {
+            warn(`Could not update engines.${spec.tool}: ${(cause as Error).message}`);
+        }
+    }
 };
 
 const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | undefined, rawTool: string | undefined): void => {
@@ -583,6 +608,7 @@ const toolchain: Command = {
         { defaultValue: false, description: "With `status`: exit 1 if any tool mismatches", name: "exit-code", type: Boolean },
         { defaultValue: false, description: "Print the command that would run, but don't execute", name: "dry-run", type: Boolean },
         { defaultValue: false, description: "Emit JSON (status subcommand only)", name: "json", type: Boolean },
+        { defaultValue: true, description: "With `use`: also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.", name: "engines", type: Boolean },
     ],
 };
 

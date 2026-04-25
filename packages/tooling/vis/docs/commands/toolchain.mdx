@@ -206,6 +206,28 @@ RUN powershell -Command "& ([scriptblock]::Create((irm 'https://visulima.com/ins
 
 If Node is on PATH both scripts skip the manager install step and go straight to `npm install -g @visulima/vis`. In that case you can also just run that command directly — the install scripts are a convenience, not a requirement.
 
+### Verifying the script before piping it into your shell
+
+Each script has a SHA256 sidecar at `<script>.sha256`. To verify before executing:
+
+```bash
+curl -fsSL https://visulima.com/install.sh -o install.sh
+curl -fsSL https://visulima.com/install.sh.sha256 | sha256sum -c -
+# install.sh: OK
+bash install.sh
+```
+
+```powershell
+# Windows
+$body = irm https://visulima.com/install.ps1
+$expected = (irm https://visulima.com/install.ps1.sha256).Split(" ")[0]
+$actual = (Get-FileHash -Algorithm SHA256 -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($body)))).Hash.ToLower()
+if ($actual -ne $expected) { throw "SHA256 mismatch" }
+$body | iex
+```
+
+The script body has a `# vis-install <version> (built <iso-date>)` banner near the top, so once you've run it you can confirm which release you got.
+
 ## Why not embed a runtime manager?
 
 Most developers already have `fnm`, `volta`, `mise`, or `proto` installed. Shipping another ~20 MB binary would violate the principle of least surprise and duplicate behaviour the OS-level manager already handles (PATH shims, global caches, shell activation). Delegation keeps vis small and portable.

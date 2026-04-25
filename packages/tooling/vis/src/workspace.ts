@@ -569,6 +569,16 @@ interface VisConfig {
      */
     toolchain?: {
         /**
+         * When `vis run` / `vis ci` start and a workspace tool pin
+         * doesn't match the running version, install via the right
+         * manager and let subsequent task subprocesses pick up the new
+         * version. Defaults to `true` when at least one manager is
+         * detected on PATH, `false` otherwise. Set to `false` to keep
+         * the doctor-style warning behaviour.
+         */
+        autoInstall?: boolean;
+
+        /**
          * Explicit manager override, bypasses auto-detection. Useful in
          * CI where the runner image only has one manager available.
          *

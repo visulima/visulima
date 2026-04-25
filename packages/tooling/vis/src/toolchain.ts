@@ -60,6 +60,17 @@ export interface DetectedManager {
 }
 
 export interface ToolchainConfig {
+    /**
+     * When a tool pin doesn't match the running version, try to fix it
+     * automatically before `vis run` / `vis ci` proceed. Defaults to
+     * `true` when {@link findInstalledManagers} reports at least one
+     * installed manager, `false` otherwise.
+     *
+     * Set to `false` to keep the doctor-style warning behaviour and
+     * make users run `vis toolchain install` themselves.
+     */
+    readonly autoInstall?: boolean;
+
     /** Explicit manager override, useful in CI. */
     readonly preferredManager?: VersionManagerName;
     /** Overrides for engines/packageManager-derived pins. */
@@ -1190,6 +1201,57 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
 };
 
 /**
+ * Updates `engines.<tool>` in package.json **only when the field
+ * already exists**. The reasoning: if a project never authored an
+ * engines field, vis shouldn't add one — it might be intentional for
+ * libraries that want to leave the choice to consumers. But if the
+ * field is there, keeping it in sync with the manager-specific pin is
+ * almost always what the user wants (and it's the only durable pin
+ * many CI providers actually check).
+ *
+ * Returns the new value when an update happened, `undefined` when the
+ * field didn't exist (and we left things alone).
+ */
+export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): string | undefined => {
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return undefined;
+    }
+
+    const raw = readFileSync(pkgPath);
+    let pkg: { engines?: Record<string, string> } & Record<string, unknown>;
+
+    try {
+        pkg = JSON.parse(raw) as typeof pkg;
+    } catch (cause: unknown) {
+        throw new Error(
+            `${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(cause as Error).message}`,
+        );
+    }
+
+    if (!pkg.engines || pkg.engines[spec.tool] === undefined) {
+        // Don't synthesise an engines field; that's an editorial choice
+        // for the project owner.
+        return undefined;
+    }
+
+    if (pkg.engines[spec.tool] === spec.version) {
+        return undefined;
+    }
+
+    pkg.engines[spec.tool] = spec.version;
+
+    const indentMatch = /\n([ \t]+)/.exec(raw);
+    const indent = indentMatch?.[1] ?? "  ";
+    const trailingNewline = raw.endsWith("\n") ? "\n" : "";
+
+    writeFileSync(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
+
+    return spec.version;
+};
+
+/**
  * Parses `<tool>@<version>` as typed in `vis toolchain use node@22.13.0`.
  * Returns `undefined` when the shape is wrong or the tool is unknown.
  */
@@ -1207,4 +1269,212 @@ export const parseUseArgument = (raw: string): ToolSpec | undefined => {
     }
 
     return { source: "vis.config.ts", tool: normalizedTool, version: match[2]! };
+};
+
+// ── Auto-install hook (vis run / vis ci pre-flight) ─────────────────
+
+export interface EnsureToolchainResult {
+    /** Tools that vis tried to install on the user's behalf. */
+    readonly attempted: readonly ToolSpec[];
+    /** Tools whose install failed (or was unsupported). Caller decides what to do. */
+    readonly failed: readonly { error: string; spec: ToolSpec }[];
+    /** True when nothing needed doing — fast path. */
+    readonly upToDate: boolean;
+}
+
+export interface EnsureToolchainLogger {
+    error: (message: string) => void;
+    info: (message: string) => void;
+    warn: (message: string) => void;
+}
+
+/**
+ * Pre-flight check for `vis run` / `vis ci`. Compares actual vs expected
+ * tool versions; if `config.autoInstall` is true (default when a manager
+ * is detected) and any pin is unsatisfied, runs the appropriate
+ * manager install for each mismatched tool.
+ *
+ * Returns without error in three cases:
+ *   - everything matches
+ *   - autoInstall is disabled (caller may still warn separately)
+ *   - the install succeeds
+ *
+ * For shim-based managers (proto, mise, asdf, volta) the new versions
+ * are picked up by subsequent subprocess spawns automatically, since
+ * the shim binaries on PATH resolve the active version on each call.
+ *
+ * For fnm/nvm — which require a shell-side activation step — vis can
+ * install but cannot transparently switch the current process. We
+ * surface a clear hint and continue with the old version rather than
+ * blocking.
+ */
+export const ensureToolchain = async (
+    workspaceRoot: string,
+    config: ToolchainConfig | undefined,
+    logger: EnsureToolchainLogger,
+): Promise<EnsureToolchainResult> => {
+    const status = getToolchainStatus(workspaceRoot, config);
+    const mismatches = status.tools.filter((t) => !t.matches);
+
+    if (mismatches.length === 0) {
+        return { attempted: [], failed: [], upToDate: true };
+    }
+
+    const hasManager = status.detected.some((d) => d.installed);
+    const autoInstall = config?.autoInstall ?? hasManager;
+
+    if (!autoInstall) {
+        // Caller (typically `vis run` / `vis ci`) decides whether to
+        // surface this as a warning. ensureToolchain stays quiet so it
+        // can be a no-op when the user has explicitly opted out.
+        return { attempted: [], failed: [], upToDate: false };
+    }
+
+    const attempted: ToolSpec[] = [];
+    const failed: { error: string; spec: ToolSpec }[] = [];
+
+    // Group mismatches by resolved manager so proto/mise/asdf only run
+    // their bulk-install command once.
+    const byManager = new Map<VersionManagerName, ToolStatus[]>();
+
+    for (const tool of mismatches) {
+        const bucket = byManager.get(tool.manager.name);
+
+        if (bucket) {
+            bucket.push(tool);
+        } else {
+            byManager.set(tool.manager.name, [tool]);
+        }
+    }
+
+    for (const [managerName, tools] of byManager) {
+        if (managerName === "self-activate") {
+            for (const { expected } of tools) {
+                if (expected.source !== "packageManager") {
+                    try {
+                        writePackageManagerField(workspaceRoot, expected);
+                        logger.info(`toolchain: wrote packageManager=${expected.tool}@${expected.version} (self-activate)`);
+                        attempted.push(expected);
+                    } catch (cause: unknown) {
+                        failed.push({ error: (cause as Error).message, spec: expected });
+                    }
+                } else {
+                    logger.info(`toolchain: ${expected.tool} ${expected.version} will self-activate on next ${expected.tool} invocation`);
+                    attempted.push(expected);
+                }
+            }
+
+            continue;
+        }
+
+        if (managerName === "none") {
+            for (const { expected } of tools) {
+                failed.push({
+                    error: `no manager can install ${expected.tool} — install one of ${SUPPORTED_MANAGERS.join(", ")}`,
+                    spec: expected,
+                });
+            }
+
+            continue;
+        }
+
+        const manager = status.detected.find((d) => d.name === managerName);
+
+        if (!manager?.installed) {
+            for (const { expected } of tools) {
+                failed.push({ error: `${managerName} is not on PATH`, spec: expected });
+            }
+
+            continue;
+        }
+
+        // proto/mise/asdf/fnm read their own config, one invocation does
+        // them all. volta/corepack pin per-tool so we iterate.
+        const perTool = managerName === "volta" || managerName === "corepack";
+        const invocations = perTool
+            ? tools.map((t) => buildInstallInvocation(managerName, t.expected)).filter((inv) => inv !== undefined)
+            : [buildInstallInvocation(managerName)].filter((inv) => inv !== undefined);
+
+        for (const invocation of invocations) {
+            if (invocation.bin === "nvm" && invocation.args.length === 0) {
+                logger.warn("toolchain: nvm requires a shell-side activation. Run `nvm install` / `nvm use` manually.");
+
+                for (const { expected } of tools) {
+                    failed.push({ error: "nvm requires shell-side activation", spec: expected });
+                }
+
+                continue;
+            }
+
+            logger.info(`toolchain: $ ${invocation.bin} ${invocation.args.join(" ")}`);
+
+            try {
+                execFileSync(invocation.bin, invocation.args as string[], {
+                    cwd: workspaceRoot,
+                    stdio: "inherit",
+                });
+
+                for (const { expected } of tools) {
+                    attempted.push(expected);
+                }
+
+                // fnm needs PATH-side activation — even after `fnm
+                // install`, the subprocesses we'll spawn next inherit
+                // the current PATH and won't see the new version.
+                // Eval `fnm env --use-on-cd` and merge into process.env
+                // so subsequent task subprocesses pick up the new node.
+                if (managerName === "fnm") {
+                    activateFnmEnv(invocation.bin, logger);
+                }
+            } catch (cause: unknown) {
+                for (const { expected } of tools) {
+                    failed.push({ error: (cause as Error).message, spec: expected });
+                }
+
+                break;
+            }
+        }
+    }
+
+    // Drop the cache so the next call re-detects (e.g. corepack just
+    // got installed).
+    clearToolchainCache();
+
+    return { attempted, failed, upToDate: false };
+};
+
+/**
+ * Eval `fnm env` and merge its PATH/FNM_* exports into `process.env` so
+ * subsequent subprocesses (the actual tasks `vis run` will spawn) see
+ * the freshly-installed Node. Best-effort — failures are logged and
+ * swallowed.
+ */
+const activateFnmEnv = (fnmBin: string, logger: EnsureToolchainLogger): void => {
+    try {
+        const output = execFileSync(fnmBin, ["env", "--shell", "bash"], {
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+            timeout: 2000,
+        });
+
+        // `fnm env --shell bash` emits lines like:
+        //   export PATH="..."
+        //   export FNM_DIR="..."
+        // Strip the `export ` prefix and split on `=`. Quoted values
+        // unwrap on the first/last single or double quote.
+        for (const line of output.split("\n")) {
+            const match = /^(?:export\s+)?([A-Z_]+)=(.+)$/.exec(line.trim());
+
+            if (!match) {
+                continue;
+            }
+
+            const [, name, rawValue] = match;
+            const value = rawValue!.replace(/^["']|["']$/g, "");
+
+            process.env[name!] = value;
+        }
+    } catch (cause: unknown) {
+        logger.warn(`toolchain: could not activate fnm env (${(cause as Error).message}). Subsequent tasks may use the previous Node version.`);
+    }
 };

@@ -72,3 +72,21 @@
     Content-Type = "text/plain; charset=utf-8"
     Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
     Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+# SHA256 sidecars for the install scripts. Cached aggressively because
+# they only change when the script body changes — and when that happens
+# the new sidecar has a different hash, so cache invalidation is
+# automatic.
+[[headers]]
+  for = "/install.sh.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install.ps1.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"

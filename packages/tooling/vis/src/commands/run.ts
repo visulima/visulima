@@ -34,6 +34,7 @@ import { compareDuration, formatTimingSummary, loadRunSummaries } from "../run-r
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import { appendToShellHistory } from "../shell-history";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../target-discovery";
+import { ensureToolchain } from "../toolchain";
 import type { VisTargetConfiguration, VisTargetOptions } from "../target-options";
 import { detectCurrentOs, evaluateWhen, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../target-options";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
@@ -634,6 +635,24 @@ const run: Command = {
         const invocationCwd = process.cwd();
         const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
+
+        // Pre-flight: if a workspace tool pin doesn't match the running
+        // version and `toolchain.autoInstall` is on (default when a
+        // manager is detected), install via the right manager and let
+        // subsequent task subprocesses pick up the new version. We
+        // never block on failure — surface a warning, keep going,
+        // and let the existing runtime-check warnings do their job.
+        if (!options.skipToolchain) {
+            const result = await ensureToolchain(workspaceRoot, config.toolchain, {
+                error: (message) => logger.error(message),
+                info: (message) => logger.info(message),
+                warn: (message) => logger.warn(message),
+            });
+
+            for (const failure of result.failed) {
+                logger.warn(`toolchain: ${failure.spec.tool} ${failure.spec.version} — ${failure.error}`);
+            }
+        }
 
         let rawSelector = argument[0];
 
@@ -1356,6 +1375,12 @@ const run: Command = {
             description: "Comma-separated list of projects to run",
             name: "projects",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Skip the pre-flight toolchain check (no auto-install on engines.node mismatch)",
+            name: "skip-toolchain",
+            type: Boolean,
         },
         {
             defaultValue: 3,
