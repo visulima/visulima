@@ -11,6 +11,7 @@ import {
     buildUseInvocation,
     findInstalledManagers,
     getToolchainStatus,
+    isOnPath,
     parseUseArgument,
     pickPrimaryManager,
     resolveManagerFor,
@@ -507,8 +508,16 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
         toolchainConfig,
     );
 
-    const manager = resolved.installed && resolved.name !== "self-activate" ? detected.find((d) => d.name === resolved.name) : undefined;
-    const binary = manager ? resolveToolBinary(manager, normalized) : undefined;
+    // For real, installed managers (proto/mise/asdf/volta/fnm), ask
+    // the manager itself: it knows about shims and can resolve the
+    // active version's binary correctly. For `self-activate` and
+    // `none` (no manager involved), do a plain PATH lookup so users
+    // running `vis toolchain which pnpm` on a workspace that
+    // self-activates still get a useful answer.
+    const manager = resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none"
+        ? detected.find((d) => d.name === resolved.name)
+        : undefined;
+    const binary = manager ? resolveToolBinary(manager, normalized) : isOnPath(normalized);
 
     if (!binary) {
         errorOutput(`${rawTool} not found in PATH${manager ? ` or via ${manager.name}` : ""}.`);

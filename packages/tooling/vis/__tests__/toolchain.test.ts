@@ -1048,4 +1048,68 @@ describe(isOnPath, () => {
             }
         }
     });
+
+    it("should strip surrounding quotes from PATH entries (Windows installer artefact)", () => {
+        expect.assertions(1);
+
+        const binary = join(tmpDirectory, "fake-bin-quoted");
+
+        writeFileSync(binary, "#!/bin/sh\n", { mode: 0o755 });
+
+        if (process.platform !== "win32") {
+            chmodSync(binary, 0o755);
+        }
+
+        const originalPath = process.env["PATH"];
+
+        try {
+            // Some Windows installers leave quoted PATH entries.
+            process.env["PATH"] = `"${tmpDirectory}"`;
+            clearToolchainCache();
+
+            if (process.platform === "win32") {
+                expect(true).toBe(true);
+            } else {
+                expect(isOnPath("fake-bin-quoted")).toBe(binary);
+            }
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
+    });
+});
+
+describe("resolveManagerFor preferredManager fallback", () => {
+    it("should synthesise an installed=false ResolvedManager when the override isn't detected", () => {
+        expect.assertions(3);
+
+        const result = resolveManagerFor(
+            { source: "vis.config.ts", tool: "node", version: "22.13.0" },
+            // No managers detected.
+            [],
+            { preferredManager: "proto" },
+        );
+
+        // Honours the override even when proto isn't installed yet.
+        expect(result.name).toBe("proto");
+        expect(result.installed).toBe(false);
+        expect(result.note).toContain("proto");
+    });
+
+    it("should fall through to default preference when the override can't handle the tool", () => {
+        expect.assertions(1);
+
+        // fnm can only install node — when asked to pin python, the
+        // override is ignored and we fall through to a capable manager.
+        const result = resolveManagerFor(
+            { source: "vis.config.ts", tool: "python", version: "3.12" },
+            [],
+            { preferredManager: "fnm" },
+        );
+
+        expect(result.name).not.toBe("fnm");
+    });
 });

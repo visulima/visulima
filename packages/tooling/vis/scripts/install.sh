@@ -155,7 +155,7 @@ install_fnm() {
 
 install_mise() {
     info "Installing mise via https://mise.run..."
-    curl https://mise.run | sh
+    curl -fsSL https://mise.run | sh
     add_to_path "$HOME/.local/bin"
     eval "$("$HOME/.local/bin/mise" activate bash)" || true
 }
@@ -194,7 +194,11 @@ install_manager() {
 
 install_node_via_manager() {
     local manager="$1"
+    local status=0
 
+    # Capture the install command's exit code BEFORE running shell-env
+    # activation. `eval "$(<manager> env) || true` always returns 0,
+    # which would otherwise mask a real install failure on fnm/mise.
     set +e
     case "$manager" in
         proto)
@@ -202,23 +206,32 @@ install_node_via_manager() {
             # `proto install <tool> lts` resolves the LTS alias server-side.
             # npm ships with node, so no separate install step is needed.
             proto install node lts
+            status=$?
             ;;
         fnm)
             info "Installing Node LTS via fnm..."
             fnm install --lts && fnm default lts-latest
-            eval "$(fnm env)" || true
+            status=$?
+
+            if [ "$status" -eq 0 ]; then
+                eval "$(fnm env)" || true
+            fi
             ;;
         mise)
             info "Installing Node LTS via mise..."
             mise use --global node@lts
-            eval "$(mise activate bash)" || true
+            status=$?
+
+            if [ "$status" -eq 0 ]; then
+                eval "$(mise activate bash)" || true
+            fi
             ;;
         volta)
             info "Installing Node LTS via volta..."
             volta install node@lts
+            status=$?
             ;;
     esac
-    local status=$?
     set -e
 
     if [ "$status" -ne 0 ]; then

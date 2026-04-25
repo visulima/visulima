@@ -34,7 +34,7 @@ import { compareDuration, formatTimingSummary, loadRunSummaries } from "../run-r
 import { filterProjectsByQuery, resolveSelector } from "../selectors";
 import { appendToShellHistory } from "../shell-history";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../target-discovery";
-import { ensureToolchain } from "../toolchain";
+import { runToolchainPreflight } from "../toolchain";
 import type { VisTargetConfiguration, VisTargetOptions } from "../target-options";
 import { detectCurrentOs, evaluateWhen, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../target-options";
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
@@ -642,17 +642,16 @@ const run: Command = {
         // subsequent task subprocesses pick up the new version. We
         // never block on failure — surface a warning, keep going,
         // and let the existing runtime-check warnings do their job.
-        if (!options.skipToolchain) {
-            const result = await ensureToolchain(workspaceRoot, config.toolchain, {
+        await runToolchainPreflight(
+            workspaceRoot,
+            config.toolchain,
+            {
                 error: (message) => logger.error(message),
                 info: (message) => logger.info(message),
                 warn: (message) => logger.warn(message),
-            });
-
-            for (const failure of result.failed) {
-                logger.warn(`toolchain: ${failure.spec.tool} ${failure.spec.version} — ${failure.error}`);
-            }
-        }
+            },
+            Boolean(options.skipToolchain),
+        );
 
         let rawSelector = argument[0];
 
@@ -1378,7 +1377,7 @@ const run: Command = {
         },
         {
             defaultValue: false,
-            description: "Skip the pre-flight toolchain check (no auto-install on engines.node mismatch)",
+            description: "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
             name: "skip-toolchain",
             type: Boolean,
         },

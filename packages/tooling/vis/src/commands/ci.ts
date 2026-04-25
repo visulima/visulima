@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { ensureToolchain } from "../toolchain";
+import { runToolchainPreflight } from "../toolchain";
 
 /**
  * Detect base/head refs from common CI provider environment variables.
@@ -94,17 +94,18 @@ const ci: Command = {
         // image happened to provision.
         if (!options.skipToolchain) {
             logger.info("▸ Toolchain pre-flight");
+        }
 
-            const result = await ensureToolchain(wsRoot, visConfig?.toolchain, {
+        await runToolchainPreflight(
+            wsRoot,
+            visConfig?.toolchain,
+            {
                 error: (message) => logger.error(message),
                 info: (message) => logger.info(message),
                 warn: (message) => logger.warn(message),
-            });
-
-            for (const failure of result.failed) {
-                logger.warn(`toolchain: ${failure.spec.tool} ${failure.spec.version} — ${failure.error}`);
-            }
-        }
+            },
+            Boolean(options.skipToolchain),
+        );
 
         if (options.install === false) {
             logger.info("▸ Skipping install (--no-install)");
@@ -155,7 +156,7 @@ const ci: Command = {
         },
         {
             defaultValue: false,
-            description: "Skip the toolchain pre-flight (no auto-install on engines.node mismatch)",
+            description: "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
             name: "skip-toolchain",
             type: Boolean,
         },

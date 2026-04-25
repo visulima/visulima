@@ -83,6 +83,8 @@ The first installed + capable manager wins. If nothing is installed, vis names t
 
 ## Tool pin priority (when the same tool is pinned in multiple places)
 
+**Later entries override earlier ones** — read top-to-bottom, the bottom wins. `toolchain.tools` in `vis.config.ts` overrides `.prototools`, which overrides `.mise.toml`, and so on down to `engines.*`.
+
 1. `engines.*` in `package.json`
 2. `packageManager` in `package.json`
 3. `volta.<tool>` in `package.json`
@@ -124,11 +126,11 @@ export default defineConfig({
 | fnm           | node only                                     | `fnm install [<ver>]`                            | `fnm use <ver>` (Node only)                  | `.nvmrc` / `.node-version`             |
 | volta         | node, npm, pnpm, yarn                         | `volta install <tool>@<ver>`                     | `volta pin <tool>@<ver>`                     | `package.json` (`volta.<tool>` field)  |
 | asdf          | node, bun, deno, go, python, ruby, rust       | `asdf install`                                   | `asdf local <tool> <ver>`                    | `.tool-versions`                       |
-| nvm           | node only                                     | (manual — shell function)                         | (manual)                                     | `.nvmrc` (edit by hand)                |
+| nvm           | node only                                     | (manual — shell function, run `nvm install`)      | writes `.nvmrc`, then prompts to run `nvm use`| `.nvmrc`                               |
 | corepack      | npm, pnpm, yarn                               | `corepack prepare <tool>@<ver> --activate`       | `corepack use <tool>@<ver>`                  | `package.json` (`packageManager`)      |
 | self-activate | pnpm 10+, yarn berry                          | (no-op — runs on next `pnpm`/`yarn` invocation)  | edit `packageManager` field                  | `package.json` (`packageManager`)      |
 
-vis never edits these files itself — it shells out to the manager so the change integrates with shell hooks and caches the way each manager expects.
+For most managers vis shells out to the manager itself (`proto pin`, `volta pin`, `mise use`, etc.) so the change integrates with shell hooks and caches the way each manager expects. The exceptions are **nvm** (a shell function — vis writes `.nvmrc` directly and prompts you to run `nvm use`) and **self-activate** (vis writes the `packageManager` field directly so pnpm/yarn pick it up on next invocation).
 
 ## A note on corepack
 
@@ -294,7 +296,7 @@ Or set `toolchain.autoInstall: false` in `vis.config.ts` for a workspace-wide op
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Volta**   | Nothing immediate — vis reads your existing `volta` field in package.json and routes pnpm/yarn/npm/node pins to `volta install`. New pins from `vis toolchain use` write to the same field. |
 | **nvm**     | Keep your `.nvmrc`. `vis toolchain status` reads it; `vis toolchain use node@22.13.0` rewrites it. nvm-the-shell-function still owns activation (run `nvm use` to switch the shell).                |
-| **fnm**     | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis writes pin updates back to those files via `fnm use`.                              |
+| **fnm**     | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis runs `fnm use <ver>` to switch the current shell. Persistent updates to `.nvmrc` need a manual edit (or use `vis toolchain use node@<ver>` with the `nvm` resolved manager — see the nvm row, which writes `.nvmrc`). |
 | **proto**   | Native fit. `.prototools` is the source of truth, `vis toolchain install` runs `proto install`, `vis toolchain use <tool>@<ver>` runs `proto pin`.          |
 | **mise**    | Same as proto — `.mise.toml` is the config, vis maps `install` and `use` to `mise install` / `mise use`.                                                   |
 | **asdf**    | `.tool-versions` is the config. vis maps to `asdf install` / `asdf local <tool> <ver>`.                                                                    |

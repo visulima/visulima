@@ -16,6 +16,7 @@ import type {
 import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
+import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 import { applyPreset, defaultCacheForType } from "./target-options";
 
 export interface CodeownersConfig {
@@ -566,48 +567,15 @@ interface VisConfig {
      * delegates to whichever version manager (proto, mise, fnm, volta,
      * asdf, nvm, corepack) the developer already has — it does not ship
      * its own.
+     *
+     * Re-exported from `./toolchain` so the public config type stays
+     * in lockstep with the resolver implementation. `self-activate` is
+     * narrowed out of `preferredManager` here — it's auto-resolved for
+     * pnpm/yarn `packageManager` pins and isn't meaningful as an
+     * override.
      */
-    toolchain?: {
-        /**
-         * When `vis run` / `vis ci` start and a workspace tool pin
-         * doesn't match the running version, install via the right
-         * manager and let subsequent task subprocesses pick up the new
-         * version. Defaults to `true` when at least one manager is
-         * detected on PATH, `false` otherwise. Set to `false` to keep
-         * the doctor-style warning behaviour.
-         */
-        autoInstall?: boolean;
-
-        /**
-         * Explicit manager override, bypasses auto-detection. Useful in
-         * CI where the runner image only has one manager available.
-         *
-         * Note: `self-activate` is resolved automatically for pnpm/yarn
-         * pins from the `packageManager` field (pnpm 10+, yarn berry)
-         * and is not a valid override here.
-         */
-        preferredManager?: "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "volta";
-
-        /**
-         * Override engines/packageManager-derived pins. Takes precedence
-         * over `.nvmrc`, `.prototools`, etc.
-         * @example
-         * ```
-         * toolchain: { tools: { node: ">=22.13", pnpm: "10.32.1" } }
-         * ```
-         */
-        tools?: {
-            bun?: string;
-            deno?: string;
-            go?: string;
-            node?: string;
-            npm?: string;
-            pnpm?: string;
-            python?: string;
-            ruby?: string;
-            rust?: string;
-            yarn?: string;
-        };
+    toolchain?: Omit<InternalToolchainConfig, "preferredManager"> & {
+        readonly preferredManager?: Exclude<VersionManagerName, "self-activate">;
     };
 
     /** Terminal UI configuration */

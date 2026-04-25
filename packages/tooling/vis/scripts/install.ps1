@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Bootstrap vis on Windows — installs a version manager (if needed),
+    Bootstrap vis on Windows -- installs a version manager (if needed),
     Node LTS, and @visulima/vis in one step.
 
 .DESCRIPTION
@@ -23,7 +23,7 @@
         4. Runs `vis toolchain install` when the current directory has
            workspace pin files (.nvmrc, .prototools, etc.).
 
-    Requires PowerShell 5.1 or newer. Native Windows only — for WSL,
+    Requires PowerShell 5.1 or newer. Native Windows only -- for WSL,
     use install.sh instead.
 
 .PARAMETER Manager
@@ -56,17 +56,17 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# ── Output helpers ──────────────────────────────────────────────────
+# -- Output helpers --------------------------------------------------
 
 function Write-Info   ($m) { Write-Host ("info:  " + $m)  -ForegroundColor Blue }
 function Write-Warn   ($m) { Write-Host ("warn:  " + $m)  -ForegroundColor Yellow }
 function Write-Err    ($m) { Write-Host ("error: " + $m)  -ForegroundColor Red }
-function Write-Ok     ($m) { Write-Host ("✓ "    + $m)    -ForegroundColor Green }
+function Write-Ok     ($m) { Write-Host ("[ok]  " + $m)   -ForegroundColor Green }
 function Write-Dim    ($m) { Write-Host $m                 -ForegroundColor DarkGray }
 
 if ($Help) {
     @'
-vis install script — bootstrap Node + vis from scratch (Windows)
+vis install script -- bootstrap Node + vis from scratch (Windows)
 
 Usage:
   irm <url>/install.ps1 | iex
@@ -84,7 +84,7 @@ Requires PowerShell 5.1+. For WSL, use install.sh instead.
     exit 0
 }
 
-# ── Helpers ─────────────────────────────────────────────────────────
+# -- Helpers ---------------------------------------------------------
 
 function Test-Command($Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
@@ -110,23 +110,23 @@ function Add-ToSessionPath([string]$Dir) {
     $env:PATH = "$Dir;$env:PATH"
 }
 
-# ── Main flow ───────────────────────────────────────────────────────
+# -- Main flow -------------------------------------------------------
 
 Write-Host ""
 Write-Host "vis" -ForegroundColor White -NoNewline
-Write-Host " — bootstrap installer (Windows)"
+Write-Host " -- bootstrap installer (Windows)"
 Write-Host ""
 
 # 1. Node detection
 if (Test-Command node) {
     $nodeVersion = (& node --version) -replace '^v', ''
 
-    Write-Ok "Node $nodeVersion detected on PATH — skipping runtime install."
+    Write-Ok "Node $nodeVersion detected on PATH -- skipping runtime install."
 }
 else {
     Write-Warn "No Node detected on PATH."
     Write-Info "vis needs Node >= 18 to run. Bootstrap options:"
-    Write-Host "  1. proto (recommended — multi-language, reads .prototools / .nvmrc / engines.node)"
+    Write-Host "  1. proto (recommended -- multi-language, reads .prototools / .nvmrc / engines.node)"
     Write-Host "  2. fnm   (Node only, fastest shell activation)"
     Write-Host "  3. volta (Node + JS package managers, package.json-driven)"
     Write-Host ""
@@ -275,7 +275,7 @@ if (-not $NoToolchainInstall) {
     }
 
     if ($found) {
-        Write-Info "Found $found — running ``vis toolchain install``..."
+        Write-Info "Found $found -- running ``vis toolchain install``..."
 
         try {
             & vis toolchain install
@@ -292,13 +292,13 @@ if (-not $NoToolchainInstall) {
         }
     }
     else {
-        Write-Dim "(skipping ``vis toolchain install`` — no workspace pin files found)"
+        Write-Dim "(skipping ``vis toolchain install`` -- no workspace pin files found)"
     }
 }
 
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor White
-Write-Dim "  vis doctor            — full project health check"
-Write-Dim "  vis toolchain status  — report tool versions"
-Write-Dim "  vis run build         — run a workspace target"
+Write-Dim "  vis doctor            -- full project health check"
+Write-Dim "  vis toolchain status  -- report tool versions"
+Write-Dim "  vis run build         -- run a workspace target"
 Write-Host ""

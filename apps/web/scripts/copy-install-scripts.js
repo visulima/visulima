@@ -48,41 +48,52 @@ if (missing.length > 0) {
     process.exit(1);
 }
 
-let visVersion = "0.0.0";
+let visVersion;
 
 try {
-    visVersion = JSON.parse(readFileSync(VIS_PACKAGE_JSON, "utf8")).version;
+    const parsed = JSON.parse(readFileSync(VIS_PACKAGE_JSON, "utf8"));
+
+    visVersion = parsed.version;
 } catch (cause) {
-    console.warn(`[copy-install-scripts] Could not read vis package version: ${cause.message}`);
+    // Use String(cause) so non-Error throwables (string, plain object,
+    // …) still print readable output instead of "undefined".
+    console.warn(`[copy-install-scripts] Could not read vis package version: ${String(cause)}`);
+}
+
+if (!visVersion) {
+    visVersion = "unknown";
 }
 
 const stampedAt = new Date().toISOString();
+const banner = `# vis-install ${visVersion} (built ${stampedAt})`;
 
 /**
  * Inserts (or replaces) a one-line version banner near the top of the
  * script. We insert after the shebang / `<#` block comment so the
- * existing flow isn't disturbed.
+ * existing flow isn't disturbed. Returns `undefined` when the body
+ * has no recognisable insertion anchor — caller treats that as a
+ * build-breaking error so we don't silently ship an unstamped script.
  */
 const stampVersion = (script, body) => {
-    const banner = `# vis-install ${visVersion} (built ${stampedAt})`;
-    const psBanner = `# vis-install ${visVersion} (built ${stampedAt})`;
+    // Strip any prior banner before re-stamping (idempotent re-runs).
+    const stripped = body.replace(/^# vis-install [^\n]*\n/m, "");
 
     if (script === "install.sh") {
-        // Strip any prior banner before re-stamping.
-        const stripped = body.replace(/^# vis-install [^\n]*\n/m, "");
         // Insert right after the shebang.
-        return stripped.replace(/^(#![^\n]*\n)/, `$1${banner}\n`);
+        const result = stripped.replace(/^(#![^\n]*\n)/, `$1${banner}\n`);
+
+        return result.includes(banner) ? result : undefined;
     }
 
     if (script === "install.ps1") {
-        // PowerShell uses `<# ... #>` block comments at the top.
-        // Insert the banner right after that block.
-        const stripped = body.replace(/^# vis-install [^\n]*\n/m, "");
+        // PowerShell uses `<# ... #>` block comments at the top —
+        // insert the banner right after that block.
+        const result = stripped.replace(/(#>\s*\n)/, `$1${banner}\n`);
 
-        return stripped.replace(/(#>\s*\n)/, `$1${psBanner}\n`);
+        return result.includes(banner) ? result : undefined;
     }
 
-    return body;
+    return undefined;
 };
 
 for (const script of SCRIPTS) {
@@ -90,6 +101,14 @@ for (const script of SCRIPTS) {
     const destination = path.join(DESTINATION, script);
     const body = readFileSync(source, "utf8");
     const stamped = stampVersion(script, body);
+
+    if (!stamped) {
+        // No shebang / `<# ... #>` block comment to anchor the banner
+        // — bail rather than ship a script without the version stamp.
+        console.error(`[copy-install-scripts] Could not stamp version banner into ${script}.`);
+        console.error(`[copy-install-scripts]   expected a shebang (install.sh) or '<# ... #>' block (install.ps1) near the top.`);
+        process.exit(1);
+    }
 
     writeFileSync(destination, stamped);
 
@@ -100,5 +119,5 @@ for (const script of SCRIPTS) {
 
     writeFileSync(`${destination}.sha256`, `${hash}  ${script}\n`);
 
-    console.log(`[copy-install-scripts] ${script} → public/${script}  (sha256: ${hash.slice(0, 12)}…, vis ${visVersion})`);
+    console.log(`[copy-install-scripts] ${script} → public/${script}  (sha256: ${hash.slice(0, 12)}..., vis ${visVersion})`);
 }

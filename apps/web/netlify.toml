@@ -62,7 +62,7 @@
 [[headers]]
   for = "/install.sh"
   [headers.values]
-    Content-Type = "text/x-shellscript; charset=utf-8"
+    Content-Type = "text/plain; charset=utf-8"
     Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
     Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
 
@@ -118,3 +118,35 @@
   from = "/install/v1.ps1.sha256"
   to = "/install.ps1.sha256"
   status = 200
+
+# Headers attach to the URL the user requests (the rewrite source),
+# not the destination. Mirror /install.{sh,ps1,*.sha256} headers onto
+# the versioned aliases so curl/irm see the right Content-Type and
+# the CDN gets the same cache window.
+[[headers]]
+  for = "/install/v1.sh"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.sh.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.ps1.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
