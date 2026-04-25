@@ -446,13 +446,30 @@ describe(pickPrimaryManager, () => {
 });
 
 describe(buildInstallInvocation, () => {
-    it("should build a proto invocation that reads .prototools", () => {
+    it("should refuse to build a spec-less proto invocation (would silently no-op without .prototools)", () => {
+        expect.assertions(1);
+
+        // Bare `proto install` only does anything when .prototools
+        // exists; we'd rather force callers to pass an explicit pin
+        // than silently succeed with nothing installed.
+        expect(buildInstallInvocation("proto")).toBeUndefined();
+    });
+
+    it("should build a per-tool proto invocation with an explicit pin", () => {
         expect.assertions(2);
 
-        const invocation = buildInstallInvocation("proto");
+        const invocation = buildInstallInvocation("proto", { source: "engines", tool: "node", version: "22.13.0" });
 
         expect(invocation?.bin).toBe("proto");
-        expect(invocation?.args).toEqual(["install"]);
+        expect(invocation?.args).toEqual(["install", "node", "22.13.0"]);
+    });
+
+    it("should refuse spec-less asdf, fnm, mise (silent no-op risk)", () => {
+        expect.assertions(3);
+
+        expect(buildInstallInvocation("asdf")).toBeUndefined();
+        expect(buildInstallInvocation("fnm")).toBeUndefined();
+        expect(buildInstallInvocation("mise")).toBeUndefined();
     });
 
     it("should build a volta invocation per tool spec", () => {

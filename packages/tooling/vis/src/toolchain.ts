@@ -1081,15 +1081,15 @@ export interface InstallInvocation {
 export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolSpec): InstallInvocation | undefined => {
     switch (manager) {
         case "asdf": {
-            // With a pin: install that exact tool+version. Without:
-            // fall back to `asdf install` (reads .tool-versions). Bare
-            // `asdf install` with no .tool-versions is a no-op, so
-            // callers should always pass a spec when they have one.
-            if (spec) {
-                return { args: ["install", spec.tool, spec.version], bin: "asdf" };
+            // Refuse the spec-less form: bare `asdf install` reads
+            // .tool-versions and silently succeeds with nothing
+            // installed when that file is absent. Callers must pass a
+            // pin so we can install it explicitly.
+            if (!spec) {
+                return undefined;
             }
 
-            return { args: ["install"], bin: "asdf", hint: "reads .tool-versions" };
+            return { args: ["install", spec.tool, spec.version], bin: "asdf" };
         }
         case "corepack": {
             if (!spec) {
@@ -1108,22 +1108,24 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
             };
         }
         case "fnm": {
-            if (spec && spec.tool === "node") {
-                return { args: ["install", spec.version], bin: "fnm" };
+            // fnm only handles Node, and bare `fnm install` reads
+            // .nvmrc which may not exist — silent no-op. Always
+            // require an explicit version.
+            if (!spec || spec.tool !== "node") {
+                return undefined;
             }
 
-            return { args: ["install"], bin: "fnm", hint: "reads .nvmrc / .node-version" };
+            return { args: ["install", spec.version], bin: "fnm" };
         }
         case "mise": {
-            // With a pin: install the explicit tool@version. Without:
-            // fall back to `mise install` (reads .mise.toml /
-            // .tool-versions). Bare `mise install` with no config file
-            // is a no-op, so callers should always pass a spec.
-            if (spec) {
-                return { args: ["install", `${spec.tool}@${spec.version}`], bin: "mise" };
+            // Refuse the spec-less form: bare `mise install` reads
+            // .mise.toml / .tool-versions and silently succeeds when
+            // those don't exist. Callers must pass a pin.
+            if (!spec) {
+                return undefined;
             }
 
-            return { args: ["install"], bin: "mise", hint: "reads .mise.toml / .tool-versions" };
+            return { args: ["install", `${spec.tool}@${spec.version}`], bin: "mise" };
         }
         case "none": {
             return undefined;
@@ -1136,14 +1138,14 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
             };
         }
         case "proto": {
-            // With a pin: install the explicit tool+version. Without:
-            // fall back to `proto install` (reads .prototools). Bare
-            // `proto install` with no config file is a no-op.
-            if (spec) {
-                return { args: ["install", spec.tool, spec.version], bin: "proto" };
+            // Refuse the spec-less form: bare `proto install` reads
+            // .prototools and silently succeeds when that file isn't
+            // present. Callers must pass a pin.
+            if (!spec) {
+                return undefined;
             }
 
-            return { args: ["install"], bin: "proto", hint: "reads .prototools" };
+            return { args: ["install", spec.tool, spec.version], bin: "proto" };
         }
         case "self-activate": {
             // pnpm 10+ / yarn berry activate from the packageManager field
@@ -1263,6 +1265,27 @@ export const buildUseInvocation = (manager: VersionManagerName, spec: ToolSpec):
             throw new Error(`Unknown manager: ${exhaustive as string}`);
         }
     }
+};
+
+/**
+ * Walks the same alias list as {@link queryToolVersion} (so
+ * `findOnPathByAlias("rust")` resolves through `rustc`,
+ * `findOnPathByAlias("python")` falls back to `python3`, etc.) and
+ * returns the first hit. Useful for callers that have a `RuntimeTool`
+ * but no manager handle — e.g. `vis toolchain which` when the resolved
+ * manager is `self-activate` / `none`.
+ * @returns the absolute binary path, or undefined when no alias is on PATH.
+ */
+export const findOnPathByAlias = (tool: RuntimeTool): string | undefined => {
+    for (const alias of TOOL_VERSION_QUERY[tool].binaries) {
+        const binary = isOnPath(alias);
+
+        if (binary) {
+            return binary;
+        }
+    }
+
+    return undefined;
 };
 
 /**
@@ -1621,25 +1644,24 @@ export const ensureToolchain = async (
             continue;
         }
 
-        // proto/mise/asdf/fnm read their own config, one invocation does
-        // them all. volta/corepack pin per-tool so we iterate.
-        // Always invoke per-tool when we have a spec — proto/mise/asdf
-        // run `install <tool> <version>` and skip the workspace-config
-        // dependency, which would otherwise turn `vis toolchain
-        // install` into a silent no-op when only `engines.<tool>` is
-        // pinned (no .prototools / .mise.toml / .tool-versions).
-        const invocations = tools
-            .map((t) => buildInstallInvocation(managerName, t.expected))
-            .filter((inv) => inv !== undefined);
+        // Pair each invocation with the tool that produced it so we
+        // record success/failure against the actual tool that ran,
+        // not the whole bucket. Previously a single failed invocation
+        // marked every tool in the bucket as failed even though only
+        // one was attempted, distorting the result counts callers see.
+        // Always invoke per-tool with an explicit spec so proto/mise/
+        // asdf install the exact pin instead of falling back to a
+        // workspace config that may not exist.
+        const pairs = tools
+            .map((tool) => ({ invocation: buildInstallInvocation(managerName, tool.expected), tool }))
+            .filter((pair): pair is { invocation: InstallInvocation; tool: ToolStatus } => pair.invocation !== undefined);
 
-        for (const invocation of invocations) {
+        for (const { invocation, tool } of pairs) {
+            const { expected } = tool;
+
             if (invocation.bin === "nvm" && invocation.args.length === 0) {
-                logger.warn("toolchain: nvm requires a shell-side activation. Run `nvm install` / `nvm use` manually.");
-
-                for (const { expected } of tools) {
-                    failed.push({ error: "nvm requires shell-side activation", spec: expected });
-                }
-
+                logger.warn(`toolchain: nvm requires a shell-side activation for ${expected.tool} ${expected.version}. Run \`nvm install\` / \`nvm use\` manually.`);
+                failed.push({ error: "nvm requires shell-side activation", spec: expected });
                 continue;
             }
 
@@ -1651,23 +1673,18 @@ export const ensureToolchain = async (
                     stdio: "inherit",
                 });
 
-                for (const { expected } of tools) {
-                    attempted.push(expected);
-                }
+                attempted.push(expected);
 
                 // fnm needs PATH-side activation — even after `fnm
                 // install`, the subprocesses we'll spawn next inherit
                 // the current PATH and won't see the new version.
-                // Eval `fnm env --use-on-cd` and merge into process.env
-                // so subsequent task subprocesses pick up the new node.
+                // Eval `fnm env` and merge into process.env so
+                // subsequent task subprocesses pick up the new node.
                 if (managerName === "fnm") {
                     activateFnmEnv(invocation.bin, logger);
                 }
             } catch (cause: unknown) {
-                for (const { expected } of tools) {
-                    failed.push({ error: (cause as Error).message, spec: expected });
-                }
-
+                failed.push({ error: (cause as Error).message, spec: expected });
                 break;
             }
         }
@@ -1727,6 +1744,14 @@ const activateFnmEnv = (fnmBin: string, logger: EnsureToolchainLogger): void => 
             stdio: ["ignore", "pipe", "ignore"],
             timeout: 2000,
         });
+
+        // The chosen shell determines the line format we expect, but
+        // older fnm builds and shell-style overrides can emit a
+        // different format than requested. The three parsers below are
+        // intentionally redundant — whichever line format `output`
+        // actually contains, we'll parse it. Keeps the activation
+        // working when fnm changes its default emit format between
+        // versions.
 
         for (const line of output.split(/\r?\n/)) {
             const trimmed = line.trim();

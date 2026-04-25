@@ -150,6 +150,7 @@ else {
     switch ($Manager) {
         'proto' {
             Write-Info "Installing proto via https://moonrepo.dev/install/proto.ps1..."
+            # PSScriptAnalyzer disable=PSAvoidUsingInvokeExpression - vendor installer pattern (irm | iex), intentionally executed
             Invoke-RestMethod -Uri 'https://moonrepo.dev/install/proto.ps1' | Invoke-Expression
             Add-ToSessionPath "$env:USERPROFILE\.proto\bin"
             Add-ToSessionPath "$env:USERPROFILE\.proto\shims"
@@ -170,8 +171,20 @@ else {
 
             # fnm installs into the user's standard package-manager
             # location, which is already on PATH after the install
-            # exits, but we prod a session refresh just in case.
-            $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "User") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+            # exits — but the current process didn't inherit the
+            # registry update. Refresh by APPENDING User+Machine PATH
+            # to whatever the session has so far (Add-ToSessionPath
+            # entries from earlier installers stay), then de-duplicate
+            # so we don't end up with the same dir listed twice.
+            $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+            $machinePath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+            $combined = "$env:PATH;$userPath;$machinePath"
+            $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            $deduped = ($combined -split ';' | Where-Object {
+                if ([string]::IsNullOrWhiteSpace($_)) { return $false }
+                return $seen.Add($_.TrimEnd('\'))
+            }) -join ';'
+            $env:PATH = $deduped
         }
         'volta' {
             if (Test-Command winget) {
@@ -208,6 +221,7 @@ else {
             # Apply fnm env so `node` resolves in this session.
             $fnmEnv = & fnm env --use-on-cd | Out-String
 
+            # PSScriptAnalyzer disable=PSAvoidUsingInvokeExpression - fnm env emits PS exports we need to apply to this session
             Invoke-Expression $fnmEnv
         }
         'volta' {

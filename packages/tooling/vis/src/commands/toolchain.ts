@@ -10,8 +10,8 @@ import {
     buildInstallInvocation,
     buildUseInvocation,
     findInstalledManagers,
+    findOnPathByAlias,
     getToolchainStatus,
-    isOnPath,
     parseUseArgument,
     pickPrimaryManager,
     resolveManagerFor,
@@ -527,7 +527,11 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
     const manager = resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none"
         ? detected.find((d) => d.name === resolved.name)
         : undefined;
-    const binary = manager ? resolveToolBinary(manager, normalized) : isOnPath(normalized);
+    // Use findOnPathByAlias so users running `which rust` or `which
+    // python` on a self-activate / no-manager workspace still get a
+    // useful answer (rustc, python3) — same alias list as
+    // queryToolVersion / resolveToolBinary.
+    const binary = manager ? resolveToolBinary(manager, normalized) : findOnPathByAlias(normalized);
 
     if (!binary) {
         errorOutput(`${rawTool} not found in PATH${manager ? ` or via ${manager.name}` : ""}.`);
