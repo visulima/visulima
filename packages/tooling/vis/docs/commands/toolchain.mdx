@@ -228,7 +228,7 @@ if ($actual -ne $expected) { throw "SHA256 mismatch" }
 $body | iex
 ```
 
-The script body has a `# vis-install <version> (built <iso-date>)` banner near the top, so once you've run it you can confirm which release you got.
+The script body has a `# vis-install <version>` banner near the top, so once you've run it you can confirm which release you got. The banner is intentionally content-stable across rebuilds (no per-build timestamp) so the SHA256 only changes when the script body or vis version actually changes.
 
 ### Pinning to a specific version of the install script
 

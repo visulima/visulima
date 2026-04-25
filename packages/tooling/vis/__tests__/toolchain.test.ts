@@ -73,6 +73,17 @@ describe(satisfies, () => {
         expect(satisfies("23.0.0", "^22.1.0")).toBe(false);
     });
 
+    it("should support `||` alternatives (any group passes wins)", () => {
+        expect.assertions(4);
+
+        // Common npm engines pattern: "any of these majors works."
+        expect(satisfies("20.5.0", "^20 || ^22")).toBe(true);
+        expect(satisfies("22.5.0", "^20 || ^22")).toBe(true);
+        expect(satisfies("21.0.0", "^20 || ^22")).toBe(false);
+        // Each alternative is itself an AND-group of clauses.
+        expect(satisfies("22.5.0", ">=20 <21 || >=22 <23")).toBe(true);
+    });
+
     it("should support tilde (~) for same major.minor", () => {
         expect.assertions(2);
 

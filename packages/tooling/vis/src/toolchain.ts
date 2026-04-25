@@ -844,43 +844,65 @@ export const satisfies = (actual: string, range: string): boolean => {
         return 0;
     };
 
-    for (const clause of normalized.split(/\s+/).filter(Boolean)) {
-        if (clause.startsWith(">=")) {
-            if (compare(actual, clause.slice(2).trim()) < 0) {
-                return false;
-            }
-        } else if (clause.startsWith("<=")) {
-            if (compare(actual, clause.slice(2).trim()) > 0) {
-                return false;
-            }
-        } else if (clause.startsWith(">")) {
-            if (compare(actual, clause.slice(1).trim()) <= 0) {
-                return false;
-            }
-        } else if (clause.startsWith("<")) {
-            if (compare(actual, clause.slice(1).trim()) >= 0) {
-                return false;
-            }
-        } else if (clause.startsWith("^") || clause.startsWith("~")) {
-            const target = clause.slice(1).trim();
-            const [targetMajor, targetMinor] = parse(target);
-            const [actualMajor, actualMinor] = parse(actual);
+    /**
+     * Evaluate a single AND-group: every space-separated clause must
+     * pass for the group to pass. Used by both single-range and `||`
+     * alternatives below.
+     */
+    const matchesAll = (clauses: readonly string[]): boolean => {
+        for (const clause of clauses) {
+            if (clause.startsWith(">=")) {
+                if (compare(actual, clause.slice(2).trim()) < 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("<=")) {
+                if (compare(actual, clause.slice(2).trim()) > 0) {
+                    return false;
+                }
+            } else if (clause.startsWith(">")) {
+                if (compare(actual, clause.slice(1).trim()) <= 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("<")) {
+                if (compare(actual, clause.slice(1).trim()) >= 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("^") || clause.startsWith("~")) {
+                const target = clause.slice(1).trim();
+                const [targetMajor, targetMinor] = parse(target);
+                const [actualMajor, actualMinor] = parse(actual);
 
-            if (actualMajor !== targetMajor) {
-                return false;
-            }
+                if (actualMajor !== targetMajor) {
+                    return false;
+                }
 
-            if (clause.startsWith("~") && actualMinor !== targetMinor) {
-                return false;
-            }
+                if (clause.startsWith("~") && actualMinor !== targetMinor) {
+                    return false;
+                }
 
-            if (compare(actual, target) < 0) {
-                return false;
+                if (compare(actual, target) < 0) {
+                    return false;
+                }
             }
         }
+
+        return true;
+    };
+
+    // Split on `||` first — common npm engines patterns like
+    // `^20 || ^22` mean "any major matches". Then each alternative is
+    // an AND-group of whitespace-separated clauses. Without this, the
+    // OR alternatives would be flattened into AND and never pass.
+    const alternatives = normalized
+        .split("||")
+        .map((alternative) => alternative.trim().split(/\s+/).filter(Boolean))
+        .filter((clauses) => clauses.length > 0);
+
+    if (alternatives.length === 0) {
+        return true;
     }
 
-    return true;
+    return alternatives.some((clauses) => matchesAll(clauses));
 };
 
 /**
@@ -1059,7 +1081,15 @@ export interface InstallInvocation {
 export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolSpec): InstallInvocation | undefined => {
     switch (manager) {
         case "asdf": {
-            return { args: ["install"], bin: "asdf" };
+            // With a pin: install that exact tool+version. Without:
+            // fall back to `asdf install` (reads .tool-versions). Bare
+            // `asdf install` with no .tool-versions is a no-op, so
+            // callers should always pass a spec when they have one.
+            if (spec) {
+                return { args: ["install", spec.tool, spec.version], bin: "asdf" };
+            }
+
+            return { args: ["install"], bin: "asdf", hint: "reads .tool-versions" };
         }
         case "corepack": {
             if (!spec) {
@@ -1085,7 +1115,15 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
             return { args: ["install"], bin: "fnm", hint: "reads .nvmrc / .node-version" };
         }
         case "mise": {
-            return { args: ["install"], bin: "mise" };
+            // With a pin: install the explicit tool@version. Without:
+            // fall back to `mise install` (reads .mise.toml /
+            // .tool-versions). Bare `mise install` with no config file
+            // is a no-op, so callers should always pass a spec.
+            if (spec) {
+                return { args: ["install", `${spec.tool}@${spec.version}`], bin: "mise" };
+            }
+
+            return { args: ["install"], bin: "mise", hint: "reads .mise.toml / .tool-versions" };
         }
         case "none": {
             return undefined;
@@ -1098,7 +1136,14 @@ export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolS
             };
         }
         case "proto": {
-            return { args: ["install"], bin: "proto" };
+            // With a pin: install the explicit tool+version. Without:
+            // fall back to `proto install` (reads .prototools). Bare
+            // `proto install` with no config file is a no-op.
+            if (spec) {
+                return { args: ["install", spec.tool, spec.version], bin: "proto" };
+            }
+
+            return { args: ["install"], bin: "proto", hint: "reads .prototools" };
         }
         case "self-activate": {
             // pnpm 10+ / yarn berry activate from the packageManager field
@@ -1222,28 +1267,48 @@ export const buildUseInvocation = (manager: VersionManagerName, spec: ToolSpec):
 
 /**
  * Helper for commands: runs `<manager> which <tool>` when available,
- * returning the resolved binary path. Falls back to PATH lookup.
+ * returning the resolved binary path. Falls back to PATH lookup,
+ * walking the same alias list as {@link queryToolVersion} so `rust`
+ * resolves via `rustc`, `python` falls back to `python3`, etc.
  */
 export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): string | undefined => {
+    const aliases = TOOL_VERSION_QUERY[tool].binaries;
+
     if (manager.installed && manager.binPath) {
         // proto/mise/asdf expose `which`; volta has `volta which`; fnm
-        // prints to stdout from `fnm which`.
+        // prints to stdout from `fnm which`. Try each alias in order so
+        // `mise which rust` (which doesn't know "rust") falls back to
+        // `mise which rustc`.
         if (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm") {
-            try {
-                const output = execFileSync(manager.binPath, ["which", tool], {
-                    encoding: "utf8",
-                    stdio: ["ignore", "pipe", "ignore"],
-                    timeout: 2000,
-                });
+            for (const alias of aliases) {
+                try {
+                    const output = execFileSync(manager.binPath, ["which", alias], {
+                        encoding: "utf8",
+                        stdio: ["ignore", "pipe", "ignore"],
+                        timeout: 2000,
+                    });
 
-                return output.trim() || undefined;
-            } catch {
-                // fall through to PATH
+                    const trimmed = output.trim();
+
+                    if (trimmed) {
+                        return trimmed;
+                    }
+                } catch {
+                    // try the next alias
+                }
             }
         }
     }
 
-    return isOnPath(tool);
+    for (const alias of aliases) {
+        const binary = isOnPath(alias);
+
+        if (binary) {
+            return binary;
+        }
+    }
+
+    return undefined;
 };
 
 /**
@@ -1558,10 +1623,14 @@ export const ensureToolchain = async (
 
         // proto/mise/asdf/fnm read their own config, one invocation does
         // them all. volta/corepack pin per-tool so we iterate.
-        const perTool = managerName === "volta" || managerName === "corepack";
-        const invocations = perTool
-            ? tools.map((t) => buildInstallInvocation(managerName, t.expected)).filter((inv) => inv !== undefined)
-            : [buildInstallInvocation(managerName)].filter((inv) => inv !== undefined);
+        // Always invoke per-tool when we have a spec — proto/mise/asdf
+        // run `install <tool> <version>` and skip the workspace-config
+        // dependency, which would otherwise turn `vis toolchain
+        // install` into a silent no-op when only `engines.<tool>` is
+        // pinned (no .prototools / .mise.toml / .tool-versions).
+        const invocations = tools
+            .map((t) => buildInstallInvocation(managerName, t.expected))
+            .filter((inv) => inv !== undefined);
 
         for (const invocation of invocations) {
             if (invocation.bin === "nvm" && invocation.args.length === 0) {

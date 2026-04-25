@@ -307,7 +307,11 @@ case "$PM" in
 esac
 
 if ! has_cmd vis; then
-    err "vis is installed but not on PATH. Check your global bin directory (\`npm config get prefix\`)."
+    if [ "$PM" = "pnpm" ]; then
+        err "vis is installed but not on PATH. Check your global bin directory (run: \`pnpm bin -g\`)."
+    else
+        err "vis is installed but not on PATH. Check your global bin directory (run: \`npm config get prefix\`)."
+    fi
     exit 1
 fi
 

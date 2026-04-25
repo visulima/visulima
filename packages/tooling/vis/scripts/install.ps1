@@ -242,7 +242,8 @@ switch ($pm) {
 }
 
 if (-not (Test-Command vis)) {
-    Write-Err "vis is installed but not on PATH. Check your global bin directory (``npm config get prefix``)."
+    $binHint = if ($pm -eq 'pnpm') { 'pnpm bin -g' } else { 'npm config get prefix' }
+    Write-Err "vis is installed but not on PATH. Check your global bin directory (run: ``$binHint``)."
     exit 1
 }
 

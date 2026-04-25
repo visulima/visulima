@@ -209,7 +209,14 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
         return;
     }
 
-    if (status.detected.length === 0) {
+    // Only error when we have no manager AND there's at least one
+    // mismatch that needs one. A workspace where every mismatched pin
+    // is `self-activate` (pnpm/yarn from the packageManager field)
+    // doesn't need a detected manager — vis writes packageManager
+    // itself, then the PM activates on next invocation.
+    const needsRealManager = mismatches.some((m) => m.manager.name !== "self-activate" && m.manager.name !== "none");
+
+    if (status.detected.length === 0 && needsRealManager) {
         errorOutput(`No version manager detected. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
         process.exitCode = 1;
 
@@ -271,10 +278,13 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
         // volta and corepack pin per-tool, so invoke once per tool. The
         // rest (proto/mise/asdf/fnm) install everything from their config
         // in a single shot.
-        const perTool = managerName === "volta" || managerName === "corepack";
-        const invocations = perTool
-            ? tools.map((t) => buildInstallInvocation(managerName, t.expected)).filter(Boolean)
-            : [buildInstallInvocation(managerName)].filter(Boolean);
+        // Always invoke per-tool with an explicit spec so proto/mise/
+        // asdf install the exact pin instead of falling back to a
+        // workspace config that may not exist (engines.<tool> with no
+        // .prototools / .mise.toml / .tool-versions).
+        const invocations = tools
+            .map((t) => buildInstallInvocation(managerName, t.expected))
+            .filter(Boolean);
 
         for (const invocation of invocations) {
             if (!invocation) {

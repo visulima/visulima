@@ -64,8 +64,11 @@ if (!visVersion) {
     visVersion = "unknown";
 }
 
-const stampedAt = new Date().toISOString();
-const banner = `# vis-install ${visVersion} (built ${stampedAt})`;
+// Banner is content-stable — no `Date.now()` in here. If the banner
+// included a per-build timestamp, every deploy would change the SHA256
+// and break users who pinned to a known-good hash. Bump visVersion
+// (i.e., release a new vis) to invalidate the cache.
+const banner = `# vis-install ${visVersion}`;
 
 /**
  * Inserts (or replaces) a one-line version banner near the top of the

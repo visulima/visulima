@@ -636,23 +636,6 @@ const run: Command = {
         const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
-        // Pre-flight: if a workspace tool pin doesn't match the running
-        // version and `toolchain.autoInstall` is on (default when a
-        // manager is detected), install via the right manager and let
-        // subsequent task subprocesses pick up the new version. We
-        // never block on failure — surface a warning, keep going,
-        // and let the existing runtime-check warnings do their job.
-        await runToolchainPreflight(
-            workspaceRoot,
-            config.toolchain,
-            {
-                error: (message) => logger.error(message),
-                info: (message) => logger.info(message),
-                warn: (message) => logger.warn(message),
-            },
-            Boolean(options.skipToolchain),
-        );
-
         let rawSelector = argument[0];
 
         if (!rawSelector) {
@@ -936,6 +919,29 @@ const run: Command = {
 
             return;
         }
+
+        // Pre-flight: if a workspace tool pin doesn't match the running
+        // version and `toolchain.autoInstall` is on (default when a
+        // manager is detected), install via the right manager and let
+        // subsequent task subprocesses pick up the new version. We
+        // never block on failure — surface a warning, keep going,
+        // and let the existing runtime-check warnings do their job.
+        //
+        // Runs only when we're committing to actually execute tasks:
+        // after target selection, after the `--last-details` and
+        // `--dry-run` short-circuits, and after the no-target listing
+        // path returns. Avoids surprising auto-installs from `vis run`
+        // with no args or `vis run --dry-run`.
+        await runToolchainPreflight(
+            workspaceRoot,
+            config.toolchain,
+            {
+                error: (message) => logger.error(message),
+                info: (message) => logger.info(message),
+                warn: (message) => logger.warn(message),
+            },
+            Boolean(options.skipToolchain),
+        );
 
         const startTime = Date.now();
 
