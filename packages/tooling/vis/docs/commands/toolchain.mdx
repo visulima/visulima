@@ -228,6 +228,80 @@ $body | iex
 
 The script body has a `# vis-install <version> (built <iso-date>)` banner near the top, so once you've run it you can confirm which release you got.
 
+### Pinning to a specific version of the install script
+
+Versioned aliases let tutorials pin to a major version so a breaking flag rename in v2 doesn't silently break copy-paste:
+
+```bash
+# Pinned — body matches /install.sh today, won't follow breaking v2 changes.
+curl -fsSL https://visulima.com/install/v1.sh | bash
+```
+
+```powershell
+irm https://visulima.com/install/v1.ps1 | iex
+```
+
+The non-versioned URLs (`https://visulima.com/install.sh` and `…/install.ps1`) are the rolling latest.
+
+## CI / CD recipes
+
+`vis ci` calls `ensureToolchain()` automatically as its first step, so the simplest CI is:
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap vis (installs proto + Node from .prototools / engines.node)
+        run: curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+      - name: Lint, test, build (affected)
+        run: vis ci lint,test,build
+```
+
+### GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+ci:
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update && apt-get install -y curl bash
+    - curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+  script:
+    - vis ci lint,test,build
+```
+
+### Skipping the toolchain pre-flight
+
+When the CI image already has the right Node version baked in (and you trust that), pass `--skip-toolchain` to short-circuit the pre-flight:
+
+```bash
+vis ci lint,test,build --skip-toolchain
+```
+
+Or set `toolchain.autoInstall: false` in `vis.config.ts` for a workspace-wide opt-out.
+
+## Migrating from another version manager
+
+| Coming from | What changes                                                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Volta**   | Nothing immediate — vis reads your existing `volta` field in package.json and routes pnpm/yarn/npm/node pins to `volta install`. New pins from `vis toolchain use` write to the same field. |
+| **nvm**     | Keep your `.nvmrc`. `vis toolchain status` reads it; `vis toolchain use node@22.13.0` rewrites it. nvm-the-shell-function still owns activation (run `nvm use` to switch the shell).                |
+| **fnm**     | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis writes pin updates back to those files via `fnm use`.                              |
+| **proto**   | Native fit. `.prototools` is the source of truth, `vis toolchain install` runs `proto install`, `vis toolchain use <tool>@<ver>` runs `proto pin`.          |
+| **mise**    | Same as proto — `.mise.toml` is the config, vis maps `install` and `use` to `mise install` / `mise use`.                                                   |
+| **asdf**    | `.tool-versions` is the config. vis maps to `asdf install` / `asdf local <tool> <ver>`.                                                                    |
+| **corepack**| If you only used corepack to pin pnpm/yarn via the `packageManager` field, you can drop corepack on most projects: pnpm 10+ and yarn berry **self-activate** from that field on next invocation. vis surfaces this as the `self-activate` pseudo-manager. corepack is still needed when you want to pin **npm** itself (which doesn't self-switch). |
+
+You don't have to migrate anything: vis runs alongside whatever manager you have. The benefits of explicit migration are smaller config drift and the ability to use `vis toolchain use` to update pins from the CLI.
+
 ## Why not embed a runtime manager?
 
 Most developers already have `fnm`, `volta`, `mise`, or `proto` installed. Shipping another ~20 MB binary would violate the principle of least surprise and duplicate behaviour the OS-level manager already handles (PATH shims, global caches, shell activation). Delegation keeps vis small and portable.

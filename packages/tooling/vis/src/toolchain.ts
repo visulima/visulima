@@ -10,6 +10,7 @@
  * keeps vis's binary small and avoids a parallel ~/.vis-plus directory.
  */
 import { execFileSync } from "node:child_process";
+import { renameSync, unlinkSync, writeFileSync as fsWriteFileSync } from "node:fs";
 import { delimiter, sep } from "node:path";
 
 import { isAccessibleSync, readFileSync, readJsonSync, writeFileSync } from "@visulima/fs";
@@ -1145,6 +1146,40 @@ export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): 
 };
 
 /**
+ * Writes `body` to `path` atomically — write a sibling temp file,
+ * fsync the bytes (writeFileSync does this), then rename over the
+ * destination. On POSIX rename is atomic, so a concurrent reader
+ * always sees either the old body or the new one, never a half-written
+ * file. On Windows, rename onto an existing path requires the
+ * destination to be writable; that's universally true for files we
+ * own (package.json, .nvmrc).
+ *
+ * Used for `package.json` updates so two `vis toolchain use` runs
+ * racing against each other can't produce a corrupted JSON body.
+ */
+const atomicWrite = (path: string, body: string): void => {
+    // Random suffix avoids collisions when the same workspace is
+    // touched by parallel vis invocations (rare but possible in CI).
+    const tmp = `${path}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+
+    fsWriteFileSync(tmp, body);
+
+    try {
+        renameSync(tmp, path);
+    } catch (cause: unknown) {
+        // Best-effort cleanup. If rename failed, the tmp file is still
+        // sitting on disk; if rename succeeded, the unlink is a no-op.
+        try {
+            unlinkSync(tmp);
+        } catch {
+            // ignore
+        }
+
+        throw cause;
+    }
+};
+
+/**
  * Writes `<spec.tool>@<spec.version>` into `package.json`'s
  * `packageManager` field. Used by the self-activate path of
  * `vis toolchain use <pnpm|yarn>@<version>` — pnpm 10+ and yarn berry
@@ -1195,7 +1230,7 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
 
     const trailingNewline = raw.endsWith("\n") ? "\n" : "";
 
-    writeFileSync(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
+    atomicWrite(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
 
     return value;
 };
@@ -1246,7 +1281,7 @@ export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): strin
     const indent = indentMatch?.[1] ?? "  ";
     const trailingNewline = raw.endsWith("\n") ? "\n" : "";
 
-    writeFileSync(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
+    atomicWrite(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
 
     return spec.version;
 };

@@ -90,3 +90,31 @@
     Content-Type = "text/plain; charset=utf-8"
     Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
     Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+# Versioned install URLs. Tutorials, blog posts, and Dockerfiles can pin
+# to a major version so a breaking flag rename in v2 doesn't silently
+# break copy-pastes. We rewrite (status 200, not redirect) so curl /
+# irm hashes stay aligned with the canonical /install.{sh,ps1}.
+#
+# When v2 lands with breaking changes, copy `install.sh` → `install.v1.sh`
+# at the cut point, drop these rewrites, and add fresh /install/v2.sh
+# rewrites pointing at the new body.
+[[redirects]]
+  from = "/install/v1.sh"
+  to = "/install.sh"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.ps1"
+  to = "/install.ps1"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.sh.sha256"
+  to = "/install.sh.sha256"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.ps1.sha256"
+  to = "/install.ps1.sha256"
+  status = 200
