@@ -1,5 +1,6 @@
 {
     "name": "tabular-bench",
+    "version": "0.0.0",
     "scripts": {
         "test:bench": "vitest bench --run"
     },

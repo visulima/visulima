@@ -1,5 +1,6 @@
 {
     "name": "deep-clone-bench",
+    "version": "0.0.0",
     "private": true,
     "scripts": {
         "test:bench": "vitest bench"
