@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "4.0.0-alpha.9",
+    "version": "4.0.0-alpha.10",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "anolilab",
@@ -162,10 +162,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "4.0.0-alpha.8",
-        "@visulima/fs": "5.0.0-alpha.7",
-        "@visulima/jsdoc-open-api": "3.0.0-alpha.7",
-        "@visulima/path": "3.0.0-alpha.8",
+        "@visulima/connect": "4.0.0-alpha.10",
+        "@visulima/fs": "5.0.0-alpha.12",
+        "@visulima/jsdoc-open-api": "3.0.0-alpha.11",
+        "@visulima/path": "3.0.0-alpha.10",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",
         "http-errors": "catalog:prod",
@@ -174,11 +174,11 @@
         "lodash.merge": "catalog:prod",
         "schema-dts": "catalog:prod",
         "ts-japi": "catalog:prod",
-        "type-fest": "catalog:dev",
         "yaml": "catalog:prod",
         "zod-to-ts": "^1.2.0"
     },
     "devDependencies": {
+        "type-fest": "catalog:dev",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -205,7 +205,7 @@
         "@types/react-dom": "catalog:types",
         "@types/swagger-ui-react": "^4.18.3",
         "@types/webpack": "catalog:types",
-        "@visulima/crud": "3.0.0-alpha.9",
+        "@visulima/crud": "3.0.0-alpha.14",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
@@ -253,7 +253,7 @@
     "peerDependencies": {
         "@hapi/hapi": "catalog:peer",
         "@koa/router": "catalog:backend",
-        "@visulima/crud": "3.0.0-alpha.9",
+        "@visulima/crud": "3.0.0-alpha.14",
         "chalk": "catalog:peer",
         "commander": "catalog:peer",
         "cors": "catalog:peer",
@@ -326,7 +326,6 @@
             "optional": true
         }
     },
-    "optionalDependencies": {},
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
     },
@@ -338,15 +337,5 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "sources": [
-        "src/index-browser.tsx",
-        "src/index-server.ts",
-        "src/framework/cli/index.ts",
-        "src/framework/cli/commander/index.ts",
-        "src/framework/next/index-browser.tsx",
-        "src/framework/next/index-server.ts",
-        "src/framework/next/routes/pages/swagger/index.tsx",
-        "src/framework/next/routes/pages/redoc/index.tsx"
-    ]
+    }
 }

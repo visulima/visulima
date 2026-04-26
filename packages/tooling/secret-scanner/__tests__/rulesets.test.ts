@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { listRules, scanString } from "../src";
+
+// Warm the Rust regex JIT (full bundled ruleset) once so tests don't timeout.
+beforeAll(async () => {
+    await scanString("warmup", "warmup.txt");
+}, 120_000);
 
 const AWS_ACCESS_KEY_NOT_EXAMPLE = "AKIAQYLPMN5HJ38DNCZG";
 const AWS_EXAMPLE_PLACEHOLDER = "AKIAIOSFODNN7EXAMPLE";

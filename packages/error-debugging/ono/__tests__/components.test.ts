@@ -17,9 +17,9 @@ describe("components", () => {
                 targetId: "test-target",
             });
 
-            expect(html).toContain('type="button"');
-            expect(html).toContain('aria-label="Copy text"');
-            expect(html).toContain('data-target="#test-target"');
+            expect(html).toContain("type=\"button\"");
+            expect(html).toContain("aria-label=\"Copy text\"");
+            expect(html).toContain("data-target=\"#test-target\"");
             expect(html).toContain("Copy text");
         });
 
@@ -33,13 +33,13 @@ describe("components", () => {
                 targetId: "test-target",
             });
 
-            expect(html).toContain('class="ono-dropdown relative inline-block"');
-            expect(html).toContain('class="ono-dropdown-toggle');
+            expect(html).toContain("class=\"ono-dropdown relative inline-block\"");
+            expect(html).toContain("class=\"ono-dropdown-toggle");
             expect(html).toContain(
-                'class="ono-dropdown-menu absolute z-20 top-full left-0 mt-1 min-w-52 p-1 bg-[var(--ono-surface)] border border-[var(--ono-border)] text-sm text-[var(--ono-text)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-2)] [&.ono-dropdown-open]:block"',
+                "class=\"ono-dropdown-menu absolute z-20 top-full left-0 mt-1 min-w-52 p-1 bg-[var(--ono-surface)] border border-[var(--ono-border)] text-sm text-[var(--ono-text)] rounded-[var(--ono-radius-md)] shadow-[var(--ono-elevation-2)] [&.ono-dropdown-open]:block\"",
             );
-            expect(html).toContain('data-target="#test-target"');
-            expect(html).toContain('data-text="This is the fix text"');
+            expect(html).toContain("data-target=\"#test-target\"");
+            expect(html).toContain("data-text=\"This is the fix text\"");
             expect(html).toContain("Copy fix");
         });
 
@@ -52,7 +52,7 @@ describe("components", () => {
                 targetId: "target",
             });
 
-            expect(html).toContain('data-success-text="Done!"');
+            expect(html).toContain("data-success-text=\"Done!\"");
         });
 
         it("should use default values when not provided", () => {
@@ -62,8 +62,8 @@ describe("components", () => {
                 targetId: "target",
             });
 
-            expect(html).toContain('aria-label="Copy"');
-            expect(html).toContain('data-success-text="Copied!"');
+            expect(html).toContain("aria-label=\"Copy\"");
+            expect(html).toContain("data-success-text=\"Copied!\"");
         });
     });
 
@@ -79,7 +79,7 @@ describe("components", () => {
             });
 
             expect(html).toContain("ono-dropdown");
-            expect(html).toContain('data-target="#test-target"');
+            expect(html).toContain("data-target=\"#test-target\"");
             expect(html).toContain("Copy");
             expect(html).toContain("Copy with AI prompt");
         });
@@ -94,7 +94,7 @@ describe("components", () => {
                 targetId: "target",
             });
 
-            expect(html).toContain('data-text="Custom AI prompt"');
+            expect(html).toContain("data-text=\"Custom AI prompt\"");
         });
     });
 
@@ -109,11 +109,11 @@ describe("components", () => {
 
             const { html } = headerTabs(tabs);
 
-            expect(html).toContain('role="tablist"');
-            expect(html).toContain('data-ono-tab="#ono-section-stack"');
-            expect(html).toContain('data-ono-tab="#ono-section-context"');
-            expect(html).toContain('aria-selected="true"');
-            expect(html).toContain('aria-selected="false"');
+            expect(html).toContain("role=\"tablist\"");
+            expect(html).toContain("data-ono-tab=\"#ono-section-stack\"");
+            expect(html).toContain("data-ono-tab=\"#ono-section-context\"");
+            expect(html).toContain("aria-selected=\"true\"");
+            expect(html).toContain("aria-selected=\"false\"");
         });
 
         it("should handle custom icons", () => {
@@ -178,10 +178,10 @@ describe("components", () => {
 
             const { html, script } = shortcutsButton();
 
-            expect(html).toContain('type="button"');
-            expect(html).toContain('aria-label="Open keyboard shortcuts"');
-            expect(html).toContain('data-ono-action="open-shortcuts-modal"');
-            expect(html).toContain('role="dialog"');
+            expect(html).toContain("type=\"button\"");
+            expect(html).toContain("aria-label=\"Open keyboard shortcuts\"");
+            expect(html).toContain("data-ono-action=\"open-shortcuts-modal\"");
+            expect(html).toContain("role=\"dialog\"");
             expect(script).toContain("bindShortcutsModal");
         });
     });
@@ -194,7 +194,7 @@ describe("components", () => {
                 message: "This is a helpful tip",
             });
 
-            expect(html).toContain('title="This is a helpful tip"');
+            expect(html).toContain("title=\"This is a helpful tip\"");
             expect(html).toContain("cursor-help");
         });
 
@@ -210,7 +210,7 @@ describe("components", () => {
             expect.assertions(1);
 
             const html = tooltip({
-                message: 'Tip with <script>alert("xss")</script>',
+                message: "Tip with <script>alert(\"xss\")</script>",
             });
 
             expect(html).not.toContain("<script>");

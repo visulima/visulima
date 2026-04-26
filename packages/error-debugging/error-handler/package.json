@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error-handler",
-    "version": "2.0.0-alpha.11",
+    "version": "2.0.0-alpha.12",
     "description": "Error handlers for use in development and production environments.",
     "keywords": [
         "visulima",
@@ -151,8 +151,8 @@
     },
     "dependencies": {
         "@tinyhttp/accepts": "catalog:prod",
-        "@visulima/boxen": "3.0.0-alpha.9",
-        "@visulima/error": "6.0.0-alpha.8",
+        "@visulima/boxen": "3.0.0-alpha.10",
+        "@visulima/error": "6.0.0-alpha.13",
         "http-errors": "catalog:prod",
         "http-status-codes": "catalog:prod",
         "jstoxml": "catalog:prod",

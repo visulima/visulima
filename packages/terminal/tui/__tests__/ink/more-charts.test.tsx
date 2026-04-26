@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { createBrailleGrid } from "../../src/ink/canvas/braille";
 import { createCanvasBuffer } from "../../src/ink/canvas/buffer";
@@ -92,7 +92,7 @@ describe(LineChart, () => {
 
         const output = renderToString(<LineChart series={[]} showLegend={false} />);
 
-        expect(typeof output).toBe("string");
+        expectTypeOf(output).toBeString();
     });
 });
 

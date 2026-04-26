@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "1.0.0-alpha.13",
+    "version": "1.0.0-alpha.16",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "visulima",
@@ -280,7 +280,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "1.0.0-alpha.12",
+        "@visulima/disposable-email-domains": "1.0.0-alpha.13",
         "html-to-text": "catalog:prod",
         "ical-generator": "catalog:prod",
         "lru-cache": "catalog:prod",
@@ -300,10 +300,10 @@
         "@types/mjml": "catalog:types",
         "@types/node": "catalog:types",
         "@types/nodemailer": "catalog:types",
-        "@visulima/error": "6.0.0-alpha.8",
-        "@visulima/fs": "5.0.0-alpha.7",
+        "@visulima/error": "6.0.0-alpha.13",
+        "@visulima/fs": "5.0.0-alpha.12",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.8",
+        "@visulima/path": "3.0.0-alpha.10",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@vue-email/render": "catalog:frontend",

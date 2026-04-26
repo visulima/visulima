@@ -1,3 +1,18 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.12...@visulima/disposable-email-domains@1.0.0-alpha.13) (2026-04-22)
+
+### Bug Fixes
+
+* **disposable-email-domains:** resolve eslint and formatting issues ([f419276](https://github.com/visulima/visulima/commit/f419276bc4f6bdc01fa35dfb035c438e343be7e2))
+* **disposable-email-domains:** update README ([af4f517](https://github.com/visulima/visulima/commit/af4f51762a6ea74e7f9c6c368d112ba325516e45))
+* **email:** resolve eslint issues and format code ([8fd689c](https://github.com/visulima/visulima/commit/8fd689c12e9c21f7222597bbf99a6fe431b5f0d4))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **disposable-email-domains:** apply pending changes ([18080ea](https://github.com/visulima/visulima/commit/18080ea18ca93b3a455543a84fd1baa618009473))
+* **disposable-email-domains:** enforce curly braces and apply lint fixes ([76010b3](https://github.com/visulima/visulima/commit/76010b362d980fa9e324f592cda5d6314197bc67))
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.11...@visulima/disposable-email-domains@1.0.0-alpha.12) (2026-04-08)
 
 ### Bug Fixes

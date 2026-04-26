@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/content-safety",
-    "version": "1.0.0-alpha.6",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

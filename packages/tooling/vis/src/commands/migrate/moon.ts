@@ -182,13 +182,7 @@ const findMoonTemplates = (workspaceRoot: string): string[] => {
  * Skips when the target already exists; logs each decision via
  * `report.manualSteps` so the user can review.
  */
-const copyMoonTemplatesToVis = (
-    workspaceRoot: string,
-    names: string[],
-    dryRun: boolean,
-    logger: MigrateLogger,
-    report: MigrationReport,
-): void => {
+const copyMoonTemplatesToVis = (workspaceRoot: string, names: string[], dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
     const moonRoot = join(workspaceRoot, ".moon", "templates");
     const visRoot = join(workspaceRoot, ".vis", "templates");
 

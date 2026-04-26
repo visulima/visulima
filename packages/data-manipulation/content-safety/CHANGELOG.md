@@ -1,3 +1,28 @@
+## @visulima/content-safety [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.7...@visulima/content-safety@1.0.0-alpha.8) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+## @visulima/content-safety [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.6...@visulima/content-safety@1.0.0-alpha.7) (2026-04-21)
+
+### Performance Improvements
+
+* **content-safety:** replace regex matching with set-based word lookup ([9b39449](https://github.com/visulima/visulima/commit/9b394494ea8f6387ad6ce8bb70a2365da369fe2b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Tests
+
+* **content-safety:** warm regex groups in beforeAll to avoid 20s timeout ([f361422](https://github.com/visulima/visulima/commit/f3614227959e8eab4a6eae9e1b8257914bc3d4c1))
+
 ## @visulima/content-safety [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.5...@visulima/content-safety@1.0.0-alpha.6) (2026-04-15)
 
 ### Bug Fixes

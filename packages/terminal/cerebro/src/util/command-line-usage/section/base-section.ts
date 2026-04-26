@@ -1,6 +1,8 @@
 import os from "node:os";
 
-import { bold } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { bold } = colorize;
 
 class BaseSection {
     protected lines: string[];

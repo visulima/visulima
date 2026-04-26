@@ -38,12 +38,7 @@
         ],
         "@semantic-release/changelog",
         "@anolilab/semantic-release-clean-package-json",
-        [
-            "@semantic-release/exec",
-            {
-                "prepareCmd": "node ../../../scripts/publish-native-addons.mjs ${nextRelease.version}"
-            }
-        ],
+        "../../../scripts/semantic-release-native-addons.mjs",
         "@anolilab/semantic-release-pnpm",
         [
             "@semantic-release/git",

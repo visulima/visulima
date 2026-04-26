@@ -13,8 +13,8 @@ type EnvTypeConstructor<T> = (value: string | undefined) => T extends (infer R)[
 
 type MultiplePropertyOptions<T> = T extends ReadonlyArray<unknown> ? { lazyMultiple: true } | { multiple: true } : unknown;
 
-export type OptionDefinition<T> = MultiplePropertyOptions<T> &
-    Omit<BaseOptionDefinition, "type|defaultValue"> & {
+export type OptionDefinition<T> = MultiplePropertyOptions<T>
+    & Omit<BaseOptionDefinition, "type|defaultValue"> & {
         // @internal
         __camelCaseName__?: string;
 
@@ -52,14 +52,14 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T> &
         typeLabel?: string;
     };
 
-export type PossibleOptionDefinition<OD> =
-    | OD
-    | OptionDefinition<boolean[]>
-    | OptionDefinition<boolean>
-    | OptionDefinition<number[]>
-    | OptionDefinition<number>
-    | OptionDefinition<string[]>
-    | OptionDefinition<string>;
+export type PossibleOptionDefinition<OD>
+    = | OD
+        | OptionDefinition<boolean[]>
+        | OptionDefinition<boolean>
+        | OptionDefinition<number[]>
+        | OptionDefinition<number>
+        | OptionDefinition<string[]>
+        | OptionDefinition<string>;
 
 export type ArgumentDefinition<T = unknown> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
 

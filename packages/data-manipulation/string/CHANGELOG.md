@@ -1,3 +1,35 @@
+## @visulima/string [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.10...@visulima/string@3.0.0-alpha.11) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.10
+
+## @visulima/string [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.9...@visulima/string@3.0.0-alpha.10) (2026-04-21)
+
+### Bug Fixes
+
+* **data-manipulation:** resolve eslint and formatting issues ([3687b65](https://github.com/visulima/visulima/commit/3687b65d804abe316fad8c3a02ec659bf303332e))
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **string:** cast string result to branded case types ([295e613](https://github.com/visulima/visulima/commit/295e613abfe301ba8e1dc308f5a519bb58d22aff))
+* **string:** resolve eslint and formatting issues ([1903c05](https://github.com/visulima/visulima/commit/1903c0531bd481e19488ad4aa7a186a95c181f15))
+* **string:** resolve eslint and formatting issues ([c706cfb](https://github.com/visulima/visulima/commit/c706cfb0ebb8a21f287018d393b28f0aa4922601))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **string:** apply pending changes ([1d19db3](https://github.com/visulima/visulima/commit/1d19db3db45d060f22028692e677c935e8a36a2e))
+* **string:** apply pending lint and source updates ([25b371c](https://github.com/visulima/visulima/commit/25b371c5026b200c87f88f7b424b6d8bd53f901a))
+
 ## @visulima/string [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.8...@visulima/string@3.0.0-alpha.9) (2026-04-08)
 
 ### Features

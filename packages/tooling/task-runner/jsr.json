@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/task-runner",
-    "version": "1.0.0-alpha.5",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

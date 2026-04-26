@@ -1,3 +1,29 @@
+## @visulima/source-map [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.8...@visulima/source-map@3.0.0-alpha.9) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.10
+
+## @visulima/source-map [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.7...@visulima/source-map@3.0.0-alpha.8) (2026-04-21)
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
 ## @visulima/source-map [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.6...@visulima/source-map@3.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes

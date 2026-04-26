@@ -94,7 +94,7 @@ export const identifyActiveStickyNodes = (
         }
 
         const stickyNodeTop = getRelativeTop(stickyChild, node) ?? 0;
-        const stickyNodeHeight = stickyChild.yogaNode.getComputedHeight();
+        const stickyNodeHeight = Math.round(stickyChild.yogaNode.getComputedHeight());
         const stickyNodeBottom = stickyNodeTop + stickyNodeHeight;
 
         const parent = stickyChild.parentNode;
@@ -103,7 +103,7 @@ export const identifyActiveStickyNodes = (
 
         if (parent?.yogaNode) {
             parentTop = getRelativeTop(parent, node) ?? 0;
-            parentHeight = parent.yogaNode.getComputedHeight();
+            parentHeight = Math.round(parent.yogaNode.getComputedHeight());
         }
 
         // A top-sticky node is active when it has scrolled above the viewport
@@ -208,7 +208,7 @@ export const renderActiveStickyNodes = (
         }
 
         const stickyNodeTop = getRelativeTop(stickyNode, node) ?? 0;
-        const stickyNodeHeight = stickyNode.yogaNode.getComputedHeight();
+        const stickyNodeHeight = Math.round(stickyNode.yogaNode.getComputedHeight());
         const stickyOffsetX = x + (getRelativeLeft(stickyNode, node) ?? 0);
 
         const parent = stickyNode.parentNode;
@@ -217,7 +217,7 @@ export const renderActiveStickyNodes = (
 
         if (parent?.yogaNode) {
             parentTop = getRelativeTop(parent, node) ?? 0;
-            parentHeight = parent.yogaNode.getComputedHeight();
+            parentHeight = Math.round(parent.yogaNode.getComputedHeight());
         }
 
         let finalStickyY: number;
@@ -248,7 +248,7 @@ export const renderActiveStickyNodes = (
             const stuckStickyY = y + currentBorderTop + currentClientHeight - stickyNodeHeight;
 
             if (nextStickyNodeInfo?.node?.yogaNode) {
-                const nextNodeHeight = nextStickyNodeInfo.node.yogaNode.getComputedHeight();
+                const nextNodeHeight = Math.round(nextStickyNodeInfo.node.yogaNode.getComputedHeight());
                 const nextNodeTop = getRelativeTop(nextStickyNodeInfo.node, node) ?? 0;
                 const nextNodeBottomInViewport = y - currentScrollTop + nextNodeTop + nextNodeHeight;
 
@@ -263,12 +263,12 @@ export const renderActiveStickyNodes = (
         // Render the sticky node into a temporary output to capture its content
         const stickyOutput = createOutput({
             height: stickyNodeHeight,
-            width: stickyNode.yogaNode.getComputedWidth(),
+            width: Math.round(stickyNode.yogaNode.getComputedWidth()),
         });
 
         renderNodeToOutput(stickyNode, stickyOutput, {
-            offsetX: -stickyNode.yogaNode.getComputedLeft(),
-            offsetY: -stickyNode.yogaNode.getComputedTop(),
+            offsetX: -Math.round(stickyNode.yogaNode.getComputedLeft()),
+            offsetY: -Math.round(stickyNode.yogaNode.getComputedTop()),
             skipStaticElements,
             transformers: newTransformers,
         });

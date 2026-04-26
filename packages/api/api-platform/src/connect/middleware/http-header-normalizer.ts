@@ -69,7 +69,7 @@ const httpHeaderNormalizerMiddleware = (options_?: {
 }): (request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void> => {
     const options = { ...defaults, ...options_ };
 
-    return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler) => {
+    return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler): Promise<void> => {
         const rawHeaders: IncomingHttpHeaders = {};
         const headers: IncomingHttpHeaders = {};
 
@@ -88,7 +88,7 @@ const httpHeaderNormalizerMiddleware = (options_?: {
         // @ts-expect-error - `rawHeaders` is not a property of `Request`
         request.rawHeaders = rawHeaders;
 
-        return next();
+        await next();
     };
 };
 

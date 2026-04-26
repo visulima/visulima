@@ -1,6 +1,8 @@
 import { stderr, stdout } from "node:process";
 
-import colorize, { bgGrey, cyan, green, greenBright, grey, red, underline, white } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { bgGrey, cyan, green, greenBright, grey, red, underline, white } = colorize;
 import type { RenderErrorOptions } from "@visulima/error/error";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { renderError } from "@visulima/error/error";
@@ -78,7 +80,6 @@ export class PrettyReporter<T extends string = string, L extends string = string
      * @param options Configuration options for styling, error rendering, and object inspection
      */
     public constructor(options: Partial<PrettyReporterOptions> = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- type resolution issue with Options from @visulima/inspector
         const { error: errorOptions, inspect: inspectOptions, ...rest }: Partial<PrettyReporterOptions> = options;
 
         super({
@@ -89,7 +90,6 @@ export class PrettyReporter<T extends string = string, L extends string = string
             ...rest,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- inspectOptions has type resolution issues
         this.#inspectOptions = { ...defaultInspectorConfig, ...inspectOptions };
         this.#errorOptions = {
             ...errorOptions,
@@ -230,12 +230,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
             const formattedMessage: string = typeof message === "string" ? message : inspect(message, this.#inspectOptions);
 
             items.push(
-                groupSpaces +
-                    wordWrap(formattedMessage, {
-                        trim: false,
-                        width: size - 3,
-                        wrapMode: WrapMode.STRICT_WIDTH,
-                    }),
+                groupSpaces
+                + wordWrap(formattedMessage, {
+                    trim: false,
+                    width: size - 3,
+                    wrapMode: WrapMode.STRICT_WIDTH,
+                }),
             );
         }
 

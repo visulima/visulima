@@ -168,21 +168,24 @@ export default class Output {
     constructor(options: Options) {
         const { caches, height, width } = options;
 
-        this.width = width;
-        this.height = height;
+        this.width = Math.round(width);
+        this.height = Math.round(height);
         this.caches = caches ?? new OutputCaches();
-        this.grid = this.createGrid(width, height);
+        this.grid = this.createGrid(this.width, this.height);
     }
 
     reset(width: number, height: number): void {
-        this.width = width;
-        this.height = height;
+        this.width = Math.round(width);
+        this.height = Math.round(height);
         this.clipStack.length = 0;
-        this.grid = this.createGrid(width, height);
+        this.grid = this.createGrid(this.width, this.height);
     }
 
     startChildRegion(absX: number, absY: number, width: number, height: number): void {
-        this.clipStack.push({ x1: absX, x2: absX + width, y1: absY, y2: absY + height });
+        const x1 = Math.round(absX);
+        const y1 = Math.round(absY);
+
+        this.clipStack.push({ x1, x2: x1 + Math.round(width), y1, y2: y1 + Math.round(height) });
     }
 
     endChildRegion(): void {

@@ -3,7 +3,6 @@ import { dirname } from "node:path";
 import { exit } from "node:process";
 
 import { collect } from "@visulima/fs";
-import type { Compiler } from "webpack";
 
 import { DEFAULT_EXCLUDE } from "../constants";
 import type { BaseDefinition } from "../exported";
@@ -12,6 +11,12 @@ import parseFile from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
 import validate from "../validate";
+
+// webpack uses `export = exports` CJS-namespace types (webpack/types.d.ts), which
+// rollup-plugin-dts can't trace at bundle time. Using an inline type reference
+// keeps the import out of the module-level import graph for dts generation.
+
+type WebpackCompiler = import("webpack").Compiler;
 
 const errorHandler = (error: any) => {
     if (error) {
@@ -49,7 +54,7 @@ class SwaggerCompilerPlugin {
         this.ignore = options.ignore ?? [];
     }
 
-    public apply(compiler: Compiler): void {
+    public apply(compiler: WebpackCompiler): void {
         const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...this.ignore]);
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises

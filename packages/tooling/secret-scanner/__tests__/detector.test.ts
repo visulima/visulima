@@ -1,11 +1,16 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { scan, scanString } from "../src/index";
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+// Warm the Rust regex JIT (full bundled ruleset) once so tests don't timeout.
+beforeAll(async () => {
+    await scanString("warmup", "warmup.txt");
+}, 120_000);
 
 describe("detector (integration)", () => {
     it("scans the fixture directory and reports findings", async () => {

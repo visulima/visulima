@@ -1,3 +1,43 @@
+## @visulima/pail [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.10...@visulima/pail@4.0.0-alpha.11) (2026-04-22)
+
+### ⚠ BREAKING CHANGES
+
+* **pail:** Removed createSpinner(), createMultiSpinner(),
+createProgressBar(), createMultiProgressBar() methods and the
+./spinner, ./progress-bar, ./interactive exports. Use the standalone
+packages @visulima/spinner, @visulima/progress-bar, and
+@visulima/interactive-manager instead. See MIGRATION-GUIDE.md for
+details.
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+
+### Features
+
+* **pail:** remove spinner, progress-bar, and interactive from pail ([b600f82](https://github.com/visulima/visulima/commit/b600f82876330d55ba98c090b3cf37745ee1e5ed))
+
+### Bug Fixes
+
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* fixed package version ([710e732](https://github.com/visulima/visulima/commit/710e73235b82699c511cfcc2482c491c767b2376))
+* **pail, boxen:** resolve eslint unsafe type issues ([d6e852e](https://github.com/visulima/visulima/commit/d6e852e63f4572a12c31ac44a4ae687c743cf7db))
+* **pail:** disable noUncheckedIndexedAccess and fix middleware return types ([0e94d32](https://github.com/visulima/visulima/commit/0e94d32a6315008e17633374c6e916bc625bc617))
+* **pail:** resolve eslint and formatting issues ([3697233](https://github.com/visulima/visulima/commit/3697233aecdeac382774e5c00a0ad0e8e83b2397))
+* **pail:** resolve eslint issues with terminal-size and interactive-manager ([0776deb](https://github.com/visulima/visulima/commit/0776debc2c2031cb1c13c1958a3188cecae60e8e))
+* **pail:** resolve typescript-eslint strict lint errors ([a0e6b1f](https://github.com/visulima/visulima/commit/a0e6b1f3ce6518450488d4c5385333534cd22b71))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **pail:** apply formatter and lint fixes ([73e4e1f](https://github.com/visulima/visulima/commit/73e4e1fbdf4c7541fb6fa6419dfe43f0c6225ac9))
+* **pail:** apply formatter and lint fixes ([367292b](https://github.com/visulima/visulima/commit/367292bb3bf0effc94ec9828a85e926e84acd1f9))
+* **pail:** apply pending changes ([e777058](https://github.com/visulima/visulima/commit/e7770582a222e586bf3f84d2c10989a26e95451d))
+* **pail:** apply pending lint and source updates ([e71aa5b](https://github.com/visulima/visulima/commit/e71aa5b970e596a5b3099825d0007a9bf63425f8))
+* **pail:** apply pending lint and source updates ([4c0069a](https://github.com/visulima/visulima/commit/4c0069aac50254a3329bf7f5627a9fd807f5fbca))
+* **pail:** enforce curly braces and apply lint fixes ([08945a9](https://github.com/visulima/visulima/commit/08945a91e090abf6ccd5e687525ed791abb2f5c7))
+
 ## @visulima/pail [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.9...@visulima/pail@4.0.0-alpha.10) (2026-04-08)
 
 ### Features

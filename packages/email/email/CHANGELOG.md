@@ -1,3 +1,33 @@
+## @visulima/email [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.15...@visulima/email@1.0.0-alpha.16) (2026-04-22)
+
+## @visulima/email [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.14...@visulima/email@1.0.0-alpha.15) (2026-04-22)
+
+## @visulima/email [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.13...@visulima/email@1.0.0-alpha.14) (2026-04-22)
+
+### Bug Fixes
+
+* **email:** resolve eslint and formatting issues ([50c6fb1](https://github.com/visulima/visulima/commit/50c6fb14a6f72e40d168fcb57908fa9489417e9a))
+* **email:** resolve eslint and formatting issues ([ad82020](https://github.com/visulima/visulima/commit/ad82020ded7fffdbba89b6befd2522a908cffe81))
+* **email:** resolve eslint issues and format code ([8fd689c](https://github.com/visulima/visulima/commit/8fd689c12e9c21f7222597bbf99a6fe431b5f0d4))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **email:** apply formatter and lint fixes across providers ([addf346](https://github.com/visulima/visulima/commit/addf346653b0400de7a944b1d5573efc9654fe30))
+* **email:** apply pending changes ([002c978](https://github.com/visulima/visulima/commit/002c9781033e9b2eae08257867b136dccdd11160))
+* **email:** enforce curly braces and apply lint fixes ([2d82544](https://github.com/visulima/visulima/commit/2d82544bd769eef2935565a4df2c0c98b2cb8262))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Code Refactoring
+
+* replace inline import() types with top-level imports ([4569a4c](https://github.com/visulima/visulima/commit/4569a4ca04723da069f985855dcfab292f7347e1))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.13
+
 ## @visulima/email [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.12...@visulima/email@1.0.0-alpha.13) (2026-04-08)
 
 ### Bug Fixes

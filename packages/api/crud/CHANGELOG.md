@@ -1,3 +1,55 @@
+## @visulima/crud [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.13...@visulima/crud@3.0.0-alpha.14) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.11
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.13
+
+## @visulima/crud [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.12...@visulima/crud@3.0.0-alpha.13) (2026-04-21)
+
+### Miscellaneous Chores
+
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.12
+
+## @visulima/crud [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.11...@visulima/crud@3.0.0-alpha.12) (2026-04-21)
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.11
+
+## @visulima/crud [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.10...@visulima/crud@3.0.0-alpha.11) (2026-04-21)
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **crud:** apply pending changes ([f109452](https://github.com/visulima/visulima/commit/f109452a3b00355f305835edf8a9e46dcac8d3c8))
+* **crud:** apply pending lint and source updates ([45ec62a](https://github.com/visulima/visulima/commit/45ec62a0fcfc6b20b810f7821b59a8ca2e814b6d))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+### Code Refactoring
+
+* **crud:** break handler <-> types circular imports ([#613](https://github.com/visulima/visulima/issues/613)) ([a3c7692](https://github.com/visulima/visulima/commit/a3c7692a5c47cb6ce2284cef7507f4fb992ad3a3))
+
+
+### Dependencies
+
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.10
+
 ## @visulima/crud [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.9...@visulima/crud@3.0.0-alpha.10) (2026-04-15)
 
 ### Bug Fixes

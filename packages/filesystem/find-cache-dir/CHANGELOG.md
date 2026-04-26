@@ -1,3 +1,39 @@
+## @visulima/find-cache-dir [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.8...@visulima/find-cache-dir@3.0.0-alpha.9) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.12
+* **@visulima/path:** upgraded to 3.0.0-alpha.10
+
+## @visulima/find-cache-dir [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.7...@visulima/find-cache-dir@3.0.0-alpha.8) (2026-04-21)
+
+### Bug Fixes
+
+* **filesystem:** resolve eslint issues in fs, path, and find-cache-dir ([59ad5e3](https://github.com/visulima/visulima/commit/59ad5e3051e92365eb8b1fdd73d4f4fd1f4bb547))
+* **find-cache-dir:** resolve eslint and formatting issues ([14f7c5e](https://github.com/visulima/visulima/commit/14f7c5e7db01f254cbceb050b4826cd59a68ff5c))
+* **find-cache-dir:** resolve eslint issues ([2bc4c56](https://github.com/visulima/visulima/commit/2bc4c565a9d6dd7ecd9b198cc1b6de76aa92bab3))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **find-cache-dir:** apply pending changes ([7bde581](https://github.com/visulima/visulima/commit/7bde5810a14c80e20ade3da69d33d06dd1057a86))
+* **find-cache-dir:** enforce curly braces and apply lint fixes ([81d8cc1](https://github.com/visulima/visulima/commit/81d8cc1ecbe95442d2919a15bc61e0d18d5a2ac4))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.9
+
 ## @visulima/find-cache-dir [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.6...@visulima/find-cache-dir@3.0.0-alpha.7) (2026-04-08)
 
 ### Bug Fixes

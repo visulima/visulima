@@ -1,6 +1,6 @@
 {
     "name": "@visulima/task-runner",
-    "version": "1.0.0-alpha.5",
+    "version": "1.0.0-alpha.7",
     "description": "A task runner with caching support for monorepo workspaces",
     "keywords": [
         "visulima",
@@ -73,8 +73,8 @@
     },
     "dependencies": {
         "@lydell/node-pty": "catalog:dev",
-        "@visulima/humanizer": "3.0.0-alpha.10",
-        "@visulima/path": "3.0.0-alpha.9"
+        "@visulima/humanizer": "3.0.0-alpha.11",
+        "@visulima/path": "3.0.0-alpha.10"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",

@@ -32,7 +32,7 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
  * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
  */
-class VercelBlobStorage extends BaseStorage {
+class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
 
     public override checksumTypes: string[] = ["md5"];

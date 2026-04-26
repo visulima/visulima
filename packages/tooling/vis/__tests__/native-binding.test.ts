@@ -12,7 +12,8 @@ describe("native-binding", () => {
             const result = loadNativeBindings();
 
             expect(result).toBeDefined();
-            expect(typeof result).toBe("object");
+
+            expectTypeOf(result).toBeObject();
         });
 
         it("should cache the result after the first attempt", async () => {

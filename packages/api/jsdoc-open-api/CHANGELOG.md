@@ -1,3 +1,57 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.10...@visulima/jsdoc-open-api@3.0.0-alpha.11) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.12
+
+## @visulima/jsdoc-open-api [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.9...@visulima/jsdoc-open-api@3.0.0-alpha.10) (2026-04-21)
+
+### Miscellaneous Chores
+
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.11
+
+## @visulima/jsdoc-open-api [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.8...@visulima/jsdoc-open-api@3.0.0-alpha.9) (2026-04-21)
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.10
+
+## @visulima/jsdoc-open-api [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.7...@visulima/jsdoc-open-api@3.0.0-alpha.8) (2026-04-21)
+
+### Bug Fixes
+
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* **jsdoc-open-api:** drop redundant String() conversion in init-command ([1b2384e](https://github.com/visulima/visulima/commit/1b2384e917687beaf464e18e24595c7d4214c94e))
+* **jsdoc-open-api:** relax type overrides for parser code, preserve JSON roundtrip for undefined stripping ([be896e2](https://github.com/visulima/visulima/commit/be896e2e724396bcb74fbbd3161d29213a9984d6))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **jsdoc-open-api:** apply formatter updates ([57231bd](https://github.com/visulima/visulima/commit/57231bd235fa16768802306aa6e906a4558c579c))
+* **jsdoc-open-api:** apply pending lint and source updates ([0669fd3](https://github.com/visulima/visulima/commit/0669fd3d46ad0787ef6709cc8cad67b7ff7495f7))
+* **jsdoc-open-api:** enforce curly braces and apply lint fixes ([606641f](https://github.com/visulima/visulima/commit/606641f7a29eaa5707ae27c57ed02a91adf950b5))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.9
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.6...@visulima/jsdoc-open-api@3.0.0-alpha.7) (2026-04-08)
 
 ### Miscellaneous Chores

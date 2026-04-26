@@ -84,7 +84,7 @@ To add a new package to the website: add `category:<slug>` tag to its `project.j
 `packages/tooling/task-runner/` has native NAPI bindings:
 - 8 platform-specific packages in `npm/` (darwin, linux, windows × x64, arm64)
 - Built by `.github/workflows/build-native.yml` (matrix across all targets)
-- Published via `publish-native-addons.mjs` during semantic-release `prepare` phase
+- Published via `scripts/semantic-release-native-addons.mjs` (local semantic-release plugin, runs in `verifyConditions` + `prepare`)
 - Platform packages are excluded from `multi-semantic-release` via `--ignore-packages`
 - `binding.js` handles runtime platform detection and fallback to JS implementations
 

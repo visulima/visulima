@@ -1,4 +1,6 @@
-import { cyan, green, inverse, yellow } from "@visulima/colorize";
+import colorize from "@visulima/colorize";
+
+const { cyan, green, inverse, yellow } = colorize;
 
 import defaultEnv from "../default-env";
 import type { Cli as ICli } from "../types/cli";
@@ -77,9 +79,9 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                          header: inverse.yellow(" Command Options "),
-                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                      }
+                        header: inverse.yellow(" Command Options "),
+                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                    }
                     : undefined,
                 { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {

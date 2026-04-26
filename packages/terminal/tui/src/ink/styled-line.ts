@@ -218,6 +218,12 @@ export class StyledLine {
 
         this.charData![index] = start | (isFullWidth ? FULL_WIDTH_FLAG : 0);
 
+        // Fast paths: style-already-matches (no-op) and merge-with-adjacent-span
+        // avoid the splitSpansAt + mergeSpans roundtrip when possible.
+        if (this.trySetStyleAtIndex(index, cleanFormatFlags, fgColor, bgColor, link)) {
+            return;
+        }
+
         this.splitSpansAt(index);
         this.splitSpansAt(index + 1);
 
@@ -288,16 +294,9 @@ export class StyledLine {
             this.charData![index] = start | (isFullWidth ? FULL_WIDTH_FLAG : 0);
         }
 
-        // Check if the style at this index already matches — if so, skip
-        // the expensive splitSpansAt + mergeSpans work entirely.
-        const existingSpan = this.getSpan(index);
-
-        if (
-            existingSpan?.formatFlags === cleanFormatFlags
-            && existingSpan.fgColor === fgColor
-            && existingSpan.bgColor === bgColor
-            && existingSpan.link === link
-        ) {
+        // Fast paths: style-already-matches (no-op) and merge-with-adjacent-span
+        // avoid the splitSpansAt + mergeSpans roundtrip when possible.
+        if (this.trySetStyleAtIndex(index, cleanFormatFlags, fgColor, bgColor, link)) {
             return;
         }
 
@@ -879,6 +878,84 @@ export class StyledLine {
 
             current += span.length;
         }
+    }
+
+    /**
+     * Try to apply a single-char style at `index` by matching or merging
+     * with an adjacent span, avoiding splitSpansAt + mergeSpans.
+     *
+     * Returns true if the style was applied (or was already correct),
+     * false if the caller must fall through to the split/update/merge path.
+     *
+     * Ported from jacob314/ink PR #123 (Google LLC, Apache-2.0).
+     */
+    private trySetStyleAtIndex(index: number, formatFlags: number, fgColor?: string, bgColor?: string, link?: string): boolean {
+        if (!this.spans) {
+            return false;
+        }
+
+        let currentOffset = 0;
+        let spanIndex = -1;
+        let span: StyleSpan | undefined;
+
+        for (let i = 0; i < this.spans.length; i++) {
+            const s = this.spans[i]!;
+
+            if (currentOffset <= index && currentOffset + s.length > index) {
+                spanIndex = i;
+                span = s;
+                break;
+            }
+
+            currentOffset += s.length;
+        }
+
+        if (!span) {
+            return false;
+        }
+
+        if (span.formatFlags === formatFlags && span.fgColor === fgColor && span.bgColor === bgColor && span.link === link) {
+            return true;
+        }
+
+        if (index === currentOffset && spanIndex > 0) {
+            const previousSpan = this.spans[spanIndex - 1]!;
+
+            if (
+                previousSpan.formatFlags === formatFlags
+                && previousSpan.fgColor === fgColor
+                && previousSpan.bgColor === bgColor
+                && previousSpan.link === link
+            ) {
+                previousSpan.length += 1;
+
+                if (span.length === 1) {
+                    this.spans.splice(spanIndex, 1);
+                } else {
+                    span.length -= 1;
+                }
+
+                return true;
+            }
+        }
+
+        if (index === currentOffset + span.length - 1 && spanIndex < this.spans.length - 1) {
+            const nextSpan = this.spans[spanIndex + 1]!;
+
+            if (nextSpan.formatFlags === formatFlags && nextSpan.fgColor === fgColor && nextSpan.bgColor === bgColor && nextSpan.link === link) {
+                nextSpan.length += 1;
+
+                if (span.length === 1) {
+                    this.spans.splice(spanIndex, 1);
+                } else {
+                    span.length -= 1;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private mergeSpans(): void {

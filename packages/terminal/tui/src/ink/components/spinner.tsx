@@ -26,8 +26,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { SpinnerName } from "cli-spinners";
-import spinners from "cli-spinners";
+import type { SpinnerName } from "@visulima/spinner";
+import { getSpinner } from "@visulima/spinner";
 import type { ReactElement } from "react";
 
 import useAnimation from "../hooks/use-animation";
@@ -36,7 +36,7 @@ import Text from "./text";
 export type Props = {
     /**
      * Type of a spinner.
-     * See [cli-spinners](https://github.com/sindresorhus/cli-spinners) for available spinners.
+     * Accepts any preset from `@visulima/spinner` (cli-spinners + custom frame sets).
      * @default "dots"
      */
     readonly type?: SpinnerName;
@@ -44,11 +44,9 @@ export type Props = {
 
 /**
  * Spinner component that renders an animated loading indicator.
- *
- * Uses spinners from [cli-spinners](https://github.com/sindresorhus/cli-spinners).
  */
 export default function Spinner({ type = "dots" }: Props): ReactElement {
-    const spinner = spinners[type];
+    const spinner = getSpinner(type);
     const { frame } = useAnimation({ interval: spinner.interval });
 
     return <Text>{spinner.frames[frame % spinner.frames.length]}</Text>;

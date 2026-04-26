@@ -176,9 +176,7 @@ const generate: Command = {
             if (input) {
                 wanted = input;
             } else if (options.noInteractive || !process.stdin.isTTY) {
-                throw new Error(
-                    "No template specified. Pass a template name (see `vis generate --list`) or run interactively in a terminal.",
-                );
+                throw new Error("No template specified. Pass a template name (see `vis generate --list`) or run interactively in a terminal.");
             } else {
                 wanted = await pickInteractive(discovered);
             }

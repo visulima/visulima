@@ -75,21 +75,18 @@ jobs:
                         - 'packages/tooling/secret-scanner/index.js'
                         - '.github/workflows/build-native.yml'
 
-    # Build all changed packages per target, test inline on native-runnable targets
+    # Build all changed packages per target, test inline on native-runnable targets.
+    # Always runs so that test.yml can download artifacts for every PR — caches
+    # prevent recompilation when native sources are unchanged.
     build:
         name: "Build native - ${{ matrix.settings.target }}"
         needs: "files-changed"
-        if: |
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            needs.files-changed.outputs.any-changed == 'true'
         strategy:
             fail-fast: false
             matrix:
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
-                      testable: true
                     - target: "aarch64-apple-darwin"
                       os: "macos-latest"
                       testable: true
@@ -178,7 +175,7 @@ jobs:
 
             # Setup Node.js/pnpm — needed for building AND for running vitest on testable targets
             - name: "Setup resources and environment"
-              if: "steps.need-build.outputs.any == 'true' || matrix.settings.testable"
+              if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:

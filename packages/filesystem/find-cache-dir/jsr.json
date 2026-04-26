@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/find-cache-dir",
-    "version": "3.0.0-alpha.7",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

@@ -11,8 +11,8 @@ export const onError
     = <Request extends IncomingMessage, Response extends ServerResponse>(
         errorHandlers: ErrorHandlers,
         showTrace: boolean,
-    ): (error: unknown, request: Request, response: Response) => Promise<void> =>
-        async (error: unknown, request: Request, response: Response): Promise<void> => {
+    ): (error: unknown, request: Request, response: Response, routes: Route<Nextable<FunctionLike>>[]) => Promise<Response | undefined> =>
+        async (error: unknown, request: Request, response: Response): Promise<Response | undefined> => {
             const apiFormat: string = request.headers.accept as string;
 
             let errorHandler: ErrorHandler = ProblemErrorHandler;
@@ -33,13 +33,15 @@ export const onError
             (error as Error & { expose: boolean }).expose = showTrace;
 
             errorHandler(error, request, response);
+
+            return undefined;
         };
 
 export const onNoMatch: <Request extends IncomingMessage, Response extends ServerResponse>(
     request: Request,
     response: Response,
     routes: Route<Nextable<FunctionLike>>[],
-) => ValueOrPromise<void> = async (request, response, routes) => {
+) => ValueOrPromise<Response | undefined> = async (request, response, routes) => {
     const uniqueMethods = [...new Set(routes.map((route) => route.method))].join(", ");
 
     response.setHeader("Allow", uniqueMethods);

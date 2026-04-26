@@ -1,3 +1,69 @@
+## @visulima/fs [5.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.11...@visulima/fs@5.0.0-alpha.12) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.10
+* **@visulima/error:** upgraded to 6.0.0-alpha.13
+
+## @visulima/fs [5.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.10...@visulima/fs@5.0.0-alpha.11) (2026-04-21)
+
+### Miscellaneous Chores
+
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.12
+
+## @visulima/fs [5.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.9...@visulima/fs@5.0.0-alpha.10) (2026-04-21)
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.11
+
+## @visulima/fs [5.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.8...@visulima/fs@5.0.0-alpha.9) (2026-04-21)
+
+### Features
+
+* **fs:** add glob, isGlob, globParent, match helpers ([f0f0a2f](https://github.com/visulima/visulima/commit/f0f0a2f6f834015ba5d9915b8afb4318910225c4)), closes [micromatch/picomatch#150](https://github.com/micromatch/picomatch/issues/150) [#188](https://github.com/visulima/visulima/issues/188) [#143](https://github.com/visulima/visulima/issues/143)
+* **fs:** add TOML, JSONC, JSON5, INI support with style preservation ([f07446c](https://github.com/visulima/visulima/commit/f07446c97c0b5c3a2bd05297abc7705379ad336f))
+
+### Bug Fixes
+
+* **fs:** disable isolated declarations to unblock Windows CI ([e510ddf](https://github.com/visulima/visulima/commit/e510ddfd18759dff63e33badeffb7623dbe5d570))
+* **fs:** drop undefined retry fields from rm options ([c937df3](https://github.com/visulima/visulima/commit/c937df37401f14a4b3a0fc8b26f4a779b3a1e26e))
+
+### Miscellaneous Chores
+
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **fs:** apply formatter and lint fixes ([6bd7a2d](https://github.com/visulima/visulima/commit/6bd7a2d6397e38caf12b2799c5f0cdd6933db64a))
+* **fs:** apply formatter and lint fixes ([f59a388](https://github.com/visulima/visulima/commit/f59a38866c232e832de00777486ed4a8f24129a9))
+* **fs:** apply pending changes ([91490a8](https://github.com/visulima/visulima/commit/91490a801d4821a97e3a45c44173090f7bc8b97f))
+* **fs:** apply pending lint and source updates ([9d1cf79](https://github.com/visulima/visulima/commit/9d1cf793f5ea2baa5efdc55faae0ddb6772678ad))
+* **fs:** enforce curly braces and apply lint fixes ([b77fb0b](https://github.com/visulima/visulima/commit/b77fb0b3915b05fc8e3937b2866a3e23c3e58f5b))
+* lock update ([4c82df0](https://github.com/visulima/visulima/commit/4c82df0f7df233b9da14cb6c8543cf15870a9008))
+
+### Continuous Integration
+
+* disable isolatedDeclarationTransformer ([d5845d8](https://github.com/visulima/visulima/commit/d5845d888012fbe20a020cb2c02ec57269356e56))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.10
+
 ## @visulima/fs [5.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.7...@visulima/fs@5.0.0-alpha.8) (2026-04-15)
 
 ### Bug Fixes

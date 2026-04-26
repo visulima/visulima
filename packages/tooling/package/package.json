@@ -1,6 +1,6 @@
 {
     "name": "@visulima/package",
-    "version": "5.0.0-alpha.7",
+    "version": "5.0.0-alpha.11",
     "description": "A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.",
     "keywords": [
         "anolilab",
@@ -118,14 +118,14 @@
     },
     "dependencies": {
         "@antfu/install-pkg": "catalog:prod",
-        "@visulima/fs": "5.0.0-alpha.7",
-        "@visulima/path": "3.0.0-alpha.8",
+        "@visulima/fs": "5.0.0-alpha.12",
+        "@visulima/path": "3.0.0-alpha.10",
         "json5": "catalog:prod",
         "normalize-package-data": "catalog:prod",
-        "type-fest": "catalog:prod",
         "yaml": "catalog:prod"
     },
     "devDependencies": {
+        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",

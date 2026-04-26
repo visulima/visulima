@@ -2,9 +2,18 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { inspectRuleset, listRules, scan, scanFiles } from "../src/index";
+import { inspectRuleset, listRules, scan, scanFiles, scanString } from "../src/index";
+
+// Warm the Rust regex JIT (full bundled ruleset) once so tests don't timeout.
+// Tests that merge custom configs (extendBundled + inline rules, tag selectors)
+// still trigger secondary compilations — the 30 s testTimeout covers those.
+beforeAll(async () => {
+    await scanString("warmup", "warmup.txt");
+}, 120_000);
+
+vi.setConfig({ testTimeout: 30_000 });
 
 let tmpDir: string;
 

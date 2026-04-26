@@ -15,6 +15,7 @@ import {
     createTextNode,
     emitLayoutListeners,
     insertBeforeNode,
+    markNodeAsDirty,
     removeChildNode,
     setAttribute,
     setStyle,
@@ -202,8 +203,14 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
             return;
         }
 
+        let shouldMarkDirty = Boolean(style);
+
         if (props) {
             for (const [key, value] of Object.entries(props)) {
+                if (key === "children") {
+                    continue;
+                }
+
                 if (key === "style") {
                     setStyle(node, value as Styles);
                     continue;
@@ -211,65 +218,75 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
                 if (key === "internal_transform") {
                     node.internal_transform = value as OutputTransformer;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "internal_cursor") {
                     node.internal_cursor = value as CursorMarker;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "internal_static") {
                     node.internal_static = true;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "sticky") {
                     node.internal_sticky = value as boolean | "top" | "bottom";
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "internalStickyAlternate") {
                     node.internal_stickyAlternate = value as boolean;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "opaque") {
                     node.internal_opaque = value as boolean;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "scrollbar") {
                     node.internal_scrollbar = value as boolean;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "internal_terminalCursorFocus") {
                     node.internal_terminalCursorFocus = value as boolean;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "internal_terminalCursorPosition") {
                     node.internal_terminalCursorPosition = value as number;
-                    continue;
-                }
-
-                if (key === "internal_static") {
-                    node.internal_static = true;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 if (key === "cachedRender") {
                     node.cachedRender = value as Region;
+                    shouldMarkDirty = true;
                     continue;
                 }
 
                 setAttribute(node, key, value as DOMNodeAttribute);
+                shouldMarkDirty = true;
             }
         }
 
         if (style && node.yogaNode) {
             applyStyles(node.yogaNode, style, (newProps["style"] as Styles | undefined) ?? {});
+        }
+
+        if (shouldMarkDirty) {
+            markNodeAsDirty(node);
         }
     },
     createInstance(originalType, newProps, rootNode, hostContext) {
@@ -399,6 +416,7 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     hideInstance(node) {
         node.internal_hidden = true;
         node.yogaNode?.setDisplay(Yoga.DISPLAY_NONE);
+        markNodeAsDirty(node);
     },
     hideTextInstance(node) {
         setTextNodeValue(node, "");
@@ -494,6 +512,7 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     unhideInstance(node) {
         node.internal_hidden = false;
         node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
+        markNodeAsDirty(node);
     },
     unhideTextInstance(node, text) {
         setTextNodeValue(node, text);

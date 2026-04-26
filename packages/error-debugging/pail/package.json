@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.0.0-alpha.10",
+    "version": "4.0.0-alpha.11",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -248,11 +248,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.0.0-alpha.8",
-        "@visulima/interactive-manager": "0.0.0",
-        "type-fest": "catalog:prod"
+        "@visulima/colorize": "2.0.0-alpha.10",
+        "@visulima/interactive-manager": "1.0.0-alpha.2"
     },
     "devDependencies": {
+        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -262,13 +262,13 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/ansi": "4.0.0-alpha.8",
-        "@visulima/error": "6.0.0-alpha.8",
-        "@visulima/fmt": "2.0.0-alpha.8",
-        "@visulima/inspector": "2.0.0-alpha.7",
+        "@visulima/ansi": "4.0.0-alpha.13",
+        "@visulima/error": "6.0.0-alpha.13",
+        "@visulima/fmt": "2.0.0-alpha.10",
+        "@visulima/inspector": "2.0.0-alpha.9",
         "@visulima/packem": "catalog:dev",
-        "@visulima/redact": "3.0.0-alpha.8",
-        "@visulima/string": "3.0.0-alpha.9",
+        "@visulima/redact": "3.0.0-alpha.10",
+        "@visulima/string": "3.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -288,7 +288,7 @@
     "peerDependencies": {
         "@opentelemetry/api": "catalog:peer",
         "@sveltejs/kit": ">=2.0",
-        "@visulima/redact": "3.0.0-alpha.8",
+        "@visulima/redact": "3.0.0-alpha.10",
         "elysia": ">=1.0",
         "express": ">=4.0",
         "fastify": ">=4.0",

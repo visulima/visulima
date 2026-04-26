@@ -1,6 +1,6 @@
 {
     "name": "@visulima/interactive-manager",
-    "version": "0.0.0",
+    "version": "1.0.0-alpha.2",
     "description": "Interactive terminal output manager for spinners, progress bars, and dynamic updates",
     "keywords": [
         "visulima",
@@ -73,9 +73,9 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/ansi": "4.0.0-alpha.8",
+        "@visulima/ansi": "4.0.0-alpha.13",
         "@visulima/packem": "catalog:dev",
-        "@visulima/string": "3.0.0-alpha.9",
+        "@visulima/string": "3.0.0-alpha.11",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
