@@ -102,6 +102,8 @@ describe("vis toolchain (command)", () => {
         expect.assertions(1);
 
         const originalWrite = process.stdout.write.bind(process.stdout);
+        const originalPath = process.env["PATH"];
+        const originalNvmDir = process.env["NVM_DIR"];
         let captured = "";
 
         process.stdout.write = ((chunk: string | Uint8Array): boolean => {
@@ -111,9 +113,26 @@ describe("vis toolchain (command)", () => {
         }) as never;
 
         try {
+            // Scope PATH to the empty workspace dir and clear NVM_DIR so
+            // host-installed managers (nvm, fnm, etc.) don't leak in.
+            process.env["PATH"] = workspaceRoot;
+            delete process.env["NVM_DIR"];
+
             await toolchainCommand.execute(makeToolbox(workspaceRoot, ["detect"]) as never);
         } finally {
             process.stdout.write = originalWrite;
+
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+
+            if (originalNvmDir === undefined) {
+                delete process.env["NVM_DIR"];
+            } else {
+                process.env["NVM_DIR"] = originalNvmDir;
+            }
         }
 
         // No managers, no config — primary should be "none".
