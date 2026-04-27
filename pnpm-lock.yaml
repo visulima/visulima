@@ -50,8 +50,8 @@ catalogs:
       specifier: 1.33.2
       version: 1.33.2
     '@netlify/vite-plugin-tanstack-start':
-      specifier: 1.3.7
-      version: 1.3.7
+      specifier: 1.3.8
+      version: 1.3.8
     '@optimize-lodash/rollup-plugin':
       specifier: 6.0.0
       version: 6.0.0
@@ -112,11 +112,11 @@ catalogs:
       version: 25.0.3
   dev:
     '@anolilab/semantic-release-pnpm':
-      specifier: ^8.1.2
-      version: 8.1.2
+      specifier: ^8.1.4
+      version: 8.1.4
     '@anolilab/semantic-release-preset':
-      specifier: ^13.4.3
-      version: 13.4.3
+      specifier: ^13.4.5
+      version: 13.4.5
     '@arethetypeswrong/cli':
       specifier: ^0.18.2
       version: 0.18.2
@@ -394,8 +394,8 @@ catalogs:
       specifier: ^2.6.1
       version: 2.6.1
     jsdom:
-      specifier: 29.0.2
-      version: 29.0.2
+      specifier: 29.1.0
+      version: 29.1.0
     json-schema:
       specifier: 0.4.0
       version: 0.4.0
@@ -436,8 +436,8 @@ catalogs:
       specifier: 1.1.0
       version: 1.1.0
     nodemailer:
-      specifier: 8.0.6
-      version: 8.0.6
+      specifier: 8.0.7
+      version: 8.0.7
     npm:
       specifier: 11.13.0
       version: 11.13.0
@@ -651,14 +651,14 @@ catalogs:
       specifier: 4.2.4
       version: 4.2.4
     '@tanstack/react-router':
-      specifier: 1.168.24
-      version: 1.168.24
+      specifier: 1.168.25
+      version: 1.168.25
     '@tanstack/react-router-devtools':
       specifier: 1.166.13
       version: 1.166.13
     '@tanstack/react-start':
-      specifier: 1.167.49
-      version: 1.167.49
+      specifier: 1.167.50
+      version: 1.167.50
     '@tanstack/react-virtual':
       specifier: 3.13.24
       version: 3.13.24
@@ -996,8 +996,8 @@ catalogs:
       specifier: 2.3.1
       version: 2.3.1
     '@tanstack/router-plugin':
-      specifier: 1.167.27
-      version: 1.167.27
+      specifier: 1.167.28
+      version: 1.167.28
     '@tinyhttp/accepts':
       specifier: ^2.3.0
       version: 2.3.0
@@ -1299,8 +1299,8 @@ catalogs:
       specifier: 3.0.260311-beta
       version: 3.0.260311-beta
     nodemailer:
-      specifier: 8.0.6
-      version: 8.0.6
+      specifier: 8.0.7
+      version: 8.0.7
     normalize-package-data:
       specifier: ^8.0.0
       version: 8.0.0
@@ -1338,8 +1338,8 @@ catalogs:
       specifier: ^4.0.5
       version: 4.0.5
     posthog-js:
-      specifier: 1.372.1
-      version: 1.372.1
+      specifier: 1.372.2
+      version: 1.372.2
     preact:
       specifier: ^10.29.1
       version: 10.29.1
@@ -1407,8 +1407,8 @@ catalogs:
       specifier: 2.3.1
       version: 2.3.1
     string-width:
-      specifier: 8.2.0
-      version: 8.2.0
+      specifier: 8.2.1
+      version: 8.2.1
     swagger-jsdoc:
       specifier: ^6.2.8
       version: 6.2.8
@@ -1910,7 +1910,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/storybook:
     dependencies:
@@ -2073,7 +2073,7 @@ importers:
         version: 1.4.1(@floating-ui/dom@1.7.6)(@tiptap/extensions@3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))(@tiptap/pm@3.22.3))(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(highlight.js@11.11.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3)
       '@fumadocs/mdx-remote':
         specifier: catalog:prod
-        version: 1.4.9(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(react@19.2.5)
+        version: 1.4.9(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(react@19.2.5)
       '@icons-pack/react-simple-icons':
         specifier: catalog:icons
         version: 13.13.0(react@19.2.5)
@@ -2097,13 +2097,13 @@ importers:
         version: 4.2.4(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       '@tanstack/react-virtual':
         specifier: catalog:frontend
         version: 3.13.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -2157,16 +2157,16 @@ importers:
         version: 3.3.3
       fumadocs-core:
         specifier: catalog:prod
-        version: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
+        version: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
       fumadocs-mdx:
         specifier: catalog:prod
-        version: 14.3.1(@types/mdast@4.0.4)(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 14.3.1(@types/mdast@4.0.4)(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       fumadocs-twoslash:
         specifier: catalog:prod
-        version: 3.2.0(408401ed713dda0b3d153ef6eace75cd)
+        version: 3.2.0(bf6d0d798e15ae60d0ce3b8ea6b7fe90)
       fumadocs-ui:
         specifier: catalog:frontend
-        version: 16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4)
+        version: 16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4)
       gray-matter:
         specifier: catalog:prod
         version: 4.0.3
@@ -2187,7 +2187,7 @@ importers:
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       posthog-js:
         specifier: catalog:prod
-        version: 1.372.1
+        version: 1.372.2
       radix-ui:
         specifier: catalog:frontend
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -2257,7 +2257,7 @@ importers:
         version: 1.1.0
       '@netlify/vite-plugin-tanstack-start':
         specifier: catalog:build
-        version: 1.3.7(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 1.3.8(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 12.3.1
@@ -2332,7 +2332,7 @@ importers:
         version: 0.3.1(@eslint/css@1.1.0)
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/api/api-platform:
     dependencies:
@@ -2387,10 +2387,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 4.2.3(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
@@ -2585,7 +2585,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       webpack:
         specifier: catalog:build
         version: 5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)
@@ -2644,10 +2644,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -2704,7 +2704,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       zod:
         specifier: catalog:utils
         version: 4.3.6
@@ -2732,10 +2732,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 4.2.3(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
@@ -2840,7 +2840,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/api/health-check:
     dependencies:
@@ -2862,10 +2862,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -2958,7 +2958,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/api/jsdoc-open-api:
     dependencies:
@@ -2986,10 +2986,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@types/cli-progress':
         specifier: catalog:types
         version: 3.11.6
@@ -3040,7 +3040,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     optionalDependencies:
       cli-progress:
         specifier: catalog:optional
@@ -3064,10 +3064,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3115,7 +3115,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/bytes:
     devDependencies:
@@ -3127,10 +3127,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3184,7 +3184,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/content-safety:
     devDependencies:
@@ -3193,10 +3193,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3247,7 +3247,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/deep-clone:
     devDependencies:
@@ -3259,10 +3259,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3292,7 +3292,7 @@ importers:
         version: 10.2.1(jiti@2.6.1)
       jsdom:
         specifier: catalog:dev
-        version: 29.0.2(@noble/hashes@1.8.0)
+        version: 29.1.0(@noble/hashes@1.8.0)
       prettier:
         specifier: catalog:lint
         version: 3.8.3
@@ -3313,7 +3313,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/deep-clone/__bench__:
     dependencies:
@@ -3362,7 +3362,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/html:
     dependencies:
@@ -3378,10 +3378,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3453,7 +3453,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/humanizer:
     devDependencies:
@@ -3465,10 +3465,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3525,7 +3525,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/humanizer/__fixtures__/package/cjs:
     dependencies:
@@ -3546,10 +3546,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3600,7 +3600,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/object:
     devDependencies:
@@ -3612,10 +3612,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3681,7 +3681,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/redact:
     dependencies:
@@ -3697,10 +3697,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3751,7 +3751,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/redact/__bench__:
     dependencies:
@@ -3776,7 +3776,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/redact/__fixtures__/package/mjs:
     dependencies:
@@ -3794,10 +3794,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -3878,7 +3878,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/data-manipulation/string/__bench__:
     dependencies:
@@ -3932,7 +3932,7 @@ importers:
         version: 2.3.1
       string-width:
         specifier: catalog:prod
-        version: 8.2.0
+        version: 8.2.1
       transliteration:
         specifier: catalog:prod
         version: 2.6.1
@@ -3941,7 +3941,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       wrap-ansi:
         specifier: catalog:prod
         version: 10.0.0
@@ -3953,10 +3953,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4013,7 +4013,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/email/email:
     dependencies:
@@ -4041,10 +4041,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4113,7 +4113,7 @@ importers:
         version: 5.1.0(relateurl@0.2.7)(svgo@4.0.1)(terser@5.46.1)(typescript@6.0.3)
       nodemailer:
         specifier: catalog:dev
-        version: 8.0.6
+        version: 8.0.7
       openapi-types:
         specifier: catalog:dev
         version: 12.1.3
@@ -4140,7 +4140,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/email/email/examples/nodemailer:
     dependencies:
@@ -4149,7 +4149,7 @@ importers:
         version: link:../..
       nodemailer:
         specifier: catalog:prod
-        version: 8.0.6
+        version: 8.0.7
     devDependencies:
       '@types/node':
         specifier: catalog:types
@@ -4196,10 +4196,10 @@ importers:
         version: 27.0.1(75e122e1e8bddd096f722e62bf55e751)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4280,7 +4280,7 @@ importers:
         version: 3.5.4(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)(zod@3.25.76)
       jsdom:
         specifier: catalog:dev
-        version: 29.0.2(@noble/hashes@1.8.0)
+        version: 29.1.0(@noble/hashes@1.8.0)
       lucide-static:
         specifier: catalog:icons
         version: 1.11.0
@@ -4313,7 +4313,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/dev-toolbar/examples/vite:
     devDependencies:
@@ -4525,13 +4525,13 @@ importers:
         version: 4.2.4(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/router-plugin':
         specifier: catalog:prod
-        version: 1.167.27(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.28(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       react:
         specifier: catalog:frontend
         version: 19.2.5
@@ -4571,13 +4571,13 @@ importers:
     dependencies:
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       react:
         specifier: catalog:frontend
         version: 19.2.5
@@ -4629,13 +4629,13 @@ importers:
     dependencies:
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       react:
         specifier: catalog:frontend
         version: 19.2.5
@@ -4705,10 +4705,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4765,7 +4765,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/error-handler:
     dependencies:
@@ -4796,10 +4796,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4856,7 +4856,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/error-handler/examples/cli:
     dependencies:
@@ -4901,10 +4901,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -4967,7 +4967,7 @@ importers:
         version: 1.1.1(typescript@6.0.3)
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       webdriverio:
         specifier: catalog:dev
         version: 9.27.0
@@ -4992,7 +4992,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/ono:
     dependencies:
@@ -5038,7 +5038,7 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5131,7 +5131,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/ono/examples/bun:
     dependencies:
@@ -5205,10 +5205,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5292,7 +5292,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/pail/__bench__:
     dependencies:
@@ -5335,7 +5335,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/pail/__fixtures__/package/mjs:
     dependencies:
@@ -5412,10 +5412,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5469,7 +5469,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/vite-overlay:
     dependencies:
@@ -5497,10 +5497,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -5608,7 +5608,7 @@ importers:
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/error-debugging/vite-overlay/examples/vite-preact:
     dependencies:
@@ -5863,13 +5863,13 @@ importers:
         version: 4.2.4(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/router-plugin':
         specifier: catalog:prod
-        version: 1.167.27(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.28(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       react:
         specifier: catalog:frontend
         version: 19.2.5
@@ -5900,7 +5900,7 @@ importers:
         version: 6.0.1(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.0)(@babel/runtime@7.29.2)(rolldown@1.0.0-rc.17)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(babel-plugin-react-compiler@19.1.0-rc.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
         specifier: catalog:dev
-        version: 29.0.2(@noble/hashes@1.8.0)
+        version: 29.1.0(@noble/hashes@1.8.0)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -5909,7 +5909,7 @@ importers:
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       web-vitals:
         specifier: catalog:dev
         version: 5.2.0
@@ -5918,13 +5918,13 @@ importers:
     dependencies:
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-router-devtools':
         specifier: catalog:frontend
-        version: 1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       react:
         specifier: catalog:frontend
         version: 19.2.5
@@ -6016,10 +6016,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6079,7 +6079,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/filesystem/fs:
     dependencies:
@@ -6095,10 +6095,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6200,7 +6200,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       yaml:
         specifier: catalog:dev
         version: 2.8.3
@@ -6246,7 +6246,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/filesystem/fs/__bench__/fixtures/a/b: {}
 
@@ -6274,10 +6274,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6328,7 +6328,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       zeptomatch:
         specifier: catalog:dev
         version: 2.1.0
@@ -6383,10 +6383,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6536,7 +6536,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/storage/storage-client:
     devDependencies:
@@ -6545,10 +6545,10 @@ importers:
         version: 27.0.1(60b7789f7358a90f9bc9efbf5933bd2c)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -6683,7 +6683,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vue:
         specifier: '>=3.5.30'
         version: 3.5.32(typescript@6.0.3)
@@ -6846,13 +6846,13 @@ importers:
     dependencies:
       '@tanstack/react-router':
         specifier: catalog:frontend
-        version: 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       '@tanstack/router-plugin':
         specifier: catalog:prod
-        version: 1.167.27(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+        version: 1.167.28(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -6892,7 +6892,7 @@ importers:
         version: 6.0.1(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.0)(@babel/runtime@7.29.2)(rolldown@1.0.0-rc.17)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(babel-plugin-react-compiler@19.1.0-rc.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
         specifier: catalog:dev
-        version: 29.0.2(@noble/hashes@1.8.0)
+        version: 29.1.0(@noble/hashes@1.8.0)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -6901,7 +6901,7 @@ importers:
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       web-vitals:
         specifier: catalog:dev
         version: 5.2.0
@@ -7444,10 +7444,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7516,7 +7516,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -7540,10 +7540,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7597,7 +7597,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/boxen/__bench__:
     devDependencies:
@@ -7609,7 +7609,7 @@ importers:
         version: 8.0.1
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/boxen/__fixtures__/package/cjs:
     dependencies:
@@ -7643,10 +7643,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -7721,7 +7721,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/cerebro/__bench__:
     dependencies:
@@ -7758,7 +7758,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/cerebro/__fixtures__/package/mjs:
     dependencies:
@@ -7833,10 +7833,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@rushstack/eslint-plugin-security':
         specifier: catalog:lint
         version: 0.14.2(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
@@ -7896,7 +7896,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/colorize/__bench__:
     dependencies:
@@ -8014,10 +8014,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8074,7 +8074,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/command-line-args/__bench__:
     dependencies:
@@ -8126,7 +8126,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/fmt:
     devDependencies:
@@ -8138,10 +8138,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8186,7 +8186,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/interactive-manager:
     devDependencies:
@@ -8195,10 +8195,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8258,7 +8258,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/is-ansi-color-supported:
     devDependencies:
@@ -8270,10 +8270,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8321,7 +8321,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/progress-bar:
     dependencies:
@@ -8334,10 +8334,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8388,7 +8388,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/spinner:
     dependencies:
@@ -8401,10 +8401,10 @@ importers:
         version: 27.0.1(624745a3b63bc894a9202e345d87f01d)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8458,7 +8458,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/tabular:
     devDependencies:
@@ -8470,10 +8470,10 @@ importers:
         version: 10.0.0(prettier@3.8.1)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8545,7 +8545,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/tabular/__bench__:
     devDependencies:
@@ -8566,7 +8566,7 @@ importers:
         version: 6.9.0
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/terminal/tui:
     dependencies:
@@ -8636,10 +8636,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8786,7 +8786,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     optionalDependencies:
       '@visulima/tui-binding-darwin-arm64':
         specifier: workspace:*
@@ -8839,10 +8839,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8890,7 +8890,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/tooling/package:
     dependencies:
@@ -8921,10 +8921,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -8999,7 +8999,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       yarn:
         specifier: catalog:dev
         version: 1.22.22
@@ -9030,10 +9030,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9099,7 +9099,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/tooling/secret-scanner:
     dependencies:
@@ -9115,10 +9115,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9208,7 +9208,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       yaml:
         specifier: catalog:dev
         version: 2.8.3
@@ -9274,10 +9274,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9337,7 +9337,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     optionalDependencies:
       '@visulima/task-runner-binding-darwin-arm64':
         specifier: workspace:*
@@ -9403,10 +9403,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9475,7 +9475,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/tooling/vis:
     dependencies:
@@ -9578,10 +9578,10 @@ importers:
         version: 10.0.0(prettier@3.8.3)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
-        version: 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+        version: 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@anolilab/semantic-release-preset':
         specifier: catalog:dev
-        version: 13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
+        version: 13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
@@ -9689,7 +9689,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     optionalDependencies:
       '@visulima/vis-binding-darwin-arm64':
         specifier: workspace:*
@@ -9775,12 +9775,15 @@ importers:
         version: 6.0.3
       vitest:
         specifier: catalog:test
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
 packages:
 
   '@actions/core@3.0.0':
     resolution: {integrity: sha512-zYt6cz+ivnTmiT/ksRVriMBOiuoUpDCJJlZ5KPl2/FRdvwU3f7MPh9qftvbkXJThragzUZieit2nyHUyw53Seg==}
+
+  '@actions/core@3.0.1':
+    resolution: {integrity: sha512-a6d/Nwahm9fliVGRhdhofo40HjHQasUPusmc7vBfyky+7Z+P2A1J68zyFVaNcEclc/Se+eO595oAr5nwEIoIUA==}
 
   '@actions/exec@3.0.0':
     resolution: {integrity: sha512-6xH/puSoNBXb72VPlZVm7vQ+svQpFyA96qdDBvhB8eNZOE8LtPf9L4oAsfzK/crCL8YZ+19fKYVnM63Sl+Xzlw==}
@@ -10013,20 +10016,20 @@ packages:
     resolution: {integrity: sha512-BfZIx+N9+orJVE/YlzqokSxrSN/QCwFxGxFBLIBuy3mfQk4Cu6+0xPGLLaX906/MWlqAWv2t/CIylF1NS89CBQ==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
-  '@anolilab/semantic-release-clean-package-json@5.5.0':
-    resolution: {integrity: sha512-xBCaHQ/P4KFD5e4uK/o7IY8uNzNf7cYbTP+LglmvIFCMv+eQD041r45BAtV5HYkkprsqmRlxGVQxiHoWshb2iA==}
+  '@anolilab/semantic-release-clean-package-json@5.5.2':
+    resolution: {integrity: sha512-sNcF73gDvSYSGSL8jkL1a5UnvM06dsX2tOeZ72UoeOnogwKlSP91OFNDMqb8fVxVxoa7xMRU4YBbH1i4JxEN3A==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
-  '@anolilab/semantic-release-pnpm@8.1.2':
-    resolution: {integrity: sha512-Jw2YiGwr7Xv5+tCu3/bkbwXxNAbLJ5H05He8TmWvdAYJpREmpiYqbT8SKLl3JcFfvEF64FZqOzRS08xaGVLKHg==}
+  '@anolilab/semantic-release-pnpm@8.1.4':
+    resolution: {integrity: sha512-0mEIJgbc62cgJ95I7+zYsjbrwAso5FFLgtMbcFI0XiznutlMRgD7mojs0yiIkXL0cgGrN1U48bW4PKOE1b+UzQ==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
-  '@anolilab/semantic-release-preset@13.4.3':
-    resolution: {integrity: sha512-+m12AlFtSjsD7uATdfA76WOIDxY3iBuBx8CCac5I7hp7VQIg4+r1/Or9L9PsYx4q/yApi93BP7wE9JzuJBuPjA==}
+  '@anolilab/semantic-release-preset@13.4.5':
+    resolution: {integrity: sha512-dkvf7d906z7sIUPytFq040eMwcgZmuE7nh2evsUWHV7b+tp+XcjqtpiuoFl7T7zfhKjg7b+/xIwrsnydtrhHow==}
     engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
     peerDependencies:
-      '@anolilab/semantic-release-pnpm': 8.1.2
+      '@anolilab/semantic-release-pnpm': 8.1.4
       '@semantic-release/npm': 13.1.5
       semantic-release: 25.0.3
       semantic-release-yarn: ^3.0.2
@@ -10088,8 +10091,20 @@ packages:
     resolution: {integrity: sha512-02OhhkKtgNRuicQ/nF3TRnGsxL9wp0r3Y7VlKWyOHHGmGyvXv03y+PnymU8FKFJMTjIr1Bk8U2g1HWSLrpAHww==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
+  '@asamuzakjp/css-color@5.1.11':
+    resolution: {integrity: sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+
   '@asamuzakjp/dom-selector@7.0.9':
     resolution: {integrity: sha512-r3ElRr7y8ucyN2KdICwGsmj19RoN13CLCa/pvGydghWK6ZzeKQ+TcDjVdtEZz2ElpndM5jXw//B9CEee0mWnVg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+
+  '@asamuzakjp/dom-selector@7.1.1':
+    resolution: {integrity: sha512-67RZDnYRc8H/8MLDgQCDE//zoqVFwajkepHZgmXrbwybzXOEwOWGPYGmALYl9J2DOLfFPPs6kKCqmbzV895hTQ==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+
+  '@asamuzakjp/generational-cache@1.0.1':
+    resolution: {integrity: sha512-wajfB8KqzMCN2KGNFdLkReeHncd0AslUSrvHVvvYWuU8ghncRJoA50kT3zP9MVL0+9g4/67H+cdvBskj9THPzg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   '@asamuzakjp/nwsapi@2.3.9':
@@ -13324,16 +13339,16 @@ packages:
     engines: {node: '>=18.14.0'}
     hasBin: true
 
-  '@netlify/database-dev@0.10.0':
-    resolution: {integrity: sha512-kdootHVxNsIZK8B6p2pAeIXs1VsVOCGsApzyi7JhA60Sdqemk9DT2Pf4FeIcGJb205o9VX1AXEbErOmDzjnnnA==}
+  '@netlify/database-dev@0.10.1':
+    resolution: {integrity: sha512-kHLdS6r45TsDiS5aBrHUmzqPvoaWQEUZnaZeMwnIrLMwX8f2bIa6YAMOJJYJhyKm2drVo3C/T92/lJ5iGV/VBQ==}
     engines: {node: '>=20.6.1'}
 
   '@netlify/dev-utils@4.4.3':
     resolution: {integrity: sha512-VkMD8YACshR6pHgoub6nikkI+SQVdhjVvLsOK2ZSpN2wMlDHdsD8uRjESfzv/yYfq5jlsGskfx1cf1FUurWt9A==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@netlify/dev@4.17.3':
-    resolution: {integrity: sha512-EU8EqY2E3BdNCzimZS5PMat8ETAsUFJMBKcOaAMhw0dJFckUj+oZ5OijxfBHJe0sfvDj8eq3E/nQtBlnaoKpHw==}
+  '@netlify/dev@4.18.0':
+    resolution: {integrity: sha512-8wzQT8IdCDOnhaMe65u+R8slRVgUe6Q/EODPVIhgIqGgNd9rVCgLjNcZjJho6gdLRYRIRYtoiZoVUDw20/Ptag==}
     engines: {node: '>=20.6.1'}
 
   '@netlify/edge-bundler@14.9.19':
@@ -13407,8 +13422,8 @@ packages:
     resolution: {integrity: sha512-yD20EizHJDQxajJ66Vo8RTwLwR2jMNVxufPG8MHd2AScX8jW4z0VPnnJHArq2GYPFTFZRHmiAhDrXr5m8zof6w==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@netlify/vite-plugin-tanstack-start@1.3.7':
-    resolution: {integrity: sha512-9p4OjmxwKnwyteNQXbs2j0eunP6oOtkD8s5apvN+WVZjO7KnAPN+rGaKjIpQImAjm46sDhiSyKfqImCsEO1d/g==}
+  '@netlify/vite-plugin-tanstack-start@1.3.8':
+    resolution: {integrity: sha512-1gyIi0z3PKRB4EHF5UArJwlOP7CJTbbUSV8dwxNphUg5uOi8LUE+CbahlIqcBPopYPeqZ4NjF3pWP5aJEFVXIQ==}
     engines: {node: ^22.12.0 || >=24.0.0}
     peerDependencies:
       '@tanstack/react-start': '>=1.132.0'
@@ -13420,8 +13435,8 @@ packages:
       '@tanstack/solid-start':
         optional: true
 
-  '@netlify/vite-plugin@2.11.7':
-    resolution: {integrity: sha512-S3IR5uuPxggzR3+U+2xm4XU2gq+2EFsrRRaiRMRiYxPDihJJN3QrvAIk/NzgRLvbPksaZPHekwS1P2dopGRvpw==}
+  '@netlify/vite-plugin@2.12.0':
+    resolution: {integrity: sha512-dV843KjygSrfidY/JZwO8oPxvEjql2ps4r9qCyIlmgHeWPIpD7cmeMaMPLBFnKC5UJB1M85h4lSjW5uFItdrHg==}
     engines: {node: ^20.6.1 || >=22}
     peerDependencies:
       vite: '>=7.1.11'
@@ -15045,11 +15060,11 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@posthog/core@1.27.5':
-    resolution: {integrity: sha512-sYCcUDuYKumYTjwGqGCPT8aUy086v9PKw5wD+UXCRSfCsxWy5R/ic6W13kGTn4O5B2cD1V19wJv19oIH5kHUiQ==}
+  '@posthog/core@1.27.6':
+    resolution: {integrity: sha512-FjvgPdORywAjgjtgkZJ2/x9ED52jtOJym/RVldY4Oa7wzmlY49rxZm8gvOlocEnjP90bSbj3ko7qVjXNhftFvA==}
 
-  '@posthog/types@1.372.1':
-    resolution: {integrity: sha512-yl2x2HgtdhFk8bvf6HuRSDzXnKmKGrzNxUahKvA/0mcwheweINvmWy5MsN55NevrcCrNXA6m8GPHS9o/y1mn4A==}
+  '@posthog/types@1.372.2':
+    resolution: {integrity: sha512-dx+WImdDg2NDqaDowTmW+BMNalUfPKngR+g1Iom8ULSav+fGacxexv6fSOl0uSVBwYZsDFe7qNUu0NB/rwGjEw==}
 
   '@preact/preset-vite@2.10.5':
     resolution: {integrity: sha512-p0vJpxiVO7KWWazWny3LUZ+saXyZKWv6Ju0bYMWNJRp2YveufRPgSUB1C4MTqGJfz07EehMgfN+AJNwQy+w6Iw==}
@@ -18013,22 +18028,22 @@ packages:
       '@tanstack/router-core':
         optional: true
 
-  '@tanstack/react-router@1.168.24':
-    resolution: {integrity: sha512-CQWd9ywDZU6icG65SrjJMzWcNg/ehBKFxfxYssKSuELk0eM9SzJxJ3JBI760kdLXIsXewOX9PHpJDknxC/R5Ag==}
+  '@tanstack/react-router@1.168.25':
+    resolution: {integrity: sha512-4U/E76dc+fYuLixjV1RLNfqrkQoexSL8MqGNpIHOodtvY3fMPGaALrvDVtBDQYBEU4z5r5fHaV6+kclWAVFP9A==}
     engines: {node: '>=20.19'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start-client@1.166.42':
-    resolution: {integrity: sha512-p8i9HNvVz3QnzBMoVqx7qp1HaMzqiNStVpD+cOGlVi93cxx9CVMDZnOECwe5cIXVuAC3WW4+eB5+5vK8VEWdbg==}
+  '@tanstack/react-start-client@1.166.43':
+    resolution: {integrity: sha512-7quJs9kGbX+Vxa8FJ4mg1oRnUkumL21lUzM05ESeGZPDvPqwF58YL5nrq52o5X46gL9fbI8wDLKgJcwByAHNhA==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start-rsc@0.0.28':
-    resolution: {integrity: sha512-rSEXRHAyP1iKTyzawdm2N44m1y9lP+f4K/BnTTGv2R9jPALmWXQZHWYw3mevjzGiXw2TTzQEZ0tJFuXc64MywQ==}
+  '@tanstack/react-start-rsc@0.0.29':
+    resolution: {integrity: sha512-nMdtylzgoQvQNH0zfT6ZZRzzgyMMiPxOxI3ElY+A79vq0ZJOaqvzownh/e7XIMv/AngWcx38CgnQkM1rfMtSFg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       '@rspack/core': '>=2.0.0-0'
@@ -18044,15 +18059,15 @@ packages:
       react-server-dom-rspack:
         optional: true
 
-  '@tanstack/react-start-server@1.166.43':
-    resolution: {integrity: sha512-tfKFhDCiH8HNCwGFxkiuZsXIi68SHa+5/0i4bO7JCpPzy3FprVdcCJX0Vs0izaNcP8FVKs/TzRAzDilL42Tdlw==}
+  '@tanstack/react-start-server@1.166.44':
+    resolution: {integrity: sha512-ro3s8zWJ0WgWgSkb7VZWyelPrdKvBYImeR5xubqYgP0IRVfmnbYSCY0yZQPNFmv825hv8qMiK4y6NPez7BJRRg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start@1.167.49':
-    resolution: {integrity: sha512-zGIfVklhLHXeFPrAK7dCdjeFilAu+/ZC6+Hwq5ltMN/IXVmkddoSkDx9+63xYCMkHm+oujLd56phZ/kd3A2n3g==}
+  '@tanstack/react-start@1.167.50':
+    resolution: {integrity: sha512-WvYvqC+nV0e0ewK1uH8GecC6KixlDm9vk3pdhmgphIFAM/D5iQOZvO3W3e4UW36o0ViAV1rB6Onoqy6ivN8rkA==}
     engines: {node: '>=22.12.0'}
     hasBin: true
     peerDependencies:
@@ -18081,8 +18096,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/router-core@1.168.16':
-    resolution: {integrity: sha512-2lkWNMzDWWxVqTf9Y54DH1ceZOrGrOGzx9CFVMq8gQSOxhr3x3+otjVei1Rlx4xmsCc4yCqccqjun5wDtE9MZA==}
+  '@tanstack/router-core@1.168.17':
+    resolution: {integrity: sha512-VDq7HCqRK3sdpxoETwYoTXTaYi+OVQC197g1fdzaiZBUmhntfjn+PQc15OzTqNNhf8Menk6r6ftmuphybMKdig==}
     engines: {node: '>=20.19'}
     hasBin: true
 
@@ -18096,17 +18111,17 @@ packages:
       csstype:
         optional: true
 
-  '@tanstack/router-generator@1.166.35':
-    resolution: {integrity: sha512-d3tdUTf6QRjMW4V2P91mE8OR0haHgGktkLOs3zQmirEokQhu2qgoVfcSxLF6DfmMR6smvDjwdeMdy2sudImuFQ==}
+  '@tanstack/router-generator@1.166.36':
+    resolution: {integrity: sha512-ce8Sg+ONwdd483kXJBYhTcdIAjEwSlWUOkoLsgPdNUIfA05hdnd9JkNnM4X1OnzpFL8/+TBSMo4WYQp9CHhDPg==}
     engines: {node: '>=20.19'}
 
-  '@tanstack/router-plugin@1.167.27':
-    resolution: {integrity: sha512-3jl+9I6bgSqAhwIDU2ps4pjhaEy2kugXvZ/dCAE6zF+pYEuRkNr8GA7bpoboZqdAtbceyZ2sLgX6aB7VQvHGUg==}
+  '@tanstack/router-plugin@1.167.28':
+    resolution: {integrity: sha512-O23ba7JaKvx5Eu0l6iTpknu79QcdkMmoW1VtZdsZe5NoQ6dHHru6caoapDc/uOxmz7h7VYfSuLjs/UYg7EA1cA==}
     engines: {node: '>=20.19'}
     hasBin: true
     peerDependencies:
       '@rsbuild/core': '>=1.0.2 || ^2.0.0'
-      '@tanstack/react-router': ^1.168.24
+      '@tanstack/react-router': ^1.168.25
       vite: '>=7.3.2'
       vite-plugin-solid: ^2.11.10 || ^3.0.0-0
       webpack: '>=5.92.0'
@@ -18139,8 +18154,8 @@ packages:
     peerDependencies:
       solid-js: ^1.6.0
 
-  '@tanstack/start-client-core@1.167.19':
-    resolution: {integrity: sha512-lyzA0hzSRKN+vl6093kX8GXnI4XVPDX5x5siWn0CGfmw4/+8l5dRU4Q7QVeWy7xu6JAZCV/gzdDs+nIm50YK7Q==}
+  '@tanstack/start-client-core@1.167.20':
+    resolution: {integrity: sha512-QKBAr/TZlJaBFfveNSuycCJDrwE15cukUm5ogpS9e6xNBy6TMDFTWbfAoLKk8qV8TalxyGbUKjUp6YwWE+KMXQ==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
@@ -18148,8 +18163,8 @@ packages:
     resolution: {integrity: sha512-Y6QSlGiLga8cHfvxGGaonXIlt2bIUTVdH6AMjmpMp7+ANNCp+N96GQbjjhLye3JkaxDfP68x5iZA8NK4imgRig==}
     engines: {node: '>=22.12.0'}
 
-  '@tanstack/start-plugin-core@1.169.5':
-    resolution: {integrity: sha512-gbPmbelQI7aLWxJn5M5XPoGvFKMf3rRU7J3RXNB9WO5lfrNVTEltKV6zBsW7HuJGxIspJRhsrA1c0AtjTsJAvw==}
+  '@tanstack/start-plugin-core@1.169.6':
+    resolution: {integrity: sha512-UhsPkfIi4/8OoJFSYd0MduxjilGYBttHdgqeJCeFZfr/UCV05q28VynUx+zuIG3Pe3Mj2+SKQhQqoJAFPk8nLA==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       '@rsbuild/core': ^2.0.0
@@ -18160,13 +18175,13 @@ packages:
       vite:
         optional: true
 
-  '@tanstack/start-server-core@1.167.21':
-    resolution: {integrity: sha512-G1tWw4lCCjPhyzUT+kMf2NyBS9i5mTlHoElvQBRYu2TvYbUStqnDhEha5apKWkuQWSucw2lM9V61JHucMFsZwg==}
+  '@tanstack/start-server-core@1.167.22':
+    resolution: {integrity: sha512-oTJ/bu5pFuX5vh0OqRfZdXLWauOKIY1w3X+Q9iL6NQ38mhnWGmCVgMxAk+wX7KGSdjmXokpSNbBXTaxk9fcQLA==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
-  '@tanstack/start-storage-context@1.166.30':
-    resolution: {integrity: sha512-2hnpn1n2ls6NbsviNSLl/iD5y+WK45XGFgHDMUnzsUMEf5jXKUoQNSmmcjh+Lhtg+Ag7XOwOs4utXvm0OkevMQ==}
+  '@tanstack/start-storage-context@1.166.31':
+    resolution: {integrity: sha512-HwwPixGNenX1mXJwjJBgWHdxuDj9JHclcbYGeJ130oK2gcyo4RX7AdVsGKV9BCdjv81nODyPYHA9GLzxkp6xfg==}
     engines: {node: '>=22.12.0'}
 
   '@tanstack/store@0.9.3':
@@ -25845,6 +25860,15 @@ packages:
       canvas:
         optional: true
 
+  jsdom@29.1.0:
+    resolution: {integrity: sha512-YNUc7fB9QuvSSQWfrH0xF+TyABkxUwx8sswgIDaCrw4Hol8BghdZDkITtZheRJeMtzWlnTfsM3bBBusRvpO1wg==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
+    peerDependencies:
+      canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
@@ -27756,8 +27780,8 @@ packages:
     resolution: {integrity: sha512-LN4fydt9TqhZhThkZIVQnF9cwjU3qmUH9h78Mx/K7d3VvfRqqwthLwJEUOEL0QPZ0XQmNN7be5Ggit5+4dq3Bw==}
     engines: {node: '>=0.12.0'}
 
-  nodemailer@8.0.6:
-    resolution: {integrity: sha512-Nm2XeuDwwy2wi5A+8jPWwQwNzcjNjhWdE3pVLoXEusxJqCnAPAgnBGkSmiLknbnWuOF9qraRpYZjfxqtKZ4tPw==}
+  nodemailer@8.0.7:
+    resolution: {integrity: sha512-pkjE4mkBzQjdJT4/UmlKl3pX0rC9fZmjh7c6C9o7lv66Ac6w9WCnzPzhbPNxwZAzlF4mdq4CSWB5+FbK6FWCow==}
     engines: {node: '>=6.0.0'}
 
   nopt@7.2.1:
@@ -28475,6 +28499,9 @@ packages:
   parse5@8.0.0:
     resolution: {integrity: sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==}
 
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
+
   parseley@0.12.1:
     resolution: {integrity: sha512-e6qHKe3a9HWr0oMRVDTRhKce+bRO8VGQR3NyVwcjwrbhMmFCX9KszEV35+rn4AdilFAq9VPxP/Fe1wC9Qjd2lw==}
 
@@ -28984,8 +29011,8 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-js@1.372.1:
-    resolution: {integrity: sha512-gP316wDc36YbieIEW48wfB6wq2ugBNQc+XwNkewN9QRPzhitX+9dG6lUjqHEhMx3A2Y41HjbZf5Vl0Ll0ju8UA==}
+  posthog-js@1.372.2:
+    resolution: {integrity: sha512-FS+vKDXB1vghrVch3EDi3IRcoH5OnLQYxchHWi+8U4D4PzWQZnZLo5vyMRL1+ZUHNEZ2v599uX3UKhRZv2z6Cg==}
 
   posthtml-parser@0.11.0:
     resolution: {integrity: sha512-QecJtfLekJbWVo/dMAA+OSwY79wpRmbqS5TeXvXSX+f0c6pW4/SE6inzZ2qkU7oAMCPqIDkZDvd/bQsSFUnKyw==}
@@ -30811,6 +30838,10 @@ packages:
 
   string-width@8.2.0:
     resolution: {integrity: sha512-6hJPQ8N0V0P3SNmP6h2J99RLuzrWz2gvT7VnK5tKvrNqJoyS9W4/Fb8mo31UiPvy00z7DQXkP2hnKBVav76thw==}
+    engines: {node: '>=20'}
+
+  string-width@8.2.1:
+    resolution: {integrity: sha512-IIaP0g3iy9Cyy18w3M9YcaDudujEAVHKt3a3QJg1+sr/oX96TbaGUubG0hJyCjCBThFH+tFpcIyoUHUn1ogaLA==}
     engines: {node: '>=20'}
 
   string.prototype.includes@2.0.1:
@@ -33359,6 +33390,11 @@ snapshots:
       '@actions/exec': 3.0.0
       '@actions/http-client': 4.0.0
 
+  '@actions/core@3.0.1':
+    dependencies:
+      '@actions/exec': 3.0.0
+      '@actions/http-client': 4.0.0
+
   '@actions/exec@3.0.0':
     dependencies:
       '@actions/io': 3.0.2
@@ -34316,7 +34352,7 @@ snapshots:
       lint-staged: 16.4.0
       prettier: 3.8.3
       secretlint: 12.3.1
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     transitivePeerDependencies:
       - '@types/node'
       - yaml
@@ -34357,18 +34393,18 @@ snapshots:
       ini: 6.0.0
       ts-deepmerge: 7.0.3
 
-  '@anolilab/semantic-release-clean-package-json@5.5.0(yaml@2.8.3)':
+  '@anolilab/semantic-release-clean-package-json@5.5.2(yaml@2.8.3)':
     dependencies:
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 4.1.0(yaml@2.8.3)
       '@visulima/path': 2.0.5
-      type-fest: 5.5.0
+      type-fest: 5.6.0
     transitivePeerDependencies:
       - yaml
 
-  '@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3)':
+  '@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3)':
     dependencies:
-      '@actions/core': 3.0.0
+      '@actions/core': 3.0.1
       '@anolilab/rc': 4.0.2
       '@semantic-release/error': 4.0.0
       '@visulima/fs': 4.1.0(yaml@2.8.3)
@@ -34386,9 +34422,9 @@ snapshots:
       - supports-color
       - yaml
 
-  '@anolilab/semantic-release-preset@13.4.3(@anolilab/semantic-release-pnpm@8.1.2(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)':
+  '@anolilab/semantic-release-preset@13.4.5(@anolilab/semantic-release-pnpm@8.1.4(@types/node@25.6.0)(yaml@2.8.3))(@semantic-release/npm@13.1.5(semantic-release@25.0.3(typescript@6.0.3)))(semantic-release@25.0.3(typescript@6.0.3))(yaml@2.8.3)':
     dependencies:
-      '@anolilab/semantic-release-clean-package-json': 5.5.0(yaml@2.8.3)
+      '@anolilab/semantic-release-clean-package-json': 5.5.2(yaml@2.8.3)
       '@semantic-release/changelog': 6.0.3(semantic-release@25.0.3(typescript@6.0.3))
       '@semantic-release/commit-analyzer': 13.0.1(semantic-release@25.0.3(typescript@6.0.3))
       '@semantic-release/exec': 7.1.0(semantic-release@25.0.3(typescript@6.0.3))
@@ -34398,7 +34434,7 @@ snapshots:
       conventional-changelog-conventionalcommits: 9.3.1
       semantic-release: 25.0.3(typescript@6.0.3)
     optionalDependencies:
-      '@anolilab/semantic-release-pnpm': 8.1.2(@types/node@25.6.0)(yaml@2.8.3)
+      '@anolilab/semantic-release-pnpm': 8.1.4(@types/node@25.6.0)(yaml@2.8.3)
       '@semantic-release/npm': 13.1.5(semantic-release@25.0.3(typescript@6.0.3))
     transitivePeerDependencies:
       - supports-color
@@ -34502,12 +34538,30 @@ snapshots:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
 
+  '@asamuzakjp/css-color@5.1.11':
+    dependencies:
+      '@asamuzakjp/generational-cache': 1.0.1
+      '@csstools/css-calc': 3.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-color-parser': 4.1.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-tokenizer': 4.0.0
+
   '@asamuzakjp/dom-selector@7.0.9':
     dependencies:
       '@asamuzakjp/nwsapi': 2.3.9
       bidi-js: 1.0.3
       css-tree: 3.2.1
       is-potential-custom-element-name: 1.0.1
+
+  '@asamuzakjp/dom-selector@7.1.1':
+    dependencies:
+      '@asamuzakjp/generational-cache': 1.0.1
+      '@asamuzakjp/nwsapi': 2.3.9
+      bidi-js: 1.0.3
+      css-tree: 3.2.1
+      is-potential-custom-element-name: 1.0.1
+
+  '@asamuzakjp/generational-cache@1.0.1': {}
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
@@ -36985,10 +37039,10 @@ snapshots:
       - supports-color
       - typescript
 
-  '@fumadocs/mdx-remote@1.4.9(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(react@19.2.5)':
+  '@fumadocs/mdx-remote@1.4.9(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(react@19.2.5)':
     dependencies:
       '@mdx-js/mdx': 3.1.1
-      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
+      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
       js-yaml: 4.1.1
       react: 19.2.5
       unified: 11.0.5
@@ -38425,7 +38479,7 @@ snapshots:
       yargs: 17.7.2
       zod: 4.3.6
 
-  '@netlify/database-dev@0.10.0':
+  '@netlify/database-dev@0.10.1':
     dependencies:
       '@electric-sql/pglite': 0.3.16
       pg-gateway: 0.3.0-beta.4
@@ -38448,12 +38502,12 @@ snapshots:
       uuid: 13.0.0
       write-file-atomic: 5.0.1
 
-  '@netlify/dev@4.17.3(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)':
+  '@netlify/dev@4.18.0(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)':
     dependencies:
       '@netlify/ai': 0.4.1
       '@netlify/blobs': 10.7.4
       '@netlify/config': 24.4.4
-      '@netlify/database-dev': 0.10.0
+      '@netlify/database-dev': 0.10.1
       '@netlify/dev-utils': 4.4.3
       '@netlify/edge-functions-dev': 1.0.16
       '@netlify/functions-dev': 1.2.6(rollup@4.60.2)
@@ -38495,9 +38549,9 @@ snapshots:
       '@import-maps/resolve': 2.0.0
       '@sveltejs/acorn-typescript': 1.0.9(acorn@8.16.0)
       acorn: 8.16.0
-      ajv: 8.18.0
-      ajv-errors: 3.0.0(ajv@8.18.0)
-      better-ajv-errors: 1.2.0(ajv@8.18.0)
+      ajv: 8.20.0
+      ajv-errors: 3.0.0(ajv@8.20.0)
+      better-ajv-errors: 1.2.0(ajv@8.20.0)
       common-path-prefix: 3.0.0
       env-paths: 3.0.0
       esbuild: 0.27.3
@@ -38643,12 +38697,12 @@ snapshots:
 
   '@netlify/types@2.6.0': {}
 
-  '@netlify/vite-plugin-tanstack-start@1.3.7(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@netlify/vite-plugin-tanstack-start@1.3.8(@azure/storage-blob@12.31.0)(@tanstack/react-start@1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)))(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
-      '@netlify/vite-plugin': 2.11.7(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      '@netlify/vite-plugin': 2.12.0(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
     optionalDependencies:
-      '@tanstack/react-start': 1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+      '@tanstack/react-start': 1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -38677,9 +38731,9 @@ snapshots:
       - supports-color
       - uploadthing
 
-  '@netlify/vite-plugin@2.11.7(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@netlify/vite-plugin@2.12.0(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
-      '@netlify/dev': 4.17.3(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)
+      '@netlify/dev': 4.18.0(@azure/storage-blob@12.31.0)(@vercel/blob@2.3.3)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.0(@types/node@25.6.0)))(ioredis@5.10.1)(rollup@4.60.2)(srvx@0.11.15)
       '@netlify/dev-utils': 4.4.3
       dedent: 1.7.2
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
@@ -40238,11 +40292,11 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@posthog/core@1.27.5':
+  '@posthog/core@1.27.6':
     dependencies:
-      '@posthog/types': 1.372.1
+      '@posthog/types': 1.372.2
 
-  '@posthog/types@1.372.1': {}
+  '@posthog/types@1.372.2': {}
 
   '@preact/preset-vite@2.10.5(@babel/core@7.29.0)(preact@10.29.1)(rollup@4.60.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
@@ -43919,45 +43973,45 @@ snapshots:
       '@tanstack/query-core': 5.99.0
       react: 19.2.5
 
-  '@tanstack/react-router-devtools@1.166.13(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.16)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@tanstack/react-router-devtools@1.166.13(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@tanstack/router-core@1.168.17)(csstype@3.2.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/router-devtools-core': 1.167.3(@tanstack/router-core@1.168.16)(csstype@3.2.3)
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/router-devtools-core': 1.167.3(@tanstack/router-core@1.168.17)(csstype@3.2.3)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
     optionalDependencies:
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
       '@tanstack/history': 1.161.6
       '@tanstack/react-store': 0.9.3(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
       isbot: 5.1.38
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@tanstack/react-start-client@1.166.42(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@tanstack/react-start-client@1.166.43(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/router-core': 1.168.16
-      '@tanstack/start-client-core': 1.167.19
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/router-core': 1.168.17
+      '@tanstack/start-client-core': 1.167.20
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@tanstack/react-start-rsc@0.0.28(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
+  '@tanstack/react-start-rsc@0.0.29(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
     dependencies:
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/react-start-server': 1.166.43(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-start-server': 1.166.44(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/router-core': 1.168.17
       '@tanstack/router-utils': 1.161.7
-      '@tanstack/start-client-core': 1.167.19
+      '@tanstack/start-client-core': 1.167.20
       '@tanstack/start-fn-stubs': 1.161.6
-      '@tanstack/start-plugin-core': 1.169.5(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
-      '@tanstack/start-server-core': 1.167.21(crossws@0.4.5(srvx@0.11.15))
-      '@tanstack/start-storage-context': 1.166.30
+      '@tanstack/start-plugin-core': 1.169.6(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+      '@tanstack/start-server-core': 1.167.22(crossws@0.4.5(srvx@0.11.15))
+      '@tanstack/start-storage-context': 1.166.31
       pathe: 2.0.3
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -43969,28 +44023,28 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/react-start-server@1.166.43(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@tanstack/react-start-server@1.166.44(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
       '@tanstack/history': 1.161.6
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/router-core': 1.168.16
-      '@tanstack/start-client-core': 1.167.19
-      '@tanstack/start-server-core': 1.167.21(crossws@0.4.5(srvx@0.11.15))
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/router-core': 1.168.17
+      '@tanstack/start-client-core': 1.167.20
+      '@tanstack/start-server-core': 1.167.22(crossws@0.4.5(srvx@0.11.15))
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.167.49(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
+  '@tanstack/react-start@1.167.50(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
     dependencies:
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/react-start-client': 1.166.42(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@tanstack/react-start-rsc': 0.0.28(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
-      '@tanstack/react-start-server': 1.166.43(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-start-client': 1.166.43(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-start-rsc': 0.0.29(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+      '@tanstack/react-start-server': 1.166.44(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/router-utils': 1.161.7
-      '@tanstack/start-client-core': 1.167.19
-      '@tanstack/start-plugin-core': 1.169.5(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
-      '@tanstack/start-server-core': 1.167.21(crossws@0.4.5(srvx@0.11.15))
+      '@tanstack/start-client-core': 1.167.20
+      '@tanstack/start-plugin-core': 1.169.6(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+      '@tanstack/start-server-core': 1.167.22(crossws@0.4.5(srvx@0.11.15))
       pathe: 2.0.3
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -44017,25 +44071,25 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@tanstack/router-core@1.168.16':
+  '@tanstack/router-core@1.168.17':
     dependencies:
       '@tanstack/history': 1.161.6
       cookie-es: 3.1.1
       seroval: 1.5.2
       seroval-plugins: 1.5.2(seroval@1.5.2)
 
-  '@tanstack/router-devtools-core@1.167.3(@tanstack/router-core@1.168.16)(csstype@3.2.3)':
+  '@tanstack/router-devtools-core@1.167.3(@tanstack/router-core@1.168.17)(csstype@3.2.3)':
     dependencies:
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
       clsx: 2.1.1
       goober: 2.1.18(csstype@3.2.3)
     optionalDependencies:
       csstype: 3.2.3
 
-  '@tanstack/router-generator@1.166.35':
+  '@tanstack/router-generator@1.166.36':
     dependencies:
       '@babel/types': 7.29.0
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
       '@tanstack/router-utils': 1.161.7
       '@tanstack/virtual-file-routes': 1.161.7
       jiti: 2.6.1
@@ -44045,7 +44099,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.167.27(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
+  '@tanstack/router-plugin@1.167.28(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
@@ -44053,15 +44107,15 @@ snapshots:
       '@babel/template': 7.28.6
       '@babel/traverse': 7.29.0
       '@babel/types': 7.29.0
-      '@tanstack/router-core': 1.168.16
-      '@tanstack/router-generator': 1.166.35
+      '@tanstack/router-core': 1.168.17
+      '@tanstack/router-generator': 1.166.36
       '@tanstack/router-utils': 1.161.7
       '@tanstack/virtual-file-routes': 1.161.7
       chokidar: 3.6.0
       unplugin: 3.0.0
       zod: 3.25.76
     optionalDependencies:
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       webpack: 5.106.2(@swc/core@1.15.24)(esbuild@0.28.0)
@@ -44133,27 +44187,27 @@ snapshots:
       '@tanstack/query-core': 5.91.2
       solid-js: 1.9.12
 
-  '@tanstack/start-client-core@1.167.19':
+  '@tanstack/start-client-core@1.167.20':
     dependencies:
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
       '@tanstack/start-fn-stubs': 1.161.6
-      '@tanstack/start-storage-context': 1.166.30
+      '@tanstack/start-storage-context': 1.166.31
       seroval: 1.5.2
 
   '@tanstack/start-fn-stubs@1.161.6': {}
 
-  '@tanstack/start-plugin-core@1.169.5(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
+  '@tanstack/start-plugin-core@1.169.6(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(crossws@0.4.5(srvx@0.11.15))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.0
       '@babel/types': 7.29.0
       '@rolldown/pluginutils': 1.0.0-beta.40
-      '@tanstack/router-core': 1.168.16
-      '@tanstack/router-generator': 1.166.35
-      '@tanstack/router-plugin': 1.167.27(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
+      '@tanstack/router-core': 1.168.17
+      '@tanstack/router-generator': 1.166.36
+      '@tanstack/router-plugin': 1.167.28(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.12)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(webpack@5.106.2(@swc/core@1.15.24)(esbuild@0.28.0))
       '@tanstack/router-utils': 1.161.7
-      '@tanstack/start-client-core': 1.167.19
-      '@tanstack/start-server-core': 1.167.21(crossws@0.4.5(srvx@0.11.15))
+      '@tanstack/start-client-core': 1.167.20
+      '@tanstack/start-server-core': 1.167.22(crossws@0.4.5(srvx@0.11.15))
       cheerio: 1.2.0
       exsolve: 1.0.8
       lightningcss: 1.32.0
@@ -44176,20 +44230,20 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-server-core@1.167.21(crossws@0.4.5(srvx@0.11.15))':
+  '@tanstack/start-server-core@1.167.22(crossws@0.4.5(srvx@0.11.15))':
     dependencies:
       '@tanstack/history': 1.161.6
-      '@tanstack/router-core': 1.168.16
-      '@tanstack/start-client-core': 1.167.19
-      '@tanstack/start-storage-context': 1.166.30
+      '@tanstack/router-core': 1.168.17
+      '@tanstack/start-client-core': 1.167.20
+      '@tanstack/start-storage-context': 1.166.31
       h3-v2: h3@2.0.1-rc.18(crossws@0.4.5(srvx@0.11.15))
       seroval: 1.5.2
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/start-storage-context@1.166.30':
+  '@tanstack/start-storage-context@1.166.31':
     dependencies:
-      '@tanstack/router-core': 1.168.16
+      '@tanstack/router-core': 1.168.17
 
   '@tanstack/store@0.9.3': {}
 
@@ -44340,7 +44394,7 @@ snapshots:
       svelte: 5.55.4(@typescript-eslint/types@8.59.0)
     optionalDependencies:
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@testing-library/user-event@14.5.2(@testing-library/dom@10.4.0)':
     dependencies:
@@ -47066,7 +47120,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       ws: 8.20.0
     transitivePeerDependencies:
       - bufferutil
@@ -47086,7 +47140,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     optionalDependencies:
       '@vitest/browser': 4.1.5(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))(vitest@4.1.5)
 
@@ -47098,7 +47152,7 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.59.0(@typescript-eslint/parser@8.58.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
       typescript: 6.0.3
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     transitivePeerDependencies:
       - supports-color
 
@@ -47110,7 +47164,7 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.59.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
       typescript: 6.0.3
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
     transitivePeerDependencies:
       - supports-color
 
@@ -47203,7 +47257,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.16(patch_hash=dd3579a67d9d131e5ddfa67e5cae3ee576e0235e36ada17ee6486cf037b67ea2)
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -47774,9 +47828,9 @@ snapshots:
     optionalDependencies:
       ajv: 8.18.0
 
-  ajv-errors@3.0.0(ajv@8.18.0):
+  ajv-errors@3.0.0(ajv@8.20.0):
     dependencies:
-      ajv: 8.18.0
+      ajv: 8.20.0
 
   ajv-formats@2.1.1(ajv@8.18.0):
     optionalDependencies:
@@ -48318,11 +48372,11 @@ snapshots:
       lodash: 4.18.1
       platform: 1.3.6
 
-  better-ajv-errors@1.2.0(ajv@8.18.0):
+  better-ajv-errors@1.2.0(ajv@8.20.0):
     dependencies:
       '@babel/code-frame': 7.29.0
       '@humanwhocodes/momoa': 2.0.4
-      ajv: 8.18.0
+      ajv: 8.20.0
       chalk: 4.1.2
       jsonpointer: 5.0.1
       leven: 3.1.0
@@ -48881,7 +48935,7 @@ snapshots:
   cli-truncate@6.0.0:
     dependencies:
       slice-ansi: 9.0.0
-      string-width: 8.2.0
+      string-width: 8.2.1
 
   cli-width@3.0.0: {}
 
@@ -49787,7 +49841,7 @@ snapshots:
   detective-vue2@2.2.0(typescript@5.9.3):
     dependencies:
       '@dependents/detective-less': 5.0.1
-      '@vue/compiler-sfc': 3.5.32
+      '@vue/compiler-sfc': 3.5.33
       detective-es6: 5.0.1
       detective-sass: 6.0.1
       detective-scss: 5.0.1
@@ -50488,7 +50542,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
@@ -52285,7 +52339,7 @@ snapshots:
       array-back: 6.2.3
       obso: 0.7.0
 
-  fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6):
+  fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6):
     dependencies:
       '@orama/orama': 3.1.18
       estree-util-value-to-estree: 3.5.0
@@ -52306,7 +52360,7 @@ snapshots:
       vfile: 6.0.3
     optionalDependencies:
       '@mdx-js/mdx': 3.1.1
-      '@tanstack/react-router': 1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@tanstack/react-router': 1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@types/estree-jsx': 1.0.5
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
@@ -52320,14 +52374,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-mdx@14.3.1(@types/mdast@4.0.4)(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
+  fumadocs-mdx@14.3.1(@types/mdast@4.0.4)(@types/mdx@2.0.13)(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.1.0
       chokidar: 5.0.0
       esbuild: 0.28.0
       estree-util-value-to-estree: 3.5.0
-      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
+      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
       js-yaml: 4.1.1
       mdast-util-mdx: 3.0.0
       mdast-util-to-markdown: 2.1.2
@@ -52350,12 +52404,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-twoslash@3.2.0(408401ed713dda0b3d153ef6eace75cd):
+  fumadocs-twoslash@3.2.0(bf6d0d798e15ae60d0ce3b8ea6b7fe90):
     dependencies:
       '@radix-ui/react-popover': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@shikijs/twoslash': 4.0.2(typescript@6.0.3)
-      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
-      fumadocs-ui: 16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4)
+      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
+      fumadocs-ui: 16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4)
       mdast-util-from-markdown: 2.0.3
       mdast-util-gfm: 3.1.0
       mdast-util-to-hast: 13.2.1
@@ -52371,7 +52425,7 @@ snapshots:
       - supports-color
       - typescript
 
-  fumadocs-ui@16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4):
+  fumadocs-ui@16.8.4(@emotion/is-prop-valid@1.4.0)(@tailwindcss/oxide@4.2.4)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@4.2.4):
     dependencies:
       '@fumadocs/tailwind': 0.0.5(@tailwindcss/oxide@4.2.4)(tailwindcss@4.2.4)
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -52385,7 +52439,7 @@ snapshots:
       '@radix-ui/react-slot': 1.2.4(@types/react@19.2.14)(react@19.2.5)
       '@radix-ui/react-tabs': 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       class-variance-authority: 0.7.1
-      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.24(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
+      fumadocs-core: 16.8.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.168.25(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@1.11.0(react@19.2.5))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react-router@7.14.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(zod@4.3.6)
       lucide-react: 1.11.0(react@19.2.5)
       motion: 12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       next-themes: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -54477,6 +54531,32 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.3.5
       parse5: 8.0.0
+      saxes: 6.0.0
+      symbol-tree: 3.2.4
+      tough-cookie: 6.0.1
+      undici: 7.25.0
+      w3c-xmlserializer: 5.0.0
+      webidl-conversions: 8.0.1
+      whatwg-mimetype: 5.0.0
+      whatwg-url: 16.0.1(@noble/hashes@1.8.0)
+      xml-name-validator: 5.0.0
+    transitivePeerDependencies:
+      - '@noble/hashes'
+
+  jsdom@29.1.0(@noble/hashes@1.8.0):
+    dependencies:
+      '@asamuzakjp/css-color': 5.1.11
+      '@asamuzakjp/dom-selector': 7.1.1
+      '@bramus/specificity': 2.4.2
+      '@csstools/css-syntax-patches-for-csstree': 1.1.3(css-tree@3.2.1)
+      '@exodus/bytes': 1.15.0(@noble/hashes@1.8.0)
+      css-tree: 3.2.1
+      data-urls: 7.0.0(@noble/hashes@1.8.0)
+      decimal.js: 10.6.0
+      html-encoding-sniffer: 6.0.0(@noble/hashes@1.8.0)
+      is-potential-custom-element-name: 1.0.1
+      lru-cache: 11.3.5
+      parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
@@ -57525,7 +57605,7 @@ snapshots:
 
   node-stream-zip@1.15.0: {}
 
-  nodemailer@8.0.6: {}
+  nodemailer@8.0.7: {}
 
   nopt@7.2.1:
     dependencies:
@@ -58741,6 +58821,10 @@ snapshots:
     dependencies:
       entities: 6.0.1
 
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.0.0
+
   parseley@0.12.1:
     dependencies:
       leac: 0.6.0
@@ -59363,17 +59447,17 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  posthog-js@1.372.1:
+  posthog-js@1.372.2:
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/api-logs': 0.208.0
       '@opentelemetry/exporter-logs-otlp-http': 0.208.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/resources': 2.6.1(@opentelemetry/api@1.9.1)
       '@opentelemetry/sdk-logs': 0.208.0(@opentelemetry/api@1.9.1)
-      '@posthog/core': 1.27.5
-      '@posthog/types': 1.372.1
+      '@posthog/core': 1.27.6
+      '@posthog/types': 1.372.2
       core-js: 3.49.0
-      dompurify: 3.4.0
+      dompurify: 3.4.1
       fflate: 0.4.8
       preact: 10.29.1
       query-selector-shadow-dom: 1.0.1
@@ -61637,7 +61721,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
@@ -61770,6 +61854,11 @@ snapshots:
       strip-ansi: 7.2.0
 
   string-width@8.2.0:
+    dependencies:
+      get-east-asian-width: 1.5.0
+      strip-ansi: 7.2.0
+
+  string-width@8.2.1:
     dependencies:
       get-east-asian-width: 1.5.0
       strip-ansi: 7.2.0
@@ -63958,7 +64047,7 @@ snapshots:
       vite: 8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
     optional: true
 
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -63986,11 +64075,11 @@ snapshots:
       '@vitest/coverage-v8': 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
       '@vitest/ui': 4.1.5(vitest@4.1.5)
       happy-dom: 20.9.0
-      jsdom: 29.0.2(@noble/hashes@1.8.0)
+      jsdom: 29.1.0(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.9(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -64018,7 +64107,7 @@ snapshots:
       '@vitest/coverage-v8': 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
       '@vitest/ui': 4.1.5(vitest@4.1.5)
       happy-dom: 20.9.0
-      jsdom: 29.0.2(@noble/hashes@1.8.0)
+      jsdom: 29.1.0(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - msw
 
@@ -64466,7 +64555,7 @@ snapshots:
   wrap-ansi@10.0.0:
     dependencies:
       ansi-styles: 6.2.3
-      string-width: 8.2.0
+      string-width: 8.2.1
       strip-ansi: 7.2.0
 
   wrap-ansi@6.2.0:
