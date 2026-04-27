@@ -28,22 +28,44 @@ interface Cli {
 
 ### Command
 
-Command definition:
+Command definition. Either `execute` or `loader` must be set — not both.
 
 ```typescript
 interface Command<O extends OptionDefinition = OptionDefinition, TContext extends Toolbox = Toolbox> {
     name: string;
-    execute: (toolbox: TContext) => Promise<void> | void;
+    execute?: (toolbox: TContext) => Promise<void> | void;
+    loader?: () => Promise<LazyCommandModule<TContext>>;
     description?: string;
     alias?: string | string[];
     argument?: ArgumentDefinition;
     options?: OptionDefinition[];
+    env?: EnvDefinition[];
     hidden?: boolean;
     group?: string;
     examples?: string[] | string[][];
     usage?: Content[];
     file?: string;
     commandPath?: string[];
+}
+```
+
+### CommandExecute
+
+Handler signature, used by both `execute` and the resolved default export of `loader`.
+
+```typescript
+type CommandExecute<TContext> =
+    | ((toolbox: TContext) => Promise<void>)
+    | ((toolbox: TContext) => void);
+```
+
+### LazyCommandModule
+
+Module shape returned by a command `loader`.
+
+```typescript
+interface LazyCommandModule<TContext> {
+    default: CommandExecute<TContext>;
 }
 ```
 
@@ -196,11 +218,20 @@ import type {
     CliRunOptions,
     RunCommandOptions,
     Command,
+    CommandExecute,
+    LazyCommandModule,
+    EnvDefinition,
     OptionDefinition,
     ArgumentDefinition,
     Plugin,
     PluginContext,
     Toolbox,
+    CreateOptions,
+    CreateEnv,
+    OptionNameToCamelCase,
     VERBOSITY_LEVEL,
 } from "@visulima/cerebro";
+
+// Runtime exports
+import { lazyNamed } from "@visulima/cerebro";
 ```

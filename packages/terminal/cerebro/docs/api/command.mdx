@@ -7,7 +7,10 @@ Command interface for defining CLI commands.
 ```typescript
 interface Command<O extends OptionDefinition = OptionDefinition, TContext extends Toolbox = Toolbox> {
     name: string;
-    execute: (toolbox: TContext) => Promise<void> | void;
+    /** Either `execute` or `loader` must be provided (but not both). */
+    execute?: (toolbox: TContext) => Promise<void> | void;
+    /** Lazily imports the handler module on first invocation. */
+    loader?: () => Promise<{ default: (toolbox: TContext) => Promise<void> | void }>;
     description?: string;
     alias?: string | string[];
     argument?: ArgumentDefinition;
@@ -40,7 +43,7 @@ The command name used to invoke it:
 ### execute
 
 **Type:** `(toolbox: TContext) => Promise<void> | void`  
-**Required:** Yes
+**Required:** Either `execute` or `loader` must be set — not both.
 
 The function that executes the command:
 
@@ -51,6 +54,51 @@ The function that executes the command:
     };
 }
 ```
+
+### loader
+
+**Type:** `() => Promise<{ default: (toolbox: TContext) => Promise<void> | void }>`  
+**Required:** Either `execute` or `loader` must be set — not both.
+
+Lazily imports the handler module on first invocation. The module's
+**default export** is used as the handler. Help, completion, and option
+validation work entirely from the metadata declared on `addCommand` and
+never trigger the loader. The first invocation imports the module;
+subsequent calls reuse the cached handler.
+
+Use this for commands whose handler pulls in heavy dependencies — the
+import cost is paid only when the user actually invokes the command.
+
+```typescript
+// commands/build.ts
+const build: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", type: String }],
+    loader: () => import("./build.handler"),
+};
+
+// commands/build.handler.ts
+export default async ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+For modules that group multiple subcommands' handlers as named exports,
+use the `lazyNamed` helper:
+
+```typescript
+import { lazyNamed } from "@visulima/cerebro";
+
+cli.addCommand({
+    name: "list",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheList"),
+});
+```
+
+If the loader rejects or the resolved module has no default-exported
+function, a `CommandLoaderError` is thrown.
 
 ### description
 

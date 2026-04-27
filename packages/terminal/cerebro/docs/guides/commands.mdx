@@ -131,6 +131,30 @@ cli.addCommand({
 });
 ```
 
+### Lazy-Loaded Commands
+
+Use `loader` instead of `execute` to defer importing the handler module
+until the command is actually invoked. Help, completion, and option
+validation work from the metadata alone — they never trigger the loader.
+See the [advanced guide](/guides/advanced#lazy-command-loading) for the
+full pattern.
+
+```typescript
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", type: String }],
+    loader: () => import("./commands/build.handler"),
+});
+
+// commands/build.handler.ts
+export default async ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+A command must declare either `execute` or `loader`, but not both.
+
 ## Positional Arguments
 
 Define positional arguments using the `argument` property:
