@@ -91,13 +91,32 @@ cli.getCommands(): Map<string, Command>
 
 ## Type Definitions
 
-- `Command` - Command definition interface
+- `Command` - Command definition interface (supports `execute` or `loader`)
+- `CommandExecute` - Handler signature shared by `execute` and `loader`
+- `LazyCommandModule` - Module shape returned by a command `loader`
 - `Plugin` - Plugin definition interface
 - `Toolbox` - Execution context interface
 - `CliOptions` - CLI configuration options
 - `OptionDefinition` - Option definition interface
 - `ArgumentDefinition` - Argument definition interface
 - `EnvDefinition` - Environment variable definition
+- `CreateOptions` - Derive a typed options object from a kebab-case input
+- `CreateEnv` - Derive a typed env object from an UPPER_SNAKE_CASE input
+- `OptionNameToCamelCase` - String type that converts `output-dir` → `outputDir`
+
+## Helpers
+
+- `lazyNamed(load, key)` - Builds a `loader` for handlers exported as named entries from a shared module
+- `createCerebro(name, options)` - Factory function for a `Cerebro` instance
+
+## Errors
+
+- `CerebroError` - Base error class
+- `CommandNotFoundError` - Command lookup failed
+- `CommandValidationError` - Command failed validation (e.g. missing required option)
+- `CommandLoaderError` - `loader` rejected or returned no default-exported function
+- `ConflictingOptionsError` - Two options that conflict were both passed
+- `PluginError` - A plugin threw during a lifecycle hook
 
 ## Constants
 

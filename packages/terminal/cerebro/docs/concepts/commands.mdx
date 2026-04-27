@@ -8,7 +8,8 @@ Learn about Cerebro's command system and how to create powerful CLI commands.
 
 ## Command Structure
 
-A command is defined by its metadata and execution function:
+A command is defined by its metadata and either an inline `execute` function
+or a `loader` that defers handler import until invocation:
 
 ```typescript
 {
@@ -17,8 +18,10 @@ A command is defined by its metadata and execution function:
   argument?: ArgumentDef,    // Positional argument
   options?: OptionDef[],     // Named options/flags
   env?: EnvDef,              // Environment variables
-  commands?: Command[],      // Nested subcommands
-  execute: (toolbox) => void // Execution function
+  commandPath?: string[],    // Path for nested subcommands
+  // Exactly one of:
+  execute?: (toolbox) => void,                    // Inline handler
+  loader?: () => Promise<{ default: handler }>,   // Lazy-imported handler
 }
 ```
 
@@ -333,5 +336,50 @@ cli.addCommandSection({
     name: "Database",
     description: "Database management commands",
     commands: ["db:migrate", "db:seed", "db:backup"],
+});
+```
+
+## Lazy Commands
+
+For CLIs with many subcommands or heavy per-command dependencies, defer
+importing each handler until the command is actually invoked. Declare
+metadata inline and point `loader` at a dynamic `import()`:
+
+```typescript
+// commands/build/index.ts
+const build: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", alias: "o", type: String }],
+    loader: () => import("./handler"),
+};
+export default build;
+
+// commands/build/handler.ts
+export default ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+`loader` is a zero-argument function that returns a promise resolving to
+a module with a default-exported handler. Help, completion, and option
+validation work entirely from the metadata you declared on `addCommand`
+and never trigger the loader. The first invocation imports the module;
+subsequent calls reuse the cached handler.
+
+A command must declare either `execute` or `loader`, but not both. If a
+loader rejects or returns a module without a default-exported function, a
+`CommandLoaderError` is thrown.
+
+For modules that export multiple subcommand handlers as named exports,
+use the `lazyNamed` helper:
+
+```typescript
+import { lazyNamed } from "@visulima/cerebro";
+
+cli.addCommand({
+    name: "list",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheList"),
 });
 ```
