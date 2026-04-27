@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runPmSubcommand } from "../pm-runner";
+import { resolveInstaller, runPmSubcommand } from "../pm-runner";
 
 const pm: Command = {
     argument: {
@@ -17,7 +17,7 @@ const pm: Command = {
         ["vis pm audit", "Run security audit"],
         ["vis pm whoami", "Show logged-in user"],
     ],
-    execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, visConfig, workspaceRoot: wsRoot }) => {
         const args = argument;
 
         if (!args || args.length === 0) {
@@ -28,7 +28,7 @@ const pm: Command = {
 
         const [subcommand, ...rest] = args;
         const cwd = wsRoot ?? process.cwd();
-        const pm_ = detectPm(cwd);
+        const pm_ = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runPmSubcommand(pm_, subcommand as string, rest, cwd, logger);
 

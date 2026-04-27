@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runUnlink } from "../pm-runner";
+import { resolveInstaller, runUnlink } from "../pm-runner";
 
 const unlink: Command = {
     argument: {
@@ -14,10 +14,10 @@ const unlink: Command = {
         ["vis unlink react", "Unlink specific package"],
         ["vis unlink -r", "Unlink in all workspace packages"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const packages = argument || [];
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runUnlink(pm, packages, (options.recursive as boolean) || false, cwd, logger);
 

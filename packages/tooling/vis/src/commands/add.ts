@@ -7,7 +7,7 @@ const { dim, green, red, yellow } = colorize;
 import { coerce } from "semver";
 
 import { info, note, warn } from "../output";
-import { detectPm, runAdd } from "../pm-runner";
+import { resolveInstaller, runAdd } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import {
     buildSocketOptions,
@@ -310,7 +310,7 @@ const add: Command = {
 
         // Default to current directory; workspace root used only for PM detection
         const cwd = process.cwd();
-        const pm = detectPm(wsRoot ?? cwd);
+        const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runAdd(
             pm,
