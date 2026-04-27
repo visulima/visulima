@@ -58,8 +58,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
 
                 if (updateAvailable) {
                     // Lazy load heavy dependencies only when update is available
-                    const [{ boxen }, { default: colorize }] = await Promise.all([import("@visulima/boxen"), import("@visulima/colorize")]);
-                    const { dim, green, reset, yellow } = colorize;
+                    const [{ boxen }, { dim, green, reset, yellow }] = await Promise.all([import("@visulima/boxen"), import("@visulima/colorize")]);
 
                     const template = `Update available ${dim(packageVersion)}${reset(" → ")}${green(updateAvailable)}`;
 
@@ -79,7 +78,6 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
         },
         description: "Checks for package updates and notifies users",
         name: "update-notifier",
-
         version: "1.0.0",
     };
 };

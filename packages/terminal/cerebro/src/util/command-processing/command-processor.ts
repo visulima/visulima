@@ -4,7 +4,8 @@ import { commandLineArgs } from "@visulima/command-line-args";
 
 import { POSITIONALS_KEY } from "../../constants";
 import EmptyToolbox from "../../empty-toolbox";
-import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
+import CommandLoaderError from "../../errors/command-loader-error";
+import type { Command as ICommand, CommandExecute, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
@@ -39,6 +40,43 @@ const buildOptionMaps = <OD extends OptionDefinition<unknown>>(
     }
 
     return { optionMapByAlias, optionMapByName };
+};
+
+/**
+ * Loads the handler for a lazy command, caching the result on the command for subsequent invocations.
+ * @internal
+ */
+const loadLazyHandler = async <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    command: ICommand<OD, TLogger>,
+): Promise<CommandExecute<IToolbox<TLogger>>> => {
+    // eslint-disable-next-line no-underscore-dangle
+    if (typeof command.__resolvedExecute__ === "function") {
+        // eslint-disable-next-line no-underscore-dangle
+        return command.__resolvedExecute__;
+    }
+
+    if (typeof command.loader !== "function") {
+        throw new CommandLoaderError(command.name, "no execute or loader defined");
+    }
+
+    let loadedModule: { default?: unknown };
+
+    try {
+        loadedModule = (await command.loader()) as { default?: unknown };
+    } catch (error) {
+        throw new CommandLoaderError(command.name, error instanceof Error ? error.message : String(error), error);
+    }
+
+    const handler = loadedModule.default;
+
+    if (typeof handler !== "function") {
+        throw new CommandLoaderError(command.name, "loader did not return a module with a default-exported handler function");
+    }
+
+    // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+    command.__resolvedExecute__ = handler as CommandExecute<IToolbox<TLogger>>;
+
+    return handler as CommandExecute<IToolbox<TLogger>>;
 };
 
 /**
@@ -160,6 +198,9 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>, TLogger
 
 /**
  * Executes a command and returns its result.
+ *
+ * If the command was registered with a `loader`, the handler module is imported on first call
+ * and cached on the command for subsequent invocations.
  * @template OD The option definition type.
  * @param command The command to execute.
  * @param toolbox The prepared toolbox for command execution.
@@ -170,4 +211,13 @@ export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogg
     command: ICommand<OD, TLogger>,
     toolbox: IToolbox<TLogger>,
     _commandArgs: CommandLineOptions,
-): Promise<unknown> => command.execute(toolbox);
+): Promise<unknown> => {
+    // Method call form preserves `this` for class-based commands such as HelpCommand.
+    if (typeof command.execute === "function") {
+        return command.execute(toolbox);
+    }
+
+    const handler = await loadLazyHandler(command);
+
+    return handler(toolbox);
+};

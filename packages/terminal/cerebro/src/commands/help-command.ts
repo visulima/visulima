@@ -1,6 +1,4 @@
-import colorize from "@visulima/colorize";
-
-const { cyan, green, inverse, yellow } = colorize;
+import { cyan, green, inverse, yellow } from "@visulima/colorize";
 
 import defaultEnv from "../default-env";
 import type { Cli as ICli } from "../types/cli";

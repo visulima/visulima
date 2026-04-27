@@ -1,6 +1,5 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
 
-import HelpCommand from "./commands/help-command";
 import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
@@ -460,6 +459,25 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         validateObject(command, "Command");
         validateCommandName(command.name);
 
+        const hasExecute = typeof command.execute === "function";
+        const hasLoader = typeof command.loader === "function";
+
+        if (hasExecute && hasLoader) {
+            throw new CerebroError(
+                `Command "${command.name}" cannot define both "execute" and "loader" — choose one`,
+                "INVALID_COMMAND",
+                { commandName: command.name },
+            );
+        }
+
+        if (!hasExecute && !hasLoader) {
+            throw new CerebroError(
+                `Command "${command.name}" must define either "execute" or "loader"`,
+                "INVALID_COMMAND",
+                { commandName: command.name },
+            );
+        }
+
         if (command.alias) {
             if (typeof command.alias === "string") {
                 validateCommandName(command.alias);
@@ -738,6 +756,8 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         const { autoDispose = true, shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
 
         if (!this.#commands.has("help")) {
+            const { default: HelpCommand } = await import("./commands/help-command");
+
             this.addCommand(new HelpCommand<T>(this.#commands));
         }
 
@@ -850,7 +870,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             }
         }
 
-        if (typeof command.execute !== "function") {
+        if (typeof command.execute !== "function" && typeof command.loader !== "function") {
             this.#logger.error(`Command "${command.name}" has no function to execute.`);
 
             return shouldExitProcess ? exitProcess(1) : undefined;
@@ -957,7 +977,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             throw new CommandNotFoundError(commandName, alternatives);
         }
 
-        if (typeof command.execute !== "function") {
+        if (typeof command.execute !== "function" && typeof command.loader !== "function") {
             throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
         }
 

@@ -362,28 +362,18 @@ describe("cli", () => {
             expect(parentExecute).toHaveBeenCalledTimes(1);
         });
 
-        it("should throw error when command has no execute function", async () => {
+        it("should throw error when registering a command without execute or loader", () => {
             expect.assertions(1);
 
-            const parentExecute = vi.fn().mockImplementation(async ({ runtime }: Toolbox) => {
-                await runtime.runCommand("invalid");
-            });
+            const cli = new Cli("MyCLI");
 
-            const cli = new Cli("MyCLI", { argv: ["parent"] });
-
-            // Add a command without execute function
-            cli.addCommand({
-                // @ts-expect-error - Testing invalid command
-                execute: undefined,
-                name: "invalid",
-            });
-
-            cli.addCommand({
-                execute: parentExecute,
-                name: "parent",
-            });
-
-            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow("Command \"invalid\" has no function to execute");
+            expect(() =>
+                cli.addCommand({
+                    // @ts-expect-error - Testing invalid command
+                    execute: undefined,
+                    name: "invalid",
+                }),
+            ).toThrow("Command \"invalid\" must define either \"execute\" or \"loader\"");
         });
 
         it("should validate required options for called command", async () => {
