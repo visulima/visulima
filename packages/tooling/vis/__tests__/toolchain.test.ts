@@ -349,9 +349,9 @@ describe(findInstalledManagers, () => {
         const originalPath = process.env["PATH"];
 
         try {
-            // Keep the real PATH so `node --version` still works for
-            // other tests, but prepend our bin dir so pnpm is visible.
-            process.env["PATH"] = `${binDir}:${originalPath ?? ""}`;
+            // Scope PATH to just our bin dir so corepack from the host
+            // (e.g. shipped alongside Node via nvm) doesn't leak in.
+            process.env["PATH"] = binDir;
             clearToolchainCache();
 
             const managers = findInstalledManagers(tmpDirectory);

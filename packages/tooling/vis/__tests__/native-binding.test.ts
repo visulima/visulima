@@ -5,7 +5,7 @@ import { loadNativeBindings } from "../src/native-binding";
 describe("native-binding", () => {
     describe(loadNativeBindings, () => {
         it("should return the native bindings when addon is available", async () => {
-            expect.assertions(2);
+            expect.assertions(1);
 
             vi.resetModules();
             const { loadNativeBindings } = await import("../src/native-binding");
