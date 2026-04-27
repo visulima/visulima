@@ -13,7 +13,7 @@ import { execFileSync } from "node:child_process";
 import { renameSync, unlinkSync, writeFileSync as fsWriteFileSync } from "node:fs";
 import { delimiter, sep } from "node:path";
 
-import { isAccessibleSync, readFileSync, readJsonSync, writeFileSync } from "@visulima/fs";
+import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 /**

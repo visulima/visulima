@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import toolchainCommand from "../src/commands/toolchain";
+import toolchainExecute from "../src/commands/toolchain/handler";
 import { clearToolchainCache } from "../src/toolchain";
 
 interface LoggerCall {
@@ -83,7 +83,7 @@ describe("vis toolchain (command)", () => {
         }) as never;
 
         try {
-            await toolchainCommand.execute(makeToolbox(workspaceRoot, ["status"], { json: true }) as never);
+            await toolchainExecute(makeToolbox(workspaceRoot, ["status"], { json: true }) as never);
         } finally {
             process.stdout.write = originalWrite;
         }
@@ -118,7 +118,7 @@ describe("vis toolchain (command)", () => {
             process.env["PATH"] = workspaceRoot;
             delete process.env["NVM_DIR"];
 
-            await toolchainCommand.execute(makeToolbox(workspaceRoot, ["detect"]) as never);
+            await toolchainExecute(makeToolbox(workspaceRoot, ["detect"]) as never);
         } finally {
             process.stdout.write = originalWrite;
 
@@ -142,7 +142,7 @@ describe("vis toolchain (command)", () => {
     it("`use <bad-spec>` rejects malformed input", async () => {
         expect.assertions(1);
 
-        await expect(toolchainCommand.execute(makeToolbox(workspaceRoot, ["use", "not-a-spec"]) as never)).rejects.toThrow(
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["use", "not-a-spec"]) as never)).rejects.toThrow(
             /Could not parse "not-a-spec"/,
         );
     });
@@ -150,7 +150,7 @@ describe("vis toolchain (command)", () => {
     it("`use` rejects an unknown subcommand", async () => {
         expect.assertions(1);
 
-        await expect(toolchainCommand.execute(makeToolbox(workspaceRoot, ["wat"]) as never)).rejects.toThrow(
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["wat"]) as never)).rejects.toThrow(
             /Unknown toolchain action/,
         );
     });
@@ -163,7 +163,7 @@ describe("vis toolchain (command)", () => {
 
         writeFileSync(pkgPath, original);
 
-        await toolchainCommand.execute(
+        await toolchainExecute(
             makeToolbox(workspaceRoot, ["use", "pnpm@10.32.1"], { dryRun: true }) as never,
         );
 
@@ -189,7 +189,7 @@ describe("vis toolchain (command)", () => {
         // installed in the sandbox), but the engines write is gated on
         // a successful `runInvocation`, so it won't fire here. Use
         // dryRun to avoid running the manager and only test the path.
-        await toolchainCommand.execute(
+        await toolchainExecute(
             makeToolbox(workspaceRoot, ["use", "node@22.13.0"], { dryRun: true }) as never,
         );
 
@@ -205,7 +205,7 @@ describe("vis toolchain (command)", () => {
     it("`which <unknown-tool>` throws a helpful error", async () => {
         expect.assertions(1);
 
-        await expect(toolchainCommand.execute(makeToolbox(workspaceRoot, ["which", "not-a-tool"]) as never)).rejects.toThrow(
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["which", "not-a-tool"]) as never)).rejects.toThrow(
             /Unknown tool/,
         );
     });
@@ -216,7 +216,7 @@ describe("vis toolchain (command)", () => {
         const { logger } = makeLogger();
 
         await expect(
-            toolchainCommand.execute({
+            toolchainExecute({
                 argument: ["status"],
                 logger,
                 options: {},

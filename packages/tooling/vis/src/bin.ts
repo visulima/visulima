@@ -223,10 +223,15 @@ if (isBareMigrateInvocation(process.argv.slice(2))) {
         process.exitCode = 1;
     }
 } else {
-    try {
-        await cli.run();
-    } catch {
-        // errorHandlerPlugin already rendered the error
-        process.exitCode = process.exitCode || 1;
-    }
+    // Run inside an async IIFE so there's no top-level await — Node 22 logs
+    // "Detected unsettled top-level await" if cerebro's plugin lifecycle keeps
+    // a microtask in flight when the loop empties.
+    void (async () => {
+        try {
+            await cli.run({ shouldExitProcess: false });
+        } catch {
+            // errorHandlerPlugin already rendered the error
+            process.exitCode = process.exitCode || 1;
+        }
+    })();
 }
