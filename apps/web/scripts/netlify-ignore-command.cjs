@@ -27,8 +27,11 @@ if (commitMessage.startsWith("[skip ci]")) {
     exit(0);
 }
 
-// Only build when changes happen in relevant directories or files
-const requiredChanges = ["apps/web/", "/docs/", "pnpm-lock.yaml"];
+// Only build when changes happen in relevant directories or files.
+// Keep in sync with `apps/web/scripts/copy-install-scripts.js`: any
+// file that's pulled into `apps/web/public/` at build time must appear
+// here, or the Netlify edge will keep serving the stale copy.
+const requiredChanges = ["apps/web/", "/docs/", "pnpm-lock.yaml", "packages/tooling/vis/scripts/"];
 
 const changedFiles = getChangedFiles();
 

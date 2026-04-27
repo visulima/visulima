@@ -62,6 +62,24 @@ yarn add @visulima/vis
 pnpm add @visulima/vis
 ```
 
+### Cold start (no Node? no manager?)
+
+One-liner bootstrap that installs a version manager, Node LTS, and `vis` in one go.
+
+**Linux / macOS / WSL** (bash):
+
+```sh
+curl -fsSL https://visulima.com/install.sh | bash
+```
+
+**Windows** (PowerShell 5.1+):
+
+```powershell
+irm https://visulima.com/install.ps1 | iex
+```
+
+Pass `--yes --manager=proto` (POSIX) or `-Yes -Manager proto` (PowerShell) for non-interactive / CI usage. See [`vis toolchain` docs](./docs/commands/toolchain.mdx#cold-start--no-node-no-manager) for details.
+
 ## Quick Start
 
 ```bash
@@ -143,6 +161,7 @@ Aube already skips dependency lifecycle scripts by default. `--ignore-scripts` i
 | `vis clean`             |        | Remove build artifacts, caches, and node_modules                     |
 | `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                       |
 | `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)               |
+| `vis toolchain <cmd>`   |        | Inspect / delegate to the version manager (proto, mise, fnm, volta…) |
 | `vis staged`            |        | Run tasks on staged files (built-in `lint-staged` replacement)       |
 | `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint` |
 

@@ -1,5 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
+import { runToolchainPreflight } from "../toolchain";
+
 /**
  * Detect base/head refs from common CI provider environment variables.
  * Falls back to `main` / `HEAD` when no CI-specific info is available.
@@ -62,7 +64,7 @@ const ci: Command = {
         ["vis ci build --no-install", "Skip the install step (assume deps already present)"],
         ["vis ci build --parallel=6", "Increase concurrency"],
     ],
-    execute: async ({ argument, logger, options, runtime, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }) => {
         const rawTargets = argument[0];
 
         if (!rawTargets) {
@@ -85,6 +87,25 @@ const ci: Command = {
         const { base: defaultBase, head: defaultHead } = detectCiRefs();
         const base = (options.base as string | undefined) ?? defaultBase;
         const head = (options.head as string | undefined) ?? defaultHead;
+
+        // Pre-flight: install pinned tools before anything else, so the
+        // dependency install + every affected target runs against the
+        // workspace's pinned Node/pnpm/etc rather than whatever the CI
+        // image happened to provision.
+        if (!options.skipToolchain) {
+            logger.info("▸ Toolchain pre-flight");
+        }
+
+        await runToolchainPreflight(
+            wsRoot,
+            visConfig?.toolchain,
+            {
+                error: (message) => logger.error(message),
+                info: (message) => logger.info(message),
+                warn: (message) => logger.warn(message),
+            },
+            Boolean(options.skipToolchain),
+        );
 
         if (options.install === false) {
             logger.info("▸ Skipping install (--no-install)");
@@ -131,6 +152,12 @@ const ci: Command = {
             defaultValue: true,
             description: "Install dependencies before running targets (use --no-install to skip)",
             name: "install",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+            name: "skip-toolchain",
             type: Boolean,
         },
         {

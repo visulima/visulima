@@ -25,6 +25,7 @@
                 "commands/audit",
                 "commands/secrets",
                 "commands/sbom",
+                "commands/toolchain",
                 "commands/clean",
                 "commands/hook"
             ]

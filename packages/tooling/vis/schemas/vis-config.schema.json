@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://visulima.dev/schemas/vis-config.schema.json",
+    "$id": "https://visulima.com/schemas/vis-config.schema.json",
     "title": "vis.config.ts",
     "description": "Workspace configuration for @visulima/vis. Used by defineConfig() in vis.config.ts. This schema is for non-TypeScript editors; TypeScript users get autocomplete from defineConfig() types.",
     "type": "object",
@@ -180,6 +180,39 @@
             "additionalProperties": false,
             "properties": {
                 "sortScripts": { "type": "boolean", "default": false }
+            }
+        },
+        "toolchain": {
+            "type": "object",
+            "description": "Toolchain (Node / pnpm / python / ...) management. Delegates to proto / mise / fnm / volta / asdf / nvm / corepack.",
+            "additionalProperties": false,
+            "properties": {
+                "autoInstall": {
+                    "type": "boolean",
+                    "description": "Run the right manager install on engines.node mismatch before vis run / vis ci proceed. Default: true when a manager is detected on PATH."
+                },
+                "preferredManager": {
+                    "type": "string",
+                    "enum": ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack", "none"],
+                    "description": "Explicit manager override, bypasses auto-detection. Note: self-activate is resolved automatically for pnpm/yarn + packageManager pins and is not a valid override."
+                },
+                "tools": {
+                    "type": "object",
+                    "description": "Override engines/packageManager-derived pins.",
+                    "additionalProperties": false,
+                    "properties": {
+                        "bun": { "type": "string" },
+                        "deno": { "type": "string" },
+                        "go": { "type": "string" },
+                        "node": { "type": "string" },
+                        "npm": { "type": "string" },
+                        "pnpm": { "type": "string" },
+                        "python": { "type": "string" },
+                        "ruby": { "type": "string" },
+                        "rust": { "type": "string" },
+                        "yarn": { "type": "string" }
+                    }
+                }
             }
         },
         "staged": {

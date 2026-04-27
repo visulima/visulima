@@ -160,7 +160,26 @@ from the Bazel Remote Execution proto).
 
 ---
 
-### Toolchain management (`vis toolchain` — auto-install runtimes)
+### Toolchain management (`vis toolchain` — auto-install runtimes) — DELIVERED ✅
+
+Initial implementation landed. `vis toolchain` detects whichever version manager
+(proto, mise, fnm, volta, asdf, nvm) is installed and delegates to it — no
+embedded runtime, no `~/.vis-plus`. Subcommands: `status`, `detect`, `install`,
+`use <tool>@<ver>`, `which <tool>`. Pin discovery merges `engines.node`,
+`packageManager`, `.nvmrc`, `.node-version`, `.tool-versions`, `.mise.toml`,
+`.prototools`, `volta` field, and `toolchain.tools` in `vis.config.ts` in that
+priority order. See `docs/commands/toolchain.mdx` for the full command + config
+surface and the compat matrix.
+
+**Open follow-ups** (deferred):
+
+- Wire `autoInstall` into `vis run` / `vis ci` so an engines.node mismatch
+  triggers the install flow automatically (currently users run `vis toolchain
+  install` manually).
+- Richer status output for partial matches (e.g. "node 22.13 would satisfy, but
+  you also have a `volta.node: 20` pin that disagrees").
+- Rust-side detector on `native-binding.ts` for zero-cost manager detection on
+  `vis run` startup (today it runs on demand inside the toolchain command).
 
 **Research summary — how competitors handle this**:
 
@@ -242,7 +261,7 @@ of the use case. A full v1 can wait until there's clear user demand.
 
 1. ~~**In-repo generators** (`vis generate`)~~ — **delivered**
 2. ~~**SBOM** (`vis sbom`)~~ — **delivered**
-3. **Toolchain** (`vis toolchain`) — medium-high effort, completes the moon parity story
+3. ~~**Toolchain** (`vis toolchain`)~~ — **delivered** (autoInstall hook into `vis run` remains open)
 4. **Plugin API** — only when third-party demand materializes
 5. **Webhooks** — niche, CI providers cover this natively
 6. **gRPC cache** — high effort, narrow audience (Bazel shops)
