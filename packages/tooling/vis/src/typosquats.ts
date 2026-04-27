@@ -7,14 +7,12 @@
  */
 
 import { createInterface } from "node:readline";
-import { fileURLToPath } from "node:url";
 
-import colorize from "@visulima/colorize";
-
-const { red, yellow } = colorize;
+import { red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
-import { dirname, join, resolve } from "@visulima/path";
+import { join } from "@visulima/path";
 
+import blocklistData from "../data/typosquats.json" with { type: "json" };
 import { warn } from "./output";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -157,9 +155,7 @@ let cachedReverseLookup: Map<string, string> | undefined;
 
 const loadBlocklist = (): Blocklist => {
     if (!cachedBlocklist) {
-        const dataPath = resolve(dirname(fileURLToPath(import.meta.url)), "../data/typosquats.json");
-
-        cachedBlocklist = readJsonSync(dataPath) as Blocklist;
+        cachedBlocklist = blocklistData as Blocklist;
     }
 
     return cachedBlocklist;

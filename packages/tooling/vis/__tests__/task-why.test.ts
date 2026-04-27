@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import taskWhyCommand from "../src/commands/task-why";
+import taskWhyExecute from "../src/commands/task-why/handler";
 
 type LoggerCall = [string, ...unknown[]];
 
@@ -73,7 +73,7 @@ describe("vis task-why", () => {
         const { logger } = makeLogger();
 
         await expect(
-            taskWhyCommand.execute({
+            taskWhyExecute({
                 argument: ["notacolon"],
                 logger,
                 options: {},
@@ -90,7 +90,7 @@ describe("vis task-why", () => {
         const { logger } = makeLogger();
 
         await expect(
-            taskWhyCommand.execute({
+            taskWhyExecute({
                 argument: ["@unknown/pkg:build"],
                 logger,
                 options: {},
@@ -106,7 +106,7 @@ describe("vis task-why", () => {
 
         const { calls, logger } = makeLogger();
 
-        await taskWhyCommand.execute({
+        await taskWhyExecute({
             argument: ["@my/lib:build"],
             logger,
             options: {},

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { collectCacheEntries, formatAge, runClean, runPrune } from "../src/commands/cache";
+import { collectCacheEntries, formatAge, runClean, runPrune } from "../src/commands/cache/handler";
 
 describe(formatAge, () => {
     it("returns seconds for sub-minute ages", () => {
