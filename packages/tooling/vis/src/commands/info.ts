@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runInfo } from "../pm-runner";
+import { resolveInstaller, runInfo } from "../pm-runner";
 
 const info: Command = {
     alias: "view",
@@ -18,7 +18,7 @@ const info: Command = {
         ["vis info react --json", "Emit JSON"],
         ["vis view react", "Alias matching npm/pnpm"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!argument || argument.length === 0) {
             throw new Error("No package specified. Usage: vis info <package> [field...]");
         }
@@ -26,7 +26,7 @@ const info: Command = {
         const [pkg, ...fields] = argument;
 
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runInfo(
             pm,

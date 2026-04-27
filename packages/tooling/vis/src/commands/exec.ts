@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runExec } from "../pm-runner";
+import { resolveInstaller, runExec } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const exec: Command = {
@@ -16,7 +16,7 @@ const exec: Command = {
         ["vis exec -r -- eslint .", "Run in all workspace packages"],
         ["vis exec -c 'echo $PATH'", "Shell mode"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const args = argument;
 
         if (!args || args.length === 0) {
@@ -25,7 +25,7 @@ const exec: Command = {
 
         const [command, ...rest] = args;
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runExec(
             pm,

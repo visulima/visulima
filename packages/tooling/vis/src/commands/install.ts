@@ -3,10 +3,13 @@ import { rmSync } from "node:fs";
 import type { Command } from "@visulima/cerebro";
 import { join } from "@visulima/path";
 
-import { error as errorOutput, info } from "../output";
-import { detectPm, runInstall } from "../pm-runner";
+import { error as errorOutput, info, warn } from "../output";
+import type { InstallBackend } from "../pm-runner";
+import { detectLockfileDrift, detectPm, resolveInstaller, runInstall } from "../pm-runner";
 import { scanDepsForTyposquats } from "../typosquats";
 import { toStringArray } from "../utils";
+
+const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
 
 const install: Command = {
     alias: "i",
@@ -19,6 +22,8 @@ const install: Command = {
         ["vis install --filter app", "Install for specific workspace package"],
         ["vis install --ignore-scripts", "Install without running lifecycle scripts"],
         ["vis install --no-typosquat-check", "Skip typosquat name check"],
+        ["vis install --installer aube", "Force aube as the installer (errors if not on PATH)"],
+        ["vis install --no-aube", "Bypass aube; use the lockfile-detected PM"],
     ],
     execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
@@ -34,7 +39,44 @@ const install: Command = {
             }
         }
 
-        const pm = detectPm(cwd);
+        const flagBackendRaw = options.installer as string | undefined;
+
+        if (flagBackendRaw && !ALLOWED_BACKENDS.has(flagBackendRaw as InstallBackend)) {
+            errorOutput(`Invalid --installer value: "${flagBackendRaw}". Expected one of: ${[...ALLOWED_BACKENDS].join(", ")}.`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        const flagBackend = flagBackendRaw as InstallBackend | undefined;
+        const noAube = (options.noAube as boolean) || false;
+
+        // `--no-aube` is the user's explicit escape hatch: ignore CLI flag,
+        // env, and config; go straight to lockfile detection. Otherwise,
+        // run the full precedence chain (flag → env → config → auto).
+        let pm;
+
+        try {
+            pm = noAube
+                ? detectPm(cwd)
+                : resolveInstaller(cwd, { backend: flagBackend, configBackend: visConfig?.install?.backend });
+        } catch (error: unknown) {
+            errorOutput(error instanceof Error ? error.message : String(error));
+            process.exitCode = 1;
+
+            return;
+        }
+
+        // One-time pre-flight: warn before aube rewrites a non-aube
+        // lockfile. Surfaced as a single line so it doesn't drown out
+        // the install output, but loud enough that a user committing
+        // the resulting churn diff sees it before they push.
+        const driftWarning = detectLockfileDrift(cwd, pm);
+
+        if (driftWarning) {
+            warn(driftWarning);
+        }
+
         const filters = toStringArray(options.filter);
         const ciMode = (options.ci as boolean) || false;
 
@@ -96,6 +138,17 @@ const install: Command = {
         { alias: "w", defaultValue: false, description: "Target workspace root", name: "workspace-root", type: Boolean },
         { alias: "F", description: "Filter by workspace package name", multiple: true, name: "filter", type: String },
         { defaultValue: false, description: "Skip typosquat name check", name: "no-typosquat-check", type: Boolean },
+        {
+            description: "Pick the installer explicitly. One of: auto, aube, pnpm, npm, yarn, bun. Overrides VIS_INSTALLER and install.backend in vis.config.",
+            name: "installer",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Skip aube and use the lockfile-detected PM. Wins over --installer / VIS_INSTALLER / install.backend.",
+            name: "no-aube",
+            type: Boolean,
+        },
     ],
 };
 

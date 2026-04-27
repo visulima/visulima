@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runRemove } from "../pm-runner";
+import { resolveInstaller, runRemove } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const remove: Command = {
@@ -17,7 +17,7 @@ const remove: Command = {
         ["vis remove --filter app react", "Remove from specific workspace"],
         ["vis remove -g typescript", "Remove global package"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const packages = argument;
 
         if (!packages || packages.length === 0) {
@@ -25,7 +25,7 @@ const remove: Command = {
         }
 
         const cwd = process.cwd();
-        const pm = detectPm(wsRoot ?? cwd);
+        const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runRemove(
             pm,

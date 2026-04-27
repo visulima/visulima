@@ -9,13 +9,173 @@ import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
 import { coerce, lt } from "semver";
 
+import {
+    resolveAubeAdd,
+    resolveAubeDedupe,
+    resolveAubeDlx,
+    resolveAubeExec,
+    resolveAubeInfo,
+    resolveAubeInstall,
+    resolveAubeLink,
+    resolveAubeOutdated,
+    resolveAubePmCommand,
+    resolveAubeRemove,
+    resolveAubeUnlink,
+    resolveAubeWhy,
+} from "./aube-resolver";
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "./native-binding";
 import { loadNativeBindings } from "./native-binding";
+
+/**
+ * Allowed `install.backend` values in `vis.config.ts`. `auto` means
+ * "use aube if it is on PATH, otherwise fall back to lockfile-detected
+ * PM." Any explicit name pins the choice, ignoring detection.
+ */
+type InstallBackend = "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
 
 interface PmInfo {
     name: "bun" | "npm" | "pnpm" | "yarn";
     version: string;
 }
+
+/**
+ * Strict superset of {@link PmInfo} that also admits `aube`. Used only
+ * on the installer path (`runInstall`, `resolveInstaller`). Detection
+ * helpers and PM-specific code paths (overrides, doctor, optimize,
+ * approve-builds) keep the narrower {@link PmInfo} because aube reuses
+ * the underlying PM's lockfile and behavior — there is no aube-specific
+ * override resolution or doctor check to run.
+ */
+interface InstallerInfo {
+    name: "aube" | PmInfo["name"];
+    version: string;
+}
+
+/**
+ * Returns true if a binary is callable from PATH. Prefers the native
+ * `whichBin` (Rust `which` crate) for parity with the rest of `vis`'s
+ * lookups, with no JS fallback — `which` is always present once the
+ * native addon loads, and falling back to PATH walking would diverge
+ * subtly on Windows (PATHEXT, app-execution aliases). When the native
+ * addon is unavailable, we conservatively report "not found" so `auto`
+ * mode picks the lockfile-detected PM.
+ */
+const hasBinaryOnPath = (name: string): boolean => {
+    const native = loadNativeBindings();
+
+    if (!native) {
+        return false;
+    }
+
+    return native.whichBin(name) !== null;
+};
+
+/**
+ * Walk up from `start` looking for the nearest non-aube lockfile, returning
+ * the PM that wrote it. We can't rely on {@link detectPm} for this because
+ * the native detector defaults to "pnpm" when nothing matches — that'd
+ * produce false-positive drift warnings for greenfield aube workspaces.
+ * Here we only return when an actual lockfile file is found on disk.
+ *
+ * `pnpm-workspace.yaml` is excluded — it's a workspace config, not a
+ * lockfile, and aube reads it natively without rewriting it.
+ */
+const findNonAubeLockfile = (start: string): PmInfo["name"] | undefined => {
+    const lockfiles: ReadonlyArray<readonly [string, PmInfo["name"]]> = [
+        ["pnpm-lock.yaml", "pnpm"],
+        ["yarn.lock", "yarn"],
+        ["package-lock.json", "npm"],
+        ["npm-shrinkwrap.json", "npm"],
+        ["bun.lock", "bun"],
+        ["bun.lockb", "bun"],
+    ];
+
+    let dir = start;
+
+    while (true) {
+        for (const [file, pm] of lockfiles) {
+            if (isAccessibleSync(join(dir, file))) {
+                return pm;
+            }
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir || parsePath(dir).root === dir) {
+            return undefined;
+        }
+
+        dir = parent;
+    }
+};
+
+/**
+ * Detect cross-tool lockfile drift before a mutating install.
+ *
+ * Aube reads/writes pnpm/npm/yarn/bun lockfiles in place but its
+ * serialized output is not byte-identical to the original tool's —
+ * the first aube install on a workspace whose lockfile was written by
+ * pnpm/npm/yarn/bun will produce a one-time churn diff in git, and
+ * teams that mix tools on the same lockfile will see repeated drift.
+ *
+ * Returns a user-facing warning when the resolved installer is aube
+ * and the workspace already has a non-aube lockfile. Greenfield
+ * workspaces (no lockfile at all) and aube-only workspaces return
+ * `undefined`.
+ *
+ * Pure read-only — safe to call before any mutating PM operation.
+ */
+const detectLockfileDrift = (cwd: string, installer: InstallerInfo): string | undefined => {
+    if (installer.name !== "aube") {
+        return undefined;
+    }
+
+    const detected = findNonAubeLockfile(cwd);
+
+    if (detected === undefined) {
+        return undefined;
+    }
+
+    return (
+        `Resolved installer is aube but the workspace has a ${detected} lockfile. `
+        + `Aube reads and writes ${detected}'s lockfile format in place, but its byte output may differ subtly — `
+        + "expect a one-time churn diff on the first install, and ongoing drift if your team mixes tools on the same lockfile. "
+        + "To pin the choice across the team, set `install.backend` in vis.config; to bypass aube for this run, pass --no-aube."
+    );
+};
+
+/**
+ * Resolve which package manager `vis install` (and friends) should use.
+ *
+ * Precedence: explicit CLI flag → `VIS_INSTALLER` env var → `vis.config.ts`
+ * `install.backend` → auto-detect. Auto mode picks `aube` when it is on
+ * PATH, otherwise falls back to lockfile-based detection via {@link detectPm}.
+ *
+ * Throws when an explicit choice is missing from PATH so the user gets a
+ * clear failure instead of a downstream "command not found".
+ */
+const resolveInstaller = (cwd: string, override: { backend?: InstallBackend; configBackend?: InstallBackend }): InstallerInfo => {
+    const cliBackend = override.backend;
+    const envBackend = process.env.VIS_INSTALLER as InstallBackend | undefined;
+    const explicit = cliBackend ?? envBackend ?? override.configBackend;
+
+    if (explicit && explicit !== "auto") {
+        if (explicit === "aube" && !hasBinaryOnPath("aube")) {
+            throw new Error(
+                "install.backend is set to \"aube\" but the `aube` binary is not on PATH. "
+                + "Install it via `npm i -g @endevco/aube`, `mise use -g aube`, or `brew install endevco/tap/aube`.",
+            );
+        }
+
+        return { name: explicit, version: "latest" };
+    }
+
+    if (hasBinaryOnPath("aube")) {
+        return { name: "aube", version: "latest" };
+    }
+
+    return detectPm(cwd);
+};
 
 const requireNative = (): NonNullable<ReturnType<typeof loadNativeBindings>> => {
     const native = loadNativeBindings();
@@ -154,23 +314,56 @@ const resolveAndRun = (nativeCall: (native: NonNullable<ReturnType<typeof loadNa
     return runResolved(resolved, cwd, logger);
 };
 
-const runInstall = (pm: PmInfo, options: InstallOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveInstall(pm.name, pm.version, options), cwd, logger);
+const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console): number => {
+    // Aube's flag surface lives in TS (see `aube-resolver.ts`) until the
+    // native binding learns about it. Short-circuit before the NAPI call
+    // so we don't pay a cross-FFI hop for a 5-line argv build.
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeInstall(options), cwd, logger);
+    }
 
-const runAdd = (pm: PmInfo, options: AddOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveAdd(pm.name, pm.version, options), cwd, logger);
+    return resolveAndRun((native) => native.resolveInstall(pm.name, pm.version, options), cwd, logger);
+};
 
-const runRemove = (pm: PmInfo, options: RemoveOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveRemove(pm.name, pm.version, options), cwd, logger);
+const runAdd = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeAdd(options), cwd, logger);
+    }
 
-const runDedupe = (pm: PmInfo, check: boolean, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveDedupe(pm.name, pm.version, check), cwd, logger);
+    return resolveAndRun((native) => native.resolveAdd(pm.name, pm.version, options), cwd, logger);
+};
 
-const runWhy = (pm: PmInfo, options: WhyOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveWhy(pm.name, pm.version, options), cwd, logger);
+const runRemove = (pm: InstallerInfo, options: RemoveOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeRemove(options), cwd, logger);
+    }
 
-const runOutdated = (pm: PmInfo, options: OutdatedOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveOutdated(pm.name, pm.version, options), cwd, logger);
+    return resolveAndRun((native) => native.resolveRemove(pm.name, pm.version, options), cwd, logger);
+};
+
+const runDedupe = (pm: InstallerInfo, check: boolean, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeDedupe(check), cwd, logger);
+    }
+
+    return resolveAndRun((native) => native.resolveDedupe(pm.name, pm.version, check), cwd, logger);
+};
+
+const runWhy = (pm: InstallerInfo, options: WhyOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeWhy(options), cwd, logger);
+    }
+
+    return resolveAndRun((native) => native.resolveWhy(pm.name, pm.version, options), cwd, logger);
+};
+
+const runOutdated = (pm: InstallerInfo, options: OutdatedOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeOutdated(options), cwd, logger);
+    }
+
+    return resolveAndRun((native) => native.resolveOutdated(pm.name, pm.version, options), cwd, logger);
+};
 
 interface InfoOptions {
     fields: string[];
@@ -186,7 +379,11 @@ interface InfoOptions {
  *
  * Pure function — exported for unit testing.
  */
-const resolveInfo = (pm: PmInfo, options: InfoOptions): ResolvedCommand => {
+const resolveInfo = (pm: InstallerInfo, options: InfoOptions): ResolvedCommand => {
+    if (pm.name === "aube") {
+        return resolveAubeInfo(options);
+    }
+
     const args: string[] = [];
     const warnings: string[] = [];
     const bin = pm.name;
@@ -266,7 +463,7 @@ const resolveInfo = (pm: PmInfo, options: InfoOptions): ResolvedCommand => {
     return { args, bin, warnings };
 };
 
-const runInfo = (pm: PmInfo, options: InfoOptions, cwd: string, logger: Console): number => runResolved(resolveInfo(pm, options), cwd, logger);
+const runInfo = (pm: InstallerInfo, options: InfoOptions, cwd: string, logger: Console): number => runResolved(resolveInfo(pm, options), cwd, logger);
 
 /**
  * Resolves and runs a PM `link` operation. Passes `pm.version` to the native
@@ -274,20 +471,62 @@ const runInfo = (pm: PmInfo, options: InfoOptions, cwd: string, logger: Console)
  * global-store name resolution were removed). `target` is `null` for arg-less
  * link, or a package name / path string.
  */
-const runLink = (pm: PmInfo, target: string | null, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveLink(pm.name, pm.version, target), cwd, logger);
+const runLink = (pm: InstallerInfo, target: string | null, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeLink(target), cwd, logger);
+    }
 
-const runUnlink = (pm: PmInfo, packages: string[], recursive: boolean, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveUnlink(pm.name, pm.version, packages, recursive), cwd, logger);
+    return resolveAndRun((native) => native.resolveLink(pm.name, pm.version, target), cwd, logger);
+};
 
-const runDlx = (pm: PmInfo, options: DlxOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveDlx(pm.name, pm.version, options), cwd, logger);
+const runUnlink = (pm: InstallerInfo, packages: string[], recursive: boolean, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeUnlink(packages, recursive), cwd, logger);
+    }
 
-const runExec = (pm: PmInfo, options: ExecOptions, cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolveExec(pm.name, pm.version, options), cwd, logger);
+    return resolveAndRun((native) => native.resolveUnlink(pm.name, pm.version, packages, recursive), cwd, logger);
+};
 
-const runPmSubcommand = (pm: PmInfo, subcommand: string, args: string[], cwd: string, logger: Console): number =>
-    resolveAndRun((native) => native.resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger);
+const runDlx = (pm: InstallerInfo, options: DlxOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeDlx(options), cwd, logger);
+    }
 
-export type { InfoOptions, PmInfo };
-export { detectPm, resolveInfo, runAdd, runDedupe, runDlx, runExec, runInfo, runInstall, runLink, runOutdated, runPmSubcommand, runRemove, runUnlink, runWhy };
+    return resolveAndRun((native) => native.resolveDlx(pm.name, pm.version, options), cwd, logger);
+};
+
+const runExec = (pm: InstallerInfo, options: ExecOptions, cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubeExec(options), cwd, logger);
+    }
+
+    return resolveAndRun((native) => native.resolveExec(pm.name, pm.version, options), cwd, logger);
+};
+
+const runPmSubcommand = (pm: InstallerInfo, subcommand: string, args: string[], cwd: string, logger: Console): number => {
+    if (pm.name === "aube") {
+        return runResolved(resolveAubePmCommand(subcommand, args), cwd, logger);
+    }
+
+    return resolveAndRun((native) => native.resolvePmCommand(pm.name, pm.version, subcommand, args), cwd, logger);
+};
+
+export type { InfoOptions, InstallBackend, InstallerInfo, PmInfo };
+export {
+    detectLockfileDrift,
+    detectPm,
+    resolveInfo,
+    resolveInstaller,
+    runAdd,
+    runDedupe,
+    runDlx,
+    runExec,
+    runInfo,
+    runInstall,
+    runLink,
+    runOutdated,
+    runPmSubcommand,
+    runRemove,
+    runUnlink,
+    runWhy,
+};

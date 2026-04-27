@@ -58,6 +58,7 @@
     "files": [
         "dist/**",
         "schemas/**",
+        "data/**",
         "index.js",
         "README.md",
         "CHANGELOG.md",

@@ -92,6 +92,19 @@
                 }
             }
         },
+        "install": {
+            "type": "object",
+            "description": "Installer backend selection. Lets `vis install` (and friends) use aube — a fast Rust-native PM that reads/writes pnpm/npm/yarn/bun lockfiles in place — or pin a specific conventional PM. Aube must be installed separately; vis does not bundle it.",
+            "additionalProperties": false,
+            "properties": {
+                "backend": {
+                    "type": "string",
+                    "enum": ["auto", "aube", "pnpm", "npm", "yarn", "bun"],
+                    "default": "auto",
+                    "description": "Which PM runs install/add/remove. `auto` uses aube when it is on PATH and falls back to the lockfile-detected PM. Explicit names error if the binary is missing. CLI flag `--installer` and env var `VIS_INSTALLER` override this."
+                }
+            }
+        },
         "create": {
             "type": "object",
             "description": "Configuration for vis create scaffolding command.",

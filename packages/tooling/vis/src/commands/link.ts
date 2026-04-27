@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runLink } from "../pm-runner";
+import { resolveInstaller, runLink } from "../pm-runner";
 
 const link: Command = {
     alias: "ln",
@@ -15,10 +15,10 @@ const link: Command = {
         ["vis link", "Register current package globally (pnpm <=10, yarn, npm, bun)"],
         ["vis link react", "Link global package into current project (pnpm <=10, yarn, npm, bun)"],
     ],
-    execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, visConfig, workspaceRoot: wsRoot }) => {
         const target = argument?.[0] ?? null;
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runLink(pm, target, cwd, logger);
 

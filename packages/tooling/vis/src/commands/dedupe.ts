@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runDedupe } from "../pm-runner";
+import { resolveInstaller, runDedupe } from "../pm-runner";
 
 const dedupe: Command = {
     description: "Deduplicate dependencies using the detected package manager",
@@ -8,9 +8,9 @@ const dedupe: Command = {
         ["vis dedupe", "Run deduplication"],
         ["vis dedupe --check", "Preview changes without modifying (CI-friendly)"],
     ],
-    execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runDedupe(pm, (options.check as boolean) || false, cwd, logger);
 

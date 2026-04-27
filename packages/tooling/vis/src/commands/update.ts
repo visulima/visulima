@@ -33,6 +33,7 @@ import {
 } from "../catalog";
 import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
+import { resolveInstaller } from "../pm-runner";
 import { buildSocketOptions, scoreColor } from "../socket-security";
 import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
@@ -515,7 +516,7 @@ const executeCatalogUpdate = async (
 
 const executePmWrapper = (
     workspaceRoot: string,
-    packageManager: "bun" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
     version: string,
     options: Record<string, unknown>,
     argument: string[],
@@ -658,15 +659,21 @@ const update: Command = {
             return;
         }
 
-        // Catalog mode: pnpm/bun with catalogs detected, unless --no-catalog
+        // Catalog mode: pnpm/bun with catalogs detected, unless --no-catalog.
+        // Catalog work always uses the lockfile-detected PM (pnpm/bun) because
+        // catalog manipulation is PM-format-specific. Aube cannot host catalogs
+        // on its own — it inherits whatever pnpm-workspace.yaml the project has.
         const useCatalogMode = !options.noCatalog && hasCatalogs(workspaceRoot, packageManager);
 
         if (useCatalogMode) {
             await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument, logger);
         } else {
-            const version = getPackageManagerVersion(packageManager);
+            // Non-catalog updates honor `install.backend` so users who opted
+            // into aube get `aube update` instead of the lockfile-detected PM.
+            const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend });
+            const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
-            executePmWrapper(workspaceRoot, packageManager, version, options, argument, logger);
+            executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
         }
     },
     group: "Dependencies",

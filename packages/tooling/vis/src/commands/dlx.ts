@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runDlx } from "../pm-runner";
+import { resolveInstaller, runDlx } from "../pm-runner";
 
 const dlx: Command = {
     argument: {
@@ -14,7 +14,7 @@ const dlx: Command = {
         ["vis dlx typescript@5.5.4 tsc --version", "Run specific version"],
         ["vis dlx -p cowsay -p lolcatjs -c 'echo hi | cowsay | lolcatjs'", "Multiple packages with shell"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const args = argument;
 
         if (!args || args.length === 0) {
@@ -23,7 +23,7 @@ const dlx: Command = {
 
         const [pkg, ...rest] = args;
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
 
