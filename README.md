@@ -46,7 +46,7 @@ Every package is **standalone** — install one, install ten, mix them with what
 - **Modern runtimes** — pure ESM, works in Node.js, Bun, Deno, edge runtimes, and (where it makes sense) the browser.
 - **TypeScript-native** — written in TypeScript with strict types, full inference, and `"sideEffects": false` for clean tree-shaking.
 - **Production-tested** — high test coverage, Vitest-driven, used in real products.
-- **Well-documented** — each package has its own README with examples and API reference.
+- **Well-documented** — every package has a dedicated doc page on [visulima.com](https://visulima.com), plus a README with examples and API reference.
 - **MIT licensed** — free to use, free to fork.
 
 ## Install
@@ -64,7 +64,7 @@ npm install @visulima/pail @visulima/fs
 yarn add @visulima/pail @visulima/fs
 ```
 
-Then read the README of each package for usage — links are in the table below.
+Every package has a dedicated doc page on **[visulima.com](https://visulima.com)** with usage examples and full API reference.
 
 ## What's inside
 
