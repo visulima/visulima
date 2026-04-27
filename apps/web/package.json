@@ -5,9 +5,9 @@
     "description": "Visulima main website",
     "type": "module",
     "scripts": {
-        "build": "node scripts/generate-packages.js && node scripts/copy-package-docs.js && node scripts/fetch-stats.js && vite build",
+        "build": "node scripts/generate-packages.js && node scripts/copy-package-docs.js && node scripts/copy-install-scripts.js && node scripts/fetch-stats.js && vite build",
         "copy-docs": "node scripts/copy-package-docs.js",
-        "dev": "node scripts/generate-packages.js && node scripts/copy-package-docs.js && vite dev",
+        "dev": "node scripts/generate-packages.js && node scripts/copy-package-docs.js && node scripts/copy-install-scripts.js && vite dev",
         "lint:eslint": "eslint src",
         "lint:eslint:fix": "eslint src --fix",
         "lint:prettier": "prettier --config=prettier.config.js --check .",

@@ -16,6 +16,7 @@ import type {
 import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
+import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 import { applyPreset, defaultCacheForType } from "./target-options";
 
 export interface CodeownersConfig {
@@ -560,6 +561,23 @@ interface VisConfig {
 
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
+
+    /**
+     * Toolchain (Node / pnpm / python / rust / ...) management. vis
+     * delegates to whichever version manager (proto, mise, fnm, volta,
+     * asdf, nvm, corepack) the developer already has — it does not ship
+     * its own.
+     *
+     * Re-exported from `./toolchain` so the public config type stays
+     * in lockstep with the resolver implementation. `self-activate` is
+     * narrowed out of `preferredManager` here — it's auto-resolved for
+     * pnpm/yarn `packageManager` pins and isn't meaningful as an
+     * override.
+     */
+    toolchain?: Omit<InternalToolchainConfig, "preferredManager"> & {
+        readonly preferredManager?: Exclude<VersionManagerName, "self-activate">;
+    };
+
     /** Terminal UI configuration */
     tui?: {
         /**

@@ -51,6 +51,7 @@ import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
 import syncCommand from "./commands/sync";
 import taskWhyCommand from "./commands/task-why";
+import toolchainCommand from "./commands/toolchain";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
@@ -141,6 +142,7 @@ cli.addCommand(statusCommand);
 cli.addCommand(syncCommand);
 cli.addCommand(dockerCommand);
 cli.addCommand(listCommand);
+cli.addCommand(toolchainCommand);
 cli.addCommand(completionCommand);
 
 // Package management commands

@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://visulima.dev/schemas/project.schema.json",
+    "$id": "https://visulima.com/schemas/project.schema.json",
     "title": "vis project.json",
     "description": "Per-project configuration for @visulima/vis. Place a project.json in each workspace package root.",
     "type": "object",

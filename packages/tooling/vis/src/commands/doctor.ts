@@ -387,6 +387,10 @@ const doctor: Command = {
 
                 info(`  ${icon(false)} Runtime: ${colour(finding.message)}`);
             }
+
+            // Doctor only reports — `vis toolchain install` actually fixes
+            // the mismatch via the detected manager (proto/mise/fnm/...).
+            note(`  Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
         }
 
         info(`\n  Scanning...`);
