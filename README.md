@@ -5,6 +5,14 @@
   </a>
 </p>
 
+<p align="center">
+  <strong>The TypeScript toolbox for building modern Node.js, browser, edge, and CLI applications.</strong>
+</p>
+
+<p align="center">
+  44+ independent, production-ready packages — pick only what you need.
+</p>
+
 <div align="center">
 
 [![typescript-image][typescript-badge]][typescript-url]
@@ -26,13 +34,52 @@
 
 ---
 
-## Description
+## What is Visulima?
 
-Visulima is a comprehensive monorepo containing a collection of high-quality, production-ready TypeScript packages for modern web development. The packages cover a wide range of functionality including API development, data manipulation, email handling, error debugging, filesystem operations, storage solutions, and terminal utilities.
+Visulima is a curated collection of small, focused TypeScript libraries that solve the problems you hit every day when shipping real applications — parsing CLI args, formatting terminal output, handling files and paths, debugging errors with readable stack traces, building APIs, sending emails, redacting secrets, and dozens more.
 
-Built with TypeScript and organized using Nx, Visulima provides modular, well-tested, and well-documented packages that can be used independently or together to build robust applications.
+Every package is **standalone** — install one, install ten, mix them with whatever framework you already use. No lock-in, no umbrella runtime.
 
-## Featured Packages
+## Why Visulima?
+
+- **Modular by design** — every package has a single responsibility and ships independently. Use `@visulima/fs` without touching anything else.
+- **Modern runtimes** — pure ESM, works in Node.js, Bun, Deno, edge runtimes, and (where it makes sense) the browser.
+- **TypeScript-native** — written in TypeScript with strict types, full inference, and `"sideEffects": false` for clean tree-shaking.
+- **Production-tested** — high test coverage, Vitest-driven, used in real products.
+- **Well-documented** — each package has its own README with examples and API reference.
+- **MIT licensed** — free to use, free to fork.
+
+## Install
+
+Install only the packages you need:
+
+```bash
+# pnpm
+pnpm add @visulima/pail @visulima/fs
+
+# npm
+npm install @visulima/pail @visulima/fs
+
+# yarn
+yarn add @visulima/pail @visulima/fs
+```
+
+Then read the README of each package for usage — links are in the table below.
+
+## What's inside
+
+Packages are grouped into eight categories. Jump to the section you need:
+
+- **[API](#api)** — routing, CRUD, OpenAPI, pagination, health checks
+- **[Data Manipulation](#data-manipulation)** — strings, objects, bytes, HTML, redaction, locales
+- **[Email](#email)** — multi-provider sending, templates, disposable-domain detection
+- **[Error Debugging](#error-debugging)** — stack traces, source maps, loggers, dev overlays
+- **[Filesystem](#filesystem)** — human-friendly fs helpers, path utilities, cache directories
+- **[Storage](#storage)** — S3, Azure, GCS, and local file uploads with a unified API
+- **[Terminal](#terminal)** — CLIs, colors, spinners, progress bars, tables, TUI
+- **[Tooling](#tooling)** — task runner, secret scanner, tsconfig parser, package utilities
+
+## All Packages
 
 <!-- START_TABLE_PLACEHOLDER -->
 ### API
