@@ -1,3 +1,5 @@
+import { resolveAubeUpdate } from "./aube-resolver";
+
 interface UpdateCommandOptions {
     dev: boolean;
     filters: string[];
@@ -164,14 +166,15 @@ const resolveBun = (options: UpdateCommandOptions): ResolvedCommand => {
 };
 
 const resolveUpdateCommand = (
-    packageManager: "bun" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
     version: string,
     options: UpdateCommandOptions,
 ): { command: ResolvedCommand; warnings: string[] } => {
     const warnings: string[] = [];
 
-    // Global updates always use npm
-    if (options.global) {
+    // Global updates always use npm — except for aube, which has its own
+    // `aube update --global` that operates on the aube global store.
+    if (options.global && packageManager !== "aube") {
         const args = ["update", "--global", ...options.packages];
 
         return { command: { args, bin: "npm" }, warnings };
@@ -180,6 +183,18 @@ const resolveUpdateCommand = (
     let command: ResolvedCommand;
 
     switch (packageManager) {
+        case "aube": {
+            // Delegate to the shared aube resolver so flag mapping stays
+            // single-sourced. The returned `warnings` flow up via the
+            // outer `warnings` array.
+            const aube = resolveAubeUpdate(options);
+
+            command = { args: aube.args, bin: aube.bin };
+            warnings.push(...aube.warnings);
+
+            break;
+        }
+
         case "bun": {
             command = resolveBun(options);
             break;

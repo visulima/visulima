@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runOutdated } from "../pm-runner";
+import { resolveInstaller, runOutdated } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const outdated: Command = {
@@ -16,10 +16,10 @@ const outdated: Command = {
         ["vis outdated --format json", "Output as JSON"],
         ["vis outdated -r", "Check across all workspaces"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const packages = argument || [];
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runOutdated(
             pm,

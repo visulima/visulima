@@ -40,6 +40,7 @@
 - **Task caching**: Powered by `@visulima/task-runner` with local and remote caching support
 - **Dependency-aware scheduling**: Runs tasks in topological order with configurable parallelism
 - **Affected detection**: Only runs tasks for projects changed since a given git ref
+- **Pluggable installer**: Defaults to the lockfile-detected PM (pnpm/npm/yarn/bun); auto-uses [aube](https://github.com/endevco/aube) when on `PATH`, with a single switch (`install.backend` / `--installer` / `--no-aube`) to pin or bypass it
 - **Catalog management**: Check and update dependencies in pnpm/bun workspace catalogs
 - **Security scanning**: Check for known vulnerabilities via OSV.dev
 - **Graph visualization**: View your project dependency graph in ASCII, DOT, JSON, or HTML
@@ -103,6 +104,42 @@ vis update --interactive
 # Install git hooks
 vis hook install
 ```
+
+## Installer backend (aube)
+
+`vis install`, `vis add`, `vis remove`, `vis update`, `vis dlx`, `vis exec`, `vis link`, `vis unlink`, `vis dedupe`, `vis why`, `vis outdated`, `vis info`, and `vis pm` honor [aube](https://github.com/endevco/aube) — a Rust-native package manager that reads and writes pnpm/npm/yarn/bun lockfiles in place — as a drop-in installer. Aube also supports the pnpm `catalog:` and `catalog:<name>` protocol from `pnpm-workspace.yaml`, including walk-up resolution from subpackages.
+
+`vis` does not bundle aube. Install it once via your tool of choice and `vis` will auto-detect it on `PATH`:
+
+```bash
+npm install -g @endevco/aube       # or
+mise use -g aube                   # or
+brew install endevco/tap/aube
+```
+
+Resolution precedence (highest first):
+
+1. `--installer <name>` CLI flag (or `--no-aube` to force the lockfile-detected PM for one run)
+2. `VIS_INSTALLER` environment variable
+3. `install.backend` in `vis.config.ts`
+4. Auto-detect — uses `aube` when it's on `PATH`, otherwise the lockfile-detected PM
+
+```ts
+// vis.config.ts — pin the installer for the team
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    install: { backend: "aube" }, // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun"
+});
+```
+
+### Lockfile drift
+
+Aube reuses pnpm/npm/yarn/bun lockfile formats but its serialized output isn't byte-identical to the original tool's. The first install on a workspace whose lockfile was written by another PM produces a one-time churn diff; teams that mix tools on the same lockfile see ongoing drift. `vis install` warns when this is about to happen — pin `install.backend` to keep the team consistent.
+
+### Lifecycle scripts
+
+Aube already skips dependency lifecycle scripts by default. `--ignore-scripts` is a no-op under aube (`vis install` warns when you pass it). To opt specific packages back in, run `aube approve-builds` — the inverse direction from the pnpm/npm `--ignore-scripts` model.
 
 ## Commands
 

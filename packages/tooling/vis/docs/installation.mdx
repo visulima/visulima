@@ -14,7 +14,23 @@ npm install @visulima/vis
 ## Requirements
 
 - **Node.js**: 20.19 or higher
-- **Workspace**: A monorepo using pnpm, npm, yarn, or bun workspaces
+- **Workspace**: A monorepo using pnpm, npm, yarn, bun, or [aube](https://github.com/endevco/aube) workspaces
+
+## Optional: aube as the installer backend
+
+`vis install` (and the rest of the PM commands) can use [aube](https://github.com/endevco/aube) — a Rust-native package manager that reads and writes pnpm/npm/yarn/bun lockfiles in place — instead of the lockfile-detected PM. Aube supports pnpm catalogs, including walk-up resolution from subpackages, so visulima-style monorepos work transparently.
+
+`vis` does not bundle aube. Install it separately:
+
+```bash
+npm install -g @endevco/aube
+# or
+mise use -g aube
+# or
+brew install endevco/tap/aube
+```
+
+By default, `vis` auto-detects aube on `PATH` and uses it; pass `--no-aube` to bypass it for one run, or set `install.backend` in `vis.config.ts` to pin the choice across the team. See [Configuration → Installer Backend](/configuration#installer-backend) for the full resolution chain and the lockfile-drift caveat.
 
 ## Binary Commands
 

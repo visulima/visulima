@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm, runWhy } from "../pm-runner";
+import { resolveInstaller, runWhy } from "../pm-runner";
 import { toStringArray } from "../utils";
 
 const why: Command = {
@@ -17,7 +17,7 @@ const why: Command = {
         ["vis why react -r", "Check across all workspaces"],
         ["vis explain react", "Alias matching npm's command"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const packages = argument;
 
         if (!packages || packages.length === 0) {
@@ -25,7 +25,7 @@ const why: Command = {
         }
 
         const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend });
 
         const code = runWhy(
             pm,

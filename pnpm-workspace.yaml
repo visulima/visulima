@@ -1,46 +1,17 @@
 packages:
-  - "!**/__test__/**"
-  - "!**/__tests__/**"
+  - "apps/**"
+  - "packages/**"
+  - "shared/**"
+  - "!*/__test__/**"
+  - "!*/__tests__/**"
   - "!packages/api/api-platform/__fixtures__/**"
   - "!packages/error-debugging/error/__fixtures__/**"
-  - "!packages/tooling/jsdoc-open-api/__fixtures__/**"
+  - "!packages/tooling/tsconfig/__fixtures__/**"
   - "!packages/tooling/package/__fixtures__/package-json/**"
-  - "!packages/tooling/package/__fixtures__/read-tsconfig/**"
   - "!packages/tooling/package/__fixtures__/which-package-manager/**"
   - "!packages/tooling/package/__fixtures__/workspaces/**"
   - "!packages/storage/storage/src/adapter/nuxt"
   - "!packages/tooling/vis/examples/sample-workspace/**"
-  - "apps/**"
-  - "packages/**"
-  - "shared/**"
-  - "packages/terminal/boxen/__bench__"
-  - "packages/terminal/colorize/__bench__"
-  - "packages/data-manipulation/deep-clone/__bench__"
-  - "packages/terminal/fmt/__bench__"
-  - "packages/error-debugging/inspector/__bench__"
-  - "packages/error-debugging/pail/__bench__"
-  - "packages/data-manipulation/string/__bench__"
-  - "packages/terminal/tabular/__bench__"
-  - "packages/filesystem/fs/__bench__"
-  - "packages/data-manipulation/redact/__bench__"
-  - "packages/terminal/command-line-args/__bench__"
-  - "packages/terminal/cerebro/__bench__"
-  - "packages/terminal/colorize/__fixtures__/package/cjs"
-  - "packages/terminal/colorize/__fixtures__/package/mjs"
-  - "packages/terminal/cerebro/__fixtures__/package/cjs"
-  - "packages/terminal/cerebro/__fixtures__/package/mjs"
-  - "packages/tooling/package/__fixtures__/package/cjs"
-  - "packages/tooling/package/__fixtures__/package/mjs"
-  - "packages/error-debugging/pail/__fixtures__/package/cjs"
-  - "packages/error-debugging/pail/__fixtures__/package/mjs"
-  - "packages/terminal/boxen/__fixtures__/package/cjs"
-  - "packages/terminal/boxen/__fixtures__/package/mjs"
-  - "packages/filesystem/path/__fixtures__/package/cjs"
-  - "packages/filesystem/path/__fixtures__/package/mjs"
-  - "packages/data-manipulation/redact/__fixtures__/package/cjs"
-  - "packages/data-manipulation/redact/__fixtures__/package/mjs"
-  - "packages/tooling/tsconfig/__fixtures__/package/cjs"
-  - "packages/tooling/tsconfig/__fixtures__/package/mjs"
 
 allowBuilds:
   '@parcel/watcher': true
@@ -103,12 +74,12 @@ catalogs:
     '@visulima/prisma-dmmf-transformer': 3.0.0-alpha.5
     express: ^5.2.1
     fastify: 5.8.5
-    hono: 4.12.14
+    hono: 4.12.15
     koa: 3.2.0
     prisma: 6.19.2
     swagger-ui-express: ^5.0.1
   build:
-    '@cloudflare/vite-plugin': 1.33.1
+    '@cloudflare/vite-plugin': 1.33.2
     '@netlify/vite-plugin-tanstack-start': 1.3.7
     '@optimize-lodash/rollup-plugin': 6.0.0
     '@preact/preset-vite': 2.10.5
@@ -123,7 +94,7 @@ catalogs:
     esbuild: 0.28.0
     rollup: 4.60.2
     unplugin-fonts: 2.0.0
-    vite: 8.0.9
+    vite: 8.0.10
     vite-imagetools: 10.0.0
     vite-plugin-solid: 2.11.12
     vite-plugin-svgr: 5.2.0
@@ -136,16 +107,16 @@ catalogs:
     '@anolilab/semantic-release-pnpm': ^8.1.2
     '@anolilab/semantic-release-preset': ^13.4.3
     '@arethetypeswrong/cli': ^0.18.2
-    '@aws-sdk/client-s3': 3.1034.0
-    '@aws-sdk/credential-providers': 3.1034.0
-    '@aws-sdk/s3-request-presigner': 3.1034.0
-    '@aws-sdk/signature-v4-crt': 3.1034.0
+    '@aws-sdk/client-s3': 3.1037.0
+    '@aws-sdk/credential-providers': 3.1037.0
+    '@aws-sdk/s3-request-presigner': 3.1037.0
+    '@aws-sdk/signature-v4-crt': 3.1037.0
     '@aws-sdk/types': 3.973.8
     '@azure/storage-blob': ^12.31.0
     '@babel/core': 7.29.0
     '@babel/types': ^7.29.0
     '@bomb.sh/tab': ^0.0.14
-    '@cloudflare/workers-types': 4.20260422.1
+    '@cloudflare/workers-types': 4.20260426.1
     '@hapi/hapi': ^21.4.8
     '@inquirer/core': 11.1.9
     '@inquirer/type': 4.0.5
@@ -161,7 +132,7 @@ catalogs:
     '@shikijs/langs': ^4.0.2
     '@shikijs/themes': ^4.0.2
     '@sveltejs/adapter-auto': ^7.0.1
-    '@sveltejs/kit': ^2.57.1
+    '@sveltejs/kit': ^2.58.0
     '@total-typescript/ts-reset': ^0.6.1
     '@tsconfig/node22': ^22.0.5
     '@vercel/blob': 2.3.3
@@ -183,7 +154,7 @@ catalogs:
     '@xterm/headless': ^6.0.0
     '@yarnpkg/pnp': 4.1.5
     ai: 6.0.168
-    ajv: 8.18.0
+    ajv: 8.20.0
     ajv-formats: 3.0.1
     ansi-regex: ^6.2.2
     ansi-styles: ^6.2.3
@@ -248,22 +219,22 @@ catalogs:
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
     marked: 18.0.2
-    mediabunny: 1.40.1
-    mjml: ^5.0.1
+    mediabunny: 1.41.0
+    mjml: ^5.1.0
     mobx: ^6.15.0
     ms: ^2.1.3
-    msw: 2.13.4
+    msw: 2.13.6
     next: 16.2.4
     node-fetch: ^3.3.2
     node-mocks-http: ^1.17.2
     node-pty: 1.1.0
-    nodemailer: 8.0.5
-    npm: 11.12.1
+    nodemailer: 8.0.6
+    npm: 11.13.0
     npm-run-all2: ^8.0.4
     openai: 6.34.0
     openapi-types: ^12.1.3
     pkijs: 3.4.0
-    postcss: ^8.5.10
+    postcss: ^8.5.12
     preact: ^10.29.1
     publint: ^0.3.18
     qs-esm: ^8.0.1
@@ -298,7 +269,7 @@ catalogs:
     typescript-coverage-report: ^1.1.1
     web-vitals: 5.2.0
     webdriverio: 9.27.0
-    wrangler: 4.84.1
+    wrangler: 4.85.0
     yaml: 2.8.3
     yarn: ^1.22.22
     zeptomatch: ^2.1.0
@@ -331,9 +302,9 @@ catalogs:
     '@tailwindcss/node': 4.2.4
     '@tailwindcss/oxide': 4.2.4
     '@tailwindcss/postcss': 4.2.4
-    '@tanstack/react-router': 1.168.23
+    '@tanstack/react-router': 1.168.24
     '@tanstack/react-router-devtools': 1.166.13
-    '@tanstack/react-start': 1.167.42
+    '@tanstack/react-start': 1.167.49
     '@tanstack/react-virtual': 3.13.24
     '@tsconfig/svelte': ^5.0.8
     '@unpic/react': 1.0.2
@@ -341,7 +312,7 @@ catalogs:
     '@vue-email/render': 0.0.9
     '@vue/tsconfig': 0.9.1
     babel-plugin-react-compiler: 19.1.0-rc.3
-    fumadocs-ui: 16.8.1
+    fumadocs-ui: 16.8.4
     motion: 12.38.0
     radix-ui: ^1.4.3
     react: 19.2.5
@@ -351,17 +322,17 @@ catalogs:
     react-remove-scroll: 2.7.2
     react-router: 7.14.2
     solid-js: 1.9.12
-    svelte: 5.55.4
+    svelte: 5.55.5
     svelte-check: ^4.4.6
     svelte-preprocess: ^6.0.3
     swagger-ui-react: 5.32.4
     three: 0.184.0
-    vue: 3.5.32
+    vue: 3.5.33
   icons:
     '@icons-pack/react-simple-icons': 13.13.0
     '@radix-ui/react-icons': 1.3.2
-    lucide-react: 1.8.0
-    lucide-static: 1.8.0
+    lucide-react: 1.11.0
+    lucide-static: 1.11.0
     media-icons: 1.1.5
     react-icon-cloud: 4.1.7
   lint:
@@ -373,8 +344,8 @@ catalogs:
     '@eslint/eslintrc': ^3.3.5
     '@eslint/js': ^10.0.1
     '@rushstack/eslint-plugin-security': ^0.14.2
-    '@secretlint/secretlint-rule-preset-recommend': 12.2.0
-    '@tanstack/eslint-plugin-query': 5.99.2
+    '@secretlint/secretlint-rule-preset-recommend': 12.3.1
+    '@tanstack/eslint-plugin-query': 5.100.5
     '@tanstack/eslint-plugin-router': 1.161.6
     '@typescript-eslint/eslint-plugin': 8.59.0
     '@typescript-eslint/parser': 8.59.0
@@ -389,17 +360,17 @@ catalogs:
     eslint-plugin-react-you-might-not-need-an-effect: 0.9.3
     eslint-plugin-solid: 0.14.5
     eslint-plugin-storybook: 10.3.5
-    eslint-plugin-svelte: 3.17.0
+    eslint-plugin-svelte: 3.17.1
     eslint-plugin-testing-library: 7.16.2
     eslint-plugin-validate-jsx-nesting: ^0.1.1
     eslint-plugin-vue: 10.9.0
     eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-    eslint-plugin-zod: 3.7.0
+    eslint-plugin-zod: 3.8.0
     husky: ^9.1.7
     lint-staged: ^16.4.0
     prettier: 3.8.3
-    prettier-plugin-tailwindcss: 0.7.2
-    secretlint: 12.2.0
+    prettier-plugin-tailwindcss: 0.7.3
+    secretlint: 12.3.1
     svelte-eslint-parser: 1.6.0
     typescript-eslint: 8.59.0
     vue-eslint-parser: 10.4.0
@@ -435,7 +406,7 @@ catalogs:
     ini: ^6.0.0
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
-    mjml: 5.0.1
+    mjml: 5.1.0
     next: 16.2.4
     pkijs: 3.4.0
     rate-limiter-flexible: 11.0.1
@@ -453,23 +424,23 @@ catalogs:
     '@apidevtools/swagger-parser': ^12.1.0
     '@arcanis/slice-ansi': 2.0.1
     '@aws-sdk/abort-controller': ^3.374.0
-    '@aws-sdk/client-s3': 3.1034.0
-    '@aws-sdk/credential-providers': 3.1034.0
-    '@aws-sdk/s3-request-presigner': 3.1034.0
+    '@aws-sdk/client-s3': 3.1037.0
+    '@aws-sdk/credential-providers': 3.1037.0
+    '@aws-sdk/s3-request-presigner': 3.1037.0
     '@aws-sdk/types': 3.973.8
     '@azure/storage-blob': ^12.31.0
     '@babel/generator': ^7.29.1
     '@babel/parser': 7.29.2
     '@babel/traverse': ^7.29.0
     '@bomb.sh/args': ^0.3.1
-    '@commitlint/cli': ^20.5.0
+    '@commitlint/cli': ^20.5.2
     '@commitlint/config-conventional': ^20.5.0
     '@dynamicabot/signales': ^2.1.2
     '@floating-ui/dom': ^1.7.6
     '@fumadocs/mdx-remote': 1.4.9
     '@jridgewell/trace-mapping': ^0.3.31
     '@mfederczuk/deeptools': 2.1.0-rc01
-    '@oclif/core': 4.10.5
+    '@oclif/core': 4.10.6
     '@octokit/rest': ^22.0.1
     '@ogma/logger': 3.4.0
     '@qiwi/masker': ^2.0.1
@@ -479,7 +450,7 @@ catalogs:
     '@sindresorhus/fnv1a': 3.1.0
     '@sindresorhus/slugify': ^3.0.0
     '@sindresorhus/transliterate': 2.3.1
-    '@tanstack/router-plugin': 1.167.22
+    '@tanstack/router-plugin': 1.167.27
     '@tinyhttp/accepts': ^2.3.0
     '@ungap/structured-clone': ^1.3.0
     '@visulima/boxen': 3.0.0-alpha.6
@@ -555,7 +526,7 @@ catalogs:
     find-up: 8.0.0
     find-up-simple: 1.0.1
     fs-extra: 11.3.4
-    fumadocs-core: 16.8.1
+    fumadocs-core: 16.8.4
     fumadocs-mdx: 14.3.1
     fumadocs-twoslash: 3.2.0
     google-auth-library: 10.6.2
@@ -566,7 +537,7 @@ catalogs:
     http-status-codes: ^2.3.0
     ical-generator: 10.2.0
     is-in-ci: ^2.0.0
-    isomorphic-dompurify: 3.9.0
+    isomorphic-dompurify: 3.10.0
     jackspeak: ^4.2.3
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
@@ -592,20 +563,20 @@ catalogs:
     next: 16.2.4
     next-themes: ^0.4.6
     nitro: 3.0.260311-beta
-    nodemailer: 8.0.5
+    nodemailer: 8.0.6
     normalize-package-data: ^8.0.0
     nuxt: ^4.4.2
-    nx: 22.6.5
+    nx: 22.7.0
     object-inspect: ^1.13.4
     patch-console: ^2.0.0
     path-to-regexp: 8.4.2
     picocolors: ^1.1.1
     pingman: ^2.1.0
     pino: ^10.3.1
-    pkg-pr-new: ^0.0.66
+    pkg-pr-new: ^0.0.67
     plain-object-clone: ^2.0.1
     plop: ^4.0.5
-    posthog-js: 1.369.5
+    posthog-js: 1.372.1
     preact: ^10.29.1
     ramda: ^0.32.0
     read-pkg: ^10.1.0
@@ -632,7 +603,7 @@ catalogs:
     string-width: 8.2.0
     swagger-jsdoc: ^6.2.8
     tailwind-merge: 3.5.0
-    textlint: ^15.5.4
+    textlint: ^15.6.0
     transliteration: 2.6.1
     ts-japi: ^1.12.3
     tslog: ^4.10.2
@@ -775,6 +746,7 @@ overrides:
   axios@<=1.13.4: '>=1.13.5'
   basic-ftp@<5.2.0: '>=5.2.0'
   basic-ftp@<=5.2.1: '>=5.2.2'
+  basic-ftp@<=5.2.2: '>=5.3.0'
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   brace-expansion@<5.0.5: '>=5.0.5'
   chrono-node@<2.2.4: '>=2.9.0'
@@ -791,6 +763,7 @@ overrides:
   express@<4.22.0: '>=4.22.0'
   express@>=5.0.0 <5.2.0: '>=5.2.0'
   fast-xml-parser@<5.3.8: '>=5.3.8'
+  fast-xml-parser@<5.7.0: '>=5.7.0'
   fast-xml-parser@>=4.0.0-beta.3 <=5.5.5: '>=5.5.6'
   fast-xml-parser@>=4.0.0-beta.3 <=5.5.6: '>=5.5.7'
   fast-xml-parser@>=4.1.3 <4.5.4: '>=4.5.4'
@@ -846,7 +819,9 @@ overrides:
   path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
   picomatch@<2.3.2: '>=2.3.2'
   picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
+  postcss@<8.5.10: '>=8.5.10'
   prismjs@<1.30.0: '>=1.30.0'
+  protobufjs@<7.5.5: '>=7.5.5'
   qs@>=6.7.0 <=6.14.1: '>=6.14.2'
   rollup@>=4.0.0 <4.59.0: '>=4.59.0'
   serialize-javascript@<7.0.5: '>=7.0.5'
@@ -873,6 +848,7 @@ overrides:
   vite@>=7.0.0 <=7.3.1: '>=7.3.2'
   vite@>=7.1.0 <=7.1.4: '>=7.1.11'
   yaml@>=1.0.0 <1.10.3: '>=1.10.3'
+  yaml@>=2.0.0 <2.8.3: '>=2.8.3'
   yauzl@<3.2.1: '>=3.2.1'
 patchedDependencies:
   picomatch@4.0.4: patches/picomatch@4.0.4.patch

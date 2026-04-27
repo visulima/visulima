@@ -315,6 +315,53 @@ export default defineConfig({
 });
 ```
 
+### Installer Backend
+
+Pin which package manager runs `vis install`, `vis add`, `vis remove`, `vis update`, `vis dlx`, `vis exec`, and friends. Useful for opting a workspace into [aube](https://github.com/endevco/aube) — a Rust-native PM that reads/writes pnpm/npm/yarn/bun lockfiles in place — without forcing every team member to remember CLI flags.
+
+```typescript
+export default defineConfig({
+    install: {
+        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun"
+    },
+});
+```
+
+| Value                                     | Behavior                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `"auto"` _(default)_                      | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                           |
+| `"aube"`                                  | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back            |
+| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"`   | Pin to the named PM regardless of what's on PATH                                                                          |
+
+#### Resolution precedence
+
+Highest first:
+
+1. CLI flag — `vis install --installer <name>` (or `--no-aube` to force the lockfile-detected PM for one run)
+2. Environment variable — `VIS_INSTALLER=<name>`
+3. This `install.backend` field
+4. Auto-detect
+
+#### Aube installation
+
+`vis` does not bundle aube. Install it once via your tool of choice:
+
+```bash
+npm install -g @endevco/aube
+# or
+mise use -g aube
+# or
+brew install endevco/tap/aube
+```
+
+#### Lockfile drift
+
+Aube reuses pnpm/npm/yarn/bun lockfile formats but its serialized output isn't byte-identical to the original tool's. The first install on a workspace whose lockfile was written by another PM produces a one-time churn diff in git, and teams that mix tools on the same lockfile see ongoing drift. `vis install` warns when this is about to happen — pin `install.backend` here to keep the team consistent.
+
+#### Catalogs
+
+Aube supports the pnpm `catalog:` and `catalog:<name>` protocol from `pnpm-workspace.yaml`, including walk-up resolution from subpackages. No additional configuration needed.
+
 ---
 
 ## project.json
