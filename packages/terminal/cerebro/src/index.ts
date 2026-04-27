@@ -88,10 +88,11 @@ export type { CliOptions } from "./cli";
 export { Cli as Cerebro } from "./cli";
 export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
-export type { ArgumentDefinition, Command, EnvDefinition, OptionDefinition } from "./types/command";
+export type { ArgumentDefinition, Command, CommandExecute, EnvDefinition, LazyCommandModule, OptionDefinition } from "./types/command";
 export type { CreateEnv, CreateOptions, OptionNameToCamelCase } from "./types/option-types";
 export type { Plugin, PluginContext } from "./types/plugin";
 export type { Toolbox } from "./types/toolbox";
+export { lazyNamed } from "./util/lazy-named";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { VisulimaError } from "@visulima/error";
 
