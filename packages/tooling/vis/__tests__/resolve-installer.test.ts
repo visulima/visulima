@@ -18,14 +18,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 let availableBinaries = new Set<string>();
 
-vi.mock("../src/native-binding", async () => {
-    const actual = await vi.importActual<typeof import("../src/native-binding")>("../src/native-binding");
+vi.mock(import('@visulima/vis/native'), async () => {
+    const actual = await vi.importActual<typeof import("@visulima/vis/native")>("@visulima/vis/native");
 
     return {
         ...actual,
-        loadNativeBindings: () => ({
-            whichBin: (name: string) => (availableBinaries.has(name) ? `/usr/local/bin/${name}` : null),
-        }),
+        whichBin: (name: string) => (availableBinaries.has(name) ? `/usr/local/bin/${name}` : null),
     };
 });
 
@@ -47,7 +45,7 @@ afterEach(() => {
 });
 
 describe("resolveInstaller precedence", () => {
-    it("CLI flag wins over env var, config, and auto-detect", () => {
+    it("cLI flag wins over env var, config, and auto-detect", () => {
         expect.assertions(1);
 
         availableBinaries.add("aube");

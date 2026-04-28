@@ -3,8 +3,8 @@ import { writeFileSync } from "node:fs";
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
+import { sortPackageJsonStringWithOptions } from "#native";
 
-import { loadNativeBindings } from "../../native-binding";
 import { failure, info, success, warn } from "../../output";
 import { errorMessage } from "../../utils";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../workspace";
@@ -65,26 +65,62 @@ const findPackageJsonFiles = (root: string): string[] => {
 };
 
 /**
- * Sorts a package.json string using the native Rust binding.
+ * Detects the leading indent of a JSON document by sampling the
+ * whitespace on the first child line. Falls back to two spaces.
  */
-const sortContents = (contents: string, sortScripts: boolean): string => {
-    const native = loadNativeBindings();
+const detectIndent = (contents: string): string => {
+    const match = /\n([ \t]+)/.exec(contents);
 
-    if (!native) {
-        throw new Error("Native bindings unavailable: sort-package-json requires the native addon. Ensure the correct platform binary is installed.");
+    return match?.[1] ?? "  ";
+};
+
+/**
+ * Resolves a user-supplied indent override into a literal whitespace
+ * string. Accepts:
+ *   - a digit string ("2", "4") — that many spaces
+ *   - "tab" or "\t" — a single tab
+ *   - any literal whitespace (already-resolved value from config)
+ * Returns `undefined` for empty/missing input so the caller falls back
+ * to per-file detection.
+ */
+const resolveIndentOverride = (raw: string | undefined): string | undefined => {
+    if (raw === undefined || raw === "") {
+        return undefined;
     }
 
-    return native.sortPackageJsonStringWithOptions(contents, {
-        pretty: true,
-        sort_scripts: sortScripts,
+    if (raw === "tab" || raw === "\\t") {
+        return "\t";
+    }
+
+    if (/^\d+$/.test(raw)) {
+        return " ".repeat(Number.parseInt(raw, 10));
+    }
+
+    return raw;
+};
+
+/**
+ * Sorts a package.json string using the native Rust binding for key
+ * ordering, then re-serializes with `JSON.stringify` to apply the
+ * caller's indent. Going through `pretty: false` + `JSON.parse` keeps
+ * us decoupled from the Rust crate's hardcoded two-space pretty
+ * output.
+ */
+const sortContents = (contents: string, sortScripts: boolean, indent: string): string => {
+    const compact = sortPackageJsonStringWithOptions(contents, {
+        pretty: false,
+        sortScripts,
     });
+
+    return JSON.stringify(JSON.parse(compact) as unknown, null, indent);
 };
 
 const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SortPackageJsonOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
-    const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as { sortScripts?: boolean } | undefined;
+    const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as { indent?: string; sortScripts?: boolean } | undefined;
     const check = options.check || false;
     const sortScripts = options.sortScripts || config?.sortScripts || false;
+    const indentOverride = resolveIndentOverride(options.indent ?? config?.indent);
     const files = findPackageJsonFiles(cwd);
 
     if (files.length === 0) {
@@ -104,7 +140,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             let sorted: string;
 
             try {
-                sorted = sortContents(contents, sortScripts);
+                const indent = indentOverride ?? detectIndent(contents);
+
+                sorted = sortContents(contents, sortScripts, indent);
             } catch (error: unknown) {
                 failure(`${filePath}: ${errorMessage(error)}`);
                 errorCount++;
