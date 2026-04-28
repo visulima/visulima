@@ -29,7 +29,7 @@ import type {
     RemoveOptions,
     ResolvedCommand,
     WhyOptions,
-} from "./native-binding";
+} from "#native";
 
 interface InfoOptions {
     fields: string[];
@@ -45,20 +45,20 @@ interface InfoOptions {
  */
 interface UpdateOptions {
     dev: boolean;
-    filters: readonly string[];
+    filters: ReadonlyArray<string>;
     global: boolean;
     interactive: boolean;
     latest: boolean;
     noOptional: boolean;
     noSave: boolean;
-    packages: readonly string[];
+    packages: ReadonlyArray<string>;
     prod: boolean;
     recursive: boolean;
     workspaceRoot: boolean;
 }
 
 /** Push global filters/recursive/workspace-root flags ahead of a subcommand. */
-const pushFilterGlobals = (args: string[], filters: readonly string[], recursive: boolean, workspaceRoot: boolean): void => {
+const pushFilterGlobals = (args: string[], filters: ReadonlyArray<string>, recursive: boolean, workspaceRoot: boolean): void => {
     for (const filter of filters) {
         args.push("--filter", filter);
     }
@@ -393,7 +393,7 @@ const resolveAubeLink = (target: string | null): ResolvedCommand => {
     return { args, bin: "aube", warnings: [] };
 };
 
-const resolveAubeUnlink = (packages: readonly string[], recursive: boolean): ResolvedCommand => {
+const resolveAubeUnlink = (packages: ReadonlyArray<string>, recursive: boolean): ResolvedCommand => {
     const args: string[] = [];
     const warnings: string[] = [];
 
@@ -482,18 +482,18 @@ const resolveAubeUpdate = (options: UpdateOptions): { args: string[]; bin: "aube
 };
 
 /**
- * Pass-through resolver for `vis pm <subcommand> [args]`. Aube has
+ * Pass-through resolver for `vis pm &lt;subcommand> [args]`. Aube has
  * native subcommands for most PM utilities (cache, list, audit, view,
  * publish, login, logout, pack, dist-tag, rebuild, prune, deprecate),
  * so they forward verbatim. Commands that aube doesn't implement —
  * `fund`, `ping`, `search`, `token` — fall back to npm, matching the
  * existing pnpm/yarn/bun resolver behavior in
  * `native/src/pm_resolve.rs::resolve_pm_command`. This keeps
- * `vis pm <thing>` semantics stable across installer choice.
+ * `vis pm &lt;thing>` semantics stable across installer choice.
  */
 const NPM_ONLY_SUBCOMMANDS: ReadonlySet<string> = new Set(["fund", "ping", "search", "token"]);
 
-const resolveAubePmCommand = (subcommand: string, extraArgs: readonly string[]): ResolvedCommand => {
+const resolveAubePmCommand = (subcommand: string, extraArgs: ReadonlyArray<string>): ResolvedCommand => {
     if (NPM_ONLY_SUBCOMMANDS.has(subcommand)) {
         return {
             args: [subcommand, ...extraArgs],

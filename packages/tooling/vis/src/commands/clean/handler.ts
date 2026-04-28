@@ -3,8 +3,8 @@ import { lstatSync, readdirSync, unlinkSync } from "node:fs";
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
+import { cleanWorkspace } from "#native";
 
-import { loadNativeBindings } from "../../native-binding";
 import { failure, info, success } from "../../output";
 import { errorMessage } from "../../utils";
 import type { CleanOptions } from "./index";
@@ -112,16 +112,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
         return;
     }
 
-    const native = loadNativeBindings();
-
-    if (!native) {
-        failure("Native bindings unavailable. Ensure the correct platform binary is installed.");
-        process.exitCode = 1;
-
-        return;
-    }
-
-    const result = native.cleanWorkspace(cwd, shouldRemoveLockfile);
+    const result = cleanWorkspace(cwd, shouldRemoveLockfile);
 
     for (const dir of result.removed) {
         success(`Removed ${dir}`);
