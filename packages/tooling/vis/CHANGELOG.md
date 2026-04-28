@@ -1,3 +1,38 @@
+## @visulima/vis [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.8...@visulima/vis@1.0.0-alpha.9) (2026-04-28)
+
+### Features
+
+* Add toolchain management with version manager detection and delegation ([#617](https://github.com/visulima/visulima/issues/617)) ([548b0e8](https://github.com/visulima/visulima/commit/548b0e8f9d59743be25abb97b5de3fdbeb681bd6))
+* **vis:** add aube as default installer with PM fallback ([79a9933](https://github.com/visulima/visulima/commit/79a99333c0e73e69f375b36c56e40b2693dc4c90))
+* **vis:** add ignore/sortOrder/unsorted/finalNewline/lineEnding to sort-package-json ([50f68df](https://github.com/visulima/visulima/commit/50f68dfc2bc31c082ef98b3ddcf73d3dee0cc080))
+* **vis:** interactive TUI for bare `vis migrate` ([2171441](https://github.com/visulima/visulima/commit/217144190520447ba9fbe66a9a8f0c452469151e))
+
+### Bug Fixes
+
+* fixed spacing ([1544af2](https://github.com/visulima/visulima/commit/1544af21294edaaf5799846e6c6063c86def3d29))
+* **vis:** use default colorize import ([2b95ad2](https://github.com/visulima/visulima/commit/2b95ad28207e699161ed201a43f175a630a06c61))
+
+### Miscellaneous Chores
+
+* added missing version key ([036d86e](https://github.com/visulima/visulima/commit/036d86e6cfa078e4f651327f630cec721f1bbc47))
+* **vis:** upgrade packem to 2.0.0-alpha.76 ([9753759](https://github.com/visulima/visulima/commit/97537598a23a4f680e332ca2ea73ad64f301252a))
+
+### Code Refactoring
+
+* **vis:** adopt cerebro lazy commands; split each command into folder ([e1efc0f](https://github.com/visulima/visulima/commit/e1efc0fe57e39433c33c50b1ad2c9e971ea596ba))
+* **vis:** drop native-binding wrapper; preserve indent in sort-package-json ([efcccb8](https://github.com/visulima/visulima/commit/efcccb8bedac2f7e7e0819b8eb12277e5bf71312))
+
+### Tests
+
+* **vis:** isolate host env in toolchain tests, fix assertion count ([d472635](https://github.com/visulima/visulima/commit/d4726350c3a68d574b08aff88369751f07216137))
+* **vis:** scope PATH in ensureToolchain engines-pnpm test ([ced1571](https://github.com/visulima/visulima/commit/ced157139ba8c6140b85a11d6c3655b2412620ac))
+
+
+### Dependencies
+
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.12
+* **@visulima/tui:** upgraded to 1.0.0-alpha.5
+
 ## @visulima/vis [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.7...@visulima/vis@1.0.0-alpha.8) (2026-04-22)
 
 ### Features
