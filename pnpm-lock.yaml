@@ -9477,14 +9477,23 @@ importers:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
+  packages/tooling/tsconfig/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/tsconfig':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/tsconfig/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/tsconfig':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/tooling/vis:
     dependencies:
       '@bomb.sh/tab':
         specifier: catalog:dev
         version: 0.0.14(cac@6.7.14)(citty@0.2.2)(commander@14.0.3)
-      '@nkzw/safe-word-list':
-        specifier: ^3.1.2
-        version: 3.1.2
       '@socketsecurity/registry':
         specifier: ^2.0.2
         version: 2.0.2(typescript@6.0.3)
@@ -9560,9 +9569,6 @@ importers:
       smol-toml:
         specifier: catalog:peer
         version: 1.6.1
-      validate-npm-package-name:
-        specifier: ^7.0.2
-        version: 7.0.2
       yaml:
         specifier: catalog:prod
         version: 2.8.3
@@ -9591,6 +9597,9 @@ importers:
       '@napi-rs/cli':
         specifier: catalog:dev
         version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.6.0)(node-addon-api@8.7.0)
+      '@nkzw/safe-word-list':
+        specifier: ^3.1.2
+        version: 3.1.2
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 12.3.1
@@ -9687,6 +9696,9 @@ importers:
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
+      validate-npm-package-name:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: catalog:test
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.0(@noble/hashes@1.8.0))(msw@2.13.6(@types/node@25.6.0)(typescript@6.0.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -50542,7 +50554,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.1(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
@@ -61721,7 +61733,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.2.1(jiti@2.6.1)))(eslint-plugin-promise@6.6.0(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.2.1(jiti@2.6.1)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.0(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
