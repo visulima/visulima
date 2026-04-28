@@ -5234,7 +5234,7 @@ importers:
         specifier: 2.0.0-alpha.10
         version: link:../../terminal/fmt
       '@visulima/inspector':
-        specifier: 2.0.0-alpha.9
+        specifier: 2.0.0-alpha.10
         version: link:../inspector
       '@visulima/packem':
         specifier: catalog:dev
@@ -7675,7 +7675,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.77(57fe05c3c337a038cf7ac40eb4d1afea)
       '@visulima/pail':
-        specifier: 4.0.0-alpha.11
+        specifier: 4.0.0-alpha.12
         version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.10
@@ -9501,7 +9501,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.0-alpha.11
+        specifier: 3.0.0-alpha.12
         version: link:../../terminal/cerebro
       '@visulima/colorize':
         specifier: 2.0.0-alpha.10
@@ -9534,7 +9534,7 @@ importers:
         specifier: 1.0.0-alpha.7
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 1.0.0-alpha.4
+        specifier: 1.0.0-alpha.5
         version: link:../../terminal/tui
       execa:
         specifier: catalog:dev
