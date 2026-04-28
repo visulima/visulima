@@ -1,3 +1,18 @@
+## @visulima/tui [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.4...@visulima/tui@1.0.0-alpha.5) (2026-04-28)
+
+### Bug Fixes
+
+* **tui:** annotate Array.from element type in histogram ([8f94a52](https://github.com/visulima/visulima/commit/8f94a52e775430c1336a3b24e9d7a30b59afb3f9))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **tui:** upgrade packem to 2.0.0-alpha.76 ([12e76e0](https://github.com/visulima/visulima/commit/12e76e05c3c7f2656af061a058f6812c7c45d1e4))
+
+### Tests
+
+* **tui:** use runtime expect in LineChart empty-series test ([0a6e167](https://github.com/visulima/visulima/commit/0a6e167a332cf35b21391f325ab0ce29591a8ece))
+
 ## @visulima/tui [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.3...@visulima/tui@1.0.0-alpha.4) (2026-04-22)
 
 ### Bug Fixes
