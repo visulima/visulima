@@ -1,3 +1,10 @@
+## @visulima/email [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.16...@visulima/email@1.0.0-alpha.17) (2026-04-28)
+
+### Miscellaneous Chores
+
+* **email:** upgrade packem to 2.0.0-alpha.76 ([d2840bc](https://github.com/visulima/visulima/commit/d2840bcc61a1be0a9176645c40875e7e0381a0c3))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
 ## @visulima/email [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.15...@visulima/email@1.0.0-alpha.16) (2026-04-22)
 
 ## @visulima/email [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.14...@visulima/email@1.0.0-alpha.15) (2026-04-22)
