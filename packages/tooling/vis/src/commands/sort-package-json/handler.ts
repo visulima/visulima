@@ -2,13 +2,37 @@ import { writeFileSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
-import { join, resolve } from "@visulima/path";
+import { basename, join, relative, resolve } from "@visulima/path";
+import zeptomatch from "zeptomatch";
+
 import { sortPackageJsonStringWithOptions } from "#native";
 
 import { failure, info, success, warn } from "../../output";
 import { errorMessage } from "../../utils";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../workspace";
 import type { SortPackageJsonOptions } from "./index";
+
+type LineEnding = "auto" | "crlf" | "lf";
+
+interface SortPackageJsonConfig {
+    finalNewline?: boolean;
+    ignore?: string[];
+    indent?: string;
+    lineEnding?: LineEnding;
+    sortOrder?: string[];
+    sortScripts?: boolean;
+    unsorted?: string[];
+}
+
+interface NormalizedConfig {
+    finalNewline: boolean;
+    ignore: string[];
+    indent: string | undefined;
+    lineEnding: LineEnding;
+    sortOrder: string[];
+    sortScripts: boolean;
+    unsorted: string[];
+}
 
 /**
  * Finds all package.json files in the monorepo workspace.
@@ -29,10 +53,8 @@ const findPackageJsonFiles = (root: string): string[] => {
         }
     };
 
-    // Root package.json
     addFile(join(root, "package.json"));
 
-    // Use workspace patterns to discover project package.json files
     const pnpmPatterns = readPnpmWorkspacePatterns(root);
 
     if (pnpmPatterns) {
@@ -42,7 +64,6 @@ const findPackageJsonFiles = (root: string): string[] => {
             addFile(join(root, dir, "package.json"));
         }
     } else {
-        // Fallback: read workspaces from root package.json
         const rootPkgPath = join(root, "package.json");
 
         if (isAccessibleSync(rootPkgPath)) {
@@ -88,7 +109,7 @@ const resolveIndentOverride = (raw: string | undefined): string | undefined => {
         return undefined;
     }
 
-    if (raw === "tab" || raw === "\\t") {
+    if (raw === "tab" || raw === String.raw`\t`) {
         return "\t";
     }
 
@@ -100,31 +121,173 @@ const resolveIndentOverride = (raw: string | undefined): string | undefined => {
 };
 
 /**
+ * Splits a CLI-supplied list value into a clean array. Accepts both a
+ * single comma-joined string ("a,b") and a repeated multi-flag form
+ * (["a", "b,c"]). Empty entries are dropped.
+ */
+const splitList = (raw: string | string[] | undefined): string[] => {
+    if (raw === undefined) {
+        return [];
+    }
+
+    const items = Array.isArray(raw) ? raw : [raw];
+
+    return items.flatMap((item) => item.split(",")).map((item) => item.trim()).filter((item) => item.length > 0);
+};
+
+const detectLineEnding = (contents: string): "crlf" | "lf" => (contents.includes("\r\n") ? "crlf" : "lf");
+
+const ALLOWED_LINE_ENDINGS = new Set<LineEnding>(["auto", "crlf", "lf"]);
+
+// eslint-disable-next-line consistent-return
+const validateLineEnding = (raw: string | undefined): LineEnding => {
+    if (raw === undefined || raw === "") {
+        return "auto";
+    }
+
+    if (ALLOWED_LINE_ENDINGS.has(raw as LineEnding)) {
+        return raw as LineEnding;
+    }
+
+    failure(`--line-ending must be one of: auto, lf, crlf (got "${raw}")`);
+    process.exit(2);
+};
+
+/**
+ * Drops files whose path matches any of the user-supplied ignore
+ * patterns. Patterns without `/` match against the basename (lint-staged
+ * semantics); path-style patterns match against the workspace-relative
+ * path.
+ */
+const filterByIgnore = (files: string[], patterns: string[], cwd: string): string[] => {
+    if (patterns.length === 0) {
+        return files;
+    }
+
+    return files.filter((absolute) => {
+        const relPath = relative(cwd, absolute);
+        const base = basename(absolute);
+
+        return !patterns.some((pattern) => {
+            const target = pattern.includes("/") ? relPath : base;
+
+            return zeptomatch(pattern, target);
+        });
+    });
+};
+
+/**
+ * Builds a new object that places the user-supplied keys first (in the
+ * given order, when present), then keeps the remaining keys in their
+ * existing order. Used to apply `sortOrder` after the native crate has
+ * already produced its conventional ordering.
+ */
+const applySortOrder = (object: Record<string, unknown>, sortOrder: string[]): Record<string, unknown> => {
+    if (sortOrder.length === 0) {
+        return object;
+    }
+
+    const result: Record<string, unknown> = {};
+    const consumed = new Set<string>();
+
+    for (const key of sortOrder) {
+        if (Object.hasOwn(object, key)) {
+            result[key] = object[key];
+            consumed.add(key);
+        }
+    }
+
+    for (const key of Object.keys(object)) {
+        if (!consumed.has(key)) {
+            result[key] = object[key];
+        }
+    }
+
+    return result;
+};
+
+/**
+ * Restores the original (unsorted) values for the named top-level
+ * sections, preserving the input's insertion order for those sections
+ * while keeping the rest of the file sorted.
+ */
+const restoreUnsortedSections = (sorted: Record<string, unknown>, original: Record<string, unknown>, unsorted: string[]): Record<string, unknown> => {
+    if (unsorted.length === 0) {
+        return sorted;
+    }
+
+    const result: Record<string, unknown> = { ...sorted };
+
+    for (const key of unsorted) {
+        if (Object.hasOwn(original, key)) {
+            result[key] = original[key];
+        }
+    }
+
+    return result;
+};
+
+/**
  * Sorts a package.json string using the native Rust binding for key
  * ordering, then re-serializes with `JSON.stringify` to apply the
  * caller's indent. Going through `pretty: false` + `JSON.parse` keeps
  * us decoupled from the Rust crate's hardcoded two-space pretty
- * output.
+ * output and lets us layer our own post-processing (custom prefix
+ * order, unsorted-section preservation, line-ending and trailing-
+ * newline policy).
  */
-const sortContents = (contents: string, sortScripts: boolean, indent: string): string => {
+const sortContents = (contents: string, config: NormalizedConfig): string => {
+    const indent = config.indent ?? detectIndent(contents);
+    const lineEnding = config.lineEnding === "auto" ? detectLineEnding(contents) : config.lineEnding;
+
     const compact = sortPackageJsonStringWithOptions(contents, {
         pretty: false,
-        sortScripts,
+        sortScripts: config.sortScripts,
     });
 
-    return JSON.stringify(JSON.parse(compact) as unknown, null, indent);
+    let parsed = JSON.parse(compact) as Record<string, unknown>;
+
+    if (config.unsorted.length > 0) {
+        const original = JSON.parse(contents) as Record<string, unknown>;
+
+        parsed = restoreUnsortedSections(parsed, original, config.unsorted);
+    }
+
+    parsed = applySortOrder(parsed, config.sortOrder);
+
+    let output = JSON.stringify(parsed, null, indent);
+
+    if (config.finalNewline) {
+        output += "\n";
+    }
+
+    if (lineEnding === "crlf") {
+        output = output.replaceAll('\n', "\r\n");
+    }
+
+    return output;
 };
 
 const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SortPackageJsonOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
-    const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as { indent?: string; sortScripts?: boolean } | undefined;
+    const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as SortPackageJsonConfig | undefined;
     const check = options.check || false;
-    const sortScripts = options.sortScripts || config?.sortScripts || false;
-    const indentOverride = resolveIndentOverride(options.indent ?? config?.indent);
-    const files = findPackageJsonFiles(cwd);
+
+    const normalized: NormalizedConfig = {
+        finalNewline: options.finalNewline ?? config?.finalNewline ?? true,
+        ignore: [...splitList(options.ignore), ...(config?.ignore ?? [])],
+        indent: resolveIndentOverride(options.indent ?? config?.indent),
+        lineEnding: validateLineEnding(options.lineEnding ?? config?.lineEnding),
+        sortOrder: [...splitList(options.sortOrder), ...(config?.sortOrder ?? [])],
+        sortScripts: options.sortScripts || config?.sortScripts || false,
+        unsorted: [...splitList(options.unsorted), ...(config?.unsorted ?? [])],
+    };
+
+    const allFiles = findPackageJsonFiles(cwd);
+    const files = filterByIgnore(allFiles, normalized.ignore, cwd);
 
     if (files.length === 0) {
-        info("No package.json files found.");
+        info(allFiles.length === 0 ? "No package.json files found." : "All package.json files were excluded by --ignore.");
 
         return;
     }
@@ -140,20 +303,14 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             let sorted: string;
 
             try {
-                const indent = indentOverride ?? detectIndent(contents);
-
-                sorted = sortContents(contents, sortScripts, indent);
+                sorted = sortContents(contents, normalized);
             } catch (error: unknown) {
                 failure(`${filePath}: ${errorMessage(error)}`);
                 errorCount++;
                 continue;
             }
 
-            // Normalize: ensure trailing newline for comparison
-            const normalizedContents = contents.endsWith("\n") ? contents : `${contents}\n`;
-            const normalizedSorted = sorted.endsWith("\n") ? sorted : `${sorted}\n`;
-
-            if (normalizedContents === normalizedSorted) {
+            if (contents === sorted) {
                 sortedCount++;
                 continue;
             }
@@ -163,7 +320,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             if (check) {
                 warn(`${filePath} is not sorted`);
             } else {
-                writeFileSync(filePath, normalizedSorted, "utf8");
+                writeFileSync(filePath, sorted, "utf8");
                 success(`Sorted ${filePath}`);
             }
         } catch (error: unknown) {
