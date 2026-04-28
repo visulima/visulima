@@ -6,7 +6,7 @@ packages:
   - "!*/__tests__/**"
   - "!packages/api/api-platform/__fixtures__/**"
   - "!packages/error-debugging/error/__fixtures__/**"
-  - "!packages/tooling/tsconfig/__fixtures__/**"
+  - "!packages/tooling/tsconfig/__fixtures__/read-tsconfig/**"
   - "!packages/tooling/package/__fixtures__/package-json/**"
   - "!packages/tooling/package/__fixtures__/which-package-manager/**"
   - "!packages/tooling/package/__fixtures__/workspaces/**"
