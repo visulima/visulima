@@ -1,3 +1,14 @@
+## @visulima/storage [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.15...@visulima/storage@1.0.0-alpha.16) (2026-04-28)
+
+### Bug Fixes
+
+* **storage:** pin BaseStorage TFile generic and cast list body ([13f0253](https://github.com/visulima/visulima/commit/13f0253c61f96b0daa4d18e17b273eddea27e20a))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **storage:** upgrade packem to 2.0.0-alpha.76 ([9095f20](https://github.com/visulima/visulima/commit/9095f201a4d28970badbf69f8de1eb87aa9f3c2d))
+
 ## @visulima/storage [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.14...@visulima/storage@1.0.0-alpha.15) (2026-04-22)
 
 ### Bug Fixes
