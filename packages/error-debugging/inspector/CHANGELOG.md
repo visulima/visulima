@@ -1,3 +1,15 @@
+## @visulima/inspector [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.9...@visulima/inspector@2.0.0-alpha.10) (2026-04-28)
+
+### Bug Fixes
+
+* **inspector:** use default colorize import for tests ([e0fe892](https://github.com/visulima/visulima/commit/e0fe89295da36872e511a2e0fca75bf2edf27a6e))
+
+### Miscellaneous Chores
+
+* **inspector:** upgrade packem to 2.0.0-alpha.76 ([54f6186](https://github.com/visulima/visulima/commit/54f618639a554b6e4ba809187bbdd6e8e3606f29))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
 ## @visulima/inspector [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.8...@visulima/inspector@2.0.0-alpha.9) (2026-04-22)
 
 ### Bug Fixes
