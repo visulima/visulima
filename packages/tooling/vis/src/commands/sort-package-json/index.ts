@@ -8,6 +8,11 @@ const sortPackageJson: Command = {
         ["vis sort-package-json --sort-scripts", "Also sort the scripts field alphabetically"],
         ["vis sort-package-json --indent 4", "Force 4-space indentation (overrides per-file detection)"],
         ["vis sort-package-json --indent tab", "Force tab indentation"],
+        ["vis sort-package-json --ignore '**/fixtures/**'", "Skip files matching one or more glob patterns"],
+        ["vis sort-package-json --sort-order name,version,license", "Pin a custom prefix order before the default field order"],
+        ["vis sort-package-json --unsorted dependencies,devDependencies", "Preserve original key order for the listed top-level sections"],
+        ["vis sort-package-json --no-final-newline", "Do not append a trailing newline"],
+        ["vis sort-package-json --line-ending crlf", "Force CRLF line endings (default: auto-detect per file)"],
     ],
     group: "Workspace",
     loader: () => import("./handler"),
@@ -31,13 +36,48 @@ const sortPackageJson: Command = {
             name: "indent",
             type: String,
         },
+        {
+            description: "Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.",
+            multiple: true,
+            name: "ignore",
+            type: String,
+        },
+        {
+            description: "Comma-separated list of top-level keys to place first, before the default field order. Repeatable.",
+            multiple: true,
+            name: "sort-order",
+            type: String,
+        },
+        {
+            description: "Comma-separated list of top-level sections whose key order should be preserved (e.g. dependencies,devDependencies). Repeatable.",
+            multiple: true,
+            name: "unsorted",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Do not append a trailing newline to the output (default: append one).",
+            name: "no-final-newline",
+            type: Boolean,
+        },
+        {
+            defaultValue: "auto",
+            description: "Line ending to write: auto (per-file detection, default), lf, or crlf.",
+            name: "line-ending",
+            type: String,
+        },
     ],
 };
 
 export default sortPackageJson;
 
 export type SortPackageJsonOptions = CreateOptions<{
-    "check": boolean | undefined;
-    "indent": string | undefined;
+    check: boolean | undefined;
+    "final-newline": boolean | undefined;
+    ignore: string[] | undefined;
+    indent: string | undefined;
+    "line-ending": string | undefined;
+    "sort-order": string[] | undefined;
     "sort-scripts": boolean | undefined;
+    unsorted: string[] | undefined;
 }>;
