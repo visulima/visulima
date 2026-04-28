@@ -3,16 +3,16 @@
     "version": "3.0.0-alpha.11",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
-        "visulima",
+        "api",
+        "cli",
+        "command",
+        "comment",
         "javascript",
+        "jsdoc",
         "openapi",
         "swagger",
-        "jsdoc",
-        "comment",
-        "api",
-        "webpack",
-        "cli",
-        "command"
+        "visulima",
+        "webpack"
     ],
     "homepage": "https://visulima.com/packages/jsdoc-open-api/",
     "bugs": {

@@ -1,11 +1,11 @@
 {
-  "name": "ansi-cjs",
-  "version": "0.0.0",
-  "private": true,
-  "description": "CommonJS version",
-  "type": "commonjs",
-  "dependencies": {
-    "@visulima/ansi": "workspace:*"
-  },
-  "devDependencies": {}
+    "name": "ansi-cjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/ansi": "workspace:*"
+    },
+    "devDependencies": {}
 }

@@ -3,11 +3,11 @@
     "version": "1.0.0-alpha.1",
     "description": "Terminal progress bars with multiple styles and multi-bar support",
     "keywords": [
-        "visulima",
+        "cli",
         "progress",
         "progress-bar",
         "terminal",
-        "cli"
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/progress-bar",
     "bugs": {

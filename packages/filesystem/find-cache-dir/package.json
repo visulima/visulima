@@ -3,15 +3,15 @@
     "version": "3.0.0-alpha.9",
     "description": "Finds the common standard cache directory",
     "keywords": [
-        "visulima",
-        "find-cache",
-        "find-cache-directory",
-        "find-cache-dir",
         "cache",
-        "cache-directory",
         "cache-dir",
+        "cache-directory",
+        "cache-path",
+        "find-cache",
+        "find-cache-dir",
+        "find-cache-directory",
         "os-cache-dir",
-        "cache-path"
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/find-cache-dir",
     "bugs": {

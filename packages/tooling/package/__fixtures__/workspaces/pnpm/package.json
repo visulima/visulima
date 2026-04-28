@@ -1,5 +1,5 @@
 {
-  "name": "@foo/test-pnpm",
-  "private": true,
-  "devDependencies": {}
+    "name": "@foo/test-pnpm",
+    "private": true,
+    "devDependencies": {}
 }

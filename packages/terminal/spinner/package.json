@@ -3,8 +3,8 @@
     "version": "1.0.0-alpha.1",
     "description": "Minimal terminal spinners",
     "keywords": [
-        "visulima",
-        "spinner"
+        "spinner",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/spinner",
     "bugs": {

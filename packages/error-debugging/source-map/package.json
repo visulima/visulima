@@ -3,11 +3,11 @@
     "version": "3.0.0-alpha.9",
     "description": "Provides functionality related to source maps.",
     "keywords": [
-        "visulima",
-        "source-map",
-        "source",
         "map",
-        "trace-mapping"
+        "source",
+        "source-map",
+        "trace-mapping",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/source-map",
     "bugs": {

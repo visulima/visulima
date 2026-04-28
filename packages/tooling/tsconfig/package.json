@@ -4,12 +4,12 @@
     "description": "Find and/or parse the tsconfig.json file from a directory path.",
     "keywords": [
         "anolilab",
-        "visulima",
-        "ts-config",
         "get-tsconfig",
         "read-tsconfig",
+        "ts-config",
         "tsconfig",
-        "tsconfig.json"
+        "tsconfig.json",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/tsconfig",
     "bugs": {
@@ -74,7 +74,6 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "type-fest": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
@@ -95,6 +94,7 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "tempy": "catalog:dev",
+        "type-fest": "catalog:prod",
         "typedoc": "catalog:dev",
         "typedoc-plugin-markdown": "catalog:dev",
         "typedoc-plugin-rename-defaults": "catalog:dev",

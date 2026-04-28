@@ -3,12 +3,12 @@
     "version": "1.0.0-alpha.7",
     "description": "A task runner with caching support for monorepo workspaces",
     "keywords": [
-        "visulima",
-        "task-runner",
         "cache",
         "monorepo",
-        "task",
         "runner",
+        "task",
+        "task-runner",
+        "visulima",
         "workspace"
     ],
     "homepage": "https://visulima.com/packages/task-runner",

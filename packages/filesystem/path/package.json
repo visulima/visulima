@@ -3,15 +3,15 @@
     "version": "3.0.0-alpha.10",
     "description": "Drop-in replacement of the Node.js path module.",
     "keywords": [
-        "visulima",
-        "path",
+        "array",
         "binary",
-        "extensions",
         "extension",
+        "extensions",
         "file",
         "json",
         "list",
-        "array"
+        "path",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/path",
     "bugs": {

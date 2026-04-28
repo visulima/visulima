@@ -1,8 +1,8 @@
 {
-  "name": "@foo/test-npm",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {}
+    "name": "@foo/test-npm",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {}
 }
