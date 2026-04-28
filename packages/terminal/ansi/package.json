@@ -17,11 +17,11 @@
         "escape",
         "escapes",
         "formatting",
+        "hyperlink",
         "image",
         "iterm",
         "iterm2",
         "link",
-        "hyperlink",
         "log",
         "logging",
         "screen",
@@ -171,7 +171,6 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -196,6 +195,7 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
+        "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

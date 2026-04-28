@@ -1,8 +1,8 @@
 {
-  "name": "@foo/test-yarn",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {}
+    "name": "@foo/test-yarn",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {}
 }

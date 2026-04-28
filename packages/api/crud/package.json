@@ -4,11 +4,11 @@
     "description": "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
     "keywords": [
         "anolilab",
-        "visulima",
-        "api-platform",
         "api",
+        "api-platform",
         "crud",
-        "prisma"
+        "prisma",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/crud/",
     "repository": {

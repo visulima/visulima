@@ -3,14 +3,14 @@
     "version": "1.0.0-alpha.13",
     "description": "A regularly updated list of disposable and temporary email domains.",
     "keywords": [
-        "visulima",
-        "disposable-email-domains",
         "disposable-email",
-        "temporary-email",
-        "email-validation",
+        "disposable-email-domains",
         "email-domains",
         "email-list",
-        "spam-prevention"
+        "email-validation",
+        "spam-prevention",
+        "temporary-email",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/disposable-email-domains",
     "bugs": {

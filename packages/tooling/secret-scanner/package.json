@@ -3,17 +3,17 @@
     "version": "1.0.0-alpha.1",
     "description": "Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI",
     "keywords": [
-        "visulima",
-        "secret",
-        "secrets",
-        "scanner",
+        "credentials",
         "gitleaks",
         "leaks",
-        "credentials",
-        "security",
-        "pre-commit",
         "napi",
-        "rust"
+        "pre-commit",
+        "rust",
+        "scanner",
+        "secret",
+        "secrets",
+        "security",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/secret-scanner",
     "bugs": {
