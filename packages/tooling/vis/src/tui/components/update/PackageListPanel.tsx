@@ -2,6 +2,7 @@ import { Box, ScrollBar, Tab, Tabs, Text } from "@visulima/tui";
 
 import type { OutdatedEntry } from "../../../catalog";
 import { scoreColor } from "../../../socket-security";
+import { useMeasuredHeight } from "../../use-measured-height";
 import type { FilterType } from "./UpdateStore";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
@@ -121,6 +122,14 @@ interface PackageListPanelProps {
     focused: boolean;
     groupedByCatalog: Map<string, OutdatedEntry[]>;
     isDryRun: boolean;
+
+    /**
+     * Reports the actual measured content-row height. The parent uses
+     * it for scroll math (max offset, scroll-into-view); the JS estimate
+     * passed via `viewportHeight` is only the initial fallback before
+     * measurement lands. See DoctorListPanel for the same pattern.
+     */
+    onViewportHeightChange?: (height: number) => void;
     scrollOffset: number;
     selectedIndex: number;
     totalCatalogEntries: number;
@@ -139,6 +148,7 @@ const PackageListPanel = ({
     focused,
     groupedByCatalog,
     isDryRun,
+    onViewportHeightChange,
     scrollOffset,
     selectedIndex,
     totalCatalogEntries,
@@ -147,6 +157,12 @@ const PackageListPanel = ({
     viewportHeight,
 }: PackageListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
+
+    // Measure the actual rendered content-row height — the JS estimate
+    // doesn't account for the conditional "filtered out" notice or for
+    // wrapping/padding rounding, so the scrollbar would visibly mismatch
+    // the visible list area without this.
+    const { measuredHeight: measuredViewportHeight, ref: contentRowRef } = useMeasuredHeight(viewportHeight, onViewportHeightChange);
 
     let majors = 0;
     let minors = 0;
@@ -223,7 +239,7 @@ const PackageListPanel = ({
         contentHeight += 2 + catalogEntries.length;
     }
 
-    const showScrollbar = contentHeight > viewportHeight && viewportHeight > 0;
+    const showScrollbar = contentHeight > measuredViewportHeight && measuredViewportHeight > 0;
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
@@ -302,7 +318,7 @@ const PackageListPanel = ({
             )}
 
             {/* Package list with scrollbar — key forces remount on filter change to clear stale content */}
-            <Box flexDirection="row" flexGrow={1} key={`list-${filterType}-${filterText}`} overflow="hidden">
+            <Box flexDirection="row" flexGrow={1} key={`list-${filterType}-${filterText}`} overflow="hidden" ref={contentRowRef}>
                 <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingLeft={1}>
                     <Box flexDirection="column" marginTop={-scrollOffset}>
                         {rows}
@@ -310,7 +326,7 @@ const PackageListPanel = ({
                 </Box>
                 {showScrollbar && (
                     <Box flexShrink={0} marginLeft={1} marginRight={1}>
-                        <ScrollBar contentHeight={contentHeight} placement="inset" scrollOffset={scrollOffset} style="block" viewportHeight={viewportHeight} />
+                        <ScrollBar contentHeight={contentHeight} placement="inset" scrollOffset={scrollOffset} style="block" viewportHeight={measuredViewportHeight} />
                     </Box>
                 )}
             </Box>
