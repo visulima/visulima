@@ -545,6 +545,22 @@ interface VisConfig {
         typosquatAllowlist?: string[];
     };
 
+    /**
+     * Share the cache between sibling git worktrees. When the workspace is a
+     * linked worktree (created with `git worktree add`), the cache root is
+     * relocated from `&lt;linkedRoot>/.task-runner-cache` to the *main*
+     * worktree's `.task-runner-cache`. Multiple parallel agents working in
+     * sibling worktrees then share a single cache instead of rebuilding the
+     * same hash N times.
+     *
+     * Single-checkout repos (where `.git` is a directory) are unaffected.
+     *
+     * Set to `false` to opt out — useful when worktrees deliberately need
+     * independent caches, e.g. for hermetic experiments.
+     * @default true
+     */
+    sharedWorktreeCache?: boolean;
+
     /** sort-package-json command defaults */
     sortPackageJson?: {
         /** Alphabetize script commands (default: false) */

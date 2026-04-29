@@ -20,6 +20,36 @@ Manage the local task cache: list entries, prune old ones, print sizes, and diag
 
 All subcommands accept `--cache-dir <path>` to point at a non-default cache location.
 
+## Cache scope and worktrees
+
+When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/.task-runner-cache`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
+
+Toggle the behaviour from `vis.config.ts`:
+
+```ts
+export default {
+    sharedWorktreeCache: false, // default: true
+};
+```
+
+`vis cache list`, `vis cache size`, and `vis cache prune` accept `--scope`:
+
+| Value              | Cache directory                                                             |
+| ------------------ | --------------------------------------------------------------------------- |
+| `shared` (default) | The main worktree's cache (or this checkout when not in a linked worktree). |
+| `worktree`         | This checkout's local `.task-runner-cache`, never the main one.             |
+| `all`              | Operate on both directories (skipped when they resolve to the same path).   |
+
+```bash
+vis cache list --scope=worktree   # only entries owned by this checkout
+vis cache prune --scope=all       # garbage-collect both stores
+vis cache size --scope=shared     # default; explicit for scripts
+```
+
+Explicit cache paths win over scope: `--cache-dir <path>`, `taskRunnerOptions.cacheDirectory` in `vis.config.ts`, and the `VIS_CACHE_DIRECTORY` env var (parity with `NX_CACHE_DIRECTORY`) all skip worktree remapping.
+
+`vis cache clean` always nukes the directory the resolver picked. From a linked worktree without an explicit override, that's the _main_ worktree's cache — so `clean` requires `--force` (or interactive confirmation) before deleting it because the path is outside the current `workspaceRoot`.
+
 ## `vis cache why <task>`
 
 When a task you expected to be cached re-ran, ask vis what changed:

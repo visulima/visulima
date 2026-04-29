@@ -193,6 +193,10 @@ vis cache prune --keep-last=30 --max-age-days=14   # combine: 30-newest floor, t
 
 `--keep-last` enforces a count floor first (newest-first by mtime), then `--max-age-days` and `--max-size` apply.
 
+### Sharing the cache across git worktrees
+
+When the workspace is a linked worktree (created with `git worktree add`), vis stores the cache at `<mainWorktreeRoot>/.task-runner-cache` so sibling worktrees driven by parallel agents share one cache instead of rebuilding the same hash N times. Set `sharedWorktreeCache: false` in `vis.config.ts` to opt out, or use `--scope=worktree|shared|all` on `vis cache list/size/prune` to inspect or operate on a specific store.
+
 ### Quieting successful runs
 
 `--output-style=quiet` skips stdout/stderr from successful and cached tasks while keeping failures fully visible. Pair it with per-target `options.outputStyle` to mute a single noisy task — or to keep one critical task verbose under a global quiet flag:

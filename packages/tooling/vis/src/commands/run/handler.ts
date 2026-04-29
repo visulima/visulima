@@ -27,7 +27,7 @@ import {
 } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
-import { applyBranchScope, resolveCacheDirectory } from "../../cache-directory";
+import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache-directory";
 import { analyzeFlakiness, formatFlakinessTable } from "../../flakiness";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../hooks";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../run-report";
@@ -968,7 +968,16 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // workspace root. Other fields keep their existing spread semantics
     // to avoid changing override precedence for parallel/dryRun/etc.
     const configTaskRunnerOptions = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
-    const baseCacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunnerOptions.cacheDirectory);
+    // Anchor the default cache path to the *main* worktree root when this
+    // workspace is a linked git worktree, so sibling agents share one cache
+    // instead of rebuilding the same hash N times. Explicit paths
+    // (--cache-dir, vis.config.ts, VIS_CACHE_DIRECTORY) win unchanged.
+    const baseCacheDirectory = resolveSharedCacheDirectory(
+        workspaceRoot,
+        options.cacheDir,
+        configTaskRunnerOptions.cacheDirectory,
+        config.sharedWorktreeCache,
+    );
     // Branch-scope the cache dir when configured so main/feature
     // branches stop overwriting each other's entries.
     const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);

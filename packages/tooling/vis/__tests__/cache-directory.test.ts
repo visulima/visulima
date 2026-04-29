@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../src/cache-directory";
 
@@ -57,6 +57,68 @@ describe(resolveCacheDirectory, () => {
         const abs = resolve("/custom/cache");
 
         expect(resolveCacheDirectory(WS, abs, undefined)).toBe(abs);
+    });
+
+    describe("env-var fallback (VIS_CACHE_DIRECTORY)", () => {
+        const originalEnv = process.env["VIS_CACHE_DIRECTORY"];
+
+        beforeEach(() => {
+            delete process.env["VIS_CACHE_DIRECTORY"];
+        });
+
+        afterEach(() => {
+            if (originalEnv === undefined) {
+                delete process.env["VIS_CACHE_DIRECTORY"];
+            } else {
+                process.env["VIS_CACHE_DIRECTORY"] = originalEnv;
+            }
+        });
+
+        it("falls back to the env var when neither CLI nor config is set", () => {
+            expect.assertions(1);
+
+            const env = resolve("/tmp/env-cache");
+
+            process.env["VIS_CACHE_DIRECTORY"] = env;
+
+            expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(env);
+        });
+
+        it("loses to the CLI override", () => {
+            expect.assertions(1);
+
+            process.env["VIS_CACHE_DIRECTORY"] = resolve("/tmp/env-cache");
+
+            const cli = resolve("/tmp/cli-cache");
+
+            expect(resolveCacheDirectory(WS, cli, undefined)).toBe(cli);
+        });
+
+        it("loses to the config value", () => {
+            expect.assertions(1);
+
+            process.env["VIS_CACHE_DIRECTORY"] = resolve("/tmp/env-cache");
+
+            const cfg = resolve("/tmp/config-cache");
+
+            expect(resolveCacheDirectory(WS, undefined, cfg)).toBe(cfg);
+        });
+
+        it("treats an empty env var as unset", () => {
+            expect.assertions(1);
+
+            process.env["VIS_CACHE_DIRECTORY"] = "";
+
+            expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, DEFAULT_CACHE_DIRECTORY_NAME));
+        });
+
+        it("resolves a relative env value against the workspace root", () => {
+            expect.assertions(1);
+
+            process.env["VIS_CACHE_DIRECTORY"] = ".env-cache/shared";
+
+            expect(resolveCacheDirectory(WS, undefined, undefined)).toBe(resolve(WS, ".env-cache/shared"));
+        });
     });
 });
 
