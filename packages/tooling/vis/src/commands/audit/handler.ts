@@ -4,9 +4,10 @@ import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../audit-config";
 import type { SecurityVulnerability } from "../../catalog";
 import { fetchVulnerabilities } from "../../catalog";
-import { findDuplicateDependencies, scanInstalledPackages } from "../../dependency-scan";
+import { findDuplicateDependencies, lockedPackages } from "../../dependency-scan";
 import { error as errorOutput, info, note, success, warn } from "../../output";
 import { detectPm } from "../../pm-runner";
+import { startScanProgress } from "../../scan-progress";
 import type { AcceptedRisk, PackageReportData } from "../../socket-security";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../socket-security";
 import type { VisConfig } from "../../workspace";
@@ -96,18 +97,19 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         );
     }
 
-    // 1. Discover installed packages
-    info("Scanning installed packages...");
-
-    const installed = scanInstalledPackages(workspaceRoot);
+    // 1. Discover installed packages from the lockfile (single parse,
+    // no recursive node_modules walk).
+    const installed = lockedPackages(workspaceRoot, pm.name);
 
     if (installed.length === 0) {
-        info("No packages found in node_modules. Run your package manager's install command first.");
+        info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
 
         return;
     }
 
-    info(`Found ${String(installed.length)} packages.\n`);
+    if (!isJson) {
+        info(`Scanning ${String(installed.length)} installed packages…`);
+    }
 
     // 2. Fetch vulnerability and security data in parallel
     const packagesToScan = installed.map((p) => {
@@ -120,10 +122,85 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // so the async fan-out only contains genuine async work.
     const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
 
-    const [vulnMap, socketReports] = await Promise.all([
-        fetchVulnerabilities(packagesToScan),
-        socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : Promise.resolve(new Map<string, PackageReportData>()),
-    ]);
+    // Live progress: one row per network-bound scan. JSON consumers get
+    // no progress UI (it would corrupt the output stream).
+    const progressTasks = [
+        { id: "vulnerabilities", label: "Known vulnerabilities (OSV)" },
+        ...(socketOptions ? [{ id: "socket", label: "Socket.dev supply-chain reports" }] : []),
+    ];
+    const progress = startScanProgress(progressTasks, { live: !isJson });
+    const startedAt = Date.now();
+    const fmtElapsed = (start: number): string => {
+        const ms = Date.now() - start;
+
+        return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${String(Math.round(ms))}ms`;
+    };
+
+    let vulnMap: Awaited<ReturnType<typeof fetchVulnerabilities>>;
+    let socketReports: Map<string, PackageReportData>;
+
+    try {
+        const vulnStart = Date.now();
+        const socketStart = Date.now();
+
+        progress.start("vulnerabilities");
+
+        if (socketOptions) {
+            progress.start("socket");
+        }
+
+        [vulnMap, socketReports] = await Promise.all([
+            fetchVulnerabilities(packagesToScan).then((map) => {
+                let count = 0;
+
+                for (const list of map.values()) {
+                    count += list.length;
+                }
+
+                progress.finish("vulnerabilities", count > 0 ? "warn" : "ok", count > 0 ? `${String(count)} found · ${fmtElapsed(vulnStart)}` : `none found · ${fmtElapsed(vulnStart)}`);
+
+                return map;
+            }).catch((error: unknown) => {
+                const message = error instanceof Error ? error.message : String(error);
+
+                progress.finish("vulnerabilities", "error", message);
+
+                return new Map();
+            }),
+            socketOptions
+                ? fetchSocketReports(packagesToScan, socketOptions).then((reports) => {
+                    let alerts = 0;
+                    let low = 0;
+
+                    for (const report of reports.values()) {
+                        alerts += report.alerts.length;
+
+                        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                            low += 1;
+                        }
+                    }
+
+                    const total = alerts + low;
+
+                    progress.finish("socket", total > 0 ? "warn" : "ok", total > 0 ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}` : `clean · ${fmtElapsed(socketStart)}`);
+
+                    return reports;
+                }).catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : String(error);
+
+                    progress.finish("socket", "error", message);
+
+                    return new Map<string, PackageReportData>();
+                })
+                : Promise.resolve(new Map<string, PackageReportData>()),
+        ]);
+    } finally {
+        progress.stop();
+    }
+
+    if (!isJson) {
+        info(dim(`Scan completed in ${fmtElapsed(startedAt)}`));
+    }
 
     // 3. Build audit entries
     const entries: AuditEntry[] = [];

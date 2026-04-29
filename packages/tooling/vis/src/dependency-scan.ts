@@ -5,9 +5,7 @@
  * import these utilities without coupling their handler chunks together.
  */
 
-import { readdirSync, statSync } from "node:fs";
-
-import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
+import { readFileSync } from "@visulima/fs";
 import type { LockFileType } from "@visulima/package";
 import { parseLockFileContent } from "@visulima/package";
 import { join } from "@visulima/path";
@@ -26,91 +24,65 @@ export interface DuplicatePackage {
     versions: string[];
 }
 
-export const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
-    const nodeModulesPath = join(workspaceRoot, "node_modules");
-
-    if (!isAccessibleSync(nodeModulesPath)) {
-        return [];
-    }
-
-    const packages: InstalledPackage[] = [];
-
-    const rootPkgPath = join(workspaceRoot, "package.json");
-    let devDeps = new Set<string>();
-
-    if (isAccessibleSync(rootPkgPath)) {
-        try {
-            const pkg = readJsonSync(rootPkgPath) as {
-                devDependencies?: Record<string, string>;
-            };
-
-            devDeps = new Set(Object.keys(pkg.devDependencies ?? {}));
-        } catch {
-            // Non-critical
-        }
-    }
-
-    const scanDir = (dir: string, prefix: string): void => {
-        let entries: string[];
-
-        try {
-            entries = readdirSync(dir);
-        } catch {
-            return;
-        }
-
-        for (const entry of entries) {
-            if (entry.startsWith(".")) {
-                continue;
-            }
-
-            const fullPath = join(dir, entry);
-
-            if (entry.startsWith("@")) {
-                scanDir(fullPath, `${entry}/`);
-                continue;
-            }
-
-            const pkgName = prefix + entry;
-            const pkgJsonPath = join(fullPath, "package.json");
-
-            try {
-                if (!statSync(fullPath).isDirectory() || !isAccessibleSync(pkgJsonPath)) {
-                    continue;
-                }
-
-                const pkg = readJsonSync(pkgJsonPath) as { version?: string };
-
-                if (pkg.version) {
-                    packages.push({
-                        isDev: devDeps.has(pkgName),
-                        name: pkgName,
-                        version: pkg.version,
-                    });
-                }
-
-                // Recurse into nested node_modules (npm non-flat installs)
-                const nestedNm = join(fullPath, "node_modules");
-
-                if (isAccessibleSync(nestedNm)) {
-                    scanDir(nestedNm, "");
-                }
-            } catch {
-                // Skip unreadable packages
-            }
-        }
-    };
-
-    scanDir(nodeModulesPath, "");
-
-    return packages;
-};
-
 const LOCKFILE_NAMES: Record<string, { file: string; type: LockFileType }> = {
     bun: { file: "bun.lock", type: "bun" },
     npm: { file: "package-lock.json", type: "npm" },
     pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },
     yarn: { file: "yarn.lock", type: "yarn" },
+};
+
+/**
+ * Resolved `name@version` pairs from the workspace lockfile.
+ *
+ * Replaces a recursive `node_modules` walk for callers that only need
+ * the set of installed packages to query against (OSV vulnerabilities,
+ * Socket.dev reports, etc.). On a 44-package monorepo this is a single
+ * lockfile parse (~80ms) versus thousands of `readdir`/`stat` calls.
+ *
+ * Entries are deduplicated by `name@version` — the lockfile lists each
+ * resolution once per dependency edge, but vulnerability scans only
+ * care about the unique versions actually installed.
+ *
+ * `isDev` is set to `false` for every entry: lockfiles don't mark
+ * transitive dev/prod and no current consumer reads the flag. If a
+ * caller starts to depend on it, derive it from `package.json`.
+ */
+export const lockedPackages = (workspaceRoot: string, pmName: string): InstalledPackage[] => {
+    const lockInfo = LOCKFILE_NAMES[pmName];
+
+    if (!lockInfo) {
+        return [];
+    }
+
+    let lockContent: string;
+
+    try {
+        lockContent = readFileSync(join(workspaceRoot, lockInfo.file));
+    } catch {
+        return [];
+    }
+
+    const entries = parseLockFileContent(lockContent, lockInfo.type);
+
+    if (entries.length === 0) {
+        return [];
+    }
+
+    const seen = new Set<string>();
+    const packages: InstalledPackage[] = [];
+
+    for (const entry of entries) {
+        const key = `${entry.name}@${entry.version}`;
+
+        if (seen.has(key)) {
+            continue;
+        }
+
+        seen.add(key);
+        packages.push({ isDev: false, name: entry.name, version: entry.version });
+    }
+
+    return packages;
 };
 
 /**

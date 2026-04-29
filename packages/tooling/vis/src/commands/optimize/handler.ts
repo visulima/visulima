@@ -34,9 +34,27 @@ interface ManifestEntryData {
 
 type ManifestEntry = [string, ManifestEntryData];
 
+/**
+ * `module-replacements` manifest shape (v3+). The package was reshaped
+ * to a single flat `moduleReplacements` array; entries fall into three
+ * variants distinguished by `type`:
+ *
+ * - `simple` — inline replacement string
+ * - `native` — replaceable with a built-in API at the given Node version
+ * - `documented` — guidance lives at an external doc path
+ */
+interface E18eEntry {
+    category?: string;
+    docPath?: string;
+    mdnPath?: string;
+    moduleName: string;
+    nodeVersion?: string;
+    replacement?: string;
+    type: "documented" | "native" | "simple";
+}
+
 interface E18eManifest {
-    mappings: Record<string, { moduleName: string; replacements: string[] }>;
-    replacements: Record<string, { description?: string; id: string; type: string }>;
+    moduleReplacements: E18eEntry[];
 }
 
 // ── Dep collection ──────────────────────────────────────────────────
@@ -100,32 +118,50 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
 
 // ── Entry builders ──────────────────────────────────────────────────
 
+/**
+ * Builds a human-readable replacement hint for an e18e entry.
+ * Each variant carries its replacement guidance under a different key.
+ */
+const e18eReplacementHint = (entry: E18eEntry): string => {
+    if (entry.type === "simple" && entry.replacement) {
+        return entry.replacement;
+    }
+
+    if (entry.type === "native") {
+        const minNode = entry.nodeVersion ? ` (Node ${entry.nodeVersion}+)` : "";
+
+        return entry.replacement ? `${entry.replacement}${minNode}` : `Native API${minNode}`;
+    }
+
+    if (entry.type === "documented" && entry.docPath) {
+        return `See ${entry.docPath}`;
+    }
+
+    return "";
+};
+
 /** Scans deps against e18e module-replacements manifests. */
 const buildE18eEntries = (allDeps: Set<string>): OptimizeEntry[] => {
     const entries: OptimizeEntry[] = [];
 
     const scanManifest = (manifest: E18eManifest, category: "micro-utility" | "native" | "preferred"): void => {
-        for (const [, mapping] of Object.entries(manifest.mappings)) {
-            if (!allDeps.has(mapping.moduleName)) {
+        const list = manifest.moduleReplacements;
+
+        if (!Array.isArray(list)) {
+            return;
+        }
+
+        for (const entry of list) {
+            if (!allDeps.has(entry.moduleName)) {
                 continue;
-            }
-
-            const descriptions: string[] = [];
-
-            for (const rid of mapping.replacements) {
-                const rep = manifest.replacements[rid];
-
-                if (rep) {
-                    descriptions.push(rep.description ?? rep.id);
-                }
             }
 
             entries.push({
                 category,
                 hasCodemod: false, // filled in below
                 overrideSpec: undefined,
-                packageName: mapping.moduleName,
-                replacement: descriptions.join(", ") || mapping.replacements.join(", "),
+                packageName: entry.moduleName,
+                replacement: e18eReplacementHint(entry),
             });
         }
     };
