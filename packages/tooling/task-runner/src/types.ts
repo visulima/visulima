@@ -1,3 +1,5 @@
+import type { WhenCondition } from "./when-condition";
+
 /**
  * Represents a target that a task executes against.
  */
@@ -41,6 +43,13 @@ export type TaskPriority = "high" | "low" | "normal";
 export type OutputSpec = string | { auto: true };
 
 export interface Task {
+    /**
+     * When `true`, this task runs after the main task graph completes
+     * — even if upstream tasks failed or the run was interrupted.
+     * Used for cleanup, teardown, or notification tasks. Carried over
+     * from {@link TargetConfiguration.always} at task graph creation.
+     */
+    always?: boolean;
     /** Whether this task is eligible for caching */
     cache?: boolean;
     /** Hash of the task inputs for caching */
@@ -71,6 +80,14 @@ export interface Task {
     projectRoot?: string;
     /** The target this task executes */
     target: TaskTarget;
+
+    /**
+     * Predicate that gates execution. Evaluated by the orchestrator
+     * just before the task is launched; tasks whose `when` returns
+     * `false` are marked `"skipped"` without ever invoking the
+     * executor. Carried over from {@link TargetConfiguration.when}.
+     */
+    when?: WhenCondition;
 }
 
 /**
@@ -174,6 +191,14 @@ export interface ProjectConfiguration {
  * Configuration for a target within a project.
  */
 export interface TargetConfiguration {
+    /**
+     * When `true`, this target runs after the main task graph
+     * completes — even if upstream tasks failed. Useful for cleanup,
+     * teardown, notifications, or anything that should fire
+     * regardless of build outcome. Always-tasks are not part of the
+     * normal dependency graph and never block other tasks.
+     */
+    always?: boolean;
     /** Whether this target is cacheable */
     cache?: boolean;
     /** The command to run (alternative to executor) */
@@ -192,6 +217,18 @@ export interface TargetConfiguration {
     outputs?: string[];
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
+
+    /**
+     * Predicate that gates execution. When the condition evaluates
+     * to `false` for the current environment, the task is skipped
+     * (marked `"skipped"`, not failed). Combine with `os`, `env`,
+     * `branch`, and `ci` clauses for granular control:
+     *
+     *   ```ts
+     *   when: { os: "linux", ci: true, env: "DEPLOY_TOKEN" }
+     *   ```
+     */
+    when?: WhenCondition;
 }
 
 /**
@@ -822,7 +859,19 @@ export interface LifeCycleInterface {
      * post-execution hashes.
      */
     printSelfModifyingSkip?: (task: Task, modifiedFiles: string[]) => void;
+
     printTaskTerminalOutput?: (task: Task, status: TaskStatus, terminalOutput: string) => void;
+
+    /**
+     * Called when a task is skipped because its `when` clause did not
+     * match the current environment. `reason` is a short
+     * human-readable diagnostic produced by {@link import("./when-condition").explainWhen}.
+     *
+     * Co-fires with `printTaskTerminalOutput` (status `"skipped"`,
+     * output `"Skipped: [reason]"`). Pick one to render — implementing
+     * both will double-report the skip.
+     */
+    printWhenSkip?: (task: Task, reason: string) => void;
     scheduleTask?: (task: Task) => void;
     startCommand?: () => void;
     startTasks?: (tasks: Task[]) => void;

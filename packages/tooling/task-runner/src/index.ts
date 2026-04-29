@@ -10,8 +10,8 @@ export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } 
 export type { ChromeTraceEvent } from "./chrome-trace";
 export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 // Command parser
-export type { ParseCommandsOptions } from "./command-parser";
-export { expandArguments, expandShortcut, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
+export type { ParseCommandsOptions, TokenContext } from "./command-parser";
+export { expandArguments, expandShortcut, expandTokens, expandTokensInString, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
 // Concurrent process runner
 export { runConcurrently } from "./concurrent";
 export { runConcurrentFallback } from "./concurrent-fallback";
@@ -138,6 +138,9 @@ export type {
     TypeBoundaries,
     WorkspaceConfiguration,
 } from "./types";
-
 // Shared utilities
 export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId } from "./utils";
+
+// Conditional task evaluation (`when:` clause)
+export type { EnvMatcher, NodePlatform, WhenCondition, WhenContext } from "./when-condition";
+export { evaluateWhen, explainWhen, getCurrentBranch, resetBranchCache } from "./when-condition";
