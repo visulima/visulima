@@ -13,11 +13,21 @@ import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
 import type { LifeCycleInterface, Task, TaskExecutor, TaskGraph, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
+import type { WhenContext } from "./when-condition";
+import { evaluateWhen, explainWhen, getCurrentBranch } from "./when-condition";
 
 /**
  * Options for the TaskOrchestrator.
  */
 interface TaskOrchestratorOptions {
+    /**
+     * Tasks marked `always: true` to run after the main task graph
+     * completes. Run sequentially, in declaration order, even if the
+     * main run failed or was aborted (SIGINT skips them — that's an
+     * explicit user request to stop). Skipped if their `when` clause
+     * doesn't match.
+     */
+    alwaysTasks?: Task[];
     autoFingerprint?: boolean;
     cache: Cache;
     cacheDiagnostics?: boolean;
@@ -34,6 +44,13 @@ interface TaskOrchestratorOptions {
     taskGraph?: TaskGraph;
     taskHasher: TaskHasher;
     untrackedEnvVars?: string[];
+
+    /**
+     * Context used to evaluate per-task `when` conditions. Defaults
+     * to the live process state — `process.env`, `process.platform`,
+     * git branch read from `workspaceRoot`. Override in tests.
+     */
+    whenContext?: WhenContext;
     workspaceRoot: string;
 }
 
@@ -123,6 +140,10 @@ class TaskOrchestrator {
 
     readonly #startTime: number;
 
+    readonly #alwaysTasks: Task[];
+
+    readonly #whenContext: WhenContext;
+
     /** Tracks in-flight task promises so the execution loop can await them */
     readonly #inFlightTasks = new Map<string, Promise<TaskResult>>();
 
@@ -150,6 +171,10 @@ class TaskOrchestrator {
         this.#summarize = options.summarize ?? false;
         this.#taskGraph = options.taskGraph ?? undefined;
         this.#startTime = Date.now();
+        this.#alwaysTasks = options.alwaysTasks ?? [];
+        this.#whenContext = options.whenContext ?? {
+            branch: getCurrentBranch(options.workspaceRoot),
+        };
 
         if (this.#autoFingerprint) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
@@ -175,6 +200,12 @@ class TaskOrchestrator {
 
         try {
             await this.#executionLoop();
+
+            // Run "always" tasks after the main graph, even if it failed.
+            // Skipped on SIGINT — the user's explicit ask is to stop now.
+            if (this.#alwaysTasks.length > 0 && !this.#aborted) {
+                await this.#runAlwaysTasks();
+            }
         } finally {
             process.removeListener("SIGINT", signalHandler);
             process.removeListener("SIGTERM", signalHandler);
@@ -194,6 +225,47 @@ class TaskOrchestrator {
         }
 
         return this.#results;
+    }
+
+    /**
+     * Runs the configured `always: true` tasks sequentially after the
+     * main task graph completes. Each task's `when` clause is still
+     * honoured. Failures are recorded but never propagate — the whole
+     * point of an always-task is to fire regardless of upstream state.
+     *
+     * Always-tasks deliberately bypass `#processTask` /
+     * `#processTaskWithFingerprint`, which means **no cache lookup
+     * and no fingerprint check**. Cleanup / teardown / notification
+     * tasks are expected to run every invocation; serving them from
+     * cache would defeat the purpose.
+     */
+    async #runAlwaysTasks(): Promise<void> {
+        for (const task of this.#alwaysTasks) {
+            this.#lifeCycle.scheduleTask?.(task);
+            this.#lifeCycle.startTasks?.([task]);
+
+            let result: TaskResult;
+
+            if (this.#shouldSkipForWhen(task)) {
+                result = this.#whenSkipResult(task);
+            } else {
+                const startTime = Date.now();
+
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    result = await this.#executeTask(task, startTime);
+                } catch (error) {
+                    result = createFailureResult(task, error, startTime);
+                    this.#results.set(task.id, result);
+                }
+            }
+
+            this.#lifeCycle.endTasks?.([result]);
+
+            if (result.terminalOutput) {
+                this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
+            }
+        }
     }
 
     async #executionLoop(): Promise<void> {
@@ -227,7 +299,11 @@ class TaskOrchestrator {
 
             // Launch tasks concurrently and track them as in-flight
             for (const task of batch) {
-                const taskPromise = (this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task))
+                const startPromise = this.#shouldSkipForWhen(task)
+                    ? Promise.resolve(this.#whenSkipResult(task))
+                    : (this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task));
+
+                const taskPromise = startPromise
                     .catch((error: unknown) => {
                         const errorResult = createFailureResult(task, error, Date.now());
 
@@ -597,6 +673,34 @@ class TaskOrchestrator {
             status: "skipped",
             task,
             terminalOutput: `DRY RUN ${cacheStatus}`,
+        };
+
+        this.#results.set(task.id, result);
+
+        return result;
+    }
+
+    #shouldSkipForWhen(task: Task): boolean {
+        if (!task.when) {
+            return false;
+        }
+
+        return !evaluateWhen(task.when, this.#whenContext);
+    }
+
+    #whenSkipResult(task: Task): TaskResult {
+        const reason = explainWhen(task.when, this.#whenContext);
+        const startTime = Date.now();
+
+        this.#lifeCycle.printWhenSkip?.(task, reason);
+
+        const result: TaskResult = {
+            code: 0,
+            endTime: startTime,
+            startTime,
+            status: "skipped",
+            task,
+            terminalOutput: reason ? `Skipped: ${reason}` : "Skipped by when clause",
         };
 
         this.#results.set(task.id, result);

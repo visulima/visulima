@@ -86,6 +86,7 @@ const getSameProjectTask = (
 
     return [
         {
+            always: project.targets?.[targetName]?.always ?? targetDefaults?.[targetName]?.always,
             cache: project.targets?.[targetName]?.cache ?? targetDefaults?.[targetName]?.cache,
             id: getTaskId(target),
             outputs: getTaskOutputs(projectName, targetName, workspace, targetDefaults),
@@ -93,6 +94,7 @@ const getSameProjectTask = (
             parallelism: project.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
             projectRoot: project.root,
             target,
+            when: project.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
         },
     ];
 };
@@ -127,6 +129,7 @@ const getDependencyProjectTasks = (
             };
 
             tasks.push({
+                always: depProject.targets?.[targetName]?.always ?? targetDefaults?.[targetName]?.always,
                 cache: depProject.targets?.[targetName]?.cache ?? targetDefaults?.[targetName]?.cache,
                 id: getTaskId(target),
                 outputs: getTaskOutputs(dep.target, targetName, workspace, targetDefaults),
@@ -134,6 +137,7 @@ const getDependencyProjectTasks = (
                 parallelism: depProject.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
                 projectRoot: depProject.root,
                 target,
+                when: depProject.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
             });
         }
     }

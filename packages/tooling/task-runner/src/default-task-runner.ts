@@ -8,7 +8,53 @@ import { RemoteCache } from "./remote-cache";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
-import type { ProjectConfiguration, Task, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+import type { ProjectConfiguration, Task, TaskGraph, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+
+/**
+ * Splits a {@link TaskGraph} into the regular dependency-graph tasks
+ * and a flat list of `always: true` tasks. The always-tasks list keeps
+ * the original declaration order from `Object.values(taskGraph.tasks)`.
+ *
+ * Always-tasks are stripped from the returned graph entirely:
+ * removed from `tasks`, `roots`, and from any other task's
+ * dependency list so the scheduler can never block on them.
+ */
+const partitionAlwaysTasks = (taskGraph: TaskGraph): { alwaysTasks: Task[]; graph: TaskGraph } => {
+    const alwaysTasks: Task[] = [];
+    const remaining: Record<string, Task> = {};
+
+    for (const [id, task] of Object.entries(taskGraph.tasks)) {
+        if (task.always) {
+            alwaysTasks.push(task);
+        } else {
+            remaining[id] = task;
+        }
+    }
+
+    if (alwaysTasks.length === 0) {
+        return { alwaysTasks: [], graph: taskGraph };
+    }
+
+    const alwaysIds = new Set(alwaysTasks.map((t) => t.id));
+    const dependencies: Record<string, string[]> = {};
+
+    for (const [id, deps] of Object.entries(taskGraph.dependencies)) {
+        if (alwaysIds.has(id)) {
+            continue;
+        }
+
+        dependencies[id] = deps.filter((dep) => !alwaysIds.has(dep));
+    }
+
+    return {
+        alwaysTasks,
+        graph: {
+            dependencies,
+            roots: taskGraph.roots.filter((id) => !alwaysIds.has(id)),
+            tasks: remaining,
+        },
+    };
+};
 
 /**
  * Hashes the resolved `globalEnv` values into a short namespace segment.
@@ -138,11 +184,15 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         workspaceRoot,
     });
 
+    // Pull `always: true` tasks out of the main graph — they run
+    // sequentially in a finalisation phase, never block other tasks.
+    const { alwaysTasks, graph: scheduledGraph } = partitionAlwaysTasks(taskGraph);
+
     // Calculate max parallel
     const maxParallel = resolveParallel(options.parallel);
 
     // Create the scheduler
-    const scheduler = new TaskScheduler(taskGraph, projectGraph, maxParallel);
+    const scheduler = new TaskScheduler(scheduledGraph, projectGraph, maxParallel);
 
     // Build command resolver for auto-fingerprint mode
     const resolveCommand = (task: Task): string | undefined => {
@@ -168,6 +218,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
 
     // Create the orchestrator
     const orchestrator = new TaskOrchestrator({
+        alwaysTasks,
         autoFingerprint: options.autoFingerprint,
         cache,
         cacheDiagnostics: options.cacheDiagnostics,
@@ -181,7 +232,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         skipCache: options.skipNxCache,
         summarize: options.summarize,
         taskExecutor,
-        taskGraph,
+        taskGraph: scheduledGraph,
         taskHasher,
         untrackedEnvVars: options.untrackedEnvVars,
         workspaceRoot,
