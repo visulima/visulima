@@ -107,9 +107,10 @@ impl ConcurrentRunner {
                             close_event.duration_ms,
                         ));
 
-                        // Check kill-others condition
+                        // Check kill-others condition. Hard-kill (graceful=false)
+                        // since this is a peer-induced abort, not a user Ctrl+C.
                         if !aborting && self.should_kill_others(&close_event) {
-                            self.kill_all(&mut active);
+                            self.kill_all_with(&mut active, false);
                             aborting = true;
                         }
 
@@ -202,12 +203,12 @@ impl ConcurrentRunner {
         }
     }
 
-    fn kill_all(&self, active: &mut [ProcessInfo]) {
-        // Default: hard kill (used by kill-others). Graceful path is reserved
-        // for the user-initiated Ctrl+C / SIGINT case.
-        self.kill_all_with(active, false);
-    }
-
+    /// Send termination signals to every active process.
+    ///
+    /// `graceful = true` is reserved for user-initiated Ctrl+C / SIGINT —
+    /// on Windows it routes through `CTRL_BREAK_EVENT` so well-behaved CLIs
+    /// can clean up before the Job Object force-kill fires. The kill-others
+    /// path passes `false` for an immediate hard kill.
     fn kill_all_with(&self, active: &mut [ProcessInfo], graceful: bool) {
         for info in active.iter_mut() {
             #[cfg(windows)]
@@ -236,6 +237,12 @@ impl ConcurrentRunner {
             // Unix: kill process group with the configured signal (default
             // SIGTERM). Both graceful and non-graceful paths use the same
             // signal here; escalation to SIGKILL happens below.
+            //
+            // Coverage: `runner_tests::test_kill_others_on_failure` exercises
+            // this branch with graceful=false. The graceful=true path is
+            // structurally identical on Unix — `kill_tree(pid, kill_signal)`
+            // is invoked regardless of the flag — so any regression in either
+            // direction is caught by that test.
             #[cfg(unix)]
             {
                 let _ = graceful;
@@ -245,7 +252,15 @@ impl ConcurrentRunner {
             }
         }
 
-        // Schedule force-kill after timeout
+        // Schedule force-kill after timeout.
+        //
+        // On Windows the graceful path's final backstop is implicit:
+        // every child has a Job Object configured with
+        // `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, so when its `ProcessInfo`
+        // is dropped (after the completion event arrives), the kernel
+        // tears down any surviving descendants. The `kill_tree` call
+        // here covers the window between escalation and that drop —
+        // missing grandchildren are caught by the Job Object close.
         let kill_timeout = self.kill_timeout_ms;
         let pids: Vec<u32> = active.iter().filter_map(|p| p.pid).collect();
         if !pids.is_empty() {

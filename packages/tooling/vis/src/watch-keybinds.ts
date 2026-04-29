@@ -29,7 +29,11 @@ export interface KeybindHandlers {
      *
      * Ctrl+C is dispatched even while the `p` filter prompt is open, so
      * the user always has an escape hatch. If a custom `promptFilter`
-     * is in use, it must tolerate being abandoned mid-await.
+     * is in use, it must tolerate being abandoned mid-await — the
+     * dispatcher will resolve `onQuit` regardless of any pending prompt
+     * promise, and the host will tear the keybind handle down. A custom
+     * prompt that wants to handle Ctrl+C internally must accept that
+     * `onQuit` will fire as well; there is no way to suppress it.
      */
     onQuit: () => void | Promise<void>;
     /** Called for `r` / `Enter` — rerun active task set. */
