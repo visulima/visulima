@@ -72,7 +72,7 @@ export const checkInotifyCapacity = (): RuntimeDiagnostic => {
         return {
             detail: { maxWatches },
             id: "inotify",
-            message: `inotify watcher limit is ${String(maxWatches)} — large monorepos can exhaust this. Bump with: sudo sysctl fs.inotify.max_user_watches=524288`,
+            message: `inotify watcher limit is ${String(maxWatches)} — large monorepos can exhaust this. Bump now with \`sudo sysctl fs.inotify.max_user_watches=524288\` and persist via \`/etc/sysctl.d/99-vis.conf\` so it survives reboot.`,
             status: "warn",
         };
     }
@@ -161,10 +161,14 @@ export const checkOrphanedRunners = (): RuntimeDiagnostic => {
         };
     }
 
+    const killSnippet = process.platform === "win32"
+        ? pids.map((p) => `taskkill /F /PID ${String(p)}`).join(" & ")
+        : `kill ${pids.join(" ")}`;
+
     return {
         detail: { count: pids.length, pids: pids.join(",") },
         id: "orphans",
-        message: `${String(pids.length)} possibly orphaned vis/task-runner processes — kill them with: kill ${pids.join(" ")}`,
+        message: `${String(pids.length)} possibly orphaned vis/task-runner processes — kill them with: ${killSnippet}`,
         status: "warn",
     };
 };
@@ -232,7 +236,10 @@ const listOrphansWindows = (selfPid: number): number[] => {
             continue;
         }
 
-        if (image.includes("vis") || image.includes("task-runner")) {
+        // Tight match: the Windows binary names we ship.
+        // `image.includes("vis")` would falsely flag visualstudio.exe,
+        // vista.exe, aviso.exe, etc.
+        if (image === "vis.exe" || image.startsWith("vis-native") || image.includes("task-runner")) {
             pids.push(pid);
         }
     }

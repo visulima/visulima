@@ -119,6 +119,24 @@ describe(checkInotifyCapacity, () => {
         expect(diagnostic.id).toBe("inotify");
         expect(["ok", "warn"]).toContain(diagnostic.status);
     });
+
+    it("warn message includes both the immediate sysctl fix and the persistent /etc/sysctl.d hint", () => {
+        if (process.platform !== "linux") {
+            return;
+        }
+
+        const diagnostic = checkInotifyCapacity();
+
+        if (diagnostic.status !== "warn") {
+            // Host already has a sufficient limit — nothing to assert.
+            return;
+        }
+
+        expect.assertions(2);
+        expect(diagnostic.message).toContain("sysctl fs.inotify.max_user_watches=524288");
+        // Persistence hint protects users from getting bitten again after reboot.
+        expect(diagnostic.message).toContain("/etc/sysctl.d");
+    });
 });
 
 describe(checkOrphanedRunners, () => {

@@ -192,6 +192,10 @@ fn build_command(config: &ConcurrentCommandConfig, shell_path: Option<&str>) -> 
     // Windows: create the child as the leader of a new process group so
     // we can later target it with `GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid)`
     // for graceful shutdown without also signalling our own console.
+    //
+    // Note: tokio's `creation_flags` always ORs `CREATE_UNICODE_ENVIRONMENT`
+    // into the final flag set, so we don't lose unicode env support by
+    // setting only `CREATE_NEW_PROCESS_GROUP` here.
     #[cfg(windows)]
     {
         use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;

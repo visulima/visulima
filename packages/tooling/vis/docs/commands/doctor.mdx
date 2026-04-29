@@ -99,8 +99,8 @@ Runtime warnings flip the exit code to `1` only under `--strict`, since none of 
   "security": { "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
   "optimizations": { "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
   "runtime": [
-    { "id": "inotify", "status": "ok",   "message": "inotify capacity OK (524288 watches).",     "detail": { "maxWatches": 524288 } },
-    { "id": "tty",     "status": "ok",   "message": "Interactive TTY available — watch keybinds enabled." },
+    { "id": "inotify", "status": "warn", "message": "inotify watcher limit is 8192 — large monorepos can exhaust this. Bump now with `sudo sysctl fs.inotify.max_user_watches=524288` and persist via `/etc/sysctl.d/99-vis.conf` so it survives reboot.", "detail": { "maxWatches": 8192 } },
+    { "id": "tty",     "status": "skip", "message": "No TTY on stdin/stdout — running in CI / piped mode (keybinds disabled)." },
     { "id": "orphans", "status": "ok",   "message": "No orphaned vis/task-runner processes detected." }
   ],
   "packageManager": "pnpm",
