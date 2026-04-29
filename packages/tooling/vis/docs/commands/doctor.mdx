@@ -23,11 +23,27 @@ vis doctor [options]
 # Full project health check
 vis doctor
 
-# Auto-apply safe fixes (security overrides + codemods)
+# Auto-apply safe fixes (security overrides + codemods, SIGTERM orphans)
 vis doctor --fix
+
+# Same as --fix, but SIGKILL orphans that don't respond to SIGTERM
+vis doctor --fix --fix-force
 
 # Machine-readable output for CI
 vis doctor --format json
+vis doctor --json                # shorthand for --format json
+
+# Run only the security scans (skips outdated, duplicates, optimization, runtime)
+vis doctor --only security
+
+# Skip the slowest optional scans
+vis doctor --skip optimization,runtime
+
+# Summary only (no per-section breakdown), still shows the live progress UI
+vis doctor --quiet
+
+# Disable the live progress UI (forces sequential plain logs)
+vis doctor --no-progress
 
 # Exit with code 1 if security issues found
 vis doctor --exit-code
@@ -38,12 +54,30 @@ vis doctor --exit-code --strict
 
 ## Options
 
-| Option        | Default | Description                                                            |
-| ------------- | ------- | ---------------------------------------------------------------------- |
-| `--format`    | `table` | Output format: `table` or `json`                                       |
-| `--exit-code` | `false` | Exit with code 1 if security issues are found                          |
-| `--fix`       | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install)   |
-| `--strict`    | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings |
+| Option          | Default | Description                                                            |
+| --------------- | ------- | ---------------------------------------------------------------------- |
+| `--format`      | `table` | Output format: `table` or `json`                                       |
+| `--json`        | `false` | Shorthand for `--format json`                                          |
+| `--only`        |         | Comma-separated sections to run: `dependencies`, `security`, `optimization`, `runtime` |
+| `--skip`        |         | Comma-separated sections to skip                                       |
+| `--quiet`       | `false` | Suppress per-section detail; print summary only                        |
+| `--no-progress` | `false` | Disable live progress UI (forces sequential logs)                      |
+| `--exit-code`   | `false` | Exit with code 1 if security issues are found                          |
+| `--fix`         | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install). Also SIGTERMs orphaned `vis` / `task-runner` processes the runtime check found. |
+| `--fix-force`   | `false` | With `--fix`: escalate orphan cleanup to `SIGKILL` (or `taskkill /F` on Windows). Use when SIGTERM is ignored — Windows child trees, blocked event loops. |
+| `--strict`      | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings |
+
+### Live progress
+
+By default `vis doctor` shows a live multi-line spinner — one row per network-bound scan (outdated catalog deps, OSV vulnerability lookup, Socket.dev reports, codemod availability under `--fix`). Each row finishes with its own status icon (`✓` ok, `⚠` warn, `✗` error) and elapsed time so you can spot the slow scan at a glance.
+
+The progress UI auto-disables in any of these cases:
+
+- non-TTY stdout (CI, piped output)
+- `--json` / `--format json`
+- `--no-progress` flag
+
+In those modes, every scan still emits a single completion line so the log stays useful.
 
 ## What It Checks
 
@@ -77,7 +111,7 @@ The runtime block surfaces watch / signal subsystem state that silently breaks `
 | --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `inotify` | Linux only | Reads `/proc/sys/fs/inotify/max_user_watches`. Warns when the limit is below `65536` — large monorepos can exhaust this and `fs.watch` will silently miss events. |
 | `tty`     | All        | Confirms an interactive TTY is present so [watch keybinds](./run#keybinds) work. Reports `skip` in CI / piped mode (keybinds disabled, file-change reruns still fire). |
-| `orphans` | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. |
+| `orphans` | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. Pass `--fix` to send SIGTERM (or `taskkill` on Windows) to the matched PIDs automatically. |
 
 When the inotify warning fires, the suggested fix is:
 
@@ -89,15 +123,22 @@ sudo sysctl fs.inotify.max_user_watches=524288
 
 Runtime warnings flip the exit code to `1` only under `--strict`, since none of them indicate a security issue.
 
+The `orphans` warning is the only runtime check `--fix` can resolve. The auto-recover step shares its matcher with the diagnostic — what got warned about is exactly what gets killed — and treats `ESRCH` (process already exited) as success so a benign race doesn't surface as a failure. Failures are reported per PID with their `errno` so the user knows whether to escalate privileges (`EPERM`) or investigate.
+
+`--fix` sends SIGTERM by default so the orphan can flush buffered output and tear down its child tree gracefully. Add `--fix-force` to escalate to SIGKILL (or `taskkill /F` on Windows) for processes that ignore SIGTERM — most commonly Windows child trees that hold open console handles, or processes with a blocked event loop. The doctor re-enumerates the process table on each `--fix` run rather than reusing the cached PIDs from the diagnostic, since the orphan set can change between the scan and the recovery step (a `vis run` in another terminal could exit, or a fresh crash could leave a new orphan).
+
 ## JSON Output
 
 `--format json` (or `--json`) emits a stable schema suitable for CI:
 
 ```json
 {
-  "dependencies": { "installed": 1230, "outdated": 4, "duplicates": 0 },
-  "security": { "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
-  "optimizations": { "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
+  "status": "warn",
+  "elapsedMs": 3420,
+  "dependencies": { "status": "warn", "installed": 1230, "outdated": 4, "duplicates": 0 },
+  "security": { "status": "ok", "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
+  "optimizations": { "status": "warn", "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
+  "runtimeStatus": "warn",
   "runtime": [
     { "id": "inotify", "status": "warn", "message": "inotify watcher limit is 8192 — large monorepos can exhaust this. Bump now with `sudo sysctl fs.inotify.max_user_watches=524288` and persist via `/etc/sysctl.d/99-vis.conf` so it survives reboot.", "detail": { "maxWatches": 8192 } },
     { "id": "tty",     "status": "skip", "message": "No TTY on stdin/stdout — running in CI / piped mode (keybinds disabled)." },
@@ -108,7 +149,12 @@ Runtime warnings flip the exit code to `1` only under `--strict`, since none of 
 }
 ```
 
-`runtime[*].status` is one of `ok`, `skip`, or `warn`. The `detail` field is optional and varies per check.
+Status fields:
+
+- Top-level `status` and each section's `status` is one of `ok`, `warn`, `error`, or `skip`. The top-level value escalates over the section values (`error` > `warn` > `ok`).
+- `skip` indicates the section was filtered out via `--only` / `--skip` — distinguishes "scanned clean" from "didn't run".
+- `runtime[*].status` is one of `ok`, `skip`, or `warn`. The `detail` field is optional and varies per check.
+- `elapsedMs` is the wall-clock time of the scan phase (excludes banner / dashboard rendering).
 
 ## Exit Codes
 
