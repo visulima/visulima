@@ -130,9 +130,10 @@ impl ConcurrentRunner {
                 _ = signal_rx.changed() => {
                     let sig = *signal_rx.borrow();
                     if sig != ReceivedSignal::None && !aborting {
-                        self.kill_all(&mut active);
+                        let graceful = sig == ReceivedSignal::Interrupt;
+                        self.kill_all_with(&mut active, graceful);
                         aborting = true;
-                        sigint_abort = sig == ReceivedSignal::Interrupt;
+                        sigint_abort = graceful;
                     }
                 }
             }
@@ -202,17 +203,45 @@ impl ConcurrentRunner {
     }
 
     fn kill_all(&self, active: &mut [ProcessInfo]) {
+        // Default: hard kill (used by kill-others). Graceful path is reserved
+        // for the user-initiated Ctrl+C / SIGINT case.
+        self.kill_all_with(active, false);
+    }
+
+    fn kill_all_with(&self, active: &mut [ProcessInfo], graceful: bool) {
         for info in active.iter_mut() {
-            // Windows: use Job Object for reliable tree killing
             #[cfg(windows)]
-            if let Some(ref job) = info.job {
-                let _ = job.terminate(1);
-                continue;
+            {
+                if graceful {
+                    // Send CTRL_BREAK_EVENT to the child's process group
+                    // (which we created via CREATE_NEW_PROCESS_GROUP at spawn).
+                    // The Job Object stays alive as a backstop — escalation
+                    // below will TerminateJobObject if the child doesn't exit.
+                    if let Some(pid) = info.pid {
+                        let _ = super::process_group::graceful_shutdown(pid);
+                    }
+                    continue;
+                }
+                if let Some(ref job) = info.job {
+                    let _ = job.terminate(1);
+                    continue;
+                }
+                // Fallback when Job Object creation failed at spawn time:
+                // taskkill /F /T via kill_tree.
+                if let Some(pid) = info.pid {
+                    let _ = super::process_group::kill_tree(pid, &self.kill_signal);
+                }
             }
 
-            // Unix: kill process group; Windows fallback: taskkill
-            if let Some(pid) = info.pid {
-                let _ = super::process_group::kill_tree(pid, &self.kill_signal);
+            // Unix: kill process group with the configured signal (default
+            // SIGTERM). Both graceful and non-graceful paths use the same
+            // signal here; escalation to SIGKILL happens below.
+            #[cfg(unix)]
+            {
+                let _ = graceful;
+                if let Some(pid) = info.pid {
+                    let _ = super::process_group::kill_tree(pid, &self.kill_signal);
+                }
             }
         }
 
