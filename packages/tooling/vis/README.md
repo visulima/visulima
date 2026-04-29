@@ -159,6 +159,7 @@ Aube already skips dependency lifecycle scripts by default. `--ignore-scripts` i
 | `vis dlx <package>`     |        | Execute a remote package without permanent installation              |
 | `vis audit`             |        | Audit dependencies for security vulnerabilities                      |
 | `vis clean`             |        | Remove build artifacts, caches, and node_modules                     |
+| `vis cache <action>`    |        | Inspect cache (`list`, `size`, `hash`, `why`), or `prune` / `clean`  |
 | `vis hook <action>`     |        | Manage git hooks (install, uninstall, migrate)                       |
 | `vis secrets [paths]`   |        | Scan for hardcoded secrets / credentials (Rust-native)               |
 | `vis toolchain <cmd>`   |        | Inspect / delegate to the version manager (proto, mise, fnm, volta…) |
@@ -166,6 +167,50 @@ Aube already skips dependency lifecycle scripts by default. `--ignore-scripts` i
 | `vis migrate <type>`    |        | Migrate from other tools — now including `gitleaks` and `secretlint` |
 
 For `vis ignore`, see the [command reference](./docs/commands/ignore.mdx) and the [deployment build gating section](./docs/guides/ci-cd.mdx#deployment-build-gating) of the CI/CD guide.
+
+### Diagnosing cache misses
+
+When a task you expected to be cached re-ran, ask vis what changed:
+
+```sh
+vis cache why @myorg/app:build           # human-friendly diff vs. previous run
+vis cache why @myorg/app:build --json    # stable shape for CI
+vis cache hash @myorg/app:build          # just print the hash + per-bucket inputs
+```
+
+`vis cache why` reads `.task-runner/last-summary.json` and diffs the task's `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run, so you can pinpoint exactly which bucket rotated. Past runs only land in `.task-runner/runs/` when you pass `--summarize`, so use `vis run :build --summarize` (or set it as a default in CI) for diffs you'll want to inspect later.
+
+### Cache retention
+
+`vis cache prune` evicts entries by any combination of age, total size, and count:
+
+```sh
+vis cache prune --max-age-days=7              # drop entries older than a week
+vis cache prune --max-size=2GB                # evict oldest until under 2 GB
+vis cache prune --keep-last=30                # keep only the 30 newest entries
+vis cache prune --keep-last=30 --max-age-days=14   # combine: 30-newest floor, then age cap
+```
+
+`--keep-last` enforces a count floor first (newest-first by mtime), then `--max-age-days` and `--max-size` apply.
+
+### Quieting successful runs
+
+`--output-style=quiet` skips stdout/stderr from successful and cached tasks while keeping failures fully visible. Pair it with per-target `options.outputStyle` to mute a single noisy task — or to keep one critical task verbose under a global quiet flag:
+
+```sh
+vis run :build --output-style=quiet     # only failures print
+```
+
+```json
+{
+    "targets": {
+        "lint": { "options": { "outputStyle": "quiet" } },
+        "migrate": { "options": { "outputStyle": "normal" } }
+    }
+}
+```
+
+See the [`vis cache`](./docs/commands/cache.mdx) and [`vis run`](./docs/commands/run.mdx) command references for the full surface.
 
 ### Scanning for secrets
 

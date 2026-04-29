@@ -103,6 +103,11 @@ const run: Command = {
             type: String,
         },
         {
+            description: "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Per-target options.outputStyle overrides this.",
+            name: "output-style",
+            type: String,
+        },
+        {
             defaultValue: false,
             description: "Run every task through a pseudo-terminal so color-aware tools render as if attached to a TTY (disables caching)",
             name: "pty",
@@ -136,23 +141,24 @@ const run: Command = {
 export default run;
 
 export type RunOptions = CreateOptions<{
-    "projects": string | undefined;
-    "skip-toolchain": boolean | undefined;
-    "parallel": number | undefined;
-    "cache": boolean | undefined;
+    affected: boolean | undefined;
+    cache: boolean | undefined;
     "cache-dir": string | undefined;
     "dry-run": boolean | undefined;
-    "summarize": boolean | undefined;
-    "partition": string | undefined;
-    "skip-constraints": boolean | undefined;
-    "query": string | undefined;
-    "affected": boolean | undefined;
-    "watch": boolean | undefined;
     "fail-fast": boolean | undefined;
-    "log": string | undefined;
-    "pty": boolean | undefined;
-    "retry-budget": number | undefined;
-    "profile": string | undefined;
+    flaky: boolean | undefined;
     "last-details": boolean | undefined;
-    "flaky": boolean | undefined;
+    log: string | undefined;
+    "output-style": string | undefined;
+    parallel: number | undefined;
+    partition: string | undefined;
+    profile: string | undefined;
+    projects: string | undefined;
+    pty: boolean | undefined;
+    query: string | undefined;
+    "retry-budget": number | undefined;
+    "skip-constraints": boolean | undefined;
+    "skip-toolchain": boolean | undefined;
+    summarize: boolean | undefined;
+    watch: boolean | undefined;
 }>;

@@ -34,11 +34,11 @@ import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../ru
 import { filterProjectsByQuery, resolveSelector } from "../../selectors";
 import { appendToShellHistory } from "../../shell-history";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../target-discovery";
-import { runToolchainPreflight } from "../../toolchain";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../target-options";
 import { detectCurrentOs, evaluateWhen, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../../target-options";
+import { runToolchainPreflight } from "../../toolchain";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
-import { StaticOutputLifeCycle } from "../../tui/static-life-cycle";
+import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
 import { collectTrackedWatchTargets, createTrackedFileFilter, startWatcher } from "../../watch";
 import type { VisProjectConfiguration } from "../../workspace";
@@ -594,766 +594,768 @@ const renderLastRunSummary = async (
 };
 
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RunOptions>): Promise<void> => {
-        if (!wsRoot) {
-            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
-        }
+    if (!wsRoot) {
+        throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+    }
 
-        const workspaceRoot = wsRoot;
+    const workspaceRoot = wsRoot;
 
-        // `--last-details` short-circuits execution: render the
-        // persisted last-run summary and exit. Handles the common
-        // "I ran tests 30s ago, show me what happened" case without
-        // re-running and (more importantly) without needing the
-        // workspace to be in a runnable state.
-        if (options.lastDetails === true) {
-            await renderLastRunSummary(workspaceRoot, logger);
+    // `--last-details` short-circuits execution: render the
+    // persisted last-run summary and exit. Handles the common
+    // "I ran tests 30s ago, show me what happened" case without
+    // re-running and (more importantly) without needing the
+    // workspace to be in a runnable state.
+    if (options.lastDetails === true) {
+        await renderLastRunSummary(workspaceRoot, logger);
 
-            return;
-        }
+        return;
+    }
 
-        // The directory the user invoked `vis` from, captured before any
-        // workspace resolution. Propagated as INIT_CWD to every task —
-        // matches pnpm/npm/yarn semantics so scripts can resolve paths
-        // relative to where the user actually ran the command.
-        const invocationCwd = process.cwd();
-        const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
-        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
+    // The directory the user invoked `vis` from, captured before any
+    // workspace resolution. Propagated as INIT_CWD to every task —
+    // matches pnpm/npm/yarn semantics so scripts can resolve paths
+    // relative to where the user actually ran the command.
+    const invocationCwd = process.cwd();
+    const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+    const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
-        let rawSelector = argument[0];
+    let rawSelector = argument[0];
 
-        if (!rawSelector) {
-            const available = collectAvailableTargets(workspace);
+    if (!rawSelector) {
+        const available = collectAvailableTargets(workspace);
 
-            if (process.stdout.isTTY && process.stdin.isTTY) {
-                const picked = await promptTargetInteractively(available);
+        if (process.stdout.isTTY && process.stdin.isTTY) {
+            const picked = await promptTargetInteractively(available);
 
-                if (!picked) {
-                    logger.info("No target selected.");
-
-                    return;
-                }
-
-                rawSelector = picked;
-
-                // The user ran `vis run` (no target) — without this, the
-                // resolved pick never appears in shell history, so
-                // up-arrow replays the picker, not the task. Best-effort,
-                // skipped on Windows / unrecognized shell.
-                await appendToShellHistory(`vis run ${picked}`);
-            } else {
-                logger.info("Available targets:");
-                logger.info("");
-                logger.info(formatTargetList(available));
-                logger.info("");
-                logger.info("Usage: vis run <target>");
+            if (!picked) {
+                logger.info("No target selected.");
 
                 return;
             }
-        }
 
-        if (config.constraints && !options.skipConstraints) {
-            const violations = enforceProjectConstraints(projectGraph, config.constraints);
+            rawSelector = picked;
 
-            if (violations.length > 0) {
-                for (const v of violations) {
-                    logger.error(`[${v.rule}] ${v.message}`);
-                }
-
-                throw new Error(`${violations.length} project constraint violation(s) found. Use --skip-constraints to bypass.`);
-            }
-        }
-
-        // --affected shorthand: delegate to the affected command
-        if (options.affected) {
-            const argv: string[] = [rawSelector];
-
-            if (options.parallel !== undefined) {
-                argv.push(`--parallel=${String(options.parallel)}`);
-            }
-
-            if (!options.cache) {
-                argv.push("--no-cache");
-            }
-
-            if (options.query) {
-                argv.push(`--query=${String(options.query)}`);
-            }
-
-            await runtime.runCommand("affected", { argv });
+            // The user ran `vis run` (no target) — without this, the
+            // resolved pick never appears in shell history, so
+            // up-arrow replays the picker, not the task. Best-effort,
+            // skipped on Windows / unrecognized shell.
+            await appendToShellHistory(`vis run ${picked}`);
+        } else {
+            logger.info("Available targets:");
+            logger.info("");
+            logger.info(formatTargetList(available));
+            logger.info("");
+            logger.info("Usage: vis run <target>");
 
             return;
         }
+    }
 
-        const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
-        // Resolve target aliases declared on any VisTargetConfiguration
-        // before any further filtering so `vis run t` picks up `test`.
-        const aliasMap = buildAliasMap(projectOptions);
-        const target = resolveTargetAlias(selectorResult.target, aliasMap);
+    if (config.constraints && !options.skipConstraints) {
+        const violations = enforceProjectConstraints(projectGraph, config.constraints);
 
-        if (target !== selectorResult.target) {
-            logger.debug?.(`Resolved alias "${selectorResult.target}" → "${target}"`);
-        }
-
-        let projectNames = selectorResult.projects;
-
-        // Any positional args past the target name are forwarded only to the
-        // invoked task — not to `dependsOn` deps. The task-runner string-form
-        // resolver strips overrides so deps start with a clean slate.
-        const forwardedArgs: string[] = argument.slice(1).map(String);
-
-        if (options.projects) {
-            const requested = new Set((options.projects as string).split(",").map((p: string) => p.trim()));
-
-            projectNames = projectNames.filter((name) => requested.has(name));
-
-            if (projectNames.length === 0) {
-                throw new Error(`No matching projects found for: ${String(options.projects)}`);
+        if (violations.length > 0) {
+            for (const v of violations) {
+                logger.error(`[${v.rule}] ${v.message}`);
             }
+
+            throw new Error(`${violations.length} project constraint violation(s) found. Use --skip-constraints to bypass.`);
+        }
+    }
+
+    // --affected shorthand: delegate to the affected command
+    if (options.affected) {
+        const argv: string[] = [rawSelector];
+
+        if (options.parallel !== undefined) {
+            argv.push(`--parallel=${String(options.parallel)}`);
         }
 
-        // Apply --query filter (language=X && tag=Y style).
+        if (!options.cache) {
+            argv.push("--no-cache");
+        }
+
         if (options.query) {
-            projectNames = filterProjectsByQuery(projectNames, workspace, options.query);
-
-            if (projectNames.length === 0) {
-                logger.info(`Query "${String(options.query)}" matched no projects.`);
-
-                return;
-            }
+            argv.push(`--query=${String(options.query)}`);
         }
 
-        const currentOs = detectCurrentOs();
+        await runtime.runCommand("affected", { argv });
 
-        const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
-        const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
+        return;
+    }
 
-        const projectsWithTarget: string[] = [];
-        const projectTargetIndex = new Map<string, VisTargetConfiguration>();
+    const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
+    // Resolve target aliases declared on any VisTargetConfiguration
+    // before any further filtering so `vis run t` picks up `test`.
+    const aliasMap = buildAliasMap(projectOptions);
+    const target = resolveTargetAlias(selectorResult.target, aliasMap);
 
-        for (const name of projectNames) {
-            const visTargets = projectOptions.get(name);
-            const visTarget = visTargets?.[target];
+    if (target !== selectorResult.target) {
+        logger.debug?.(`Resolved alias "${selectorResult.target}" → "${target}"`);
+    }
 
-            if (!visTarget) {
-                continue;
-            }
+    let projectNames = selectorResult.projects;
 
-            const visOptions = visTarget.options;
+    // Any positional args past the target name are forwarded only to the
+    // invoked task — not to `dependsOn` deps. The task-runner string-form
+    // resolver strips overrides so deps start with a clean slate.
+    const forwardedArgs: string[] = argument.slice(1).map(String);
 
-            if (visOptions?.internal) {
-                continue;
-            }
+    if (options.projects) {
+        const requested = new Set((options.projects).split(",").map((p: string) => p.trim()));
 
-            if (!matchesOs(visOptions, currentOs)) {
-                logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
-                continue;
-            }
+        projectNames = projectNames.filter((name) => requested.has(name));
 
-            if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
-                logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
-                continue;
-            }
-
-            if (!evaluateWhen(visOptions?.when)) {
-                logger.debug?.(`Skipping ${name}:${target} — \`when\` condition not satisfied`);
-                continue;
-            }
-
-            projectsWithTarget.push(name);
-            projectTargetIndex.set(name, visTarget);
+        if (projectNames.length === 0) {
+            throw new Error(`No matching projects found for: ${String(options.projects)}`);
         }
+    }
 
-        if (projectsWithTarget.length === 0) {
-            const available = collectAvailableTargets(workspace);
-            const exactMatchProjects = Object.entries(workspace.projects)
-                .filter(([, proj]) => proj.targets?.[target] !== undefined)
-                .map(([name]) => name);
+    // Apply --query filter (language=X && tag=Y style).
+    if (options.query) {
+        projectNames = filterProjectsByQuery(projectNames, workspace, options.query);
 
-            logger.error(`No projects have the "${target}" target.`);
-
-            if (exactMatchProjects.length > 0) {
-                // The target exists somewhere in the workspace — it was
-                // just filtered out by selector/query/os/runInCI. Tell
-                // the user which projects do implement it.
-                logger.info("");
-                logger.info(`Target "${target}" exists in these projects but was filtered out:`);
-
-                for (const name of exactMatchProjects.slice(0, 5)) {
-                    logger.info(`  - ${name}`);
-                }
-
-                if (exactMatchProjects.length > 5) {
-                    logger.info(`  …and ${exactMatchProjects.length - 5} more`);
-                }
-            } else {
-                const suggestions = suggestTargets(target, available, 3);
-
-                if (suggestions.length > 0) {
-                    logger.info("");
-                    logger.info(
-                        suggestions.length === 1 ? `Did you mean "${suggestions[0]}"?` : `Did you mean one of: ${suggestions.map((s) => `"${s}"`).join(", ")}?`,
-                    );
-                }
-
-                logger.info("");
-                logger.info("Run `vis run` without arguments to see all available targets.");
-            }
+        if (projectNames.length === 0) {
+            logger.info(`Query "${String(options.query)}" matched no projects.`);
 
             return;
         }
+    }
 
-        const ptyFlag = options.pty === true;
+    const currentOs = detectCurrentOs();
 
-        let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
-            const project = workspace.projects[projectName];
-            const visTarget = projectTargetIndex.get(projectName)!;
-            const taskTarget: TaskTarget = { project: projectName, target };
-            const taskId = `${projectName}:${target}`;
-            // The --pty flag flips all tasks into PTY mode; per-target config
-            // still wins when the target explicitly opts out.
-            const mergedOptions: VisTargetOptions | undefined = ptyFlag ? { ...visTarget.options, pty: visTarget.options?.pty ?? true } : visTarget.options;
+    const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
+    const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
 
-            return {
-                cache: visTarget.cache,
-                id: taskId,
-                outputs: visTarget.outputs ?? [],
-                overrides: {
-                    command: visTarget.command,
-                    ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
-                    ...(mergedOptions ? { visOptions: mergedOptions } : {}),
-                },
-                parallelism: visTarget.parallelism,
-                projectRoot: project?.root,
-                target: taskTarget,
-            };
-        });
+    const projectsWithTarget: string[] = [];
+    const projectTargetIndex = new Map<string, VisTargetConfiguration>();
 
-        const persistentTasks: Task[] = [];
-        const regularTasks: Task[] = [];
+    for (const name of projectNames) {
+        const visTargets = projectOptions.get(name);
+        const visTarget = visTargets?.[target];
 
-        for (const task of initialTasks) {
-            const opts = getTaskOptions(task);
-
-            if (opts?.persistent) {
-                task.cache = false;
-                persistentTasks.push(task);
-            } else {
-                regularTasks.push(task);
-            }
+        if (!visTarget) {
+            continue;
         }
 
-        initialTasks = regularTasks;
+        const visOptions = visTarget.options;
 
-        const partition = parsePartition(options.partition);
-
-        if (partition) {
-            initialTasks = TaskScheduler.partitionTasks(initialTasks, partition);
-
-            logger.info(`Partition ${partition.index}/${partition.total}: running ${initialTasks.length} task(s)`);
-
-            if (initialTasks.length === 0) {
-                logger.info("No tasks assigned to this partition.");
-
-                return;
-            }
+        if (visOptions?.internal) {
+            continue;
         }
 
-        const taskGraph = createTaskGraph(initialTasks, {
-            projectGraph,
-            targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
-            workspace,
-        });
+        if (!matchesOs(visOptions, currentOs)) {
+            logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
+            continue;
+        }
 
-        if (options.dryRun) {
-            const taskCount = Object.keys(taskGraph.tasks).length;
-            const rootCount = taskGraph.roots.length;
+        if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
+            logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
+            continue;
+        }
 
-            logger.info(`Execution plan (${String(taskCount)} task(s), ${String(rootCount)} root(s)):`);
+        if (!evaluateWhen(visOptions?.when)) {
+            logger.debug?.(`Skipping ${name}:${target} — \`when\` condition not satisfied`);
+            continue;
+        }
+
+        projectsWithTarget.push(name);
+        projectTargetIndex.set(name, visTarget);
+    }
+
+    if (projectsWithTarget.length === 0) {
+        const available = collectAvailableTargets(workspace);
+        const exactMatchProjects = Object.entries(workspace.projects)
+            .filter(([, proj]) => proj.targets?.[target] !== undefined)
+            .map(([name]) => name);
+
+        logger.error(`No projects have the "${target}" target.`);
+
+        if (exactMatchProjects.length > 0) {
+            // The target exists somewhere in the workspace — it was
+            // just filtered out by selector/query/os/runInCI. Tell
+            // the user which projects do implement it.
             logger.info("");
+            logger.info(`Target "${target}" exists in these projects but was filtered out:`);
 
-            const visited = new Set<string>();
-            const walkPlan = (id: string, depth: number): void => {
-                if (visited.has(id)) {
-                    return;
-                }
-
-                visited.add(id);
-
-                for (const dep of taskGraph.dependencies[id] ?? []) {
-                    walkPlan(dep, depth + 1);
-                }
-
-                const task = taskGraph.tasks[id];
-                const indent = "  ".repeat(depth + 1);
-
-                logger.info(`${indent}${id}${task?.cache === false ? " (no-cache)" : ""}`);
-            };
-
-            for (const root of taskGraph.roots) {
-                walkPlan(root, 0);
+            for (const name of exactMatchProjects.slice(0, 5)) {
+                logger.info(`  - ${name}`);
             }
 
-            if (persistentTasks.length > 0) {
-                logger.info("");
-                logger.info(`  + ${String(persistentTasks.length)} persistent task(s) (run after graph completes)`);
-            }
-
-            logger.info("");
-
-            return;
-        }
-
-        // Pre-flight: if a workspace tool pin doesn't match the running
-        // version and `toolchain.autoInstall` is on (default when a
-        // manager is detected), install via the right manager and let
-        // subsequent task subprocesses pick up the new version. We
-        // never block on failure — surface a warning, keep going,
-        // and let the existing runtime-check warnings do their job.
-        //
-        // Runs only when we're committing to actually execute tasks:
-        // after target selection, after the `--last-details` and
-        // `--dry-run` short-circuits, and after the no-target listing
-        // path returns. Avoids surprising auto-installs from `vis run`
-        // with no args or `vis run --dry-run`.
-        await runToolchainPreflight(
-            workspaceRoot,
-            config.toolchain,
-            {
-                error: (message) => logger.error(message),
-                info: (message) => logger.info(message),
-                warn: (message) => logger.warn(message),
-            },
-            Boolean(options.skipToolchain),
-        );
-
-        const startTime = Date.now();
-
-        // One typed hook registry per run. Plugins register handlers
-        // via `config.plugins`; the HookableLifeCycle forwards lifecycle
-        // events from task-runner into the registry so plugin authors
-        // see `task:before`/`task:after`/`task:cacheHit` etc. without
-        // needing to understand the lower-level LifeCycleInterface.
-        const hooks = createVisHooks();
-
-        // Per-run handler, passed into HookableLifeCycle below. No
-        // module-level state: concurrent `vis` invocations in the same
-        // process (programmatic API, Vitest parallel suites) each get
-        // their own channel.
-        const onHookError = (hookName: string, error: unknown): void => {
-            const message = error instanceof Error ? error.message : String(error);
-
-            logger.warn(`Plugin error in ${hookName}: ${message}`);
-        };
-
-        await registerPlugins(hooks, config.plugins);
-
-        const profilePath = typeof options.profile === "string" ? options.profile : undefined;
-        const maybeWriteProfile = async (results: TaskResults): Promise<void> => {
-            if (!profilePath) {
-                return;
-            }
-
-            const summary = generateRunSummary(results, taskGraph, startTime);
-
-            const resolvedProfilePath = profilePath.startsWith("/") ? profilePath : `${workspaceRoot}/${profilePath}`;
-
-            await writeChromeTrace(summary, resolvedProfilePath);
-
-            logger.info(`Profile written to ${profilePath}`);
-        };
-
-        // Resolve the cache directory through the shared helper so precedence
-        // (CLI > vis.config.ts > default) stays consistent with `vis cache`
-        // and relative --cache-dir values are normalized against the
-        // workspace root. Other fields keep their existing spread semantics
-        // to avoid changing override precedence for parallel/dryRun/etc.
-        const configTaskRunnerOptions = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
-        const baseCacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunnerOptions.cacheDirectory);
-        // Branch-scope the cache dir when configured so main/feature
-        // branches stop overwriting each other's entries.
-        const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);
-
-        // Concurrency resolution order: --parallel CLI flag > VIS_RUN_CONCURRENCY_LIMIT
-        // env > built-in default of 3. Matches vite-task's
-        // VP_RUN_CONCURRENCY_LIMIT semantics — lets CI runners set a
-        // global limit via env without passing the flag on every call.
-        // An invalid env value surfaces as a warn so misconfigurations
-        // aren't silently ignored.
-        const parallelEnvParsed = parseEnvConcurrency(process.env["VIS_RUN_CONCURRENCY_LIMIT"]);
-
-        if (parallelEnvParsed && "invalid" in parallelEnvParsed) {
-            logger.warn(`VIS_RUN_CONCURRENCY_LIMIT=${parallelEnvParsed.invalid} is not a positive number; falling back to default concurrency.`);
-        }
-
-        const parallelFromEnv = parallelEnvParsed && "value" in parallelEnvParsed ? parallelEnvParsed.value : undefined;
-        const resolvedParallel = options.parallel ?? parallelFromEnv ?? 3;
-
-        const runnerOptions: TaskRunnerOptions = {
-            dryRun: options.dryRun ?? false,
-            parallel: resolvedParallel,
-            skipNxCache: !options.cache,
-            summarize: options.summarize ?? false,
-            ...configTaskRunnerOptions,
-            // Applied after the config spread so the user's `--cache-dir` flag
-            // wins over a config value and relative paths are normalized
-            // against `workspaceRoot` via `resolveCacheDirectory()`.
-            cacheDirectory: resolvedCacheDirectory,
-        };
-
-        const isTTY = process.stdout.isTTY && !isInCi;
-        const autoExitConfig = config.tui?.autoExit ?? false;
-        const lifecycleOptions = {
-            args: { parallel: runnerOptions.parallel, targets: [target] },
-            autoExit: autoExitConfig,
-            projectNames: projectsWithTarget,
-            tasks: initialTasks,
-        };
-
-        const retryBudgetLimit = typeof options.retryBudget === "number" ? options.retryBudget : undefined;
-        const sharedRetryBudget = retryBudgetLimit === undefined ? undefined : createRetryBudget(retryBudgetLimit);
-
-        const hookLifeCycle = new HookableLifeCycle(hooks, onHookError);
-
-        await hooks.callHook("run:before", { tasks: initialTasks, workspaceRoot });
-
-        if (isTTY) {
-            const stdinRegistry = new Map<string, StdinEntry>();
-            const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, stdinRegistry });
-            const { lifeCycle: uiLifeCycle, store } = dynamic;
-            // Fan lifecycle events out to both the UI renderer and the
-            // plugin hook layer so subscribers see the same events
-            // without adding another renderer.
-            const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle]);
-            const mutexPool: MutexPool = new Map();
-            const taskExecutor = createConcurrentExecutor({
-                affectedFiles,
-                currentOs,
-                initCwd: invocationCwd,
-                lifeCycle,
-                mutexPool,
-                onOutput: (taskId, text) => {
-                    store.addOutput(taskId, text);
-                },
-                onOutputReplace: (taskId, fullContent) => {
-                    store.setOutput(taskId, fullContent);
-                },
-                retryBudget: sharedRetryBudget,
-                stdinRegistry,
-                workspaceRoot,
-            });
-
-            let loopAction: "quit" | "rerun" | "retry" = "rerun";
-            let retryTaskId: string | null = null;
-
-            let lastResults: TaskResults = new Map();
-
-            while (loopAction !== "quit") {
-                if (loopAction === "rerun") {
-                    lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
-                        lifeCycle,
-                        projectGraph,
-                        taskExecutor,
-                        taskGraph,
-                        workspaceRoot,
-                    });
-                } else if (loopAction === "retry" && retryTaskId) {
-                    const task = initialTasks.find((t) => t.id === retryTaskId);
-                    const command = task?.overrides["command"] as string | undefined;
-
-                    if (task && command) {
-                        const taskCwd = task.projectRoot ?? workspaceRoot;
-                        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
-
-                        lifeCycle.startTasks?.([task]);
-
-                        const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
-
-                        const retryResult = await runConcurrently(
-                            [
-                                {
-                                    command,
-                                    cwd: resolvedCwd,
-                                    name: task.id,
-                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                    stdin: "pty",
-                                },
-                            ],
-                            {
-                                onEvent: (event: ProcessEvent) => {
-                                    if (event.kind === "started" && event.write) {
-                                        stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
-                                    }
-
-                                    if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
-                                        retryTermBuf.write(event.text);
-                                        store.setOutput(task.id, retryTermBuf.toString());
-                                    }
-
-                                    if (event.kind === "close") {
-                                        stdinRegistry.delete(task.id);
-                                    }
-                                },
-                            },
-                        );
-
-                        const closeEvent = retryResult.closeEvents[0];
-
-                        lifeCycle.endTasks?.([
-                            {
-                                code: closeEvent?.exitCode ?? 1,
-                                status: closeEvent?.exitCode === 0 ? "success" : "failure",
-                                task,
-                                terminalOutput: store.getSnapshot().outputs.get(task.id),
-                            },
-                        ]);
-                    } else if (task) {
-                        lifeCycle.endTasks?.([
-                            {
-                                code: 1,
-                                status: "failure",
-                                task,
-                                terminalOutput: `No command configured for ${task.id}`,
-                            },
-                        ]);
-                    }
-
-                    retryTaskId = null;
-
-                    // Mark done after retry so user can rerun/retry again
-                    store.markDone();
-                }
-
-                loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
-                    const unsubscribe = store.subscribe(() => {
-                        const s = store.getSnapshot();
-
-                        if (s.rerunRequested) {
-                            store.acknowledgeRerun();
-                            unsubscribe();
-                            resolve("rerun");
-                        }
-
-                        if (s.retryTaskId) {
-                            retryTaskId = store.acknowledgeRetry();
-                            unsubscribe();
-                            resolve("retry");
-                        }
-                    });
-
-                    dynamic.renderIsDone.then(
-                        () => {
-                            unsubscribe();
-                            resolve("quit");
-                        },
-                        () => {
-                            unsubscribe();
-                            resolve("quit");
-                        },
-                    );
-                });
-            }
-
-            await dynamic.renderIsDone;
-            await hooks.callHook("run:after", lastResults);
-            await maybeWriteProfile(lastResults);
-
-            if (persistentTasks.length > 0 && !options.failFast) {
-                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
+            if (exactMatchProjects.length > 5) {
+                logger.info(`  …and ${exactMatchProjects.length - 5} more`);
             }
         } else {
-            const mutexPool: MutexPool = new Map();
-            const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
-            const logMode: LogMode | undefined
-                = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
-            const logReporter = logMode ? createLogReporter(logMode) : undefined;
-            // Composite so plugin hooks see every task boundary event in
-            // addition to the CI-style static renderer. Build the
-            // lifecycle first so the executor can forward streaming
-            // stdout/stderr chunks into it.
-            const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter }), hookLifeCycle]);
+            const suggestions = suggestTargets(target, available, 3);
 
-            const taskExecutor = createConcurrentExecutor({
-                affectedFiles,
-                currentOs,
-                initCwd: invocationCwd,
-                lifeCycle,
-                mutexPool,
-                retryBudget: sharedRetryBudget,
-                workspaceRoot,
-            });
+            if (suggestions.length > 0) {
+                logger.info("");
+                logger.info(
+                    suggestions.length === 1 ? `Did you mean "${suggestions[0]}"?` : `Did you mean one of: ${suggestions.map((s) => `"${s}"`).join(", ")}?`,
+                );
+            }
 
-            const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults; runHistory: Awaited<ReturnType<typeof loadRunSummaries>> }> => {
-                const runStart = Date.now();
+            logger.info("");
+            logger.info("Run `vis run` without arguments to see all available targets.");
+        }
 
-                const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+        return;
+    }
+
+    const ptyFlag = options.pty === true;
+
+    let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
+        const project = workspace.projects[projectName];
+        const visTarget = projectTargetIndex.get(projectName)!;
+        const taskTarget: TaskTarget = { project: projectName, target };
+        const taskId = `${projectName}:${target}`;
+        // The --pty flag flips all tasks into PTY mode; per-target config
+        // still wins when the target explicitly opts out.
+        const mergedOptions: VisTargetOptions | undefined = ptyFlag ? { ...visTarget.options, pty: visTarget.options?.pty ?? true } : visTarget.options;
+
+        return {
+            cache: visTarget.cache,
+            id: taskId,
+            outputs: visTarget.outputs ?? [],
+            overrides: {
+                command: visTarget.command,
+                ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
+                ...(mergedOptions ? { visOptions: mergedOptions } : {}),
+            },
+            parallelism: visTarget.parallelism,
+            projectRoot: project?.root,
+            target: taskTarget,
+        };
+    });
+
+    const persistentTasks: Task[] = [];
+    const regularTasks: Task[] = [];
+
+    for (const task of initialTasks) {
+        const opts = getTaskOptions(task);
+
+        if (opts?.persistent) {
+            task.cache = false;
+            persistentTasks.push(task);
+        } else {
+            regularTasks.push(task);
+        }
+    }
+
+    initialTasks = regularTasks;
+
+    const partition = parsePartition(options.partition);
+
+    if (partition) {
+        initialTasks = TaskScheduler.partitionTasks(initialTasks, partition);
+
+        logger.info(`Partition ${partition.index}/${partition.total}: running ${initialTasks.length} task(s)`);
+
+        if (initialTasks.length === 0) {
+            logger.info("No tasks assigned to this partition.");
+
+            return;
+        }
+    }
+
+    const taskGraph = createTaskGraph(initialTasks, {
+        projectGraph,
+        targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
+        workspace,
+    });
+
+    if (options.dryRun) {
+        const taskCount = Object.keys(taskGraph.tasks).length;
+        const rootCount = taskGraph.roots.length;
+
+        logger.info(`Execution plan (${String(taskCount)} task(s), ${String(rootCount)} root(s)):`);
+        logger.info("");
+
+        const visited = new Set<string>();
+        const walkPlan = (id: string, depth: number): void => {
+            if (visited.has(id)) {
+                return;
+            }
+
+            visited.add(id);
+
+            for (const dep of taskGraph.dependencies[id] ?? []) {
+                walkPlan(dep, depth + 1);
+            }
+
+            const task = taskGraph.tasks[id];
+            const indent = "  ".repeat(depth + 1);
+
+            logger.info(`${indent}${id}${task?.cache === false ? " (no-cache)" : ""}`);
+        };
+
+        for (const root of taskGraph.roots) {
+            walkPlan(root, 0);
+        }
+
+        if (persistentTasks.length > 0) {
+            logger.info("");
+            logger.info(`  + ${String(persistentTasks.length)} persistent task(s) (run after graph completes)`);
+        }
+
+        logger.info("");
+
+        return;
+    }
+
+    // Pre-flight: if a workspace tool pin doesn't match the running
+    // version and `toolchain.autoInstall` is on (default when a
+    // manager is detected), install via the right manager and let
+    // subsequent task subprocesses pick up the new version. We
+    // never block on failure — surface a warning, keep going,
+    // and let the existing runtime-check warnings do their job.
+    //
+    // Runs only when we're committing to actually execute tasks:
+    // after target selection, after the `--last-details` and
+    // `--dry-run` short-circuits, and after the no-target listing
+    // path returns. Avoids surprising auto-installs from `vis run`
+    // with no args or `vis run --dry-run`.
+    await runToolchainPreflight(
+        workspaceRoot,
+        config.toolchain,
+        {
+            error: (message) => { logger.error(message); },
+            info: (message) => { logger.info(message); },
+            warn: (message) => { logger.warn(message); },
+        },
+        Boolean(options.skipToolchain),
+    );
+
+    const startTime = Date.now();
+
+    // One typed hook registry per run. Plugins register handlers
+    // via `config.plugins`; the HookableLifeCycle forwards lifecycle
+    // events from task-runner into the registry so plugin authors
+    // see `task:before`/`task:after`/`task:cacheHit` etc. without
+    // needing to understand the lower-level LifeCycleInterface.
+    const hooks = createVisHooks();
+
+    // Per-run handler, passed into HookableLifeCycle below. No
+    // module-level state: concurrent `vis` invocations in the same
+    // process (programmatic API, Vitest parallel suites) each get
+    // their own channel.
+    const onHookError = (hookName: string, error: unknown): void => {
+        const message = error instanceof Error ? error.message : String(error);
+
+        logger.warn(`Plugin error in ${hookName}: ${message}`);
+    };
+
+    await registerPlugins(hooks, config.plugins);
+
+    const profilePath = typeof options.profile === "string" ? options.profile : undefined;
+    const maybeWriteProfile = async (results: TaskResults): Promise<void> => {
+        if (!profilePath) {
+            return;
+        }
+
+        const summary = generateRunSummary(results, taskGraph, startTime);
+
+        const resolvedProfilePath = profilePath.startsWith("/") ? profilePath : `${workspaceRoot}/${profilePath}`;
+
+        await writeChromeTrace(summary, resolvedProfilePath);
+
+        logger.info(`Profile written to ${profilePath}`);
+    };
+
+    // Resolve the cache directory through the shared helper so precedence
+    // (CLI > vis.config.ts > default) stays consistent with `vis cache`
+    // and relative --cache-dir values are normalized against the
+    // workspace root. Other fields keep their existing spread semantics
+    // to avoid changing override precedence for parallel/dryRun/etc.
+    const configTaskRunnerOptions = (config.taskRunnerOptions ?? {}) as TaskRunnerOptions & { cacheDirectory?: string };
+    const baseCacheDirectory = resolveCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunnerOptions.cacheDirectory);
+    // Branch-scope the cache dir when configured so main/feature
+    // branches stop overwriting each other's entries.
+    const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);
+
+    // Concurrency resolution order: --parallel CLI flag > VIS_RUN_CONCURRENCY_LIMIT
+    // env > built-in default of 3. Matches vite-task's
+    // VP_RUN_CONCURRENCY_LIMIT semantics — lets CI runners set a
+    // global limit via env without passing the flag on every call.
+    // An invalid env value surfaces as a warn so misconfigurations
+    // aren't silently ignored.
+    const parallelEnvParsed = parseEnvConcurrency(process.env["VIS_RUN_CONCURRENCY_LIMIT"]);
+
+    if (parallelEnvParsed && "invalid" in parallelEnvParsed) {
+        logger.warn(`VIS_RUN_CONCURRENCY_LIMIT=${parallelEnvParsed.invalid} is not a positive number; falling back to default concurrency.`);
+    }
+
+    const parallelFromEnv = parallelEnvParsed && "value" in parallelEnvParsed ? parallelEnvParsed.value : undefined;
+    const resolvedParallel = options.parallel ?? parallelFromEnv ?? 3;
+
+    const runnerOptions: TaskRunnerOptions = {
+        dryRun: options.dryRun ?? false,
+        parallel: resolvedParallel,
+        skipNxCache: !options.cache,
+        summarize: options.summarize ?? false,
+        ...configTaskRunnerOptions,
+        // Applied after the config spread so the user's `--cache-dir` flag
+        // wins over a config value and relative paths are normalized
+        // against `workspaceRoot` via `resolveCacheDirectory()`.
+        cacheDirectory: resolvedCacheDirectory,
+    };
+
+    const isTTY = process.stdout.isTTY && !isInCi;
+    const autoExitConfig = config.tui?.autoExit ?? false;
+    const lifecycleOptions = {
+        args: { parallel: runnerOptions.parallel, targets: [target] },
+        autoExit: autoExitConfig,
+        projectNames: projectsWithTarget,
+        tasks: initialTasks,
+    };
+
+    const retryBudgetLimit = typeof options.retryBudget === "number" ? options.retryBudget : undefined;
+    const sharedRetryBudget = retryBudgetLimit === undefined ? undefined : createRetryBudget(retryBudgetLimit);
+
+    const hookLifeCycle = new HookableLifeCycle(hooks, onHookError);
+
+    const outputStyle = parseOutputStyle(typeof options.outputStyle === "string" ? options.outputStyle.toLowerCase() : undefined);
+
+    await hooks.callHook("run:before", { tasks: initialTasks, workspaceRoot });
+
+    if (isTTY) {
+        const stdinRegistry = new Map<string, StdinEntry>();
+        const dynamic = createDynamicOutputRenderer({ ...lifecycleOptions, outputStyle, stdinRegistry });
+        const { lifeCycle: uiLifeCycle, store } = dynamic;
+        // Fan lifecycle events out to both the UI renderer and the
+        // plugin hook layer so subscribers see the same events
+        // without adding another renderer.
+        const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle]);
+        const mutexPool: MutexPool = new Map();
+        const taskExecutor = createConcurrentExecutor({
+            affectedFiles,
+            currentOs,
+            initCwd: invocationCwd,
+            lifeCycle,
+            mutexPool,
+            onOutput: (taskId, text) => {
+                store.addOutput(taskId, text);
+            },
+            onOutputReplace: (taskId, fullContent) => {
+                store.setOutput(taskId, fullContent);
+            },
+            retryBudget: sharedRetryBudget,
+            stdinRegistry,
+            workspaceRoot,
+        });
+
+        let loopAction: "quit" | "rerun" | "retry" = "rerun";
+        let retryTaskId: string | null = null;
+
+        let lastResults: TaskResults = new Map();
+
+        while (loopAction !== "quit") {
+            if (loopAction === "rerun") {
+                lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
                     lifeCycle,
                     projectGraph,
                     taskExecutor,
                     taskGraph,
                     workspaceRoot,
                 });
+            } else if (loopAction === "retry" && retryTaskId) {
+                const task = initialTasks.find((t) => t.id === retryTaskId);
+                const command = task?.overrides["command"] as string | undefined;
 
-                const durationMs = Date.now() - runStart;
+                if (task && command) {
+                    const taskCwd = task.projectRoot ?? workspaceRoot;
+                    const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
 
-                if (options.summarize) {
-                    const summary = generateRunSummary(results, taskGraph, startTime);
+                    lifeCycle.startTasks?.([task]);
 
-                    await writeRunSummary(summary, workspaceRoot);
+                    const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
+
+                    const retryResult = await runConcurrently(
+                        [
+                            {
+                                command,
+                                cwd: resolvedCwd,
+                                name: task.id,
+                                ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                stdin: "pty",
+                            },
+                        ],
+                        {
+                            onEvent: (event: ProcessEvent) => {
+                                if (event.kind === "started" && event.write) {
+                                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
+                                }
+
+                                if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
+                                    retryTermBuf.write(event.text);
+                                    store.setOutput(task.id, retryTermBuf.toString());
+                                }
+
+                                if (event.kind === "close") {
+                                    stdinRegistry.delete(task.id);
+                                }
+                            },
+                        },
+                    );
+
+                    const closeEvent = retryResult.closeEvents[0];
+
+                    lifeCycle.endTasks?.([
+                        {
+                            code: closeEvent?.exitCode ?? 1,
+                            status: closeEvent?.exitCode === 0 ? "success" : "failure",
+                            task,
+                            terminalOutput: store.getSnapshot().outputs.get(task.id),
+                        },
+                    ]);
+                } else if (task) {
+                    lifeCycle.endTasks?.([
+                        {
+                            code: 1,
+                            status: "failure",
+                            task,
+                            terminalOutput: `No command configured for ${task.id}`,
+                        },
+                    ]);
                 }
 
-                let hasFailure = false;
+                retryTaskId = null;
 
-                for (const [, result] of results) {
-                    if (result.status === "failure") {
-                        hasFailure = true;
-                    }
-                }
+                // Mark done after retry so user can rerun/retry again
+                store.markDone();
+            }
 
-                const timingLine = formatTimingSummary(results, durationMs);
+            loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
+                const unsubscribe = store.subscribe(() => {
+                    const s = store.getSnapshot();
 
-                // Load historical summaries once here and share with
-                // the flakiness analyzer below — both consumers need
-                // the same files and duplicate reads dominate when
-                // the runs/ dir has accumulated hundreds of entries.
-                const runHistory = loadRunSummaries(workspaceRoot);
-                const durationComparison = compareDuration(workspaceRoot, durationMs, runHistory);
-
-                logger.info("");
-                logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
-
-                return { hasFailure, results, runHistory };
-            };
-
-            const firstRun = await runOnce();
-
-            await hooks.callHook("run:after", firstRun.results);
-            await maybeWriteProfile(firstRun.results);
-
-            const { hasFailure } = firstRun;
-
-            if (options.watch) {
-                const absoluteRoots = projectsWithTarget
-                    .map((name) => {
-                        const project = workspace.projects[name] as VisProjectConfiguration | undefined;
-                        const root = project?.root;
-
-                        if (!root) {
-                            return undefined;
-                        }
-
-                        return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
-                    })
-                    .filter((p): p is string => p !== undefined);
-
-                let running = false;
-                let lastResults = firstRun.results;
-
-                // Builds a fresh watcher after each run so the watch set
-                // reflects the files the latest run actually touched.
-                // Falls back to project roots on the first invocation
-                // (no prior results) or when no task carries hashDetails.
-                const buildHandle = (): { handle: ReturnType<typeof startWatcher>; mode: "tracked" | "roots" } => {
-                    const targets = collectTrackedWatchTargets(lastResults, workspaceRoot);
-
-                    if (targets.directories.length > 0 && targets.files.size > 0) {
-                        const filter = createTrackedFileFilter(targets.files, workspaceRoot, targets.directories);
-
-                        return {
-                            handle: startWatcher({
-                                filter,
-                                onChange: onChangeHandler,
-                                paths: targets.directories,
-                            }),
-                            mode: "tracked",
-                        };
+                    if (s.rerunRequested) {
+                        store.acknowledgeRerun();
+                        unsubscribe();
+                        resolve("rerun");
                     }
 
-                    return {
-                        handle: startWatcher({ onChange: onChangeHandler, paths: absoluteRoots }),
-                        mode: "roots",
-                    };
-                };
-
-                let currentHandle: ReturnType<typeof startWatcher> | undefined;
-
-                const onChangeHandler = async (paths: string[]): Promise<void> => {
-                    if (running) {
-                        return;
+                    if (s.retryTaskId) {
+                        retryTaskId = store.acknowledgeRetry();
+                        unsubscribe();
+                        resolve("retry");
                     }
-
-                    running = true;
-
-                    try {
-                        logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
-
-                        const nextRun = await runOnce();
-
-                        lastResults = nextRun.results;
-
-                        // Rebuild the watcher so the next event only
-                        // fires for files the newest run still cares
-                        // about. Cheap — under 100ms on typical graphs.
-                        currentHandle?.close();
-
-                        const rebuilt = buildHandle();
-
-                        currentHandle = rebuilt.handle;
-                    } finally {
-                        running = false;
-                    }
-                };
-
-                const initial = buildHandle();
-
-                currentHandle = initial.handle;
-
-                const scope
-                    = initial.mode === "tracked"
-                        ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
-                        : `Watching ${String(absoluteRoots.length)} project root(s)`;
-
-                logger.info(`${scope} — edit a file to rerun, Ctrl+C to exit.`);
-
-                await new Promise<void>((resolve) => {
-                    const onSigint = (): void => {
-                        process.off("SIGINT", onSigint);
-                        currentHandle?.close();
-                        resolve();
-                    };
-
-                    process.on("SIGINT", onSigint);
                 });
 
-                return;
+                dynamic.renderIsDone.then(
+                    () => {
+                        unsubscribe();
+                        resolve("quit");
+                    },
+                    () => {
+                        unsubscribe();
+                        resolve("quit");
+                    },
+                );
+            });
+        }
+
+        await dynamic.renderIsDone;
+        await hooks.callHook("run:after", lastResults);
+        await maybeWriteProfile(lastResults);
+
+        if (persistentTasks.length > 0 && !options.failFast) {
+            await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
+        }
+    } else {
+        const mutexPool: MutexPool = new Map();
+        const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
+        const logMode: LogMode | undefined
+            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
+        const logReporter = logMode ? createLogReporter(logMode) : undefined;
+        // Composite so plugin hooks see every task boundary event in
+        // addition to the CI-style static renderer. Build the
+        // lifecycle first so the executor can forward streaming
+        // stdout/stderr chunks into it.
+        const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }), hookLifeCycle]);
+
+        const taskExecutor = createConcurrentExecutor({
+            affectedFiles,
+            currentOs,
+            initCwd: invocationCwd,
+            lifeCycle,
+            mutexPool,
+            retryBudget: sharedRetryBudget,
+            workspaceRoot,
+        });
+
+        const runOnce = async (): Promise<{ hasFailure: boolean; results: TaskResults; runHistory: Awaited<ReturnType<typeof loadRunSummaries>> }> => {
+            const runStart = Date.now();
+
+            const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+                lifeCycle,
+                projectGraph,
+                taskExecutor,
+                taskGraph,
+                workspaceRoot,
+            });
+
+            const durationMs = Date.now() - runStart;
+
+            if (options.summarize) {
+                const summary = generateRunSummary(results, taskGraph, startTime);
+
+                await writeRunSummary(summary, workspaceRoot);
             }
 
-            if (hasFailure) {
-                if (options.flaky !== false) {
-                    // Reuse the history already loaded for the timing
-                    // comparison above — the runs/ directory hasn't
-                    // changed since this turn of the loop started.
-                    const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
+            let hasFailure = false;
 
-                    if (flakyStats.length > 0) {
-                        logger.info("");
-                        logger.info("Flaky tasks (based on historical runs):");
-                        logger.info("");
+            for (const [, result] of results) {
+                if (result.status === "failure") {
+                    hasFailure = true;
+                }
+            }
 
-                        for (const line of formatFlakinessTable(flakyStats)) {
-                            logger.info(`  ${line}`);
-                        }
+            const timingLine = formatTimingSummary(results, durationMs);
 
-                        logger.info("");
+            // Load historical summaries once here and share with
+            // the flakiness analyzer below — both consumers need
+            // the same files and duplicate reads dominate when
+            // the runs/ dir has accumulated hundreds of entries.
+            const runHistory = loadRunSummaries(workspaceRoot);
+            const durationComparison = compareDuration(workspaceRoot, durationMs, runHistory);
+
+            logger.info("");
+            logger.info(`  ${timingLine}${durationComparison ? ` ${durationComparison}` : ""}`);
+
+            return { hasFailure, results, runHistory };
+        };
+
+        const firstRun = await runOnce();
+
+        await hooks.callHook("run:after", firstRun.results);
+        await maybeWriteProfile(firstRun.results);
+
+        const { hasFailure } = firstRun;
+
+        if (options.watch) {
+            const absoluteRoots = projectsWithTarget
+                .map((name) => {
+                    const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+                    const root = project?.root;
+
+                    if (!root) {
+                        return undefined;
                     }
+
+                    return root.startsWith("/") ? root : `${workspaceRoot}/${root}`;
+                })
+                .filter((p): p is string => p !== undefined);
+
+            let running = false;
+            let lastResults = firstRun.results;
+
+            // Builds a fresh watcher after each run so the watch set
+            // reflects the files the latest run actually touched.
+            // Falls back to project roots on the first invocation
+            // (no prior results) or when no task carries hashDetails.
+            const buildHandle = (): { handle: ReturnType<typeof startWatcher>; mode: "tracked" | "roots" } => {
+                const targets = collectTrackedWatchTargets(lastResults, workspaceRoot);
+
+                if (targets.directories.length > 0 && targets.files.size > 0) {
+                    const filter = createTrackedFileFilter(targets.files, workspaceRoot, targets.directories);
+
+                    return {
+                        handle: startWatcher({
+                            filter,
+                            onChange: onChangeHandler,
+                            paths: targets.directories,
+                        }),
+                        mode: "tracked",
+                    };
                 }
 
-                throw new Error("Some tasks failed.");
+                return {
+                    handle: startWatcher({ onChange: onChangeHandler, paths: absoluteRoots }),
+                    mode: "roots",
+                };
+            };
+
+            let currentHandle: ReturnType<typeof startWatcher> | undefined;
+
+            const onChangeHandler = async (paths: string[]): Promise<void> => {
+                if (running) {
+                    return;
+                }
+
+                running = true;
+
+                try {
+                    logger.info(`Change detected in ${paths.length} file(s), rerunning…`);
+
+                    const nextRun = await runOnce();
+
+                    lastResults = nextRun.results;
+
+                    // Rebuild the watcher so the next event only
+                    // fires for files the newest run still cares
+                    // about. Cheap — under 100ms on typical graphs.
+                    currentHandle?.close();
+
+                    const rebuilt = buildHandle();
+
+                    currentHandle = rebuilt.handle;
+                } finally {
+                    running = false;
+                }
+            };
+
+            const initial = buildHandle();
+
+            currentHandle = initial.handle;
+
+            const scope
+                = initial.mode === "tracked"
+                    ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
+                    : `Watching ${String(absoluteRoots.length)} project root(s)`;
+
+            logger.info(`${scope} — edit a file to rerun, Ctrl+C to exit.`);
+
+            await new Promise<void>((resolve) => {
+                const onSigint = (): void => {
+                    process.off("SIGINT", onSigint);
+                    currentHandle?.close();
+                    resolve();
+                };
+
+                process.on("SIGINT", onSigint);
+            });
+
+            return;
+        }
+
+        if (hasFailure) {
+            if (options.flaky !== false) {
+                // Reuse the history already loaded for the timing
+                // comparison above — the runs/ directory hasn't
+                // changed since this turn of the loop started.
+                const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
+
+                if (flakyStats.length > 0) {
+                    logger.info("");
+                    logger.info("Flaky tasks (based on historical runs):");
+                    logger.info("");
+
+                    for (const line of formatFlakinessTable(flakyStats)) {
+                        logger.info(`  ${line}`);
+                    }
+
+                    logger.info("");
+                }
             }
 
-            if (persistentTasks.length > 0 && !options.failFast) {
-                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
-            }
+            throw new Error("Some tasks failed.");
         }
+
+        if (persistentTasks.length > 0 && !options.failFast) {
+            await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd);
+        }
+    }
 };
 
 export default execute as CommandExecute<Toolbox>;

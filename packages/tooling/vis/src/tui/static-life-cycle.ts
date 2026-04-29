@@ -2,11 +2,27 @@ import type { LifeCycleInterface, LogReporter, Task, TaskResult, TaskStatus } fr
 import { renderToString, Text } from "@visulima/tui";
 import React from "react";
 
+import type { VisTargetOptions } from "../target-options";
 import CommandSummary from "./components/CommandSummary";
 import Header from "./components/Header";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 import { formatMs } from "./pretty-time";
 import { getStatusIcon, isCacheStatus, logCommandOutputCI } from "./status-utils";
+
+/**
+ * Drives whether `printTaskTerminalOutput` actually prints. `"quiet"`
+ * suppresses output for successful and cached tasks; failed tasks always
+ * print so the user sees what broke. Per-target `options.outputStyle`
+ * (read off `task.overrides.visOptions`) overrides this global default.
+ */
+export type OutputStyle = "normal" | "quiet";
+
+/**
+ * Coerces a free-form CLI / config string into the strict
+ * {@link OutputStyle} union. Returns `"normal"` for unknown values so
+ * a typo'd `--output-style=verbose` doesn't silently mute output.
+ */
+export const parseOutputStyle = (value: string | undefined): OutputStyle => (value === "quiet" ? "quiet" : "normal");
 
 interface StaticOutputOptions {
     args: {
@@ -19,9 +35,27 @@ interface StaticOutputOptions {
      * separator+status formatting is kept (vis's default).
      */
     logReporter?: LogReporter;
+    /** Default verbosity. Per-target `options.outputStyle` overrides. */
+    outputStyle?: OutputStyle;
     projectNames: string[];
     tasks: Task[];
 }
+
+/**
+ * Resolves the effective output style for `task`. Per-target overrides
+ * (set via `vis-task.ts`/`vis-config.ts` as `options.outputStyle`) take
+ * precedence over the runner-wide default so a single noisy linter
+ * can opt into quiet mode without changing the global flag.
+ */
+const resolveTaskOutputStyle = (task: Task, fallback: OutputStyle): OutputStyle => {
+    const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
+
+    if (visOptions?.outputStyle === "normal" || visOptions?.outputStyle === "quiet") {
+        return visOptions.outputStyle;
+    }
+
+    return fallback;
+};
 
 /**
  * A lifecycle handler for CI environments that produces static, append-only output.
@@ -42,6 +76,8 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
 
     readonly #logReporter: LogReporter | undefined;
 
+    readonly #outputStyle: OutputStyle;
+
     #commandStartTime = 0;
 
     public constructor(options: StaticOutputOptions) {
@@ -49,6 +85,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         this.#targets = options.args.targets;
         this.#tasks = options.tasks;
         this.#logReporter = options.logReporter;
+        this.#outputStyle = options.outputStyle ?? "normal";
     }
 
     public startCommand(): void {
@@ -118,6 +155,14 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     }
 
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
+        // `quiet` swallows successful + cached output but keeps failures visible
+        // so users still see what broke without scrolling past clean runs.
+        // Skipped tasks aren't suppressed because a skip usually carries an
+        // explanatory line the user wants to see (timeout, dep failure, etc.).
+        if (resolveTaskOutputStyle(task, this.#outputStyle) === "quiet" && (status === "success" || isCacheStatus(status))) {
+            return;
+        }
+
         if (this.#logReporter) {
             this.#logReporter.printTaskTerminalOutput(task, status, terminalOutput);
 

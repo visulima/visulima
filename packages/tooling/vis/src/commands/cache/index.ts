@@ -57,6 +57,7 @@ const cachePrune: Command = {
     examples: [
         ["vis cache prune", "Remove old and oversized entries"],
         ["vis cache prune --max-age-days=3 --max-size=500MB", "Prune with custom limits"],
+        ["vis cache prune --keep-last=30", "Keep only the 30 most recent entries"],
     ],
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "cachePruneExecute"),
@@ -72,6 +73,11 @@ const cachePrune: Command = {
             description: "Evict oldest entries until cache is under this size (e.g. 500MB)",
             name: "max-size",
             type: String,
+        },
+        {
+            description: "Keep only the N most recent entries (sorted newest-first by mtime)",
+            name: "keep-last",
+            type: Number,
         },
     ],
 };
@@ -93,28 +99,88 @@ const cacheSize: Command = {
     ],
 };
 
-const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize];
+const formatOption = {
+    description: "Output format: table or json (default: table)",
+    name: "format",
+    type: String,
+} as const;
+
+const runOption = {
+    description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+    name: "run",
+    type: String,
+} as const;
+
+const cacheWhy: Command = {
+    argument: {
+        description: "Task ID to explain (e.g. @my/app:build)",
+        name: "taskId",
+        type: String,
+    },
+    commandPath: ["cache"],
+    description: "Explain why a task missed the cache by diffing hash inputs against the previous run",
+    examples: [
+        ["vis cache why @myorg/app:build", "Show which inputs changed since the last run"],
+        ["vis cache why @myorg/app:build --json", "Machine-readable output for CI"],
+        ["vis cache why @myorg/app:build --run 2026-04-28T...", "Inspect a specific historical run"],
+    ],
+    group: "Workspace",
+    loader: lazyNamed(() => import("./handler"), "cacheWhyExecute"),
+    name: "why",
+    options: [formatOption, runOption],
+};
+
+const cacheHash: Command = {
+    argument: {
+        description: "Task ID to print the hash for (e.g. @my/app:build)",
+        name: "taskId",
+        type: String,
+    },
+    commandPath: ["cache"],
+    description: "Print the recorded hash and per-input hash details for a task",
+    examples: [
+        ["vis cache hash @myorg/app:build", "Show the resolved hash + contributing inputs"],
+        ["vis cache hash @myorg/app:build --json", "Machine-readable output"],
+    ],
+    group: "Workspace",
+    loader: lazyNamed(() => import("./handler"), "cacheHashExecute"),
+    name: "hash",
+    options: [formatOption, runOption],
+};
+
+const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash];
 
 export default cacheCommands;
 
 export type CacheListOptions = CreateOptions<{
     "cache-dir": string | undefined;
-    "format": string | undefined;
+    format: string | undefined;
 }>;
 
 export type CacheCleanOptions = CreateOptions<{
     "cache-dir": string | undefined;
     "dry-run": boolean | undefined;
-    "force": boolean | undefined;
+    force: boolean | undefined;
 }>;
 
 export type CachePruneOptions = CreateOptions<{
     "cache-dir": string | undefined;
+    "keep-last": number | undefined;
     "max-age-days": number | undefined;
     "max-size": string | undefined;
 }>;
 
 export type CacheSizeOptions = CreateOptions<{
     "cache-dir": string | undefined;
-    "format": string | undefined;
+    format: string | undefined;
+}>;
+
+export type CacheWhyOptions = CreateOptions<{
+    format: string | undefined;
+    run: string | undefined;
+}>;
+
+export type CacheHashOptions = CreateOptions<{
+    format: string | undefined;
+    run: string | undefined;
 }>;

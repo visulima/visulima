@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync }
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { collectCacheEntries, formatAge, runClean, runPrune } from "../src/commands/cache/handler";
+import { cacheHashExecute, cacheWhyExecute, collectCacheEntries, formatAge, runClean, runHash, runPrune, runWhy } from "../src/commands/cache/handler";
 
 describe(formatAge, () => {
     it("returns seconds for sub-minute ages", () => {
@@ -393,5 +393,537 @@ describe(runPrune, () => {
         } finally {
             process.exitCode = originalExitCode;
         }
+    });
+
+    it("keeps only the N most recent entries when --keep-last is set", async () => {
+        expect.assertions(2);
+
+        const now = Date.now();
+
+        // mtimes spaced one minute apart so sort is deterministic.
+        writeCacheEntry(cacheDirectory, "oldest", { mtime: new Date(now - 4 * 60 * 1000) });
+        writeCacheEntry(cacheDirectory, "old", { mtime: new Date(now - 3 * 60 * 1000) });
+        writeCacheEntry(cacheDirectory, "newer", { mtime: new Date(now - 2 * 60 * 1000) });
+        writeCacheEntry(cacheDirectory, "newest", { mtime: new Date(now - 1 * 60 * 1000) });
+
+        await runPrune(cacheDirectory, workspaceRoot, { keepLast: 2 });
+
+        const entries = await collectCacheEntries(cacheDirectory);
+        const hashes = entries.map((entry) => entry.hash).sort();
+
+        expect(entries).toHaveLength(2);
+        expect(hashes).toStrictEqual(["newer", "newest"]);
+    });
+
+    it("does nothing when --keep-last exceeds entry count", async () => {
+        expect.assertions(1);
+
+        writeCacheEntry(cacheDirectory, "a");
+        writeCacheEntry(cacheDirectory, "b");
+
+        await runPrune(cacheDirectory, workspaceRoot, { keepLast: 10 });
+
+        const entries = await collectCacheEntries(cacheDirectory);
+
+        expect(entries).toHaveLength(2);
+    });
+
+    it("rejects negative --keep-last and sets exit code 1", async () => {
+        expect.assertions(2);
+
+        const originalExitCode = process.exitCode;
+
+        try {
+            writeCacheEntry(cacheDirectory, "hash1");
+
+            await runPrune(cacheDirectory, workspaceRoot, { keepLast: -1 });
+
+            expect(process.exitCode).toBe(1);
+
+            const entries = await collectCacheEntries(cacheDirectory);
+
+            expect(entries).toHaveLength(1);
+        } finally {
+            process.exitCode = originalExitCode;
+        }
+    });
+
+    it("rejects non-integer --keep-last and sets exit code 1", async () => {
+        expect.assertions(2);
+
+        const originalExitCode = process.exitCode;
+
+        try {
+            writeCacheEntry(cacheDirectory, "hash1");
+
+            await runPrune(cacheDirectory, workspaceRoot, { keepLast: 2.5 });
+
+            expect(process.exitCode).toBe(1);
+
+            const entries = await collectCacheEntries(cacheDirectory);
+
+            expect(entries).toHaveLength(1);
+        } finally {
+            process.exitCode = originalExitCode;
+        }
+    });
+
+    it("combines --keep-last with --max-age-days (keep-last applies first)", async () => {
+        // Keep-last carves the cache down by recency before age eviction
+        // runs, so a young entry below the count cap survives even if
+        // older siblings would have been evicted by age.
+        expect.assertions(1);
+
+        const now = Date.now();
+        const fortyDaysAgo = new Date(now - 40 * 24 * 60 * 60 * 1000);
+
+        writeCacheEntry(cacheDirectory, "ancient", { mtime: fortyDaysAgo });
+        writeCacheEntry(cacheDirectory, "recent");
+
+        await runPrune(cacheDirectory, workspaceRoot, { keepLast: 1, maxCacheAgeDays: 7 });
+
+        const entries = await collectCacheEntries(cacheDirectory);
+        const hashes = entries.map((entry) => entry.hash);
+
+        expect(hashes).toStrictEqual(["recent"]);
+    });
+});
+
+/**
+ * Minimal mock console capturing stdout/stderr so test assertions can
+ * inspect what the command rendered. Production handlers use the
+ * `Console` shape from cerebro for `logger.info` calls.
+ */
+const createMockLogger = (): { info: (message: string) => void; lines: string[] } => {
+    const lines: string[] = [];
+
+    return {
+        info: (message: string) => lines.push(message),
+        lines,
+    };
+};
+
+const writeRunSummary = (workspaceRoot: string, summary: { duration?: number; endTime?: string; environment?: Record<string, unknown>; id: string; startTime?: string; stats?: Record<string, number>; taskGraph?: Record<string, unknown>; tasks: unknown[] }): void => {
+    const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+    mkdirSync(runsDir, { recursive: true });
+
+    const filled = {
+        duration: 1000,
+        endTime: new Date().toISOString(),
+        environment: { arch: "x64", nodeVersion: "v22.0.0", platform: "linux" },
+        startTime: new Date().toISOString(),
+        stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
+        taskGraph: { dependencies: {}, roots: [] },
+        ...summary,
+    };
+
+    writeFileSync(join(runsDir, `${summary.id}.json`), JSON.stringify(filled));
+};
+
+const writeLastSummary = (workspaceRoot: string, summary: Parameters<typeof writeRunSummary>[1]): void => {
+    const dir = join(workspaceRoot, ".task-runner");
+
+    mkdirSync(dir, { recursive: true });
+
+    const filled = {
+        duration: 1000,
+        endTime: new Date().toISOString(),
+        environment: { arch: "x64", nodeVersion: "v22.0.0", platform: "linux" },
+        startTime: new Date().toISOString(),
+        stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
+        taskGraph: { dependencies: {}, roots: [] },
+        ...summary,
+    };
+
+    writeFileSync(join(dir, "last-summary.json"), JSON.stringify(filled));
+};
+
+const buildTaskSummary = (overrides: Partial<{ cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED"; hash: string; hashDetails: { command: string; implicitDeps?: Record<string, string>; nodes: Record<string, string>; runtime?: Record<string, string> }; taskId: string }> = {}): Record<string, unknown> => {
+    return {
+        cacheable: true,
+        cacheStatus: "MISS",
+        dependencies: [],
+        duration: 100,
+        endTime: new Date().toISOString(),
+        exitCode: 0,
+        hash: "hashA",
+        hashDetails: {
+            command: "cmdA",
+            nodes: { "src/index.ts": "node1" },
+            runtime: {},
+        },
+        outputs: [],
+        startTime: new Date().toISOString(),
+        target: { project: "app", target: "build" },
+        taskId: "app:build",
+        ...overrides,
+    };
+};
+
+describe(runWhy, () => {
+    let workspaceRoot: string;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-why-ws-"));
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+        stdoutSpy.mockRestore();
+        process.exitCode = 0;
+    });
+
+    it("exits with 1 when no last summary exists", async () => {
+        expect.assertions(1);
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("emits JSON error when --json + no summary", async () => {
+        expect.assertions(2);
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "json", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(process.exitCode).toBe(1);
+
+        const written = (stdoutSpy.mock.calls[0]?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed).toMatchObject({ error: "no-summary", taskId: "app:build" });
+    });
+
+    it("exits with 1 when task is not in summary", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, { id: "run-1", tasks: [buildTaskSummary({ taskId: "app:build" })] });
+
+        const logger = createMockLogger();
+
+        await runWhy("missing:test", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("renders task hash + status when summary has only one run", async () => {
+        expect.assertions(2);
+
+        writeLastSummary(workspaceRoot, { id: "run-1", tasks: [buildTaskSummary({ hash: "abc123def456", taskId: "app:build" })] });
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const text = logger.lines.join("\n");
+
+        expect(text).toContain("abc123def456");
+        expect(text).toContain("MISS");
+    });
+
+    it("diffs hash inputs against the previous run", async () => {
+        expect.assertions(3);
+
+        // Previous run: command=cmdA, node=node1
+        writeRunSummary(workspaceRoot, {
+            id: "run-old",
+            tasks: [
+                buildTaskSummary({
+                    hash: "old",
+                    hashDetails: { command: "cmdA", nodes: { "src/index.ts": "node1" }, runtime: {} },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        // Sleep tiny bit to ensure mtime ordering between run files.
+        const now = Date.now();
+
+        utimesSync(join(workspaceRoot, ".task-runner", "runs", "run-old.json"), new Date(now - 60 * 1000), new Date(now - 60 * 1000));
+
+        // Current run: command changed, node value rotated, new node added
+        writeLastSummary(workspaceRoot, {
+            id: "run-new",
+            tasks: [
+                buildTaskSummary({
+                    hash: "new",
+                    hashDetails: {
+                        command: "cmdB",
+                        nodes: { "src/added.ts": "node-new", "src/index.ts": "node1-changed" },
+                        runtime: { NODE_ENV: "envHash" },
+                    },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "json", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.diff.commandChanged).toBe(true);
+        expect(parsed.diff.nodes.changed).toContain("src/index.ts");
+        expect(parsed.diff.nodes.added).toContain("src/added.ts");
+    });
+
+    it("loads a specific run via --run", async () => {
+        expect.assertions(1);
+
+        writeRunSummary(workspaceRoot, { id: "run-target", tasks: [buildTaskSummary({ hash: "target-hash", taskId: "app:build" })] });
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "json", runId: "run-target", workspaceRoot }, logger as unknown as Console);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.task.hash).toBe("target-hash");
+    });
+});
+
+describe(runHash, () => {
+    let workspaceRoot: string;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-hash-ws-"));
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+        stdoutSpy.mockRestore();
+        process.exitCode = 0;
+    });
+
+    it("exits with 1 when no last summary exists", async () => {
+        expect.assertions(1);
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("renders hash + per-bucket details for a known task", async () => {
+        expect.assertions(3);
+
+        writeLastSummary(workspaceRoot, {
+            id: "run-1",
+            tasks: [
+                buildTaskSummary({
+                    hash: "fullhash",
+                    hashDetails: {
+                        command: "commandhash",
+                        implicitDeps: { lockfile: "lockhash" },
+                        nodes: { "src/a.ts": "nodeA" },
+                        runtime: { NODE_ENV: "envhash" },
+                    },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const text = logger.lines.join("\n");
+
+        expect(text).toContain("fullhash");
+        expect(text).toContain("src/a.ts");
+        expect(text).toContain("NODE_ENV");
+    });
+
+    it("emits JSON with hashDetails when --json is set", async () => {
+        expect.assertions(2);
+
+        writeLastSummary(workspaceRoot, {
+            id: "run-1",
+            tasks: [
+                buildTaskSummary({
+                    hash: "h1",
+                    hashDetails: { command: "c1", nodes: { "f.ts": "n1" }, runtime: {} },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { format: "json", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.hash).toBe("h1");
+        expect(parsed.hashDetails.nodes["f.ts"]).toBe("n1");
+    });
+
+    it("indicates truncation on long hash values with a trailing ellipsis", async () => {
+        expect.assertions(2);
+
+        // 64-char hex hash — render path should slice to 16 + "…"
+        writeLastSummary(workspaceRoot, {
+            id: "run-1",
+            tasks: [
+                buildTaskSummary({
+                    hash: "fullhash",
+                    hashDetails: {
+                        command: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                        nodes: { "src/index.ts": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210" },
+                        runtime: {},
+                    },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const text = logger.lines.join("\n");
+
+        expect(text).toContain("0123456789abcdef…");
+        expect(text).toContain("fedcba9876543210…");
+    });
+
+    it("does not append ellipsis to short hash values", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, {
+            id: "run-1",
+            tasks: [
+                buildTaskSummary({
+                    hash: "short",
+                    hashDetails: { command: "tinycmd", nodes: { "f.ts": "tiny" }, runtime: {} },
+                    taskId: "app:build",
+                }),
+            ],
+        });
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const text = logger.lines.join("\n");
+
+        expect(text).not.toContain("…");
+    });
+});
+
+describe(cacheWhyExecute, () => {
+    let workspaceRoot: string;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-why-exec-"));
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+        stdoutSpy.mockRestore();
+        process.exitCode = 0;
+    });
+
+    it("exits with 1 when no task ID is provided", async () => {
+        expect.assertions(1);
+
+        const logger = createMockLogger();
+
+        await cacheWhyExecute({
+            argument: [],
+            logger: logger as unknown as Console,
+            options: { format: undefined, run: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("forwards a known task ID to runWhy and renders human output by default", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, { id: "run-1", tasks: [buildTaskSummary({ hash: "fwd-hash", taskId: "app:build" })] });
+
+        const logger = createMockLogger();
+
+        await cacheWhyExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { format: undefined, run: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(logger.lines.join("\n")).toContain("fwd-hash");
+    });
+});
+
+describe(cacheHashExecute, () => {
+    let workspaceRoot: string;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-hash-exec-"));
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+        stdoutSpy.mockRestore();
+        process.exitCode = 0;
+    });
+
+    it("exits with 1 when no task ID is provided", async () => {
+        expect.assertions(1);
+
+        const logger = createMockLogger();
+
+        await cacheHashExecute({
+            argument: [],
+            logger: logger as unknown as Console,
+            options: { format: undefined, run: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("forwards a known task ID to runHash and emits JSON when --json is set", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, { id: "run-1", tasks: [buildTaskSummary({ hash: "exec-hash", taskId: "app:build" })] });
+
+        const logger = createMockLogger();
+
+        await cacheHashExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { format: "json", run: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.hash).toBe("exec-hash");
     });
 });

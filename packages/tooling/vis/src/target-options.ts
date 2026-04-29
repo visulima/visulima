@@ -169,6 +169,21 @@ export interface VisTargetOptions {
     osType?: TargetOsType | TargetOsType[];
 
     /**
+     * Per-target output verbosity. Overrides the global `--output-style`
+     * flag for this specific target.
+     *
+     * - `"normal"` (default): print every task's terminal output
+     * - `"quiet"`: only print output when the task fails. Successful
+     *   and cached tasks contribute their status line and timing, but
+     *   their captured stdout/stderr is suppressed.
+     *
+     * Useful when a routinely-noisy task (a linter or test runner with
+     * verbose progress output) should stay quiet during green builds
+     * but reveal everything when it fails.
+     */
+    outputStyle?: "normal" | "quiet";
+
+    /**
      * When true, the task is a long-running / never-ending process.
      * Persistent tasks are scheduled last, execute after all cacheable
      * tasks complete, and are never cached.

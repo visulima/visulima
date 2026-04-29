@@ -27,6 +27,7 @@
                 "commands/sbom",
                 "commands/toolchain",
                 "commands/clean",
+                "commands/cache",
                 "commands/hook"
             ]
         },

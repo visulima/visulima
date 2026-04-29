@@ -2,7 +2,7 @@ import { strip } from "@visulima/colorize";
 import type { Task, TaskResult } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { StaticOutputLifeCycle } from "../../src/tui/static-life-cycle";
+import { parseOutputStyle, StaticOutputLifeCycle } from "../../src/tui/static-life-cycle";
 
 const createTask = (project: string, target: string): Task => {
     return {
@@ -182,5 +182,123 @@ describe("tui/StaticOutputLifeCycle", () => {
         const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
 
         expect(allOutput).toContain("Error: something broke");
+    });
+
+    describe("outputStyle: quiet", () => {
+        const createQuietLifeCycle = (tasks: Task[]): StaticOutputLifeCycle =>
+            new StaticOutputLifeCycle({
+                args: { targets: ["build"] },
+                outputStyle: "quiet",
+                projectNames: [...new Set(tasks.map((t) => t.target.project))],
+                tasks,
+            });
+
+        it("suppresses successful task output", () => {
+            expect.assertions(1);
+
+            const task = createTask("app-a", "build");
+            const lc = createQuietLifeCycle([task]);
+
+            lc.printTaskTerminalOutput(task, "success", "Compiled in 2.4s");
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).not.toContain("Compiled in 2.4s");
+        });
+
+        it("suppresses cached task output", () => {
+            expect.assertions(2);
+
+            const task = createTask("app-a", "build");
+            const lc = createQuietLifeCycle([task]);
+
+            lc.printTaskTerminalOutput(task, "local-cache", "(cached output)");
+            lc.printTaskTerminalOutput(task, "remote-cache", "(remote cached)");
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).not.toContain("cached output");
+            expect(allOutput).not.toContain("remote cached");
+        });
+
+        it("still prints failed task output", () => {
+            expect.assertions(1);
+
+            const task = createTask("app-a", "build");
+            const lc = createQuietLifeCycle([task]);
+
+            lc.printTaskTerminalOutput(task, "failure", "Error: something broke");
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).toContain("Error: something broke");
+        });
+
+        it("per-task outputStyle override beats global quiet", () => {
+            // Reverse case: global=quiet, but this task wants normal — its
+            // success output should print despite the global silence.
+            expect.assertions(1);
+
+            const task: Task = {
+                id: "noisy:build",
+                outputs: [],
+                overrides: { visOptions: { outputStyle: "normal" } },
+                target: { project: "noisy", target: "build" },
+            };
+
+            const lc = createQuietLifeCycle([task]);
+
+            lc.printTaskTerminalOutput(task, "success", "noisy success line");
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).toContain("noisy success line");
+        });
+
+        it("per-task outputStyle override mutes a task even with normal global", () => {
+            expect.assertions(1);
+
+            const task: Task = {
+                id: "quiet:build",
+                outputs: [],
+                overrides: { visOptions: { outputStyle: "quiet" } },
+                target: { project: "quiet", target: "build" },
+            };
+
+            const lc = createLifeCycle([task]);
+
+            lc.printTaskTerminalOutput(task, "success", "muted on success");
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).not.toContain("muted on success");
+        });
+    });
+});
+
+describe(parseOutputStyle, () => {
+    it("returns 'quiet' for the quiet string", () => {
+        expect.assertions(1);
+
+        expect(parseOutputStyle("quiet")).toBe("quiet");
+    });
+
+    it("returns 'normal' for an explicit normal string", () => {
+        expect.assertions(1);
+
+        expect(parseOutputStyle("normal")).toBe("normal");
+    });
+
+    it("returns 'normal' for undefined (default)", () => {
+        expect.assertions(1);
+
+        expect(parseOutputStyle(undefined)).toBe("normal");
+    });
+
+    it("falls back to 'normal' for unknown values to avoid silently muting output", () => {
+        expect.assertions(2);
+
+        expect(parseOutputStyle("verbose")).toBe("normal");
+        expect(parseOutputStyle("loud")).toBe("normal");
     });
 });
