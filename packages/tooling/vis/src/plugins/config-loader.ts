@@ -65,10 +65,17 @@ const configLoaderPlugin: Plugin = {
                 }
             } catch (configError: unknown) {
                 const configFile = configFilePath;
+                const message = configError instanceof Error ? configError.message : String(configError);
 
-                if (configFile) {
-                    const message = configError instanceof Error ? configError.message : String(configError);
+                toolbox.visConfigError = { file: configFile ?? undefined, message };
 
+                // In an interactive terminal we let the command surface
+                // the failure (e.g. doctor's ConfigBanner) so we don't
+                // double-print the error block right above the TUI.
+                // Non-TTY runs (CI, pipes) still get the loud diagnostic.
+                const suppressInline = Boolean(process.stdout.isTTY) && !isInCi;
+
+                if (configFile && !suppressInline) {
                     toolbox.logger.error("");
                     toolbox.logger.error(red(bold(`\u2716 Failed to load ${configFile}`)));
                     toolbox.logger.error(`  ${message}`);

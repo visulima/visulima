@@ -1,47 +1,142 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import { dim, green, red, yellow } from "@visulima/colorize";
 import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
+import { render } from "@visulima/tui";
+import isInCi from "is-in-ci";
+import React from "react";
 
-import type { CatalogCheckOptions, OutdatedEntry } from "../../catalog";
+import type { CatalogCheckOptions } from "../../catalog";
 import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../../catalog";
-import type { DuplicatePackage } from "../../dependency-scan";
-import { findDuplicateDependencies, scanInstalledPackages } from "../../dependency-scan";
-import { error as errorOutput, info, note, success } from "../../output";
+import { findVisConfigFile } from "../../config";
+import type { InstalledPackage } from "../../dependency-scan";
+import { findDuplicateDependencies, lockedPackages } from "../../dependency-scan";
+import { buildDoctorCacheKey, readDoctorCache, writeDoctorCache } from "../../doctor-cache";
+import { bold, cyan, dim, error as errorOutput, green, note, plain, red, success, SYMBOLS, warn, yellow } from "../../output";
 import { applyOverrides, readLockfileText } from "../../overrides";
 import { detectPm, runInstall } from "../../pm-runner";
+import type { RuntimeFinding } from "../../runtime-check";
 import { checkRuntimeVersions } from "../../runtime-check";
-import type { RuntimeDiagnostic } from "../../runtime-diagnostics";
-import { runRuntimeDiagnostics } from "../../runtime-diagnostics";
+import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } from "../../runtime-diagnostics";
+import type { ScanProgress, ScanTask } from "../../scan-progress";
+import { startScanProgress } from "../../scan-progress";
+import type { PackageReportData } from "../../socket-security";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../socket-security";
-import type { OptimizeEntry } from "../../tui/components/optimize/OptimizeStore";
+import { DoctorStore } from "../../tui/components/doctor/DoctorStore";
+import type { DoctorFinding } from "../../tui/components/doctor/findings";
+import { flattenFindings } from "../../tui/components/doctor/findings";
+import type { DoctorBannerInput } from "../../tui/components/doctor/VisDoctorApp";
+import VisDoctorApp from "../../tui/components/doctor/VisDoctorApp";
 import type { VisConfig } from "../../workspace";
 import { buildE18eEntries, buildSocketEntries, collectDepsFromPkgJson, discoverWorkspacePackages, markCodemodAvailability, runCodemod } from "../optimize/handler";
+import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
-
-// ── Types ───────────────────────────────────────────────────────────
-
-interface DoctorResults {
-    duplicates: DuplicatePackage[];
-    installedCount: number;
-    optimizations: OptimizeEntry[];
-    outdated: OutdatedEntry[];
-    runtime: RuntimeDiagnostic[];
-    socketIssues: { alerts: number; lowScore: number };
-    vulnCount: number;
-    workspaceCount: number;
-}
+import type { DoctorResults, SectionId, SectionStatus } from "./sections";
+import { buildJsonPayload, resolveSections, sectionStatus, shouldFail, summarizeOptimizations } from "./sections";
 
 // ── Scan orchestration ──────────────────────────────────────────────
 
+interface ScanContext {
+    /** --filter regexes applied to per-section findings before they hit the store/results. */
+    filterPatterns: ReadonlyArray<RegExp>;
+    installed: InstalledPackage[];
+    /** Inline scan-row reporter — only set in non-interactive mode. */
+    progress?: ScanProgress;
+    resolveCodemods: boolean;
+    sections: Set<SectionId>;
+    /** TUI store — only set in interactive mode. Receives per-section lifecycle events. */
+    store?: DoctorStore;
+    visConfig: VisConfig | undefined;
+    workspaceRoot: string;
+}
+
 /**
- * Runs all diagnostic scans in parallel and returns a unified result.
- * @param workspaceRoot Absolute path to the workspace root.
- * @param visConfig Loaded vis configuration (may be undefined if no config file).
- * @param resolveCodemods When true, checks which e18e entries have codemods available (adds latency).
- * @returns Aggregated results including outdated, vulns, duplicates, and optimization counts.
+ * Format a duration as a compact "1.2s" / "850ms" string for inline summaries.
  */
-const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefined, resolveCodemods: boolean = false): Promise<DoctorResults> => {
+const fmtDuration = (ms: number): string => {
+    if (ms >= 1000) {
+        return `${(ms / 1000).toFixed(1)}s`;
+    }
+
+    return `${String(Math.round(ms))}ms`;
+};
+
+/**
+ * Run an async scan and route its lifecycle through the progress reporter
+ * when one is supplied. In TUI mode `progress` is undefined and the wrapper
+ * collapses to a plain await (the store handles per-section status).
+ */
+const tracked = async <T>(
+    progress: ScanProgress | undefined,
+    id: string,
+    factory: () => Promise<T>,
+    summarize: (value: T, durationMs: number) => { status: "error" | "ok" | "warn"; summary: string },
+): Promise<T> => {
+    if (!progress) {
+        return factory();
+    }
+
+    progress.start(id);
+    const startedAt = Date.now();
+
+    try {
+        const value = await factory();
+        const elapsed = Date.now() - startedAt;
+        const { status, summary } = summarize(value, elapsed);
+
+        progress.finish(id, status, summary);
+
+        return value;
+    } catch (error) {
+        const elapsed = Date.now() - startedAt;
+        const message = error instanceof Error ? error.message : String(error);
+
+        progress.finish(id, "error", `${message} (${fmtDuration(elapsed)})`);
+        throw error;
+    }
+};
+
+/**
+ * Translate a partial DoctorResults snapshot into the findings that belong
+ * to a single section. Lets the streaming path emit per-section finding
+ * lists without re-implementing the flatten logic.
+ */
+const buildSectionFindings = (
+    section: SectionId,
+    payload: Pick<DoctorResults, "duplicates" | "optimizations" | "outdated" | "runtime">,
+): DoctorFinding[] => {
+    const partial: DoctorResults = {
+        duplicates: payload.duplicates,
+        elapsedMs: 0,
+        installedCount: 0,
+        optimizations: payload.optimizations,
+        outdated: payload.outdated,
+        runtime: payload.runtime,
+        sections: new Set([section]),
+        socketIssues: { alerts: 0, lowScore: 0 },
+        vulnCount: 0,
+        workspaceCount: 0,
+    };
+
+    return flattenFindings(partial);
+};
+
+/**
+ * Runs all diagnostic scans, optionally streaming per-section completion
+ * into a {@link DoctorStore}. The same function powers both the inline
+ * non-interactive run (with a {@link ScanProgress} reporter) and the live
+ * TUI (with a store). Sync scans are essentially free and run inline.
+ * Async scans gate on the active section set so `--only security` skips
+ * the e18e/socket-override fan-out entirely.
+ */
+const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "elapsedMs">> => {
+    const { filterPatterns, installed, progress, resolveCodemods, sections, store, visConfig, workspaceRoot } = context;
+    const wantsDeps = sections.has("dependencies");
+    const wantsSec = sections.has("security");
+    const wantsOpt = sections.has("optimization");
+    const wantsRuntime = sections.has("runtime");
+    const sectionFindings = (section: SectionId, payload: Pick<DoctorResults, "duplicates" | "optimizations" | "outdated" | "runtime">): DoctorFinding[] =>
+        filterFindingsByPattern(buildSectionFindings(section, payload), filterPatterns);
+
     const pm = detectPm(workspaceRoot);
     const { packageManager } = findPackageManagerSync(workspaceRoot);
 
@@ -75,79 +170,257 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
         target: "latest",
     };
 
-    // Run all scans in parallel
-    // `findDuplicateDependencies` is synchronous — hoist it out of Promise.all
-    // so `await Promise.all` doesn't flag it (await-thenable).
-    const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
-    const [outdatedResult, installed, e18eEntries, socketEntries] = await Promise.all([
-        catalogs.size > 0
-            ? checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks)
-            : Promise.resolve({ failed: [], ignored: [], outdated: [] }),
-        Promise.resolve(scanInstalledPackages(workspaceRoot)),
-        Promise.resolve(buildE18eEntries(allDeps)),
-        Promise.resolve(buildSocketEntries(allDeps, lockText, pm, false)),
-    ]);
-
-    // Deduplicate: e18e preferred over socket
+    // Sync work first — essentially free. (`installed` was computed up
+    // front by `execute()` so the banner can render before the recursive
+    // node_modules walk.)
+    const duplicates = wantsDeps ? findDuplicateDependencies(workspaceRoot, pm.name) : [];
+    const e18eEntries = wantsOpt ? buildE18eEntries(allDeps) : [];
+    const socketOverrideEntries = wantsOpt ? buildSocketEntries(allDeps, lockText, pm, false) : [];
     const e18eNames = new Set(e18eEntries.map((e) => e.packageName));
-    const dedupedSocket = socketEntries.filter((e) => !e18eNames.has(e.packageName));
+    const dedupedSocket = socketOverrideEntries.filter((e) => !e18eNames.has(e.packageName));
     const allOptimizations = [...e18eEntries, ...dedupedSocket];
+    const runtime = wantsRuntime ? runRuntimeDiagnostics() : [];
 
-    if (resolveCodemods) {
-        await markCodemodAvailability(allOptimizations);
+    // Mark sections running so the TUI tabs show spinners straight away.
+    // The messages are rendered as a single dim activity line beneath
+    // the tab strip so the user can tell what is taking time on big
+    // monorepos (registry round-trips dominate).
+    if (store) {
+        if (wantsDeps) {
+            store.startSection("dependencies", catalogs.size > 0 ? "checking outdated catalog dependencies" : "scanning duplicates");
+        }
+
+        if (wantsSec) {
+            store.startSection("security", installed.length > 0 ? `scanning ${String(installed.length)} packages for advisories` : "no installed packages to scan");
+        }
+
+        if (wantsOpt) {
+            store.startSection("optimization", "matching e18e + socket overrides");
+        }
+
+        if (wantsRuntime) {
+            store.startSection("runtime", "running runtime diagnostics");
+        }
     }
 
-    // Count Socket.dev issues from installed packages
+    // Runtime is sync — flush immediately.
+    if (store && wantsRuntime) {
+        store.completeSection("runtime", sectionFindings("runtime", {
+            duplicates: [],
+            optimizations: [],
+            outdated: [],
+            runtime,
+        }));
+    }
+
+    // Fan out async scans. Each runs only when its section is active.
+    // `outdated` straddles dependencies (update counts) and security
+    // (CVEs embedded on the entries), so it runs when either is selected.
+    const needsOutdated = (wantsDeps || wantsSec) && catalogs.size > 0;
+
+    const outdatedPromise = needsOutdated
+        ? tracked(progress, "outdated", () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks), (result, ms) => {
+            const count = result.outdated.length;
+
+            return {
+                status: count > 0 ? "warn" : "ok",
+                summary: count > 0 ? `${String(count)} outdated · ${fmtDuration(ms)}` : `up to date · ${fmtDuration(ms)}`,
+            };
+        })
+        : Promise.resolve({ failed: [], ignored: [], outdated: [] });
+
+    const vulnPromise = wantsSec && installed.length > 0
+        ? tracked(progress, "vulnerabilities", () => fetchVulnerabilities(installed.map((p) => { return { name: p.name, version: p.version }; })), (vulnMap, ms) => {
+            let count = 0;
+
+            for (const list of vulnMap.values()) {
+                count += list.length;
+            }
+
+            return {
+                status: count > 0 ? "error" : "ok",
+                summary: count > 0 ? `${String(count)} found · ${fmtDuration(ms)}` : `none found · ${fmtDuration(ms)}`,
+            };
+        })
+        : Promise.resolve(new Map<string, never[]>());
+
+    const socketReportsPromise = wantsSec && socketOptions && installed.length > 0
+        ? tracked(progress, "socket", () => fetchSocketReports(installed.map((p) => { return { name: p.name, version: p.version }; }), socketOptions), (reports, ms) => {
+            let alerts = 0;
+            let low = 0;
+
+            for (const report of reports.values()) {
+                alerts += report.alerts.length;
+
+                if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                    low += 1;
+                }
+            }
+
+            const issues = alerts + low;
+
+            return {
+                status: issues > 0 ? "warn" : "ok",
+                summary: issues > 0 ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtDuration(ms)}` : `clean · ${fmtDuration(ms)}`,
+            };
+        })
+        : Promise.resolve(new Map<string, PackageReportData>());
+
+    // Catch on each so a single registry timeout doesn't sink the
+    // dashboard. The error string is captured separately so the streaming
+    // path can fail the affected sections instead of silently completing
+    // them with empty data.
+    let outdatedError: string | undefined;
+    let vulnError: string | undefined;
+    let socketError: string | undefined;
+    let optError: string | undefined;
+
+    const outdatedSafe = outdatedPromise.catch((error: unknown) => {
+        outdatedError = error instanceof Error ? error.message : String(error);
+
+        if (!store) {
+            warn(`Outdated scan failed: ${outdatedError}`);
+        }
+
+        return { failed: [], ignored: [], outdated: [] };
+    });
+
+    const vulnSafe = vulnPromise.catch((error: unknown) => {
+        vulnError = error instanceof Error ? error.message : String(error);
+
+        if (!store) {
+            warn(`Vulnerability scan failed: ${vulnError}`);
+        }
+
+        return new Map<string, never[]>();
+    });
+
+    const socketSafe = socketReportsPromise.catch((error: unknown) => {
+        socketError = error instanceof Error ? error.message : String(error);
+
+        if (!store) {
+            warn(`Socket scan failed: ${socketError}`);
+        }
+
+        return new Map<string, PackageReportData>();
+    });
+
+    // Stream dependencies as soon as outdated lands — duplicates is sync
+    // and already in hand.
+    const depsStream = store && wantsDeps
+        ? outdatedSafe.then((res) => {
+            if (outdatedError) {
+                store.failSection("dependencies", outdatedError);
+
+                return;
+            }
+
+            store.completeSection("dependencies", sectionFindings("dependencies", {
+                duplicates,
+                optimizations: [],
+                outdated: res.outdated,
+                runtime: [],
+            }));
+        })
+        : undefined;
+
+    // Stream security only after every input scan settles — keeps the
+    // tab spinner running until the section's count is final. Any of the
+    // three failing flips the section to error so the user knows the
+    // count is incomplete.
+    const secStream = store && wantsSec
+        ? Promise.all([outdatedSafe, vulnSafe, socketSafe]).then(([res]) => {
+            const firstError = outdatedError ?? vulnError ?? socketError;
+
+            if (firstError) {
+                store.failSection("security", firstError);
+
+                return;
+            }
+
+            store.completeSection("security", sectionFindings("security", {
+                duplicates: [],
+                optimizations: [],
+                outdated: res.outdated,
+                runtime: [],
+            }));
+        })
+        : undefined;
+
+    const optStream = (async () => {
+        if (resolveCodemods && wantsOpt && allOptimizations.length > 0) {
+            await tracked(progress, "codemods", async () => {
+                await markCodemodAvailability(allOptimizations);
+
+                return allOptimizations;
+            }, (entries, ms) => {
+                const fixable = entries.filter((entry) => entry.hasCodemod || entry.category === "socket").length;
+
+                return {
+                    status: "ok",
+                    summary: `${String(fixable)} auto-fixable · ${fmtDuration(ms)}`,
+                };
+            }).catch((error: unknown) => {
+                optError = error instanceof Error ? error.message : String(error);
+            });
+        }
+
+        if (store && wantsOpt) {
+            if (optError) {
+                store.failSection("optimization", optError);
+
+                return;
+            }
+
+            store.completeSection("optimization", sectionFindings("optimization", {
+                duplicates: [],
+                optimizations: allOptimizations,
+                outdated: [],
+                runtime: [],
+            }));
+        }
+    })();
+
+    const [outdatedResult, vulnMap, socketReports] = await Promise.all([outdatedSafe, vulnSafe, socketSafe]);
+
+    await Promise.all([depsStream, secStream, optStream]);
+
+    // Aggregate Socket findings
     let socketAlerts = 0;
     let socketLowScore = 0;
 
-    if (socketOptions && installed.length > 0) {
-        const reports = await fetchSocketReports(
-            installed.map((p) => {
-                return { name: p.name, version: p.version };
-            }),
-            socketOptions,
-        );
-
-        for (const report of reports.values()) {
-            if (report.alerts.length > 0) {
-                socketAlerts += report.alerts.length;
-            }
+    if (wantsSec && socketOptions) {
+        for (const report of socketReports.values()) {
+            socketAlerts += report.alerts.length;
 
             if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
-                socketLowScore++;
+                socketLowScore += 1;
             }
         }
     }
 
-    // Count vulnerabilities from both outdated entries and installed packages
+    // Vulnerability count: from outdated entries + standalone fetch
     let vulnCount = 0;
 
-    for (const entry of outdatedResult.outdated) {
-        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) {
-            vulnCount += entry.vulnerabilities.length;
+    if (wantsSec) {
+        for (const entry of outdatedResult.outdated) {
+            if (entry.vulnerabilities && entry.vulnerabilities.length > 0) {
+                vulnCount += entry.vulnerabilities.length;
+            }
         }
-    }
 
-    // Also scan installed packages for known vulnerabilities (catches advisory-only CVEs)
-    if (installed.length > 0) {
-        const vulnMap = await fetchVulnerabilities(
-            installed.map((p) => {
-                return { name: p.name, version: p.version };
-            }),
-        );
-
-        for (const vulns of vulnMap.values()) {
-            vulnCount += vulns.length;
+        for (const list of vulnMap.values()) {
+            vulnCount += (list as unknown[]).length;
         }
     }
 
     return {
         duplicates,
         installedCount: installed.length,
-        optimizations: allOptimizations,
-        outdated: outdatedResult.outdated,
-        runtime: runRuntimeDiagnostics(),
+        optimizations: wantsOpt ? allOptimizations : [],
+        outdated: wantsDeps ? outdatedResult.outdated : [],
+        runtime,
+        sections,
         socketIssues: { alerts: socketAlerts, lowScore: socketLowScore },
         vulnCount,
         workspaceCount: workspaceDirectories.length,
@@ -156,27 +429,68 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
 
 // ── Display ─────────────────────────────────────────────────────────
 
-/** Returns a colored checkmark (ok) or cross (not ok). */
-const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
-const warnIcon = yellow("⚠");
+const sectionIcon = (status: SectionStatus): string => {
+    switch (status) {
+        case "error": {
+            return red(SYMBOLS.failure);
+        }
+        case "skip": {
+            return dim(SYMBOLS.dash);
+        }
+        case "warn": {
+            return yellow(SYMBOLS.warning);
+        }
+        default: {
+            return green(SYMBOLS.success);
+        }
+    }
+};
 
-const displayResults = (results: DoctorResults): void => {
-    const { duplicates, installedCount, optimizations, outdated, runtime, socketIssues, vulnCount } = results;
+/**
+ * Width-adaptive heading. Falls back to a plain title in narrow shells.
+ */
+const heading = (title: string, status: SectionStatus): string => {
+    const cols = process.stderr.columns ?? 80;
+    const cap = Math.max(20, Math.min(cols - 2, 60));
+    const decoration = SYMBOLS.dash.repeat(2);
+    const label = `${sectionIcon(status)} ${bold(title)}`;
+    // strip-ansi-light: count width by stripping known ANSI escapes.
+    // eslint-disable-next-line no-control-regex
+    const labelWidth = label.replaceAll(/\[[0-9;]*m/g, "").length;
+    const remaining = Math.max(0, cap - labelWidth - decoration.length - 2);
 
-    info("");
+    return `${decoration} ${label} ${dim(SYMBOLS.dash.repeat(remaining))}`;
+};
 
-    // Dependencies section
-    info(
-        dim(
-            "── Dependencies ────────────────────────",
-        ),
-    );
-    info(`  ${icon(true)} ${String(installedCount)} packages installed`);
+const itemOk = (text: string): string => `  ${green(SYMBOLS.success)} ${text}`;
+const itemWarn = (text: string): string => `  ${yellow(SYMBOLS.warning)} ${text}`;
+const itemError = (text: string): string => `  ${red(SYMBOLS.failure)} ${text}`;
+const itemSkip = (text: string): string => `  ${dim(SYMBOLS.dash)} ${dim(text)}`;
 
-    if (outdated.length > 0) {
-        const majors = outdated.filter((e) => e.updateType === "major").length;
-        const minors = outdated.filter((e) => e.updateType === "minor").length;
-        const patches = outdated.filter((e) => e.updateType === "patch").length;
+/**
+ * Format `<count> <label>` with the count emphasised and the prose
+ * dimmed, optionally with a dim parenthetical breakdown. Lets the eye
+ * skim numbers down a column without losing the descriptive context.
+ */
+const countLine = (count: number, label: string, parenthetical?: string): string => {
+    const head = `${bold(String(count))} ${dim(label)}`;
+
+    return parenthetical ? `${head} ${dim(`(${parenthetical})`)}` : head;
+};
+
+const displayDependencies = (results: DoctorResults): void => {
+    if (!results.sections.has("dependencies")) {
+        return;
+    }
+
+    plain("");
+    plain(heading("Dependencies", sectionStatus(results, "dependencies")));
+    plain(itemOk(countLine(results.installedCount, "packages installed")));
+
+    if (results.outdated.length > 0) {
+        const majors = results.outdated.filter((e) => e.updateType === "major").length;
+        const minors = results.outdated.filter((e) => e.updateType === "minor").length;
+        const patches = results.outdated.filter((e) => e.updateType === "patch").length;
         const parts: string[] = [];
 
         if (majors > 0) {
@@ -191,141 +505,135 @@ const displayResults = (results: DoctorResults): void => {
             parts.push(`${String(patches)} patch`);
         }
 
-        info(`  ${warnIcon} ${String(outdated.length)} outdated (${parts.join(", ")})`);
+        plain(itemWarn(countLine(results.outdated.length, "outdated", parts.join(", "))));
     } else {
-        info(`  ${icon(true)} All dependencies up to date`);
+        plain(itemOk("All dependencies up to date"));
     }
 
-    if (duplicates.length > 0) {
-        info(`  ${warnIcon} ${String(duplicates.length)} packages with duplicate versions`);
+    if (results.duplicates.length > 0) {
+        plain(itemWarn(countLine(results.duplicates.length, "packages with duplicate versions")));
     } else {
-        info(`  ${icon(true)} No duplicate dependencies`);
+        plain(itemOk("No duplicate dependencies"));
+    }
+};
+
+const displaySecurity = (results: DoctorResults): void => {
+    if (!results.sections.has("security")) {
+        return;
     }
 
-    // Security section
-    info("");
-    info(
-        dim(
-            "── Security ────────────────────────────",
-        ),
-    );
+    plain("");
+    plain(heading("Security", sectionStatus(results, "security")));
 
-    if (vulnCount > 0) {
-        info(`  ${icon(false)} ${String(vulnCount)} vulnerabilit${vulnCount === 1 ? "y" : "ies"} found`);
+    if (results.vulnCount > 0) {
+        plain(itemError(countLine(results.vulnCount, `vulnerabilit${results.vulnCount === 1 ? "y" : "ies"} found`)));
     } else {
-        info(`  ${icon(true)} No known vulnerabilities`);
+        plain(itemOk("No known vulnerabilities"));
     }
 
-    if (socketIssues.alerts > 0) {
-        info(`  ${warnIcon} ${String(socketIssues.alerts)} Socket.dev security alert${socketIssues.alerts === 1 ? "" : "s"}`);
+    if (results.socketIssues.alerts > 0) {
+        plain(itemWarn(countLine(results.socketIssues.alerts, `Socket.dev security alert${results.socketIssues.alerts === 1 ? "" : "s"}`)));
     }
 
-    if (socketIssues.lowScore > 0) {
-        info(`  ${warnIcon} ${String(socketIssues.lowScore)} package${socketIssues.lowScore === 1 ? "" : "s"} with low security score`);
+    if (results.socketIssues.lowScore > 0) {
+        plain(itemWarn(countLine(results.socketIssues.lowScore, `package${results.socketIssues.lowScore === 1 ? "" : "s"} with low security score`)));
     }
 
-    if (socketIssues.alerts === 0 && socketIssues.lowScore === 0 && vulnCount === 0) {
-        info(`  ${icon(true)} No security issues detected`);
+    if (results.socketIssues.alerts === 0 && results.socketIssues.lowScore === 0 && results.vulnCount === 0) {
+        plain(itemOk("No security issues detected"));
+    }
+};
+
+const displayOptimization = (results: DoctorResults): void => {
+    if (!results.sections.has("optimization")) {
+        return;
     }
 
-    // Optimization section
-    info("");
-    info(
-        dim(
-            "── Optimization ────────────────────────",
-        ),
-    );
+    plain("");
+    plain(heading("Optimization", sectionStatus(results, "optimization")));
 
-    let natives = 0;
-    let preferred = 0;
-    let micros = 0;
-    let socketOverrides = 0;
+    const counts = summarizeOptimizations(results.optimizations);
 
-    for (const o of optimizations) {
-        switch (o.category) {
-            case "micro-utility": {
-                micros++;
-                break;
-            }
-            case "native": {
-                natives++;
-                break;
-            }
-            case "preferred": {
-                preferred++;
-                break;
-            }
-            case "socket": {
-                {
-                    socketOverrides++;
-                    // No default
-                }
-                break;
-            }
-        }
+    if (counts.total === 0) {
+        plain(itemOk("No optimizations available"));
+
+        return;
     }
 
-    if (optimizations.length > 0) {
-        if (natives > 0) {
-            info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
-        }
-
-        if (preferred > 0) {
-            info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
-        }
-
-        if (micros > 0) {
-            info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
-        }
-
-        if (socketOverrides > 0) {
-            info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
-        }
-    } else {
-        info(`  ${icon(true)} No optimizations available`);
+    if (counts.native > 0) {
+        plain(itemWarn(countLine(counts.native, "replaceable with native APIs")));
     }
 
-    // Runtime / Watch section
-    info("");
-    info(
-        dim(
-            "── Runtime ─────────────────────────────",
-        ),
-    );
+    if (counts.preferred > 0) {
+        plain(itemWarn(countLine(counts.preferred, "with lighter alternatives")));
+    }
 
-    let runtimeWarnings = 0;
+    if (counts.micro > 0) {
+        plain(itemWarn(countLine(counts.micro, "trivial micro-utilities")));
+    }
 
-    for (const diagnostic of runtime) {
+    if (counts.socket > 0) {
+        plain(itemWarn(countLine(counts.socket, "@socketregistry overrides available")));
+    }
+};
+
+const displayRuntime = (results: DoctorResults): void => {
+    if (!results.sections.has("runtime")) {
+        return;
+    }
+
+    plain("");
+    plain(heading("Runtime", sectionStatus(results, "runtime")));
+
+    for (const diagnostic of results.runtime) {
         if (diagnostic.status === "ok") {
-            info(`  ${icon(true)} ${diagnostic.message}`);
+            plain(itemOk(diagnostic.message));
         } else if (diagnostic.status === "skip") {
-            info(`  ${dim("·")} ${dim(diagnostic.message)}`);
+            plain(itemSkip(diagnostic.message));
         } else {
-            info(`  ${warnIcon} ${diagnostic.message}`);
-            runtimeWarnings += 1;
+            plain(itemWarn(diagnostic.message));
         }
     }
+};
 
-    // Summary
-    info("");
-    info(
-        dim(
-            "── Summary ─────────────────────────────",
-        ),
-    );
+const displaySummary = (results: DoctorResults, quiet: boolean): void => {
+    const criticalCount = results.vulnCount;
+    const runtimeWarnings = results.runtime.filter((d) => d.status === "warn").length;
+    const improvementCount = results.outdated.length + results.duplicates.length + results.optimizations.length + runtimeWarnings;
 
-    const criticalCount = vulnCount;
-    const improvementCount = outdated.length + duplicates.length + optimizations.length + runtimeWarnings;
+    if (quiet) {
+        // One-line summary — no banner, no info: prefix.
+        if (criticalCount === 0 && improvementCount === 0) {
+            success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+        } else {
+            const parts: string[] = [];
+
+            if (criticalCount > 0) {
+                parts.push(red(`${String(criticalCount)} security`));
+            }
+
+            if (improvementCount > 0) {
+                parts.push(yellow(`${String(improvementCount)} improvement${improvementCount === 1 ? "" : "s"}`));
+            }
+
+            plain(`${red(SYMBOLS.failure)} ${parts.join(", ")} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+        }
+
+        return;
+    }
+
+    plain("");
+    plain(heading("Summary", "ok"));
 
     if (criticalCount === 0 && improvementCount === 0) {
-        success("  Everything looks good!");
+        success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
     } else {
         if (criticalCount > 0) {
-            errorOutput(`  ${String(criticalCount)} security issue${criticalCount === 1 ? "" : "s"}`);
+            errorOutput(`${String(criticalCount)} security issue${criticalCount === 1 ? "" : "s"}`);
         }
 
         if (improvementCount > 0) {
-            info(`  ${String(improvementCount)} improvement${improvementCount === 1 ? "" : "s"} available`);
+            plain(`  ${cyan(SYMBOLS.arrow)} ${bold(String(improvementCount))} ${dim(`improvement${improvementCount === 1 ? "" : "s"} available`)} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
         }
     }
 };
@@ -350,213 +658,454 @@ const displayActions = (results: DoctorResults): void => {
     }
 
     if (actions.length > 0) {
-        info("");
-        note("  Next steps:");
+        plain("");
+        plain(`${bold("Next steps:")}`);
 
         for (const action of actions) {
-            note(`    ${action}`);
+            plain(`  ${dim(SYMBOLS.arrow)} ${action}`);
         }
     }
 
-    info("");
+    plain("");
 };
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
+const displayResults = (results: DoctorResults, quiet: boolean): void => {
+    if (!quiet) {
+        displayDependencies(results);
+        displaySecurity(results);
+        displayOptimization(results);
+        displayRuntime(results);
+    }
+
+    displaySummary(results, quiet);
+};
+
+// ── Scan task list ──────────────────────────────────────────────────
+
+interface BannerInputs {
+    nodeVersion: string;
+    packageManagerName: string;
+    packageManagerVersion: string;
+    runtimeFindings: RuntimeFinding[];
+    /** Workspace package count, or `undefined` when not surveyed yet. */
+    workspaceCount: number | undefined;
+}
+
+const planScanTasks = (
+    sections: Set<SectionId>,
+    catalogsCount: number,
+    socketEnabled: boolean,
+    installedCount: number,
+    fix: boolean,
+): ScanTask[] => {
+    const tasks: ScanTask[] = [];
+    const wantsDeps = sections.has("dependencies");
+    const wantsSec = sections.has("security");
+    const wantsOpt = sections.has("optimization");
+
+    if ((wantsDeps || wantsSec) && catalogsCount > 0) {
+        tasks.push({ id: "outdated", label: "Outdated catalog dependencies" });
+    }
+
+    if (wantsSec && installedCount > 0) {
+        tasks.push({ id: "vulnerabilities", label: "Known vulnerabilities (OSV)" });
+    }
+
+    if (wantsSec && socketEnabled && installedCount > 0) {
+        tasks.push({ id: "socket", label: "Socket.dev supply-chain reports" });
+    }
+
+    if (wantsOpt && fix) {
+        tasks.push({ id: "codemods", label: "Codemod availability" });
+    }
+
+    return tasks;
+};
+
+const printBanner = (input: BannerInputs): void => {
+    plain("");
+    plain(`${bold(cyan("vis doctor"))} ${dim("— project health check")}`);
+    plain(itemOk(`Detected ${input.packageManagerName} v${input.packageManagerVersion}`));
+
+    if (input.workspaceCount !== undefined && input.workspaceCount > 0) {
+        plain(itemOk(countLine(input.workspaceCount, `workspace package${input.workspaceCount === 1 ? "" : "s"}`)));
+    }
+
+    if (input.runtimeFindings.length === 0) {
+        plain(itemOk(`Node.js ${input.nodeVersion}`));
+    } else {
+        for (const finding of input.runtimeFindings) {
+            const colour = finding.severity === "error" ? red : yellow;
+
+            plain(itemError(`Runtime: ${colour(finding.message)}`));
+        }
+
+        plain(`  ${dim(SYMBOLS.arrow)} Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
+    }
+
+    plain("");
+};
+
+// ── Main execute ────────────────────────────────────────────────────
+
+const execute = async ({ logger, options, visConfig, visConfigError, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root.");
     }
 
-    const pm = detectPm(wsRoot);
+    const isJson = options.format === "json" || options.json === true;
+    const sections = resolveSections(options.only, options.skip);
+    const quiet = Boolean(options.quiet);
+    const noProgress = Boolean(options.noProgress);
+    const filterPatterns = parseFilterPatterns(options.filter);
 
-    info(`\n  ${dim("VIS DOCTOR")} — project health check\n`);
-    info(`  ${icon(true)} Detected ${pm.name} v${pm.version}`);
+    if (sections.size === 0) {
+        errorOutput("No sections selected. Check your --only / --skip values.");
+        process.exitCode = 2;
 
-    const workspaceDirectories = discoverWorkspacePackages(wsRoot);
-
-    if (workspaceDirectories.length > 0) {
-        info(`  ${icon(true)} ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`);
+        return;
     }
 
-    // Runtime version sanity check (Node, .nvmrc, packageManager field).
+    const startedAt = Date.now();
+    const pm = detectPm(wsRoot);
     const runtimeFindings = checkRuntimeVersions(wsRoot);
 
-    if (runtimeFindings.length === 0) {
-        info(`  ${icon(true)} Runtime: Node.js ${process.versions.node} ${green("✓")}`);
-    } else {
-        for (const finding of runtimeFindings) {
-            const colour = finding.severity === "error" ? red : yellow;
+    // Decide TUI vs inline progress up front so the banner / pre-scan
+    // chatter doesn't double-render with the TUI.
+    const stdoutTty = Boolean(process.stdout.isTTY);
+    const wantsInteractive = !isJson && stdoutTty && !isInCi && !quiet && !noProgress;
 
-            info(`  ${icon(false)} Runtime: ${colour(finding.message)}`);
-        }
-
-        // Doctor only reports — `vis toolchain install` actually fixes
-        // the mismatch via the detected manager (proto/mise/fnm/...).
-        note(`  Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
+    // Print the banner up front so the user gets immediate feedback that
+    // the command is alive — the surveys below can take a few seconds on
+    // large monorepos (recursive node_modules walk + lockfile parse).
+    // In TUI mode we skip the inline banner; the TUI takes over the screen.
+    if (!isJson && !wantsInteractive) {
+        printBanner({
+            nodeVersion: process.versions.node,
+            packageManagerName: pm.name,
+            packageManagerVersion: pm.version,
+            runtimeFindings,
+            workspaceCount: undefined,
+        });
     }
 
-    info(`\n  Scanning...`);
+    // Pre-scan: cheap surveys we need before deciding which scan rows
+    // to draw. Lockfile parse is ~80ms even on large monorepos.
 
-    const results = await runAllScans(wsRoot, visConfig, Boolean(options.fix));
+    const catalogs = readCatalogs(wsRoot, findPackageManagerSync(wsRoot).packageManager);
+    const installed = lockedPackages(wsRoot, pm.name);
+    const installedCount = installed.length;
+    const socketEnabled = Boolean(buildSocketOptions(visConfig?.security?.socket));
+    const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
-    // Pre-compute optimization counts (used by both JSON and display)
-    let optNative = 0;
-    let optPreferred = 0;
-    let optMicro = 0;
-    let optSocket = 0;
+    if (!isJson && !quiet && !wantsInteractive) {
+        const wsLine = workspaceDirectories.length > 0
+            ? dim(` · ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`)
+            : "";
 
-    for (const o of results.optimizations) {
-        switch (o.category) {
-            case "micro-utility": {
-                optMicro++;
-                break;
-            }
-            case "native": {
-                optNative++;
-                break;
-            }
-            case "preferred": {
-                optPreferred++;
-                break;
-            }
-            case "socket": {
-                {
-                    optSocket++;
-                    // No default
-                }
-                break;
-            }
-        }
+        plain(`${dim("·")} ${dim("Found")} ${bold(String(installedCount))} ${dim(`installed package${installedCount === 1 ? "" : "s"}`)}${wsLine}`);
     }
 
-    // JSON output
-    if (options.format === "json" || (options as Record<string, unknown>).json) {
-        process.stdout.write(
-            `${JSON.stringify(
-                {
-                    dependencies: {
-                        duplicates: results.duplicates.length,
-                        installed: results.installedCount,
-                        outdated: results.outdated.length,
-                    },
-                    optimizations: {
-                        microUtilities: optMicro,
-                        native: optNative,
-                        preferred: optPreferred,
-                        socket: optSocket,
-                        total: results.optimizations.length,
-                    },
-                    packageManager: pm.name,
-                    runtime: results.runtime.map((d) => ({
-                        detail: d.detail,
-                        id: d.id,
-                        message: d.message,
-                        status: d.status,
-                    })),
-                    security: {
-                        alerts: results.socketIssues.alerts,
-                        lowScorePackages: results.socketIssues.lowScore,
-                        vulnerabilities: results.vulnCount,
-                    },
-                    workspaces: results.workspaceCount,
-                },
-                undefined,
-                2,
-            )}\n`,
+    const banner: DoctorBannerInput | undefined = visConfigError
+        ? {
+            hint: visConfigError.file
+                ? `Continuing with default settings — fix or regenerate ${visConfigError.file} (vis init --force).`
+                : "Continuing with default settings.",
+            message: visConfigError.message,
+            severity: "error",
+            title: visConfigError.file ? `Failed to load ${visConfigError.file}` : "Failed to load vis.config",
+        }
+        : undefined;
+
+    // Cache: skip when --fix (mutates workspace) or --no-cache. The
+    // lockfile mtime is the primary invalidation signal — if deps
+    // didn't change, the catalog/duplicate/security scans return the
+    // same answers.
+    const lockfileNameByPm: Record<string, string> = {
+        bun: "bun.lock",
+        npm: "package-lock.json",
+        pnpm: "pnpm-lock.yaml",
+        yarn: "yarn.lock",
+    };
+    const lockfileFile = lockfileNameByPm[pm.name];
+    const lockfilePath = lockfileFile ? join(wsRoot, lockfileFile) : undefined;
+    const configFilePath = findVisConfigFile(wsRoot);
+    const cacheEnabled = !options.noCache && !options.fix;
+    const cacheKey = cacheEnabled
+        ? buildDoctorCacheKey({
+            configPath: configFilePath,
+            lockfilePath,
+            sections,
+            socketEnabled,
+            workspaceRoot: wsRoot,
+        })
+        : undefined;
+
+    const cachedResults = cacheKey ? readDoctorCache(cacheKey) : undefined;
+    const cacheHit = cachedResults !== undefined;
+
+    let scanResults: Omit<DoctorResults, "elapsedMs">;
+    let pendingAction: ReturnType<DoctorStore["getSnapshot"]>["pendingAction"];
+
+    if (wantsInteractive) {
+        // TUI is the primary surface for interactive runs — mount it
+        // whether scans need to run or we can seed from cache. Cache
+        // hits skip the streaming work but still let the user explore
+        // findings instead of dumping a static summary to the terminal.
+        const store = cachedResults
+            ? new DoctorStore({ activeSections: sections, findings: filterFindingsByPattern(flattenFindings(cachedResults), filterPatterns) })
+            : new DoctorStore({ activeSections: sections });
+
+        const instance = render(
+            React.createElement(VisDoctorApp, { banner, fromCache: cacheHit, startedAt, store }),
+            {
+                alternateScreen: true,
+                exitOnCtrlC: false,
+                interactive: true,
+                patchConsole: true,
+            },
         );
 
-        if (options.exitCode) {
-            const hasRuntimeWarn = results.runtime.some((d) => d.status === "warn");
-            const fail = options.strict
-                ? results.vulnCount > 0
-                    || results.socketIssues.alerts > 0
-                    || results.outdated.length > 0
-                    || results.duplicates.length > 0
-                    || hasRuntimeWarn
-                : results.vulnCount > 0 || results.socketIssues.alerts > 0;
+        try {
+            scanResults = cachedResults ?? await streamScans({
+                filterPatterns,
+                installed,
+                resolveCodemods: Boolean(options.fix),
+                sections,
+                store,
+                visConfig,
+                workspaceRoot: wsRoot,
+            });
+        } catch (error) {
+            // Make sure the TUI can be dismissed even if a scan throws.
+            instance.unmount();
+            throw error;
+        }
 
-            if (fail) {
-                process.exitCode = 1;
-            }
+        await instance.waitUntilExit();
+        pendingAction = store.getSnapshot().pendingAction;
+    } else if (cachedResults) {
+        // Non-interactive cache hit — skip scans, print the summary inline.
+        scanResults = cachedResults;
+    } else {
+        const tasks = planScanTasks(sections, catalogs.size, socketEnabled, installedCount, Boolean(options.fix));
+        const live = !isJson && !quiet && !noProgress;
+        const progress = startScanProgress(tasks, { live });
+
+        try {
+            scanResults = await streamScans({
+                filterPatterns,
+                installed,
+                progress,
+                resolveCodemods: Boolean(options.fix),
+                sections,
+                visConfig,
+                workspaceRoot: wsRoot,
+            });
+        } finally {
+            progress.stop();
+        }
+    }
+
+    const fullResults: DoctorResults = { ...scanResults, elapsedMs: Date.now() - startedAt };
+
+    // Cache the full unfiltered results so a later run with a different
+    // --filter still hits cache. Filtering happens post-cache.
+    if (cacheKey && !cacheHit) {
+        try {
+            writeDoctorCache(cacheKey, fullResults);
+        } catch {
+            // Cache writes are best-effort; a failed write shouldn't
+            // break the user's doctor run.
+        }
+    }
+
+    const results = applyFilter(fullResults, filterPatterns);
+
+    // JSON output
+    if (isJson) {
+        process.stdout.write(`${JSON.stringify(buildJsonPayload(results, pm.name), undefined, 2)}\n`);
+
+        if (options.exitCode && shouldFail(results, Boolean(options.strict))) {
+            process.exitCode = 1;
         }
 
         return;
     }
 
-    displayResults(results);
+    if (cacheHit && !quiet) {
+        plain(`${dim("·")} Cached results (use --no-cache to refresh)`);
+    }
+
+    if (filterPatterns.length > 0 && !quiet) {
+        plain(`${dim("·")} Filter active: ${cyan(options.filter ?? "")}`);
+    }
+
+    displayResults(results, quiet);
 
     // --fix: auto-remediate by running optimize (codemods + overrides + install)
-    if (options.fix && results.optimizations.length > 0) {
-        info("");
-        info("Applying fixes...\n");
+    // and clean up orphaned vis/task-runner processes the runtime check found.
+    const hasOrphanWarning = results.runtime.some((d) => d.id === ORPHANS_DIAGNOSTIC_ID && d.status === "warn");
+    const hasOptimizationFixes = results.sections.has("optimization") && results.optimizations.length > 0;
 
-        const socketEntries = results.optimizations
-            .filter((o) => o.category === "socket" && o.overrideSpec)
-            .map((o) => {
-                return { original: o.packageName, spec: o.overrideSpec! };
-            });
-
-        if (socketEntries.length > 0) {
-            const overrideResult = applyOverrides(wsRoot, join(wsRoot, "package.json"), socketEntries, pm);
-
-            if (overrideResult.added.length > 0) {
-                success(`  Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);
-            }
-
-            if (overrideResult.updated.length > 0) {
-                success(`  Updated ${String(overrideResult.updated.length)} override${overrideResult.updated.length === 1 ? "" : "s"}.`);
-            }
-        }
-
-        const codemodEntries = results.optimizations.filter((o) => o.category !== "socket" && o.hasCodemod);
-
-        for (const entry of codemodEntries) {
-            const codemodResult = await runCodemod(wsRoot, entry.packageName);
-
-            if (codemodResult.filesChanged > 0) {
-                success(`  ${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);
-            }
-        }
-
-        if (socketEntries.length > 0) {
-            info(`\n  Running ${pm.name} install to update lockfile...`);
-
-            const installOptions = {
-                dev: false,
-                filter: [],
-                force: false,
-                frozenLockfile: false,
-                ignoreScripts: false,
-                lockfileOnly: false,
-                noOptional: false,
-                offline: false,
-                prod: false,
-                recursive: false,
-                silent: false,
-                workspaceRoot: false,
-            };
-
-            runInstall(pm, installOptions, wsRoot, logger);
-        }
-
-        info("");
-        success("Fixes applied.");
-    } else {
+    if (options.fix && (hasOptimizationFixes || hasOrphanWarning)) {
+        await runFixes({
+            force: Boolean(options.fixForce),
+            logger,
+            pm,
+            recoverOrphans: hasOrphanWarning,
+            results,
+            workspaceRoot: wsRoot,
+        });
+    } else if (!quiet) {
         displayActions(results);
     }
 
-    if (options.exitCode) {
-        const hasRuntimeWarn = results.runtime.some((d) => d.status === "warn");
-        const hasIssues = options.strict
-            ? results.vulnCount > 0
-                || results.socketIssues.alerts > 0
-                || results.outdated.length > 0
-                || results.duplicates.length > 0
-                || hasRuntimeWarn
-            : results.vulnCount > 0 || results.socketIssues.alerts > 0;
+    if (pendingAction) {
+        process.stdout.write("\n");
+        process.stdout.write(`${bold("→ ")}${pendingAction.description}\n`);
 
-        if (hasIssues) {
-            process.exitCode = 1;
+        if (pendingAction.configSnippet) {
+            process.stdout.write("\n");
+            process.stdout.write(`${dim(pendingAction.configSnippet)}\n`);
+        } else {
+            process.stdout.write(`  ${cyan(pendingAction.command)}\n`);
         }
+
+        process.stdout.write("\n");
+    }
+
+    if (options.exitCode && shouldFail(results, Boolean(options.strict))) {
+        process.exitCode = 1;
+    }
+};
+
+// ── --fix flow ──────────────────────────────────────────────────────
+
+interface PmLike {
+    name: string;
+}
+
+interface RunFixesOptions {
+    /** Pass `true` for `--fix-force`: orphan cleanup escalates straight to SIGKILL. */
+    force: boolean;
+    logger: Console;
+    pm: PmLike;
+    /** When true, run {@link killOrphanedRunners} after the optimization fixes. */
+    recoverOrphans: boolean;
+    results: DoctorResults;
+    workspaceRoot: string;
+}
+
+const runFixes = async (opts: RunFixesOptions): Promise<void> => {
+    const { force, logger, pm, recoverOrphans, results, workspaceRoot } = opts;
+
+    plain("");
+    plain(heading("Applying fixes", "ok"));
+
+    const socketEntries = results.optimizations
+        .filter((o) => o.category === "socket" && o.overrideSpec)
+        .map((o) => { return { original: o.packageName, spec: o.overrideSpec! }; });
+    const codemodEntries = results.optimizations.filter((o) => o.category !== "socket" && o.hasCodemod);
+    const manualEntries = results.optimizations.filter((o) => o.category !== "socket" && !o.hasCodemod);
+
+    let didSomething = false;
+    let codemodsApplied = 0;
+    const codemodFailures: { error: string; package: string }[] = [];
+
+    if (recoverOrphans) {
+        // SIGTERM by default — give the orphans a chance to flush buffered
+        // output and tear down child trees gracefully. `--fix-force`
+        // escalates to SIGKILL for SIGTERM-resistant processes (Windows
+        // child trees, blocked event loops).
+        //
+        // We deliberately re-enumerate via killOrphanedRunners() rather than
+        // pass through the cached pids from `results.runtime`. Between the
+        // diagnostic running and `--fix` running, the orphan set can change
+        // (a `vis run` in another terminal could exit, or a new crash could
+        // leave a fresh orphan); re-enumerating keeps us aligned with the
+        // current process table.
+        const recovery = killOrphanedRunners({ force });
+
+        if (recovery.killed.length > 0) {
+            success(`Cleaned up ${String(recovery.killed.length)} orphaned process${recovery.killed.length === 1 ? "" : "es"} (PIDs: ${recovery.killed.join(", ")}).`);
+            didSomething = true;
+        }
+
+        if (recovery.failed.length > 0) {
+            const escalation = force ? "" : " Re-run with `--fix --fix-force` to escalate to SIGKILL.";
+
+            warn(`Could not signal ${String(recovery.failed.length)} orphan${recovery.failed.length === 1 ? "" : "s"}: ${recovery.failed.map((f) => `${String(f.pid)} (${f.reason})`).join(", ")}.${escalation}`);
+        }
+    }
+
+    if (socketEntries.length > 0) {
+        const overrideResult = applyOverrides(workspaceRoot, join(workspaceRoot, "package.json"), socketEntries, pm as Parameters<typeof applyOverrides>[3]);
+
+        if (overrideResult.added.length > 0) {
+            success(`Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);
+            didSomething = true;
+        }
+
+        if (overrideResult.updated.length > 0) {
+            success(`Updated ${String(overrideResult.updated.length)} override${overrideResult.updated.length === 1 ? "" : "s"}.`);
+            didSomething = true;
+        }
+    }
+
+    for (const entry of codemodEntries) {
+        try {
+            const codemodResult = await runCodemod(workspaceRoot, entry.packageName);
+
+            if (codemodResult.filesChanged > 0) {
+                success(`${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);
+                codemodsApplied += 1;
+                didSomething = true;
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+
+            codemodFailures.push({ error: message, package: entry.packageName });
+            warn(`${entry.packageName}: codemod failed — ${message}`);
+        }
+    }
+
+    if (socketEntries.length > 0) {
+        plain(`${cyan(SYMBOLS.arrow)} Running ${pm.name} install to update lockfile…`);
+
+        const installOptions = {
+            dev: false,
+            filter: [],
+            force: false,
+            frozenLockfile: false,
+            ignoreScripts: false,
+            lockfileOnly: false,
+            noOptional: false,
+            offline: false,
+            prod: false,
+            recursive: false,
+            silent: false,
+            workspaceRoot: false,
+        };
+
+        runInstall(pm as Parameters<typeof runInstall>[0], installOptions, workspaceRoot, logger);
+        didSomething = true;
+    }
+
+    plain("");
+
+    if (didSomething) {
+        success(`Fixes applied. ${codemodsApplied > 0 ? `${String(codemodsApplied)} codemod${codemodsApplied === 1 ? "" : "s"} applied.` : ""}`.trim());
+    } else {
+        plain(itemSkip("No auto-fixable items in the current run."));
+    }
+
+    if (codemodFailures.length > 0) {
+        warn(`${String(codemodFailures.length)} codemod${codemodFailures.length === 1 ? "" : "s"} failed (run ${green("vis optimize")} for the interactive picker).`);
+    }
+
+    if (manualEntries.length > 0) {
+        note(`${String(manualEntries.length)} optimization${manualEntries.length === 1 ? "" : "s"} need manual review (no codemod). Run ${green("vis optimize")} to inspect them.`);
     }
 };
 

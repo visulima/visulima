@@ -86,6 +86,15 @@ const info = (message: string): void => {
     process.stderr.write(`${bold(blue("info:"))} ${message}\n`);
 };
 
+/**
+ * Prefix-less stderr line — for visual separators and pre-styled
+ * content (like section headings) where the `info:` prefix would
+ * clutter the output. Trailing newline is added.
+ */
+const plain = (message: string): void => {
+    process.stderr.write(`${message}\n`);
+};
+
 /** Warning with yellow bold `warn:` prefix */
 const warn = (message: string): void => {
     process.stderr.write(`${bold(yellow("warn:"))} ${message}\n`);
@@ -161,4 +170,4 @@ const setTerminalTitle = (title: string): void => {
     process.stdout.write(`\u001B]0;${title}\u0007`);
 };
 
-export { bold, cyan, dim, error, failure, green, info, injectVersion, link, note, red, setTerminalTitle, success, SYMBOLS, warn, yellow };
+export { bold, cyan, dim, error, failure, green, info, injectVersion, link, note, plain, red, setTerminalTitle, success, SYMBOLS, warn, yellow };
