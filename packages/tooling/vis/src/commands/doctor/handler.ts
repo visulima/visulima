@@ -11,6 +11,8 @@ import { error as errorOutput, info, note, success } from "../../output";
 import { applyOverrides, readLockfileText } from "../../overrides";
 import { detectPm, runInstall } from "../../pm-runner";
 import { checkRuntimeVersions } from "../../runtime-check";
+import type { RuntimeDiagnostic } from "../../runtime-diagnostics";
+import { runRuntimeDiagnostics } from "../../runtime-diagnostics";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../socket-security";
 import type { OptimizeEntry } from "../../tui/components/optimize/OptimizeStore";
 import type { VisConfig } from "../../workspace";
@@ -24,6 +26,7 @@ interface DoctorResults {
     installedCount: number;
     optimizations: OptimizeEntry[];
     outdated: OutdatedEntry[];
+    runtime: RuntimeDiagnostic[];
     socketIssues: { alerts: number; lowScore: number };
     vulnCount: number;
     workspaceCount: number;
@@ -144,6 +147,7 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
         installedCount: installed.length,
         optimizations: allOptimizations,
         outdated: outdatedResult.outdated,
+        runtime: runRuntimeDiagnostics(),
         socketIssues: { alerts: socketAlerts, lowScore: socketLowScore },
         vulnCount,
         workspaceCount: workspaceDirectories.length,
@@ -157,7 +161,7 @@ const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
 const warnIcon = yellow("⚠");
 
 const displayResults = (results: DoctorResults): void => {
-    const { duplicates, installedCount, optimizations, outdated, socketIssues, vulnCount } = results;
+    const { duplicates, installedCount, optimizations, outdated, runtime, socketIssues, vulnCount } = results;
 
     info("");
 
@@ -281,6 +285,27 @@ const displayResults = (results: DoctorResults): void => {
         info(`  ${icon(true)} No optimizations available`);
     }
 
+    // Runtime / Watch section
+    info("");
+    info(
+        dim(
+            "── Runtime ─────────────────────────────",
+        ),
+    );
+
+    let runtimeWarnings = 0;
+
+    for (const diagnostic of runtime) {
+        if (diagnostic.status === "ok") {
+            info(`  ${icon(true)} ${diagnostic.message}`);
+        } else if (diagnostic.status === "skip") {
+            info(`  ${dim("·")} ${dim(diagnostic.message)}`);
+        } else {
+            info(`  ${warnIcon} ${diagnostic.message}`);
+            runtimeWarnings += 1;
+        }
+    }
+
     // Summary
     info("");
     info(
@@ -290,7 +315,7 @@ const displayResults = (results: DoctorResults): void => {
     );
 
     const criticalCount = vulnCount;
-    const improvementCount = outdated.length + duplicates.length + optimizations.length;
+    const improvementCount = outdated.length + duplicates.length + optimizations.length + runtimeWarnings;
 
     if (criticalCount === 0 && improvementCount === 0) {
         success("  Everything looks good!");
@@ -421,6 +446,12 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
                         total: results.optimizations.length,
                     },
                     packageManager: pm.name,
+                    runtime: results.runtime.map((d) => ({
+                        detail: d.detail,
+                        id: d.id,
+                        message: d.message,
+                        status: d.status,
+                    })),
                     security: {
                         alerts: results.socketIssues.alerts,
                         lowScorePackages: results.socketIssues.lowScore,
@@ -433,8 +464,19 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             )}\n`,
         );
 
-        if (options.exitCode && (results.vulnCount > 0 || results.socketIssues.alerts > 0)) {
-            process.exitCode = 1;
+        if (options.exitCode) {
+            const hasRuntimeWarn = results.runtime.some((d) => d.status === "warn");
+            const fail = options.strict
+                ? results.vulnCount > 0
+                    || results.socketIssues.alerts > 0
+                    || results.outdated.length > 0
+                    || results.duplicates.length > 0
+                    || hasRuntimeWarn
+                : results.vulnCount > 0 || results.socketIssues.alerts > 0;
+
+            if (fail) {
+                process.exitCode = 1;
+            }
         }
 
         return;
@@ -503,8 +545,13 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     }
 
     if (options.exitCode) {
+        const hasRuntimeWarn = results.runtime.some((d) => d.status === "warn");
         const hasIssues = options.strict
-            ? results.vulnCount > 0 || results.socketIssues.alerts > 0 || results.outdated.length > 0 || results.duplicates.length > 0
+            ? results.vulnCount > 0
+                || results.socketIssues.alerts > 0
+                || results.outdated.length > 0
+                || results.duplicates.length > 0
+                || hasRuntimeWarn
             : results.vulnCount > 0 || results.socketIssues.alerts > 0;
 
         if (hasIssues) {
