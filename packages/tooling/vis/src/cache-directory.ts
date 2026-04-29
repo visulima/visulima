@@ -3,6 +3,8 @@ import { execFileSync } from "node:child_process";
 import { isAbsolute, relative, resolve } from "@visulima/path";
 import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
 
+import { getMainWorktreeRoot } from "./git-worktree";
+
 /**
  * Shared helpers for resolving the task runner's cache directory.
  *
@@ -23,7 +25,11 @@ import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
  * resolved against `workspaceRoot` so they refer to the same directory no
  * matter what `process.cwd()` happens to be when the command runs.
  *
- * Precedence: `optionsCacheDir` > `configCacheDir` > `{workspaceRoot}/{@link DEFAULT_CACHE_DIRECTORY_NAME}`.
+ * Precedence: `optionsCacheDir` > `configCacheDir` > `VIS_CACHE_DIRECTORY` env >
+ * `{workspaceRoot}/{@link DEFAULT_CACHE_DIRECTORY_NAME}`.
+ *
+ * The env-var fallback exists for parity with Nx (`NX_CACHE_DIRECTORY`) so CI
+ * runners can pin the cache root without rewriting `vis.config.ts`.
  * @param workspaceRoot Absolute path to the workspace root directory.
  * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute). Takes highest priority.
  * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts (may be relative or absolute).
@@ -40,7 +46,70 @@ const resolveCacheDirectory = (workspaceRoot: string, optionsCacheDir: string | 
         return normalize(configCacheDir);
     }
 
+    const envOverride = process.env["VIS_CACHE_DIRECTORY"];
+
+    if (envOverride && envOverride.length > 0) {
+        return normalize(envOverride);
+    }
+
     return resolve(workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
+};
+
+/**
+ * Picks the *root* used to anchor the cache directory.
+ *
+ * When `sharedWorktreeCache` is enabled (default) and `workspaceRoot` is a
+ * linked git worktree, the main worktree's path is returned so all sibling
+ * worktrees share a single cache. Single-checkout repos and primary
+ * worktrees return their own root unchanged.
+ *
+ * When the caller has already provided an explicit cache path (CLI flag,
+ * config value, or `VIS_CACHE_DIRECTORY` env), this helper should NOT be
+ * invoked — explicit paths win without remapping. Use it only on the
+ * default-path branch.
+ * @param workspaceRoot Absolute path to the candidate workspace root.
+ * @param enabled Whether worktree-share is on. Defaults to `true` when undefined.
+ * @returns Absolute path of the cache anchor (main worktree root or workspace_root).
+ */
+export const resolveSharedCacheRoot = (workspaceRoot: string, enabled: boolean | undefined): string => {
+    if (enabled === false) {
+        return workspaceRoot;
+    }
+
+    const mainRoot = getMainWorktreeRoot(workspaceRoot);
+
+    return mainRoot ?? workspaceRoot;
+};
+
+/**
+ * Same precedence as {@link resolveCacheDirectory}, but when no explicit
+ * path is supplied the workspace anchor is the *main* worktree root rather
+ * than the linked checkout. Used by `vis run` and `vis cache` so parallel
+ * agents in sibling worktrees share `&lt;mainWorktreeRoot>/.task-runner-cache`.
+ * @param workspaceRoot Absolute path of the current workspace (linked or primary).
+ * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute).
+ * @param configCacheDir `taskRunnerOptions.cacheDirectory` from vis.config.ts.
+ * @param sharedWorktreeCache Whether to share the cache between sibling worktrees. Defaults to `true`.
+ */
+const resolveSharedCacheDirectory = (
+    workspaceRoot: string,
+    optionsCacheDir: string | undefined,
+    configCacheDir: string | undefined,
+    sharedWorktreeCache: boolean | undefined,
+): string => {
+    // Read the env var once to gate the explicit-path branch; the inner
+    // `resolveCacheDirectory` call re-reads it intentionally so the gating
+    // and the resolution stay in lock-step (single source of truth lives
+    // in `resolveCacheDirectory`'s precedence chain).
+    const explicit = optionsCacheDir ?? configCacheDir ?? process.env["VIS_CACHE_DIRECTORY"];
+
+    if (explicit && explicit.length > 0) {
+        return resolveCacheDirectory(workspaceRoot, optionsCacheDir, configCacheDir);
+    }
+
+    const anchor = resolveSharedCacheRoot(workspaceRoot, sharedWorktreeCache);
+
+    return resolve(anchor, DEFAULT_CACHE_DIRECTORY_NAME);
 };
 
 const BRANCH_SLUG_RE = /[^\w.-]+/g;
@@ -148,6 +217,6 @@ const isCacheDirectoryInsideWorkspace = (cacheDirectory: string, workspaceRoot: 
     return !(rel === ".." || rel.startsWith("../")) && !isAbsolute(rel);
 };
 
-export { isCacheDirectoryInsideWorkspace, resolveCacheDirectory };
+export { isCacheDirectoryInsideWorkspace, resolveCacheDirectory, resolveSharedCacheDirectory };
 
 export { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";

@@ -7,6 +7,12 @@ const cacheDirectoryOption = {
     type: String,
 } as const;
 
+const scopeOption = {
+    description: "Cache scope: 'shared' (default — main worktree's cache), 'worktree' (this checkout's local cache), or 'all' (both)",
+    name: "scope",
+    type: String,
+} as const;
+
 const cacheList: Command = {
     commandPath: ["cache"],
     description: "List all cache entries",
@@ -16,6 +22,7 @@ const cacheList: Command = {
     name: "list",
     options: [
         cacheDirectoryOption,
+        scopeOption,
         {
             description: "Output format: table or json (default: table)",
             name: "format",
@@ -64,6 +71,7 @@ const cachePrune: Command = {
     name: "prune",
     options: [
         cacheDirectoryOption,
+        scopeOption,
         {
             description: "Remove entries older than N days",
             name: "max-age-days",
@@ -91,6 +99,7 @@ const cacheSize: Command = {
     name: "size",
     options: [
         cacheDirectoryOption,
+        scopeOption,
         {
             description: "Output format: table or json (default: table)",
             name: "format",
@@ -155,6 +164,7 @@ export default cacheCommands;
 export type CacheListOptions = CreateOptions<{
     "cache-dir": string | undefined;
     format: string | undefined;
+    scope: string | undefined;
 }>;
 
 export type CacheCleanOptions = CreateOptions<{
@@ -168,11 +178,13 @@ export type CachePruneOptions = CreateOptions<{
     "keep-last": number | undefined;
     "max-age-days": number | undefined;
     "max-size": string | undefined;
+    scope: string | undefined;
 }>;
 
 export type CacheSizeOptions = CreateOptions<{
     "cache-dir": string | undefined;
     format: string | undefined;
+    scope: string | undefined;
 }>;
 
 export type CacheWhyOptions = CreateOptions<{

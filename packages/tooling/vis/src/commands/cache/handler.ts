@@ -8,7 +8,7 @@ import { join } from "@visulima/path";
 import type { RunSummary, TaskHashDetails, TaskSummary } from "@visulima/task-runner";
 import { Cache, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
-import { isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../../cache-directory";
+import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache-directory";
 import { failure, info, success, warn } from "../../output";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheWhyOptions } from "./index";
 
@@ -774,30 +774,110 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
     info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
 };
 
+type CacheScope = "all" | "shared" | "worktree";
+
+const parseScope = (raw: string | undefined): CacheScope => {
+    if (raw === "worktree" || raw === "shared" || raw === "all") {
+        return raw;
+    }
+
+    if (raw && raw.length > 0) {
+        warn(`Unknown --scope value '${raw}'; falling back to 'shared'.`);
+    }
+
+    return "shared";
+};
+
+interface ResolvedCacheContext {
+    /** All paths the operation should touch (deduplicated). */
+    cacheDirectories: string[];
+    /** Primary directory selected by the chosen scope (shared by default). */
+    cacheDirectory: string;
+    scope: CacheScope;
+    sharedWorktreeCache: boolean | undefined;
+    workspaceRoot: string;
+}
+
 const resolveCacheDirectoryFromContext = (
     workspaceRoot: string | undefined,
     options: Record<string, unknown>,
     visConfig: Record<string, unknown> | undefined,
-): { cacheDirectory: string; workspaceRoot: string } => {
+): ResolvedCacheContext => {
     const resolvedWorkspaceRoot = workspaceRoot ?? process.cwd();
-    const taskRunnerOptions = ((visConfig ?? {}) as { taskRunnerOptions?: { cacheDirectory?: string } }).taskRunnerOptions ?? {};
+    const cfg = (visConfig ?? {}) as { sharedWorktreeCache?: boolean; taskRunnerOptions?: { cacheDirectory?: string } };
+    const taskRunnerOptions = cfg.taskRunnerOptions ?? {};
+    const scope = parseScope(options.scope as string | undefined);
+    const optionsCacheDir = options.cacheDir as string | undefined;
+
+    // Worktree-local: this checkout's `.task-runner-cache`. Disable
+    // worktree-share by passing `sharedWorktreeCache: false` so the
+    // resolver returns the literal workspace_root path.
+    const worktreeDirectory = resolveSharedCacheDirectory(
+        resolvedWorkspaceRoot,
+        optionsCacheDir,
+        taskRunnerOptions.cacheDirectory,
+        false,
+    );
+
+    // Shared: the main worktree's cache (or workspace_root for primary checkouts).
+    const sharedDirectory = resolveSharedCacheDirectory(
+        resolvedWorkspaceRoot,
+        optionsCacheDir,
+        taskRunnerOptions.cacheDirectory,
+        cfg.sharedWorktreeCache,
+    );
+
+    let primary: string;
+    let directories: string[];
+
+    switch (scope) {
+        case "all": {
+            primary = sharedDirectory;
+            directories = sharedDirectory === worktreeDirectory ? [sharedDirectory] : [sharedDirectory, worktreeDirectory];
+            break;
+        }
+        case "worktree": {
+            primary = worktreeDirectory;
+            directories = [worktreeDirectory];
+            break;
+        }
+        default: {
+            primary = sharedDirectory;
+            directories = [sharedDirectory];
+        }
+    }
 
     return {
-        cacheDirectory: resolveCacheDirectory(resolvedWorkspaceRoot, options.cacheDir as string | undefined, taskRunnerOptions.cacheDirectory),
+        cacheDirectories: directories,
+        cacheDirectory: primary,
+        scope,
+        sharedWorktreeCache: cfg.sharedWorktreeCache,
         workspaceRoot: resolvedWorkspaceRoot,
     };
 };
 
 export const cacheListExecute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheListOptions>): Promise<void> => {
-    const { cacheDirectory } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
     const format = options.format ?? "table";
 
-    await runList(cacheDirectory, format, logger);
+    for (const directory of cacheDirectories) {
+        if (cacheDirectories.length > 1) {
+            info(`# ${directory}`);
+        }
+
+        await runList(directory, format, logger);
+    }
 };
 
 export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheCleanOptions>): Promise<void> => {
     const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
+    // `runClean` already invokes `isCacheDirectoryInsideWorkspace` and
+    // prompts for out-of-workspace targets — when the user is in a linked
+    // worktree and the resolver landed on the *main* worktree's cache,
+    // that path lives outside the current `workspaceRoot`, so the
+    // existing prompt naturally requires `--force` (or interactive
+    // confirmation) before nuking the shared store.
     await runClean(cacheDirectory, workspaceRoot, {
         dryRun: Boolean(options.dryRun),
         force: Boolean(options.force),
@@ -805,13 +885,19 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
 };
 
 export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CachePruneOptions>): Promise<void> => {
-    const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { cacheDirectories, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
-    await runPrune(cacheDirectory, workspaceRoot, {
-        keepLast: typeof options.keepLast === "number" ? options.keepLast : undefined,
-        maxCacheAgeDays: typeof options.maxAgeDays === "number" ? options.maxAgeDays : undefined,
-        maxCacheSize: options.maxSize,
-    });
+    for (const directory of cacheDirectories) {
+        if (cacheDirectories.length > 1) {
+            info(`# ${directory}`);
+        }
+
+        await runPrune(directory, workspaceRoot, {
+            keepLast: typeof options.keepLast === "number" ? options.keepLast : undefined,
+            maxCacheAgeDays: typeof options.maxAgeDays === "number" ? options.maxAgeDays : undefined,
+            maxCacheSize: options.maxSize,
+        });
+    }
 };
 
 const resolveWorkspaceRoot = (workspaceRoot: string | undefined): string => workspaceRoot ?? process.cwd();
@@ -851,8 +937,14 @@ export const cacheHashExecute = async ({ argument, logger, options, workspaceRoo
 };
 
 export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheSizeOptions>): Promise<void> => {
-    const { cacheDirectory } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
     const format = options.format ?? "table";
 
-    await runSize(cacheDirectory, format);
+    for (const directory of cacheDirectories) {
+        if (cacheDirectories.length > 1) {
+            info(`# ${directory}`);
+        }
+
+        await runSize(directory, format);
+    }
 };
