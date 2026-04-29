@@ -16,8 +16,8 @@ import type {
 import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
-import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 import { applyPreset, defaultCacheForType } from "./target-options";
+import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 
 export interface CodeownersConfig {
     /** Workspace-level paths that apply outside any project (e.g., `.github/**`). */
@@ -270,6 +270,38 @@ interface VisConfig {
          * ```
          */
         templates?: string[];
+    };
+
+    /**
+     * Installer backend selection for `vis install` / `vis add` /
+     * `vis remove` / `vis update` / `vis ci`.
+     *
+     * Lets users opt into [aube](https://github.com/endevco/aube) — a
+     * Rust-native package manager that reads/writes pnpm/npm/yarn/bun
+     * lockfiles in place — as the default installer, while keeping a
+     * single switch to fall back to the conventional PM detected from
+     * the lockfile.
+     *
+     * Resolution precedence (highest first):
+     * 1. CLI flag (`--installer &lt;name>` / `--no-aube`)
+     * 2. Env var `VIS_INSTALLER`
+     * 3. This config field
+     * 4. Auto-detect (the default)
+     *
+     * Aube must be installed separately — `vis` does not bundle it.
+     * Install via `npm i -g @endevco/aube`, `mise use -g aube`, or
+     * `brew install endevco/tap/aube`.
+     */
+    install?: {
+        /**
+         * Which package manager performs install/add/remove/etc.
+         * - `auto` (default): use `aube` when it is on PATH; otherwise
+         *   fall back to the lockfile-detected PM.
+         * - explicit name: always use that PM. Errors when the named
+         *   binary is missing rather than silently falling back.
+         * @default "auto"
+         */
+        backend?: "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
     };
 
     /**
@@ -577,7 +609,6 @@ interface VisConfig {
     toolchain?: Omit<InternalToolchainConfig, "preferredManager"> & {
         readonly preferredManager?: Exclude<VersionManagerName, "self-activate">;
     };
-
     /** Terminal UI configuration */
     tui?: {
         /**
@@ -587,37 +618,6 @@ interface VisConfig {
          * - `number`: Show quit dialog with custom countdown in seconds
          */
         autoExit?: boolean | number;
-    };
-    /**
-     * Installer backend selection for `vis install` / `vis add` /
-     * `vis remove` / `vis update` / `vis ci`.
-     *
-     * Lets users opt into [aube](https://github.com/endevco/aube) — a
-     * Rust-native package manager that reads/writes pnpm/npm/yarn/bun
-     * lockfiles in place — as the default installer, while keeping a
-     * single switch to fall back to the conventional PM detected from
-     * the lockfile.
-     *
-     * Resolution precedence (highest first):
-     * 1. CLI flag (`--installer <name>` / `--no-aube`)
-     * 2. Env var `VIS_INSTALLER`
-     * 3. This config field
-     * 4. Auto-detect (the default)
-     *
-     * Aube must be installed separately — `vis` does not bundle it.
-     * Install via `npm i -g @endevco/aube`, `mise use -g aube`, or
-     * `brew install endevco/tap/aube`.
-     */
-    install?: {
-        /**
-         * Which package manager performs install/add/remove/etc.
-         * - `auto` (default): use `aube` when it is on PATH; otherwise
-         *   fall back to the lockfile-detected PM.
-         * - explicit name: always use that PM. Errors when the named
-         *   binary is missing rather than silently falling back.
-         * @default "auto"
-         */
-        backend?: "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
     };
 
     /** Update command defaults */
