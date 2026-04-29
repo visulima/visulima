@@ -158,6 +158,32 @@ You should see help output and command execution based on the options provided:
 
 ![Cli Output](./__assets__/cli_output.png)
 
+## Lazy commands
+
+For CLIs with many subcommands or heavy per-command dependencies, you can defer importing each handler until the command is actually invoked. Declare the metadata inline and point `loader` at a dynamic `import()`:
+
+```ts
+// commands/build.ts
+export default ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+```ts
+// index.ts
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", alias: "o", type: String, description: "Output directory" }],
+    argument: { name: "target", type: String },
+    loader: () => import("./commands/build"),
+});
+```
+
+`loader` is a zero-argument function that returns a promise resolving to a module — typically `() => import("./path")`. The handler module's **default export** is the toolbox-receiving function. Help, completion, and option validation work entirely from the metadata you declared on `addCommand` and never trigger the loader. The first invocation of the command imports the module; subsequent calls reuse the cached handler.
+
+A command may declare either `execute` or `loader`, but not both. If a loader rejects or returns a module without a default-exported function, a `CommandLoaderError` is thrown.
+
 ## Toolbox API
 
 When your command's `execute` function is called, it receives a toolbox object with various utilities and context. Here's what you can access:

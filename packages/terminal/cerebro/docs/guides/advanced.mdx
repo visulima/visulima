@@ -133,6 +133,149 @@ cli.setDefaultCommand("help"); // Shows help by default
 cli.setDefaultCommand("start"); // Runs start command by default
 ```
 
+## Lazy Command Loading
+
+For CLIs with many commands or heavy per-command dependencies, the
+combined startup cost of evaluating every command's module at import
+time can dominate `--help` and short-running commands. Cerebro lets you
+defer the handler import until the command is actually invoked.
+
+### When to use it
+
+You'll see a meaningful win when:
+
+- You have **10+ commands** registered.
+- Most commands pull in heavy transitive deps (rendering libs, AI clients,
+  database drivers, …) that aren't needed for `--help` or unrelated
+  commands.
+- Startup time matters — interactive CLIs, frequently-invoked dev tools,
+  serverless contexts.
+
+For a tiny CLI with two subcommands and minimal deps, the difference is
+noise — leave them eager.
+
+### How it works
+
+Replace `execute` with `loader: () => import("./handler")`. The loader
+returns a promise resolving to a module whose **default export** is the
+handler:
+
+```typescript
+// commands/build.ts
+const build: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", type: String, alias: "o" }],
+    loader: () => import("./build.handler"),
+};
+export default build;
+
+// commands/build.handler.ts
+export default async ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+Help, completion, and option validation iterate metadata only — they
+never trigger loaders. The first invocation of the command imports the
+handler module; the resolved handler is memoised on the command for
+subsequent calls within the same process.
+
+### Typed handlers
+
+Co-locate the option type with the metadata using `CreateOptions<T>`:
+
+```typescript
+// commands/build.ts
+import type { Command, CreateOptions } from "@visulima/cerebro";
+
+export type BuildOptions = CreateOptions<{
+    "output": string | undefined;
+    "production": boolean | undefined;
+}>;
+
+const build: Command = {
+    name: "build",
+    options: [
+        { name: "output", type: String },
+        { name: "production", type: Boolean },
+    ],
+    loader: () => import("./build.handler"),
+};
+export default build;
+
+// commands/build.handler.ts
+import type { Toolbox } from "@visulima/cerebro";
+import type { BuildOptions } from "./index";
+
+export default async ({ options }: Toolbox<Console, BuildOptions>) => {
+    // options.output: string | undefined
+    // options.production: boolean | undefined
+};
+```
+
+### Shared handler modules
+
+When several subcommands of a parent share helpers, put their handlers
+together as **named exports** in one module and load each via `lazyNamed`:
+
+```typescript
+// commands/cache.handlers.ts
+export const cacheList: CommandExecute<Toolbox> = async (toolbox) => { /* … */ };
+export const cacheClean: CommandExecute<Toolbox> = async (toolbox) => { /* … */ };
+
+// commands/cache.ts
+import { lazyNamed, type Command } from "@visulima/cerebro";
+
+const cacheList: Command = {
+    name: "list",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheList"),
+};
+const cacheClean: Command = {
+    name: "clean",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheClean"),
+};
+```
+
+The shared module is imported once (when any cache subcommand runs); each
+subcommand resolves to its own named export.
+
+### Recommended layout
+
+For each command, two files in a directory:
+
+```
+commands/
+  build/
+    index.ts     # metadata stub (cheap import: only types + the loader)
+    handler.ts   # heavy imports + default-exported handler
+  ...
+```
+
+Node's module resolution maps `import build from "./commands/build"` to
+`./commands/build/index.ts`, so existing `cli.addCommand(buildCommand)`
+calls keep working unchanged.
+
+### Errors
+
+If `loader()` rejects, or the resolved module has no default-exported
+function, cerebro throws a `CommandLoaderError`. The original error is
+attached as `cause`.
+
+```typescript
+import { CommandLoaderError } from "@visulima/cerebro";
+
+try {
+    await cli.run({ shouldExitProcess: false });
+} catch (error) {
+    if (error instanceof CommandLoaderError) {
+        console.error(`Failed to load ${error.commandName}:`, error.cause);
+    }
+}
+```
+
 ## Running Without Exiting
 
 For testing or programmatic use:

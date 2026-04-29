@@ -1,3 +1,28 @@
+## @visulima/cerebro [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.11...@visulima/cerebro@3.0.0-alpha.12) (2026-04-28)
+
+### Features
+
+* **cerebro:** add lazy command loading via loader field ([5e10e4a](https://github.com/visulima/visulima/commit/5e10e4ac1bcdb3a0203395f43f760c8fc3b12741))
+
+### Bug Fixes
+
+* **cerebro:** use default colorize import ([c8f5997](https://github.com/visulima/visulima/commit/c8f599775bf3a5c9f92e570c80970b439f4a44c9))
+
+### Documentation
+
+* **cerebro:** document lazy command loading ([3feb2e1](https://github.com/visulima/visulima/commit/3feb2e149ad5a93725539096d6f389d1b1f72875))
+
+### Miscellaneous Chores
+
+* **cerebro:** upgrade packem to 2.0.0-alpha.76 ([657c11e](https://github.com/visulima/visulima/commit/657c11ec325b49abec1f9a6e4bac72f482942758))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 4.0.0-alpha.12
+
 ## @visulima/cerebro [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.10...@visulima/cerebro@3.0.0-alpha.11) (2026-04-22)
 
 ### Features

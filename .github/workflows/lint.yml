@@ -86,6 +86,7 @@ jobs:
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "22"
+                  install-node-gyp: "true"
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
@@ -142,6 +143,7 @@ jobs:
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "22"
+                  install-node-gyp: "true"
                   cache-prefix: "lint"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false

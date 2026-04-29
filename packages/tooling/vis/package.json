@@ -1,16 +1,16 @@
 {
     "name": "@visulima/vis",
-    "version": "1.0.0-alpha.8",
+    "version": "1.0.0-alpha.9",
     "description": "A CLI task runner for monorepo workspaces, powered by @visulima/task-runner",
     "keywords": [
-        "visulima",
-        "vis",
-        "cli",
-        "task-runner",
-        "monorepo",
-        "workspace",
         "build",
-        "cache"
+        "cache",
+        "cli",
+        "monorepo",
+        "task-runner",
+        "vis",
+        "visulima",
+        "workspace"
     ],
     "homepage": "https://visulima.com/packages/vis",
     "bugs": {
@@ -38,6 +38,11 @@
     },
     "sideEffects": false,
     "type": "module",
+    "imports": {
+        "#native": {
+            "default": "./index.js"
+        }
+    },
     "exports": {
         "./config": {
             "types": "./dist/config.d.ts",
@@ -46,6 +51,10 @@
         "./generate": {
             "types": "./dist/generate/index.d.ts",
             "default": "./dist/generate/index.js"
+        },
+        "./native": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
         },
         "./schemas/project.schema.json": "./schemas/project.schema.json",
         "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
@@ -58,8 +67,8 @@
     "files": [
         "dist/**",
         "schemas/**",
-        "data/**",
         "index.js",
+        "index.d.ts",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
@@ -85,10 +94,9 @@
     },
     "dependencies": {
         "@bomb.sh/tab": "catalog:dev",
-        "@nkzw/safe-word-list": "^3.1.2",
         "@socketsecurity/registry": "^2.0.2",
         "@visulima/ansi": "4.0.0-alpha.13",
-        "@visulima/cerebro": "3.0.0-alpha.11",
+        "@visulima/cerebro": "3.0.0-alpha.12",
         "@visulima/colorize": "2.0.0-alpha.10",
         "@visulima/find-ai-runner": "1.0.0-alpha.5",
         "@visulima/find-cache-dir": "3.0.0-alpha.9",
@@ -99,7 +107,7 @@
         "@visulima/secret-scanner": "1.0.0-alpha.1",
         "@visulima/string": "3.0.0-alpha.11",
         "@visulima/task-runner": "1.0.0-alpha.7",
-        "@visulima/tui": "1.0.0-alpha.4",
+        "@visulima/tui": "1.0.0-alpha.5",
         "execa": "catalog:dev",
         "giget": "^3.2.0",
         "hookable": "^6.1.1",
@@ -111,7 +119,6 @@
         "react-reconciler": ">=0.33.0",
         "semver": "^7.7.4",
         "smol-toml": "catalog:peer",
-        "validate-npm-package-name": "^7.0.2",
         "yaml": "catalog:prod",
         "zeptomatch": "catalog:dev"
     },
@@ -123,6 +130,7 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
         "@napi-rs/cli": "catalog:dev",
+        "@nkzw/safe-word-list": "^3.1.2",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
         "@shared/xxh3": "workspace:*",
@@ -155,6 +163,7 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
+        "validate-npm-package-name": "^7.0.2",
         "vitest": "catalog:test"
     },
     "optionalDependencies": {

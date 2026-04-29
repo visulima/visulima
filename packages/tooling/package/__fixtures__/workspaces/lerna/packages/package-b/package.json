@@ -1,4 +1,4 @@
 {
-  "name": "package-b",
-  "devDependencies": {}
+    "name": "package-b",
+    "devDependencies": {}
 }

@@ -1,19 +1,8 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { sortPackageJsonString, sortPackageJsonStringWithOptions } from "@visulima/vis/native";
+import { describe, expect, it } from "vitest";
 
-import type { loadNativeBindings } from "../src/native-binding";
-
-// Native addon integration tests - only run if addon is compiled
 describe("sort-package-json native integration", () => {
-    let native: Awaited<ReturnType<typeof loadNativeBindings>>;
-
-    beforeAll(async () => {
-        vi.resetModules();
-        const { loadNativeBindings } = await import("../src/native-binding");
-
-        native = loadNativeBindings();
-    });
-
-    describe.skipIf(!native)("sortPackageJsonString", () => {
+    describe(sortPackageJsonString, () => {
         it("should sort package.json fields into conventional order", () => {
             expect.assertions(2);
 
@@ -23,7 +12,7 @@ describe("sort-package-json native integration", () => {
                 version: "1.0.0",
             });
 
-            const result = native!.sortPackageJsonString(input);
+            const result = sortPackageJsonString(input);
             const keys = Object.keys(JSON.parse(result) as Record<string, unknown>);
 
             expect(keys.indexOf("name")).toBeLessThan(keys.indexOf("version"));
@@ -38,7 +27,7 @@ describe("sort-package-json native integration", () => {
                 name: "test",
             });
 
-            const result = native!.sortPackageJsonString(input);
+            const result = sortPackageJsonString(input);
             const parsed = JSON.parse(result) as { dependencies: Record<string, string> };
 
             expect(Object.keys(parsed.dependencies)).toStrictEqual(["a", "b", "c"]);
@@ -48,7 +37,7 @@ describe("sort-package-json native integration", () => {
             expect.assertions(1);
 
             const input = JSON.stringify({ name: "test", version: "1.0.0" });
-            const result = native!.sortPackageJsonString(input);
+            const result = sortPackageJsonString(input);
 
             expect(result).toContain("\n");
         });
@@ -63,7 +52,7 @@ describe("sort-package-json native integration", () => {
                 version: "1.0.0",
             });
 
-            const result = native!.sortPackageJsonString(input);
+            const result = sortPackageJsonString(input);
             const parsed = JSON.parse(result) as Record<string, unknown>;
 
             expect(parsed).toHaveProperty("name", "test");
@@ -75,23 +64,23 @@ describe("sort-package-json native integration", () => {
         it("should handle empty object", () => {
             expect.assertions(1);
 
-            const result = native!.sortPackageJsonString("{}");
+            const result = sortPackageJsonString("{}");
 
             expect(JSON.parse(result)).toStrictEqual({});
         });
     });
 
-    describe.skipIf(!native)("sortPackageJsonStringWithOptions", () => {
+    describe(sortPackageJsonStringWithOptions, () => {
         it("should produce compact output when pretty is false", () => {
             expect.assertions(1);
 
             const input = JSON.stringify({ name: "test", version: "1.0.0" });
-            const result = native!.sortPackageJsonStringWithOptions(input, { pretty: false });
+            const result = sortPackageJsonStringWithOptions(input, { pretty: false });
 
             expect(result).not.toContain("\n");
         });
 
-        it("should sort scripts when sort_scripts is true", () => {
+        it("should sort scripts when sortScripts is true", () => {
             expect.assertions(1);
 
             const input = JSON.stringify({
@@ -99,7 +88,7 @@ describe("sort-package-json native integration", () => {
                 scripts: { build: "tsc", dev: "vite", test: "vitest" },
             });
 
-            const result = native!.sortPackageJsonStringWithOptions(input, { sort_scripts: true });
+            const result = sortPackageJsonStringWithOptions(input, { sortScripts: true });
             const parsed = JSON.parse(result) as { scripts: Record<string, string> };
             const scriptKeys = Object.keys(parsed.scripts);
 
@@ -109,12 +98,10 @@ describe("sort-package-json native integration", () => {
         it("should not sort scripts by default", () => {
             expect.assertions(1);
 
-            const input = JSON.stringify({
-                name: "test",
-                scripts: { build: "tsc", dev: "vite", test: "vitest" },
-            });
+            // eslint-disable-next-line perfectionist/sort-objects
+            const input = JSON.stringify({ name: "test", scripts: { test: "vitest", build: "tsc", dev: "vite" } });
 
-            const result = native!.sortPackageJsonStringWithOptions(input, { sort_scripts: false });
+            const result = sortPackageJsonStringWithOptions(input, { sortScripts: false });
             const parsed = JSON.parse(result) as { scripts: Record<string, string> };
             const scriptKeys = Object.keys(parsed.scripts);
 
@@ -130,7 +117,7 @@ describe("sort-package-json native integration", () => {
                 name: "test",
             });
 
-            const result = native!.sortPackageJsonStringWithOptions(input, {});
+            const result = sortPackageJsonStringWithOptions(input, {});
             const parsed = JSON.parse(result) as { devDependencies: Record<string, string> };
 
             expect(Object.keys(parsed.devDependencies)).toStrictEqual(["eslint", "typescript", "vitest"]);

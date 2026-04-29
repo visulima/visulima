@@ -1,16 +1,16 @@
 {
     "name": "@visulima/tui",
-    "version": "1.0.0-alpha.4",
+    "version": "1.0.0-alpha.5",
     "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
     "keywords": [
-        "visulima",
-        "tui",
-        "terminal",
-        "react",
-        "ink",
         "cli",
+        "ink",
+        "napi",
+        "react",
         "rust",
-        "napi"
+        "terminal",
+        "tui",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/tui",
     "bugs": {
@@ -108,7 +108,6 @@
         "yoga-layout-prebuilt": "catalog:prod"
     },
     "devDependencies": {
-        "type-fest": "catalog:prod",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -159,6 +158,7 @@
         "stack-utils": "catalog:prod",
         "terminal-size": "catalog:dev",
         "tsx": "catalog:dev",
+        "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

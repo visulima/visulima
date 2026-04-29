@@ -1,5 +1,5 @@
 {
-  "name": "@foo/test-root",
-  "private": true,
-  "devDependencies": {}
+    "name": "@foo/test-root",
+    "private": true,
+    "devDependencies": {}
 }

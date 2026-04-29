@@ -936,9 +936,30 @@ describe(ensureToolchain, () => {
         // (assuming pnpm is on PATH, which it is in this test env).
         writeFileSync(pkgPath, JSON.stringify({ engines: { pnpm: "10.32.1" } }));
 
-        const logger = collectingLogger();
+        const binDir = join(tmpDirectory, "bin");
 
-        await ensureToolchain(tmpDirectory, { autoInstall: true }, logger);
+        mkdirSync(binDir, { recursive: true });
+        writeFileSync(join(binDir, "pnpm"), "#!/bin/sh\n", { mode: 0o755 });
+
+        const logger = collectingLogger();
+        const originalPath = process.env["PATH"];
+
+        try {
+            // Scope PATH to just our bin dir so host-installed managers
+            // (corepack, mise, proto, etc.) don't leak in and trigger a
+            // real `execFileSync` install that blows past the test
+            // timeout in CI.
+            process.env["PATH"] = binDir;
+            clearToolchainCache();
+
+            await ensureToolchain(tmpDirectory, { autoInstall: true }, logger);
+        } finally {
+            if (originalPath === undefined) {
+                delete process.env["PATH"];
+            } else {
+                process.env["PATH"] = originalPath;
+            }
+        }
 
         const parsed = JSON.parse(readFileSync(pkgPath, "utf8")) as { packageManager?: string };
 

@@ -3,14 +3,14 @@
     "version": "3.0.0-alpha.10",
     "description": "Utility functions to make dealing with Uint8Arrays easier",
     "keywords": [
-        "visulima",
-        "bytes",
-        "uint8array",
-        "buffer",
-        "binary",
-        "data",
         "array",
-        "typed-array"
+        "binary",
+        "buffer",
+        "bytes",
+        "data",
+        "typed-array",
+        "uint8array",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/bytes",
     "bugs": {

@@ -104,6 +104,7 @@ jobs:
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "${{ matrix.node_version }}"
+                  install-node-gyp: "true"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "true"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
@@ -241,6 +242,7 @@ jobs:
               uses: "anolilab/workflows/step/setup@main"
               with:
                   node-version: "22"
+                  install-node-gyp: "true"
                   skip-playwright: "false"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false

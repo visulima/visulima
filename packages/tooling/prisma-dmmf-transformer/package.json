@@ -4,15 +4,15 @@
     "description": "A generator for Prisma to generate a valid JSON Schema v7.",
     "keywords": [
         "anolilab",
-        "visulima",
+        "dmmf",
+        "json-schema",
         "prisma",
+        "prisma-schema",
         "prisma2",
         "prisma3",
         "prisma4",
-        "prisma-schema",
-        "dmmf",
         "transformer",
-        "json-schema"
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/prisma-dmmf-transformer/",
     "repository": {
@@ -88,7 +88,6 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "type-fest": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
@@ -111,6 +110,7 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
+        "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

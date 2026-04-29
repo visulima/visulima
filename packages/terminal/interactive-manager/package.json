@@ -3,12 +3,12 @@
     "version": "1.0.0-alpha.2",
     "description": "Interactive terminal output manager for spinners, progress bars, and dynamic updates",
     "keywords": [
-        "visulima",
+        "ansi",
+        "cursor",
         "interactive",
         "terminal",
         "tty",
-        "ansi",
-        "cursor"
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/interactive-manager",
     "bugs": {

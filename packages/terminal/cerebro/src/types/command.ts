@@ -130,6 +130,19 @@ export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<numbe
  * });
  * ```
  */
+
+/**
+ * Handler signature for commands. Used by both `execute` and the resolved default export of `loader`.
+ */
+export type CommandExecute<TContext> = ((toolbox: TContext) => Promise<void>) | ((toolbox: TContext) => void);
+
+/**
+ * Module shape returned by a command `loader`. The default export is the command handler.
+ */
+export interface LazyCommandModule<TContext> {
+    default: CommandExecute<TContext>;
+}
+
 export interface Command<
     O extends OptionDefinition<unknown> = OptionDefinition<unknown>,
     TLogger extends Console = Console,
@@ -144,6 +157,12 @@ export interface Command<
      * @internal
      */
     __requiredOptions__?: PossibleOptionDefinition<O>[];
+
+    /**
+     * Cached handler resolved from `loader` on first execution.
+     * @internal
+     */
+    __resolvedExecute__?: CommandExecute<TContext>;
 
     /** Potential other names for this command */
     alias?: string[] | string;
@@ -162,8 +181,12 @@ export interface Command<
 
     /** The full command examples, can be multiple lines */
     examples?: string[] | string[][];
-    /** The function for running your command, can be async */
-    execute: ((toolbox: TContext) => Promise<void>) | ((toolbox: TContext) => void);
+
+    /**
+     * The function for running your command, can be async.
+     * Either `execute` or `loader` must be provided (but not both).
+     */
+    execute?: CommandExecute<TContext>;
     /** The path to the file name for this command. */
     file?: string;
     /** Group commands together under a heading */
@@ -171,6 +194,25 @@ export interface Command<
 
     /** Should your command be shown in the listings  */
     hidden?: boolean;
+
+    /**
+     * Lazily loads the command handler on first execution. The module's default export is used as the handler.
+     * Either `execute` or `loader` must be provided (but not both).
+     * Help, completion, and validation work from the metadata declared on this object and never trigger the loader.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "build",
+     *   description: "Build the project",
+     *   options: [{ name: "output", type: String }],
+     *   loader: () => import("./commands/build"),
+     * });
+     *
+     * // commands/build.ts
+     * export default ({ options }) => { ... };
+     * ```
+     */
+    loader?: () => Promise<LazyCommandModule<TContext>>;
 
     /** The name of your command */
     name: string;

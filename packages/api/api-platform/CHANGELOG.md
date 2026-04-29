@@ -1,3 +1,14 @@
+## @visulima/api-platform [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.10...@visulima/api-platform@4.0.0-alpha.11) (2026-04-28)
+
+### Bug Fixes
+
+* **api-platform:** align connect onError/onNoMatch with RoutesExtendedRequestHandler ([5e0c600](https://github.com/visulima/visulima/commit/5e0c60059a5d53a88e64fcb249f93b17ee9e52e0))
+
+### Miscellaneous Chores
+
+* **api-platform:** upgrade packem to 2.0.0-alpha.76 ([23894fe](https://github.com/visulima/visulima/commit/23894fe77460e25acb43d5a979f0f6e75979bdca))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
 ## @visulima/api-platform [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.9...@visulima/api-platform@4.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes

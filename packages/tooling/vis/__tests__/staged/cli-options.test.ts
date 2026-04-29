@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { buildRunOptions } from "../../src/commands/staged";
+import { buildRunOptions } from "../../src/commands/staged/handler";
 import { CONCURRENT_ENV_VAR, parseConcurrent } from "../../src/staged/cli-parse";
 
 describe(parseConcurrent, () => {

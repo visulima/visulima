@@ -1,86 +1,32 @@
-import { beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { detectPackageManager, execPmCommand, NATIVE_BINDING_VERSION, resolveAdd, resolveDedupe, resolveDlx, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, whichBin } from "@visulima/vis/native";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { loadNativeBindings } from "../src/native-binding";
-
-describe("native-binding", () => {
-    describe(loadNativeBindings, () => {
-        it("should return the native bindings when addon is available", async () => {
-            expect.assertions(1);
-
-            vi.resetModules();
-            const { loadNativeBindings } = await import("../src/native-binding");
-            const result = loadNativeBindings();
-
-            expect(result).toBeDefined();
-
-            expectTypeOf(result).toBeObject();
-        });
-
-        it("should cache the result after the first attempt", async () => {
-            expect.assertions(1);
-
-            vi.resetModules();
-            const { loadNativeBindings } = await import("../src/native-binding");
-            const first = loadNativeBindings();
-            const second = loadNativeBindings();
-
-            expect(first).toBe(second);
-        });
-    });
-
-    describe("isNativeAvailable", () => {
-        it("should return a boolean", async () => {
-            expect.assertions(1);
-
-            vi.resetModules();
-            const { isNativeAvailable } = await import("../src/native-binding");
-
-            const result = isNativeAvailable();
-
-            expectTypeOf(result).toBeBoolean();
-
-            expect(typeof result === "boolean").toBe(true);
-        });
-    });
-});
-
-// Native addon integration tests - only run if addon is compiled
 describe("native addon integration", () => {
-    let native: Awaited<ReturnType<typeof loadNativeBindings>>;
-
-    beforeAll(async () => {
-        vi.resetModules();
-        const { loadNativeBindings } = await import("../src/native-binding");
-
-        native = loadNativeBindings();
-    });
-
     describe("nATIVE_BINDING_VERSION", () => {
         it("should export NATIVE_BINDING_VERSION as a number", () => {
             // expectTypeOf is a compile-time check and does not count toward assertions.
             expect.assertions(1);
 
-            expect(native!.NATIVE_BINDING_VERSION).toBeDefined();
+            expect(NATIVE_BINDING_VERSION).toBeDefined();
 
-            expectTypeOf(native!.NATIVE_BINDING_VERSION).toBeNumber();
+            expectTypeOf(NATIVE_BINDING_VERSION).toBeNumber();
         });
 
-        it("should match the expected ABI version in native-binding.ts", () => {
+        it("should match the expected ABI version", () => {
             expect.assertions(1);
 
-            // If this fails, bump EXPECTED_NATIVE_BINDING_VERSION in
-            // src/native-binding.ts and NATIVE_BINDING_VERSION in
-            // native/src/lib.rs together.
-            expect(native!.NATIVE_BINDING_VERSION).toBe(1);
+            // If this fails, bump NATIVE_BINDING_VERSION in native/src/lib.rs
+            // together with this test.
+            expect(NATIVE_BINDING_VERSION).toBe(1);
         });
     });
 
-    describe("detectPackageManager", () => {
+    describe(detectPackageManager, () => {
         it("should detect a package manager in the workspace root", () => {
             // expectTypeOf is a compile-time check and does not count toward assertions.
             expect.assertions(1);
 
-            const result = native!.detectPackageManager(process.cwd());
+            const result = detectPackageManager(process.cwd());
 
             expectTypeOf(result.name).toBeString();
 
@@ -92,17 +38,17 @@ describe("native addon integration", () => {
         it("should return pnpm for this monorepo", () => {
             expect.assertions(1);
 
-            const result = native!.detectPackageManager(process.cwd());
+            const result = detectPackageManager(process.cwd());
 
             expect(result.name).toBe("pnpm");
         });
     });
 
-    describe("resolveInstall", () => {
+    describe(resolveInstall, () => {
         it("should resolve pnpm install with frozen lockfile", () => {
             expect.assertions(2);
 
-            const result = native!.resolveInstall("pnpm", "10.0.0", {
+            const result = resolveInstall("pnpm", "10.0.0", {
                 dev: false,
                 filter: [],
                 force: false,
@@ -124,7 +70,7 @@ describe("native addon integration", () => {
         it("should resolve npm ci for frozen lockfile", () => {
             expect.assertions(2);
 
-            const result = native!.resolveInstall("npm", "11.0.0", {
+            const result = resolveInstall("npm", "11.0.0", {
                 dev: false,
                 filter: [],
                 force: false,
@@ -146,7 +92,7 @@ describe("native addon integration", () => {
         it("should resolve yarn berry --immutable for frozen lockfile", () => {
             expect.assertions(2);
 
-            const result = native!.resolveInstall("yarn", "4.0.0", {
+            const result = resolveInstall("yarn", "4.0.0", {
                 dev: false,
                 filter: [],
                 force: false,
@@ -168,7 +114,7 @@ describe("native addon integration", () => {
         it("should resolve bun install with frozen lockfile", () => {
             expect.assertions(2);
 
-            const result = native!.resolveInstall("bun", "1.0.0", {
+            const result = resolveInstall("bun", "1.0.0", {
                 dev: false,
                 filter: [],
                 force: false,
@@ -188,11 +134,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveAdd", () => {
+    describe(resolveAdd, () => {
         it("should resolve pnpm add with -D flag", () => {
             expect.assertions(3);
 
-            const result = native!.resolveAdd("pnpm", "10.0.0", {
+            const result = resolveAdd("pnpm", "10.0.0", {
                 exact: false,
                 filter: [],
                 global: false,
@@ -212,7 +158,7 @@ describe("native addon integration", () => {
         it("should place pnpm --filter before add", () => {
             expect.assertions(2);
 
-            const result = native!.resolveAdd("pnpm", "10.0.0", {
+            const result = resolveAdd("pnpm", "10.0.0", {
                 exact: false,
                 filter: ["app"],
                 global: false,
@@ -234,7 +180,7 @@ describe("native addon integration", () => {
         it("should use npm for global installs regardless of PM", () => {
             expect.assertions(2);
 
-            const result = native!.resolveAdd("pnpm", "10.0.0", {
+            const result = resolveAdd("pnpm", "10.0.0", {
                 exact: false,
                 filter: [],
                 global: true,
@@ -253,7 +199,7 @@ describe("native addon integration", () => {
         it("should use bun for global installs on bun projects", () => {
             expect.assertions(2);
 
-            const result = native!.resolveAdd("bun", "1.0.0", {
+            const result = resolveAdd("bun", "1.0.0", {
                 exact: false,
                 filter: [],
                 global: true,
@@ -270,11 +216,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveRemove", () => {
+    describe(resolveRemove, () => {
         it("should resolve npm uninstall", () => {
             expect.assertions(2);
 
-            const result = native!.resolveRemove("npm", "11.0.0", {
+            const result = resolveRemove("npm", "11.0.0", {
                 filter: [],
                 global: false,
                 packages: ["lodash"],
@@ -290,7 +236,7 @@ describe("native addon integration", () => {
         it("should use npm for global removal", () => {
             expect.assertions(1);
 
-            const result = native!.resolveRemove("yarn", "4.0.0", {
+            const result = resolveRemove("yarn", "4.0.0", {
                 filter: [],
                 global: true,
                 packages: ["typescript"],
@@ -303,11 +249,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveDedupe", () => {
+    describe(resolveDedupe, () => {
         it("should resolve pnpm dedupe --check", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDedupe("pnpm", "10.0.0", true);
+            const result = resolveDedupe("pnpm", "10.0.0", true);
 
             expect(result.bin).toBe("pnpm");
             expect(result.args).toStrictEqual(["dedupe", "--check"]);
@@ -316,7 +262,7 @@ describe("native addon integration", () => {
         it("should resolve npm dedupe --dry-run", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDedupe("npm", "11.0.0", true);
+            const result = resolveDedupe("npm", "11.0.0", true);
 
             expect(result.bin).toBe("npm");
             expect(result.args).toStrictEqual(["dedupe", "--dry-run"]);
@@ -325,7 +271,7 @@ describe("native addon integration", () => {
         it("should warn for yarn v1", () => {
             expect.assertions(1);
 
-            const result = native!.resolveDedupe("yarn", "1.22.0", false);
+            const result = resolveDedupe("yarn", "1.22.0", false);
 
             expect(result.warnings.length).toBeGreaterThan(0);
         });
@@ -333,17 +279,17 @@ describe("native addon integration", () => {
         it("should warn for bun", () => {
             expect.assertions(1);
 
-            const result = native!.resolveDedupe("bun", "1.0.0", false);
+            const result = resolveDedupe("bun", "1.0.0", false);
 
             expect(result.warnings.length).toBeGreaterThan(0);
         });
     });
 
-    describe("resolveWhy", () => {
+    describe(resolveWhy, () => {
         it("should resolve pnpm why with --json", () => {
             expect.assertions(2);
 
-            const result = native!.resolveWhy("pnpm", "10.0.0", {
+            const result = resolveWhy("pnpm", "10.0.0", {
                 depth: undefined,
                 dev: false,
                 filter: [],
@@ -364,7 +310,7 @@ describe("native addon integration", () => {
         it("should resolve npm explain", () => {
             expect.assertions(1);
 
-            const result = native!.resolveWhy("npm", "11.0.0", {
+            const result = resolveWhy("npm", "11.0.0", {
                 depth: undefined,
                 dev: false,
                 filter: [],
@@ -384,7 +330,7 @@ describe("native addon integration", () => {
         it("should handle depth option", () => {
             expect.assertions(1);
 
-            const result = native!.resolveWhy("pnpm", "10.0.0", {
+            const result = resolveWhy("pnpm", "10.0.0", {
                 depth: 3,
                 dev: false,
                 filter: [],
@@ -404,7 +350,7 @@ describe("native addon integration", () => {
         it("should handle undefined depth without error", () => {
             expect.assertions(1);
 
-            const result = native!.resolveWhy("pnpm", "10.0.0", {
+            const result = resolveWhy("pnpm", "10.0.0", {
                 depth: undefined,
                 dev: false,
                 filter: [],
@@ -422,11 +368,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveDlx", () => {
+    describe(resolveDlx, () => {
         it("should resolve pnpm dlx", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDlx("pnpm", "10.0.0", {
+            const result = resolveDlx("pnpm", "10.0.0", {
                 additionalPackages: [],
                 args: ["my-app"],
                 package: "create-vite",
@@ -441,7 +387,7 @@ describe("native addon integration", () => {
         it("should resolve bun x", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDlx("bun", "1.0.0", {
+            const result = resolveDlx("bun", "1.0.0", {
                 additionalPackages: [],
                 args: ["my-app"],
                 package: "create-vite",
@@ -456,7 +402,7 @@ describe("native addon integration", () => {
         it("should fall back to npx for yarn v1", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDlx("yarn", "1.22.0", {
+            const result = resolveDlx("yarn", "1.22.0", {
                 additionalPackages: [],
                 args: [],
                 package: "create-vite",
@@ -471,7 +417,7 @@ describe("native addon integration", () => {
         it("should resolve npm exec with --yes", () => {
             expect.assertions(2);
 
-            const result = native!.resolveDlx("npm", "11.0.0", {
+            const result = resolveDlx("npm", "11.0.0", {
                 additionalPackages: [],
                 args: [],
                 package: "create-vite",
@@ -484,11 +430,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveExec", () => {
+    describe(resolveExec, () => {
         it("should resolve pnpm exec", () => {
             expect.assertions(2);
 
-            const result = native!.resolveExec("pnpm", "10.0.0", {
+            const result = resolveExec("pnpm", "10.0.0", {
                 args: ["."],
                 command: "eslint",
                 filter: [],
@@ -506,7 +452,7 @@ describe("native addon integration", () => {
         it("should resolve npm exec with --", () => {
             expect.assertions(1);
 
-            const result = native!.resolveExec("npm", "11.0.0", {
+            const result = resolveExec("npm", "11.0.0", {
                 args: ["."],
                 command: "eslint",
                 filter: [],
@@ -523,7 +469,7 @@ describe("native addon integration", () => {
         it("should fall back to npx for yarn v1", () => {
             expect.assertions(1);
 
-            const result = native!.resolveExec("yarn", "1.22.0", {
+            const result = resolveExec("yarn", "1.22.0", {
                 args: [],
                 command: "eslint",
                 filter: [],
@@ -540,7 +486,7 @@ describe("native addon integration", () => {
         it("should use bunx for bun", () => {
             expect.assertions(1);
 
-            const result = native!.resolveExec("bun", "1.0.0", {
+            const result = resolveExec("bun", "1.0.0", {
                 args: [],
                 command: "eslint",
                 filter: [],
@@ -555,11 +501,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolveOutdated", () => {
+    describe(resolveOutdated, () => {
         it("should resolve pnpm outdated with --format json", () => {
             expect.assertions(2);
 
-            const result = native!.resolveOutdated("pnpm", "10.0.0", {
+            const result = resolveOutdated("pnpm", "10.0.0", {
                 compatible: false,
                 dev: false,
                 filter: [],
@@ -580,7 +526,7 @@ describe("native addon integration", () => {
         it("should warn about yarn berry upgrade-interactive", () => {
             expect.assertions(1);
 
-            const result = native!.resolveOutdated("yarn", "4.0.0", {
+            const result = resolveOutdated("yarn", "4.0.0", {
                 compatible: false,
                 dev: false,
                 filter: [],
@@ -598,11 +544,11 @@ describe("native addon integration", () => {
         });
     });
 
-    describe("resolvePmCommand", () => {
+    describe(resolvePmCommand, () => {
         it("should map pnpm cache dir to store path", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("pnpm", "10.0.0", "cache", ["dir"]);
+            const result = resolvePmCommand("pnpm", "10.0.0", "cache", ["dir"]);
 
             expect(result.bin).toBe("pnpm");
             expect(result.args).toStrictEqual(["store", "path"]);
@@ -611,7 +557,7 @@ describe("native addon integration", () => {
         it("should delegate npm-only commands to npm", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("pnpm", "10.0.0", "token", ["list"]);
+            const result = resolvePmCommand("pnpm", "10.0.0", "token", ["list"]);
 
             expect(result.bin).toBe("npm");
             expect(result.warnings.length).toBeGreaterThan(0);
@@ -620,7 +566,7 @@ describe("native addon integration", () => {
         it("should use bun pm ls for list", () => {
             expect.assertions(1);
 
-            const result = native!.resolvePmCommand("bun", "1.0.0", "list", []);
+            const result = resolvePmCommand("bun", "1.0.0", "list", []);
 
             expect(result.args).toStrictEqual(["pm", "ls"]);
         });
@@ -628,7 +574,7 @@ describe("native addon integration", () => {
         it("should resolve view to `npm view` for npm", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("npm", "10.0.0", "view", ["react", "version"]);
+            const result = resolvePmCommand("npm", "10.0.0", "view", ["react", "version"]);
 
             expect(result.bin).toBe("npm");
             expect(result.args).toStrictEqual(["view", "react", "version"]);
@@ -637,7 +583,7 @@ describe("native addon integration", () => {
         it("should resolve view to `pnpm view` for pnpm", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("pnpm", "10.0.0", "view", ["react"]);
+            const result = resolvePmCommand("pnpm", "10.0.0", "view", ["react"]);
 
             expect(result.bin).toBe("pnpm");
             expect(result.args).toStrictEqual(["view", "react"]);
@@ -646,7 +592,7 @@ describe("native addon integration", () => {
         it("should resolve view to `yarn info` for yarn v1", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("yarn", "1.22.19", "view", ["react"]);
+            const result = resolvePmCommand("yarn", "1.22.19", "view", ["react"]);
 
             expect(result.bin).toBe("yarn");
             expect(result.args).toStrictEqual(["info", "react"]);
@@ -655,7 +601,7 @@ describe("native addon integration", () => {
         it("should resolve view to `yarn npm info` for yarn berry", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("yarn", "4.1.0", "view", ["react"]);
+            const result = resolvePmCommand("yarn", "4.1.0", "view", ["react"]);
 
             expect(result.bin).toBe("yarn");
             expect(result.args).toStrictEqual(["npm", "info", "react"]);
@@ -664,7 +610,7 @@ describe("native addon integration", () => {
         it("should resolve view to `bun pm view` (not `bun view`) for bun", () => {
             expect.assertions(2);
 
-            const result = native!.resolvePmCommand("bun", "1.3.0", "view", ["react"]);
+            const result = resolvePmCommand("bun", "1.3.0", "view", ["react"]);
 
             expect(result.bin).toBe("bun");
             expect(result.args).toStrictEqual(["pm", "view", "react"]);
@@ -673,8 +619,8 @@ describe("native addon integration", () => {
         it("should treat `info` as an alias of `view`", () => {
             expect.assertions(2);
 
-            const viewResult = native!.resolvePmCommand("bun", "1.3.0", "view", ["react"]);
-            const infoResult = native!.resolvePmCommand("bun", "1.3.0", "info", ["react"]);
+            const viewResult = resolvePmCommand("bun", "1.3.0", "view", ["react"]);
+            const infoResult = resolvePmCommand("bun", "1.3.0", "info", ["react"]);
 
             expect(infoResult.bin).toBe(viewResult.bin);
             expect(infoResult.args).toStrictEqual(viewResult.args);
@@ -685,7 +631,7 @@ describe("native addon integration", () => {
         it("should resolve link with target", () => {
             expect.assertions(1);
 
-            const result = native!.resolveLink("pnpm", "10.0.0", "./local-pkg");
+            const result = resolveLink("pnpm", "10.0.0", "./local-pkg");
 
             expect(result.args).toStrictEqual(["link", "./local-pkg"]);
         });
@@ -693,7 +639,7 @@ describe("native addon integration", () => {
         it("should resolve link without target", () => {
             expect.assertions(1);
 
-            const result = native!.resolveLink("npm", "11.0.0", null);
+            const result = resolveLink("npm", "11.0.0", null);
 
             expect(result.args).toStrictEqual(["link"]);
         });
@@ -701,7 +647,7 @@ describe("native addon integration", () => {
         it("should not warn on pnpm v10 link with bare name", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "10.0.0", "react");
+            const result = resolveLink("pnpm", "10.0.0", "react");
 
             expect(result.args).toStrictEqual(["link", "react"]);
             expect(result.warnings).toHaveLength(0);
@@ -710,7 +656,7 @@ describe("native addon integration", () => {
         it("should warn about arg-less link on pnpm v11", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "11.0.0-rc.0", null);
+            const result = resolveLink("pnpm", "11.0.0-rc.0", null);
 
             expect(result.args).toStrictEqual(["link"]);
             expect(result.warnings.some((w) => w.includes("arg-less") && w.includes("v11"))).toBe(true);
@@ -719,7 +665,7 @@ describe("native addon integration", () => {
         it("should warn about bare package name on pnpm v11", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "11.0.0", "react");
+            const result = resolveLink("pnpm", "11.0.0", "react");
 
             expect(result.args).toStrictEqual(["link", "react"]);
             expect(result.warnings.some((w) => w.includes("global-store") || w.includes("path"))).toBe(true);
@@ -728,7 +674,7 @@ describe("native addon integration", () => {
         it("should not warn about path target on pnpm v11", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "11.0.0", "./local-pkg");
+            const result = resolveLink("pnpm", "11.0.0", "./local-pkg");
 
             expect(result.args).toStrictEqual(["link", "./local-pkg"]);
             expect(result.warnings).toHaveLength(0);
@@ -737,7 +683,7 @@ describe("native addon integration", () => {
         it("should not warn on pnpm v11 for absolute path", () => {
             expect.assertions(1);
 
-            const result = native!.resolveLink("pnpm", "11.0.0", "/home/user/pkg");
+            const result = resolveLink("pnpm", "11.0.0", "/home/user/pkg");
 
             expect(result.warnings).toHaveLength(0);
         });
@@ -745,7 +691,7 @@ describe("native addon integration", () => {
         it("should warn generically for unknown pnpm version with bare name", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "latest", "react");
+            const result = resolveLink("pnpm", "latest", "react");
 
             expect(result.args).toStrictEqual(["link", "react"]);
             expect(result.warnings.some((w) => w.includes("unknown") && w.includes("v11"))).toBe(true);
@@ -754,7 +700,7 @@ describe("native addon integration", () => {
         it("should warn generically for unknown pnpm version with no target", () => {
             expect.assertions(2);
 
-            const result = native!.resolveLink("pnpm", "latest", null);
+            const result = resolveLink("pnpm", "latest", null);
 
             expect(result.args).toStrictEqual(["link"]);
             expect(result.warnings.some((w) => w.includes("unknown") && w.includes("Arg-less"))).toBe(true);
@@ -763,7 +709,7 @@ describe("native addon integration", () => {
         it("should not warn for unknown pnpm version with path target", () => {
             expect.assertions(1);
 
-            const result = native!.resolveLink("pnpm", "latest", "./local-pkg");
+            const result = resolveLink("pnpm", "latest", "./local-pkg");
 
             expect(result.warnings).toHaveLength(0);
         });
@@ -771,7 +717,7 @@ describe("native addon integration", () => {
         it("should resolve unlink with recursive", () => {
             expect.assertions(1);
 
-            const result = native!.resolveUnlink("pnpm", "10.0.0", ["react"], true);
+            const result = resolveUnlink("pnpm", "10.0.0", ["react"], true);
 
             expect(result.args).toContain("--recursive");
         });
@@ -779,17 +725,17 @@ describe("native addon integration", () => {
         it("should warn about recursive unlink on npm", () => {
             expect.assertions(1);
 
-            const result = native!.resolveUnlink("npm", "11.0.0", [], true);
+            const result = resolveUnlink("npm", "11.0.0", [], true);
 
             expect(result.warnings.length).toBeGreaterThan(0);
         });
     });
 
-    describe("execPmCommand", () => {
+    describe(execPmCommand, () => {
         it("should execute allowed binaries", () => {
             expect.assertions(2);
 
-            const result = native!.execPmCommand("echo", ["hello"], process.cwd());
+            const result = execPmCommand("echo", ["hello"], process.cwd());
 
             expect(result.code).toBe(0);
             expect(result.stdout.trim()).toBe("hello");
@@ -800,15 +746,15 @@ describe("native addon integration", () => {
             // throws a JS error, rather than returning exit 126 with stderr text.
             expect.assertions(1);
 
-            expect(() => native!.execPmCommand("/bin/bash", ["-c", "echo hacked"], process.cwd())).toThrow(/Disallowed binary/);
+            expect(() => execPmCommand("/bin/bash", ["-c", "echo hacked"], process.cwd())).toThrow(/Disallowed binary/);
         });
     });
 
-    describe("whichBin", () => {
+    describe(whichBin, () => {
         it("should find node", () => {
             expect.assertions(1);
 
-            const result = native!.whichBin("node");
+            const result = whichBin("node");
 
             expect(result).toContain("node");
         });
@@ -816,7 +762,7 @@ describe("native addon integration", () => {
         it("should return null for nonexistent binary", () => {
             expect.assertions(1);
 
-            const result = native!.whichBin("definitely-not-a-real-binary-xyz");
+            const result = whichBin("definitely-not-a-real-binary-xyz");
 
             expect(result).toBeNull();
         });

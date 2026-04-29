@@ -4,16 +4,16 @@
     "description": "A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.",
     "keywords": [
         "anolilab",
-        "visulima",
         "blitz",
         "blitzjs",
-        "nextjs",
-        "health",
         "check",
         "checks",
         "dns-check",
+        "health",
         "http-check",
-        "ping-check"
+        "nextjs",
+        "ping-check",
+        "visulima"
     ],
     "homepage": "https://visulima.com/packages/health-check/",
     "repository": {
