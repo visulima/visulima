@@ -145,6 +145,8 @@ Targets in `project.json` support vis-specific options:
 | `runInCI`              | `boolean \| "affected" \| "always"`     | `true`          | Whether to run in CI environments                                                                                                                                                                      |
 | `retryCount`           | `number`                                | `0`             | Auto-retry on failure                                                                                                                                                                                  |
 | `retryDelay`           | `number \| "exponential"`               | `"exponential"` | Delay between retries                                                                                                                                                                                  |
+| `timeout`              | `number`                                | `0`             | Wall-clock budget in ms. `0` disables the watchdog. Exceeding it sends `SIGTERM` and marks the task as timed out (exit code 124) — see [Timeouts & Signals](#timeouts--signals)                        |
+| `killGracePeriodMs`    | `number`                                | `5000`          | Milliseconds between `SIGTERM` and the escalating `SIGKILL` when `timeout` fires. `0` disables escalation                                                                                              |
 | `affectedFiles`        | `false \| "args" \| "env" \| "both"`    | `false`         | Forward changed files to task                                                                                                                                                                          |
 | `envFile`              | `boolean \| string \| string[]`         |                 | Dotenv file(s) — see [env file layering](#env-file-layering)                                                                                                                                           |
 | `mutex`                | `string`                                |                 | Named lock for serializing tasks                                                                                                                                                                       |
@@ -286,7 +288,49 @@ With `--watch`, vis runs the target once, then watches all matched project roots
 vis run :test --watch
 ```
 
-Changes are debounced (150ms). Cache-aware reruns are fast — only tasks whose inputs changed will re-execute. Press Ctrl+C to exit.
+Changes are debounced (150ms). Cache-aware reruns are fast — only tasks whose inputs changed will re-execute.
+
+### Keybinds
+
+While `--watch` is active, vis listens for Vitest-style single-key commands on stdin (TTY only — piped input falls back to file-change reruns):
+
+| Key            | Action                                                            |
+| -------------- | ----------------------------------------------------------------- |
+| `r` / `Enter`  | Rerun the active task set immediately                             |
+| `a`            | Clear any active project filter and rerun the full set            |
+| `p`            | Prompt for a project-name substring filter; subsequent reruns operate on matching projects only |
+| `q` / `Ctrl+C` | Exit watch mode cleanly                                           |
+| `h` / `?`      | Print the keybind reference                                       |
+
+The filter prompt accepts a case-insensitive substring match against `task.target.project`. Submitting an empty line cancels the prompt without changing the active filter.
+
+Keybinds are a no-op in non-TTY environments (CI, piped stdin) so unattended runs aren't blocked.
+
+## Timeouts & Signals
+
+Set `timeout` on a target to enforce a wall-clock budget. When the budget elapses, vis dispatches signals in two phases — modeled after GNU `timeout(1) --kill-after`:
+
+1. Send `SIGTERM` and mark the task as timed out (exit code `124`, prefixed with `[timeout]` in the output).
+2. After `killGracePeriodMs` (default `5000` ms), send `SIGKILL` to processes that ignored the term signal.
+
+```jsonc
+// project.json
+{
+    "targets": {
+        "test": {
+            "command": "vitest run",
+            "options": {
+                "timeout": 600000,
+                "killGracePeriodMs": 10000
+            }
+        }
+    }
+}
+```
+
+Set `killGracePeriodMs: 0` to disable the escalation entirely (SIGTERM only). Set `timeout: 0` (the default) to disable the watchdog.
+
+The escalation matters on Windows and for tasks that swallow `SIGTERM` (test runners holding open child processes, deep child trees) — without it, a single hung task can outlive its budget indefinitely.
 
 ## How It Works
 
