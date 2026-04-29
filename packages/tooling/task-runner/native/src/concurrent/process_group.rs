@@ -45,12 +45,31 @@ mod windows {
     use std::io;
 
     use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::System::Console::{GenerateConsoleCtrlEvent, CTRL_BREAK_EVENT};
     use windows_sys::Win32::System::JobObjects::{
         AssignProcessToJobObject, CreateJobObjectW, SetInformationJobObject,
         TerminateJobObject, JobObjectExtendedLimitInformation,
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     };
     use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_SET_QUOTA, PROCESS_TERMINATE};
+
+    /// Send `CTRL_BREAK_EVENT` to the process group rooted at `pid`.
+    ///
+    /// Requires the child to have been spawned with `CREATE_NEW_PROCESS_GROUP`
+    /// — only then does the child have its own group ID equal to its PID, so a
+    /// targeted `GenerateConsoleCtrlEvent` reaches the child + its descendants
+    /// without also signalling our parent console.
+    ///
+    /// Note: `CTRL_C_EVENT` is silently ignored by processes in a new process
+    /// group (Microsoft documents this), so we use `CTRL_BREAK_EVENT` for the
+    /// graceful path. Well-behaved CLIs handle Ctrl+Break the same as Ctrl+C.
+    pub fn graceful_shutdown(pid: u32) -> io::Result<()> {
+        let result = unsafe { GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid) };
+        if result == 0 {
+            return Err(io::Error::last_os_error());
+        }
+        Ok(())
+    }
 
     /// A Windows Job Object handle that ensures child process tree cleanup.
     /// When the Job Object is dropped, all assigned processes are terminated.
@@ -154,4 +173,4 @@ pub fn kill_tree(pid: u32, signal: &str) -> std::io::Result<()> {
 pub use unix::pre_exec_setsid;
 
 #[cfg(windows)]
-pub use windows::JobObject;
+pub use windows::{graceful_shutdown, JobObject};

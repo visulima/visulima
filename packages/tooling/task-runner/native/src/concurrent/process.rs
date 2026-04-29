@@ -189,6 +189,15 @@ fn build_command(config: &ConcurrentCommandConfig, shell_path: Option<&str>) -> 
         cmd.pre_exec(|| process_group::pre_exec_setsid());
     }
 
+    // Windows: create the child as the leader of a new process group so
+    // we can later target it with `GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid)`
+    // for graceful shutdown without also signalling our own console.
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP;
+        cmd.creation_flags(CREATE_NEW_PROCESS_GROUP);
+    }
+
     cmd
 }
 
