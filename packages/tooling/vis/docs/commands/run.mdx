@@ -306,6 +306,8 @@ The filter prompt accepts a case-insensitive substring match against `task.targe
 
 Keybinds are a no-op in non-TTY environments (CI, piped stdin) so unattended runs aren't blocked.
 
+If watch reruns silently stop firing on Linux you may have exhausted inotify watch slots. Run [`vis doctor`](./doctor#runtime) — its `inotify` runtime check reports the current limit and prints the `sysctl` snippet to raise it.
+
 ## Timeouts & Signals
 
 Set `timeout` on a target to enforce a wall-clock budget. When the budget elapses, vis dispatches signals in two phases — modeled after GNU `timeout(1) --kill-after`:
@@ -331,6 +333,8 @@ Set `timeout` on a target to enforce a wall-clock budget. When the budget elapse
 Set `killGracePeriodMs: 0` to disable the escalation entirely (SIGTERM only). Set `timeout: 0` (the default) to disable the watchdog.
 
 The escalation matters on Windows and for tasks that swallow `SIGTERM` (test runners holding open child processes, deep child trees) — without it, a single hung task can outlive its budget indefinitely.
+
+On Windows the underlying task-runner spawns each child in its own process group (`CREATE_NEW_PROCESS_GROUP`) so SIGINT / `Ctrl+C` is delivered as `CTRL_BREAK_EVENT` first, with a Job Object `TerminateJobObject` as the hard backstop after the grace window. This mirrors the Unix `setsid` + `killpg(SIGTERM)` → `SIGKILL` flow and means well-behaved CLIs (Node, Python, Go) get a chance to clean up before being force-killed. Tools that ignore Ctrl+Break are still terminated by the Job Object.
 
 ## How It Works
 

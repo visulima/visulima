@@ -1,0 +1,128 @@
+---
+title: "vis doctor"
+description: "Run a full project health check (dependencies, security, optimizations, runtime)"
+---
+
+# vis doctor
+
+`vis doctor` is a one-command project health check. It runs every diagnostic scan in parallel and prints a single dashboard with actionable next steps.
+
+```bash
+vis doctor
+```
+
+## Usage
+
+```bash
+vis doctor [options]
+```
+
+## Examples
+
+```bash
+# Full project health check
+vis doctor
+
+# Auto-apply safe fixes (security overrides + codemods)
+vis doctor --fix
+
+# Machine-readable output for CI
+vis doctor --format json
+
+# Exit with code 1 if security issues found
+vis doctor --exit-code
+
+# Strict mode: fail on any issue (outdated, duplicates, runtime warnings, etc.)
+vis doctor --exit-code --strict
+```
+
+## Options
+
+| Option        | Default | Description                                                            |
+| ------------- | ------- | ---------------------------------------------------------------------- |
+| `--format`    | `table` | Output format: `table` or `json`                                       |
+| `--exit-code` | `false` | Exit with code 1 if security issues are found                          |
+| `--fix`       | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install)   |
+| `--strict`    | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings |
+
+## What It Checks
+
+The dashboard is grouped into four sections.
+
+### Dependencies
+
+- Total installed packages and detected workspaces.
+- Outdated entries from `pnpm-workspace.yaml` catalogs (counts grouped by `major` / `minor` / `patch`).
+- Duplicate package versions across the lockfile.
+
+### Security
+
+- Known CVEs (OSV.dev) for both outdated and currently installed packages.
+- Optional Socket.dev alerts and low-score packages when the integration is configured (see [`vis audit`](./audit)).
+
+### Optimization
+
+- Replaceable native APIs (e.g. `chalk` → `node:util.styleText`).
+- Lighter alternatives flagged by [e18e](https://e18e.dev).
+- Trivial micro-utilities that can be inlined.
+- `@socketregistry` overrides available for known-bad packages.
+
+Run [`vis optimize`](./optimize) for an interactive picker, or pass `--fix` to apply non-interactively.
+
+### Runtime
+
+The runtime block surfaces watch / signal subsystem state that silently breaks `vis run --watch` when misconfigured.
+
+| Check     | Platform   | What it reports                                                                                                                                               |
+| --------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inotify` | Linux only | Reads `/proc/sys/fs/inotify/max_user_watches`. Warns when the limit is below `65536` — large monorepos can exhaust this and `fs.watch` will silently miss events. |
+| `tty`     | All        | Confirms an interactive TTY is present so [watch keybinds](./run#keybinds) work. Reports `skip` in CI / piped mode (keybinds disabled, file-change reruns still fire). |
+| `orphans` | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. |
+
+When the inotify warning fires, the suggested fix is:
+
+```bash
+sudo sysctl fs.inotify.max_user_watches=524288
+```
+
+(VS Code and IntelliJ recommend the same value; persist it via `/etc/sysctl.d/`.)
+
+Runtime warnings flip the exit code to `1` only under `--strict`, since none of them indicate a security issue.
+
+## JSON Output
+
+`--format json` (or `--json`) emits a stable schema suitable for CI:
+
+```json
+{
+  "dependencies": { "installed": 1230, "outdated": 4, "duplicates": 0 },
+  "security": { "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
+  "optimizations": { "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
+  "runtime": [
+    { "id": "inotify", "status": "ok",   "message": "inotify capacity OK (524288 watches).",     "detail": { "maxWatches": 524288 } },
+    { "id": "tty",     "status": "ok",   "message": "Interactive TTY available — watch keybinds enabled." },
+    { "id": "orphans", "status": "ok",   "message": "No orphaned vis/task-runner processes detected." }
+  ],
+  "packageManager": "pnpm",
+  "workspaces": 44
+}
+```
+
+`runtime[*].status` is one of `ok`, `skip`, or `warn`. The `detail` field is optional and varies per check.
+
+## Exit Codes
+
+| Mode                            | Fails when                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `--exit-code` (default)         | Vulnerabilities or Socket alerts present                                                     |
+| `--exit-code --strict`          | Any of: vulnerabilities, Socket alerts, outdated deps, duplicate versions, runtime warnings  |
+
+Without `--exit-code`, doctor always exits `0` so it stays usable as an informational command.
+
+## Related
+
+- [`vis audit`](./audit) — detailed security analysis (Socket.dev, advisories).
+- [`vis optimize`](./optimize) — interactive optimization picker (codemods, overrides).
+- [`vis update`](./update) — update outdated dependencies.
+- [`vis toolchain`](./toolchain) — Node / package-manager version pinning.
+- [`vis run --watch`](./run#watch-mode) — uses the inotify capacity surfaced by the `inotify` runtime check.
