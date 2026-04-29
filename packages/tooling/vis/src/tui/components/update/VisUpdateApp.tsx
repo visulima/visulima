@@ -85,10 +85,15 @@ const VisUpdateApp = ({
         [state.groupedByCatalog],
     );
 
-    // Compute the visible height of the list panel (approximate: total rows - header - filter - border)
-    // Viewport height for the list: total rows minus header(1) + filter bar(1) + border(2) + footer(2) + text filter(1 if active)
-    // Viewport = total rows - border(2) - header(1) - filter bar with padding(3) - footer(2) - text filter(1 if active)
-    const listViewportHeight = Math.max(1, rows - 8 - (state.filterActive ? 1 : 0));
+    // JS estimate of the list viewport — used as the initial value before
+    // the panel reports its actual measured height. Excludes border(2),
+    // header(1), filter tabs with padding(3), footer(2) = 8 fixed rows,
+    // plus the text-filter row when active. The estimate doesn't account
+    // for the conditional "filtered out" notice, so we measure the real
+    // content row in PackageListPanel and replace this value below.
+    const estimatedViewportHeight = Math.max(1, rows - 8 - (state.filterActive ? 1 : 0));
+    const [measuredViewportHeight, setMeasuredViewportHeight] = useState(estimatedViewportHeight);
+    const listViewportHeight = measuredViewportHeight > 0 ? measuredViewportHeight : estimatedViewportHeight;
 
     // Keep selected item in view by adjusting scroll offset
     const scrollToIndex = useCallback(
@@ -812,6 +817,7 @@ const VisUpdateApp = ({
             focused={state.focusedPanel === "list"}
             groupedByCatalog={state.groupedByCatalog}
             isDryRun={isDryRun}
+            onViewportHeightChange={setMeasuredViewportHeight}
             scrollOffset={listScrollOffset}
             selectedIndex={state.selectedIndex}
             totalCatalogEntries={totalCatalogEntries}
