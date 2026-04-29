@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  44+ independent, production-ready packages — pick only what you need.
+  44+ independent, production-ready packages. Pick only what you need.
 </p>
 
 <div align="center">
@@ -36,18 +36,18 @@
 
 ## What is Visulima?
 
-Visulima is a curated collection of small, focused TypeScript libraries that solve the problems you hit every day when shipping real applications — parsing CLI args, formatting terminal output, handling files and paths, debugging errors with readable stack traces, building APIs, sending emails, redacting secrets, and dozens more.
+Visulima is a curated collection of small, focused TypeScript libraries that solve the problems you hit every day when shipping real applications. Things like parsing CLI args, formatting terminal output, handling files and paths, debugging errors with readable stack traces, building APIs, sending emails, redacting secrets, and dozens more.
 
-Every package is **standalone** — install one, install ten, mix them with whatever framework you already use. No lock-in, no umbrella runtime.
+Every package is **standalone**. Install one, install ten, mix them with whatever framework you already use. No lock-in, no umbrella runtime.
 
 ## Why Visulima?
 
-- **Modular by design** — every package has a single responsibility and ships independently. Use `@visulima/fs` without touching anything else.
-- **Modern runtimes** — pure ESM, works in Node.js, Bun, Deno, edge runtimes, and (where it makes sense) the browser.
-- **TypeScript-native** — written in TypeScript with strict types, full inference, and `"sideEffects": false` for clean tree-shaking.
-- **Production-tested** — high test coverage, Vitest-driven, used in real products.
-- **Well-documented** — every package has a dedicated doc page on [visulima.com](https://visulima.com), plus a README with examples and API reference.
-- **MIT licensed** — free to use, free to fork.
+- **Modular by design.** Every package has a single responsibility and ships independently. Use `@visulima/fs` without touching anything else.
+- **Modern runtimes.** Pure ESM that works in Node.js, Bun, Deno, edge runtimes, and (where it makes sense) the browser.
+- **TypeScript-native.** Written in TypeScript with strict types, full inference, and `"sideEffects": false` for clean tree-shaking.
+- **Production-tested.** High test coverage, Vitest-driven, used in real products.
+- **Well-documented.** Every package has a dedicated doc page on [visulima.com](https://visulima.com), plus a README with examples and API reference.
+- **MIT licensed.** Free to use, free to fork.
 
 ## Drop-in replacements
 
@@ -61,11 +61,11 @@ Already using one of these? Swap it out without changing your code:
 
 ## Powered by native Rust
 
-Performance-critical packages ship with NAPI bindings and a JS fallback — fast where it matters, portable everywhere:
+Performance-critical packages ship with NAPI bindings and a JS fallback. Fast where it matters, portable everywhere.
 
-- **[`@visulima/tui`](packages/terminal/tui/README.md)** — native Rust diff engine for the React-to-terminal renderer.
-- **[`@visulima/secret-scanner`](packages/tooling/secret-scanner/README.md)** — Rust port of gitleaks detection, exposed via NAPI.
-- **[`@visulima/task-runner`](packages/tooling/task-runner/README.md)** — concurrent process runner with native Rust performance and process-tree cleanup on every OS.
+- **[`@visulima/tui`](packages/terminal/tui/README.md)** uses a native Rust diff engine for the React-to-terminal renderer.
+- **[`@visulima/secret-scanner`](packages/tooling/secret-scanner/README.md)** is a Rust port of gitleaks detection, exposed via NAPI.
+- **[`@visulima/task-runner`](packages/tooling/task-runner/README.md)** runs concurrent processes with native Rust performance and process-tree cleanup on every OS.
 
 ## Install
 
@@ -88,14 +88,14 @@ Every package has a dedicated doc page on **[visulima.com](https://visulima.com)
 
 Packages are grouped into eight categories. Jump to the section you need:
 
-- **[API](#api)** — routing, CRUD, OpenAPI, pagination, health checks
-- **[Data Manipulation](#data-manipulation)** — strings, objects, bytes, HTML, redaction, locales
-- **[Email](#email)** — multi-provider sending, templates, disposable-domain detection
-- **[Error Debugging](#error-debugging)** — stack traces, source maps, loggers, dev overlays
-- **[Filesystem](#filesystem)** — human-friendly fs helpers, path utilities, cache directories
-- **[Storage](#storage)** — S3, Azure, GCS, and local file uploads with a unified API
-- **[Terminal](#terminal)** — CLIs, colors, spinners, progress bars, tables, TUI
-- **[Tooling](#tooling)** — task runner, secret scanner, tsconfig parser, package utilities
+- **[API](#api)**: routing, CRUD, OpenAPI, pagination, health checks
+- **[Data Manipulation](#data-manipulation)**: strings, objects, bytes, HTML, redaction, locales
+- **[Email](#email)**: multi-provider sending, templates, disposable-domain detection
+- **[Error Debugging](#error-debugging)**: stack traces, source maps, loggers, dev overlays
+- **[Filesystem](#filesystem)**: human-friendly fs helpers, path utilities, cache directories
+- **[Storage](#storage)**: S3, Azure, GCS, and local file uploads with a unified API
+- **[Terminal](#terminal)**: CLIs, colors, spinners, progress bars, tables, TUI
+- **[Tooling](#tooling)**: task runner, secret scanner, tsconfig parser, package utilities
 
 ## All Packages
 
