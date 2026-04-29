@@ -49,6 +49,24 @@ Every package is **standalone** — install one, install ten, mix them with what
 - **Well-documented** — every package has a dedicated doc page on [visulima.com](https://visulima.com), plus a README with examples and API reference.
 - **MIT licensed** — free to use, free to fork.
 
+## Drop-in replacements
+
+Already using one of these? Swap it out without changing your code:
+
+| You're using       | Try                                                                       | What you get                                                          |
+| ------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `node:path`        | [`@visulima/path`](packages/filesystem/path/README.md)                    | Same API, normalized paths, smaller and faster.                       |
+| [`chalk`](https://github.com/chalk/chalk) | [`@visulima/colorize`](packages/terminal/colorize/README.md) | Chalk-compatible API, up to **3× faster**, with nested templates.     |
+| [`ink`](https://github.com/vadimdemedes/ink) | [`@visulima/tui`](packages/terminal/tui/README.md)         | Ink-compatible React API, backed by a native Rust diff engine.        |
+
+## Powered by native Rust
+
+Performance-critical packages ship with NAPI bindings and a JS fallback — fast where it matters, portable everywhere:
+
+- **[`@visulima/tui`](packages/terminal/tui/README.md)** — native Rust diff engine for the React-to-terminal renderer.
+- **[`@visulima/secret-scanner`](packages/tooling/secret-scanner/README.md)** — Rust port of gitleaks detection, exposed via NAPI.
+- **[`@visulima/task-runner`](packages/tooling/task-runner/README.md)** — concurrent process runner with native Rust performance and process-tree cleanup on every OS.
+
 ## Install
 
 Install only the packages you need:
