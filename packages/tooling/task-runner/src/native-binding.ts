@@ -89,6 +89,9 @@ interface NativeBindings {
     findCycle: (graph: NativeTaskGraph) => NativeCycleResult;
     getDependentTasks: (graph: NativeTaskGraph, taskId: string) => string[];
 
+    // Worktree detection (returns the main worktree root for a linked git
+    // worktree, or undefined for primary checkouts / non-git directories).
+    getMainWorktreeRoot: (workspaceRoot: string) => string | undefined | null;
     getTransitiveDeps: (graph: NativeTaskGraph, taskId: string) => string[];
     // Task hashing
     hashCommand: (project: string, target: string, configuration: string | undefined, overridesJson: string) => string;
@@ -100,7 +103,9 @@ interface NativeBindings {
     hashFilesInDirectory: (directory: string, workspaceRoot: string) => NativeFileHash[];
     hashString: (input: string) => string;
     hashStrings: (inputs: string[]) => string;
+    isLinkedWorktree: (workspaceRoot: string) => boolean;
 
+    resetWorktreeCache: () => void;
     // Concurrent process runner
     runConcurrent: (
         commands: NativeConcurrentCommandConfig[],
