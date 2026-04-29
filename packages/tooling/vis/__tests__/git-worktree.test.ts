@@ -7,6 +7,17 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "../src/git-worktree";
 
+// When this test file runs inside a git pre-commit hook, git exports
+// GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running
+// repo. Those leak into vitest workers and confuse `git worktree add`
+// inside the temp fixture repos. Strip them so child `git` calls operate
+// on the fixture's own `.git`.
+for (const key of Object.keys(process.env)) {
+    if (key.startsWith("GIT_")) {
+        delete process.env[key];
+    }
+}
+
 const hasGit = (() => {
     try {
         execFileSync("git", ["--version"], { stdio: "ignore" });
