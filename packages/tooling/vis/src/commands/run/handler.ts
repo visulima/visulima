@@ -33,6 +33,7 @@ import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../hooks"
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../run-report";
 import { filterProjectsByQuery, resolveSelector } from "../../selectors";
 import { appendToShellHistory } from "../../shell-history";
+import { scheduleTimeoutKill } from "../../signal-escalation";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../target-options";
 import { detectCurrentOs, evaluateWhen, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../../target-options";
@@ -41,6 +42,9 @@ import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
 import { collectTrackedWatchTargets, createTrackedFileFilter, startWatcher } from "../../watch";
+import { applyProjectFilter } from "../../watch-filter";
+import type { KeybindHandle } from "../../watch-keybinds";
+import { installKeybinds, writeHelp } from "../../watch-keybinds";
 import type { VisProjectConfiguration } from "../../workspace";
 import { buildProjectGraph, discoverWorkspace } from "../../workspace";
 import type { RunOptions } from "./index";
@@ -445,15 +449,21 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
             const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
+            const killGracePeriodMs = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0
+                ? visOptions.killGracePeriodMs
+                : 5000;
             let timedOut = false;
-            let timeoutHandle: NodeJS.Timeout | undefined;
 
-            if (timeoutMs > 0) {
-                timeoutHandle = setTimeout(() => {
+            const timeoutKill = scheduleTimeoutKill({
+                killGracePeriodMs,
+                onTimeout: () => {
                     timedOut = true;
-                    killCurrentProcess?.("SIGTERM");
-                }, timeoutMs);
-            }
+                },
+                sendSignal: (signal) => {
+                    killCurrentProcess?.(signal);
+                },
+                timeoutMs,
+            });
 
             let result: Awaited<ReturnType<typeof runConcurrently>>;
 
@@ -480,9 +490,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                     },
                 );
             } finally {
-                if (timeoutHandle) {
-                    clearTimeout(timeoutHandle);
-                }
+                timeoutKill.cancel();
             }
 
             const closeEvent = result.closeEvents[0];
@@ -1256,6 +1264,20 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 })
                 .filter((p): p is string => p !== undefined);
 
+            // Snapshot the post-partition task set so `a` (clear filter)
+            // can return to it after `p` narrowed the run.
+            const baseTasks = initialTasks;
+            let projectFilter: string | undefined;
+
+            const applyFilter = (filter: string | undefined): number => {
+                const result = applyProjectFilter(baseTasks, filter);
+
+                projectFilter = result.filter;
+                initialTasks = result.tasks;
+
+                return result.tasks.length;
+            };
+
             let running = false;
             let lastResults = firstRun.results;
 
@@ -1323,16 +1345,93 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
                     : `Watching ${String(absoluteRoots.length)} project root(s)`;
 
-            logger.info(`${scope} — edit a file to rerun, Ctrl+C to exit.`);
+            logger.info(`${scope} — edit a file to rerun, press h for keybinds, q to quit.`);
 
-            await new Promise<void>((resolve) => {
+            const triggerRerun = async (): Promise<void> => {
+                if (running) {
+                    return;
+                }
+
+                running = true;
+
+                try {
+                    if (initialTasks.length === 0) {
+                        logger.info("No tasks match the active filter — press a to clear it.");
+
+                        return;
+                    }
+
+                    const nextRun = await runOnce();
+
+                    lastResults = nextRun.results;
+                    currentHandle?.close();
+
+                    const rebuilt = buildHandle();
+
+                    currentHandle = rebuilt.handle;
+                } finally {
+                    running = false;
+                }
+            };
+
+            await new Promise<void>((resolveExit) => {
+                let exited = false;
+                // Forward declarations so `exit()` can reference both the
+                // SIGINT listener and the keybind handle without hitting
+                // a TDZ if a future refactor calls exit() synchronously.
+                let keybinds: KeybindHandle | undefined;
                 const onSigint = (): void => {
+                    exit();
+                };
+
+                const exit = (): void => {
+                    if (exited) {
+                        return;
+                    }
+
+                    exited = true;
+                    keybinds?.close();
                     process.off("SIGINT", onSigint);
                     currentHandle?.close();
-                    resolve();
+                    resolveExit();
                 };
 
                 process.on("SIGINT", onSigint);
+
+                keybinds = installKeybinds({
+                    handlers: {
+                        onClearFilter: async () => {
+                            const total = applyFilter(undefined);
+
+                            logger.info(`Filter cleared — running ${String(total)} task(s).`);
+                            await triggerRerun();
+                        },
+                        onFilter: async (pattern) => {
+                            // Capture before mutating — applyFilter() overwrites
+                            // projectFilter, so we'd lose the rollback target
+                            // otherwise.
+                            const previousFilter = projectFilter;
+                            const matching = applyFilter(pattern);
+
+                            if (matching === 0) {
+                                logger.info(`Filter "${pattern}" matched no projects — keeping previous filter.`);
+                                applyFilter(previousFilter);
+
+                                return;
+                            }
+
+                            logger.info(`Filter "${pattern}" matched ${String(matching)} task(s).`);
+                            await triggerRerun();
+                        },
+                        onHelp: () => {
+                            writeHelp(process.stdout);
+                        },
+                        onQuit: () => {
+                            exit();
+                        },
+                        onRerun: triggerRerun,
+                    },
+                });
             });
 
             return;
