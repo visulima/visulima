@@ -1,15 +1,16 @@
-import { readdir, realpath, rm, stat } from "node:fs/promises";
+import { readdir, readFile, realpath, rm, stat } from "node:fs/promises";
 import { createInterface } from "node:readline";
 
 import type { Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
 import { join } from "@visulima/path";
-import { Cache, parseCacheSize } from "@visulima/task-runner";
+import type { RunSummary, TaskHashDetails, TaskSummary } from "@visulima/task-runner";
+import { Cache, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
 import { isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../../cache-directory";
 import { failure, info, success, warn } from "../../output";
-import type { CacheCleanOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions } from "./index";
+import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheWhyOptions } from "./index";
 
 /**
  * Shape returned by `collectCacheEntries`. Kept close to what `removeOldEntries`
@@ -265,7 +266,11 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
     success(`Cleared cache: ${cacheDirectory}`);
 };
 
-export const runPrune = async (cacheDirectory: string, workspaceRoot: string, options: { maxCacheAgeDays?: number; maxCacheSize?: string }): Promise<void> => {
+export const runPrune = async (
+    cacheDirectory: string,
+    workspaceRoot: string,
+    options: { keepLast?: number; maxCacheAgeDays?: number; maxCacheSize?: string },
+): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
         info(`No cache directory to prune at ${cacheDirectory}`);
 
@@ -274,6 +279,13 @@ export const runPrune = async (cacheDirectory: string, workspaceRoot: string, op
 
     if (options.maxCacheAgeDays !== undefined && (!Number.isFinite(options.maxCacheAgeDays) || options.maxCacheAgeDays < 0)) {
         failure(`Invalid --max-age-days value: expected a finite number >= 0, got ${String(options.maxCacheAgeDays)}`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (options.keepLast !== undefined && (!Number.isFinite(options.keepLast) || options.keepLast < 0 || !Number.isInteger(options.keepLast))) {
+        failure(`Invalid --keep-last value: expected a non-negative integer, got ${String(options.keepLast)}`);
         process.exitCode = 1;
 
         return;
@@ -304,6 +316,16 @@ export const runPrune = async (cacheDirectory: string, workspaceRoot: string, op
     const before = await collectCacheEntries(cacheDirectory);
     const beforeBytes = before.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
+    // --keep-last runs first: trim by recency before letting the
+    // task-runner Cache enforce age/size limits. This way `--keep-last 30`
+    // is an absolute floor — we never end up over 30 even if the surviving
+    // entries are also young or small.
+    if (options.keepLast !== undefined && before.length > options.keepLast) {
+        const stale = before.slice(options.keepLast);
+
+        await Promise.all(stale.map((entry) => rm(entry.path, { force: true, recursive: true })));
+    }
+
     const cache = new Cache({
         cacheDirectory,
         maxCacheAge,
@@ -326,6 +348,396 @@ export const runPrune = async (cacheDirectory: string, workspaceRoot: string, op
     }
 
     success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
+};
+
+/**
+ * Loads a single run summary by ID (the file basename without `.json`)
+ * from `.task-runner/runs/`. Returns `undefined` when missing or unparseable
+ * so the caller can render a friendly error rather than crashing.
+ */
+const readRunSummaryById = async (workspaceRoot: string, runId: string): Promise<RunSummary | undefined> => {
+    const path = join(workspaceRoot, ".task-runner", "runs", `${runId}.json`);
+
+    try {
+        const content = await readFile(path, "utf8");
+
+        return JSON.parse(content) as RunSummary;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Returns the previous run summary — the second-most-recent file in
+ * `.task-runner/runs/`. Used by `vis cache why` to diff hash inputs
+ * against the run that came right before this one.
+ *
+ * Excludes the currently-loaded summary by `id` so callers passing a
+ * specific run via `--run` get *that run's* prior, not just "the one
+ * before now."
+ */
+const readPreviousRunSummary = async (workspaceRoot: string, currentId: string | undefined): Promise<RunSummary | undefined> => {
+    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+
+    let dirents: string[];
+
+    try {
+        dirents = (await readdir(runsDirectory)) as unknown as string[];
+    } catch {
+        return undefined;
+    }
+
+    const candidates: { mtimeMs: number; path: string }[] = [];
+
+    for (const name of dirents) {
+        if (!name.endsWith(".json")) {
+            continue;
+        }
+
+        if (currentId !== undefined && name === `${currentId}.json`) {
+            continue;
+        }
+
+        const fullPath = join(runsDirectory, name);
+
+        try {
+            const s = await stat(fullPath);
+
+            if (s.isFile()) {
+                candidates.push({ mtimeMs: s.mtimeMs, path: fullPath });
+            }
+        } catch {
+            // Skip — file may have been removed concurrently.
+        }
+    }
+
+    if (candidates.length === 0) {
+        return undefined;
+    }
+
+    candidates.sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+    try {
+        const content = await readFile(candidates[0]!.path, "utf8");
+
+        return JSON.parse(content) as RunSummary;
+    } catch {
+        return undefined;
+    }
+};
+
+const findTaskInSummary = (summary: RunSummary, taskId: string): TaskSummary | undefined =>
+    summary.tasks.find((task) => task.taskId === taskId);
+
+/**
+ * Diff between two `TaskHashDetails` snapshots — the heart of `vis cache
+ * why`. Reports per-bucket key changes so the user can see at a glance
+ * which input rotated the cache hash.
+ *
+ * `commandChanged` is reported once at the top level (alongside the
+ * per-bucket diffs) because the command is a single string, not a keyed
+ * map, and its turnover usually means the script itself was edited.
+ */
+interface HashBucketDiff {
+    added: string[];
+    changed: string[];
+    removed: string[];
+}
+
+interface HashDetailsDiff {
+    commandChanged: boolean;
+    implicitDeps: HashBucketDiff;
+    nodes: HashBucketDiff;
+    runtime: HashBucketDiff;
+}
+
+const diffHashBuckets = (
+    current: Record<string, string> | undefined,
+    previous: Record<string, string> | undefined,
+): HashBucketDiff => {
+    const currentMap = current ?? {};
+    const previousMap = previous ?? {};
+
+    const added: string[] = [];
+    const removed: string[] = [];
+    const changed: string[] = [];
+
+    for (const key of Object.keys(currentMap)) {
+        if (!(key in previousMap)) {
+            added.push(key);
+        } else if (currentMap[key] !== previousMap[key]) {
+            changed.push(key);
+        }
+    }
+
+    for (const key of Object.keys(previousMap)) {
+        if (!(key in currentMap)) {
+            removed.push(key);
+        }
+    }
+
+    added.sort();
+    removed.sort();
+    changed.sort();
+
+    return { added, changed, removed };
+};
+
+const diffHashDetails = (current: TaskHashDetails | undefined, previous: TaskHashDetails | undefined): HashDetailsDiff => {
+    return {
+        commandChanged: (current?.command ?? "") !== (previous?.command ?? ""),
+        implicitDeps: diffHashBuckets(current?.implicitDeps, previous?.implicitDeps),
+        nodes: diffHashBuckets(current?.nodes, previous?.nodes),
+        runtime: diffHashBuckets(current?.runtime, previous?.runtime),
+    };
+};
+
+/**
+ * Hashes are long opaque blobs; show enough prefix to be diff-grep-able
+ * but not so much that columns wrap. The trailing `…` is load-bearing —
+ * without it the user can't tell whether two truncated values are
+ * equal or just share a prefix.
+ */
+const HASH_DISPLAY_PREFIX = 16;
+
+const truncateHash = (value: string): string => (value.length > HASH_DISPLAY_PREFIX ? `${value.slice(0, HASH_DISPLAY_PREFIX)}…` : value);
+
+const renderHashDetailsBucket = (label: string, bucket: Record<string, string> | undefined, logger: Console): void => {
+    const entries = Object.entries(bucket ?? {});
+
+    if (entries.length === 0) {
+        return;
+    }
+
+    logger.info(`  ${label}:`);
+    entries.sort(([a], [b]) => a.localeCompare(b));
+
+    for (const [key, value] of entries) {
+        logger.info(`    ${key.padEnd(40)}  ${truncateHash(value)}`);
+    }
+};
+
+interface RunWhyOptions {
+    format: string;
+    runId: string | undefined;
+    workspaceRoot: string;
+}
+
+export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Console): Promise<void> => {
+    const { format, runId, workspaceRoot } = options;
+
+    const summary = runId === undefined ? await readLastRunSummary(workspaceRoot) : await readRunSummaryById(workspaceRoot, runId);
+
+    if (!summary) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "no-summary", runId: runId ?? null, taskId }, undefined, 2)}\n`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        if (runId === undefined) {
+            failure("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+        } else {
+            failure(`Run summary "${runId}" not found in .task-runner/runs/.`);
+        }
+
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const task = findTaskInSummary(summary, taskId);
+
+    if (!task) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "task-not-in-summary", runId: summary.id, taskId }, undefined, 2)}\n`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        failure(`Task "${taskId}" was not part of run ${summary.id}.`);
+        info(`Tasks in this run: ${summary.tasks.map((t) => t.taskId).join(", ") || "(none)"}`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const previousSummary = await readPreviousRunSummary(workspaceRoot, summary.id);
+    const previousTask = previousSummary ? findTaskInSummary(previousSummary, taskId) : undefined;
+    const diff = diffHashDetails(task.hashDetails, previousTask?.hashDetails);
+
+    if (format === "json") {
+        process.stdout.write(
+            `${JSON.stringify(
+                {
+                    diff,
+                    previousRunId: previousSummary?.id ?? null,
+                    previousTask: previousTask
+                        ? {
+                            cacheStatus: previousTask.cacheStatus,
+                            hash: previousTask.hash ?? null,
+                            hashDetails: previousTask.hashDetails ?? null,
+                        }
+                        : null,
+                    runId: summary.id,
+                    task: {
+                        cacheStatus: task.cacheStatus,
+                        hash: task.hash ?? null,
+                        hashDetails: task.hashDetails ?? null,
+                        taskId: task.taskId,
+                    },
+                },
+                undefined,
+                2,
+            )}\n`,
+        );
+
+        return;
+    }
+
+    info(`Why ${taskId}? (run ${summary.id})`);
+    logger.info("");
+    logger.info(`  status:  ${task.cacheStatus}`);
+    logger.info(`  hash:    ${task.hash ?? "(none)"}`);
+
+    if (previousTask) {
+        logger.info(`  prev:    ${previousTask.hash ?? "(none)"}  [run ${previousSummary?.id ?? "?"}]`);
+    } else {
+        logger.info(`  prev:    (no prior run found)`);
+    }
+
+    logger.info("");
+
+    if (!previousTask) {
+        info("No previous run to diff against — first time this task was recorded.");
+
+        return;
+    }
+
+    const noChanges = !diff.commandChanged && diff.nodes.added.length === 0 && diff.nodes.changed.length === 0 && diff.nodes.removed.length === 0
+        && diff.runtime.added.length === 0 && diff.runtime.changed.length === 0 && diff.runtime.removed.length === 0
+        && diff.implicitDeps.added.length === 0 && diff.implicitDeps.changed.length === 0 && diff.implicitDeps.removed.length === 0;
+
+    if (noChanges) {
+        success("No hash inputs changed since the previous run.");
+
+        return;
+    }
+
+    logger.info("Hash inputs that changed since the previous run:");
+    logger.info("");
+
+    if (diff.commandChanged) {
+        logger.info("  command:  changed");
+    }
+
+    for (const bucket of ["nodes", "runtime", "implicitDeps"] as const) {
+        const bucketDiff = diff[bucket];
+
+        if (bucketDiff.added.length === 0 && bucketDiff.changed.length === 0 && bucketDiff.removed.length === 0) {
+            continue;
+        }
+
+        logger.info(`  ${bucket}:`);
+
+        for (const key of bucketDiff.added) {
+            logger.info(`    + ${key}`);
+        }
+
+        for (const key of bucketDiff.changed) {
+            logger.info(`    ~ ${key}`);
+        }
+
+        for (const key of bucketDiff.removed) {
+            logger.info(`    - ${key}`);
+        }
+    }
+
+    logger.info("");
+    info(`Last summary file: ${getLastRunSummaryPath(workspaceRoot)}`);
+};
+
+interface RunHashOptions {
+    format: string;
+    runId: string | undefined;
+    workspaceRoot: string;
+}
+
+export const runHash = async (taskId: string, options: RunHashOptions, logger: Console): Promise<void> => {
+    const { format, runId, workspaceRoot } = options;
+
+    const summary = runId === undefined ? await readLastRunSummary(workspaceRoot) : await readRunSummaryById(workspaceRoot, runId);
+
+    if (!summary) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "no-summary", runId: runId ?? null, taskId }, undefined, 2)}\n`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        if (runId === undefined) {
+            failure("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+        } else {
+            failure(`Run summary "${runId}" not found in .task-runner/runs/.`);
+        }
+
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const task = findTaskInSummary(summary, taskId);
+
+    if (!task) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "task-not-in-summary", runId: summary.id, taskId }, undefined, 2)}\n`);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        failure(`Task "${taskId}" was not part of run ${summary.id}.`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (format === "json") {
+        process.stdout.write(
+            `${JSON.stringify(
+                {
+                    cacheStatus: task.cacheStatus,
+                    hash: task.hash ?? null,
+                    hashDetails: task.hashDetails ?? null,
+                    runId: summary.id,
+                    taskId: task.taskId,
+                },
+                undefined,
+                2,
+            )}\n`,
+        );
+
+        return;
+    }
+
+    info(`Hash for ${taskId} (run ${summary.id})`);
+    logger.info("");
+    logger.info(`  status:  ${task.cacheStatus}`);
+    logger.info(`  hash:    ${task.hash ?? "(none)"}`);
+
+    if (task.hashDetails) {
+        logger.info("");
+        logger.info(`  command: ${truncateHash(task.hashDetails.command)}`);
+        renderHashDetailsBucket("nodes", task.hashDetails.nodes, logger);
+        renderHashDetailsBucket("runtime", task.hashDetails.runtime, logger);
+        renderHashDetailsBucket("implicitDeps", task.hashDetails.implicitDeps, logger);
+    } else {
+        logger.info("");
+        info("No hash details recorded for this task.");
+    }
 };
 
 export const runSize = async (cacheDirectory: string, format: string): Promise<void> => {
@@ -396,9 +808,46 @@ export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsR
     const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
     await runPrune(cacheDirectory, workspaceRoot, {
+        keepLast: typeof options.keepLast === "number" ? options.keepLast : undefined,
         maxCacheAgeDays: typeof options.maxAgeDays === "number" ? options.maxAgeDays : undefined,
         maxCacheSize: options.maxSize,
     });
+};
+
+const resolveWorkspaceRoot = (workspaceRoot: string | undefined): string => workspaceRoot ?? process.cwd();
+
+export const cacheWhyExecute = async ({ argument, logger, options, workspaceRoot: wsRoot }: Toolbox<Console, CacheWhyOptions>): Promise<void> => {
+    const taskId = argument[0];
+
+    if (!taskId) {
+        failure("No task ID specified. Usage: vis cache why <project>:<target>");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    await runWhy(taskId, {
+        format: options.format ?? "table",
+        runId: options.run,
+        workspaceRoot: resolveWorkspaceRoot(wsRoot),
+    }, logger);
+};
+
+export const cacheHashExecute = async ({ argument, logger, options, workspaceRoot: wsRoot }: Toolbox<Console, CacheHashOptions>): Promise<void> => {
+    const taskId = argument[0];
+
+    if (!taskId) {
+        failure("No task ID specified. Usage: vis cache hash <project>:<target>");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    await runHash(taskId, {
+        format: options.format ?? "table",
+        runId: options.run,
+        workspaceRoot: resolveWorkspaceRoot(wsRoot),
+    }, logger);
 };
 
 export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheSizeOptions>): Promise<void> => {

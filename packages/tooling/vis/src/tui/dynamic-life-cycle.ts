@@ -7,6 +7,7 @@ import CommandSummary from "./components/CommandSummary";
 import { TaskStore } from "./components/TaskStore";
 import VisTaskRunnerApp from "./components/VisTaskRunnerApp";
 import { formatMs } from "./pretty-time";
+import type { OutputStyle } from "./static-life-cycle";
 import { getStatusInfo } from "./status-utils";
 import { CROSS } from "./symbols";
 import type { StdinEntry } from "./types";
@@ -18,6 +19,16 @@ interface DynamicOutputOptions {
     };
     /** Auto-exit config: false = stay open, true = 3s countdown, number = custom seconds */
     autoExit?: boolean | number;
+
+    /**
+     * Mirrors the static lifecycle's `outputStyle`. Dynamic mode already
+     * buffers all output into the TUI (the user inspects logs via panel
+     * navigation, not a stdout stream), so `quiet` only affects the
+     * post-exit auto-dump of failed task output. With `quiet`, even
+     * failures stay in the TUI scrollback rather than being re-printed
+     * below the summary. Defaults to `normal`.
+     */
+    outputStyle?: OutputStyle;
     projectNames: string[];
     /** Registry of writable stdin entries keyed by task ID, for interactive input. */
     stdinRegistry?: Map<string, StdinEntry>;
@@ -31,7 +42,7 @@ interface DynamicOutputResult {
 }
 
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
-    const { args, autoExit = false, projectNames, stdinRegistry, tasks } = options;
+    const { args, autoExit = false, outputStyle = "normal", projectNames, stdinRegistry, tasks } = options;
 
     const store = new TaskStore(tasks);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
@@ -143,8 +154,10 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
         process.stdout.write(`${summary}\n`);
 
-        // 3. Print failed task output so the user can copy/inspect errors
-        if (failedIds.length > 0) {
+        // 3. Print failed task output so the user can copy/inspect errors.
+        //    `quiet` keeps the dump out of stdout — the logs are still in
+        //    the TUI's scrollback, just not re-emitted below the summary.
+        if (failedIds.length > 0 && outputStyle !== "quiet") {
             for (const taskId of failedIds) {
                 const output = state.outputs.get(taskId);
 
