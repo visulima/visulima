@@ -53,6 +53,23 @@ export interface OwnersEntry {
 }
 
 /**
+ * Per-project TypeScript overlay loaded from `vis.task.ts`. Adds a
+ * dynamic, type-safe layer for target overrides on top of `project.json`,
+ * which stays the canonical home for static metadata (`tags`, `layer`,
+ * `stack`, `language`, `owners`, `projectType`, `sourceRoot`,
+ * `implicitDependencies`).
+ *
+ * `vis.task.ts` is opt-in. A package without one behaves identically to
+ * before its introduction. Targets defined here merge over `project.json`'s
+ * `targets` block — see `design-config-layering.md` for the full
+ * precedence stack.
+ */
+export interface VisTaskConfig {
+    /** Per-target overrides — same shape as `project.json#targets`. */
+    targets?: Record<string, VisTargetConfiguration>;
+}
+
+/**
  * Per-project metadata surfaced by `project.json`. Extended beyond the
  * minimal `projectType` / `tags` / `sourceRoot` fields we historically
  * parsed to include targets, owners, and layer/stack classification.
@@ -1171,11 +1188,43 @@ export type ProjectOptionsIndex = Map<string, Record<string, VisTargetConfigurat
 export type PackageJsonIndex = Map<string, PackageJson>;
 
 /**
+ * Pre-loaded `vis.task.ts` overlays keyed by *relative* project
+ * directory (the same key that {@link resolveWorkspacePatterns} returns).
+ * Callers that want the overlay applied must produce this map before
+ * calling {@link discoverWorkspace} — see `loadVisTaskConfigsForWorkspace`.
+ */
+export type VisTaskConfigIndex = Map<string, VisTaskConfig>;
+
+/**
+ * Merge per-project targets from `project.json` with the per-package
+ * `vis.task.ts` overlay. The overlay wins per-target via
+ * {@link mergeTargetWithInherit}, which honours the `@inherit` sentinel.
+ */
+const mergeProjectTargets = (
+    projectJsonTargets: Record<string, VisTargetConfiguration> | undefined,
+    visTaskTargets: Record<string, VisTargetConfiguration> | undefined,
+): Record<string, VisTargetConfiguration> | undefined => {
+    if (projectJsonTargets === undefined && visTaskTargets === undefined) {
+        return undefined;
+    }
+
+    const names = new Set<string>([...Object.keys(projectJsonTargets ?? {}), ...Object.keys(visTaskTargets ?? {})]);
+    const out: Record<string, VisTargetConfiguration> = {};
+
+    for (const name of names) {
+        out[name] = mergeTargetWithInherit(projectJsonTargets?.[name], visTaskTargets?.[name]) as VisTargetConfiguration;
+    }
+
+    return out;
+};
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
     workspaceRoot: string,
     config: VisConfig = {},
+    taskConfigs?: VisTaskConfigIndex,
 ): {
     config: VisConfig;
     packageJsons: PackageJsonIndex;
@@ -1226,7 +1275,8 @@ const discoverWorkspace = (
 
         const defaults = collectTargetDefaults(config, projectJson, projectType);
 
-        const visTargets = createTargetsFromScripts(pkg.scripts, projectJson?.targets, defaults, config.fileGroups);
+        const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.targets);
+        const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
 
         projectOptions.set(pkg.name, visTargets);
 
@@ -1320,11 +1370,62 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
     return { dependencies, nodes };
 };
 
+/**
+ * Pre-load every project's `vis.task.ts` overlay in parallel. Returns
+ * a {@link VisTaskConfigIndex} keyed by relative project directory, ready
+ * to pass into {@link discoverWorkspace}.
+ *
+ * This pre-pass is the bridge between sync `discoverWorkspace` and the
+ * async overlay loader — callers that want overlay support load this
+ * once up front, callers that don't simply omit the third argument and
+ * keep the legacy "no overlay" behaviour.
+ */
+const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<VisTaskConfigIndex> => {
+    const { loadVisTaskConfig } = await import("./config");
+    const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
+    const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
+
+    let workspacePatterns: string[] | undefined;
+
+    if (pnpmPatterns) {
+        workspacePatterns = pnpmPatterns;
+    } else if (rootPkg?.workspaces !== undefined) {
+        workspacePatterns = validateWorkspacesField(rootPkg.workspaces);
+    }
+
+    if (!workspacePatterns) {
+        return new Map();
+    }
+
+    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    const result: VisTaskConfigIndex = new Map();
+
+    await Promise.all(
+        projectDirectories.map(async (projectDirectory) => {
+            const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
+
+            if (!pkg?.name) {
+                return;
+            }
+
+            const overlay = await loadVisTaskConfig(workspaceRoot, join(workspaceRoot, projectDirectory), pkg.name);
+
+            if (overlay !== undefined) {
+                result.set(projectDirectory, overlay);
+            }
+        }),
+    );
+
+    return result;
+};
+
 export type { PackageJson, VisConfig };
+// VisTaskConfig is exported via its `export interface` declaration above.
 export {
     buildProjectGraph,
     collectTargetDefaults,
     discoverWorkspace,
+    loadVisTaskConfigsForWorkspace,
     readPnpmWorkspacePatterns,
     resolveWorkspacePatterns,
     scopeMatches,

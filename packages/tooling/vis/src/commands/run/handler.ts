@@ -46,7 +46,7 @@ import { applyProjectFilter } from "../../watch-filter";
 import type { KeybindHandle } from "../../watch-keybinds";
 import { installKeybinds, writeHelp } from "../../watch-keybinds";
 import type { VisProjectConfiguration } from "../../workspace";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../workspace";
 import type { RunOptions } from "./index";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
@@ -624,7 +624,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // matches pnpm/npm/yarn semantics so scripts can resolve paths
     // relative to where the user actually ran the command.
     const invocationCwd = process.cwd();
-    const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+    const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot);
+    const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
     const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
     let rawSelector = argument[0];
