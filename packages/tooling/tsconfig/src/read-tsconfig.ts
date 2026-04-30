@@ -13,6 +13,8 @@ import type { TsConfigJson } from "type-fest";
 
 import type { TsConfigJsonResolved } from "./types";
 import resolveExtendsPath from "./utils/resolve-extends-path";
+import { detectTypeScriptVersion } from "./utils/typescript-version";
+import { applyVersionDefaults } from "./version-defaults";
 
 const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }));
 
@@ -364,6 +366,17 @@ const interpolateConfigDirectory = (filePath: string, configDirectory: string): 
  */
 const compilerFieldsWithConfigDirectory = ["outDir", "declarationDir", "outFile", "rootDir", "baseUrl", "tsBuildInfoFile"] as const;
 
+/**
+ * TypeScript implies `useDefineForClassFields = true` when the *effective*
+ * target is ES2022 or later (ES2022, ES2023, ES2024, ES2025, ESNext).
+ *
+ * The previous implementation used `target.includes("es202")` which also
+ * matched ES2020/ES2021 — that was incorrect since TS only flips the flag at
+ * ES2022+.
+ */
+const targetImpliesUseDefineForClassFields = (target: string): boolean =>
+    target === "es2022" || target === "es2023" || target === "es2024" || target === "es2025" || target === "esnext";
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | undefined): TsConfigJsonResolved => {
     if (config.compilerOptions === undefined) {
@@ -527,7 +540,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         if (
             config.compilerOptions.useDefineForClassFields === undefined
             && config.compilerOptions.target
-            && (config.compilerOptions.target.includes("es202") || config.compilerOptions.target === "esnext")
+            && targetImpliesUseDefineForClassFields(config.compilerOptions.target)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useDefineForClassFields = true;
@@ -561,17 +574,13 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             config.compilerOptions.alwaysStrict = config.compilerOptions.alwaysStrict ?? true;
         }
 
-        if (config.compilerOptions.useDefineForClassFields === undefined && config.compilerOptions.target) {
-            let useDefineForClassFields = false;
-
-            if (config.compilerOptions.target.includes("es202") || config.compilerOptions.target === "esnext") {
-                useDefineForClassFields = true;
-            }
-
-            if (useDefineForClassFields) {
-                // eslint-disable-next-line no-param-reassign
-                config.compilerOptions.useDefineForClassFields = true;
-            }
+        if (
+            config.compilerOptions.useDefineForClassFields === undefined
+            && config.compilerOptions.target
+            && targetImpliesUseDefineForClassFields(config.compilerOptions.target)
+        ) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.useDefineForClassFields = true;
         }
 
         if (config.compilerOptions.strict && config.compilerOptions.useUnknownInCatchVariables === undefined) {
@@ -617,8 +626,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             && config.compilerOptions.module
             && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
             && config.compilerOptions.target
-            && !config.compilerOptions.target.includes("es202")
-            && config.compilerOptions.target !== "esnext"
+            && !targetImpliesUseDefineForClassFields(config.compilerOptions.target)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useDefineForClassFields = false;
@@ -665,15 +673,53 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
     return config;
 };
 
-export type Options = {
+type Options = {
     /**
      * Make the configuration compatible with the specified TypeScript version.
+     *
+     * Controls *derived* defaults — fields TypeScript synthesizes when other
+     * fields are set (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`).
      *
      * When `true`, it will make the configuration compatible with the latest TypeScript version.
      * @default undefined
      */
     tscCompatible?: "5.3" | "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
+
+    /**
+     * Apply the *unconditional* compiler-option defaults TypeScript would
+     * synthesize for the given version (e.g. TS 6.0's `strict: true`,
+     * `target: 'es2025'`, `moduleResolution: 'bundler'`).
+     * - `'auto'` — auto-detect the installed TypeScript version by walking up
+     * from the tsconfig directory (and consulting Yarn Berry pnp).
+     * - `string` — pin to an explicit version (e.g. `'6.0.0'`, `'5.4'`).
+     * - `false` (default) — do not apply unconditional defaults; preserves
+     * prior behaviour where the parsed config matches `tsc --showConfig`.
+     * Distinct from `tscCompatible`, which only governs derived defaults.
+     * Both can be combined.
+     * @default false
+     */
+    typescriptVersion?: "auto" | false | (Record<never, never> & string);
 };
+
+/**
+ * Resolves `options.typescriptVersion` to a concrete version string, or
+ * `undefined` when defaults should be skipped.
+ */
+const resolveTypeScriptVersion = (options: Options | undefined, configDirectory: string): string | undefined => {
+    const typescriptVersion = options?.typescriptVersion;
+
+    if (typescriptVersion === false || typescriptVersion === undefined) {
+        return undefined;
+    }
+
+    if (typescriptVersion === "auto") {
+        return detectTypeScriptVersion(configDirectory);
+    }
+
+    return typescriptVersion;
+};
+
+export type { Options };
 
 // eslint-disable-next-line no-template-curly-in-string
 export const configDirectoryPlaceholder: string = "${configDir}";
@@ -686,6 +732,12 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
     const config = internalParseTsConfig(resolvedTsconfigPath, options);
 
     const configDirectory = dirname(resolvedTsconfigPath);
+
+    const resolvedVersion = resolveTypeScriptVersion(options, configDirectory);
+
+    if (resolvedVersion && config.compilerOptions) {
+        applyVersionDefaults(config.compilerOptions, resolvedVersion);
+    }
 
     const { compilerOptions } = config;
 
