@@ -1,3 +1,15 @@
+## @visulima/tsconfig [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.11...@visulima/tsconfig@3.0.0-alpha.12) (2026-04-30)
+
+### Features
+
+* **tsconfig:** typescript-version-aware compiler defaults ([1a4236b](https://github.com/visulima/visulima/commit/1a4236bfe0dabb769a88a052a1c9e7511daf6e6d))
+
+### Miscellaneous Chores
+
+* added missing version key ([3b55253](https://github.com/visulima/visulima/commit/3b55253728af652a0bcaf230d93d2f9e9f2d8806))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **tsconfig:** upgrade packem to 2.0.0-alpha.76 ([4f08e20](https://github.com/visulima/visulima/commit/4f08e204f3a82f5da7346ad910cf39cb2c13de51))
+
 ## @visulima/tsconfig [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.10...@visulima/tsconfig@3.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes

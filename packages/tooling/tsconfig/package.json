@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tsconfig",
-    "version": "3.0.0-alpha.11",
+    "version": "3.0.0-alpha.12",
     "description": "Find and/or parse the tsconfig.json file from a directory path.",
     "keywords": [
         "anolilab",
