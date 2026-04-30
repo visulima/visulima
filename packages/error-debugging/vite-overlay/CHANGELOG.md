@@ -1,3 +1,16 @@
+## @visulima/vite-overlay [2.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.15...@visulima/vite-overlay@2.0.0-alpha.16) (2026-04-30)
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* **vite-overlay:** upgrade packem to 2.0.0-alpha.76 ([1fc8dc0](https://github.com/visulima/visulima/commit/1fc8dc0746374f8c6de5645527945693c21bcd62))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.14
+
 ## @visulima/vite-overlay [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.14...@visulima/vite-overlay@2.0.0-alpha.15) (2026-04-22)
 
 ### Bug Fixes
