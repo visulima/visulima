@@ -1,15 +1,22 @@
-import { readdir, readFile, realpath, rm, stat } from "node:fs/promises";
+import { readdir, realpath, rm, stat } from "node:fs/promises";
 import { createInterface } from "node:readline";
 
 import type { Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
 import { join } from "@visulima/path";
-import type { RunSummary, TaskHashDetails, TaskSummary } from "@visulima/task-runner";
 import { Cache, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
+import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai-cache";
 import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache-directory";
 import { failure, info, success, warn } from "../../output";
+import {
+    diffHashDetails,
+    findTaskInSummary,
+    readPreviousRunSummary,
+    readRunSummaryById,
+} from "../../run-summary-utils";
+import { clearSocketCache, getSocketCacheStats } from "../../socket-security";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheWhyOptions } from "./index";
 
 /**
@@ -200,6 +207,33 @@ export const runList = async (cacheDirectory: string, format: string, logger: Co
     }
 };
 
+// Keep each clear independent — a failure in one store (e.g. EPERM on a
+// stale lockfile) shouldn't prevent the others from being cleared, and
+// neither should bubble up and abort `vis cache clean`.
+export const clearAiCacheSafe = (): void => {
+    try {
+        const aiDeleted = clearAiResponseCache();
+
+        if (aiDeleted > 0) {
+            info(`Cleared ${String(aiDeleted)} cached AI response${aiDeleted === 1 ? "" : "s"}.`);
+        }
+    } catch (error: unknown) {
+        warn(`Failed to clear AI response cache: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
+
+export const clearSocketCacheSafe = (): void => {
+    try {
+        const socketDeleted = clearSocketCache();
+
+        if (socketDeleted > 0) {
+            info(`Cleared ${String(socketDeleted)} cached Socket.dev report${socketDeleted === 1 ? "" : "s"}.`);
+        }
+    } catch (error: unknown) {
+        warn(`Failed to clear Socket.dev cache: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
+
 export const runClean = async (cacheDirectory: string, workspaceRoot: string, options: { dryRun: boolean; force: boolean }): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
         info(`No cache directory to clean at ${cacheDirectory}`);
@@ -348,148 +382,6 @@ export const runPrune = async (
     }
 
     success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
-};
-
-/**
- * Loads a single run summary by ID (the file basename without `.json`)
- * from `.task-runner/runs/`. Returns `undefined` when missing or unparseable
- * so the caller can render a friendly error rather than crashing.
- */
-const readRunSummaryById = async (workspaceRoot: string, runId: string): Promise<RunSummary | undefined> => {
-    const path = join(workspaceRoot, ".task-runner", "runs", `${runId}.json`);
-
-    try {
-        const content = await readFile(path, "utf8");
-
-        return JSON.parse(content) as RunSummary;
-    } catch {
-        return undefined;
-    }
-};
-
-/**
- * Returns the previous run summary — the second-most-recent file in
- * `.task-runner/runs/`. Used by `vis cache why` to diff hash inputs
- * against the run that came right before this one.
- *
- * Excludes the currently-loaded summary by `id` so callers passing a
- * specific run via `--run` get *that run's* prior, not just "the one
- * before now."
- */
-const readPreviousRunSummary = async (workspaceRoot: string, currentId: string | undefined): Promise<RunSummary | undefined> => {
-    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
-
-    let dirents: string[];
-
-    try {
-        dirents = (await readdir(runsDirectory)) as unknown as string[];
-    } catch {
-        return undefined;
-    }
-
-    const candidates: { mtimeMs: number; path: string }[] = [];
-
-    for (const name of dirents) {
-        if (!name.endsWith(".json")) {
-            continue;
-        }
-
-        if (currentId !== undefined && name === `${currentId}.json`) {
-            continue;
-        }
-
-        const fullPath = join(runsDirectory, name);
-
-        try {
-            const s = await stat(fullPath);
-
-            if (s.isFile()) {
-                candidates.push({ mtimeMs: s.mtimeMs, path: fullPath });
-            }
-        } catch {
-            // Skip — file may have been removed concurrently.
-        }
-    }
-
-    if (candidates.length === 0) {
-        return undefined;
-    }
-
-    candidates.sort((a, b) => b.mtimeMs - a.mtimeMs);
-
-    try {
-        const content = await readFile(candidates[0]!.path, "utf8");
-
-        return JSON.parse(content) as RunSummary;
-    } catch {
-        return undefined;
-    }
-};
-
-const findTaskInSummary = (summary: RunSummary, taskId: string): TaskSummary | undefined =>
-    summary.tasks.find((task) => task.taskId === taskId);
-
-/**
- * Diff between two `TaskHashDetails` snapshots — the heart of `vis cache
- * why`. Reports per-bucket key changes so the user can see at a glance
- * which input rotated the cache hash.
- *
- * `commandChanged` is reported once at the top level (alongside the
- * per-bucket diffs) because the command is a single string, not a keyed
- * map, and its turnover usually means the script itself was edited.
- */
-interface HashBucketDiff {
-    added: string[];
-    changed: string[];
-    removed: string[];
-}
-
-interface HashDetailsDiff {
-    commandChanged: boolean;
-    implicitDeps: HashBucketDiff;
-    nodes: HashBucketDiff;
-    runtime: HashBucketDiff;
-}
-
-const diffHashBuckets = (
-    current: Record<string, string> | undefined,
-    previous: Record<string, string> | undefined,
-): HashBucketDiff => {
-    const currentMap = current ?? {};
-    const previousMap = previous ?? {};
-
-    const added: string[] = [];
-    const removed: string[] = [];
-    const changed: string[] = [];
-
-    for (const key of Object.keys(currentMap)) {
-        if (!(key in previousMap)) {
-            added.push(key);
-        } else if (currentMap[key] !== previousMap[key]) {
-            changed.push(key);
-        }
-    }
-
-    for (const key of Object.keys(previousMap)) {
-        if (!(key in currentMap)) {
-            removed.push(key);
-        }
-    }
-
-    added.sort();
-    removed.sort();
-    changed.sort();
-
-    return { added, changed, removed };
-};
-
-const diffHashDetails = (current: TaskHashDetails | undefined, previous: TaskHashDetails | undefined): HashDetailsDiff => {
-    return {
-        commandChanged: (current?.command ?? "") !== (previous?.command ?? ""),
-        implicitDeps: diffHashBuckets(current?.implicitDeps, previous?.implicitDeps),
-        nodes: diffHashBuckets(current?.nodes, previous?.nodes),
-        runtime: diffHashBuckets(current?.runtime, previous?.runtime),
-    };
 };
 
 /**
@@ -774,6 +666,43 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
     info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
 };
 
+// Which cache stores does an operation touch? "task" is the workspace task
+// runner cache (resolved with --scope/--cache-dir), "ai" is the global AI
+// response cache under ~/.vis/cache/ai, "socket" is the Socket.dev report
+// cache under ~/.vis/cache/socket-security. "all" means every store.
+type CacheTarget = "all" | "ai" | "socket" | "task";
+
+const parseCacheTarget = (raw: string | undefined): CacheTarget => {
+    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "all") {
+        return raw;
+    }
+
+    if (raw && raw.length > 0) {
+        warn(`Unknown --type value '${raw}'; falling back to 'all'.`);
+    }
+
+    return "all";
+};
+
+const includesTarget = (selected: CacheTarget, kind: Exclude<CacheTarget, "all">): boolean => selected === "all" || selected === kind;
+
+interface AuxStats {
+    entries: number;
+    newestEntry: number | undefined;
+    oldestEntry: number | undefined;
+    totalSizeBytes: number;
+}
+
+const isoOrNull = (value: number | undefined): string | null => (value === undefined ? null : new Date(value).toISOString());
+
+const printAuxStatsBlock = (label: string, stats: AuxStats): void => {
+    info(`${label}:`);
+    info(`  Entries:    ${String(stats.entries)}`);
+    info(`  Total size: ${formatBytes(stats.totalSizeBytes, { decimals: 1, space: false })}`);
+    info(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
+    info(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
+};
+
 type CacheScope = "all" | "shared" | "worktree";
 
 const parseScope = (raw: string | undefined): CacheScope => {
@@ -870,18 +799,43 @@ export const cacheListExecute = async ({ logger, options, visConfig, workspaceRo
 };
 
 export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheCleanOptions>): Promise<void> => {
-    const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const target = parseCacheTarget(options.type);
+    const dryRun = Boolean(options.dryRun);
 
-    // `runClean` already invokes `isCacheDirectoryInsideWorkspace` and
-    // prompts for out-of-workspace targets — when the user is in a linked
-    // worktree and the resolver landed on the *main* worktree's cache,
-    // that path lives outside the current `workspaceRoot`, so the
-    // existing prompt naturally requires `--force` (or interactive
-    // confirmation) before nuking the shared store.
-    await runClean(cacheDirectory, workspaceRoot, {
-        dryRun: Boolean(options.dryRun),
-        force: Boolean(options.force),
-    });
+    if (includesTarget(target, "task")) {
+        const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+        // `runClean` already invokes `isCacheDirectoryInsideWorkspace` and
+        // prompts for out-of-workspace targets — when the user is in a linked
+        // worktree and the resolver landed on the *main* worktree's cache,
+        // that path lives outside the current `workspaceRoot`, so the
+        // existing prompt naturally requires `--force` (or interactive
+        // confirmation) before nuking the shared store.
+        await runClean(cacheDirectory, workspaceRoot, {
+            dryRun,
+            force: Boolean(options.force),
+        });
+    }
+
+    if (includesTarget(target, "ai")) {
+        if (dryRun) {
+            const stats = getAiCacheStats();
+
+            info(`Would clear ${String(stats.entries)} cached AI response${stats.entries === 1 ? "" : "s"}.`);
+        } else {
+            clearAiCacheSafe();
+        }
+    }
+
+    if (includesTarget(target, "socket")) {
+        if (dryRun) {
+            const stats = getSocketCacheStats();
+
+            info(`Would clear ${String(stats.entries)} cached Socket.dev report${stats.entries === 1 ? "" : "s"}.`);
+        } else {
+            clearSocketCacheSafe();
+        }
+    }
 };
 
 export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CachePruneOptions>): Promise<void> => {
@@ -937,14 +891,75 @@ export const cacheHashExecute = async ({ argument, logger, options, workspaceRoo
 };
 
 export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheSizeOptions>): Promise<void> => {
-    const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const target = parseCacheTarget(options.type);
     const format = options.format ?? "table";
 
-    for (const directory of cacheDirectories) {
-        if (cacheDirectories.length > 1) {
-            info(`# ${directory}`);
+    if (format === "json") {
+        const payload: Record<string, unknown> = {};
+
+        if (includesTarget(target, "task")) {
+            const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+            payload.task = await Promise.all(cacheDirectories.map(async (directory) => {
+                const exists = isAccessibleSync(directory);
+                const entries = exists ? await collectCacheEntries(directory) : [];
+                const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
+
+                return {
+                    directory,
+                    entries: entries.length,
+                    exists,
+                    newestEntry: isoOrNull(entries[0]?.mtimeMs),
+                    oldestEntry: isoOrNull(entries.at(-1)?.mtimeMs),
+                    totalBytes,
+                };
+            }));
         }
 
-        await runSize(directory, format);
+        if (includesTarget(target, "ai")) {
+            const stats = getAiCacheStats();
+
+            payload.ai = {
+                entries: stats.entries,
+                newestEntry: isoOrNull(stats.newestEntry),
+                oldestEntry: isoOrNull(stats.oldestEntry),
+                totalBytes: stats.totalSizeBytes,
+            };
+        }
+
+        if (includesTarget(target, "socket")) {
+            const stats = getSocketCacheStats();
+
+            payload.socket = {
+                entries: stats.entries,
+                newestEntry: isoOrNull(stats.newestEntry),
+                oldestEntry: isoOrNull(stats.oldestEntry),
+                totalBytes: stats.totalSizeBytes,
+            };
+        }
+
+        process.stdout.write(`${JSON.stringify(payload, undefined, 2)}\n`);
+
+        return;
+    }
+
+    if (includesTarget(target, "task")) {
+        const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+        for (const directory of cacheDirectories) {
+            if (cacheDirectories.length > 1) {
+                info(`# ${directory}`);
+            }
+
+            await runSize(directory, "table");
+        }
+    }
+
+    if (includesTarget(target, "ai")) {
+        printAuxStatsBlock("AI response cache", getAiCacheStats());
+    }
+
+    if (includesTarget(target, "socket")) {
+        printAuxStatsBlock("Socket.dev report cache", getSocketCacheStats());
     }
 };

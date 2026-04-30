@@ -5,27 +5,30 @@ import React from "react";
 
 import type { AiConfig } from "../../ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../../ai-analysis";
-import { clearCache, getCacheStats } from "../../ai-cache";
-import { clearSocketCache } from "../../socket-security";
-import type { AiOptions } from "./index";
+import { renderDiscoveryJson, renderDiscoveryText } from "./discovery";
+import type {
+    AiFixOptions,
+    AiProvidersOptions,
+    AiRootOptions,
+    AiTestOptions,
+} from "./index";
 
-const handleCacheStats = (format: string, logger: Console): void => {
-    const stats = getCacheStats();
+export const aiRootExecute: CommandExecute<Toolbox<Console, AiRootOptions>> = async ({ options }) => {
+    const { default: aiCommands } = await import("./index");
+    const subcommands = aiCommands.filter((cmd) => cmd.name !== "ai");
+    const format = options.format ?? "text";
 
     if (format === "json") {
-        process.stdout.write(`${JSON.stringify(stats, undefined, 2)}\n`);
+        process.stdout.write(renderDiscoveryJson(subcommands));
 
         return;
     }
 
-    logger.info("AI Cache Statistics:");
-    logger.info(`  Entries:    ${String(stats.entries)}`);
-    logger.info(`  Total size: ${String(Math.round(stats.totalSizeBytes / 1024))} KB`);
-    logger.info(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
-    logger.info(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
+    process.stderr.write(renderDiscoveryText(subcommands));
 };
 
-const handleTest = async (logger: Console, aiConfig?: AiConfig): Promise<void> => {
+export const aiTestExecute: CommandExecute<Toolbox<Console, AiTestOptions>> = async ({ logger, visConfig }) => {
+    const aiConfig: AiConfig | undefined = visConfig?.ai;
     const provider = resolveProvider(aiConfig);
 
     if (!provider) {
@@ -49,7 +52,9 @@ const handleTest = async (logger: Console, aiConfig?: AiConfig): Promise<void> =
     }
 };
 
-const handleProviderStatus = (format: string, logger: Console, aiConfig?: AiConfig): void => {
+export const aiProvidersExecute: CommandExecute<Toolbox<Console, AiProvidersOptions>> = ({ logger, options, visConfig }) => {
+    const format = options.format ?? "table";
+    const aiConfig: AiConfig | undefined = visConfig?.ai;
     const allProviders = detectAllProviders();
     const selected = resolveProvider(aiConfig);
 
@@ -95,35 +100,8 @@ const handleProviderStatus = (format: string, logger: Console, aiConfig?: AiConf
     }
 };
 
-const execute = async ({ logger, options, visConfig }: Toolbox<Console, AiOptions>): Promise<void> => {
-    const format = options.format ?? "table";
+export const aiFixExecute: CommandExecute<Toolbox<Console, AiFixOptions>> = async (toolbox) => {
+    const { aiFix } = await import("./fix");
 
-    if (options.cacheStats) {
-        handleCacheStats(format, logger);
-
-        return;
-    }
-
-    if (options.clearCache) {
-        const aiDeleted = clearCache();
-        const socketDeleted = clearSocketCache();
-
-        logger.info(`Cleared ${String(aiDeleted)} cached AI response${aiDeleted === 1 ? "" : "s"}.`);
-
-        if (socketDeleted > 0) {
-            logger.info(`Cleared ${String(socketDeleted)} cached Socket.dev report${socketDeleted === 1 ? "" : "s"}.`);
-        }
-
-        return;
-    }
-
-    if (options.test) {
-        await handleTest(logger, visConfig?.ai);
-
-        return;
-    }
-
-    handleProviderStatus(format, logger, visConfig?.ai);
+    await aiFix(toolbox);
 };
-
-export default execute as CommandExecute<Toolbox>;

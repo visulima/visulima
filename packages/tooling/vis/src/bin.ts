@@ -11,7 +11,7 @@ import pkg from "../package.json";
 import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
 import affectedCommand from "./commands/affected";
-import aiCommand from "./commands/ai";
+import aiCommands from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
 import auditCommand from "./commands/audit";
@@ -134,7 +134,6 @@ cli.addCommand(taskWhyCommand);
 cli.addCommand(ignoreCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
-cli.addCommand(aiCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
@@ -187,6 +186,10 @@ for (const command of migrateCommands) {
 }
 
 for (const command of cacheCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of aiCommands) {
     cli.addCommand(command);
 }
 

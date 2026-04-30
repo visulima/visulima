@@ -8,7 +8,7 @@
  * @see https://github.com/vltpkg/vltpkg/tree/main/src/security-archive
  */
 
-import { readdirSync, rmSync, writeFileSync } from "node:fs";
+import { readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 
 import { ensureDirSync, isAccessibleSync, readJsonSync } from "@visulima/fs";
@@ -498,6 +498,45 @@ const clearSocketCache = (): number => {
     return files.length;
 };
 
+interface SocketCacheStats {
+    entries: number;
+    newestEntry: number | undefined;
+    oldestEntry: number | undefined;
+    totalSizeBytes: number;
+}
+
+const getSocketCacheStats = (): SocketCacheStats => {
+    const cacheDirectory = getCacheDirectory();
+
+    if (!isAccessibleSync(cacheDirectory)) {
+        return { entries: 0, newestEntry: undefined, oldestEntry: undefined, totalSizeBytes: 0 };
+    }
+
+    const files = readdirSync(cacheDirectory).filter((f) => f.endsWith(".json"));
+
+    let totalSizeBytes = 0;
+    let oldest: number | undefined;
+    let newest: number | undefined;
+
+    for (const file of files) {
+        const stat = statSync(join(cacheDirectory, file));
+
+        totalSizeBytes += stat.size;
+
+        const { mtimeMs } = stat;
+
+        if (oldest === undefined || mtimeMs < oldest) {
+            oldest = mtimeMs;
+        }
+
+        if (newest === undefined || mtimeMs > newest) {
+            newest = mtimeMs;
+        }
+    }
+
+    return { entries: files.length, newestEntry: newest, oldestEntry: oldest, totalSizeBytes };
+};
+
 /** Socket.dev config shape as it appears in VisConfig.security.socket. */
 interface SocketConfigLike {
     apiToken?: string;
@@ -601,6 +640,7 @@ export {
     formatReportSummary,
     formatSecurityOverview,
     getFullPackageName,
+    getSocketCacheStats,
     isPackageReportData,
     scoreColor,
     scoreLabel,

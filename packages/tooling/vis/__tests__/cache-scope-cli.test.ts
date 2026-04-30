@@ -267,18 +267,18 @@ describe("cache --scope CLI dispatch", () => {
         await cacheSizeExecute({
             argument: [],
             logger: logger as unknown as Console,
-            options: { "cache-dir": undefined, format: "json", scope: "all" },
+            options: { "cache-dir": undefined, format: "json", scope: "all", type: "task" },
             visConfig: undefined,
             workspaceRoot: main,
         } as never);
 
         const written = stdoutSpy.mock.calls.map((call) => String(call[0])).join("");
-        const payloads = splitJsonObjects(written);
+        const payload = JSON.parse(written) as { task: { directory: string }[] };
 
         // Primary checkout: shared and worktree resolve to the same directory,
-        // so only one payload — no double-count.
-        expect(payloads).toHaveLength(1);
-        expect(payloads[0]?.directory).toBe(sharedCache);
+        // so only one task entry — no double-count.
+        expect(payload.task).toHaveLength(1);
+        expect(payload.task[0]?.directory).toBe(sharedCache);
     });
 
     it("falls back to 'shared' when an unknown --scope value is passed", async () => {
