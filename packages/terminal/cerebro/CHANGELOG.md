@@ -1,3 +1,14 @@
+## @visulima/cerebro [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.12...@visulima/cerebro@3.0.0-alpha.13) (2026-04-30)
+
+### Features
+
+* **cerebro:** longest-prefix parser with option-stop and parent help ([ef1d244](https://github.com/visulima/visulima/commit/ef1d24446462cd5b34598f70715d4987c31b4eff))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.14
+
 ## @visulima/cerebro [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.11...@visulima/cerebro@3.0.0-alpha.12) (2026-04-28)
 
 ### Features
