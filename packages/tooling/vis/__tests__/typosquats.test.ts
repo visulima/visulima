@@ -256,6 +256,75 @@ describe(generateVariants, () => {
         });
     });
 
+    // ── Scoped-package brand-jacks ──────────────────────────────────
+
+    describe("scoped-package brand-jacks", () => {
+        it("should emit the scope as a standalone variant", () => {
+            expect.assertions(1);
+
+            const variants = generateVariants("@tanstack/start");
+
+            expect(variants.has("tanstack")).toBe(true);
+        });
+
+        it("should emit scope+sub combinations with each separator", () => {
+            expect.assertions(8);
+
+            const variants = generateVariants("@tanstack/start");
+
+            expect(variants.has("tanstack-start")).toBe(true);
+            expect(variants.has("tanstack.start")).toBe(true);
+            expect(variants.has("tanstack_start")).toBe(true);
+            expect(variants.has("tanstackstart")).toBe(true);
+            expect(variants.has("start-tanstack")).toBe(true);
+            expect(variants.has("start.tanstack")).toBe(true);
+            expect(variants.has("start_tanstack")).toBe(true);
+            expect(variants.has("starttanstack")).toBe(true);
+        });
+
+        it("should emit scope+app/cli/sdk-style suffix variants", () => {
+            expect.assertions(3);
+
+            const variants = generateVariants("@tanstack/start");
+
+            expect(variants.has("tanstack-app")).toBe(true);
+            expect(variants.has("tanstack-cli")).toBe(true);
+            expect(variants.has("tanstack-sdk")).toBe(true);
+        });
+
+        it("should emit sub-scope-suffix variants (e.g. start-tanstack-app)", () => {
+            expect.assertions(2);
+
+            const variants = generateVariants("@tanstack/start");
+
+            expect(variants.has("start-tanstack-app")).toBe(true);
+            expect(variants.has("app-tanstack-start")).toBe(true);
+        });
+
+        it("should not emit the bare sub alone (too generic, false positives)", () => {
+            // `start` on its own is too common to flag.
+            expect.assertions(1);
+
+            const variants = generateVariants("@tanstack/start");
+
+            expect(variants.has("start")).toBe(false);
+        });
+
+        it("should not emit brand-jack variants for malformed scoped names", () => {
+            // No slash, or empty scope/sub → skip brand-jack generation. (Other
+            // heuristics may still fire, e.g. character omission can produce
+            // `tanstack` from `@tanstack` — that's unrelated to brand-jacks.)
+            expect.assertions(2);
+
+            const noSlash = generateVariants("@tanstack");
+            const emptyScope = generateVariants("@/start");
+
+            // Brand-jack-specific variants should not appear.
+            expect(noSlash.has("tanstack-app")).toBe(false);
+            expect(emptyScope.has("start-app")).toBe(false);
+        });
+    });
+
     // ── Edge cases ──────────────────────────────────────────────────
 
     describe("edge cases", () => {
@@ -385,6 +454,27 @@ describe(checkTyposquat, () => {
 
         // "@something" has no "/" so bareName returns "@something" — unlikely to match
         expect(result).toBeUndefined();
+    });
+
+    it("should detect entries from the manual blocklist file", () => {
+        // Seeded in data/typosquats-manual.json; never written by sync-blocklist.
+        // 4 squats × 3 assertions each = 12
+        expect.assertions(12);
+
+        const cases: [string, string][] = [
+            ["tanstack", "@tanstack/start"],
+            ["tanstack-app", "@tanstack/start"],
+            ["tanstack-start", "@tanstack/start"],
+            ["start-tanstack-app", "@tanstack/start"],
+        ];
+
+        for (const [typo, expected] of cases) {
+            const result = checkTyposquat(typo);
+
+            expect(result, `"${typo}" should be detected as typosquat of "${expected}"`).toBeDefined();
+            expect(result!.legitimate).toBe(expected);
+            expect(result!.method).toBe("blocklist");
+        }
     });
 
     it("should detect all known blocklist entries in the JSON", () => {

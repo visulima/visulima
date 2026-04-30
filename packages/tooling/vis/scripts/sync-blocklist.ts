@@ -2,6 +2,11 @@
 /**
  * Discover new typosquats on npm and add them to data/typosquats.json.
  *
+ * Reads both data/typosquats.json (auto-generated, written by this script) and
+ * data/typosquats-manual.json (hand-curated). Manual entries are treated as
+ * already-known so they are never re-discovered or duplicated. Only the auto
+ * file is written.
+ *
  * Usage:
  *   npx tsx scripts/sync-blocklist.ts              # all packages in JSON
  *   npx tsx scripts/sync-blocklist.ts react vue     # specific packages
@@ -16,16 +21,21 @@ import type { Blocklist } from "../src/typosquats";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = resolve(__dirname, "../data/typosquats.json");
+const MANUAL_FILE = resolve(__dirname, "../data/typosquats-manual.json");
 const CONCURRENCY = 20;
 const REQUEST_TIMEOUT_MS = 10_000;
 
 // ── Helpers ────────────────────────────────────────────────────────
 
-const readBlocklist = (): Blocklist => {
+const readBlocklist = (path: string, { optional = false }: { optional?: boolean } = {}): Blocklist => {
     try {
-        return JSON.parse(readFileSync(DATA_FILE, "utf8")) as Blocklist;
+        return JSON.parse(readFileSync(path, "utf8")) as Blocklist;
     } catch (error) {
-        throw new Error(`Failed to read blocklist from ${DATA_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+        if (optional && (error as NodeJS.ErrnoException).code === "ENOENT") {
+            return {};
+        }
+
+        throw new Error(`Failed to read blocklist from ${path}: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
@@ -74,9 +84,10 @@ const pooled = async <T, R>(items: T[], concurrency: number, fn: (item: T) => Pr
 // ── Main ───────────────────────────────────────────────────────────
 
 const packages = process.argv.slice(2);
-const data = readBlocklist();
-const targets = packages.length > 0 ? packages : Object.keys(data);
-const allKnown = new Set(Object.values(data).flat());
+const data = readBlocklist(DATA_FILE);
+const manual = readBlocklist(MANUAL_FILE, { optional: true });
+const targets = packages.length > 0 ? packages : [...new Set([...Object.keys(data), ...Object.keys(manual)])];
+const allKnown = new Set([...Object.values(data).flat(), ...Object.values(manual).flat()]);
 
 console.log(`\n  Generating typosquat variants for ${String(targets.length)} packages...\n`);
 
