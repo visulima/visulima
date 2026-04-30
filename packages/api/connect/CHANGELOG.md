@@ -1,3 +1,10 @@
+## @visulima/connect [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.10...@visulima/connect@4.0.0-alpha.11) (2026-04-30)
+
+### Miscellaneous Chores
+
+* **connect:** upgrade packem to 2.0.0-alpha.76 ([7e3a33b](https://github.com/visulima/visulima/commit/7e3a33b6668284452fd51af3c99d2af3be2e61d5))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
 ## @visulima/connect [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.9...@visulima/connect@4.0.0-alpha.10) (2026-04-22)
 
 ### Bug Fixes
