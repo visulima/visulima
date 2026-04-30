@@ -4,8 +4,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { buildCodeownersLines, renderCodeowners } from "../../codeowners";
-import { discoverWorkspace } from "../../workspace";
+import { discoverWorkspace } from "../../config/workspace";
+import { buildCodeownersLines, renderCodeowners } from "../../util/codeowners";
 import type { SyncOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): Promise<void> => {

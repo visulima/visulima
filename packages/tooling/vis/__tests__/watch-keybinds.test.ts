@@ -8,8 +8,8 @@ import { EventEmitter } from "node:events";
 
 import { describe, expect, it, vi } from "vitest";
 
-import type { KeybindHandlers, KeypressKey } from "../src/watch-keybinds";
-import { installKeybinds } from "../src/watch-keybinds";
+import type { KeybindHandlers, KeypressKey } from "../src/watch/watch-keybinds";
+import { installKeybinds } from "../src/watch/watch-keybinds";
 
 // Stand-in for `process.stdin`. Adds the bits `installKeybinds` touches:
 // `isTTY`, `setRawMode`, `resume`, and the keypress event channel that

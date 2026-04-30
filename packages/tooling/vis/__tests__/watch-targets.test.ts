@@ -1,7 +1,7 @@
 import type { Task, TaskResult, TaskResults } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
-import { collectTrackedWatchTargets, createTrackedFileFilter } from "../src/watch";
+import { collectTrackedWatchTargets, createTrackedFileFilter } from "../src/watch/watch";
 
 const makeResult = (taskId: string, nodes: Record<string, string> | undefined): [string, TaskResult] => {
     const task: Task = {

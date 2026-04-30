@@ -5,8 +5,8 @@ import { join, resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_CACHE_DIRECTORY_NAME, resolveSharedCacheDirectory } from "../src/cache-directory";
-import { resetWorktreeCache } from "../src/git-worktree";
+import { DEFAULT_CACHE_DIRECTORY_NAME, resolveSharedCacheDirectory } from "../src/cache/cache-directory";
+import { resetWorktreeCache } from "../src/git/git-worktree";
 
 // When this test file runs inside a git pre-commit hook, git exports
 // GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running

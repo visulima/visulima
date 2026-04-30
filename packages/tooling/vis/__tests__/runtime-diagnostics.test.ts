@@ -10,7 +10,7 @@ import {
     listOrphanPids,
     ORPHANS_DIAGNOSTIC_ID,
     runRuntimeDiagnostics,
-} from "../src/runtime-diagnostics";
+} from "../src/runtime/runtime-diagnostics";
 
 describe(checkTtyAvailability, () => {
     it("reports `ok` when both stdin and stdout are TTYs", () => {

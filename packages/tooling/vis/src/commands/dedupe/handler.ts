@@ -1,6 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runDedupe } from "../../pm-runner";
+import { resolveInstaller, runDedupe } from "../../pm/pm-runner";
 import type { DedupeOptions } from "./index";
 
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DedupeOptions>): Promise<void> => {

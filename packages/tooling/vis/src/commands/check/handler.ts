@@ -4,16 +4,16 @@ import { render, renderToString, Text } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
-import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai-analysis";
-import type { CatalogCheckOptions, UpdateTarget } from "../../catalog";
-import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummary, loadNpmrc, readCatalogs, toFilterArray } from "../../catalog";
-import { info, success } from "../../output";
-import { detectPm } from "../../pm-runner";
-import { previewPnpmSync, printSecurityReport } from "../../security";
-import { buildSocketOptions, scoreColor } from "../../socket-security";
+import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
+import { pail } from "../../io/logger";
+import { detectPm } from "../../pm/pm-runner";
+import { previewPnpmSync, printSecurityReport } from "../../security/security";
+import { buildSocketOptions, scoreColor } from "../../security/socket-security";
 import CheckProgressApp from "../../tui/components/CheckProgressApp";
 import { UpdateStore } from "../../tui/components/update/UpdateStore";
 import VisUpdateApp from "../../tui/components/update/VisUpdateApp";
+import type { CatalogCheckOptions, UpdateTarget } from "../../util/catalog";
+import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummary, loadNpmrc, readCatalogs, toFilterArray } from "../../util/catalog";
 import type { CheckOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CheckOptions>): Promise<void> => {
@@ -33,17 +33,17 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             const synced = previewPnpmSync(visConfig ?? {});
 
             if (synced.length > 0) {
-                info("\nSettings that would sync to pnpm-workspace.yaml:");
+                pail.info("\nSettings that would sync to pnpm-workspace.yaml:");
 
                 for (const s of synced) {
-                    success(`  ${s}`);
+                    pail.success(`  ${s}`);
                 }
             } else {
-                info("No security settings to sync.");
+                pail.info("No security settings to sync.");
             }
         } else if (options.sync && pm.name !== "pnpm") {
-            info(`--sync is only available for pnpm projects. Your project uses ${pm.name}.`);
-            info("vis enforces security settings at the vis layer for non-pnpm projects.");
+            pail.info(`--sync is only available for pnpm projects. Your project uses ${pm.name}.`);
+            pail.info("vis enforces security settings at the vis layer for non-pnpm projects.");
         }
 
         // If only --security-config was passed (no outdated check), return

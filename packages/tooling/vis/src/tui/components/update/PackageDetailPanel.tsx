@@ -1,9 +1,9 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 
-import type { AiRecommendation } from "../../../ai-analysis";
-import type { OutdatedEntry } from "../../../catalog";
-import { scoreColor } from "../../../socket-security";
+import type { AiRecommendation } from "../../../ai/ai-analysis";
+import { scoreColor } from "../../../security/socket-security";
+import type { OutdatedEntry } from "../../../util/catalog";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 

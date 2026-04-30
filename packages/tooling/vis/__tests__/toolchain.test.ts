@@ -3,7 +3,7 @@ import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { DetectedManager } from "../src/toolchain";
+import type { DetectedManager } from "../src/runtime/toolchain";
 import {
     buildInstallInvocation,
     buildUseInvocation,
@@ -20,7 +20,7 @@ import {
     SUPPORTED_MANAGERS,
     updateEnginesField,
     writePackageManagerField,
-} from "../src/toolchain";
+} from "../src/runtime/toolchain";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 let tmpDirectory: string;

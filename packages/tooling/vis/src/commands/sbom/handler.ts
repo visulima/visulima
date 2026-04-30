@@ -4,9 +4,9 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { ensureDirSync } from "@visulima/fs";
 import { dirname, resolve } from "@visulima/path";
 
-import { note, success } from "../../output";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { pail } from "../../io/logger";
 import { buildCycloneDxBom, serializeBomToXml } from "../../sbom/cyclonedx";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
 import type { SbomOptions } from "./index";
 
 type SbomFormat = "json" | "xml";
@@ -63,8 +63,8 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const componentCount = bom.components?.length ?? 0;
     const dependencyCount = bom.dependencies?.length ?? 0;
 
-    success(`SBOM written to ${outPath}`);
-    note(`${componentCount} components, ${dependencyCount} dependency edges`);
+    pail.success(`SBOM written to ${outPath}`);
+    pail.notice(`${componentCount} components, ${dependencyCount} dependency edges`);
 };
 
 export default execute as CommandExecute<Toolbox>;

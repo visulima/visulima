@@ -1,9 +1,9 @@
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
-import { buildAliasMap, collectAvailableTargets, formatTargetList, resolveTargetAlias, suggestTarget, suggestTargets } from "../src/target-discovery";
-import type { VisTargetConfiguration } from "../src/target-options";
-import type { ProjectOptionsIndex } from "../src/workspace";
+import type { ProjectOptionsIndex } from "../src/config/workspace";
+import { buildAliasMap, collectAvailableTargets, formatTargetList, resolveTargetAlias, suggestTarget, suggestTargets } from "../src/task/target-discovery";
+import type { VisTargetConfiguration } from "../src/task/target-options";
 
 describe(collectAvailableTargets, () => {
     it("should return sorted unique targets from 2 projects with overlapping targets", () => {

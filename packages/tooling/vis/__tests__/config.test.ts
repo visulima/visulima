@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../src/config";
+import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../src/config/config";
 
 describe(defineConfig, () => {
     it("should apply secure defaults to empty config", () => {

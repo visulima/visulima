@@ -9,7 +9,8 @@
 
 import { createInterface } from "node:readline";
 
-import { bold, cyan, dim } from "../output";
+import { bold, cyan, dim } from "@visulima/colorize";
+
 import type { Options, Variable, VariableMap } from "./types";
 
 type RL = ReturnType<typeof createInterface>;

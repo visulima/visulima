@@ -1,8 +1,8 @@
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
-import { filterProjectsByQuery, parseQuery, parseTargetSelector, resolveSelector } from "../src/selectors";
-import type { VisProjectConfiguration } from "../src/workspace";
+import type { VisProjectConfiguration } from "../src/config/workspace";
+import { filterProjectsByQuery, parseQuery, parseTargetSelector, resolveSelector } from "../src/task/selectors";
 
 const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>>): WorkspaceConfiguration => {
     const full: Record<string, VisProjectConfiguration> = {};

@@ -2,10 +2,10 @@ import type { Plugin } from "@visulima/cerebro";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { info, warn } from "../output";
-import { detectPm } from "../pm-runner";
-import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "../security";
-import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../socket-security";
+import { pail } from "../io/logger";
+import { detectPm } from "../pm/pm-runner";
+import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "../security/security";
+import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../security/socket-security";
 
 const INSTALL_COMMANDS = new Set(["add", "install", "update"]);
 const PM_COMMANDS = new Set(["add", "dedupe", "install", "remove", "update"]);
@@ -92,8 +92,8 @@ const securityEnforcementPlugin: Plugin = {
                         const overview = formatSecurityOverview(reports);
 
                         if (overview) {
-                            info("");
-                            info(overview);
+                            pail.info("");
+                            pail.info(overview);
 
                             // Warn about critical/high alerts
                             let criticalHighCount = 0;
@@ -107,7 +107,7 @@ const securityEnforcementPlugin: Plugin = {
                             }
 
                             if (criticalHighCount > 0) {
-                                warn(
+                                pail.warn(
                                     `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
                                     + "Run 'vis check --security' for details.",
                                 );

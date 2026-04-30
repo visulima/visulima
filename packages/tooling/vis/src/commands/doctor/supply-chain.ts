@@ -17,7 +17,7 @@
  *           strictDepBuilds on with empty allowBuilds)
  */
 
-import type { VisConfig } from "../../workspace";
+import type { VisConfig } from "../../config/workspace";
 import type { SectionStatus, SupplyChainFinding, SupplyChainPosture } from "./sections";
 
 /**

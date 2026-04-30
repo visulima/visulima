@@ -12,11 +12,12 @@
 import { spawnSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { bold, cyan, dim } from "@visulima/colorize";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { isAbsolute, join, relative, resolve, sep } from "@visulima/path";
 
-import { bold, cyan, dim, info, note, success, warn } from "../../output";
-import { detectPm, runInstall } from "../../pm-runner";
+import { pail } from "../../io/logger";
+import { detectPm, runInstall } from "../../pm/pm-runner";
 import { discoverTemplate, inferParentDir } from "./discovery";
 import type { CreateCommandOptions } from "./index";
 import { runInteractivePrompts } from "./prompts";
@@ -49,13 +50,13 @@ const generateVscodeConfig = (projectDir: string): void => {
             const existing = readJsonSync(settingsPath) as Record<string, unknown>;
 
             writeFileSync(settingsPath, `${JSON.stringify({ ...defaultSettings, ...existing }, null, 4)}\n`);
-            success("Merged .vscode/settings.json");
+            pail.success("Merged .vscode/settings.json");
         } catch {
-            warn("Could not merge .vscode/settings.json, skipping");
+            pail.warn("Could not merge .vscode/settings.json, skipping");
         }
     } else {
         writeFileSync(settingsPath, `${JSON.stringify(defaultSettings, null, 4)}\n`);
-        success("Created .vscode/settings.json");
+        pail.success("Created .vscode/settings.json");
     }
 
     const extensionsPath = join(vscodeDir, "extensions.json");
@@ -76,13 +77,13 @@ const generateVscodeConfig = (projectDir: string): void => {
                     4,
                 )}\n`,
             );
-            success("Merged .vscode/extensions.json");
+            pail.success("Merged .vscode/extensions.json");
         } catch {
-            warn("Could not merge .vscode/extensions.json, skipping");
+            pail.warn("Could not merge .vscode/extensions.json, skipping");
         }
     } else {
         writeFileSync(extensionsPath, `${JSON.stringify(defaultExtensions, null, 4)}\n`);
-        success("Created .vscode/extensions.json");
+        pail.success("Created .vscode/extensions.json");
     }
 };
 
@@ -117,7 +118,7 @@ This project was scaffolded with vis create.
 `;
 
     writeFileSync(instructionsPath, content);
-    success("Created .ai/instructions");
+    pail.success("Created .ai/instructions");
 };
 
 const initGitRepo = (projectDir: string): void => {
@@ -127,9 +128,9 @@ const initGitRepo = (projectDir: string): void => {
     });
 
     if (result.status === 0) {
-        success("Initialized git repository");
+        pail.success("Initialized git repository");
     } else {
-        warn("Failed to initialize git repository");
+        pail.warn("Failed to initialize git repository");
     }
 };
 
@@ -143,7 +144,7 @@ const installDependencies = (
     logger: Console,
     preferOffline: boolean = false,
 ): boolean => {
-    info("Installing dependencies...");
+    pail.info("Installing dependencies...");
 
     const code = runInstall(
         pm,
@@ -166,12 +167,12 @@ const installDependencies = (
     );
 
     if (code === 0) {
-        success("Dependencies installed");
+        pail.success("Dependencies installed");
 
         return true;
     }
 
-    warn("Dependency installation failed (you can run install manually)");
+    pail.warn("Dependency installation failed (you can run install manually)");
 
     return false;
 };
@@ -207,31 +208,31 @@ const extractRepoName = (input: string): string => {
 // ── List templates ────────────────────────────────────────────────
 
 const listTemplates = (aliases?: Record<string, string>): void => {
-    info("");
-    info("  Built-in templates:");
-    info(`    ${bold(cyan("vis:monorepo"))}     ${dim("Full pnpm workspace setup")}`);
-    info(`    ${bold(cyan("vis:app"))}          ${dim("Application scaffold via create-vite")}`);
-    info(`    ${bold(cyan("vis:library"))}      ${dim("Reusable TypeScript library package")}`);
-    info(`    ${bold(cyan("vis:generator"))}    ${dim("Code generator scaffold with bin entry")}`);
+    pail.info("");
+    pail.info("  Built-in templates:");
+    pail.info(`    ${bold(cyan("vis:monorepo"))}     ${dim("Full pnpm workspace setup")}`);
+    pail.info(`    ${bold(cyan("vis:app"))}          ${dim("Application scaffold via create-vite")}`);
+    pail.info(`    ${bold(cyan("vis:library"))}      ${dim("Reusable TypeScript library package")}`);
+    pail.info(`    ${bold(cyan("vis:generator"))}    ${dim("Code generator scaffold with bin entry")}`);
 
     if (aliases && Object.keys(aliases).length > 0) {
-        info("");
-        info("  Config aliases (vis.config.ts → create.templates):");
+        pail.info("");
+        pail.info("  Config aliases (vis.config.ts → create.templates):");
 
         for (const [name, source] of Object.entries(aliases)) {
-            info(`    ${bold(cyan(name))}${" ".repeat(Math.max(1, 16 - name.length))}${dim(source)}`);
+            pail.info(`    ${bold(cyan(name))}${" ".repeat(Math.max(1, 16 - name.length))}${dim(source)}`);
         }
     }
 
-    info("");
-    info("  Remote templates:");
-    info(`    ${dim("Any npm create-* package:")}  vis create vite`);
-    info(`    ${dim("GitHub repository:")}         vis create user/repo`);
-    info(`    ${dim("GitLab / Bitbucket:")}        vis create gitlab:user/repo`);
-    info(`    ${dim("Full URL:")}                  vis create https://github.com/user/repo`);
-    info("");
-    info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
-    info("");
+    pail.info("");
+    pail.info("  Remote templates:");
+    pail.info(`    ${dim("Any npm create-* package:")}  vis create vite`);
+    pail.info(`    ${dim("GitHub repository:")}         vis create user/repo`);
+    pail.info(`    ${dim("GitLab / Bitbucket:")}        vis create gitlab:user/repo`);
+    pail.info(`    ${dim("Full URL:")}                  vis create https://github.com/user/repo`);
+    pail.info("");
+    pail.info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
+    pail.info("");
 };
 
 // ── Print next steps ──────────────────────────────────────────────
@@ -240,19 +241,19 @@ const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInst
     const relative = resolve(cwd) === resolve(targetDir) ? "" : targetDir;
 
     process.stderr.write("\n");
-    success("Project created successfully!");
+    pail.success("Project created successfully!");
     process.stderr.write("\n");
-    note("Next steps:");
+    pail.notice("Next steps:");
 
     if (relative) {
-        info(`  cd ${relative}`);
+        pail.info(`  cd ${relative}`);
     }
 
     if (!depsInstalled) {
-        info(`  ${pmName} install`);
+        pail.info(`  ${pmName} install`);
     }
 
-    info(`  ${pmName} run dev`);
+    pail.info(`  ${pmName} run dev`);
     process.stderr.write("\n");
 };
 
@@ -390,12 +391,12 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     }
 
     if (resolvedInput !== templateInput) {
-        info(`Alias:    ${bold(cyan(templateInput))} → ${dim(resolvedInput)}`);
+        pail.info(`Alias:    ${bold(cyan(templateInput))} → ${dim(resolvedInput)}`);
     }
 
-    info(`Template: ${bold(cyan(resolvedInput))}`);
-    info(`Project:  ${bold(projectName)}`);
-    info(`Target:   ${dim(targetDir)}`);
+    pail.info(`Template: ${bold(cyan(resolvedInput))}`);
+    pail.info(`Project:  ${bold(projectName)}`);
+    pail.info(`Target:   ${dim(targetDir)}`);
     process.stderr.write("\n");
 
     const code = await executeTemplate(config, {

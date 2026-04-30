@@ -1,7 +1,7 @@
 import type { Task } from "@visulima/task-runner";
 
-import { definePlugin } from "../config";
-import type { VisPlugin } from "../hooks";
+import { definePlugin } from "../config/config";
+import type { VisPlugin } from "../util/hooks";
 
 /**
  * Minimal OTel-shaped span. Deliberately structural so users can pass

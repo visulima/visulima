@@ -1,10 +1,10 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { findPackageManagerSync } from "@visulima/package";
 
-import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai-analysis";
-import type { OutdatedEntry } from "../../catalog";
-import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../../catalog";
-import { buildSocketOptions, fetchSocketReports } from "../../socket-security";
+import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
+import { buildSocketOptions, fetchSocketReports } from "../../security/socket-security";
+import type { OutdatedEntry } from "../../util/catalog";
+import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../../util/catalog";
 import type { AnalyzeOptions } from "./index";
 
 const VERSION_PREFIX_REGEX = /^[\^~>=<]+/;

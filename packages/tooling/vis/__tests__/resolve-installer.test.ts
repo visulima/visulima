@@ -27,7 +27,7 @@ vi.mock(import('@visulima/vis/native'), async () => {
     };
 });
 
-const { resolveInstaller } = await import("../src/pm-runner");
+const { resolveInstaller } = await import("../src/pm/pm-runner");
 
 const ORIGINAL_VIS_INSTALLER = process.env.VIS_INSTALLER;
 

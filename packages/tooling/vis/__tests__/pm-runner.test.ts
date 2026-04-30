@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { detectPm, resolveInfo } from "../src/pm-runner";
+import { detectPm, resolveInfo } from "../src/pm/pm-runner";
 
 describe(detectPm, () => {
     it("should detect a valid package manager for the workspace", () => {

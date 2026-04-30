@@ -1,8 +1,8 @@
 import type { WorkspaceConfiguration } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
-import { buildCodeownersLines, renderCodeowners } from "../src/codeowners";
-import type { VisProjectConfiguration } from "../src/workspace";
+import type { VisProjectConfiguration } from "../src/config/workspace";
+import { buildCodeownersLines, renderCodeowners } from "../src/util/codeowners";
 
 describe(buildCodeownersLines, () => {
     it("should prefix paths with each project's root and sort by path (file-source)", () => {

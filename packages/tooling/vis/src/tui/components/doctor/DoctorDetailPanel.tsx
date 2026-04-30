@@ -2,7 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 import React from "react";
 
-import { scoreColor } from "../../../socket-security";
+import { scoreColor } from "../../../security/socket-security";
 import type { DoctorFinding } from "./findings";
 import { SECTION_LABELS } from "./findings";
 

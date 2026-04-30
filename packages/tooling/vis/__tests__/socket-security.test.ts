@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AcceptedRisk, PackageReportData, PackageScore } from "../src/socket-security";
+import type { AcceptedRisk, PackageReportData, PackageScore } from "../src/security/socket-security";
 
 // Mock homedir before importing the module under test
 const TEST_HOME = join(tmpdir(), `vis-socket-test-${String(process.pid)}-${String(Date.now())}`);
@@ -27,7 +27,7 @@ const {
     isPackageReportData,
     scoreColor,
     scoreLabel,
-} = await import("../src/socket-security");
+} = await import("../src/security/socket-security");
 
 // --- Helpers ---
 

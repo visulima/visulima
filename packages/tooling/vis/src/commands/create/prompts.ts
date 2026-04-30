@@ -6,9 +6,9 @@
 
 import { createInterface } from "node:readline";
 
+import { bold, cyan, dim } from "@visulima/colorize";
 import { resolve } from "@visulima/path";
 
-import { bold, cyan, dim } from "../../output";
 import { randomName } from "./random-name";
 import { isEmptyDir, isValidPackageName, toValidPackageName } from "./utils";
 

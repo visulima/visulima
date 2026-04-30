@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyPreset, defaultCacheForType, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../src/target-options";
+import { applyPreset, defaultCacheForType, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../src/task/target-options";
 
 describe(applyPreset, () => {
     it("should return the target unchanged when no preset is set", () => {

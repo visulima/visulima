@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyProjectFilter } from "../src/watch-filter";
+import { applyProjectFilter } from "../src/watch/watch-filter";
 
 const task = (project: string, target = "test"): { id: string; target: { project: string; target: string } } => {
     return {

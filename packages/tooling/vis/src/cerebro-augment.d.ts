@@ -1,4 +1,4 @@
-import type { VisConfig } from "./workspace";
+import type { VisConfig } from "./config/workspace";
 
 declare global {
     namespace Cerebro {

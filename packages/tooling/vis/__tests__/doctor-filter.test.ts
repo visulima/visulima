@@ -28,11 +28,15 @@ const baseResults: DoctorResults = {
 
 describe(parseFilterPatterns, () => {
     it("returns empty list for undefined or empty", () => {
+        expect.assertions(2);
+
         expect(parseFilterPatterns(undefined)).toEqual([]);
         expect(parseFilterPatterns("")).toEqual([]);
     });
 
     it("compiles literal package names to anchored regex", () => {
+        expect.assertions(2);
+
         const [pattern] = parseFilterPatterns("lodash");
 
         expect(pattern!.test("lodash")).toBe(true);
@@ -40,6 +44,8 @@ describe(parseFilterPatterns, () => {
     });
 
     it("compiles globs with * to match any segment", () => {
+        expect.assertions(3);
+
         const [pattern] = parseFilterPatterns("@types/*");
 
         expect(pattern!.test("@types/node")).toBe(true);
@@ -48,12 +54,16 @@ describe(parseFilterPatterns, () => {
     });
 
     it("splits comma-separated patterns", () => {
+        expect.assertions(1);
+
         const patterns = parseFilterPatterns("react,@types/*");
 
         expect(patterns).toHaveLength(2);
     });
 
     it("matches case-insensitively", () => {
+        expect.assertions(1);
+
         const [pattern] = parseFilterPatterns("REACT");
 
         expect(pattern!.test("react")).toBe(true);
@@ -62,12 +72,16 @@ describe(parseFilterPatterns, () => {
 
 describe(applyFilter, () => {
     it("returns the same results when no patterns are passed", () => {
+        expect.assertions(1);
+
         const out = applyFilter(baseResults, []);
 
         expect(out).toBe(baseResults);
     });
 
     it("narrows outdated/duplicates/optimizations by package name", () => {
+        expect.assertions(3);
+
         const patterns = parseFilterPatterns("react");
         const out = applyFilter(baseResults, patterns);
 
@@ -77,6 +91,8 @@ describe(applyFilter, () => {
     });
 
     it("supports glob patterns", () => {
+        expect.assertions(2);
+
         const patterns = parseFilterPatterns("@types/*");
         const out = applyFilter(baseResults, patterns);
 
@@ -125,6 +141,8 @@ describe(filterFindingsByPattern, () => {
     };
 
     it("passes runtime findings through regardless of patterns", () => {
+        expect.assertions(1);
+
         const findings = [makeFinding("runtime", "node-version"), makeFinding("outdated", "lodash")];
         const out = filterFindingsByPattern(findings, parseFilterPatterns("react"));
 
@@ -132,6 +150,8 @@ describe(filterFindingsByPattern, () => {
     });
 
     it("returns the input list unchanged when no patterns", () => {
+        expect.assertions(1);
+
         const findings = [makeFinding("outdated", "react"), makeFinding("duplicate", "lodash")];
         const out = filterFindingsByPattern(findings, []);
 

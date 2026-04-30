@@ -1,6 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runInfo } from "../../pm-runner";
+import { resolveInstaller, runInfo } from "../../pm/pm-runner";
 import type { InfoOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, InfoOptions>): Promise<void> => {

@@ -2,8 +2,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import type { TargetConfiguration, Task, TaskTarget } from "@visulima/task-runner";
 import { createTaskGraph } from "@visulima/task-runner";
 
-import { filterProjectsByQuery, resolveSelector } from "../../selectors";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import type { ActionGraphOptions } from "./index";
 
 /**

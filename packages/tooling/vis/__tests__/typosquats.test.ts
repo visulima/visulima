@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/typosquats";
-import { parsePackageArgument } from "../src/utils";
+import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/security/typosquats";
+import { parsePackageArgument } from "../src/util/utils";
 
 // Mock node:readline so we can control createInterface in interactive tests
 let mockCreateInterface: ReturnType<typeof vi.fn> | undefined;

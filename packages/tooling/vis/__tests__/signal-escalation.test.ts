@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { scheduleTimeoutKill } from "../src/signal-escalation";
+import { scheduleTimeoutKill } from "../src/util/signal-escalation";
 
 describe(scheduleTimeoutKill, () => {
     beforeEach(() => {

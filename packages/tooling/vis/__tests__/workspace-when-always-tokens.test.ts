@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverWorkspace } from "../src/workspace";
+import { discoverWorkspace } from "../src/config/workspace";
 
 const writeProject = (root: string, name: string, projectJson: Record<string, unknown>, scripts?: Record<string, string>): void => {
     const directory = join(root, "packages", name);

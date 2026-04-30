@@ -28,6 +28,8 @@ const sample = (): DoctorFinding[] => [
 
 describe(DoctorStore, () => {
     it("seeds entries with the first active section selected", () => {
+        expect.assertions(5);
+
         const store = new DoctorStore(sample());
         const state = store.getSnapshot();
 
@@ -39,6 +41,8 @@ describe(DoctorStore, () => {
     });
 
     it("filters by section type and resets selection", () => {
+        expect.assertions(3);
+
         const store = new DoctorStore(sample());
 
         store.setSelectedIndex(3);
@@ -52,6 +56,8 @@ describe(DoctorStore, () => {
     });
 
     it("filters by free text case-insensitively against title", () => {
+        expect.assertions(1);
+
         const store = new DoctorStore(sample());
 
         store.setFilter("ALPHA");
@@ -60,6 +66,8 @@ describe(DoctorStore, () => {
     });
 
     it("combines section filter and text filter", () => {
+        expect.assertions(1);
+
         const store = new DoctorStore(sample());
 
         store.setFilterType("dependencies");
@@ -69,6 +77,8 @@ describe(DoctorStore, () => {
     });
 
     it("clears the text on filter close", () => {
+        expect.assertions(3);
+
         const store = new DoctorStore(sample());
 
         store.setFilterActive(true);
@@ -83,6 +93,8 @@ describe(DoctorStore, () => {
     });
 
     it("clamps selectedIndex to entries length", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore(sample());
 
         store.setSelectedIndex(99);
@@ -95,6 +107,8 @@ describe(DoctorStore, () => {
     });
 
     it("toggles focused panel", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore(sample());
 
         store.setFocusedPanel("detail");
@@ -107,6 +121,8 @@ describe(DoctorStore, () => {
     });
 
     it("notifies subscribers on state change", () => {
+        expect.assertions(1);
+
         const store = new DoctorStore(sample());
         let calls = 0;
         const unsubscribe = store.subscribe(() => {
@@ -122,6 +138,8 @@ describe(DoctorStore, () => {
     });
 
     it("does not emit when state would not change", () => {
+        expect.assertions(1);
+
         const store = new DoctorStore(sample());
         let calls = 0;
 
@@ -137,6 +155,8 @@ describe(DoctorStore, () => {
     });
 
     it("starts empty in streaming mode and tracks per-section status", () => {
+        expect.assertions(3);
+
         const store = new DoctorStore({});
         const initial = store.getSnapshot();
 
@@ -146,6 +166,8 @@ describe(DoctorStore, () => {
     });
 
     it("startSection flips status to running and stores message", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore({});
 
         store.startSection("dependencies", "scanning catalog");
@@ -157,6 +179,8 @@ describe(DoctorStore, () => {
     });
 
     it("completeSection appends findings, regroups, and clears message", () => {
+        expect.assertions(4);
+
         const store = new DoctorStore({});
 
         store.startSection("dependencies", "loading");
@@ -174,6 +198,8 @@ describe(DoctorStore, () => {
     });
 
     it("completeSection layers — security findings appear after deps", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore({});
 
         store.completeSection("dependencies", [make("dependencies", "alpha", "warn")]);
@@ -187,6 +213,8 @@ describe(DoctorStore, () => {
     });
 
     it("failSection records error and flips status without dropping prior data", () => {
+        expect.assertions(3);
+
         const store = new DoctorStore({});
 
         store.completeSection("dependencies", [make("dependencies", "alpha", "warn")]);
@@ -200,6 +228,8 @@ describe(DoctorStore, () => {
     });
 
     it("setSeverityFilter narrows entries to a single severity", () => {
+        expect.assertions(3);
+
         const store = new DoctorStore(sample());
 
         store.setFilterType("security");
@@ -213,6 +243,8 @@ describe(DoctorStore, () => {
     });
 
     it("setSeverityFilter clears when set back to undefined", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore(sample());
 
         store.setFilterType("security");
@@ -226,6 +258,8 @@ describe(DoctorStore, () => {
     });
 
     it("setPendingAction stores and clears the action", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore({});
 
         store.setPendingAction({ command: "vis update lodash", description: "Update lodash" });
@@ -238,6 +272,8 @@ describe(DoctorStore, () => {
     });
 
     it("severity filter combines with section + text filters", () => {
+        expect.assertions(2);
+
         const store = new DoctorStore(sample());
 
         store.setFilterType("security");

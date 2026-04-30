@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyOverrides, lockfileContainsPackage, readLockfileText, readOverrides } from "../src/overrides";
+import { applyOverrides, lockfileContainsPackage, readLockfileText, readOverrides } from "../src/pm/overrides";
 
 let tmpDir: string;
 

@@ -3,7 +3,7 @@ import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
-import { detectPm } from "../../pm-runner";
+import { detectPm } from "../../pm/pm-runner";
 import type { PackageManager } from "../../tui/components/devcontainer/catalogs/mount-suggestions";
 import { TEMPLATES } from "../../tui/components/devcontainer/catalogs/templates";
 import { readDevcontainerJson, writeDevcontainerJson } from "../../tui/components/devcontainer/devcontainer-io";

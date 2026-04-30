@@ -7,9 +7,9 @@ import zeptomatch from "zeptomatch";
 
 import { sortPackageJsonStringWithOptions } from "#native";
 
-import { failure, info, success, warn } from "../../output";
-import { errorMessage } from "../../utils";
-import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../workspace";
+import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import { errorMessage } from "../../util/utils";
 import type { SortPackageJsonOptions } from "./index";
 
 type LineEnding = "auto" | "crlf" | "lf";
@@ -149,7 +149,7 @@ const validateLineEnding = (raw: string | undefined): LineEnding => {
         return raw as LineEnding;
     }
 
-    failure(`--line-ending must be one of: auto, lf, crlf (got "${raw}")`);
+    pail.error(`--line-ending must be one of: auto, lf, crlf (got "${raw}")`);
     process.exit(2);
 };
 
@@ -287,7 +287,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const files = filterByIgnore(allFiles, normalized.ignore, cwd);
 
     if (files.length === 0) {
-        info(allFiles.length === 0 ? "No package.json files found." : "All package.json files were excluded by --ignore.");
+        pail.info(allFiles.length === 0 ? "No package.json files found." : "All package.json files were excluded by --ignore.");
 
         return;
     }
@@ -305,7 +305,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             try {
                 sorted = sortContents(contents, normalized);
             } catch (error: unknown) {
-                failure(`${filePath}: ${errorMessage(error)}`);
+                pail.error(`${filePath}: ${errorMessage(error)}`);
                 errorCount++;
                 continue;
             }
@@ -318,23 +318,23 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             unsortedCount++;
 
             if (check) {
-                warn(`${filePath} is not sorted`);
+                pail.warn(`${filePath} is not sorted`);
             } else {
                 writeFileSync(filePath, sorted, "utf8");
-                success(`Sorted ${filePath}`);
+                pail.success(`Sorted ${filePath}`);
             }
         } catch (error: unknown) {
-            failure(`${filePath}: ${errorMessage(error)}`);
+            pail.error(`${filePath}: ${errorMessage(error)}`);
             errorCount++;
         }
     }
 
     if (check) {
         if (unsortedCount > 0) {
-            info(`${unsortedCount} file${unsortedCount === 1 ? "" : "s"} not sorted, ${sortedCount} already sorted`);
+            pail.info(`${unsortedCount} file${unsortedCount === 1 ? "" : "s"} not sorted, ${sortedCount} already sorted`);
             process.exitCode = 1;
         } else {
-            info(`All ${sortedCount} package.json file${sortedCount === 1 ? " is" : "s are"} sorted`);
+            pail.info(`All ${sortedCount} package.json file${sortedCount === 1 ? " is" : "s are"} sorted`);
         }
     } else {
         const parts: string[] = [];
@@ -351,7 +351,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
             parts.push(`${errorCount} error${errorCount === 1 ? "" : "s"}`);
         }
 
-        info(parts.join(", "));
+        pail.info(parts.join(", "));
     }
 
     if (errorCount > 0) {

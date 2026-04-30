@@ -1,32 +1,34 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
-import type { CatalogCheckOptions } from "../../catalog";
-import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../../catalog";
-import { findVisConfigFile } from "../../config";
-import type { InstalledPackage } from "../../dependency-scan";
-import { findDuplicateDependencies, lockedPackages } from "../../dependency-scan";
-import { buildDoctorCacheKey, readDoctorCache, writeDoctorCache } from "../../doctor-cache";
-import { bold, cyan, dim, error as errorOutput, green, note, plain, red, success, SYMBOLS, warn, yellow } from "../../output";
-import { applyOverrides, readLockfileText } from "../../overrides";
-import { detectPm, runInstall } from "../../pm-runner";
-import type { RuntimeFinding } from "../../runtime-check";
-import { checkRuntimeVersions } from "../../runtime-check";
-import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } from "../../runtime-diagnostics";
-import type { ScanProgress, ScanTask } from "../../scan-progress";
-import { startScanProgress } from "../../scan-progress";
-import type { PackageReportData } from "../../socket-security";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../socket-security";
+import { buildDoctorCacheKey, readDoctorCache, writeDoctorCache } from "../../cache/doctor-cache";
+import { findVisConfigFile } from "../../config/config";
+import type { VisConfig } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import { SYMBOLS } from "../../io/symbols";
+import { applyOverrides, readLockfileText } from "../../pm/overrides";
+import { detectPm, runInstall } from "../../pm/pm-runner";
+import type { RuntimeFinding } from "../../runtime/runtime-check";
+import { checkRuntimeVersions } from "../../runtime/runtime-check";
+import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } from "../../runtime/runtime-diagnostics";
+import type { ScanProgress, ScanTask } from "../../scan/scan-progress";
+import { startScanProgress } from "../../scan/scan-progress";
+import type { InstalledPackage } from "../../security/dependency-scan";
+import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import type { PackageReportData } from "../../security/socket-security";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../../security/socket-security";
 import { DoctorStore } from "../../tui/components/doctor/DoctorStore";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import { flattenFindings } from "../../tui/components/doctor/findings";
 import type { DoctorBannerInput } from "../../tui/components/doctor/VisDoctorApp";
 import VisDoctorApp from "../../tui/components/doctor/VisDoctorApp";
-import type { VisConfig } from "../../workspace";
+import type { CatalogCheckOptions } from "../../util/catalog";
+import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../../util/catalog";
 import { buildE18eEntries, buildSocketEntries, collectDepsFromPkgJson, discoverWorkspacePackages, markCodemodAvailability, runCodemod } from "../optimize/handler";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
@@ -281,7 +283,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         outdatedError = error instanceof Error ? error.message : String(error);
 
         if (!store) {
-            warn(`Outdated scan failed: ${outdatedError}`);
+            pail.warn(`Outdated scan failed: ${outdatedError}`);
         }
 
         return { failed: [], ignored: [], outdated: [] };
@@ -291,7 +293,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         vulnError = error instanceof Error ? error.message : String(error);
 
         if (!store) {
-            warn(`Vulnerability scan failed: ${vulnError}`);
+            pail.warn(`Vulnerability scan failed: ${vulnError}`);
         }
 
         return new Map<string, never[]>();
@@ -301,7 +303,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         socketError = error instanceof Error ? error.message : String(error);
 
         if (!store) {
-            warn(`Socket scan failed: ${socketError}`);
+            pail.warn(`Socket scan failed: ${socketError}`);
         }
 
         return new Map<string, PackageReportData>();
@@ -490,9 +492,9 @@ const displayDependencies = (results: DoctorResults): void => {
         return;
     }
 
-    plain("");
-    plain(heading("Dependencies", sectionStatus(results, "dependencies")));
-    plain(itemOk(countLine(results.installedCount, "packages installed")));
+    pail.log("");
+    pail.log(heading("Dependencies", sectionStatus(results, "dependencies")));
+    pail.log(itemOk(countLine(results.installedCount, "packages installed")));
 
     if (results.outdated.length > 0) {
         const majors = results.outdated.filter((e) => e.updateType === "major").length;
@@ -512,15 +514,15 @@ const displayDependencies = (results: DoctorResults): void => {
             parts.push(`${String(patches)} patch`);
         }
 
-        plain(itemWarn(countLine(results.outdated.length, "outdated", parts.join(", "))));
+        pail.log(itemWarn(countLine(results.outdated.length, "outdated", parts.join(", "))));
     } else {
-        plain(itemOk("All dependencies up to date"));
+        pail.log(itemOk("All dependencies up to date"));
     }
 
     if (results.duplicates.length > 0) {
-        plain(itemWarn(countLine(results.duplicates.length, "packages with duplicate versions")));
+        pail.log(itemWarn(countLine(results.duplicates.length, "packages with duplicate versions")));
     } else {
-        plain(itemOk("No duplicate dependencies"));
+        pail.log(itemOk("No duplicate dependencies"));
     }
 };
 
@@ -529,25 +531,25 @@ const displaySecurity = (results: DoctorResults): void => {
         return;
     }
 
-    plain("");
-    plain(heading("Security", sectionStatus(results, "security")));
+    pail.log("");
+    pail.log(heading("Security", sectionStatus(results, "security")));
 
     if (results.vulnCount > 0) {
-        plain(itemError(countLine(results.vulnCount, `vulnerabilit${results.vulnCount === 1 ? "y" : "ies"} found`)));
+        pail.log(itemError(countLine(results.vulnCount, `vulnerabilit${results.vulnCount === 1 ? "y" : "ies"} found`)));
     } else {
-        plain(itemOk("No known vulnerabilities"));
+        pail.log(itemOk("No known vulnerabilities"));
     }
 
     if (results.socketIssues.alerts > 0) {
-        plain(itemWarn(countLine(results.socketIssues.alerts, `Socket.dev security alert${results.socketIssues.alerts === 1 ? "" : "s"}`)));
+        pail.log(itemWarn(countLine(results.socketIssues.alerts, `Socket.dev security alert${results.socketIssues.alerts === 1 ? "" : "s"}`)));
     }
 
     if (results.socketIssues.lowScore > 0) {
-        plain(itemWarn(countLine(results.socketIssues.lowScore, `package${results.socketIssues.lowScore === 1 ? "" : "s"} with low security score`)));
+        pail.log(itemWarn(countLine(results.socketIssues.lowScore, `package${results.socketIssues.lowScore === 1 ? "" : "s"} with low security score`)));
     }
 
     if (results.socketIssues.alerts === 0 && results.socketIssues.lowScore === 0 && results.vulnCount === 0) {
-        plain(itemOk("No security issues detected"));
+        pail.log(itemOk("No security issues detected"));
     }
 };
 
@@ -556,31 +558,31 @@ const displayOptimization = (results: DoctorResults): void => {
         return;
     }
 
-    plain("");
-    plain(heading("Optimization", sectionStatus(results, "optimization")));
+    pail.log("");
+    pail.log(heading("Optimization", sectionStatus(results, "optimization")));
 
     const counts = summarizeOptimizations(results.optimizations);
 
     if (counts.total === 0) {
-        plain(itemOk("No optimizations available"));
+        pail.log(itemOk("No optimizations available"));
 
         return;
     }
 
     if (counts.native > 0) {
-        plain(itemWarn(countLine(counts.native, "replaceable with native APIs")));
+        pail.log(itemWarn(countLine(counts.native, "replaceable with native APIs")));
     }
 
     if (counts.preferred > 0) {
-        plain(itemWarn(countLine(counts.preferred, "with lighter alternatives")));
+        pail.log(itemWarn(countLine(counts.preferred, "with lighter alternatives")));
     }
 
     if (counts.micro > 0) {
-        plain(itemWarn(countLine(counts.micro, "trivial micro-utilities")));
+        pail.log(itemWarn(countLine(counts.micro, "trivial micro-utilities")));
     }
 
     if (counts.socket > 0) {
-        plain(itemWarn(countLine(counts.socket, "@socketregistry overrides available")));
+        pail.log(itemWarn(countLine(counts.socket, "@socketregistry overrides available")));
     }
 };
 
@@ -592,8 +594,8 @@ const displayOptimization = (results: DoctorResults): void => {
  * security findings (vulns, alerts) remain in the Security section.
  */
 const displaySupplyChain = (results: DoctorResults): void => {
-    plain("");
-    plain(heading("Supply Chain", results.supplyChain.status));
+    pail.log("");
+    pail.log(heading("Supply Chain", results.supplyChain.status));
 
     for (const finding of results.supplyChain.findings) {
         const line = finding.severity === "ok"
@@ -602,15 +604,15 @@ const displaySupplyChain = (results: DoctorResults): void => {
                 ? itemError(finding.label)
                 : itemWarn(finding.label);
 
-        plain(line);
+        pail.log(line);
 
         if (finding.detail) {
-            plain(`  ${dim(SYMBOLS.arrow)} ${dim(finding.detail)}`);
+            pail.log(`  ${dim(SYMBOLS.arrow)} ${dim(finding.detail)}`);
         }
     }
 
     if (results.supplyChain.status !== "ok") {
-        plain(`  ${dim(SYMBOLS.arrow)} ${dim("Configure with security.* in vis.config.ts. See `vis check --security-config` for details.")}`);
+        pail.log(`  ${dim(SYMBOLS.arrow)} ${dim("Configure with security.* in vis.config.ts. See `vis check --security-config` for details.")}`);
     }
 };
 
@@ -619,16 +621,16 @@ const displayRuntime = (results: DoctorResults): void => {
         return;
     }
 
-    plain("");
-    plain(heading("Runtime", sectionStatus(results, "runtime")));
+    pail.log("");
+    pail.log(heading("Runtime", sectionStatus(results, "runtime")));
 
     for (const diagnostic of results.runtime) {
         if (diagnostic.status === "ok") {
-            plain(itemOk(diagnostic.message));
+            pail.log(itemOk(diagnostic.message));
         } else if (diagnostic.status === "skip") {
-            plain(itemSkip(diagnostic.message));
+            pail.log(itemSkip(diagnostic.message));
         } else {
-            plain(itemWarn(diagnostic.message));
+            pail.log(itemWarn(diagnostic.message));
         }
     }
 };
@@ -641,7 +643,7 @@ const displaySummary = (results: DoctorResults, quiet: boolean): void => {
     if (quiet) {
         // One-line summary — no banner, no info: prefix.
         if (criticalCount === 0 && improvementCount === 0) {
-            success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+            pail.success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
         } else {
             const parts: string[] = [];
 
@@ -653,24 +655,24 @@ const displaySummary = (results: DoctorResults, quiet: boolean): void => {
                 parts.push(yellow(`${String(improvementCount)} improvement${improvementCount === 1 ? "" : "s"}`));
             }
 
-            plain(`${red(SYMBOLS.failure)} ${parts.join(", ")} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+            pail.log(`${red(SYMBOLS.failure)} ${parts.join(", ")} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
         }
 
         return;
     }
 
-    plain("");
-    plain(heading("Summary", "ok"));
+    pail.log("");
+    pail.log(heading("Summary", "ok"));
 
     if (criticalCount === 0 && improvementCount === 0) {
-        success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+        pail.success(`Everything looks good! ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
     } else {
         if (criticalCount > 0) {
-            errorOutput(`${String(criticalCount)} security issue${criticalCount === 1 ? "" : "s"}`);
+            pail.error(`${String(criticalCount)} security issue${criticalCount === 1 ? "" : "s"}`);
         }
 
         if (improvementCount > 0) {
-            plain(`  ${cyan(SYMBOLS.arrow)} ${bold(String(improvementCount))} ${dim(`improvement${improvementCount === 1 ? "" : "s"} available`)} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+            pail.log(`  ${cyan(SYMBOLS.arrow)} ${bold(String(improvementCount))} ${dim(`improvement${improvementCount === 1 ? "" : "s"} available`)} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
         }
     }
 };
@@ -695,15 +697,15 @@ const displayActions = (results: DoctorResults): void => {
     }
 
     if (actions.length > 0) {
-        plain("");
-        plain(bold("Next steps:"));
+        pail.log("");
+        pail.log(bold("Next steps:"));
 
         for (const action of actions) {
-            plain(`  ${dim(SYMBOLS.arrow)} ${action}`);
+            pail.log(`  ${dim(SYMBOLS.arrow)} ${action}`);
         }
     }
 
-    plain("");
+    pail.log("");
 };
 
 const displayResults = (results: DoctorResults, quiet: boolean): void => {
@@ -761,27 +763,27 @@ const planScanTasks = (
 };
 
 const printBanner = (input: BannerInputs): void => {
-    plain("");
-    plain(`${bold(cyan("vis doctor"))} ${dim("— project health check")}`);
-    plain(itemOk(`Detected ${input.packageManagerName} v${input.packageManagerVersion}`));
+    pail.log("");
+    pail.log(`${bold(cyan("vis doctor"))} ${dim("— project health check")}`);
+    pail.log(itemOk(`Detected ${input.packageManagerName} v${input.packageManagerVersion}`));
 
     if (input.workspaceCount !== undefined && input.workspaceCount > 0) {
-        plain(itemOk(countLine(input.workspaceCount, `workspace package${input.workspaceCount === 1 ? "" : "s"}`)));
+        pail.log(itemOk(countLine(input.workspaceCount, `workspace package${input.workspaceCount === 1 ? "" : "s"}`)));
     }
 
     if (input.runtimeFindings.length === 0) {
-        plain(itemOk(`Node.js ${input.nodeVersion}`));
+        pail.log(itemOk(`Node.js ${input.nodeVersion}`));
     } else {
         for (const finding of input.runtimeFindings) {
             const colour = finding.severity === "error" ? red : yellow;
 
-            plain(itemError(`Runtime: ${colour(finding.message)}`));
+            pail.log(itemError(`Runtime: ${colour(finding.message)}`));
         }
 
-        plain(`  ${dim(SYMBOLS.arrow)} Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
+        pail.log(`  ${dim(SYMBOLS.arrow)} Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
     }
 
-    plain("");
+    pail.log("");
 };
 
 // ── Main execute ────────────────────────────────────────────────────
@@ -798,7 +800,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const filterPatterns = parseFilterPatterns(options.filter);
 
     if (sections.size === 0) {
-        errorOutput("No sections selected. Check your --only / --skip values.");
+        pail.error("No sections selected. Check your --only / --skip values.");
         process.exitCode = 2;
 
         return;
@@ -841,7 +843,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
             ? dim(` · ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`)
             : "";
 
-        plain(`${dim("·")} ${dim("Found")} ${bold(String(installedCount))} ${dim(`installed package${installedCount === 1 ? "" : "s"}`)}${wsLine}`);
+        pail.log(`${dim("·")} ${dim("Found")} ${bold(String(installedCount))} ${dim(`installed package${installedCount === 1 ? "" : "s"}`)}${wsLine}`);
     }
 
     const banner: DoctorBannerInput | undefined = visConfigError
@@ -972,11 +974,11 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     }
 
     if (cacheHit && !quiet) {
-        plain(`${dim("·")} Cached results (use --no-cache to refresh)`);
+        pail.log(`${dim("·")} Cached results (use --no-cache to refresh)`);
     }
 
     if (filterPatterns.length > 0 && !quiet) {
-        plain(`${dim("·")} Filter active: ${cyan(options.filter ?? "")}`);
+        pail.log(`${dim("·")} Filter active: ${cyan(options.filter ?? "")}`);
     }
 
     displayResults(results, quiet);
@@ -1038,8 +1040,8 @@ interface RunFixesOptions {
 const runFixes = async (opts: RunFixesOptions): Promise<void> => {
     const { force, logger, pm, recoverOrphans, results, workspaceRoot } = opts;
 
-    plain("");
-    plain(heading("Applying fixes", "ok"));
+    pail.log("");
+    pail.log(heading("Applying fixes", "ok"));
 
     const socketEntries = results.optimizations
         .filter((o) => o.category === "socket" && o.overrideSpec)
@@ -1066,14 +1068,14 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
         const recovery = killOrphanedRunners({ force });
 
         if (recovery.killed.length > 0) {
-            success(`Cleaned up ${String(recovery.killed.length)} orphaned process${recovery.killed.length === 1 ? "" : "es"} (PIDs: ${recovery.killed.join(", ")}).`);
+            pail.success(`Cleaned up ${String(recovery.killed.length)} orphaned process${recovery.killed.length === 1 ? "" : "es"} (PIDs: ${recovery.killed.join(", ")}).`);
             didSomething = true;
         }
 
         if (recovery.failed.length > 0) {
             const escalation = force ? "" : " Re-run with `--fix --fix-force` to escalate to SIGKILL.";
 
-            warn(`Could not signal ${String(recovery.failed.length)} orphan${recovery.failed.length === 1 ? "" : "s"}: ${recovery.failed.map((f) => `${String(f.pid)} (${f.reason})`).join(", ")}.${escalation}`);
+            pail.warn(`Could not signal ${String(recovery.failed.length)} orphan${recovery.failed.length === 1 ? "" : "s"}: ${recovery.failed.map((f) => `${String(f.pid)} (${f.reason})`).join(", ")}.${escalation}`);
         }
     }
 
@@ -1081,12 +1083,12 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
         const overrideResult = applyOverrides(workspaceRoot, join(workspaceRoot, "package.json"), socketEntries, pm as Parameters<typeof applyOverrides>[3]);
 
         if (overrideResult.added.length > 0) {
-            success(`Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);
+            pail.success(`Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);
             didSomething = true;
         }
 
         if (overrideResult.updated.length > 0) {
-            success(`Updated ${String(overrideResult.updated.length)} override${overrideResult.updated.length === 1 ? "" : "s"}.`);
+            pail.success(`Updated ${String(overrideResult.updated.length)} override${overrideResult.updated.length === 1 ? "" : "s"}.`);
             didSomething = true;
         }
     }
@@ -1096,7 +1098,7 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
             const codemodResult = await runCodemod(workspaceRoot, entry.packageName);
 
             if (codemodResult.filesChanged > 0) {
-                success(`${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);
+                pail.success(`${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);
                 codemodsApplied += 1;
                 didSomething = true;
             }
@@ -1104,12 +1106,12 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
             const message = error instanceof Error ? error.message : String(error);
 
             codemodFailures.push({ error: message, package: entry.packageName });
-            warn(`${entry.packageName}: codemod failed — ${message}`);
+            pail.warn(`${entry.packageName}: codemod failed — ${message}`);
         }
     }
 
     if (socketEntries.length > 0) {
-        plain(`${cyan(SYMBOLS.arrow)} Running ${pm.name} install to update lockfile…`);
+        pail.log(`${cyan(SYMBOLS.arrow)} Running ${pm.name} install to update lockfile…`);
 
         const installOptions = {
             dev: false,
@@ -1130,20 +1132,20 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
         didSomething = true;
     }
 
-    plain("");
+    pail.log("");
 
     if (didSomething) {
-        success(`Fixes applied. ${codemodsApplied > 0 ? `${String(codemodsApplied)} codemod${codemodsApplied === 1 ? "" : "s"} applied.` : ""}`.trim());
+        pail.success(`Fixes applied. ${codemodsApplied > 0 ? `${String(codemodsApplied)} codemod${codemodsApplied === 1 ? "" : "s"} applied.` : ""}`.trim());
     } else {
-        plain(itemSkip("No auto-fixable items in the current run."));
+        pail.log(itemSkip("No auto-fixable items in the current run."));
     }
 
     if (codemodFailures.length > 0) {
-        warn(`${String(codemodFailures.length)} codemod${codemodFailures.length === 1 ? "" : "s"} failed (run ${green("vis optimize")} for the interactive picker).`);
+        pail.warn(`${String(codemodFailures.length)} codemod${codemodFailures.length === 1 ? "" : "s"} failed (run ${green("vis optimize")} for the interactive picker).`);
     }
 
     if (manualEntries.length > 0) {
-        note(`${String(manualEntries.length)} optimization${manualEntries.length === 1 ? "" : "s"} need manual review (no codemod). Run ${green("vis optimize")} to inspect them.`);
+        pail.notice(`${String(manualEntries.length)} optimization${manualEntries.length === 1 ? "" : "s"} need manual review (no codemod). Run ${green("vis optimize")} to inspect them.`);
     }
 };
 

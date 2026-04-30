@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyBranchScope, sanitizeBranchSegment } from "../src/cache-directory";
+import { applyBranchScope, sanitizeBranchSegment } from "../src/cache/cache-directory";
 
 describe(sanitizeBranchSegment, () => {
     it("keeps safe characters intact", () => {

@@ -9,8 +9,8 @@ import isInCi from "is-in-ci";
 import { satisfies, validRange } from "semver";
 
 import pkg from "../../package.json";
-import { findVisConfigFile, loadVisConfig } from "../config";
-import type { VisConfig } from "../workspace";
+import { findVisConfigFile, loadVisConfig } from "../config/config";
+import type { VisConfig } from "../config/workspace";
 
 const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {

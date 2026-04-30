@@ -68,8 +68,8 @@ describe(parseSectionList, () => {
 
 describe(resolveSections, () => {
     it("returns all sections when neither flag is supplied", () => {
-        // 1 size assertion + 1 per known section.
-        expect.assertions(1 + SECTION_IDS.length);
+        // 1 size assertion + 1 per known section (SECTION_IDS has 4 entries).
+        expect.assertions(5);
 
         const sections = resolveSections(undefined, undefined);
 

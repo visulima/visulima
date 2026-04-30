@@ -14,7 +14,7 @@ import {
     resolveAubeUnlink,
     resolveAubeUpdate,
     resolveAubeWhy,
-} from "../src/aube-resolver";
+} from "../src/util/aube-resolver";
 
 const installDefaults = {
     dev: false,

@@ -2,9 +2,9 @@ import { spawnSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { error as errorOutput, info, note, success, warn } from "../../output";
-import { detectPm } from "../../pm-runner";
-import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security";
+import { pail } from "../../io/logger";
+import { detectPm } from "../../pm/pm-runner";
+import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security/security";
 import type { ApproveBuildsOptions } from "./index";
 
 const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ApproveBuildsOptions>): Promise<void> => {
@@ -13,7 +13,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
 
     // For pnpm, delegate to pnpm approve-builds (unless --scan forces vis scanning)
     if (pm.name === "pnpm" && !options.scan) {
-        info("Delegating to pnpm approve-builds...");
+        pail.info("Delegating to pnpm approve-builds...");
 
         const pnpmArgs = ["approve-builds"];
 
@@ -28,7 +28,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         }
 
         if (result.status !== 0 && result.status !== null) {
-            errorOutput(`pnpm approve-builds exited with code ${result.status}`);
+            pail.error(`pnpm approve-builds exited with code ${result.status}`);
             process.exitCode = result.status;
         }
 
@@ -37,9 +37,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         // --sync-native below, remind them that vis.config.ts may now be stale
         // relative to the native config.
         if (!options.syncNative) {
-            note("");
-            note("Tip: vis.config.ts security.allowBuilds may now be out of sync with pnpm-workspace.yaml.");
-            note("Run 'vis check --security-config' to compare, or copy the new entries into vis.config.ts.");
+            pail.notice("");
+            pail.notice("Tip: vis.config.ts security.allowBuilds may now be out of sync with pnpm-workspace.yaml.");
+            pail.notice("Run 'vis check --security-config' to compare, or copy the new entries into vis.config.ts.");
 
             return;
         }
@@ -49,32 +49,32 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         const unapproved = scanUnapprovedBuildScripts(cwd, allowBuilds);
 
         if (unapproved.length === 0) {
-            success("No unapproved build scripts found.");
+            pail.success("No unapproved build scripts found.");
         } else {
-            warn(`Found ${unapproved.length} package${unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
+            pail.warn(`Found ${unapproved.length} package${unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
 
             for (const pkg of unapproved) {
-                info(`  ${pkg}`);
+                pail.info(`  ${pkg}`);
             }
 
-            note("");
-            note("To approve these packages, add them to vis.config.ts:");
-            note("");
-            note("  security: {");
-            note("    allowBuilds: {");
+            pail.notice("");
+            pail.notice("To approve these packages, add them to vis.config.ts:");
+            pail.notice("");
+            pail.notice("  security: {");
+            pail.notice("    allowBuilds: {");
 
             for (const pkg of unapproved) {
                 const name = pkg.split(" (")[0];
 
-                note(`      "${name}": true,`);
+                pail.notice(`      "${name}": true,`);
             }
 
-            note("    },");
-            note("  },");
+            pail.notice("    },");
+            pail.notice("  },");
 
             if (pm.name === "pnpm") {
-                note("");
-                note("Or run 'pnpm approve-builds' to update pnpm-workspace.yaml directly.");
+                pail.notice("");
+                pail.notice("Or run 'pnpm approve-builds' to update pnpm-workspace.yaml directly.");
             }
         }
     }
@@ -84,14 +84,14 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         const allowBuilds = visConfig?.security?.allowBuilds ?? {};
 
         if (Object.keys(allowBuilds).length === 0) {
-            warn("No security.allowBuilds configured in vis.config.ts. Nothing to sync.");
+            pail.warn("No security.allowBuilds configured in vis.config.ts. Nothing to sync.");
         } else {
             const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
 
-            info("");
+            pail.info("");
 
             for (const action of actions) {
-                success(action);
+                pail.success(action);
             }
         }
     }

@@ -2,7 +2,7 @@ import type { LifeCycleInterface, LogReporter, Task, TaskResult, TaskStatus } fr
 import { renderToString, Text } from "@visulima/tui";
 import React from "react";
 
-import type { VisTargetOptions } from "../target-options";
+import type { VisTargetOptions } from "../task/target-options";
 import CommandSummary from "./components/CommandSummary";
 import Header from "./components/Header";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";

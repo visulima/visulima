@@ -2,7 +2,7 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import type { IgnoreDecision } from "../ignore-helpers";
 import {
     commitHasForceDeployMessage,

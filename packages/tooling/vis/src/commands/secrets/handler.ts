@@ -2,14 +2,15 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, yellow } from "@visulima/colorize";
 import { isAccessibleSync } from "@visulima/fs";
 import { join, relative, resolve } from "@visulima/path";
+import { redact } from "@visulima/redact";
 import type { Confidence, Finding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";
 import { inspectRuleset, listRequiredValidators, listRules, scan, scanFiles } from "@visulima/secret-scanner";
 
-import { failure, info, note, success, warn } from "../../output";
+import { pail } from "../../io/logger";
+import { createSpinner } from "../../io/spinner";
 import { diffBaseline, toRelativeFinding, writeBaseline } from "../../secrets/baseline";
 import { formatSarif, formatText } from "../../secrets/format";
 import { filesSince, hasGit, stagedFiles } from "../../secrets/git";
-import { startSpinner } from "../../secrets/spinner";
 import type { SecretsOptions } from "./index";
 
 type RepeatableString = string | string[];
@@ -60,7 +61,7 @@ const validateFormat = (raw: string | undefined): ReportFormat => {
     const allowed = new Set(["json", "sarif", "text"]);
 
     if (raw && !allowed.has(raw)) {
-        failure(`--format must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
+        pail.error(`--format must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
         process.exit(2);
     }
 
@@ -75,7 +76,7 @@ const validateConfidence = (raw: string | undefined): Confidence | undefined => 
     const allowed = new Set<Confidence>(["high", "low", "medium"]);
 
     if (!allowed.has(raw as Confidence)) {
-        failure(`--min-confidence must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
+        pail.error(`--min-confidence must be one of: ${[...allowed].join(", ")} (got "${raw}")`);
         process.exit(2);
     }
 
@@ -133,31 +134,35 @@ const runInit = async (root: string, scanOptions: ScanOptions, dryRun: boolean):
     const baselinePath = join(root, DEFAULT_BASELINE);
 
     if (!dryRun && isAccessibleSync(baselinePath)) {
-        warn(`Detected existing ${DEFAULT_BASELINE} — refusing to overwrite. Delete it first to re-init.`);
+        pail.warn(`Detected existing ${DEFAULT_BASELINE} — refusing to overwrite. Delete it first to re-init.`);
         process.exit(1);
     }
 
-    info(dryRun ? "[dry-run] Previewing init — no files will be written." : "Scanning workspace to seed baseline…");
-    const spinner = startSpinner("scanning");
+    pail.info(dryRun ? "[dry-run] Previewing init — no files will be written." : "Scanning workspace to seed baseline…");
+    const spinner = createSpinner();
+
+    spinner.start("scanning");
 
     let findings: Finding[];
 
     try {
         findings = await scan([root], scanOptions);
-    } finally {
-        spinner.stop();
+        spinner.succeed();
+    } catch (error) {
+        spinner.failed();
+        throw error;
     }
 
     if (dryRun) {
-        info(`[dry-run] Would create ${DEFAULT_BASELINE} with ${String(findings.length)} finding(s).`);
+        pail.info(`[dry-run] Would create ${DEFAULT_BASELINE} with ${String(findings.length)} finding(s).`);
 
         return;
     }
 
     const count = writeBaseline(findings, baselinePath, root, { replace: true });
 
-    success(`Wrote ${DEFAULT_BASELINE} (${String(count)} findings).`);
-    note("Commit it. Use `vis secrets --baseline .secrets-baseline.json` in CI. Add path patterns to .gitignore to exclude directories from scanning.");
+    pail.success(`Wrote ${DEFAULT_BASELINE} (${String(count)} findings).`);
+    pail.notice("Commit it. Use `vis secrets --baseline .secrets-baseline.json` in CI. Add path patterns to .gitignore to exclude directories from scanning.");
 };
 
 interface VisSecretsConfig {
@@ -230,7 +235,7 @@ const printDiff = (diff: { fresh: Finding[]; resolved: Finding[]; surviving: Fin
 const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string): Promise<{ files?: string[]; paths?: string[] }> => {
     if (flags.staged) {
         if (!hasGit(root)) {
-            failure("--staged requires a git working tree, and none was detected.");
+            pail.error("--staged requires a git working tree, and none was detected.");
             process.exit(2);
         }
 
@@ -239,7 +244,7 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
 
     if (flags.since) {
         if (!hasGit(root)) {
-            failure("--since requires a git working tree, and none was detected.");
+            pail.error("--since requires a git working tree, and none was detected.");
             process.exit(2);
         }
 
@@ -251,7 +256,7 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
         // user has the full vis workspace available, they can combine --since with
         // their preferred base (e.g. `--since main`) for more control.
         if (!hasGit(root)) {
-            warn("--affected requires git; falling back to full scan");
+            pail.warn("--affected requires git; falling back to full scan");
 
             return { paths: args && args.length > 0 ? args.map((p) => resolve(root, p)) : [root] };
         }
@@ -264,7 +269,15 @@ const chooseScanPaths = async (flags: SecretsFlags, args: string[], root: string
     return { paths: args && args.length > 0 ? args.map((p) => resolve(root, p)) : [root] };
 };
 
-const emitFindings = (findings: Finding[], format: ReportFormat, root: string, useColor: boolean, toolVersion: string, ruleMetadata: RuleInfo[]): void => {
+const emitFindings = (
+    findings: Finding[],
+    format: ReportFormat,
+    root: string,
+    useColor: boolean,
+    toolVersion: string,
+    ruleMetadata: RuleInfo[],
+    redactFindings: boolean,
+): void => {
     switch (format) {
         case "json": {
             const view = findings.map((f) => toRelativeFinding(f, root));
@@ -277,7 +290,7 @@ const emitFindings = (findings: Finding[], format: ReportFormat, root: string, u
             break;
         }
         default: {
-            process.stdout.write(`${formatText(findings, root, useColor)}\n`);
+            process.stdout.write(`${formatText(findings, root, useColor, { redact: redactFindings })}\n`);
         }
     }
 };
@@ -313,25 +326,26 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
 
     if (target.files?.length === 0) {
         if (!flags.quiet) {
-            success("No files to scan.");
+            pail.success("No files to scan.");
         }
 
         return;
     }
 
     const isInteractive = !flags.quiet && !["json", "sarif"].includes(flags.format ?? "text");
-    const spinner = isInteractive ? startSpinner("scanning for secrets") : { stop: () => {}, update: () => {} };
+    const spinner = createSpinner({ verbose: isInteractive });
+
+    spinner.start("scanning for secrets");
 
     let findings: Finding[];
 
     try {
         findings = target.files === undefined ? await scan(target.paths ?? [root], scanOptions) : await scanFiles(target.files, scanOptions);
+        spinner.succeed();
     } catch (error) {
-        spinner.stop();
-        failure(`secret scan failed: ${error instanceof Error ? error.message : String(error)}`);
+        spinner.failed();
+        pail.error(`secret scan failed: ${error instanceof Error ? error.message : String(error)}`);
         process.exit(2);
-    } finally {
-        spinner.stop();
     }
 
     // Optional skipped-rule diagnostics (verbose only)
@@ -339,7 +353,7 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
         const skipped = await inspectRuleset(scanOptions);
 
         if (skipped.length > 0) {
-            warn(`${String(skipped.length)} rule(s) skipped due to invalid regex. First few:`);
+            pail.warn(`${String(skipped.length)} rule(s) skipped due to invalid regex. First few:`);
 
             for (const s of skipped.slice(0, 5)) {
                 process.stderr.write(`  - ${s.ruleId}: ${s.reason}\n`);
@@ -353,7 +367,7 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
     if (flags.updateBaseline) {
         const count = writeBaseline(findings, baselineFullPath, root, { replace: flags.replaceBaseline });
 
-        success(`Baseline updated: ${relative(root, baselineFullPath) || baselineFullPath} now contains ${String(count)} entries.`);
+        pail.success(`Baseline updated: ${relative(root, baselineFullPath) || baselineFullPath} now contains ${String(count)} entries.`);
 
         return;
     }
@@ -362,7 +376,10 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
 
     const ruleMetadata = format === "sarif" ? await listRules(scanOptions).catch(() => [] as RuleInfo[]) : [];
 
-    emitFindings(findings, format, root, useColor, toolVersion, ruleMetadata);
+    const shouldRedact = scanOptions.redact === true;
+    const reportFindings = shouldRedact ? redact(findings, ["match", "secret"]) : findings;
+
+    emitFindings(reportFindings, format, root, useColor, toolVersion, ruleMetadata, shouldRedact);
 
     if (format === "text" && showDiff) {
         printDiff(diffBaseline(findings, baselineFullPath, root));
@@ -370,15 +387,15 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
 
     if (findings.length > 0) {
         if (!flags.quiet) {
-            warn(`${String(findings.length)} potential secret(s) found`);
-            note("Suppress individual lines with `gitleaks:allow` / `secret-scanner:allow`, or run `vis secrets --update-baseline`.");
+            pail.warn(`${String(findings.length)} potential secret(s) found`);
+            pail.notice("Suppress individual lines with `gitleaks:allow` / `secret-scanner:allow`, or run `vis secrets --update-baseline`.");
         }
 
         process.exit(1);
     }
 
     if (!flags.quiet) {
-        success("No secrets detected.");
+        pail.success("No secrets detected.");
     }
 };
 

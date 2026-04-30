@@ -1,16 +1,16 @@
 import { writeFileSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { bold, cyan, dim } from "@visulima/colorize";
 import type { ProjectGraph } from "@visulima/task-runner";
 import { projectGraphToDot } from "@visulima/task-runner";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
-import { bold, cyan, dim } from "../../output";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { GraphStore } from "../../tui/components/graph/GraphStore";
 import VisGraphApp from "../../tui/components/graph/VisGraphApp";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
 import type { GraphOptions } from "./index";
 
 // ── ASCII Graph Renderer ────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { analyzeFlakiness, formatFlakinessTable } from "../src/flakiness";
+import { analyzeFlakiness, formatFlakinessTable } from "../src/report/flakiness";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(analyzeFlakiness, () => {

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { TipContext } from "../src/tips";
+import type { TipContext } from "../src/util/tips";
 
 vi.mock(import("is-in-ci"), () => {
     return { default: false };
 });
 
-const { showTip, tips } = await import("../src/tips");
+const { showTip, tips } = await import("../src/util/tips");
 
 describe("showTip", () => {
     let stderrSpy: ReturnType<typeof vi.spyOn>;
@@ -37,7 +37,7 @@ describe("showTip", () => {
         vi.doMock(import("is-in-ci"), () => {
             return { default: true };
         });
-        const { showTip: showTipCi } = await import("../src/tips");
+        const { showTip: showTipCi } = await import("../src/util/tips");
 
         showTipCi({ args: ["install"], command: "install", success: true });
 

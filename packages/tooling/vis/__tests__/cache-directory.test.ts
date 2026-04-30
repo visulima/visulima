@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../src/cache-directory";
+import { DEFAULT_CACHE_DIRECTORY_NAME, isCacheDirectoryInsideWorkspace, resolveCacheDirectory } from "../src/cache/cache-directory";
 
 // Use a non-relative POSIX-ish workspace root for the tests. `resolve()` on
 // both POSIX and Windows treats `/ws` as absolute enough to build reproducible

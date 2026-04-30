@@ -1,8 +1,8 @@
 import type { Task, TaskResult } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
-import type { VisPlugin } from "../src/hooks";
-import { createVisHooks, HookableLifeCycle, registerPlugins } from "../src/hooks";
+import type { VisPlugin } from "../src/util/hooks";
+import { createVisHooks, HookableLifeCycle, registerPlugins } from "../src/util/hooks";
 
 const makeTask = (id: string): Task => {
     return {

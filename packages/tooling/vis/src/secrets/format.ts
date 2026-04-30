@@ -39,7 +39,7 @@ const caretFor = (line: string, col: number, len: number): string => {
 };
 
 /** Pretty grouped text output with file headers, context lines, and carets. */
-export const formatText = (findings: Finding[], root: string, useColor: boolean): string => {
+export const formatText = (findings: Finding[], root: string, useColor: boolean, options: { redact?: boolean } = {}): string => {
     if (findings.length === 0) {
         return useColor ? dim("No secrets detected.") : "No secrets detected.";
     }
@@ -61,7 +61,9 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean)
 
         lines.push(color.cyan(relativeFile));
 
-        const sourceLines = loadLines(file);
+        // When redacting, skip the source-context block entirely — printing the
+        // surrounding lines would leak the same secret we're trying to hide.
+        const sourceLines = options.redact ? undefined : loadLines(file);
 
         for (const f of items) {
             // Provenance + quality signal ride next to the rule id so every line of

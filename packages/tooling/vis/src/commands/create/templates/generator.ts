@@ -10,7 +10,7 @@ import { chmodSync } from "node:fs";
 import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { info, success } from "../../../output";
+import { pail } from "../../../io/logger";
 import type { ExecutionContext } from "./types";
 
 // ── Template files ────────────────────────────────────────────────
@@ -89,7 +89,7 @@ export const generate = (): void => {
 export const executeGeneratorTemplate = (context: ExecutionContext, description: string = ""): number => {
     const { projectName, targetDir } = context;
 
-    info("Scaffolding code generator...");
+    pail.info("Scaffolding code generator...");
 
     // Create directory structure
     ensureDirSync(targetDir);
@@ -98,19 +98,19 @@ export const executeGeneratorTemplate = (context: ExecutionContext, description:
 
     // Write files
     writeFileSync(join(targetDir, "package.json"), packageJson(projectName, description || `Code generator: ${projectName}`));
-    success("Created package.json");
+    pail.success("Created package.json");
 
     const binPath = join(targetDir, "bin", "index.js");
 
     writeFileSync(binPath, binIndex(projectName));
     chmodSync(binPath, 0o755);
-    success("Created bin/index.js (executable)");
+    pail.success("Created bin/index.js (executable)");
 
     writeFileSync(join(targetDir, "tsconfig.json"), tsconfigJson());
-    success("Created tsconfig.json");
+    pail.success("Created tsconfig.json");
 
     writeFileSync(join(targetDir, "src", "index.ts"), srcIndex());
-    success("Created src/index.ts");
+    pail.success("Created src/index.ts");
 
     return 0;
 };

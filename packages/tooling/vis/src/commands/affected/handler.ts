@@ -2,8 +2,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
-import { filterProjectsByQuery } from "../../selectors";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { filterProjectsByQuery } from "../../task/selectors";
 import type { AffectedCommandOptions } from "./index";
 
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {

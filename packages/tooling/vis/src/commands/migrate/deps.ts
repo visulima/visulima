@@ -3,8 +3,8 @@ import { writeFileSync } from "node:fs";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import type { VisConfig } from "../../workspace";
-import { discoverWorkspace } from "../../workspace";
+import type { VisConfig } from "../../config/workspace";
+import { discoverWorkspace } from "../../config/workspace";
 import { backupFile } from "./backup";
 import { cleanHuskyFromScript, REPLACED_PACKAGES } from "./constants";
 import { editJsonFile } from "./json";

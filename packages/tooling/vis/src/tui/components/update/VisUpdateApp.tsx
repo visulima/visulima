@@ -2,7 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import type { OutdatedEntry } from "../../../catalog";
+import type { OutdatedEntry } from "../../../util/catalog";
 import QuitDialog from "../QuitDialog";
 import PackageDetailPanel from "./PackageDetailPanel";
 import PackageListPanel from "./PackageListPanel";

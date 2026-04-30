@@ -1,9 +1,9 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { filterProjectsByQuery } from "../../selectors";
-import type { VisTargetConfiguration } from "../../target-options";
-import type { VisProjectConfiguration } from "../../workspace";
-import { discoverWorkspace } from "../../workspace";
+import type { VisProjectConfiguration } from "../../config/workspace";
+import { discoverWorkspace } from "../../config/workspace";
+import { filterProjectsByQuery } from "../../task/selectors";
+import type { VisTargetConfiguration } from "../../task/target-options";
 import type { ListOptions } from "./index";
 
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ListOptions>): Promise<void> => {

@@ -5,8 +5,8 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
 
-import { error as errorOutput, info, note, success, warn } from "../../output";
-import type { DetectedManager, RuntimeTool, ToolchainConfig, ToolchainStatus, ToolStatus, VersionManagerName } from "../../toolchain";
+import { pail } from "../../io/logger";
+import type { DetectedManager, RuntimeTool, ToolchainConfig, ToolchainStatus, ToolStatus, VersionManagerName } from "../../runtime/toolchain";
 import {
     buildInstallInvocation,
     buildUseInvocation,
@@ -20,7 +20,7 @@ import {
     SUPPORTED_MANAGERS,
     updateEnginesField,
     writePackageManagerField,
-} from "../../toolchain";
+} from "../../runtime/toolchain";
 import type { ToolchainOptions } from "./index";
 
 const KNOWN_TOOLS: ReadonlyArray<RuntimeTool> = ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
@@ -81,27 +81,27 @@ const toolIcon = (tool: ToolStatus): string => {
 };
 
 const printStatus = (status: ToolchainStatus): void => {
-    info("");
-    info(dim("── Toolchain ───────────────────────"));
+    pail.info("");
+    pail.info(dim("── Toolchain ───────────────────────"));
 
     if (status.detected.length === 0) {
-        info(`  ${icon(false)} No version manager detected`);
-        note(`  Install one of: ${SUPPORTED_MANAGERS.join(", ")}`);
+        pail.info(`  ${icon(false)} No version manager detected`);
+        pail.notice(`  Install one of: ${SUPPORTED_MANAGERS.join(", ")}`);
     } else {
         for (const manager of status.detected) {
-            info(`  ${renderManagerLine(manager)}`);
+            pail.info(`  ${renderManagerLine(manager)}`);
         }
     }
 
-    info("");
+    pail.info("");
 
     if (status.tools.length === 0) {
-        info(`  ${dim("No tool pins found — add engines.node, .nvmrc, or a manager config file.")}`);
+        pail.info(`  ${dim("No tool pins found — add engines.node, .nvmrc, or a manager config file.")}`);
 
         return;
     }
 
-    info(dim("── Tools ───────────────────────────"));
+    pail.info(dim("── Tools ───────────────────────────"));
 
     for (const tool of status.tools) {
         const expected = `${tool.expected.tool} ${tool.expected.version}`;
@@ -112,10 +112,10 @@ const printStatus = (status: ToolchainStatus): void => {
         const managerText = renderToolManager(tool);
         const suffix = managerText === "" ? "" : ` ${managerText}`;
 
-        info(`  ${toolIcon(tool)} ${expected} — ${actualText}${source}${suffix}`);
+        pail.info(`  ${toolIcon(tool)} ${expected} — ${actualText}${source}${suffix}`);
 
         if (tool.manager.note) {
-            note(`     ${tool.manager.note}`);
+            pail.notice(`     ${tool.manager.note}`);
         }
     }
 };
@@ -162,8 +162,8 @@ const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
     const mismatches = status.tools.filter((t) => !t.matches);
 
     if (mismatches.length > 0) {
-        info("");
-        note("  Run `vis toolchain install` to install pinned versions.");
+        pail.info("");
+        pail.notice("  Run `vis toolchain install` to install pinned versions.");
     }
 
     if (options.exitCode && mismatches.length > 0) {
@@ -204,7 +204,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
     const mismatches = status.tools.filter((t) => !t.matches);
 
     if (mismatches.length === 0) {
-        success("Everything already matches — nothing to install.");
+        pail.success("Everything already matches — nothing to install.");
 
         return;
     }
@@ -217,7 +217,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
     const needsRealManager = mismatches.some((m) => m.manager.name !== "self-activate" && m.manager.name !== "none");
 
     if (status.detected.length === 0 && needsRealManager) {
-        errorOutput(`No version manager detected. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
+        pail.error(`No version manager detected. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
         process.exitCode = 1;
 
         return;
@@ -235,9 +235,9 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
             // something to self-activate from.
             for (const { expected } of tools) {
                 if (expected.source === "packageManager") {
-                    info(`${dim("$")} (${expected.tool} will self-activate from packageManager on next invocation)`);
+                    pail.info(`${dim("$")} (${expected.tool} will self-activate from packageManager on next invocation)`);
                 } else {
-                    info(`${dim("$")} Writing packageManager=${expected.tool}@${expected.version}`);
+                    pail.info(`${dim("$")} Writing packageManager=${expected.tool}@${expected.version}`);
 
                     if (options.dryRun) {
                         ranAnything = true;
@@ -246,13 +246,13 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
                             writePackageManagerField(workspaceRoot, expected);
                             ranAnything = true;
                         } catch (error: unknown) {
-                            errorOutput((error as Error).message);
+                            pail.error((error as Error).message);
                             exitCode = 1;
                         }
                     }
                 }
 
-                note(`  ${expected.tool} ${expected.version} — no install needed`);
+                pail.notice(`  ${expected.tool} ${expected.version} — no install needed`);
             }
 
             continue;
@@ -260,7 +260,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
 
         if (managerName === "none") {
             for (const { expected } of tools) {
-                warn(`Cannot install ${expected.tool} ${expected.version} — no manager can handle it.`);
+                pail.warn(`Cannot install ${expected.tool} ${expected.version} — no manager can handle it.`);
             }
 
             exitCode = 1;
@@ -270,7 +270,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
         const manager = status.detected.find((d) => d.name === managerName);
 
         if (!manager?.installed) {
-            errorOutput(`${managerName} is referenced but not on PATH — install it first, then rerun \`vis toolchain install\`.`);
+            pail.error(`${managerName} is referenced but not on PATH — install it first, then rerun \`vis toolchain install\`.`);
             exitCode = 1;
             continue;
         }
@@ -292,20 +292,20 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
             }
 
             if (invocation.bin === "nvm" && invocation.args.length === 0) {
-                errorOutput("nvm is a shell function — run `nvm install` in your shell, then rerun `vis toolchain install`.");
+                pail.error("nvm is a shell function — run `nvm install` in your shell, then rerun `vis toolchain install`.");
 
                 if (invocation.hint) {
-                    note(`  ${invocation.hint}`);
+                    pail.notice(`  ${invocation.hint}`);
                 }
 
                 exitCode = 1;
                 continue;
             }
 
-            info(`${dim("$")} ${invocation.bin} ${invocation.args.join(" ")}`);
+            pail.info(`${dim("$")} ${invocation.bin} ${invocation.args.join(" ")}`);
 
             if (invocation.hint) {
-                note(`  ${invocation.hint}`);
+                pail.notice(`  ${invocation.hint}`);
             }
 
             if (options.dryRun) {
@@ -331,7 +331,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
     }
 
     if (ranAnything) {
-        success("Toolchain installed.");
+        pail.success("Toolchain installed.");
     }
 };
 
@@ -355,7 +355,7 @@ const executeUse = (
     const manager = resolveManagerFor(spec, detected, toolchainConfig);
 
     if (manager.name === "none") {
-        errorOutput(`No manager can pin ${spec.tool}. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
+        pail.error(`No manager can pin ${spec.tool}. Install one of: ${SUPPORTED_MANAGERS.join(", ")}.`);
         process.exitCode = 1;
 
         return;
@@ -367,7 +367,7 @@ const executeUse = (
         // PATH). When neither is on PATH, resolution falls through to a
         // capable runtime manager (volta/proto/mise) with `installed: false`,
         // which is what this branch surfaces.
-        errorOutput(`The best manager for ${spec.tool} (${manager.name}) is not on PATH. ${manager.note ?? ""}`);
+        pail.error(`The best manager for ${spec.tool} (${manager.name}) is not on PATH. ${manager.note ?? ""}`);
         process.exitCode = 1;
 
         return;
@@ -376,7 +376,7 @@ const executeUse = (
     const invocation = buildUseInvocation(manager.name, spec);
 
     if (!invocation) {
-        errorOutput(`${manager.name} cannot pin ${spec.tool}. Use a different manager, or set \`toolchain.tools.${spec.tool}\` in vis.config.ts.`);
+        pail.error(`${manager.name} cannot pin ${spec.tool}. Use a different manager, or set \`toolchain.tools.${spec.tool}\` in vis.config.ts.`);
         process.exitCode = 1;
 
         return;
@@ -385,10 +385,10 @@ const executeUse = (
     // self-activate: write packageManager ourselves so the pin is real,
     // not a suggestion. pnpm 10+ / yarn berry pick it up on next run.
     if (manager.name === "self-activate") {
-        info(`${dim("→")} Writing packageManager field to package.json...`);
+        pail.info(`${dim("→")} Writing packageManager field to package.json...`);
 
         if (options.dryRun) {
-            note(`  Would set packageManager: "${spec.tool}@${spec.version}"`);
+            pail.notice(`  Would set packageManager: "${spec.tool}@${spec.version}"`);
 
             return;
         }
@@ -397,23 +397,23 @@ const executeUse = (
             const written = writePackageManagerField(workspaceRoot, spec);
 
             if (!written) {
-                errorOutput(`Refusing to pin non-package-manager tool ${spec.tool} via the packageManager field.`);
+                pail.error(`Refusing to pin non-package-manager tool ${spec.tool} via the packageManager field.`);
                 process.exitCode = 1;
 
                 return;
             }
 
-            success(`Set packageManager: "${written}" — ${spec.tool} will activate this version on next invocation.`);
+            pail.success(`Set packageManager: "${written}" — ${spec.tool} will activate this version on next invocation.`);
 
             if (options.engines !== false) {
                 const updated = updateEnginesField(workspaceRoot, spec);
 
                 if (updated) {
-                    success(`Updated package.json engines.${spec.tool} → ${updated}.`);
+                    pail.success(`Updated package.json engines.${spec.tool} → ${updated}.`);
                 }
             }
         } catch (error: unknown) {
-            errorOutput((error as Error).message);
+            pail.error((error as Error).message);
             process.exitCode = 1;
         }
 
@@ -426,10 +426,10 @@ const executeUse = (
     if (invocation.args.length === 0 && manager.name === "nvm" && spec.tool === "node") {
         const nvmrcPath = join(workspaceRoot, ".nvmrc");
 
-        info(`${dim("→")} Writing ${nvmrcPath}...`);
+        pail.info(`${dim("→")} Writing ${nvmrcPath}...`);
 
         if (options.dryRun) {
-            note(`  Would write ${spec.version} to .nvmrc`);
+            pail.notice(`  Would write ${spec.version} to .nvmrc`);
 
             return;
         }
@@ -437,14 +437,14 @@ const executeUse = (
         try {
             writeFileSync(nvmrcPath, `${spec.version}\n`);
         } catch (error: unknown) {
-            errorOutput(`Failed to write .nvmrc: ${(error as Error).message}`);
+            pail.error(`Failed to write .nvmrc: ${(error as Error).message}`);
             process.exitCode = 1;
 
             return;
         }
 
-        success(`Wrote ${spec.version} to .nvmrc.`);
-        note("  nvm is a shell function — run `nvm use` to activate it in this shell.");
+        pail.success(`Wrote ${spec.version} to .nvmrc.`);
+        pail.notice("  nvm is a shell function — run `nvm use` to activate it in this shell.");
 
         return;
     }
@@ -452,10 +452,10 @@ const executeUse = (
     // Any other zero-args path is an unhandled manager — refuse
     // loudly rather than claiming success.
     if (invocation.args.length === 0) {
-        errorOutput(`${manager.name} cannot pin ${spec.tool} from a subprocess. ${invocation.configChange?.hint ?? ""}`);
+        pail.error(`${manager.name} cannot pin ${spec.tool} from a subprocess. ${invocation.configChange?.hint ?? ""}`);
 
         if (invocation.configChange) {
-            note(`  Edit ${invocation.configChange.file} by hand and rerun \`vis toolchain status\` to verify.`);
+            pail.notice(`  Edit ${invocation.configChange.file} by hand and rerun \`vis toolchain status\` to verify.`);
         }
 
         process.exitCode = 1;
@@ -463,10 +463,10 @@ const executeUse = (
         return;
     }
 
-    info(`${dim("$")} ${invocation.bin} ${invocation.args.join(" ")}`);
+    pail.info(`${dim("$")} ${invocation.bin} ${invocation.args.join(" ")}`);
 
     if (invocation.configChange) {
-        note(`  Will update ${invocation.configChange.file} — ${invocation.configChange.hint}`);
+        pail.notice(`  Will update ${invocation.configChange.file} — ${invocation.configChange.hint}`);
     }
 
     if (options.dryRun) {
@@ -481,7 +481,7 @@ const executeUse = (
         return;
     }
 
-    success(`Pinned ${spec.tool} to ${spec.version}.`);
+    pail.success(`Pinned ${spec.tool} to ${spec.version}.`);
 
     // Mirror the pin into engines.<tool> when the project already
     // declares one — keeps the "engines is the source of truth" CI
@@ -492,10 +492,10 @@ const executeUse = (
             const updated = updateEnginesField(workspaceRoot, spec);
 
             if (updated) {
-                success(`Updated package.json engines.${spec.tool} → ${updated}.`);
+                pail.success(`Updated package.json engines.${spec.tool} → ${updated}.`);
             }
         } catch (error: unknown) {
-            warn(`Could not update engines.${spec.tool}: ${(error as Error).message}`);
+            pail.warn(`Could not update engines.${spec.tool}: ${(error as Error).message}`);
         }
     }
 };
@@ -534,7 +534,7 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
     const binary = manager ? resolveToolBinary(manager, normalized) : findOnPathByAlias(normalized);
 
     if (!binary) {
-        errorOutput(`${rawTool} not found in PATH${manager ? ` or via ${manager.name}` : ""}.`);
+        pail.error(`${rawTool} not found in PATH${manager ? ` or via ${manager.name}` : ""}.`);
         process.exitCode = 1;
 
         return;

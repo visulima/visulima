@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import toolchainExecute from "../src/commands/toolchain/handler";
-import { clearToolchainCache } from "../src/toolchain";
+import { clearToolchainCache } from "../src/runtime/toolchain";
 
 interface LoggerCall {
     args: unknown[];

@@ -114,9 +114,9 @@ describe("vis generate — CLI surface", () => {
     });
 
     it("keeps each option name kebab-cased", () => {
-        const optionNames = (generateCommand as unknown as { options?: { name: string }[] }).options?.map((o) => o.name) ?? [];
+        expect.hasAssertions();
 
-        expect.assertions(optionNames.length);
+        const optionNames = (generateCommand as unknown as { options?: { name: string }[] }).options?.map((o) => o.name) ?? [];
 
         for (const name of optionNames) {
             expect(name).toMatch(/^[a-z][a-z0-9-]*$/);
