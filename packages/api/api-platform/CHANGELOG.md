@@ -1,3 +1,10 @@
+## @visulima/api-platform [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.11...@visulima/api-platform@4.0.0-alpha.12) (2026-04-30)
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.11
+
 ## @visulima/api-platform [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.10...@visulima/api-platform@4.0.0-alpha.11) (2026-04-28)
 
 ### Bug Fixes
