@@ -1,7 +1,7 @@
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import type { VisConfig } from "../../workspace";
+import type { VisConfig } from "../../config/workspace";
 import { detectPackageManager } from "../hook/migrate";
 import { REPLACED_PACKAGES } from "./constants";
 import { migrateDeps } from "./deps";

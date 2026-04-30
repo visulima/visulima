@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { appendToShellHistory } from "../src/shell-history";
+import { appendToShellHistory } from "../src/util/shell-history";
 
 describe(appendToShellHistory, () => {
     let workDirectory: string;

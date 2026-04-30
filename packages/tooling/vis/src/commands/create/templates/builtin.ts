@@ -9,14 +9,14 @@
 import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
-import { info, success } from "../../../output";
-import { runDlx } from "../../../pm-runner";
+import { pail } from "../../../io/logger";
+import { runDlx } from "../../../pm/pm-runner";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
 // ── vis:app — delegate to create-vite ─────────────────────────────
 
 const executeApp = (config: TemplateConfig, context: ExecutionContext): number => {
-    info("Scaffolding application via create-vite...");
+    pail.info("Scaffolding application via create-vite...");
 
     // create-vite expects a relative directory name, not an absolute path
     const relativeTarget = relative(context.cwd, context.targetDir) || ".";
@@ -116,26 +116,26 @@ describe("${name}", () => {
 const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): number => {
     const { projectName, targetDir } = context;
 
-    info("Scaffolding library package...");
+    pail.info("Scaffolding library package...");
 
     ensureDirSync(targetDir);
     ensureDirSync(join(targetDir, "src"));
     ensureDirSync(join(targetDir, "__tests__"));
 
     writeFileSync(join(targetDir, "package.json"), libraryPackageJson(projectName));
-    success("Created package.json");
+    pail.success("Created package.json");
 
     writeFileSync(join(targetDir, "tsconfig.json"), libraryTsconfig());
-    success("Created tsconfig.json");
+    pail.success("Created tsconfig.json");
 
     writeFileSync(join(targetDir, "src", "index.ts"), librarySrcIndex(projectName));
-    success("Created src/index.ts");
+    pail.success("Created src/index.ts");
 
     writeFileSync(join(targetDir, "__tests__", "index.test.ts"), libraryTestIndex(projectName));
-    success("Created __tests__/index.test.ts");
+    pail.success("Created __tests__/index.test.ts");
 
     writeFileSync(join(targetDir, ".gitignore"), "node_modules/\ndist/\n.env\n.DS_Store\n");
-    success("Created .gitignore");
+    pail.success("Created .gitignore");
 
     return 0;
 };

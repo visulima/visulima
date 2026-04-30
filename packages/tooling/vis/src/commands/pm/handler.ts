@@ -1,6 +1,6 @@
 import type { Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runPmSubcommand } from "../../pm-runner";
+import { resolveInstaller, runPmSubcommand } from "../../pm/pm-runner";
 
 const execute = async ({ argument, logger, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
     const args = argument;

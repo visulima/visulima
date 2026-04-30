@@ -7,16 +7,16 @@ import { formatBytes } from "@visulima/humanizer";
 import { join } from "@visulima/path";
 import { Cache, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
-import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai-cache";
-import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache-directory";
-import { failure, info, success, warn } from "../../output";
+import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai/ai-cache";
+import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
+import { pail } from "../../io/logger";
 import {
     diffHashDetails,
     findTaskInSummary,
     readPreviousRunSummary,
     readRunSummaryById,
-} from "../../run-summary-utils";
-import { clearSocketCache, getSocketCacheStats } from "../../socket-security";
+} from "../../report/run-summary-utils";
+import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheWhyOptions } from "./index";
 
 /**
@@ -135,7 +135,7 @@ export const runList = async (cacheDirectory: string, format: string, logger: Co
             return;
         }
 
-        info(`No cache directory found at ${cacheDirectory}`);
+        pail.info(`No cache directory found at ${cacheDirectory}`);
 
         return;
     }
@@ -149,7 +149,7 @@ export const runList = async (cacheDirectory: string, format: string, logger: Co
             return;
         }
 
-        info(`Cache directory is empty: ${cacheDirectory}`);
+        pail.info(`Cache directory is empty: ${cacheDirectory}`);
 
         return;
     }
@@ -182,8 +182,8 @@ export const runList = async (cacheDirectory: string, format: string, logger: Co
         return;
     }
 
-    info(`Cache directory: ${cacheDirectory}`);
-    info(`Entries: ${String(entries.length)} (${formatBytes(totalBytes, { decimals: 1, space: false })})`);
+    pail.info(`Cache directory: ${cacheDirectory}`);
+    pail.info(`Entries: ${String(entries.length)} (${formatBytes(totalBytes, { decimals: 1, space: false })})`);
     logger.info("");
 
     const renderedAt = Date.now();
@@ -215,10 +215,10 @@ export const clearAiCacheSafe = (): void => {
         const aiDeleted = clearAiResponseCache();
 
         if (aiDeleted > 0) {
-            info(`Cleared ${String(aiDeleted)} cached AI response${aiDeleted === 1 ? "" : "s"}.`);
+            pail.info(`Cleared ${String(aiDeleted)} cached AI response${aiDeleted === 1 ? "" : "s"}.`);
         }
     } catch (error: unknown) {
-        warn(`Failed to clear AI response cache: ${error instanceof Error ? error.message : String(error)}`);
+        pail.warn(`Failed to clear AI response cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
@@ -227,16 +227,16 @@ export const clearSocketCacheSafe = (): void => {
         const socketDeleted = clearSocketCache();
 
         if (socketDeleted > 0) {
-            info(`Cleared ${String(socketDeleted)} cached Socket.dev report${socketDeleted === 1 ? "" : "s"}.`);
+            pail.info(`Cleared ${String(socketDeleted)} cached Socket.dev report${socketDeleted === 1 ? "" : "s"}.`);
         }
     } catch (error: unknown) {
-        warn(`Failed to clear Socket.dev cache: ${error instanceof Error ? error.message : String(error)}`);
+        pail.warn(`Failed to clear Socket.dev cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
 export const runClean = async (cacheDirectory: string, workspaceRoot: string, options: { dryRun: boolean; force: boolean }): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
-        info(`No cache directory to clean at ${cacheDirectory}`);
+        pail.info(`No cache directory to clean at ${cacheDirectory}`);
 
         return;
     }
@@ -245,7 +245,7 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const entries = await collectCacheEntries(cacheDirectory);
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
-        info(
+        pail.info(
             `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
             + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
@@ -260,7 +260,7 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const realWorkspace = await realpath(workspaceRoot);
 
         if (realCache === realWorkspace) {
-            failure("Refusing to delete the workspace root. The cache directory resolved to the same path as the workspace.");
+            pail.error("Refusing to delete the workspace root. The cache directory resolved to the same path as the workspace.");
             process.exitCode = 1;
 
             return;
@@ -270,11 +270,11 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
     }
 
     if (!insideWorkspace && !options.force) {
-        warn(`Cache directory is outside the workspace root: ${cacheDirectory}`);
-        warn("This will recursively delete the entire directory, including anything stored there by other tools.");
+        pail.warn(`Cache directory is outside the workspace root: ${cacheDirectory}`);
+        pail.warn("This will recursively delete the entire directory, including anything stored there by other tools.");
 
         if (!process.stdin.isTTY) {
-            failure("Refusing to clean an out-of-workspace cache without --force (stdin is not a TTY).");
+            pail.error("Refusing to clean an out-of-workspace cache without --force (stdin is not a TTY).");
             process.exitCode = 1;
 
             return;
@@ -283,7 +283,7 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const confirmed = await confirmPrompt("  Continue?");
 
         if (!confirmed) {
-            info("Aborted.");
+            pail.info("Aborted.");
 
             return;
         }
@@ -297,7 +297,7 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         await rm(cacheDirectory, { force: true, recursive: true });
     }
 
-    success(`Cleared cache: ${cacheDirectory}`);
+    pail.success(`Cleared cache: ${cacheDirectory}`);
 };
 
 export const runPrune = async (
@@ -306,20 +306,20 @@ export const runPrune = async (
     options: { keepLast?: number; maxCacheAgeDays?: number; maxCacheSize?: string },
 ): Promise<void> => {
     if (!isAccessibleSync(cacheDirectory)) {
-        info(`No cache directory to prune at ${cacheDirectory}`);
+        pail.info(`No cache directory to prune at ${cacheDirectory}`);
 
         return;
     }
 
     if (options.maxCacheAgeDays !== undefined && (!Number.isFinite(options.maxCacheAgeDays) || options.maxCacheAgeDays < 0)) {
-        failure(`Invalid --max-age-days value: expected a finite number >= 0, got ${String(options.maxCacheAgeDays)}`);
+        pail.error(`Invalid --max-age-days value: expected a finite number >= 0, got ${String(options.maxCacheAgeDays)}`);
         process.exitCode = 1;
 
         return;
     }
 
     if (options.keepLast !== undefined && (!Number.isFinite(options.keepLast) || options.keepLast < 0 || !Number.isInteger(options.keepLast))) {
-        failure(`Invalid --keep-last value: expected a non-negative integer, got ${String(options.keepLast)}`);
+        pail.error(`Invalid --keep-last value: expected a non-negative integer, got ${String(options.keepLast)}`);
         process.exitCode = 1;
 
         return;
@@ -331,14 +331,14 @@ export const runPrune = async (
         try {
             parsedBytes = parseCacheSize(options.maxCacheSize);
         } catch (error: unknown) {
-            failure(`Invalid --max-size value: ${error instanceof Error ? error.message : String(error)}`);
+            pail.error(`Invalid --max-size value: ${error instanceof Error ? error.message : String(error)}`);
             process.exitCode = 1;
 
             return;
         }
 
         if (!Number.isFinite(parsedBytes) || parsedBytes <= 0) {
-            failure(`Invalid --max-size value: expected a positive size, got "${options.maxCacheSize}" (${String(parsedBytes)} bytes)`);
+            pail.error(`Invalid --max-size value: expected a positive size, got "${options.maxCacheSize}" (${String(parsedBytes)} bytes)`);
             process.exitCode = 1;
 
             return;
@@ -376,12 +376,12 @@ export const runPrune = async (
     const reclaimedBytes = beforeBytes - afterBytes;
 
     if (removed <= 0) {
-        info("Nothing to prune — all entries are within the configured limits.");
+        pail.info("Nothing to prune — all entries are within the configured limits.");
 
         return;
     }
 
-    success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
+    pail.success(`Pruned ${String(removed)} entr${removed === 1 ? "y" : "ies"}, ` + `freed ${formatBytes(reclaimedBytes, { decimals: 1, space: false })}.`);
 };
 
 /**
@@ -429,9 +429,9 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         }
 
         if (runId === undefined) {
-            failure("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+            pail.error("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
         } else {
-            failure(`Run summary "${runId}" not found in .task-runner/runs/.`);
+            pail.error(`Run summary "${runId}" not found in .task-runner/runs/.`);
         }
 
         process.exitCode = 1;
@@ -449,8 +449,8 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
             return;
         }
 
-        failure(`Task "${taskId}" was not part of run ${summary.id}.`);
-        info(`Tasks in this run: ${summary.tasks.map((t) => t.taskId).join(", ") || "(none)"}`);
+        pail.error(`Task "${taskId}" was not part of run ${summary.id}.`);
+        pail.info(`Tasks in this run: ${summary.tasks.map((t) => t.taskId).join(", ") || "(none)"}`);
         process.exitCode = 1;
 
         return;
@@ -489,7 +489,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         return;
     }
 
-    info(`Why ${taskId}? (run ${summary.id})`);
+    pail.info(`Why ${taskId}? (run ${summary.id})`);
     logger.info("");
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
@@ -503,7 +503,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     logger.info("");
 
     if (!previousTask) {
-        info("No previous run to diff against — first time this task was recorded.");
+        pail.info("No previous run to diff against — first time this task was recorded.");
 
         return;
     }
@@ -513,7 +513,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         && diff.implicitDeps.added.length === 0 && diff.implicitDeps.changed.length === 0 && diff.implicitDeps.removed.length === 0;
 
     if (noChanges) {
-        success("No hash inputs changed since the previous run.");
+        pail.success("No hash inputs changed since the previous run.");
 
         return;
     }
@@ -548,7 +548,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     }
 
     logger.info("");
-    info(`Last summary file: ${getLastRunSummaryPath(workspaceRoot)}`);
+    pail.info(`Last summary file: ${getLastRunSummaryPath(workspaceRoot)}`);
 };
 
 interface RunHashOptions {
@@ -571,9 +571,9 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         }
 
         if (runId === undefined) {
-            failure("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
+            pail.error("No previous run summary found. Run a task first to populate `.task-runner/last-summary.json`.");
         } else {
-            failure(`Run summary "${runId}" not found in .task-runner/runs/.`);
+            pail.error(`Run summary "${runId}" not found in .task-runner/runs/.`);
         }
 
         process.exitCode = 1;
@@ -591,7 +591,7 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
             return;
         }
 
-        failure(`Task "${taskId}" was not part of run ${summary.id}.`);
+        pail.error(`Task "${taskId}" was not part of run ${summary.id}.`);
         process.exitCode = 1;
 
         return;
@@ -615,7 +615,7 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         return;
     }
 
-    info(`Hash for ${taskId} (run ${summary.id})`);
+    pail.info(`Hash for ${taskId} (run ${summary.id})`);
     logger.info("");
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
@@ -628,7 +628,7 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         renderHashDetailsBucket("implicitDeps", task.hashDetails.implicitDeps, logger);
     } else {
         logger.info("");
-        info("No hash details recorded for this task.");
+        pail.info("No hash details recorded for this task.");
     }
 };
 
@@ -640,7 +640,7 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
             return;
         }
 
-        info(`No cache directory at ${cacheDirectory}`);
+        pail.info(`No cache directory at ${cacheDirectory}`);
 
         return;
     }
@@ -661,9 +661,9 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
         return;
     }
 
-    info(`Cache directory: ${cacheDirectory}`);
-    info(`Entries:         ${String(entries.length)}`);
-    info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
+    pail.info(`Cache directory: ${cacheDirectory}`);
+    pail.info(`Entries:         ${String(entries.length)}`);
+    pail.info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
 };
 
 // Which cache stores does an operation touch? "task" is the workspace task
@@ -678,7 +678,7 @@ const parseCacheTarget = (raw: string | undefined): CacheTarget => {
     }
 
     if (raw && raw.length > 0) {
-        warn(`Unknown --type value '${raw}'; falling back to 'all'.`);
+        pail.warn(`Unknown --type value '${raw}'; falling back to 'all'.`);
     }
 
     return "all";
@@ -696,11 +696,11 @@ interface AuxStats {
 const isoOrNull = (value: number | undefined): string | null => (value === undefined ? null : new Date(value).toISOString());
 
 const printAuxStatsBlock = (label: string, stats: AuxStats): void => {
-    info(`${label}:`);
-    info(`  Entries:    ${String(stats.entries)}`);
-    info(`  Total size: ${formatBytes(stats.totalSizeBytes, { decimals: 1, space: false })}`);
-    info(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
-    info(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
+    pail.info(`${label}:`);
+    pail.info(`  Entries:    ${String(stats.entries)}`);
+    pail.info(`  Total size: ${formatBytes(stats.totalSizeBytes, { decimals: 1, space: false })}`);
+    pail.info(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
+    pail.info(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
 };
 
 type CacheScope = "all" | "shared" | "worktree";
@@ -711,7 +711,7 @@ const parseScope = (raw: string | undefined): CacheScope => {
     }
 
     if (raw && raw.length > 0) {
-        warn(`Unknown --scope value '${raw}'; falling back to 'shared'.`);
+        pail.warn(`Unknown --scope value '${raw}'; falling back to 'shared'.`);
     }
 
     return "shared";
@@ -791,7 +791,7 @@ export const cacheListExecute = async ({ logger, options, visConfig, workspaceRo
 
     for (const directory of cacheDirectories) {
         if (cacheDirectories.length > 1) {
-            info(`# ${directory}`);
+            pail.info(`# ${directory}`);
         }
 
         await runList(directory, format, logger);
@@ -821,7 +821,7 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
         if (dryRun) {
             const stats = getAiCacheStats();
 
-            info(`Would clear ${String(stats.entries)} cached AI response${stats.entries === 1 ? "" : "s"}.`);
+            pail.info(`Would clear ${String(stats.entries)} cached AI response${stats.entries === 1 ? "" : "s"}.`);
         } else {
             clearAiCacheSafe();
         }
@@ -831,7 +831,7 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
         if (dryRun) {
             const stats = getSocketCacheStats();
 
-            info(`Would clear ${String(stats.entries)} cached Socket.dev report${stats.entries === 1 ? "" : "s"}.`);
+            pail.info(`Would clear ${String(stats.entries)} cached Socket.dev report${stats.entries === 1 ? "" : "s"}.`);
         } else {
             clearSocketCacheSafe();
         }
@@ -843,7 +843,7 @@ export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsR
 
     for (const directory of cacheDirectories) {
         if (cacheDirectories.length > 1) {
-            info(`# ${directory}`);
+            pail.info(`# ${directory}`);
         }
 
         await runPrune(directory, workspaceRoot, {
@@ -860,7 +860,7 @@ export const cacheWhyExecute = async ({ argument, logger, options, workspaceRoot
     const taskId = argument[0];
 
     if (!taskId) {
-        failure("No task ID specified. Usage: vis cache why <project>:<target>");
+        pail.error("No task ID specified. Usage: vis cache why <project>:<target>");
         process.exitCode = 1;
 
         return;
@@ -877,7 +877,7 @@ export const cacheHashExecute = async ({ argument, logger, options, workspaceRoo
     const taskId = argument[0];
 
     if (!taskId) {
-        failure("No task ID specified. Usage: vis cache hash <project>:<target>");
+        pail.error("No task ID specified. Usage: vis cache hash <project>:<target>");
         process.exitCode = 1;
 
         return;
@@ -948,7 +948,7 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
 
         for (const directory of cacheDirectories) {
             if (cacheDirectories.length > 1) {
-                info(`# ${directory}`);
+                pail.info(`# ${directory}`);
             }
 
             await runSize(directory, "table");

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../src/workspace";
+import { discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../src/config/workspace";
 
 const writeProject = (
     root: string,

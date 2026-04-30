@@ -1,5 +1,5 @@
-import type { AiAnalysisResult, AiRecommendation } from "../../../ai-analysis";
-import type { OutdatedEntry } from "../../../catalog";
+import type { AiAnalysisResult, AiRecommendation } from "../../../ai/ai-analysis";
+import type { OutdatedEntry } from "../../../util/catalog";
 
 // ── State Shape ─────────────────────────────────────────────────────────
 

@@ -1,9 +1,9 @@
 import type { Task, TaskResult, TaskResults } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
-import { createVisHooks, registerPlugins } from "../src/hooks";
 import type { OtelSpan, OtelTracer } from "../src/plugins/otel";
 import { otelPlugin } from "../src/plugins/otel";
+import { createVisHooks, registerPlugins } from "../src/util/hooks";
 
 interface RecordedSpan {
     attributes: Record<string, boolean | number | string>;

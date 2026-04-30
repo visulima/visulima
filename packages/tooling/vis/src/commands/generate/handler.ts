@@ -1,4 +1,5 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { bold, cyan, dim } from "@visulima/colorize";
 import { isAbsolute, resolve } from "@visulima/path";
 
 import { discoverTemplates } from "../../generate/discover";
@@ -6,18 +7,18 @@ import { collectOptions } from "../../generate/prompts";
 import { fetchRemoteTemplate, isRemoteSource } from "../../generate/remote";
 import { runTemplate } from "../../generate/runner";
 import type { DiscoveredTemplate, Template } from "../../generate/types";
-import { bold, cyan, dim, info, note, success, warn } from "../../output";
+import { pail } from "../../io/logger";
 import type { GenerateOptions } from "./index";
 
 const printList = (templates: DiscoveredTemplate[]): void => {
     if (templates.length === 0) {
-        info("No templates found.");
-        note("Create one at .vis/templates/<name>.ts (programmatic) or .vis/templates/<name>/ (moon-format with template.yml).");
+        pail.info("No templates found.");
+        pail.notice("Create one at .vis/templates/<name>.ts (programmatic) or .vis/templates/<name>/ (moon-format with template.yml).");
 
         return;
     }
 
-    info("Available templates:");
+    pail.info("Available templates:");
 
     for (const template of templates) {
         const tag = dim(`(${template.source})`);
@@ -99,7 +100,7 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     if (options.list) {
         const discovered = discoverTemplates({
             extraDirectories: generatorConfig?.templates ?? [],
-            onWarning: warn,
+            onWarning: (message: string) => { pail.warn(message); },
             workspaceRoot,
         });
 
@@ -169,7 +170,7 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     } else {
         const discovered = discoverTemplates({
             extraDirectories: generatorConfig?.templates ?? [],
-            onWarning: warn,
+            onWarning: (message: string) => { pail.warn(message); },
             workspaceRoot,
         });
 
@@ -219,8 +220,8 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     const destination = isAbsolute(destinationInput) ? destinationInput : resolve(cwd, destinationInput);
 
     // ── Options collection ───────────────────────────────────
-    info(`Template: ${bold(cyan(templateName))}`);
-    info(`Target:   ${dim(destination)}`);
+    pail.info(`Template: ${bold(cyan(templateName))}`);
+    pail.info(`Target:   ${dim(destination)}`);
     process.stderr.write("\n");
 
     const collectedOptions = await collectOptions({
@@ -244,7 +245,7 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
 
         if (!dryRun) {
             process.stderr.write("\n");
-            success(`Template '${templateName}' applied.`);
+            pail.success(`Template '${templateName}' applied.`);
         }
     } finally {
         remoteCleanup?.();

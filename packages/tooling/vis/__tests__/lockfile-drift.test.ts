@@ -14,7 +14,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { detectLockfileDrift } from "../src/pm-runner";
+import { detectLockfileDrift } from "../src/pm/pm-runner";
 
 let workspace: string;
 

@@ -6,8 +6,8 @@ import { join } from "@visulima/path";
 
 import { cleanWorkspace } from "#native";
 
-import { failure, info, success } from "../../output";
-import { errorMessage } from "../../utils";
+import { pail } from "../../io/logger";
+import { errorMessage } from "../../util/utils";
 import type { CleanOptions } from "./index";
 
 /**
@@ -75,10 +75,10 @@ const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadEr
 
         try {
             unlinkSync(lockfile);
-            success(`Removed ${lockfile}`);
+            pail.success(`Removed ${lockfile}`);
             removed++;
         } catch (error: unknown) {
-            failure(`${lockfile}: ${errorMessage(error)}`);
+            pail.error(`${lockfile}: ${errorMessage(error)}`);
             hadError = true;
         }
     }
@@ -97,13 +97,13 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
         const directories = findNodeModulesDirectories(cwd);
 
         if (directories.length > 0) {
-            info("Would remove:");
+            pail.info("Would remove:");
 
             for (const dir of directories) {
                 logger.info(`  ${dir}`);
             }
         } else {
-            info("No node_modules directories found.");
+            pail.info("No node_modules directories found.");
         }
 
         if (shouldRemoveLockfile) {
@@ -116,21 +116,21 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     const result = cleanWorkspace(cwd, shouldRemoveLockfile);
 
     for (const dir of result.removed) {
-        success(`Removed ${dir}`);
+        pail.success(`Removed ${dir}`);
     }
 
     for (const file of result.lockfilesRemoved) {
-        success(`Removed ${file}`);
+        pail.success(`Removed ${file}`);
     }
 
     for (const error of result.errors) {
-        failure(error);
+        pail.error(error);
     }
 
     if (result.removed.length === 0 && result.lockfilesRemoved.length === 0) {
-        info("No node_modules directories found.");
+        pail.info("No node_modules directories found.");
     } else {
-        info(`Cleaned ${result.removed.length} node_modules director${result.removed.length === 1 ? "y" : "ies"}`);
+        pail.info(`Cleaned ${result.removed.length} node_modules director${result.removed.length === 1 ? "y" : "ies"}`);
     }
 
     if (result.errors.length > 0) {

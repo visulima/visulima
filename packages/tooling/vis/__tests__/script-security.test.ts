@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { enforceScriptSecurity, syncAllowBuildsToNativeConfig } from "../src/security";
-import type { VisConfig } from "../src/workspace";
+import type { VisConfig } from "../src/config/workspace";
+import { enforceScriptSecurity, syncAllowBuildsToNativeConfig } from "../src/security/security";
 
 // ── enforceScriptSecurity ────────────────────────────────────────────
 

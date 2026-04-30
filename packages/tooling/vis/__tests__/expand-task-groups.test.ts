@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { expandTaskGroups } from "../src/workspace";
+import { expandTaskGroups } from "../src/config/workspace";
 
 describe(expandTaskGroups, () => {
     it("returns [] for undefined input", () => {

@@ -2,7 +2,7 @@ import type { Toolbox } from "@visulima/cerebro";
 import type { TaskGraph } from "@visulima/task-runner";
 import { createTaskGraph } from "@visulima/task-runner";
 
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 
 /**
  * Walks a task graph from `target` upward (following reverse edges) and

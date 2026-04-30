@@ -4,7 +4,7 @@ import { join } from "@visulima/path";
 import type { TaskResult } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { compareDuration, formatTimingSummary } from "../src/run-report";
+import { compareDuration, formatTimingSummary } from "../src/report/run-report";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(formatTimingSummary, () => {

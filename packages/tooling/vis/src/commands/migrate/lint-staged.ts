@@ -3,7 +3,7 @@ import { unlinkSync, writeFileSync } from "node:fs";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { findVisConfigFile } from "../../config";
+import { findVisConfigFile } from "../../config/config";
 import { backupFile } from "./backup";
 import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, LINT_STAGED_OTHER_CONFIG_FILES, STALE_LINT_STAGED_PATTERNS } from "./constants";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";

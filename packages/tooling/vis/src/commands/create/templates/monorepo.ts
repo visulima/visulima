@@ -11,7 +11,7 @@
 import { ensureDirSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { info, success } from "../../../output";
+import { pail } from "../../../io/logger";
 import type { ExecutionContext } from "./types";
 
 // ── Template files ────────────────────────────────────────────────
@@ -133,7 +133,7 @@ pnpm test
 export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     const { projectName, targetDir } = context;
 
-    info("Scaffolding monorepo workspace...");
+    pail.info("Scaffolding monorepo workspace...");
 
     // Create directory structure
     ensureDirSync(targetDir);
@@ -142,19 +142,19 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
 
     // Write root files
     writeFileSync(join(targetDir, "package.json"), rootPackageJson(projectName));
-    success("Created package.json");
+    pail.success("Created package.json");
 
     writeFileSync(join(targetDir, "pnpm-workspace.yaml"), pnpmWorkspaceYaml());
-    success("Created pnpm-workspace.yaml");
+    pail.success("Created pnpm-workspace.yaml");
 
     writeFileSync(join(targetDir, ".gitignore"), gitignore());
-    success("Created .gitignore");
+    pail.success("Created .gitignore");
 
     writeFileSync(join(targetDir, ".editorconfig"), editorconfig());
-    success("Created .editorconfig");
+    pail.success("Created .editorconfig");
 
     writeFileSync(join(targetDir, "README.md"), readmeMd(projectName));
-    success("Created README.md");
+    pail.success("Created README.md");
 
     // Add .gitkeep files so empty directories are tracked
     writeFileSync(join(targetDir, "apps", ".gitkeep"), "");

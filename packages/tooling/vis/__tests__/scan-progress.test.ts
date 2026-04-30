@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 
 import { describe, expect, it } from "vitest";
 
-import { startScanProgress } from "../src/scan-progress";
+import { startScanProgress } from "../src/scan/scan-progress";
 
 const collectChunks = (stream: PassThrough): { read: () => string } => {
     let buffer = "";

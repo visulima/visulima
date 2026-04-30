@@ -12,14 +12,14 @@ import preferredManifest from "module-replacements/manifests/preferred.json" wit
 import React from "react";
 import { coerce } from "semver";
 
-import { info, note, success, warn } from "../../output";
-import type { OverrideEntry, PmInfo } from "../../overrides";
-import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../../overrides";
-import { detectPm, runInstall } from "../../pm-runner";
+import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import type { OverrideEntry, PmInfo } from "../../pm/overrides";
+import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../../pm/overrides";
+import { detectPm, runInstall } from "../../pm/pm-runner";
 import type { OptimizeEntry } from "../../tui/components/optimize/OptimizeStore";
 import { OptimizeStore } from "../../tui/components/optimize/OptimizeStore";
 import VisOptimizeApp from "../../tui/components/optimize/VisOptimizeApp";
-import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../workspace";
 import type { OptimizeOptions } from "./index";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -329,7 +329,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     const isProduction = Boolean(options.prod);
     const isPin = Boolean(options.pin);
 
-    info(`Detected ${pm.name} v${pm.version}.`);
+    pail.info(`Detected ${pm.name} v${pm.version}.`);
 
     // Collect all deps
     const rootDeps = collectDepsFromPkgJson(join(wsRoot, "package.json"), isProduction);
@@ -345,11 +345,11 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     }
 
     if (workspaceDirectories.length > 0) {
-        info(`Scanned ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}.`);
+        pail.info(`Scanned ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}.`);
     }
 
     // Build entries from both sources
-    info("Scanning dependencies...\n");
+    pail.info("Scanning dependencies...\n");
 
     const lockText = readLockfileText(wsRoot, pm.name);
     const e18eEntries = buildE18eEntries(allDeps);
@@ -364,7 +364,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     await markCodemodAvailability(allEntries);
 
     if (allEntries.length === 0) {
-        info("No optimizations found for your dependencies.");
+        pail.info("No optimizations found for your dependencies.");
 
         return;
     }
@@ -389,7 +389,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
         const selected = Array.isArray(exitResult) ? (exitResult as OptimizeEntry[]) : [];
 
         if (selected.length === 0) {
-            info("No optimizations selected.");
+            pail.info("No optimizations selected.");
 
             return;
         }
@@ -401,30 +401,30 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
 
         // Phase 1: Run codemods
         if (selectedE18eWithCodemod.length > 0) {
-            info(`\nRunning ${String(selectedE18eWithCodemod.length)} codemod${selectedE18eWithCodemod.length === 1 ? "" : "s"}...\n`);
+            pail.info(`\nRunning ${String(selectedE18eWithCodemod.length)} codemod${selectedE18eWithCodemod.length === 1 ? "" : "s"}...\n`);
 
             for (const entry of selectedE18eWithCodemod) {
                 const result = await runCodemod(wsRoot, entry.packageName);
 
                 if (result.filesChanged > 0) {
-                    success(`  ${entry.packageName}: ${String(result.filesChanged)} file${result.filesChanged === 1 ? "" : "s"} updated`);
+                    pail.success(`  ${entry.packageName}: ${String(result.filesChanged)} file${result.filesChanged === 1 ? "" : "s"} updated`);
                 } else {
-                    info(`  ${entry.packageName}: no files changed`);
+                    pail.info(`  ${entry.packageName}: no files changed`);
                 }
             }
         }
 
         // Report e18e entries that need manual migration
         if (selectedE18eManual.length > 0) {
-            warn(
+            pail.warn(
                 `\n${String(selectedE18eManual.length)} selected replacement${selectedE18eManual.length === 1 ? "" : "s"} require manual migration (no codemod available):`,
             );
 
             for (const entry of selectedE18eManual) {
-                info(`  ${entry.packageName} → ${entry.replacement}`);
+                pail.info(`  ${entry.packageName} → ${entry.replacement}`);
             }
 
-            note("  Replace usage in your source code, then remove from dependencies.");
+            pail.notice("  Replace usage in your source code, then remove from dependencies.");
         }
 
         // Phase 2: Write overrides
@@ -438,17 +438,17 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
             const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm);
 
             if (result.added.length > 0) {
-                success(`\nAdded ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);
+                pail.success(`\nAdded ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);
             }
 
             if (result.updated.length > 0) {
-                success(`Updated ${String(result.updated.length)} override${result.updated.length === 1 ? "" : "s"}.`);
+                pail.success(`Updated ${String(result.updated.length)} override${result.updated.length === 1 ? "" : "s"}.`);
             }
         }
 
         // Run install
         if (selectedSocket.length > 0 && !options.noInstall) {
-            info(`\nRunning ${pm.name} install to update lockfile...`);
+            pail.info(`\nRunning ${pm.name} install to update lockfile...`);
 
             const installOptions = {
                 dev: false,
@@ -468,12 +468,12 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
             const code = runInstall(pm, installOptions, wsRoot, logger);
 
             if (code !== 0) {
-                warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
+                pail.warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
             }
         }
 
-        info("");
-        success("Optimization complete.");
+        pail.info("");
+        pail.success("Optimization complete.");
 
         return;
     }
@@ -512,41 +512,41 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     const micros = e18eEntries.filter((e) => e.category === "micro-utility");
 
     if (natives.length > 0) {
-        info(`Native replacements (${String(natives.length)}):`);
+        pail.info(`Native replacements (${String(natives.length)}):`);
 
         for (const s of natives) {
-            info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
+            pail.info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
         }
     }
 
     if (preferred.length > 0) {
-        info(`\nPreferred alternatives (${String(preferred.length)}):`);
+        pail.info(`\nPreferred alternatives (${String(preferred.length)}):`);
 
         for (const s of preferred) {
-            info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
+            pail.info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
         }
     }
 
     if (micros.length > 0) {
-        info(`\nMicro-utilities (${String(micros.length)}):`);
+        pail.info(`\nMicro-utilities (${String(micros.length)}):`);
 
         for (const s of micros) {
-            info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
+            pail.info(`  ${s.hasCodemod ? "⚙" : " "} ${s.packageName} → ${s.replacement}`);
         }
     }
 
     if (dedupedSocketEntries.length > 0) {
-        info(`\nSocket.dev overrides (${String(dedupedSocketEntries.length)}):`);
+        pail.info(`\nSocket.dev overrides (${String(dedupedSocketEntries.length)}):`);
 
         for (const s of dedupedSocketEntries) {
-            info(`  ${s.packageName} → ${s.overrideSpec}`);
+            pail.info(`  ${s.packageName} → ${s.overrideSpec}`);
         }
     }
 
-    info(`\nTotal: ${String(allEntries.length)} optimizations available (⚙ = codemod available).`);
+    pail.info(`\nTotal: ${String(allEntries.length)} optimizations available (⚙ = codemod available).`);
 
     if (isDryRun) {
-        note("Run without --dry-run for interactive selection.");
+        pail.notice("Run without --dry-run for interactive selection.");
     }
 };
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { validateWorkspacesField } from "../src/workspace";
+import { validateWorkspacesField } from "../src/config/workspace";
 
 describe(validateWorkspacesField, () => {
     it("returns the array unchanged for a valid string[] form", () => {

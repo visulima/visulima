@@ -6,7 +6,7 @@ import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner
 import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 
-import { resolveFocusProjects } from "../docker";
+import { resolveFocusProjects } from "../util/docker";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";

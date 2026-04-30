@@ -7,8 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const aiClearMock = vi.fn(() => 0);
 const socketClearMock = vi.fn(() => 0);
 
-vi.mock(import("../src/ai-cache"), async (importOriginal) => {
-    const actual = await importOriginal<typeof import("../src/ai-cache")>();
+vi.mock(import("../src/ai/ai-cache"), async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../src/ai/ai-cache")>();
 
     return {
         ...actual,
@@ -16,8 +16,8 @@ vi.mock(import("../src/ai-cache"), async (importOriginal) => {
     };
 });
 
-vi.mock(import("../src/socket-security"), async (importOriginal) => {
-    const actual = await importOriginal<typeof import("../src/socket-security")>();
+vi.mock(import("../src/security/socket-security"), async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../src/security/socket-security")>();
 
     return {
         ...actual,

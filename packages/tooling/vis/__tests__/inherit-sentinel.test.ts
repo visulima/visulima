@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { INHERIT_SENTINEL, mergeArrayWithInherit, mergeTargetWithInherit } from "../src/target-merge";
+import { INHERIT_SENTINEL, mergeArrayWithInherit, mergeTargetWithInherit } from "../src/task/target-merge";
 
 describe(mergeArrayWithInherit, () => {
     it("returns parent (cloned) when child is undefined", () => {

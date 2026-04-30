@@ -1,6 +1,6 @@
 import { assertType, describe, it } from "vitest";
 
-import type { StagedConfig } from "../src/workspace";
+import type { StagedConfig } from "../src/config/workspace";
 
 /* eslint-disable vitest/prefer-expect-assertions -- compile-time assertType only */
 describe("stagedConfig type", () => {

@@ -1,7 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runRemove } from "../../pm-runner";
-import { toStringArray } from "../../utils";
+import { resolveInstaller, runRemove } from "../../pm/pm-runner";
+import { toStringArray } from "../../util/utils";
 import type { RemoveOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {

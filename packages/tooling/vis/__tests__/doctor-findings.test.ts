@@ -1,13 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import type { OutdatedEntry } from "../src/catalog";
 import type { DoctorResults, SectionId } from "../src/commands/doctor/sections";
 import { SECTION_IDS } from "../src/commands/doctor/sections";
-import type { DuplicatePackage } from "../src/dependency-scan";
-import type { RuntimeDiagnostic } from "../src/runtime-diagnostics";
+import type { RuntimeDiagnostic } from "../src/runtime/runtime-diagnostics";
+import type { DuplicatePackage } from "../src/security/dependency-scan";
 import type { DoctorFinding } from "../src/tui/components/doctor/findings";
 import { flattenFindings, SECTION_LABELS } from "../src/tui/components/doctor/findings";
 import type { OptimizeEntry } from "../src/tui/components/optimize/OptimizeStore";
+import type { OutdatedEntry } from "../src/util/catalog";
 
 const buildResults = (overrides: Partial<DoctorResults> = {}): DoctorResults => {
     return {
@@ -60,6 +60,8 @@ const runtime = (overrides: Partial<RuntimeDiagnostic> = {}): RuntimeDiagnostic 
 
 describe(flattenFindings, () => {
     it("emits one row per section per item with stable ids", () => {
+        expect.assertions(4);
+
         const findings = flattenFindings(
             buildResults({
                 duplicates: [dup("react", ["18.0.0", "18.2.0"])],
@@ -78,6 +80,8 @@ describe(flattenFindings, () => {
     });
 
     it("sorts sections in declaration order then severity", () => {
+        expect.assertions(1);
+
         const findings = flattenFindings(
             buildResults({
                 outdated: [
@@ -105,6 +109,8 @@ describe(flattenFindings, () => {
     });
 
     it("demotes acked vulnerabilities from error to warn (socket already warn)", () => {
+        expect.assertions(2);
+
         const acked = outdated({
             acceptedRisk: { acceptedAt: "2025-01-01T00:00:00Z", acceptedScore: 0.5, reason: "tracked upstream" },
             packageName: "risky",
@@ -127,6 +133,8 @@ describe(flattenFindings, () => {
     });
 
     it("only surfaces warn runtime diagnostics — drops ok and skip", () => {
+        expect.assertions(1);
+
         const findings = flattenFindings(
             buildResults({
                 runtime: [
@@ -143,6 +151,8 @@ describe(flattenFindings, () => {
     });
 
     it("respects section selection — does not emit findings for sections not in the set", () => {
+        expect.assertions(1);
+
         const findings = flattenFindings(
             buildResults({
                 outdated: [outdated()],
@@ -154,6 +164,9 @@ describe(flattenFindings, () => {
     });
 
     it("exposes a label for every section id", () => {
+        // SECTION_IDS has 4 entries (dependencies, security, optimization, runtime).
+        expect.assertions(4);
+
         for (const id of SECTION_IDS) {
             expectTypeOf(SECTION_LABELS[id]).toBeString();
 

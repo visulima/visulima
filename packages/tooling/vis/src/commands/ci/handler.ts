@@ -1,6 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { runToolchainPreflight } from "../../toolchain";
+import { runToolchainPreflight } from "../../runtime/toolchain";
 import type { CiOptions } from "./index";
 
 /**

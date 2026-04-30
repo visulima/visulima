@@ -1,14 +1,15 @@
 import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { relative } from "@visulima/path";
 
-import type { AiConfig } from "../../ai-analysis";
-import { aggregateFailureContext } from "../../ai-failure-context";
-import type { FixProposal, PatchResult } from "../../ai-fix";
-import { applyFixProposal, resolvePatchPath, runFixAnalysis } from "../../ai-fix";
-import { listFailureLogs } from "../../failure-log";
-import { bold, cyan, dim, failure, green, info, note, red, success, warn, yellow } from "../../output";
+import type { AiConfig } from "../../ai/ai-analysis";
+import { aggregateFailureContext } from "../../ai/ai-failure-context";
+import type { FixProposal, PatchResult } from "../../ai/ai-fix";
+import { applyFixProposal, resolvePatchPath, runFixAnalysis } from "../../ai/ai-fix";
+import { pail } from "../../io/logger";
+import { listFailureLogs } from "../../report/failure-log";
 import type { AiFixOptions } from "./index";
 
 const PATCH_STATUS_LABEL: Record<PatchResult["status"], string> = {
@@ -134,18 +135,18 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
 
             process.stdout.write(`${JSON.stringify({ availableTasks: available, error: "No task ID specified" }, undefined, 2)}\n`);
         } else {
-            failure("No task ID specified. Usage: vis ai fix <project>:<target>");
+            pail.error("No task ID specified. Usage: vis ai fix <project>:<target>");
 
             const available = listFailureLogs(workspaceRoot);
 
             if (available.length > 0) {
-                info("Tasks with captured failure logs:");
+                pail.info("Tasks with captured failure logs:");
 
                 for (const id of available) {
-                    info(`  - ${id}`);
+                    pail.info(`  - ${id}`);
                 }
             } else {
-                note("No failure logs found. Re-run a failing task with `vis run` to capture logs.");
+                pail.notice("No failure logs found. Re-run a failing task with `vis run` to capture logs.");
             }
         }
 
@@ -160,8 +161,8 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
         if (isJson) {
             process.stdout.write(`${JSON.stringify({ error: "No failure log or run summary found", taskId }, undefined, 2)}\n`);
         } else {
-            failure(`No failure log or run summary found for task "${taskId}".`);
-            note("Re-run the task with `vis run` so its terminal output and run metadata are captured.");
+            pail.error(`No failure log or run summary found for task "${taskId}".`);
+            pail.notice("Re-run the task with `vis run` so its terminal output and run metadata are captured.");
         }
 
         process.exitCode = 1;
@@ -170,7 +171,7 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
     }
 
     if (!failureContext.terminalOutputCaptured) {
-        warn(`No captured terminal output for "${taskId}". Re-run with \`vis run\` for a better fix proposal.`);
+        pail.warn(`No captured terminal output for "${taskId}". Re-run with \`vis run\` for a better fix proposal.`);
     }
 
     const aiConfig: AiConfig | undefined = visConfig?.ai;
@@ -240,13 +241,13 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
 
     if (!apply) {
         logger.info("");
-        info("Re-run with --apply to write these patches to disk.");
+        pail.info("Re-run with --apply to write these patches to disk.");
 
         return;
     }
 
     if (dryRunSummary.applied === 0) {
-        failure("No patches can be applied (every patch failed validation).");
+        pail.error("No patches can be applied (every patch failed validation).");
         process.exitCode = 1;
 
         return;
@@ -258,7 +259,7 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
         const confirmed = await confirmPrompt(`Apply ${String(dryRunSummary.applied)} patch${dryRunSummary.applied === 1 ? "" : "es"} to disk?`);
 
         if (!confirmed) {
-            note("Aborted. Nothing written.");
+            pail.notice("Aborted. Nothing written.");
 
             return;
         }
@@ -273,9 +274,9 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
     logger.info("");
 
     if (applySummary.failed === 0) {
-        success(`Applied ${String(applySummary.applied)} patch${applySummary.applied === 1 ? "" : "es"}.`);
+        pail.success(`Applied ${String(applySummary.applied)} patch${applySummary.applied === 1 ? "" : "es"}.`);
     } else {
-        warn(`${String(applySummary.applied)} applied, ${String(applySummary.failed)} failed.`);
+        pail.warn(`${String(applySummary.applied)} applied, ${String(applySummary.failed)} failed.`);
         process.exitCode = 1;
     }
 };

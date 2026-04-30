@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AiAnalysisResult } from "../src/ai-analysis";
+import type { AiAnalysisResult } from "../src/ai/ai-analysis";
 
 const HEX_REGEX = /^[0-9a-f]+$/;
 
@@ -18,7 +18,7 @@ vi.mock(import("node:os"), async (importOriginal) => {
 });
 
 // Now import the module — it will use our mocked homedir
-const { buildCacheKey, clearCache, getCachedAnalysis, getCacheStats, getTtlForAnalysisType, setCachedAnalysis } = await import("../src/ai-cache");
+const { buildCacheKey, clearCache, getCachedAnalysis, getCacheStats, getTtlForAnalysisType, setCachedAnalysis } = await import("../src/ai/ai-cache");
 
 const CACHE_DIR = join(TEST_HOME, ".vis", "cache", "ai");
 

@@ -4,7 +4,7 @@ import { join } from "@visulima/path";
 import type { ProjectGraph, WorkspaceConfiguration } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DOCKER_MANIFEST_FILENAME, pruneDockerContext, resolveFocusProjects, scaffoldDockerContext } from "../src/docker";
+import { DOCKER_MANIFEST_FILENAME, pruneDockerContext, resolveFocusProjects, scaffoldDockerContext } from "../src/util/docker";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 describe(resolveFocusProjects, () => {

@@ -4,8 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { PmInfo } from "../src/overrides";
-import { applyOverrides, readOverrides } from "../src/overrides";
+import type { PmInfo } from "../src/pm/overrides";
+import { applyOverrides, readOverrides } from "../src/pm/overrides";
 import type { OptimizeEntry } from "../src/tui/components/optimize/OptimizeStore";
 import { OptimizeStore } from "../src/tui/components/optimize/OptimizeStore";
 

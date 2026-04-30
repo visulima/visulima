@@ -1,16 +1,16 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 
-import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../audit-config";
-import type { SecurityVulnerability } from "../../catalog";
-import { fetchVulnerabilities } from "../../catalog";
-import { findDuplicateDependencies, lockedPackages } from "../../dependency-scan";
-import { error as errorOutput, info, note, success, warn } from "../../output";
-import { detectPm } from "../../pm-runner";
-import { startScanProgress } from "../../scan-progress";
-import type { AcceptedRisk, PackageReportData } from "../../socket-security";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../socket-security";
-import type { VisConfig } from "../../workspace";
+import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../config/audit-config";
+import type { VisConfig } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import { detectPm } from "../../pm/pm-runner";
+import { startScanProgress } from "../../scan/scan-progress";
+import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
+import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../security/socket-security";
+import type { SecurityVulnerability } from "../../util/catalog";
+import { fetchVulnerabilities } from "../../util/catalog";
 import type { AuditOptions } from "./index";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const nativeExclusions = readNativeAuditExclusions(workspaceRoot, pm.name);
 
     if (nativeExclusions.ignoredAdvisories.length > 0 || nativeExclusions.excludedPackages.length > 0) {
-        info(
+        pail.info(
             `Loaded ${String(nativeExclusions.ignoredAdvisories.length)} ignored advisor${nativeExclusions.ignoredAdvisories.length === 1 ? "y" : "ies"} and ${String(nativeExclusions.excludedPackages.length)} excluded package${nativeExclusions.excludedPackages.length === 1 ? "" : "s"} from ${pm.name} config.`,
         );
     }
@@ -102,13 +102,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     const installed = lockedPackages(workspaceRoot, pm.name);
 
     if (installed.length === 0) {
-        info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
+        pail.info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
 
         return;
     }
 
     if (!isJson) {
-        info(`Scanning ${String(installed.length)} installed packages…`);
+        pail.info(`Scanning ${String(installed.length)} installed packages…`);
     }
 
     // 2. Fetch vulnerability and security data in parallel
@@ -199,7 +199,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     }
 
     if (!isJson) {
-        info(dim(`Scan completed in ${fmtElapsed(startedAt)}`));
+        pail.info(dim(`Scan completed in ${fmtElapsed(startedAt)}`));
     }
 
     // 3. Build audit entries
@@ -281,7 +281,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     // 6. Human-readable output
     if (filtered.length === 0) {
-        success(`No security issues found across ${String(installed.length)} packages.`);
+        pail.success(`No security issues found across ${String(installed.length)} packages.`);
 
         return;
     }
@@ -315,7 +315,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             continue;
         }
 
-        info(`\n── ${severity} (${String(items.length)}) ──`);
+        pail.info(`\n── ${severity} (${String(items.length)}) ──`);
 
         for (const { entry, vuln } of items) {
             const isExcluded = Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases);
@@ -329,10 +329,10 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             }
 
             totalVulns++;
-            info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
+            pail.info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
 
             if (showFixes && (vuln.fixedVersions ?? []).length > 0) {
-                note(`    Fix: update to ${vuln.fixedVersions.at(-1)}`);
+                pail.notice(`    Fix: update to ${vuln.fixedVersions.at(-1)}`);
             }
         }
     }
@@ -343,7 +343,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     );
 
     if (socketIssues.length > 0) {
-        info(`\n── Socket.dev Supply Chain (${String(socketIssues.length)}) ──`);
+        pail.info(`\n── Socket.dev Supply Chain (${String(socketIssues.length)}) ──`);
 
         for (const entry of socketIssues) {
             if (!entry.socketReport) {
@@ -356,24 +356,24 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 continue;
             }
 
-            info(formatSocketLine(entry.socketReport, isExcluded));
+            pail.info(formatSocketLine(entry.socketReport, isExcluded));
 
             for (const alert of entry.socketReport.alerts) {
                 const alertColorFunction = SOCKET_ALERT_COLORS[alert.severity] ?? dim;
 
-                info(`    ${alertColorFunction(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
+                pail.info(`    ${alertColorFunction(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
             }
         }
     }
 
     // Print duplicate dependencies
     if (duplicates.length > 0) {
-        info(`\n── Duplicate Dependencies (${String(duplicates.length)}) ──`);
+        pail.info(`\n── Duplicate Dependencies (${String(duplicates.length)}) ──`);
 
         for (const dup of duplicates) {
             const versionList = dup.versions.join(", ");
 
-            info(`  ${dup.name} — ${String(dup.versions.length)} versions: ${yellow(versionList)}`);
+            pail.info(`  ${dup.name} — ${String(dup.versions.length)} versions: ${yellow(versionList)}`);
         }
     }
 
@@ -382,12 +382,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         Boolean(e.acceptedRisk) || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
     const unacknowledgedCount = filtered.filter((e) => !isEntryExcluded(e)).length;
 
-    info("");
-    info(`─ Audit Summary`);
-    info(`  ${String(installed.length)} packages scanned`);
+    pail.info("");
+    pail.info(`─ Audit Summary`);
+    pail.info(`  ${String(installed.length)} packages scanned`);
 
     if (nativeExclusions.ignoredAdvisories.length > 0) {
-        info(
+        pail.info(
             `  ${String(nativeExclusions.ignoredAdvisories.length)} ${pm.name} audit exclusion${nativeExclusions.ignoredAdvisories.length === 1 ? "" : "s"} applied`,
         );
     }
@@ -396,40 +396,40 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const critCount = vulnsBySeverity.CRITICAL?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
         const highCount = vulnsBySeverity.HIGH?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
 
-        errorOutput(`  ${String(totalVulns)} vulnerabilit${totalVulns === 1 ? "y" : "ies"} found`);
+        pail.error(`  ${String(totalVulns)} vulnerabilit${totalVulns === 1 ? "y" : "ies"} found`);
 
         if (critCount > 0) {
-            errorOutput(`    ${String(critCount)} critical`);
+            pail.error(`    ${String(critCount)} critical`);
         }
 
         if (highCount > 0) {
-            warn(`    ${String(highCount)} high`);
+            pail.warn(`    ${String(highCount)} high`);
         }
     } else {
-        success("  No vulnerabilities found");
+        pail.success("  No vulnerabilities found");
     }
 
     if (socketIssues.length > 0) {
         const unacknowledgedSocket = socketIssues.filter((e) => !isEntryExcluded(e)).length;
 
-        warn(`  ${String(unacknowledgedSocket)} package${unacknowledgedSocket === 1 ? "" : "s"} with Socket.dev supply chain issues`);
+        pail.warn(`  ${String(unacknowledgedSocket)} package${unacknowledgedSocket === 1 ? "" : "s"} with Socket.dev supply chain issues`);
     }
 
     if (duplicates.length > 0) {
-        warn(`  ${String(duplicates.length)} package${duplicates.length === 1 ? "" : "s"} with duplicate versions`);
-        note("  Run 'vis dedupe' or your package manager's dedupe command to reduce duplicates.");
+        pail.warn(`  ${String(duplicates.length)} package${duplicates.length === 1 ? "" : "s"} with duplicate versions`);
+        pail.notice("  Run 'vis dedupe' or your package manager's dedupe command to reduce duplicates.");
     }
 
     if (acknowledgedVulns > 0) {
-        info(`  ${String(acknowledgedVulns)} acknowledged (accepted risks)`);
+        pail.info(`  ${String(acknowledgedVulns)} acknowledged (accepted risks)`);
 
         if (!showAccepted) {
-            note("  Use --show-accepted to see acknowledged issues.");
+            pail.notice("  Use --show-accepted to see acknowledged issues.");
         }
     }
 
     if (unacknowledgedCount === 0) {
-        success("\n  All issues are acknowledged. No action required.");
+        pail.success("\n  All issues are acknowledged. No action required.");
     }
 
     // Sync accepted risks to native PM config
@@ -459,14 +459,14 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const advisoryIds = [...idSet];
 
         if (advisoryIds.length > 0) {
-            info("");
+            pail.info("");
             const actions = syncAcceptedRisksToNativeConfig(pm.name, workspaceRoot, advisoryIds);
 
             for (const action of actions) {
-                success(`  ${action}`);
+                pail.success(`  ${action}`);
             }
         } else {
-            info("\nNo advisory IDs to sync to native PM config.");
+            pail.info("\nNo advisory IDs to sync to native PM config.");
         }
     }
 

@@ -1,6 +1,6 @@
 import type { Plugin } from "@visulima/cerebro";
 
-import { showTip } from "../tips";
+import { showTip } from "../util/tips";
 
 const postCommandPlugin = (upgradeCheckCallback?: () => void): Plugin => {
     return {

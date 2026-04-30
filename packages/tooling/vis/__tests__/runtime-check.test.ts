@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { checkRuntimeVersions } from "../src/runtime-check";
+import { checkRuntimeVersions } from "../src/runtime/runtime-check";
 
 let tmpDir: string;
 

@@ -1,7 +1,7 @@
-import type { OutdatedEntry } from "../../../catalog";
 import type { DoctorResults, SectionId } from "../../../commands/doctor/sections";
-import type { DuplicatePackage } from "../../../dependency-scan";
-import type { RuntimeDiagnostic } from "../../../runtime-diagnostics";
+import type { RuntimeDiagnostic } from "../../../runtime/runtime-diagnostics";
+import type { DuplicatePackage } from "../../../security/dependency-scan";
+import type { OutdatedEntry } from "../../../util/catalog";
 import type { OptimizeEntry } from "../optimize/OptimizeStore";
 
 /**

@@ -3,8 +3,8 @@ import { detectAllProviders, runProvider } from "@visulima/find-ai-runner";
 import { renderToString, Table } from "@visulima/tui";
 import React from "react";
 
-import type { AiConfig } from "../../ai-analysis";
-import { DEFAULT_PRIORITY, resolveProvider } from "../../ai-analysis";
+import type { AiConfig } from "../../ai/ai-analysis";
+import { DEFAULT_PRIORITY, resolveProvider } from "../../ai/ai-analysis";
 import { renderDiscoveryJson, renderDiscoveryText } from "./discovery";
 import type {
     AiFixOptions,

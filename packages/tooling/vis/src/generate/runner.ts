@@ -15,10 +15,11 @@
 
 import { spawnSync } from "node:child_process";
 
+import { bold, cyan, dim } from "@visulima/colorize";
 import { ensureDirSync, isAccessibleSync, writeFileSync } from "@visulima/fs";
 import { dirname, isAbsolute, join, relative, sep } from "@visulima/path";
 
-import { bold, cyan, dim, info, note, success, warn } from "../output";
+import { pail } from "../io/logger";
 import type { BuiltinVars, Creation, CreationDirectory, CreationFile, FileMeta, Script, Template, TemplateContext } from "./types";
 
 interface RunnerOptions {
@@ -103,7 +104,7 @@ const runScript = (script: Script, cwd: string, silent: boolean = false): boolea
 
     for (const command of commands) {
         if (!isSilent) {
-            info(`$ ${command}`);
+            pail.info(`$ ${command}`);
         }
 
         const result = spawnSync(command, {
@@ -113,7 +114,7 @@ const runScript = (script: Script, cwd: string, silent: boolean = false): boolea
         });
 
         if (result.status !== 0) {
-            warn(`Script failed (exit ${String(result.status)}): ${command}`);
+            pail.warn(`Script failed (exit ${String(result.status)}): ${command}`);
 
             return false;
         }
@@ -179,7 +180,7 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
     }
 
     if (options.dryRun) {
-        info(`${bold(cyan("Plan"))} ${dim("(dry-run, no files written)")}`);
+        pail.info(`${bold(cyan("Plan"))} ${dim("(dry-run, no files written)")}`);
 
         for (const plan of plans) {
             const size = Buffer.isBuffer(plan.file.content) ? plan.file.content.length : Buffer.byteLength(plan.file.content, "utf8");
@@ -198,7 +199,7 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
             const effectiveForce = options.force || meta.force === true;
 
             if (exists && !effectiveForce) {
-                warn(`Skipped existing file: ${file.path} (use --force or set frontmatter force: true to overwrite)`);
+                pail.warn(`Skipped existing file: ${file.path} (use --force or set frontmatter force: true to overwrite)`);
                 skipped += 1;
                 continue;
             }
@@ -207,14 +208,14 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
             written += 1;
         }
 
-        success(`Wrote ${String(written)} file${written === 1 ? "" : "s"}${skipped > 0 ? `, skipped ${String(skipped)}` : ""}`);
+        pail.success(`Wrote ${String(written)} file${written === 1 ? "" : "s"}${skipped > 0 ? `, skipped ${String(skipped)}` : ""}`);
     }
 
     // ── Scripts ───────────────────────────────────────────────────
     if (!options.dryRun && !options.skipScripts && creation.scripts && creation.scripts.length > 0) {
         const phases = groupByPhase(creation.scripts);
 
-        info(
+        pail.info(
             `Running ${String(creation.scripts.length)} script${creation.scripts.length === 1 ? "" : "s"} across ${String(phases.length)} phase${phases.length === 1 ? "" : "s"}…`,
         );
 
@@ -234,7 +235,7 @@ export const runTemplate = async (template: Template, options: RunnerOptions): P
     // ── Suggestions ───────────────────────────────────────────────
     if (creation.suggestions && creation.suggestions.length > 0) {
         process.stderr.write("\n");
-        note("Next steps:");
+        pail.notice("Next steps:");
 
         for (const suggestion of creation.suggestions) {
             process.stderr.write(`  ${dim("•")} ${suggestion}\n`);

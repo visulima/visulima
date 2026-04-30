@@ -4,9 +4,9 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { coerce } from "semver";
 
-import { info, note, warn } from "../../output";
-import { resolveInstaller, runAdd } from "../../pm-runner";
-import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../../socket-security";
+import { pail } from "../../io/logger";
+import { resolveInstaller, runAdd } from "../../pm/pm-runner";
+import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../../security/socket-security";
 import {
     buildSocketOptions,
     DEFAULT_LOW_SCORE_THRESHOLD,
@@ -17,9 +17,9 @@ import {
     getFullPackageName,
     scoreColor,
     scoreLabel,
-} from "../../socket-security";
-import { runTyposquatCheck } from "../../typosquats";
-import { parsePackageArgument, toStringArray } from "../../utils";
+} from "../../security/socket-security";
+import { runTyposquatCheck } from "../../security/typosquats";
+import { parsePackageArgument, toStringArray } from "../../util/utils";
 import type { AddOptions } from "./index";
 
 /**
@@ -84,16 +84,16 @@ const displaySecurityReports = (
         const colorFunction = color === "red" ? red : color === "yellow" ? yellow : green;
 
         if (accepted) {
-            info(`  ${colorFunction(pct)} ${formatReportSummary(report)} ${dim(`[accepted: ${accepted.reason}]`)}`);
+            pail.info(`  ${colorFunction(pct)} ${formatReportSummary(report)} ${dim(`[accepted: ${accepted.reason}]`)}`);
         } else {
-            info(`  ${colorFunction(pct)} ${formatReportSummary(report)}`);
+            pail.info(`  ${colorFunction(pct)} ${formatReportSummary(report)}`);
         }
 
         if (alertCount > 0) {
             const critHigh = report.alerts.filter((a) => a.severity === "critical" || a.severity === "high").length;
 
             if (critHigh > 0) {
-                warn(`    ${String(critHigh)} critical/high alert${critHigh === 1 ? "" : "s"}`);
+                pail.warn(`    ${String(critHigh)} critical/high alert${critHigh === 1 ? "" : "s"}`);
             }
         }
 
@@ -121,17 +121,17 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
 
     const pct = String(Math.round(minimumScore * 100));
 
-    warn("");
-    warn(`${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} scored below the minimum threshold (${pct}%):`);
+    pail.warn("");
+    pail.warn(`${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} scored below the minimum threshold (${pct}%):`);
 
     for (const report of lowScorePackages) {
         const name = getFullPackageName(report);
         const score = `${String(Math.round(report.score.overall * 100))}%`;
 
-        warn(`  • ${name}@${report.version} — score: ${score} (${scoreLabel(report.score.overall)})`);
+        pail.warn(`  • ${name}@${report.version} — score: ${score} (${scoreLabel(report.score.overall)})`);
     }
 
-    warn("");
+    pail.warn("");
 
     const answer = await ask("Continue adding these packages? [y/N] ");
 
@@ -147,18 +147,18 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
     rl.close();
 
     if (rememberAnswer.toLowerCase() === "y" || rememberAnswer.toLowerCase() === "yes") {
-        note("");
-        note("Add the following to security.socket.acceptedRisks in vis.config.ts:");
-        note("");
+        pail.notice("");
+        pail.notice("Add the following to security.socket.acceptedRisks in vis.config.ts:");
+        pail.notice("");
 
         for (const report of lowScorePackages) {
             const fullName = getFullPackageName(report);
             const snippet = formatAcceptedRiskSnippet(fullName, report.version, report.score.overall, "Reviewed and accepted");
 
-            note(snippet);
+            pail.notice(snippet);
         }
 
-        note("");
+        pail.notice("");
     }
 
     return true;
@@ -208,13 +208,13 @@ const runSocketPreCheck = async (
         return true;
     }
 
-    info("");
-    info("Socket.dev security check:");
+    pail.info("");
+    pail.info("Socket.dev security check:");
 
     const reports = await fetchSocketReports(lookupPackages, socketOptions);
 
     if (reports.size === 0) {
-        info("  Could not fetch security data. Proceeding.");
+        pail.info("  Could not fetch security data. Proceeding.");
 
         return true;
     }
@@ -222,14 +222,14 @@ const runSocketPreCheck = async (
     const lowScorePackages = displaySecurityReports(reports, minimumScore, acceptedRisks);
 
     if (lowScorePackages.length === 0) {
-        info("");
+        pail.info("");
 
         return true;
     }
 
     // In non-interactive mode (CI, piped), fail instead of prompting
     if (!process.stdin.isTTY) {
-        warn(
+        pail.warn(
             `Aborting: ${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} below minimum score. Use --no-socket-check to skip.`,
         );
 

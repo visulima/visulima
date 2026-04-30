@@ -2,10 +2,10 @@ import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
+import type { VisConfig } from "../../config/workspace";
 import type { MigrateItem } from "../../tui/components/migrate/MigrateStore";
 import { MigrateStore } from "../../tui/components/migrate/MigrateStore";
 import VisMigrateApp from "../../tui/components/migrate/VisMigrateApp";
-import type { VisConfig } from "../../workspace";
 import type { MigrationEntry } from "./registry";
 import { buildProbeContext, getApplicableMigrations } from "./registry";
 import { printSummary } from "./summary";

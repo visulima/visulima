@@ -1,7 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runOutdated } from "../../pm-runner";
-import { toStringArray } from "../../utils";
+import { resolveInstaller, runOutdated } from "../../pm/pm-runner";
+import { toStringArray } from "../../util/utils";
 import type { OutdatedOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OutdatedOptions>): Promise<void> => {

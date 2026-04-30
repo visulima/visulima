@@ -4,11 +4,11 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
 
-import { error as errorOutput, info, warn } from "../../output";
-import type { InstallBackend } from "../../pm-runner";
-import { detectLockfileDrift, detectPm, resolveInstaller, runInstall } from "../../pm-runner";
-import { scanDepsForTyposquats } from "../../typosquats";
-import { toStringArray } from "../../utils";
+import { pail } from "../../io/logger";
+import type { InstallBackend } from "../../pm/pm-runner";
+import { detectLockfileDrift, detectPm, resolveInstaller, runInstall } from "../../pm/pm-runner";
+import { scanDepsForTyposquats } from "../../security/typosquats";
+import { toStringArray } from "../../util/utils";
 import type { InstallOptions } from "./index";
 
 const LOCKFILE_NAMES: ReadonlyArray<string> = ["pnpm-lock.yaml", "yarn.lock", "package-lock.json", "npm-shrinkwrap.json", "bun.lock", "bun.lockb"];
@@ -57,7 +57,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const flagBackendRaw = options.installer;
 
     if (flagBackendRaw && !ALLOWED_BACKENDS.has(flagBackendRaw as InstallBackend)) {
-        errorOutput(`Invalid --installer value: "${flagBackendRaw}". Expected one of: ${[...ALLOWED_BACKENDS].join(", ")}.`);
+        pail.error(`Invalid --installer value: "${flagBackendRaw}". Expected one of: ${[...ALLOWED_BACKENDS].join(", ")}.`);
         process.exitCode = 1;
 
         return;
@@ -76,7 +76,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             ? detectPm(cwd)
             : resolveInstaller(cwd, { backend: flagBackend, configBackend: visConfig?.install?.backend });
     } catch (error: unknown) {
-        errorOutput(error instanceof Error ? error.message : String(error));
+        pail.error(error instanceof Error ? error.message : String(error));
         process.exitCode = 1;
 
         return;
@@ -89,7 +89,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const driftWarning = detectLockfileDrift(cwd, pm);
 
     if (driftWarning) {
-        warn(driftWarning);
+        pail.warn(driftWarning);
     }
 
     const filters = toStringArray(options.filter);
@@ -107,7 +107,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const shouldFreeze = explicitFrozen || (!optedOutOfFrozen && lockfilePresent);
 
     if (!explicitFrozen && shouldFreeze && !options.silent) {
-        info("Defaulting to frozen lockfile (pass --no-frozen-lockfile to allow lockfile updates).");
+        pail.info("Defaulting to frozen lockfile (pass --no-frozen-lockfile to allow lockfile updates).");
     }
 
     // --ci mirrors `npm ci` / `pnpm ci` / `yarn install --immutable`:
@@ -115,12 +115,12 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     // Works for every PM (including pnpm v10) because we do the wipe ourselves
     // and then delegate to a standard frozen-lockfile install.
     if (ciMode) {
-        info("Clean install: removing node_modules...");
+        pail.info("Clean install: removing node_modules...");
 
         try {
             rmSync(join(cwd, "node_modules"), { force: true, recursive: true });
         } catch (error: unknown) {
-            errorOutput(`Failed to remove node_modules: ${error instanceof Error ? error.message : String(error)}`);
+            pail.error(`Failed to remove node_modules: ${error instanceof Error ? error.message : String(error)}`);
             process.exitCode = 1;
 
             return;

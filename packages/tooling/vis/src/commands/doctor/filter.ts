@@ -1,4 +1,4 @@
-import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../security/socket-security";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import type { DoctorResults } from "./sections";
 

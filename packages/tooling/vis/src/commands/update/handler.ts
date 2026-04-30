@@ -10,9 +10,18 @@ import { render, renderToString, Text } from "@visulima/tui";
 import isInCi from "is-in-ci";
 import React from "react";
 
-import type { AiAnalysisResult } from "../../ai-analysis";
-import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai-analysis";
-import type { CatalogCheckOptions, OutdatedEntry, UpdateTarget } from "../../catalog";
+import type { AiAnalysisResult } from "../../ai/ai-analysis";
+import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
+import type { VisConfig } from "../../config/workspace";
+import type { UpdateCommandOptions } from "../../pm/package-manager";
+import { resolveUpdateCommand } from "../../pm/package-manager";
+import { resolveInstaller } from "../../pm/pm-runner";
+import { buildSocketOptions, scoreColor } from "../../security/socket-security";
+import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
+import CheckProgressApp from "../../tui/components/CheckProgressApp";
+import { UpdateStore } from "../../tui/components/update/UpdateStore";
+import VisUpdateApp from "../../tui/components/update/VisUpdateApp";
+import type { CatalogCheckOptions, OutdatedEntry, UpdateTarget } from "../../util/catalog";
 import {
     applyCatalogUpdates,
     checkOutdated,
@@ -28,17 +37,8 @@ import {
     readCatalogs,
     restoreFromBackup,
     toFilterArray,
-} from "../../catalog";
-import type { UpdateCommandOptions } from "../../package-manager";
-import { resolveUpdateCommand } from "../../package-manager";
-import { resolveInstaller } from "../../pm-runner";
-import { buildSocketOptions, scoreColor } from "../../socket-security";
-import CheckProgressApp from "../../tui/components/CheckProgressApp";
-import { UpdateStore } from "../../tui/components/update/UpdateStore";
-import VisUpdateApp from "../../tui/components/update/VisUpdateApp";
-import { runTyposquatCheck, scanDepsForTyposquats } from "../../typosquats";
-import { parsePackageArgument } from "../../utils";
-import type { VisConfig } from "../../workspace";
+} from "../../util/catalog";
+import { parsePackageArgument } from "../../util/utils";
 import type { UpdateOptions } from "./index";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";

@@ -1,6 +1,5 @@
 import type { Command } from "@visulima/cerebro";
-
-import { bold, cyan, dim, green, yellow } from "../../output";
+import { bold, cyan, dim, green, yellow } from "@visulima/colorize";
 
 export interface DiscoveryOption {
     defaultValue?: unknown;

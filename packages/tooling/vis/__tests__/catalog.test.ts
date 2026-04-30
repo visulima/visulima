@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { describe, expect, it, vi } from "vitest";
 
-import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../src/catalog";
+import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../src/util/catalog";
 import {
     applyCatalogUpdates,
     applyPackageJsonUpdates,
@@ -38,7 +38,7 @@ import {
     readPackageJsonDeps,
     resolvePackageTarget,
     restoreFromBackup,
-} from "../src/catalog";
+} from "../src/util/catalog";
 
 // --- parseVersion ---
 

@@ -12,8 +12,8 @@
 import { relative } from "@visulima/path";
 import { downloadTemplate } from "giget";
 
-import { info, warn } from "../../../output";
-import { runDlx } from "../../../pm-runner";
+import { pail } from "../../../io/logger";
+import { runDlx } from "../../../pm/pm-runner";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
 // ── Auto-fix rules for popular create packages ────────────────────
@@ -100,7 +100,7 @@ export const executeRemoteNpm = (config: TemplateConfig, context: ExecutionConte
 
     const args = applyAutoFixes(config.source, initialArgs, context.inMonorepo);
 
-    info(`Running ${config.source} via ${context.pm.name} dlx...`);
+    pail.info(`Running ${config.source} via ${context.pm.name} dlx...`);
 
     const code = runDlx(
         context.pm,
@@ -139,7 +139,7 @@ export const executeRemoteNpm = (config: TemplateConfig, context: ExecutionConte
 export const executeRemoteGit = async (config: TemplateConfig, context: ExecutionContext): Promise<number> => {
     const { createConfig } = context;
 
-    info(`Downloading template from ${config.source}...`);
+    pail.info(`Downloading template from ${config.source}...`);
 
     try {
         const result = await downloadTemplate(config.source, {
@@ -154,13 +154,13 @@ export const executeRemoteGit = async (config: TemplateConfig, context: Executio
             registry: createConfig?.registry,
         });
 
-        info(`Downloaded to ${result.dir}`);
+        pail.info(`Downloaded to ${result.dir}`);
 
         return 0;
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        warn(`Failed to download template: ${message}`);
+        pail.warn(`Failed to download template: ${message}`);
 
         return 1;
     }

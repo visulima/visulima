@@ -56,11 +56,11 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
-import { injectVersion, setTerminalTitle } from "./output";
+import { injectVersion, setTerminalTitle } from "./io/terminal";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
 import securityEnforcementPlugin from "./plugins/security-enforcement";
-import { startUpgradeCheck } from "./upgrade-check";
+import { startUpgradeCheck } from "./util/upgrade-check";
 
 // Apply heap memory tuning before any heavy work begins.
 // May re-spawn the process with tuned V8 flags and never return.
@@ -197,7 +197,7 @@ for (const command of aiCommands) {
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));
 
 if (isBareMigrateInvocation(process.argv.slice(2))) {
-    const { loadVisConfig } = await import("./config");
+    const { loadVisConfig } = await import("./config/config");
     const workspaceRoot = process.env["VIS_MONOREPO_ROOT"] || process.cwd();
 
     let visConfig: Awaited<ReturnType<typeof loadVisConfig>> | undefined;

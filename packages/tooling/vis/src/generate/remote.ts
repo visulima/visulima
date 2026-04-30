@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { downloadTemplate } from "giget";
 
-import { info, warn } from "../output";
+import { pail } from "../io/logger";
 
 const REMOTE_PROTOCOLS = ["git://", "npm://", "https://", "github:", "gitlab:", "bitbucket:", "sourcehut:"];
 
@@ -69,7 +69,7 @@ export const fetchRemoteTemplate = async (source: string, options: FetchOptions 
         }
     };
 
-    info(`Downloading ${source}…`);
+    pail.info(`Downloading ${source}…`);
 
     try {
         const result = await downloadTemplate(source, {
@@ -85,7 +85,7 @@ export const fetchRemoteTemplate = async (source: string, options: FetchOptions 
 
         const message = error instanceof Error ? error.message : String(error);
 
-        warn(`Failed to download template: ${message}`);
+        pail.warn(`Failed to download template: ${message}`);
 
         throw error;
     }

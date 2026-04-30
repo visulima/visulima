@@ -6,9 +6,9 @@ import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { enforceProjectConstraints } from "@visulima/task-runner";
 
-import { analyzeFlakiness } from "../../flakiness";
-import { checkRuntimeVersions } from "../../runtime-check";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { analyzeFlakiness } from "../../report/flakiness";
+import { checkRuntimeVersions } from "../../runtime/runtime-check";
 import type { StatusOptions } from "./index";
 
 const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));

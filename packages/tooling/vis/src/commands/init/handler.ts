@@ -5,11 +5,11 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
-import { findVisConfigFile } from "../../config";
-import { info, note, success, warn } from "../../output";
-import { detectPm } from "../../pm-runner";
-import type { PackageManagerName } from "../../security";
-import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security";
+import { findVisConfigFile } from "../../config/config";
+import { pail } from "../../io/logger";
+import { detectPm } from "../../pm/pm-runner";
+import type { PackageManagerName } from "../../security/security";
+import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../../security/security";
 import type { InitOptions } from "./index";
 
 /**
@@ -104,32 +104,32 @@ ${sections.join("\n\n")}
 const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }, configPath: string): Promise<void> => {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-    info("\n  vis init — interactive setup\n");
+    pail.info("\n  vis init — interactive setup\n");
 
     // Step 1: Socket.dev
     const enableSocket = await confirm(rl, "  Enable Socket.dev security scanning?");
 
     if (enableSocket) {
-        success("    Socket.dev enabled — scores, alerts, and supply chain data active.");
+        pail.success("    Socket.dev enabled — scores, alerts, and supply chain data active.");
 
         if (!process.env.VIS_SOCKET_TOKEN) {
-            note("    Set VIS_SOCKET_TOKEN for a custom API token (optional).");
+            pail.notice("    Set VIS_SOCKET_TOKEN for a custom API token (optional).");
         }
     }
 
     // Step 2: Build script approval
-    info("");
+    pail.info("");
     const scanBuilds = await confirm(rl, "  Scan for packages with build scripts?");
 
     const allowBuilds: Record<string, boolean> = {};
 
     if (scanBuilds) {
-        info("    Scanning node_modules...");
+        pail.info("    Scanning node_modules...");
 
         const unapproved = scanUnapprovedBuildScripts(cwd, {});
 
         if (unapproved.length > 0) {
-            info(`    Found ${String(unapproved.length)} package${unapproved.length === 1 ? "" : "s"} with build scripts:\n`);
+            pail.info(`    Found ${String(unapproved.length)} package${unapproved.length === 1 ? "" : "s"} with build scripts:\n`);
 
             for (const pkg of unapproved) {
                 const answer = await confirm(rl, `    Allow ${pkg}?`, false);
@@ -139,23 +139,23 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
                 allowBuilds[pkgName] = answer;
 
                 if (answer) {
-                    success(`      ✓ ${pkgName} approved`);
+                    pail.success(`      ✓ ${pkgName} approved`);
                 }
             }
         } else {
-            info("    No packages with build scripts found.");
+            pail.info("    No packages with build scripts found.");
         }
     }
 
     // Step 3: Git hooks
-    info("");
+    pail.info("");
     const setupStaged = await confirm(rl, "  Set up pre-commit hooks (lint-staged)?", false);
 
     // Step 4: Sync to native PM config
     let syncNative = false;
 
     if (pm.name === "pnpm" || pm.name === "yarn" || pm.name === "npm" || pm.name === "bun") {
-        info("");
+        pail.info("");
         syncNative = await confirm(rl, `  Sync security settings to ${pm.name} config?`);
     }
 
@@ -163,8 +163,8 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     const existingTools = detectExistingTools(cwd);
 
     if (existingTools.length > 0) {
-        info("");
-        info(`  Detected existing tools: ${existingTools.join(", ")}`);
+        pail.info("");
+        pail.info(`  Detected existing tools: ${existingTools.join(", ")}`);
         const shouldMigrate = await confirm(rl, `  Run \`vis migrate\` for ${existingTools.join(", ")}?`, false);
 
         if (shouldMigrate) {
@@ -173,7 +173,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
             const execPrefix = pm.name === "pnpm" ? "pnpm exec" : pm.name === "yarn" ? "yarn exec" : pm.name === "bun" ? "bunx" : "npx";
 
             for (const tool of existingTools) {
-                info(`    Migrating from ${tool}...`);
+                pail.info(`    Migrating from ${tool}...`);
 
                 try {
                     execSync(`${execPrefix} vis migrate ${tool}`, {
@@ -181,21 +181,21 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
                         stdio: "inherit",
                     });
                 } catch {
-                    warn(`    Migration from ${tool} had issues — run \`vis migrate ${tool}\` manually.`);
+                    pail.warn(`    Migration from ${tool} had issues — run \`vis migrate ${tool}\` manually.`);
                 }
             }
 
             // Only write the fallback config if no migration produced one.
             if (isAccessibleSync(configPath)) {
-                success(`Migrated config written to ${configPath}`);
+                pail.success(`Migrated config written to ${configPath}`);
             } else {
                 const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
                 writeFileSync(configPath, content);
-                success(`Created ${configPath}`);
+                pail.success(`Created ${configPath}`);
             }
 
-            note("  Run 'vis doctor' to see your project's full health status.");
+            pail.notice("  Run 'vis doctor' to see your project's full health status.");
 
             return;
         }
@@ -203,12 +203,12 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 
     rl.close();
 
-    info("");
+    pail.info("");
 
     const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
     writeFileSync(configPath, content);
-    success(`Created ${configPath}`);
+    pail.success(`Created ${configPath}`);
 
     // Sync to native PM config
     if (syncNative) {
@@ -216,21 +216,21 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
         const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, approvedBuilds);
 
         for (const action of actions) {
-            success(`  ${action}`);
+            pail.success(`  ${action}`);
         }
     }
 
     // Summary
-    info("");
-    info("  Setup complete. Your config:");
-    info(`    Security:     ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
-    info(`    Build scripts: ${Object.values(allowBuilds).filter(Boolean).length} approved`);
-    info(`    Git hooks:    ${setupStaged ? "lint-staged configured" : "not configured"}`);
-    info(`    PM sync:      ${syncNative ? "done" : "skipped"}`);
+    pail.info("");
+    pail.info("  Setup complete. Your config:");
+    pail.info(`    Security:     ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
+    pail.info(`    Build scripts: ${Object.values(allowBuilds).filter(Boolean).length} approved`);
+    pail.info(`    Git hooks:    ${setupStaged ? "lint-staged configured" : "not configured"}`);
+    pail.info(`    PM sync:      ${syncNative ? "done" : "skipped"}`);
 
-    info("");
-    note("  Run 'vis doctor' to see your project's full health status.");
-    info("");
+    pail.info("");
+    pail.notice("  Run 'vis doctor' to see your project's full health status.");
+    pail.info("");
 };
 
 // ── Non-interactive init ────────────────────────────────────────────
@@ -240,19 +240,19 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
     const content = generateConfigContent(pm.name, { allowBuilds: {}, enableSocket: false, staged: false });
 
     writeFileSync(configPath, content);
-    success(`Created ${configPath}`);
-    info("  Secure defaults applied automatically by defineConfig().");
+    pail.success(`Created ${configPath}`);
+    pail.info("  Secure defaults applied automatically by defineConfig().");
 
     if (options.syncNative) {
         const actions = syncAllowBuildsToNativeConfig(pm.name as PackageManagerName, cwd, {});
 
         for (const action of actions) {
-            success(`  ${action}`);
+            pail.success(`  ${action}`);
         }
     }
 
-    info("");
-    note("Run 'vis doctor' for a full health check, or 'vis init' in a terminal for guided setup.");
+    pail.info("");
+    pail.notice("Run 'vis doctor' for a full health check, or 'vis init' in a terminal for guided setup.");
 };
 
 const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, InitOptions>): Promise<void> => {
@@ -262,8 +262,8 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
     const existingConfig = findVisConfigFile(cwd);
 
     if (existingConfig && !options.force) {
-        warn(`Config already exists: ${existingConfig}`);
-        note("Use --force to overwrite, or edit the existing file.");
+        pail.warn(`Config already exists: ${existingConfig}`);
+        pail.notice("Use --force to overwrite, or edit the existing file.");
 
         return;
     }

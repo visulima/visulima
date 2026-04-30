@@ -1,8 +1,8 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { join } from "@visulima/path";
 
-import { pruneDockerContext, scaffoldDockerContext } from "../../docker";
-import { buildProjectGraph, discoverWorkspace } from "../../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { pruneDockerContext, scaffoldDockerContext } from "../../util/docker";
 import type { DockerOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DockerOptions>): Promise<void> => {

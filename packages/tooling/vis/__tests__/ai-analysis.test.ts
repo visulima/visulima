@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { AiAnalysisResult } from "../src/ai-analysis";
+import type { AiAnalysisResult } from "../src/ai/ai-analysis";
 import {
     buildAnalysisPrompt,
     extractJson,
@@ -9,8 +9,8 @@ import {
     normalizeRecommendation,
     parseAiResponse,
     ruleBasedAnalysis,
-} from "../src/ai-analysis";
-import type { OutdatedEntry } from "../src/catalog";
+} from "../src/ai/ai-analysis";
+import type { OutdatedEntry } from "../src/util/catalog";
 
 const makeEntry = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {
     return {

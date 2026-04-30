@@ -4,64 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { EXCLUDED_COMMANDS, isNewerVersion, shouldCheck } from "../src/upgrade-check";
-
-describe(isNewerVersion, () => {
-    it("should detect newer major version", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("1.0.0", "2.0.0")).toBe(true);
-    });
-
-    it("should detect newer minor version", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("1.0.0", "1.1.0")).toBe(true);
-    });
-
-    it("should detect newer patch version", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("1.0.0", "1.0.1")).toBe(true);
-    });
-
-    it("should return false for same version", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("1.0.0", "1.0.0")).toBe(false);
-    });
-
-    it("should return false for older version", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("2.0.0", "1.0.0")).toBe(false);
-    });
-
-    it("should handle prerelease versions", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("1.0.0-alpha.3", "1.0.0")).toBe(false);
-    });
-
-    it("should handle v prefix", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("v1.0.0", "v1.0.1")).toBe(true);
-    });
-
-    it("should handle alpha to alpha comparison", () => {
-        expect.assertions(1);
-
-        // Both are 1.0.0 base - not newer
-        expect(isNewerVersion("1.0.0-alpha.3", "1.0.0-alpha.4")).toBe(false);
-    });
-
-    it("should detect jump from 0.x to 1.x", () => {
-        expect.assertions(1);
-
-        expect(isNewerVersion("0.3.0", "1.0.0")).toBe(true);
-    });
-});
+import { EXCLUDED_COMMANDS, shouldCheck } from "../src/util/upgrade-check";
 
 describe(shouldCheck, () => {
     const originalEnv = { ...process.env };
