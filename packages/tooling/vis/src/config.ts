@@ -11,13 +11,18 @@ import { createJiti } from "jiti";
 import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "./errors";
 import type { VisPlugin } from "./hooks";
 import { mergeTargetWithInherit } from "./target-merge";
-import type { VisConfig } from "./workspace";
+import type { VisConfig, VisTaskConfig } from "./workspace";
 
 /** Supported config file names, checked in priority order. */
 const CONFIG_FILES: string[] = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
 
 /** Set form of `CONFIG_FILES` — kept in sync, used for O(1) membership. */
 const CONFIG_FILE_SET = new Set(CONFIG_FILES);
+
+/** Per-package overlay file names, checked in priority order. */
+const TASK_CONFIG_FILES: string[] = ["vis.task.ts", "vis.task.mts", "vis.task.cts", "vis.task.js", "vis.task.mjs", "vis.task.cjs"];
+
+const TASK_CONFIG_FILE_SET = new Set(TASK_CONFIG_FILES);
 
 /**
  * Secure-by-default security settings based on npm supply chain best practices.
@@ -90,6 +95,30 @@ const findVisConfigFile = (directory: string): string | undefined => {
     for (const file of CONFIG_FILES) {
         if (present.has(file)) {
             return join(directory, file);
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Find the per-package `vis.task.ts` overlay in a project directory.
+ * Same single-readdir lookup pattern as {@link findVisConfigFile}.
+ */
+const findVisTaskConfigFile = (projectDirectory: string): string | undefined => {
+    let entries: string[];
+
+    try {
+        entries = readdirSync(projectDirectory);
+    } catch {
+        return undefined;
+    }
+
+    const present = new Set(entries.filter((name) => TASK_CONFIG_FILE_SET.has(name)));
+
+    for (const file of TASK_CONFIG_FILES) {
+        if (present.has(file)) {
+            return join(projectDirectory, file);
         }
     }
 
@@ -408,6 +437,128 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
     return finalConfig;
 };
 
+// ── Per-package task config loader ──────────────────────────────────
+
+interface VisTaskConfigCache {
+    config: VisTaskConfig;
+    hash: string;
+}
+
+const sanitizeProjectName = (projectName: string): string => projectName.replace(/[^\w.-]+/g, "_");
+
+const getVisTaskCachePath = (workspaceRoot: string, projectName: string): string | undefined => {
+    const nodeModulesDir = join(workspaceRoot, "node_modules");
+    const safeName = sanitizeProjectName(projectName);
+
+    if (isAccessibleSync(nodeModulesDir)) {
+        const directCacheDir = join(nodeModulesDir, ".cache", "vis", "task-configs");
+
+        ensureDirSync(directCacheDir);
+
+        return join(directCacheDir, `${safeName}.json`);
+    }
+
+    const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
+
+    return cacheDir ? join(cacheDir, "task-configs", `${safeName}.json`) : undefined;
+};
+
+const readVisTaskCache = (cachePath: string, hash: string): VisTaskConfig | undefined => {
+    if (!isAccessibleSync(cachePath)) {
+        return undefined;
+    }
+
+    try {
+        const cache = readJsonSync(cachePath) as unknown as VisTaskConfigCache;
+
+        if (cache.hash === hash) {
+            return cache.config;
+        }
+    } catch {
+        // Corrupt cache — ignore
+    }
+
+    return undefined;
+};
+
+const writeVisTaskCache = (cachePath: string, hash: string, config: VisTaskConfig): void => {
+    try {
+        ensureDirSync(dirname(cachePath));
+        writeJsonSync(cachePath, { config, hash } satisfies VisTaskConfigCache);
+    } catch {
+        // Non-critical
+    }
+};
+
+/**
+ * Load the per-package `vis.task.ts` overlay for a project, if any.
+ *
+ * Returns `undefined` when no overlay file exists. Otherwise compiles
+ * the file via jiti and caches the result under
+ * `node_modules/.cache/vis/task-configs/<project>.json`, keyed by the
+ * file's content hash. Editing one project's overlay does not invalidate
+ * the root config cache.
+ *
+ * Errors thrown by the file are wrapped in `VisConfigLoadError` so the
+ * source path is reported instead of an opaque workspace.ts failure.
+ * @param workspaceRoot Absolute workspace root path (cache scope).
+ * @param projectDirectory Absolute path of the project to probe.
+ * @param projectName Project identifier — used to scope the cache file.
+ */
+const loadVisTaskConfig = async (
+    workspaceRoot: string,
+    projectDirectory: string,
+    projectName: string,
+): Promise<VisTaskConfig | undefined> => {
+    const taskConfigPath = findVisTaskConfigFile(projectDirectory);
+
+    if (!taskConfigPath) {
+        return undefined;
+    }
+
+    const hash = hashFileContents(taskConfigPath);
+    const cachePath = getVisTaskCachePath(workspaceRoot, projectName);
+
+    if (cachePath) {
+        const cached = readVisTaskCache(cachePath, hash);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
+    const jiti = createJiti(projectDirectory, { fsCache: false, moduleCache: false });
+    const raw = await loadRawConfig(jiti, taskConfigPath, []);
+    const taskConfig = raw as unknown as VisTaskConfig;
+
+    if (cachePath) {
+        writeVisTaskCache(cachePath, hash, taskConfig);
+    }
+
+    return taskConfig;
+};
+
+/**
+ * Type-safe helper for defining a per-package `vis.task.ts` overlay.
+ * Pure identity — exists only so users get type inference and
+ * autocomplete from the `VisTaskConfig` shape.
+ * @example
+ * ```typescript
+ * // packages/api/crud/vis.task.ts
+ * import { defineTaskConfig } from "@visulima/vis/config";
+ *
+ * export default defineTaskConfig({
+ *     targets: {
+ *         build: {
+ *             inputs: ["@inherit", "src/proto/**\/*.proto"],
+ *             outputs: ["dist/**\/*"],
+ *         },
+ *     },
+ * });
+ * ```
+ */
+const defineTaskConfig = (config: VisTaskConfig): VisTaskConfig => config;
+
 /**
  * Type-safe helper for defining vis configuration.
  * Provides full TypeScript autocomplete when used in `vis.config.ts`.
@@ -457,4 +608,16 @@ export type { VisHooks, VisPlugin } from "./hooks";
 // they already import `defineConfig`/`definePlugin` from.
 export type { OtelPluginOptions, OtelSpan, OtelTracer } from "./plugins/otel";
 export { otelPlugin } from "./plugins/otel";
-export { applyDefaults, CONFIG_FILES, defineConfig, definePlugin, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS };
+export {
+    applyDefaults,
+    CONFIG_FILES,
+    defineConfig,
+    definePlugin,
+    defineTaskConfig,
+    findVisConfigFile,
+    findVisTaskConfigFile,
+    loadVisConfig,
+    loadVisTaskConfig,
+    SECURITY_DEFAULTS,
+    TASK_CONFIG_FILES,
+};
