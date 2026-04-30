@@ -83,6 +83,81 @@ export default defineConfig({
 });
 ```
 
+### Layered Configuration
+
+`vis.config.ts` can `extends` other config files, and each project can ship a `vis.task.ts` overlay. Both are opt-in — projects without them behave identically to before.
+
+#### `extends` chain
+
+`extends` accepts a single string or an array. Each entry is either a relative path (`./` / `../`) resolved against the file declaring `extends`, or an npm package name resolved via Node.js module resolution. Absolute paths are rejected.
+
+```typescript
+// vis.config.ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    extends: [
+        "@acme/vis-preset",                  // npm package
+        "./shared/security.config.ts",       // relative path
+    ],
+    security: { allowBuilds: { esbuild: true } },
+});
+```
+
+Entries are processed left-to-right (later entries win). The consumer file always overrides anything pulled in from `extends`. Cycles raise `VisConfigCycleError`; missing entries raise `VisConfigNotFoundError`. Both errors include the full chain of files for debugging deep `extends` graphs.
+
+#### Per-package `vis.task.ts`
+
+Drop a `vis.task.ts` in a project to override its targets with full type-safety. `project.json` stays the canonical home for static metadata (`tags`, `layer`, `stack`, `language`, `owners`, `projectType`); `vis.task.ts` is the canonical home for dynamic, type-checked target overrides.
+
+```typescript
+// packages/api/crud/vis.task.ts
+import { defineTaskConfig } from "@visulima/vis/config";
+
+export default defineTaskConfig({
+    targets: {
+        build: {
+            inputs: ["@inherit", "src/proto/**/*.proto"],
+            outputs: ["dist/**/*"],
+        },
+        test: {
+            when: { not: { ci: true } }, // skip locally on CI
+        },
+    },
+});
+```
+
+#### Merge precedence
+
+Lowest to highest priority — later overrides earlier:
+
+1. `extends` chain (flattened depth-first, left-to-right)
+2. Root `vis.config.ts` values
+3. `taskDefaults` blocks (in declaration order)
+4. `project.json#targets`
+5. **`vis.task.ts#targets`**
+6. `package.json#scripts` *(fallback only — fills `command` if still undefined)*
+7. Preset
+8. `defaultCacheForType`
+
+#### `@inherit` array sentinel
+
+By default, child arrays replace parent arrays. To extend instead, use `"@inherit"` — every occurrence is replaced inline by the parent's entries:
+
+```typescript
+// vis.config.ts targetDefaults
+targetDefaults: {
+    build: { dependsOn: ["^build"] },
+}
+
+// packages/api/crud/vis.task.ts overlay
+targets: {
+    build: { dependsOn: ["@inherit", "^proto-gen"] }, // → ["^build", "^proto-gen"]
+}
+```
+
+Applies to `dependsOn`, `inputs`, `outputs`, and `aliases`. An empty array (`dependsOn: []`) is a deliberate reset; an array without `@inherit` is a wholesale replace.
+
 ### Scoped Task Defaults
 
 Apply target defaults conditionally based on project metadata:
