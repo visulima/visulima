@@ -80,11 +80,11 @@ const ignore: Command = {
 export default ignore;
 
 export type IgnoreOptions = CreateOptions<{
-    "base": string | undefined;
-    "head": string | undefined;
-    "downstream": string | undefined;
-    "upstream": string | undefined;
-    "json": boolean | undefined;
+    base: string | undefined;
+    downstream: string | undefined;
     "exit-zero-on-build": boolean | undefined;
-    "verbose": boolean | undefined;
+    head: string | undefined;
+    json: boolean | undefined;
+    upstream: string | undefined;
+    verbose: boolean | undefined;
 }>;

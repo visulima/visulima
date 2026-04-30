@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { applyProjectFilter } from "../src/watch-filter";
 
-const task = (project: string, target = "test"): { id: string; target: { project: string; target: string } } => ({
-    id: `${project}:${target}`,
-    target: { project, target },
-});
+const task = (project: string, target = "test"): { id: string; target: { project: string; target: string } } => {
+    return {
+        id: `${project}:${target}`,
+        target: { project, target },
+    };
+};
 
 const baseTasks = [
     task("vis"),

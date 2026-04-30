@@ -17,7 +17,7 @@ export interface ProjectFilterResult<T> {
 }
 
 export const applyProjectFilter = <T extends { target: { project: string } }>(
-    baseTasks: readonly T[],
+    baseTasks: ReadonlyArray<T>,
     filter: string | undefined,
 ): ProjectFilterResult<T> => {
     const normalized = filter?.trim();

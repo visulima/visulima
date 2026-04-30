@@ -25,5 +25,5 @@ const info: Command = {
 export default info;
 
 export type InfoOptions = CreateOptions<{
-    "json": boolean | undefined;
+    json: boolean | undefined;
 }>;

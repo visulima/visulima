@@ -30,7 +30,7 @@ const hookInstall: Command = {
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookInstallExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookInstallExecute }; }),
     name: "install",
     options: [hooksDirectoryOption],
 };
@@ -41,7 +41,7 @@ const hookUninstall: Command = {
     env: [...sharedHookEnv],
     examples: [["vis hook uninstall", "Remove git hooks and reset core.hooksPath"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookUninstallExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookUninstallExecute }; }),
     name: "uninstall",
     options: [hooksDirectoryOption],
 };
@@ -55,7 +55,7 @@ const hookMigrate: Command = {
         ["vis hook migrate --dry-run", "Preview what a migration would write without touching disk"],
     ],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookMigrateExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookMigrateExecute }; }),
     name: "migrate",
     options: [
         hooksDirectoryOption,
@@ -74,7 +74,7 @@ const hookList: Command = {
     env: [...sharedHookEnv],
     examples: [["vis hook list", "Show configured hooks grouped by stage"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookListExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookListExecute }; }),
     name: "list",
     options: [hooksDirectoryOption],
 };
@@ -85,7 +85,7 @@ const hookValidate: Command = {
     env: [...sharedHookEnv],
     examples: [["vis hook validate", "Sanity-check installed hooks and the bundled runner"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookValidateExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookValidateExecute }; }),
     name: "validate",
     options: [hooksDirectoryOption],
 };
@@ -105,7 +105,7 @@ const hookRun: Command = {
         ["vis hook run pre-commit --last-commit", "Shortcut for --from-ref HEAD~1 --to-ref HEAD"],
     ],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookRunExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookRunExecute }; }),
     name: "run",
     options: [
         hooksDirectoryOption,
@@ -147,7 +147,7 @@ const hookAdd: Command = {
     env: [...sharedHookEnv],
     examples: [["vis hook add secrets", "Add a pre-commit hook that runs `vis secrets --staged`"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.hookAddExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.hookAddExecute }; }),
     name: "add",
     options: [hooksDirectoryOption],
 };
@@ -157,7 +157,7 @@ const hookCommands: Command[] = [hookInstall, hookUninstall, hookMigrate, hookLi
 export default hookCommands;
 
 export type HookEnv = CreateEnv<{
-    "VIS_GIT_HOOKS": string | undefined;
+    VIS_GIT_HOOKS: string | undefined;
 }>;
 
 export type HookInstallOptions = CreateOptions<{
@@ -169,8 +169,8 @@ export type HookUninstallOptions = CreateOptions<{
 }>;
 
 export type HookMigrateOptions = CreateOptions<{
-    "hooks-dir": string | undefined;
     "dry-run": boolean | undefined;
+    "hooks-dir": string | undefined;
 }>;
 
 export type HookListOptions = CreateOptions<{
@@ -182,11 +182,11 @@ export type HookValidateOptions = CreateOptions<{
 }>;
 
 export type HookRunOptions = CreateOptions<{
-    "hooks-dir": string | undefined;
     "all-files": boolean | undefined;
     "from-ref": string | undefined;
-    "to-ref": string | undefined;
+    "hooks-dir": string | undefined;
     "last-commit": boolean | undefined;
+    "to-ref": string | undefined;
 }>;
 
 export type HookAddOptions = CreateOptions<{

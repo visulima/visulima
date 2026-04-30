@@ -2,6 +2,8 @@
 interface OptimizeEntry {
     /** Category for filtering and display. */
     category: "micro-utility" | "native" | "preferred" | "socket";
+    /** Upstream e18e migration guide URL when the manifest variant is `documented`. */
+    docUrl?: string;
     /** Whether a codemod is available for this entry (e18e only). */
     hasCodemod: boolean;
     /** The override spec for socket entries (e.g., "npm:@socketregistry/is-regex@^1"). */

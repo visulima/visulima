@@ -32,6 +32,7 @@ import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./fil
 import type { DoctorOptions } from "./index";
 import type { DoctorResults, SectionId, SectionStatus } from "./sections";
 import { buildJsonPayload, resolveSections, sectionStatus, shouldFail, summarizeOptimizations } from "./sections";
+import { buildSupplyChainPosture } from "./supply-chain";
 
 // ── Scan orchestration ──────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ const buildSectionFindings = (
         runtime: payload.runtime,
         sections: new Set([section]),
         socketIssues: { alerts: 0, lowScore: 0 },
+        supplyChain: { findings: [], status: "ok" },
         vulnCount: 0,
         workspaceCount: 0,
     };
@@ -422,6 +424,11 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         runtime,
         sections,
         socketIssues: { alerts: socketAlerts, lowScore: socketLowScore },
+        // Supply-chain posture is config-derived and cheap; always
+        // compute so the doctor section can render even when --only is
+        // limited to other sections (the section filters its own
+        // visibility in displayResults).
+        supplyChain: buildSupplyChainPosture(visConfig),
         vulnCount,
         workspaceCount: workspaceDirectories.length,
     };
@@ -468,7 +475,7 @@ const itemError = (text: string): string => `  ${red(SYMBOLS.failure)} ${text}`;
 const itemSkip = (text: string): string => `  ${dim(SYMBOLS.dash)} ${dim(text)}`;
 
 /**
- * Format `<count> <label>` with the count emphasised and the prose
+ * Format `&lt;count> &lt;label>` with the count emphasised and the prose
  * dimmed, optionally with a dim parenthetical breakdown. Lets the eye
  * skim numbers down a column without losing the descriptive context.
  */
@@ -577,6 +584,36 @@ const displayOptimization = (results: DoctorResults): void => {
     }
 };
 
+/**
+ * Render the static supply-chain hardening posture as its own section.
+ * Always emits when `displayResults` runs, regardless of `--only` /
+ * `--skip` filters — the section is config-derived (no scan cost), so
+ * gating it would just hide the hardening knobs from the user. Live
+ * security findings (vulns, alerts) remain in the Security section.
+ */
+const displaySupplyChain = (results: DoctorResults): void => {
+    plain("");
+    plain(heading("Supply Chain", results.supplyChain.status));
+
+    for (const finding of results.supplyChain.findings) {
+        const line = finding.severity === "ok"
+            ? itemOk(finding.label)
+            : finding.severity === "error"
+                ? itemError(finding.label)
+                : itemWarn(finding.label);
+
+        plain(line);
+
+        if (finding.detail) {
+            plain(`  ${dim(SYMBOLS.arrow)} ${dim(finding.detail)}`);
+        }
+    }
+
+    if (results.supplyChain.status !== "ok") {
+        plain(`  ${dim(SYMBOLS.arrow)} ${dim("Configure with security.* in vis.config.ts. See `vis check --security-config` for details.")}`);
+    }
+};
+
 const displayRuntime = (results: DoctorResults): void => {
     if (!results.sections.has("runtime")) {
         return;
@@ -659,7 +696,7 @@ const displayActions = (results: DoctorResults): void => {
 
     if (actions.length > 0) {
         plain("");
-        plain(`${bold("Next steps:")}`);
+        plain(bold("Next steps:"));
 
         for (const action of actions) {
             plain(`  ${dim(SYMBOLS.arrow)} ${action}`);
@@ -675,6 +712,7 @@ const displayResults = (results: DoctorResults, quiet: boolean): void => {
         displaySecurity(results);
         displayOptimization(results);
         displayRuntime(results);
+        displaySupplyChain(results);
     }
 
     displaySummary(results, quiet);

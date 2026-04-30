@@ -49,8 +49,8 @@ const sbom: Command = {
 export default sbom;
 
 export type SbomOptions = CreateOptions<{
-    "focus": string | undefined;
-    "format": string | undefined;
-    "output": string | undefined;
+    focus: string | undefined;
+    format: string | undefined;
     "include-dev": boolean | undefined;
+    output: string | undefined;
 }>;

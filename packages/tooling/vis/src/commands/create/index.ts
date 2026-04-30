@@ -30,8 +30,8 @@ const create: Command = {
 export default create;
 
 export type CreateCommandOptions = CreateOptions<{
-    "list": boolean | undefined;
-    "editor": string | undefined;
+    editor: string | undefined;
     "git-init": boolean | undefined;
+    list: boolean | undefined;
     "no-interactive": boolean | undefined;
 }>;

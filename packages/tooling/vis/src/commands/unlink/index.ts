@@ -21,5 +21,5 @@ const unlink: Command = {
 export default unlink;
 
 export type UnlinkOptions = CreateOptions<{
-    "recursive": boolean | undefined;
+    recursive: boolean | undefined;
 }>;

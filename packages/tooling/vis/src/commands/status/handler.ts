@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import colorize from "@visulima/colorize";
+import { dim, green, red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { enforceProjectConstraints } from "@visulima/task-runner";
@@ -10,8 +10,6 @@ import { analyzeFlakiness } from "../../flakiness";
 import { checkRuntimeVersions } from "../../runtime-check";
 import { buildProjectGraph, discoverWorkspace } from "../../workspace";
 import type { StatusOptions } from "./index";
-
-const { dim, green, red, yellow } = colorize;
 
 const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
 

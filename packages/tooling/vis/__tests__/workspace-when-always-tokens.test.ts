@@ -36,7 +36,7 @@ describe("workspace.ts forwards when/always/tokens to task-runner shape", () => 
             targets: {
                 deploy: {
                     command: "echo deploy",
-                    when: { branch: ["main", "alpha"], ci: true, env: { name: "DEPLOY_TOKEN", exists: true } },
+                    when: { branch: ["main", "alpha"], ci: true, env: { exists: true, name: "DEPLOY_TOKEN" } },
                 },
             },
         });
@@ -48,7 +48,7 @@ describe("workspace.ts forwards when/always/tokens to task-runner shape", () => 
         expect(target?.when).toStrictEqual({
             branch: ["main", "alpha"],
             ci: true,
-            env: { name: "DEPLOY_TOKEN", exists: true },
+            env: { exists: true, name: "DEPLOY_TOKEN" },
         });
     });
 
@@ -57,8 +57,8 @@ describe("workspace.ts forwards when/always/tokens to task-runner shape", () => 
 
         writeProject(scratch, "beta", {
             targets: {
-                test: { command: "echo test" },
                 "stop-db": { always: true, command: "echo down" },
+                test: { command: "echo test" },
             },
         });
 

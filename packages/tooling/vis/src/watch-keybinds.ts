@@ -1,5 +1,5 @@
-import type { ReadStream } from "node:tty";
 import { emitKeypressEvents } from "node:readline";
+import type { ReadStream } from "node:tty";
 
 /**
  * Vitest-style keybinds for `vis run --watch`. The watch loop installs
@@ -24,6 +24,7 @@ export interface KeybindHandlers {
     onFilter: (pattern: string) => void | Promise<void>;
     /** Called for `h` / `?` — print keybind reference (handled by host). */
     onHelp: () => void | Promise<void>;
+
     /**
      * Called for `q` / `Ctrl+C` — close watcher, exit watch loop.
      *
@@ -58,6 +59,7 @@ export interface InstallKeybindsOptions {
     input?: NodeJS.ReadableStream & Partial<Pick<ReadStream, "isTTY" | "setRawMode">>;
     /** Defaults to `process.stdout`. Set in tests. */
     output?: NodeJS.WritableStream;
+
     /**
      * Inline prompt used by the `p` keybind. Receives the host stream
      * pair so a real readline can be substituted in tests.
@@ -111,7 +113,7 @@ const defaultPromptFilter = async (input: NodeJS.ReadableStream, output: NodeJS.
 
             const newlineIndex = buffer.indexOf("\n");
 
-            if (newlineIndex < 0) {
+            if (newlineIndex === -1) {
                 return;
             }
 
@@ -142,7 +144,7 @@ const defaultPromptFilter = async (input: NodeJS.ReadableStream, output: NodeJS.
  * hook never blocks an unattended run.
  */
 export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle => {
-    const handlers = options.handlers;
+    const { handlers } = options;
     const input = options.input ?? (process.stdin as InstallKeybindsOptions["input"]);
     const output = options.output ?? process.stdout;
     const promptFilter = options.promptFilter ?? defaultPromptFilter;
@@ -175,6 +177,7 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
         // but custom prompts that keep raw mode on rely on this branch.
         if (key.ctrl === true && key.name === "c") {
             await handlers.onQuit();
+
             return;
         }
 
@@ -183,25 +186,13 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
         }
 
         switch (key.name) {
-            case "return": {
-                await handlers.onRerun();
-                break;
-            }
-            case "r": {
-                await handlers.onRerun();
+            case "?":
+            case "h": {
+                await handlers.onHelp();
                 break;
             }
             case "a": {
                 await handlers.onClearFilter();
-                break;
-            }
-            case "q": {
-                await handlers.onQuit();
-                break;
-            }
-            case "h":
-            case "?": {
-                await handlers.onHelp();
                 break;
             }
             case "p": {
@@ -219,6 +210,18 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
                     prompting = false;
                 }
 
+                break;
+            }
+            case "q": {
+                await handlers.onQuit();
+                break;
+            }
+            case "r": {
+                await handlers.onRerun();
+                break;
+            }
+            case "return": {
+                await handlers.onRerun();
                 break;
             }
             default: {
@@ -253,11 +256,11 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
             // Pair `resume()` above with a pause so stdin stops keeping
             // the event loop alive once the watch loop exits. Hosts that
             // need stdin again can resume it themselves.
-            const pause = (input as NodeJS.ReadableStream & { pause?: () => void }).pause;
+            const pausable = input as NodeJS.ReadableStream & { pause?: () => void };
 
-            if (typeof pause === "function") {
+            if (typeof pausable.pause === "function") {
                 try {
-                    pause.call(input);
+                    pausable.pause();
                 } catch {
                     // ignore — non-pausable streams (test fakes, etc.)
                 }

@@ -40,10 +40,17 @@ const safeMtime = (path: string | undefined): string => {
     }
 };
 
+// Bump when the cached `DoctorResults` shape changes — older entries
+// without the new field would deserialize with `undefined` properties
+// and crash render code that assumes presence. Cheaper than a runtime
+// schema check and self-invalidating.
+const CACHE_SCHEMA_VERSION = 2;
+
 export const buildDoctorCacheKey = (input: CacheKeyInput): string => {
     const payload = JSON.stringify({
         configMtime: safeMtime(input.configPath),
         lockfileMtime: safeMtime(input.lockfilePath),
+        schema: CACHE_SCHEMA_VERSION,
         sections: [...input.sections].toSorted(),
         socketEnabled: input.socketEnabled,
         workspaceRoot: input.workspaceRoot,

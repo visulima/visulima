@@ -15,5 +15,5 @@ const implode: Command = {
 export default implode;
 
 export type ImplodeOptions = CreateOptions<{
-    "yes": boolean | undefined;
+    yes: boolean | undefined;
 }>;

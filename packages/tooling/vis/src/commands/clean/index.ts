@@ -19,6 +19,6 @@ const clean: Command = {
 export default clean;
 
 export type CleanOptions = CreateOptions<{
-    "lockfile": boolean | undefined;
     "dry-run": boolean | undefined;
+    lockfile: boolean | undefined;
 }>;

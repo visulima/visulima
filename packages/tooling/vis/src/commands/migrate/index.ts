@@ -9,7 +9,7 @@ const migrateDepsCmd: Command = {
     commandPath: ["migrate"],
     description: "Migrate dependencies and scripts to vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateDepsExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateDepsExecute }; }),
     name: "deps",
     options: [...sharedMigrateOptions],
 };
@@ -18,7 +18,7 @@ const migrateLintStagedCmd: Command = {
     commandPath: ["migrate"],
     description: "Inline lint-staged configuration into vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateLintStagedExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateLintStagedExecute }; }),
     name: "lint-staged",
     options: [...sharedMigrateOptions],
 };
@@ -27,7 +27,7 @@ const migrateNanoStagedCmd: Command = {
     commandPath: ["migrate"],
     description: "Inline nano-staged configuration into vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateNanoStagedExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateNanoStagedExecute }; }),
     name: "nano-staged",
     options: [...sharedMigrateOptions],
 };
@@ -36,7 +36,7 @@ const migrateTurborepoCmd: Command = {
     commandPath: ["migrate"],
     description: "Migrate turborepo tasks/config to vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateTurborepoExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateTurborepoExecute }; }),
     name: "turborepo",
     options: [...sharedMigrateOptions],
 };
@@ -45,7 +45,7 @@ const migrateNxCmd: Command = {
     commandPath: ["migrate"],
     description: "Migrate nx targets/config to vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateNxExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateNxExecute }; }),
     name: "nx",
     options: [...sharedMigrateOptions],
 };
@@ -54,7 +54,7 @@ const migrateMoonCmd: Command = {
     commandPath: ["migrate"],
     description: "Migrate moon tasks/templates to vis",
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateMoonExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateMoonExecute }; }),
     name: "moon",
     options: [
         ...sharedMigrateOptions,
@@ -72,7 +72,7 @@ const migrateGitleaksCmd: Command = {
     description: "Migrate gitleaks config/baseline/hooks to `vis secrets`",
     examples: [["vis migrate gitleaks", "Migrate gitleaks config/baseline/hooks to `vis secrets`"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateGitleaksExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateGitleaksExecute }; }),
     name: "gitleaks",
     options: [...sharedMigrateOptions],
 };
@@ -82,7 +82,7 @@ const migrateKingfisherCmd: Command = {
     description: "Migrate Kingfisher baseline/hooks/scripts to `vis secrets`",
     examples: [["vis migrate kingfisher", "Migrate Kingfisher baseline/hooks/scripts to `vis secrets`"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateKingfisherExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateKingfisherExecute }; }),
     name: "kingfisher",
     options: [...sharedMigrateOptions],
 };
@@ -92,7 +92,7 @@ const migrateSecretlintCmd: Command = {
     description: "Replace secretlint with `vis secrets`",
     examples: [["vis migrate secretlint", "Replace secretlint with `vis secrets`"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateSecretlintExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateSecretlintExecute }; }),
     name: "secretlint",
     options: [...sharedMigrateOptions],
 };
@@ -102,7 +102,7 @@ const migrateVerify: Command = {
     description: "Audit the workspace for stray gitleaks/secretlint references (exit 1 on issues)",
     examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint references (exit 1 on issues)"]],
     group: "Scaffold & Config",
-    loader: () => import("./handler").then((m) => ({ default: m.migrateVerifyExecute })),
+    loader: () => import("./handler").then((m) => { return { default: m.migrateVerifyExecute }; }),
     name: "verify",
     options: [],
 };
@@ -124,7 +124,7 @@ export default migrateCommands;
 
 type SharedMigrateOptions = {
     "dry-run": boolean | undefined;
-    "yes": boolean | undefined;
+    yes: boolean | undefined;
 };
 
 export type MigrateDepsOptions = CreateOptions<SharedMigrateOptions>;

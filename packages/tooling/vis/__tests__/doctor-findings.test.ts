@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { OutdatedEntry } from "../src/catalog";
 import type { DoctorResults, SectionId } from "../src/commands/doctor/sections";
@@ -155,7 +155,8 @@ describe(flattenFindings, () => {
 
     it("exposes a label for every section id", () => {
         for (const id of SECTION_IDS) {
-            expect(typeof SECTION_LABELS[id]).toBe("string");
+            expectTypeOf(SECTION_LABELS[id]).toBeString();
+
             expect(SECTION_LABELS[id].length).toBeGreaterThan(0);
         }
     });

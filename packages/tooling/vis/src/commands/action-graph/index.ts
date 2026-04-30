@@ -39,6 +39,6 @@ const actionGraph: Command = {
 export default actionGraph;
 
 export type ActionGraphOptions = CreateOptions<{
-    "json": boolean | undefined;
-    "query": string | undefined;
+    json: boolean | undefined;
+    query: string | undefined;
 }>;

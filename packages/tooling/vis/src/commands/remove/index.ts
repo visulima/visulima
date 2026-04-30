@@ -29,9 +29,9 @@ const remove: Command = {
 export default remove;
 
 export type RemoveOptions = CreateOptions<{
+    filter: string[] | undefined;
+    global: boolean | undefined;
+    recursive: boolean | undefined;
     "save-dev": boolean | undefined;
-    "global": boolean | undefined;
-    "recursive": boolean | undefined;
     "workspace-root": boolean | undefined;
-    "filter": string[] | undefined;
 }>;

@@ -89,13 +89,13 @@ const ci: Command = {
 export default ci;
 
 export type CiOptions = CreateOptions<{
-    "install": boolean | undefined;
+    base: string | undefined;
+    downstream: string | undefined;
+    head: string | undefined;
+    install: boolean | undefined;
+    parallel: number | undefined;
+    partition: string | undefined;
+    query: string | undefined;
     "skip-toolchain": boolean | undefined;
-    "base": string | undefined;
-    "head": string | undefined;
-    "upstream": string | undefined;
-    "downstream": string | undefined;
-    "parallel": number | undefined;
-    "partition": string | undefined;
-    "query": string | undefined;
+    upstream: string | undefined;
 }>;

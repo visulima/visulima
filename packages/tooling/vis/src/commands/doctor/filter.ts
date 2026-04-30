@@ -2,7 +2,7 @@ import { DEFAULT_LOW_SCORE_THRESHOLD } from "../../socket-security";
 import type { DoctorFinding } from "../../tui/components/doctor/findings";
 import type { DoctorResults } from "./sections";
 
-const escapeRegex = (literal: string): string => literal.replaceAll(/[$()+.?[\\\]^{|}]/g, "\\$&");
+const escapeRegex = (literal: string): string => literal.replaceAll(/[$()+.?[\\\]^{|}]/g, String.raw`\$&`);
 
 const compilePattern = (pattern: string): RegExp => {
     // Convert simple `*` globs to regex; everything else is literal.

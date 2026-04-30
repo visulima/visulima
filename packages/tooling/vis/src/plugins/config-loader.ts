@@ -3,9 +3,7 @@ import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 import type { Plugin } from "@visulima/cerebro";
-import colorize from "@visulima/colorize";
-
-const { bold, cyan, red, yellow } = colorize;
+import { bold, cyan, red, yellow } from "@visulima/colorize";
 import { findMonorepoRootSync } from "@visulima/package";
 import isInCi from "is-in-ci";
 import { satisfies, validRange } from "semver";

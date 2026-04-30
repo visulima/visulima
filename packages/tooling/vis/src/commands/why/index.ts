@@ -34,14 +34,14 @@ const why: Command = {
 export default why;
 
 export type WhyOptions = CreateOptions<{
-    "json": boolean | undefined;
-    "long": boolean | undefined;
-    "parseable": boolean | undefined;
-    "recursive": boolean | undefined;
-    "dev": boolean | undefined;
-    "prod": boolean | undefined;
+    depth: number | undefined;
+    dev: boolean | undefined;
+    filter: string[] | undefined;
+    global: boolean | undefined;
+    json: boolean | undefined;
+    long: boolean | undefined;
     "no-optional": boolean | undefined;
-    "global": boolean | undefined;
-    "depth": number | undefined;
-    "filter": string[] | undefined;
+    parseable: boolean | undefined;
+    prod: boolean | undefined;
+    recursive: boolean | undefined;
 }>;

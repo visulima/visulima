@@ -14,8 +14,8 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  *   status             Show every detected manager + expected-vs-actual versions.
  *   detect             Print the primary manager's name (for scripts).
  *   install            Install pinned versions — iterates per-tool, picking the right manager.
- *   use <tool>@<ver>   Pin a version via the best manager for that tool.
- *   which <tool>       Print the resolved binary path for a tool.
+ *   use &lt;tool>@&lt;ver>   Pin a version via the best manager for that tool.
+ *   which &lt;tool>       Print the resolved binary path for a tool.
  */
 const toolchain: Command = {
     argument: {
@@ -46,8 +46,8 @@ const toolchain: Command = {
 export default toolchain;
 
 export type ToolchainOptions = CreateOptions<{
-    "exit-code": boolean | undefined;
     "dry-run": boolean | undefined;
-    "json": boolean | undefined;
-    "engines": boolean | undefined;
+    engines: boolean | undefined;
+    "exit-code": boolean | undefined;
+    json: boolean | undefined;
 }>;

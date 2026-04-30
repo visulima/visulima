@@ -4,9 +4,10 @@
 
 import { isAccessibleSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
+import { coerce, lt } from "semver";
+
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
 import { detectPackageManager, execPmCommandInteractive, resolveAdd, resolveDedupe, resolveDlx, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, whichBin } from "#native";
-import { coerce, lt } from "semver";
 
 import {
     resolveAubeAdd,
@@ -183,23 +184,80 @@ const runResolved = (resolved: ResolvedCommand, cwd: string, logger: Console): n
 
 const resolveAndRun = (nativeCall: () => ResolvedCommand, cwd: string, logger: Console): number => runResolved(nativeCall(), cwd, logger);
 
-const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console): number => {
+/**
+ * Append PM-specific `--prefer-offline` to a resolved install command.
+ *
+ * Lives in TS rather than the Rust resolver because the native
+ * `InstallOptions` ABI does not yet carry the flag, and we want to ship
+ * the secure-by-default install behavior without an ABI bump. Once the
+ * native binding learns the option, the post-process step here is a
+ * single-line removal.
+ */
+const applyPreferOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): ResolvedCommand => {
+    if (pm === "aube") {
+        // aube has no prefer-offline; its install path resolves from the
+        // local store first by design. No-op.
+        return resolved;
+    }
+
+    if (pm === "yarn") {
+        // yarn classic: --prefer-offline ✓
+        // yarn berry: no equivalent (network policy is configured via
+        // `enableMirror` / `networkSettings` in .yarnrc.yml). Pass the
+        // flag through anyway so yarn berry surfaces its own "unknown
+        // option" error if the user explicitly set it — silently dropping
+        // would hide intent.
+    }
+
+    return { ...resolved, args: [...resolved.args, "--prefer-offline"] };
+};
+
+interface RunInstallExtras {
+    preferOffline?: boolean;
+}
+
+const runInstall = (pm: InstallerInfo, options: InstallOptions, cwd: string, logger: Console, extras: RunInstallExtras = {}): number => {
     // Aube's flag surface lives in TS (see `aube-resolver.ts`) until the
     // native binding learns about it. Short-circuit before the NAPI call
     // so we don't pay a cross-FFI hop for a 5-line argv build.
-    if (pm.name === "aube") {
-        return runResolved(resolveAubeInstall(options), cwd, logger);
+    let resolved = pm.name === "aube" ? resolveAubeInstall(options) : resolveInstall(pm.name, pm.version, options);
+
+    if (extras.preferOffline) {
+        resolved = applyPreferOffline(resolved, pm.name);
     }
 
-    return resolveAndRun(() => resolveInstall(pm.name, pm.version, options), cwd, logger);
+    return runResolved(resolved, cwd, logger);
 };
 
-const runAdd = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Console): number => {
-    if (pm.name === "aube") {
-        return runResolved(resolveAubeAdd(options), cwd, logger);
+/**
+ * Append PM-specific `--ignore-scripts` to a resolved add command. Same
+ * post-process pattern as {@link applyPreferOffline} — the native
+ * `AddOptions` does not carry `ignoreScripts`, but every supported PM
+ * accepts the flag at the CLI surface.
+ */
+const applyIgnoreScripts = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): ResolvedCommand => {
+    if (pm === "aube") {
+        // aube already skips dependency lifecycle scripts by default; the
+        // flag is a no-op there. Pass it through so the user's intent is
+        // visible in the resolved command.
+        return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
     }
 
-    return resolveAndRun(() => resolveAdd(pm.name, pm.version, options), cwd, logger);
+    return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
+};
+
+interface RunAddExtras {
+    ignoreScripts?: boolean;
+}
+
+const runAdd = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Console, extras: RunAddExtras = {}): number => {
+    let resolved = pm.name === "aube" ? resolveAubeAdd(options) : resolveAdd(pm.name, pm.version, options);
+
+    if (extras.ignoreScripts) {
+        resolved = applyIgnoreScripts(resolved, pm.name);
+    }
+
+    return runResolved(resolved, cwd, logger);
 };
 
 const runRemove = (pm: InstallerInfo, options: RemoveOptions, cwd: string, logger: Console): number => {

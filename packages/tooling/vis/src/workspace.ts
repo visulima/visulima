@@ -15,9 +15,9 @@ import type {
 
 import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
+import { mergeTargetWithInherit } from "./target-merge";
 import type { VisTargetConfiguration } from "./target-options";
 import { applyPreset, defaultCacheForType } from "./target-options";
-import { mergeTargetWithInherit } from "./target-merge";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 
 export interface CodeownersConfig {

@@ -1,7 +1,7 @@
 import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import colorize from "@visulima/colorize";
+import { dim, green, red, yellow } from "@visulima/colorize";
 import { coerce } from "semver";
 
 import { info, note, warn } from "../../output";
@@ -21,8 +21,6 @@ import {
 import { runTyposquatCheck } from "../../typosquats";
 import { parsePackageArgument, toStringArray } from "../../utils";
 import type { AddOptions } from "./index";
-
-const { dim, green, red, yellow } = colorize;
 
 /**
  * Resolves the latest version for each package from the npm registry.
@@ -295,6 +293,16 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     const cwd = process.cwd();
     const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend });
 
+    // Secure-by-default: lifecycle scripts are off unless the user opts in
+    // with --run-scripts. Mirrors pnpm v10's universal block-then-allowlist
+    // model — packages listed in security.allowBuilds get their scripts
+    // run after install via the security-enforcement plugin's
+    // `runApprovedScripts` hook (afterCommand). This applies to every PM:
+    // pnpm/bun/aube already block by default, npm/yarn need the explicit
+    // flag, and the universal default keeps the surface consistent so a
+    // workspace doesn't change behavior when its detected PM changes.
+    const ignoreScripts = !options.runScripts;
+
     const code = runAdd(
         pm,
         {
@@ -310,6 +318,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         },
         cwd,
         logger,
+        { ignoreScripts },
     );
 
     if (code !== 0) {

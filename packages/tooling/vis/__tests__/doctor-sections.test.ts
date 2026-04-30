@@ -32,6 +32,7 @@ const baseResults = (overrides: Partial<DoctorResults> = {}): DoctorResults => {
         runtime: [],
         sections: new Set<SectionId>(SECTION_IDS),
         socketIssues: { alerts: 0, lowScore: 0 },
+        supplyChain: { findings: [], status: "ok" },
         vulnCount: 0,
         workspaceCount: 0,
         ...overrides,

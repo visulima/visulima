@@ -6,7 +6,7 @@ import { VisConfigError } from "./vis-config-error";
  * "TypeError in workspace.ts" — which sends them debugging the wrong file.
  */
 export class VisConfigLoadError extends VisConfigError {
-    public constructor(filePath: string, chain: readonly string[], cause: unknown) {
+    public constructor(filePath: string, chain: ReadonlyArray<string>, cause: unknown) {
         const causeMessage = cause instanceof Error ? cause.message : String(cause);
         const trail = chain.length > 0 ? `\nChain: ${chain.join(" → ")}` : "";
 

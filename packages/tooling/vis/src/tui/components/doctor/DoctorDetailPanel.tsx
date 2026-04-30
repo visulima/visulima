@@ -277,16 +277,45 @@ const OptimizationDetail = ({ finding }: OptimizationDetailProps): React.JSX.Ele
                     {entry.hasCodemod ? "available" : "not available"}
                 </Text>
             </FieldRow>
+            {entry.docUrl
+                ? (
+                    <FieldRow label="Guide">
+                        <Text color="cyan" underline>{entry.docUrl}</Text>
+                    </FieldRow>
+                )
+                : null}
             <SectionTitle>Action</SectionTitle>
-            <Text dimColor>
-                Run
-                {" "}
-                <Text bold color="white">vis optimize</Text>
-                {" "}
-                to apply
-                {entry.hasCodemod ? " the codemod " : " "}
-                interactively.
-            </Text>
+            {entry.hasCodemod
+                ? (
+                    <Text dimColor>
+                        Run
+                        {" "}
+                        <Text bold color="white">vis optimize</Text>
+                        {" "}
+                        to apply the codemod interactively.
+                    </Text>
+                )
+                : entry.overrideSpec
+                    ? (
+                        <Text dimColor>
+                            Run
+                            {" "}
+                            <Text bold color="white">vis optimize</Text>
+                            {" "}
+                            to install the package override.
+                        </Text>
+                    )
+                    : entry.docUrl
+                        ? (
+                            <Text dimColor>
+                                No automated codemod. Open the migration guide above for the recommended alternative and steps.
+                            </Text>
+                        )
+                        : (
+                            <Text dimColor>
+                                No automated codemod. Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.
+                            </Text>
+                        )}
         </Box>
     );
 };

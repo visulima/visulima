@@ -37,8 +37,8 @@ export default optimize;
 
 export type OptimizeOptions = CreateOptions<{
     "dry-run": boolean | undefined;
-    "pin": boolean | undefined;
-    "prod": boolean | undefined;
+    format: string | undefined;
     "no-install": boolean | undefined;
-    "format": string | undefined;
+    pin: boolean | undefined;
+    prod: boolean | undefined;
 }>;

@@ -1,3 +1,9 @@
+// Two cooperating test fakes (FakeTTYInput + FakeOutput) live in this
+// file because they're only used together by these tests. EventEmitter
+// (not EventTarget) is required because installKeybinds wires into
+// node:readline.emitKeypressEvents, which only speaks the EventEmitter
+// API.
+/* eslint-disable max-classes-per-file, unicorn/prefer-event-target */
 import { EventEmitter } from "node:events";
 
 import { describe, expect, it, vi } from "vitest";
@@ -10,8 +16,11 @@ import { installKeybinds } from "../src/watch-keybinds";
 // `node:readline.emitKeypressEvents` would normally drive.
 class FakeTTYInput extends EventEmitter {
     public isTTY = true;
+
     public isRaw = false;
+
     public resumed = false;
+
     public readonly setRawMode = vi.fn((value: boolean) => {
         this.isRaw = value;
     });

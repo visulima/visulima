@@ -20,13 +20,13 @@ const baseResults: DoctorResults = {
         { catalogName: "default", currentRange: "1.0", newRange: "1.1", packageName: "@types/node", targetVersion: "1.1", updateType: "minor", vulnerabilities: [] } as DoctorResults["outdated"][number],
     ],
     runtime: [],
-    sections: new Set(["dependencies", "security", "optimization", "runtime"]),
+    sections: new Set(["dependencies", "optimization", "runtime", "security"]),
     socketIssues: { alerts: 0, lowScore: 0 },
     vulnCount: 0,
     workspaceCount: 0,
 };
 
-describe("parseFilterPatterns", () => {
+describe(parseFilterPatterns, () => {
     it("returns empty list for undefined or empty", () => {
         expect(parseFilterPatterns(undefined)).toEqual([]);
         expect(parseFilterPatterns("")).toEqual([]);
@@ -60,7 +60,7 @@ describe("parseFilterPatterns", () => {
     });
 });
 
-describe("applyFilter", () => {
+describe(applyFilter, () => {
     it("returns the same results when no patterns are passed", () => {
         const out = applyFilter(baseResults, []);
 
@@ -85,24 +85,24 @@ describe("applyFilter", () => {
     });
 });
 
-describe("filterFindingsByPattern", () => {
+describe(filterFindingsByPattern, () => {
     const makeFinding = (kind: DoctorFinding["kind"], name: string): DoctorFinding => {
         switch (kind) {
-            case "outdated": {
-                return {
-                    entry: { packageName: name } as never,
-                    id: `out:${name}`,
-                    kind: "outdated",
-                    section: "dependencies",
-                    severity: "warn",
-                    title: name,
-                };
-            }
             case "duplicate": {
                 return {
                     id: `dup:${name}`,
                     kind: "duplicate",
                     pkg: { name, versions: [] } as never,
+                    section: "dependencies",
+                    severity: "warn",
+                    title: name,
+                };
+            }
+            case "outdated": {
+                return {
+                    entry: { packageName: name } as never,
+                    id: `out:${name}`,
+                    kind: "outdated",
                     section: "dependencies",
                     severity: "warn",
                     title: name,

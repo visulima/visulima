@@ -1,7 +1,8 @@
 import { rmSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import { join } from "@visulima/path";
+import { isAccessibleSync } from "@visulima/fs";
+import { dirname, join, parse as parsePath } from "@visulima/path";
 
 import { error as errorOutput, info, warn } from "../../output";
 import type { InstallBackend } from "../../pm-runner";
@@ -9,6 +10,33 @@ import { detectLockfileDrift, detectPm, resolveInstaller, runInstall } from "../
 import { scanDepsForTyposquats } from "../../typosquats";
 import { toStringArray } from "../../utils";
 import type { InstallOptions } from "./index";
+
+const LOCKFILE_NAMES: ReadonlyArray<string> = ["pnpm-lock.yaml", "yarn.lock", "package-lock.json", "npm-shrinkwrap.json", "bun.lock", "bun.lockb"];
+
+/**
+ * Walk up from `start` checking for any known PM lockfile. We only need
+ * to know whether a lockfile exists somewhere on the workspace path —
+ * the specific PM is resolved separately.
+ */
+const hasLockfile = (start: string): boolean => {
+    let dir = start;
+
+    while (true) {
+        for (const name of LOCKFILE_NAMES) {
+            if (isAccessibleSync(join(dir, name))) {
+                return true;
+            }
+        }
+
+        const parent = dirname(dir);
+
+        if (parent === dir || parsePath(dir).root === dir) {
+            return false;
+        }
+
+        dir = parent;
+    }
+};
 
 const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
 
@@ -67,6 +95,21 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const filters = toStringArray(options.filter);
     const ciMode = options.ci || false;
 
+    // Secure-by-default lockfile semantics: when a lockfile is present
+    // and the user hasn't asked for a mutation (force, lockfile-only) or
+    // an explicit opt-out (--no-frozen-lockfile), default to frozen-lockfile
+    // so `vis install` mirrors `npm ci` semantics rather than `npm install`'s
+    // silent lockfile rewrites. Greenfield workspaces (no lockfile) skip
+    // the default — there's nothing to freeze yet.
+    const explicitFrozen = options.frozenLockfile || ciMode;
+    const optedOutOfFrozen = options.noFrozenLockfile || options.force || options.lockfileOnly;
+    const lockfilePresent = hasLockfile(cwd);
+    const shouldFreeze = explicitFrozen || (!optedOutOfFrozen && lockfilePresent);
+
+    if (!explicitFrozen && shouldFreeze && !options.silent) {
+        info("Defaulting to frozen lockfile (pass --no-frozen-lockfile to allow lockfile updates).");
+    }
+
     // --ci mirrors `npm ci` / `pnpm ci` / `yarn install --immutable`:
     // wipe node_modules so the install fully reproduces the lockfile.
     // Works for every PM (including pnpm v10) because we do the wipe ourselves
@@ -90,8 +133,13 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             dev: options.dev || false,
             filter: filters,
             force: options.force || false,
-            frozenLockfile: ciMode || options.frozenLockfile || false,
-            ignoreScripts: options.ignoreScripts || false,
+            frozenLockfile: shouldFreeze,
+            // Block-by-default lifecycle scripts (mirrors pnpm v10).
+            // Allowlisted packages from `security.allowBuilds` are executed
+            // post-install by the `security-enforcement` plugin's
+            // afterCommand hook (`runApprovedScripts`). The escape hatch
+            // is `--run-scripts`, which restores the PM's native behavior.
+            ignoreScripts: !options.runScripts,
             lockfileOnly: options.lockfileOnly || false,
             noOptional: options.noOptional || false,
             offline: options.offline || false,
@@ -102,6 +150,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         },
         cwd,
         logger,
+        { preferOffline: options.preferOffline || false },
     );
 
     if (code !== 0) {

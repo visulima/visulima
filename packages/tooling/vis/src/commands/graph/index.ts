@@ -38,7 +38,7 @@ const graph: Command = {
 export default graph;
 
 export type GraphOptions = CreateOptions<{
-    "format": string | undefined;
-    "output": string | undefined;
-    "depth": number | undefined;
+    depth: number | undefined;
+    format: string | undefined;
+    output: string | undefined;
 }>;

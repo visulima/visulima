@@ -55,10 +55,10 @@ const audit: Command = {
 export default audit;
 
 export type AuditOptions = CreateOptions<{
-    "severity": string | undefined;
-    "format": string | undefined;
-    "fix": boolean | undefined;
     "exit-code": boolean | undefined;
+    fix: boolean | undefined;
+    format: string | undefined;
+    severity: string | undefined;
     "show-accepted": boolean | undefined;
-    "sync": boolean | undefined;
+    sync: boolean | undefined;
 }>;

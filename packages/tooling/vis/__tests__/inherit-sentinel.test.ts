@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { INHERIT_SENTINEL, mergeArrayWithInherit, mergeTargetWithInherit } from "../src/target-merge";
 
-describe("mergeArrayWithInherit", () => {
+describe(mergeArrayWithInherit, () => {
     it("returns parent (cloned) when child is undefined", () => {
         expect.assertions(2);
 
@@ -62,7 +62,7 @@ describe("mergeArrayWithInherit", () => {
     });
 });
 
-describe("mergeTargetWithInherit", () => {
+describe(mergeTargetWithInherit, () => {
     it("merges scalar fields with later wins", () => {
         expect.assertions(2);
 

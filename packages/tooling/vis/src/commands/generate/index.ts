@@ -42,12 +42,12 @@ const generate: Command = {
 export default generate;
 
 export type GenerateOptions = CreateOptions<{
-    "list": boolean | undefined;
-    "to": string | undefined;
+    defaults: boolean | undefined;
     "dry-run": boolean | undefined;
-    "force": boolean | undefined;
-    "defaults": boolean | undefined;
-    "skip-scripts": boolean | undefined;
+    force: boolean | undefined;
+    list: boolean | undefined;
     "no-interactive": boolean | undefined;
     "prefer-offline": boolean | undefined;
+    "skip-scripts": boolean | undefined;
+    to: string | undefined;
 }>;

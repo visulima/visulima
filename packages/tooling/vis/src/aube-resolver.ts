@@ -101,15 +101,12 @@ const resolveAubeInstall = (options: InstallOptions): ResolvedCommand => {
     }
 
     if (options.ignoreScripts) {
-        // Accepted for muscle-memory parity; aube already skips lifecycle
-        // scripts by default so the flag is a no-op. Surface a warning
-        // so users coming from pnpm/npm don't think they're hardening
-        // their install when they pass it — the inverse opt-in for
-        // lifecycle scripts under aube is `aube approve-builds`.
+        // Aube already skips dependency lifecycle scripts by default, so
+        // the flag is a no-op there. Pass it through so the resolved
+        // command faithfully reflects vis's intent (and matches the
+        // default block-by-default policy on every other PM); silently
+        // not warning since the flag is now the universal vis default.
         args.push("--ignore-scripts");
-        warnings.push(
-            "aube already skips dependency lifecycle scripts by default; --ignore-scripts is a no-op. Use `aube approve-builds` to allow specific packages.",
-        );
     }
 
     if (options.lockfileOnly) {

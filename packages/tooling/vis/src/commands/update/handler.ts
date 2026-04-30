@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import colorize from "@visulima/colorize";
+import { red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
@@ -40,8 +40,6 @@ import { runTyposquatCheck, scanDepsForTyposquats } from "../../typosquats";
 import { parsePackageArgument } from "../../utils";
 import type { VisConfig } from "../../workspace";
 import type { UpdateOptions } from "./index";
-
-const { red, yellow } = colorize;
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 type FilterOption = string | string[] | undefined;

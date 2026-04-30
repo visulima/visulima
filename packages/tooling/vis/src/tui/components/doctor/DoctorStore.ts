@@ -2,10 +2,10 @@ import type { SectionId } from "../../../commands/doctor/sections";
 import type { DoctorFinding, FindingSeverity } from "./findings";
 
 /**
- * Tab filter for the list pane. `all` mirrors the dashboard's full
- * roll-up; the per-section tabs let users focus on a single concern.
+ * Tab filter for the list pane. One tab per scan section — users
+ * focus on a single concern at a time.
  */
-export type FilterType = "all" | SectionId;
+export type FilterType = SectionId;
 
 /**
  * Single source of truth for the filter tab order + labels. Both the
@@ -13,7 +13,6 @@ export type FilterType = "all" | SectionId;
  * consume this so adding a section is a one-line change.
  */
 export const FILTER_TABS: ReadonlyArray<{ id: FilterType; label: string }> = [
-    { id: "all", label: "All" },
     { id: "dependencies", label: "Deps" },
     { id: "security", label: "Security" },
     { id: "optimization", label: "Optimize" },
@@ -34,10 +33,10 @@ export type SectionStatus = "done" | "error" | "idle" | "running";
  * TUI.
  */
 export interface PendingAction {
-    /** Optional config snippet (e.g. ack JSON) to print verbatim. */
-    readonly configSnippet?: string;
     /** Shell command we'd suggest running next. */
     readonly command: string;
+    /** Optional config snippet (e.g. ack JSON) to print verbatim. */
+    readonly configSnippet?: string;
     /** Short human description (e.g. "Update lodash"). */
     readonly description: string;
 }
@@ -57,18 +56,18 @@ export interface DoctorState {
     readonly focusedPanel: "detail" | "list";
     /** Findings grouped by section, in declaration order. */
     readonly grouped: ReadonlyMap<SectionId, ReadonlyArray<DoctorFinding>>;
-    /** Index into `entries`. */
-    readonly selectedIndex: number;
+    /** Pending exit action recorded by an action keybind (u/o/a). */
+    readonly pendingAction: PendingAction | undefined;
     /** Per-section error message — only set when status is `error`. */
     readonly sectionError: Readonly<Partial<Record<SectionId, string>>>;
     /** Per-section progress message — short status text shown next to the tab. */
     readonly sectionMessage: Readonly<Partial<Record<SectionId, string>>>;
     /** Per-section lifecycle status. */
     readonly sectionStatus: Readonly<Record<SectionId, SectionStatus>>;
+    /** Index into `entries`. */
+    readonly selectedIndex: number;
     /** Optional severity filter — `undefined` shows all severities. */
     readonly severityFilter: FindingSeverity | undefined;
-    /** Pending exit action recorded by an action keybind (u/o/a). */
-    readonly pendingAction: PendingAction | undefined;
 }
 
 type Listener = () => void;
@@ -103,11 +102,7 @@ const filterFindings = (
     filterText: string,
     severityFilter: FindingSeverity | undefined,
 ): DoctorFinding[] => {
-    let filtered: ReadonlyArray<DoctorFinding> = findings;
-
-    if (filterType !== "all") {
-        filtered = filtered.filter((f) => f.section === filterType);
-    }
+    let filtered: ReadonlyArray<DoctorFinding> = findings.filter((f) => f.section === filterType);
 
     if (severityFilter) {
         filtered = filtered.filter((f) => f.severity === severityFilter);
@@ -162,8 +157,9 @@ export class DoctorStore {
             : (input as DoctorStoreOptions);
         const findings = options.findings ?? [];
         const activeSections = options.activeSections ?? new Set<SectionId>(SECTION_ORDER);
+        const initialFilter: FilterType = SECTION_ORDER.find((id) => activeSections.has(id)) ?? "dependencies";
 
-        const seed = filterFindings(findings, "all", "", undefined);
+        const seed = filterFindings(findings, initialFilter, "", undefined);
         const status = initialStatus(activeSections);
 
         // Pre-seeded findings imply those sections completed before the
@@ -179,7 +175,7 @@ export class DoctorStore {
             entries: seed,
             filterActive: false,
             filterText: "",
-            filterType: "all",
+            filterType: initialFilter,
             focusedPanel: "list",
             grouped: groupBySection(seed),
             pendingAction: undefined,

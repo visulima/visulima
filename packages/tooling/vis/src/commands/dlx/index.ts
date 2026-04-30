@@ -25,7 +25,7 @@ const dlx: Command = {
 export default dlx;
 
 export type DlxOptions = CreateOptions<{
-    "package": string[] | undefined;
+    package: string[] | undefined;
     "shell-mode": boolean | undefined;
-    "silent": boolean | undefined;
+    silent: boolean | undefined;
 }>;
