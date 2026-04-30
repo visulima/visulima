@@ -1,3 +1,10 @@
+## @visulima/error [6.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.13...@visulima/error@6.0.0-alpha.14) (2026-04-30)
+
+### Miscellaneous Chores
+
+* **error:** upgrade packem to 2.0.0-alpha.76 ([8c17a52](https://github.com/visulima/visulima/commit/8c17a527c8a811d57d39ebb58a6af55078ddb18a))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
 ## @visulima/error [6.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.12...@visulima/error@6.0.0-alpha.13) (2026-04-22)
 
 ### Bug Fixes
