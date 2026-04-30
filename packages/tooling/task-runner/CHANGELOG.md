@@ -1,3 +1,20 @@
+## @visulima/task-runner [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.7...@visulima/task-runner@1.0.0-alpha.8) (2026-04-30)
+
+### Features
+
+* **task-runner:** expose worktree detection napi bindings ([3d67028](https://github.com/visulima/visulima/commit/3d670284090010616956a024a4e5465ee91bbcd4))
+* **task-runner:** graceful Ctrl+Break on Windows SIGINT ([ae44b1c](https://github.com/visulima/visulima/commit/ae44b1c855839746092a91430eb49b216d1172ec))
+* **task-runner:** tokens, when, and always tasks ([5ae6505](https://github.com/visulima/visulima/commit/5ae65055d97e97d7ad7ff9088996da37d964da3f))
+
+### Bug Fixes
+
+* **vis:** address review findings on watch UX bundle ([edee703](https://github.com/visulima/visulima/commit/edee7038fe23a488791682dd8ce5c469b40a3e8c))
+
+### Miscellaneous Chores
+
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **task-runner:** upgrade packem to 2.0.0-alpha.76 ([5f59c41](https://github.com/visulima/visulima/commit/5f59c4140f89019cc3756ac917e1bda7ded0beec))
+
 ## @visulima/task-runner [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.6...@visulima/task-runner@1.0.0-alpha.7) (2026-04-22)
 
 ### Bug Fixes
