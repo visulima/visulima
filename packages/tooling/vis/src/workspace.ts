@@ -226,6 +226,26 @@ interface VisConfig {
     };
 
     /**
+     * Inherit configuration from one or more parent configs. Entries are
+     * resolved left-to-right (later wins) and the consumer's own values
+     * always override anything pulled in from `extends`.
+     *
+     * Each entry is either:
+     * - a relative path (`./shared.config.ts`, `../shared.config.ts`) —
+     *   resolved against the file declaring `extends`;
+     * - an npm package name (`@acme/vis-preset`) — resolved via Node.js
+     *   module resolution from the consumer file.
+     *
+     * Absolute paths are rejected — they break across machines and CI.
+     * Cycles raise `VisConfigCycleError` during load.
+     * @example
+     * ```
+     * extends: ["@acme/vis-preset", "./shared/security.config.ts"]
+     * ```
+     */
+    extends?: string | string[];
+
+    /**
      * Named file-group patterns, reusable from target `inputs` via the
      * `@filegroup:&lt;name>` token. File groups are resolved relative to each
      * project root at discovery time.

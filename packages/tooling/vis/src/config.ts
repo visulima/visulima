@@ -1,13 +1,16 @@
 import { createHash } from "node:crypto";
 import { copyFileSync, readdirSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
-import { dirname, join } from "@visulima/path";
+import { dirname, isAbsolute, join } from "@visulima/path";
 import { createJiti } from "jiti";
 
+import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "./errors";
 import type { VisPlugin } from "./hooks";
+import { mergeTargetWithInherit } from "./target-merge";
 import type { VisConfig } from "./workspace";
 
 /** Supported config file names, checked in priority order. */
@@ -102,6 +105,25 @@ interface ConfigCache {
 
 const hashFileContents = (filePath: string): string => createHash("sha256").update(fsReadFileSync(filePath)).digest("hex");
 
+/**
+ * Composite hash for a chain of config files. Sorting by absolute path
+ * makes the result independent of resolution order — diamond imports
+ * (A and B both extend C) collapse to one entry.
+ */
+const hashConfigChain = (paths: readonly string[]): string => {
+    const hasher = createHash("sha256");
+    const sorted = [...paths].sort();
+
+    for (const path of sorted) {
+        hasher.update(path);
+        hasher.update(":");
+        hasher.update(hashFileContents(path));
+        hasher.update("\n");
+    }
+
+    return hasher.digest("hex");
+};
+
 const getConfigCachePath = (workspaceRoot: string): string | undefined => {
     // First try: use node_modules/.cache/vis directly if node_modules exists
     // in the workspace root. This avoids findCacheDirSync traversing to a
@@ -149,39 +171,69 @@ const writeConfigCache = (cachePath: string, hash: string, config: VisConfig): v
     }
 };
 
+// ── Extends resolver ────────────────────────────────────────────────
+
+const normalizeExtends = (value: VisConfig["extends"]): string[] => {
+    if (value === undefined) {
+        return [];
+    }
+
+    return Array.isArray(value) ? value : [value];
+};
+
+/**
+ * Resolve an `extends` specifier against the file that declared it.
+ *
+ * - Relative paths (`./` / `../`) → resolved against the parent's directory.
+ * - Bare specifiers (`@acme/preset`, `vis-preset-foo`) → npm resolution
+ *   from the parent file. The package may export the config file directly
+ *   or a `.js`/`.ts` module that default-exports a `VisConfig`.
+ * - Absolute paths → rejected; they break across machines and CI.
+ */
+const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: readonly string[]): string => {
+    if (isAbsolute(specifier)) {
+        throw new VisConfigNotFoundError(specifier, [...chain, parentFile], [
+            "Absolute paths in `extends` are not supported. Use a relative path or an npm package name.",
+        ]);
+    }
+
+    const attempted: string[] = [];
+
+    if (specifier.startsWith("./") || specifier.startsWith("../")) {
+        const parentDirectory = dirname(parentFile);
+        const resolved = join(parentDirectory, specifier);
+
+        attempted.push(resolved);
+
+        if (isAccessibleSync(resolved)) {
+            return resolved;
+        }
+
+        throw new VisConfigNotFoundError(specifier, [...chain, parentFile], attempted);
+    }
+
+    try {
+        const requireFromParent = createRequire(parentFile);
+
+        return requireFromParent.resolve(specifier);
+    } catch {
+        attempted.push(`require.resolve("${specifier}") from ${parentFile}`);
+        throw new VisConfigNotFoundError(specifier, [...chain, parentFile], attempted);
+    }
+};
+
 // ── Config loader ───────────────────────────────────────────────────
 
 /**
- * Load the vis configuration from a `vis.config.ts` (or `.js`, `.mjs`, `.cjs`, `.mts`, `.cts`) file.
- *
- * Uses a file-hash based cache to avoid repeated jiti compilations.
- * Falls back to secure defaults if no config file is found.
- * @param workspaceRoot The workspace root directory to search for the config file.
- * @returns The loaded and resolved configuration with secure defaults applied.
+ * Load a single config file via jiti and return its raw export. Wraps
+ * any throw in `VisConfigLoadError` so a syntax error surfaces with the
+ * source path instead of bubbling up as a workspace.ts failure.
  */
-const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
-    const configPath = findVisConfigFile(workspaceRoot);
-
-    if (!configPath) {
-        return applyDefaults({});
-    }
-
-    // Check cache: hash the config file and compare
+const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: string, chain: readonly string[]): Promise<VisConfig> => {
     const hash = hashFileContents(configPath);
-    const cachePath = getConfigCachePath(workspaceRoot);
-
-    if (cachePath) {
-        const cached = readConfigCache(cachePath, hash);
-
-        if (cached) {
-            return cached;
-        }
-    }
-
-    // Cache miss — compile via jiti
-    // Copy to a unique temp file to bypass jiti's internal module cache
-    // (jiti caches by file path and ignores moduleCache: false for ESM)
     const extension = configPath.slice(configPath.lastIndexOf("."));
+    // Copy to a unique temp file to bypass jiti's internal module cache
+    // (jiti caches by file path and ignores moduleCache: false for ESM).
     const temporaryConfigPath = join(tmpdir(), `vis-config-${hash}${extension}`);
 
     copyFileSync(configPath, temporaryConfigPath);
@@ -189,9 +241,9 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
     let loaded: unknown;
 
     try {
-        const jiti = createJiti(workspaceRoot, { fsCache: false, moduleCache: false });
-
         loaded = (await jiti.import(temporaryConfigPath, { default: true, try: true })) ?? {};
+    } catch (cause) {
+        throw new VisConfigLoadError(configPath, chain, cause);
     } finally {
         try {
             unlinkSync(temporaryConfigPath);
@@ -200,15 +252,160 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
         }
     }
 
-    let config: VisConfig;
+    try {
+        return (typeof loaded === "function" ? ((await (loaded as () => VisConfig | Promise<VisConfig>)()) ?? {}) : (loaded as VisConfig)) ?? {};
+    } catch (cause) {
+        throw new VisConfigLoadError(configPath, chain, cause);
+    }
+};
 
-    config = typeof loaded === "function" ? applyDefaults((await loaded()) ?? {}) : applyDefaults(loaded as VisConfig);
+/**
+ * Merge two `VisConfig` objects — child wins. Most top-level fields are
+ * shallow-merged; `targetDefaults` runs through {@link mergeTargetWithInherit}
+ * so the `@inherit` sentinel works across the extends chain;
+ * `taskDefaults` blocks concatenate (parent first, child last), which
+ * preserves the existing "later block wins" precedence.
+ */
+const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
+    const merged: VisConfig = { ...parent, ...child };
 
-    if (cachePath) {
-        writeConfigCache(cachePath, hash, config);
+    if (parent.targetDefaults || child.targetDefaults) {
+        const names = new Set<string>([...Object.keys(parent.targetDefaults ?? {}), ...Object.keys(child.targetDefaults ?? {})]);
+        const out: NonNullable<VisConfig["targetDefaults"]> = {};
+
+        for (const name of names) {
+            out[name] = mergeTargetWithInherit(parent.targetDefaults?.[name], child.targetDefaults?.[name]);
+        }
+
+        merged.targetDefaults = out;
     }
 
-    return config;
+    if (parent.taskDefaults || child.taskDefaults) {
+        merged.taskDefaults = [...(parent.taskDefaults ?? []), ...(child.taskDefaults ?? [])];
+    }
+
+    if (parent.fileGroups || child.fileGroups) {
+        merged.fileGroups = { ...parent.fileGroups, ...child.fileGroups };
+    }
+
+    if (parent.taskGroups || child.taskGroups) {
+        merged.taskGroups = { ...parent.taskGroups, ...child.taskGroups };
+    }
+
+    if (parent.security || child.security) {
+        merged.security = { ...parent.security, ...child.security };
+    }
+
+    if (parent.update || child.update) {
+        merged.update = { ...parent.update, ...child.update };
+    }
+
+    if (parent.taskRunnerOptions || child.taskRunnerOptions) {
+        merged.taskRunnerOptions = { ...parent.taskRunnerOptions, ...child.taskRunnerOptions };
+    }
+
+    // `extends` is consumed during resolution — never propagated downstream.
+    delete merged.extends;
+
+    return merged;
+};
+
+/**
+ * Recursively load a config file and everything it `extends`. Maintains
+ * two pieces of state across the recursion:
+ *
+ * - `inFlight` — paths currently on the stack. Re-entering one is a cycle.
+ * - `loaded` — paths already fully loaded (cached). Re-entering one is a
+ *   diamond and short-circuits to the cached raw config.
+ *
+ * Returns the post-order traversal: extends first, current last. The
+ * caller folds this into a single merged `VisConfig`.
+ */
+const resolveConfigChain = async (
+    jiti: ReturnType<typeof createJiti>,
+    configPath: string,
+    chain: readonly string[],
+    inFlight: Set<string>,
+    loaded: Map<string, VisConfig>,
+    order: string[],
+): Promise<void> => {
+    if (inFlight.has(configPath)) {
+        throw new VisConfigCycleError(configPath, chain);
+    }
+
+    if (loaded.has(configPath)) {
+        return;
+    }
+
+    inFlight.add(configPath);
+
+    try {
+        const raw = await loadRawConfig(jiti, configPath, chain);
+        const extendsList = normalizeExtends(raw.extends);
+
+        for (const specifier of extendsList) {
+            const resolved = resolveExtendsSpecifier(specifier, configPath, chain);
+
+            await resolveConfigChain(jiti, resolved, [...chain, configPath], inFlight, loaded, order);
+        }
+
+        loaded.set(configPath, raw);
+        order.push(configPath);
+    } finally {
+        inFlight.delete(configPath);
+    }
+};
+
+/**
+ * Load the vis configuration from a `vis.config.ts` (or `.js`, `.mjs`, `.cjs`, `.mts`, `.cts`) file.
+ *
+ * Resolves the entire `extends` chain, post-order, and folds it into a
+ * single merged config (extends first, root last — child wins). The
+ * cache key covers every file in the chain, so editing any extended
+ * file invalidates the cache.
+ *
+ * Falls back to secure defaults if no config file is found.
+ * @param workspaceRoot The workspace root directory to search for the config file.
+ * @returns The loaded and resolved configuration with secure defaults applied.
+ */
+const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
+    const rootConfigPath = findVisConfigFile(workspaceRoot);
+
+    if (!rootConfigPath) {
+        return applyDefaults({});
+    }
+
+    const jiti = createJiti(workspaceRoot, { fsCache: false, moduleCache: false });
+    const inFlight = new Set<string>();
+    const loaded = new Map<string, VisConfig>();
+    const order: string[] = [];
+
+    await resolveConfigChain(jiti, rootConfigPath, [], inFlight, loaded, order);
+
+    const chainHash = hashConfigChain(order);
+    const cachePath = getConfigCachePath(workspaceRoot);
+
+    if (cachePath) {
+        const cached = readConfigCache(cachePath, chainHash);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
+    let merged: VisConfig = {};
+
+    for (const path of order) {
+        merged = mergeVisConfigs(merged, loaded.get(path)!);
+    }
+
+    const finalConfig = applyDefaults(merged);
+
+    if (cachePath) {
+        writeConfigCache(cachePath, chainHash, finalConfig);
+    }
+
+    return finalConfig;
 };
 
 /**
