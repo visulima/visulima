@@ -160,6 +160,9 @@ export const migrateTurborepo = (workspaceRoot: string, options: { dryRun?: bool
     report.manualSteps.push(
         "Review targetDefaults in vis.config.ts — project-specific tasks (turbo's project#task syntax) were skipped and should be moved into each project's project.json.",
     );
+    report.manualSteps.push(
+        "vis adds two task primitives turbo doesn't have: `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
+    );
 
     const tasks = turbo.tasks ?? turbo.pipeline ?? {};
 

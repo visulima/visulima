@@ -299,6 +299,9 @@ export const migrateMoon = (
     report.manualSteps.push(
         "Scoped `.moon/tasks/<scope>.yml` files map to vis's `taskDefaults` with a `scope` block. Only the first scope file was parsed — review the generated file.",
     );
+    report.manualSteps.push(
+        "vis tasks support `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for cleanup tasks that fire even when upstream fails. Review tasks that used moon's `local: true`, `options.runInCI`, or shell-based platform gating — the new surface is more expressive and may simplify them. See docs/guides/conditional-and-finally-tasks.mdx.",
+    );
 
     // ── Templates ────────────────────────────────────────────────────
     // `.moon/templates/` auto-discovers in `vis generate` with no config

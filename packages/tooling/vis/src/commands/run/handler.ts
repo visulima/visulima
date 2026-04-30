@@ -36,7 +36,7 @@ import { appendToShellHistory } from "../../shell-history";
 import { scheduleTimeoutKill } from "../../signal-escalation";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../target-options";
-import { detectCurrentOs, evaluateWhen, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../../target-options";
+import { detectCurrentOs, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../../target-options";
 import { runToolchainPreflight } from "../../toolchain";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
@@ -752,20 +752,15 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             continue;
         }
 
-        if (!matchesOs(visOptions, currentOs)) {
-            logger.debug?.(`Skipping ${name}:${target} — osType does not match ${currentOs}`);
-            continue;
-        }
-
         if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
             logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
             continue;
         }
 
-        if (!evaluateWhen(visOptions?.when)) {
-            logger.debug?.(`Skipping ${name}:${target} — \`when\` condition not satisfied`);
-            continue;
-        }
+        // when:/os gates are evaluated by the task-runner orchestrator
+        // just before launch — see TargetConfiguration.when. Letting them
+        // through to the graph means skipped tasks show up with a reason
+        // in the run summary instead of being silently filtered here.
 
         projectsWithTarget.push(name);
         projectTargetIndex.set(name, visTarget);
