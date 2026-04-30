@@ -17,6 +17,7 @@ import type { VisPlugin } from "./hooks";
 import type { StagedConfig } from "./staged";
 import type { VisTargetConfiguration } from "./target-options";
 import { applyPreset, defaultCacheForType } from "./target-options";
+import { mergeTargetWithInherit } from "./target-merge";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "./toolchain";
 
 export interface CodeownersConfig {
@@ -1001,7 +1002,7 @@ const collectTargetDefaults = (
     const merged: Record<string, Partial<VisTargetConfiguration>> = {};
 
     for (const [name, defaults] of Object.entries(config.targetDefaults ?? {})) {
-        merged[name] = { ...defaults };
+        merged[name] = mergeTargetWithInherit(undefined, defaults);
     }
 
     for (const block of config.taskDefaults ?? []) {
@@ -1010,7 +1011,7 @@ const collectTargetDefaults = (
         }
 
         for (const [name, defaults] of Object.entries(block.targets)) {
-            merged[name] = { ...merged[name], ...defaults };
+            merged[name] = mergeTargetWithInherit(merged[name], defaults);
         }
     }
 
@@ -1061,9 +1062,9 @@ const mergeTarget = (
     defaults: Partial<VisTargetConfiguration> | undefined,
     fileGroups: Record<string, string[]> | undefined,
 ): VisTargetConfiguration => {
+    const merged = mergeTargetWithInherit(defaults, projectTarget);
     const base: VisTargetConfiguration = {
-        ...defaults,
-        ...projectTarget,
+        ...merged,
         options: {
             ...defaults?.options,
             ...projectTarget?.options,
