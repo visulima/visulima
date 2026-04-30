@@ -99,7 +99,9 @@ describe("vis lazy command contract", () => {
         (_name, command) => {
             expect.assertions(2);
 
+            // eslint-disable-next-line vitest/prefer-expect-type-of
             expect(typeof command.execute).toBe("undefined");
+            // eslint-disable-next-line vitest/prefer-expect-type-of
             expect(typeof command.loader).toBe("function");
         },
     );
@@ -111,6 +113,7 @@ describe("vis lazy command contract", () => {
 
             const module_ = await command.loader!();
 
+            // eslint-disable-next-line vitest/prefer-expect-type-of
             expect(typeof module_.default).toBe("function");
         },
     );

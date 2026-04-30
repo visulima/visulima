@@ -16,6 +16,24 @@ export interface OptimizationCounts {
     total: number;
 }
 
+/**
+ * Static snapshot of the workspace's supply-chain hardening posture,
+ * derived from `security.*` in vis.config and rendered as a dedicated
+ * "Supply Chain" section in the doctor output. Each finding carries
+ * its own severity so the section can summarise without re-deriving
+ * status from raw values.
+ */
+export interface SupplyChainPosture {
+    findings: SupplyChainFinding[];
+    status: SectionStatus;
+}
+
+export interface SupplyChainFinding {
+    detail?: string;
+    label: string;
+    severity: "error" | "ok" | "warn";
+}
+
 export interface DoctorResults {
     duplicates: DuplicatePackage[];
     elapsedMs: number;
@@ -25,6 +43,7 @@ export interface DoctorResults {
     runtime: RuntimeDiagnostic[];
     sections: Set<SectionId>;
     socketIssues: { alerts: number; lowScore: number };
+    supplyChain: SupplyChainPosture;
     vulnCount: number;
     workspaceCount: number;
 }
@@ -152,8 +171,8 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
         security: sectionStatus(results, "security"),
     };
 
-    const statuses = Object.values(sectionsObj);
-    const overall: SectionStatus = statuses.includes("error") ? "error" : statuses.includes("warn") ? "warn" : "ok";
+    const statuses = new Set([...Object.values(sectionsObj), results.supplyChain.status]);
+    const overall: SectionStatus = statuses.has("error") ? "error" : statuses.has("warn") ? "warn" : "ok";
 
     return {
         dependencies: {
@@ -188,6 +207,12 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
             vulnerabilities: results.vulnCount,
         },
         status: overall,
+        supplyChain: {
+            findings: results.supplyChain.findings.map((f) => {
+                return { detail: f.detail, label: f.label, severity: f.severity };
+            }),
+            status: results.supplyChain.status,
+        },
         workspaces: results.workspaceCount,
     };
 };

@@ -139,7 +139,7 @@ const hashFileContents = (filePath: string): string => createHash("sha256").upda
  * makes the result independent of resolution order — diamond imports
  * (A and B both extend C) collapse to one entry.
  */
-const hashConfigChain = (paths: readonly string[]): string => {
+const hashConfigChain = (paths: ReadonlyArray<string>): string => {
     const hasher = createHash("sha256");
     const sorted = [...paths].sort();
 
@@ -219,7 +219,7 @@ const normalizeExtends = (value: VisConfig["extends"]): string[] => {
  *   or a `.js`/`.ts` module that default-exports a `VisConfig`.
  * - Absolute paths → rejected; they break across machines and CI.
  */
-const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: readonly string[]): string => {
+const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: ReadonlyArray<string>): string => {
     if (isAbsolute(specifier)) {
         throw new VisConfigNotFoundError(specifier, [...chain, parentFile], [
             "Absolute paths in `extends` are not supported. Use a relative path or an npm package name.",
@@ -258,7 +258,7 @@ const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: r
  * any throw in `VisConfigLoadError` so a syntax error surfaces with the
  * source path instead of bubbling up as a workspace.ts failure.
  */
-const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: string, chain: readonly string[]): Promise<VisConfig> => {
+const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: string, chain: ReadonlyArray<string>): Promise<VisConfig> => {
     const hash = hashFileContents(configPath);
     const extension = configPath.slice(configPath.lastIndexOf("."));
     // Copy to a unique temp file to bypass jiti's internal module cache
@@ -271,8 +271,8 @@ const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: st
 
     try {
         loaded = (await jiti.import(temporaryConfigPath, { default: true, try: true })) ?? {};
-    } catch (cause) {
-        throw new VisConfigLoadError(configPath, chain, cause);
+    } catch (error) {
+        throw new VisConfigLoadError(configPath, chain, error);
     } finally {
         try {
             unlinkSync(temporaryConfigPath);
@@ -283,8 +283,8 @@ const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: st
 
     try {
         return (typeof loaded === "function" ? ((await (loaded as () => VisConfig | Promise<VisConfig>)()) ?? {}) : (loaded as VisConfig)) ?? {};
-    } catch (cause) {
-        throw new VisConfigLoadError(configPath, chain, cause);
+    } catch (error) {
+        throw new VisConfigLoadError(configPath, chain, error);
     }
 };
 
@@ -353,7 +353,7 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
 const resolveConfigChain = async (
     jiti: ReturnType<typeof createJiti>,
     configPath: string,
-    chain: readonly string[],
+    chain: ReadonlyArray<string>,
     inFlight: Set<string>,
     loaded: Map<string, VisConfig>,
     order: string[],
@@ -444,7 +444,7 @@ interface VisTaskConfigCache {
     hash: string;
 }
 
-const sanitizeProjectName = (projectName: string): string => projectName.replace(/[^\w.-]+/g, "_");
+const sanitizeProjectName = (projectName: string): string => projectName.replaceAll(/[^\w.-]+/g, "_");
 
 const getVisTaskCachePath = (workspaceRoot: string, projectName: string): string | undefined => {
     const nodeModulesDir = join(workspaceRoot, "node_modules");
@@ -495,7 +495,7 @@ const writeVisTaskCache = (cachePath: string, hash: string, config: VisTaskConfi
  *
  * Returns `undefined` when no overlay file exists. Otherwise compiles
  * the file via jiti and caches the result under
- * `node_modules/.cache/vis/task-configs/<project>.json`, keyed by the
+ * `node_modules/.cache/vis/task-configs/&lt;project>.json`, keyed by the
  * file's content hash. Editing one project's overlay does not invalidate
  * the root config cache.
  *
@@ -603,12 +603,12 @@ const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 const definePlugin = (plugin: VisPlugin): VisPlugin => plugin;
 
 export type { VisHooks, VisPlugin } from "./hooks";
-export type { VisConfig, VisTaskConfig } from "./workspace";
 // Ship the OTel plugin from the `/config` subpath so users can
 // `import { otelPlugin } from "@visulima/vis/config"` — same module
 // they already import `defineConfig`/`definePlugin` from.
 export type { OtelPluginOptions, OtelSpan, OtelTracer } from "./plugins/otel";
 export { otelPlugin } from "./plugins/otel";
+export type { VisConfig, VisTaskConfig } from "./workspace";
 export {
     applyDefaults,
     CONFIG_FILES,

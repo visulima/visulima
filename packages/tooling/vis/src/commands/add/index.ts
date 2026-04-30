@@ -15,6 +15,7 @@ const add: Command = {
         ["vis add lodash -w", "Add to workspace root"],
         ["vis add lodash --no-socket-check", "Add without Socket.dev check"],
         ["vis add lodash --no-typosquat-check", "Skip typosquat name check"],
+        ["vis add lodash --run-scripts", "Run lifecycle scripts (opts out of vis's default block-by-default policy)"],
     ],
     group: "Dependencies",
     loader: () => import("./handler"),
@@ -30,20 +31,27 @@ const add: Command = {
         { alias: "F", description: "Filter by workspace package name", multiple: true, name: "filter", type: String },
         { defaultValue: false, description: "Skip typosquat name check before adding", name: "no-typosquat-check", type: Boolean },
         { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.allowBuilds)",
+            name: "run-scripts",
+            type: Boolean,
+        },
     ],
 };
 
 export default add;
 
 export type AddOptions = CreateOptions<{
-    "save-dev": boolean | undefined;
-    "exact": boolean | undefined;
-    "save-peer": boolean | undefined;
-    "save-optional": boolean | undefined;
-    "global": boolean | undefined;
-    "workspace-root": boolean | undefined;
-    "workspace": boolean | undefined;
-    "filter": string[] | undefined;
-    "no-typosquat-check": boolean | undefined;
+    exact: boolean | undefined;
+    filter: string[] | undefined;
+    global: boolean | undefined;
     "no-socket-check": boolean | undefined;
+    "no-typosquat-check": boolean | undefined;
+    "run-scripts": boolean | undefined;
+    "save-dev": boolean | undefined;
+    "save-optional": boolean | undefined;
+    "save-peer": boolean | undefined;
+    workspace: boolean | undefined;
+    "workspace-root": boolean | undefined;
 }>;

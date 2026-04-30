@@ -1,6 +1,4 @@
-import colorize from "@visulima/colorize";
-
-const { cyan, dim, green, red, yellow } = colorize;
+import { cyan, dim, green, red, yellow } from "@visulima/colorize";
 
 import { CROSS, DASH, TICK } from "../../tui/symbols";
 import type { Renderer, TaskStatus } from "../types";

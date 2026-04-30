@@ -105,17 +105,17 @@ const check: Command = {
 export default check;
 
 export type CheckOptions = CreateOptions<{
-    "target": string | undefined;
-    "include": string[] | undefined;
-    "exclude": string[] | undefined;
-    "prerelease": boolean | undefined;
-    "no-security": boolean | undefined;
-    "security-config": boolean | undefined;
-    "sync": boolean | undefined;
-    "format": string | undefined;
-    "exit-code": boolean | undefined;
-    "ai": boolean | undefined;
+    ai: boolean | undefined;
     "ai-type": string | undefined;
-    "dev": boolean | undefined;
-    "prod": boolean | undefined;
+    dev: boolean | undefined;
+    exclude: string[] | undefined;
+    "exit-code": boolean | undefined;
+    format: string | undefined;
+    include: string[] | undefined;
+    "no-security": boolean | undefined;
+    prerelease: boolean | undefined;
+    prod: boolean | undefined;
+    "security-config": boolean | undefined;
+    sync: boolean | undefined;
+    target: string | undefined;
 }>;

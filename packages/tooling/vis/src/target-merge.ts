@@ -32,12 +32,12 @@ const ARRAY_FIELDS = ["aliases", "dependsOn", "inputs", "outputs"] as const;
  *   entries, preserving order around it. Multiple `@inherit` occurrences
  *   each splice `parent` again (rarely useful but consistent).
  */
-export const mergeArrayWithInherit = <T>(parent: readonly T[] | undefined, child: readonly T[] | undefined): T[] | undefined => {
+export const mergeArrayWithInherit = <T>(parent: ReadonlyArray<T> | undefined, child: ReadonlyArray<T> | undefined): T[] | undefined => {
     if (child === undefined) {
         return parent === undefined ? undefined : [...parent];
     }
 
-    if (!child.some((entry) => entry === (INHERIT_SENTINEL as unknown as T))) {
+    if (!child.includes((INHERIT_SENTINEL as unknown as T))) {
         return [...child];
     }
 
@@ -72,8 +72,8 @@ export const mergeTargetWithInherit = (
     const merged: Record<string, unknown> = { ...parent, ...child };
 
     for (const field of ARRAY_FIELDS) {
-        const parentValue = parent?.[field] as readonly unknown[] | undefined;
-        const childValue = child?.[field] as readonly unknown[] | undefined;
+        const parentValue = parent?.[field] as ReadonlyArray<unknown> | undefined;
+        const childValue = child?.[field] as ReadonlyArray<unknown> | undefined;
         const result = mergeArrayWithInherit(parentValue, childValue);
 
         if (result === undefined) {

@@ -41,6 +41,6 @@ export default analyze;
 
 export type AnalyzeOptions = CreateOptions<{
     "ai-type": string | undefined;
-    "security": boolean | undefined;
-    "format": string | undefined;
+    format: string | undefined;
+    security: boolean | undefined;
 }>;

@@ -30,6 +30,6 @@ const devcontainer: Command = {
 export default devcontainer;
 
 export type DevcontainerOptions = CreateOptions<{
-    "template": string | undefined;
-    "output": string | undefined;
+    output: string | undefined;
+    template: string | undefined;
 }>;

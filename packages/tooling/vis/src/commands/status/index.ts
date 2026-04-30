@@ -22,5 +22,5 @@ const status: Command = {
 export default status;
 
 export type StatusOptions = CreateOptions<{
-    "json": boolean | undefined;
+    json: boolean | undefined;
 }>;

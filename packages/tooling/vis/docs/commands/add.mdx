@@ -7,6 +7,15 @@ description: "Add packages with typosquat detection and security scanning"
 
 Add packages using the detected package manager. Before installing, vis runs a **typosquat check** against a curated blocklist of known malicious package names, followed by an optional **Socket.dev security scan**.
 
+## Secure-by-default behavior
+
+`vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
+
+- the package is listed in `security.allowBuilds` in `vis.config.ts` (vis runs its scripts post-install), or
+- you pass `--run-scripts` to opt out for one run.
+
+This pairs with the typosquat and Socket.dev checks: even if a malicious package slips past the name and score checks, its install hooks won't execute.
+
 ## Usage
 
 ```bash
@@ -16,29 +25,31 @@ vis add <packages...> [options]
 ## Examples
 
 ```bash
-vis add react react-dom              # Add packages
+vis add react react-dom              # Add packages (scripts blocked by default)
 vis add -D typescript @types/react   # Add as dev dependencies
 vis add react --filter app           # Add to specific workspace package
 vis add -g typescript                # Add globally (uses npm)
 vis add lodash -w                    # Add to workspace root
+vis add esbuild --run-scripts        # Opt out of the universal script block for this run
 vis add lodash --no-socket-check     # Add without Socket.dev check
 vis add lodash --no-typosquat-check  # Skip typosquat name check
 ```
 
 ## Options
 
-| Option                 | Alias | Default | Description                                  |
-| ---------------------- | ----- | ------- | -------------------------------------------- |
-| `--save-dev`           | `-D`  | `false` | Add as dev dependency                        |
-| `--exact`              | `-E`  | `false` | Save exact version                           |
-| `--save-peer`          | `-P`  | `false` | Add as peer dependency                       |
-| `--save-optional`      | `-O`  | `false` | Add as optional dependency                   |
-| `--global`             | `-g`  | `false` | Install globally (uses npm)                  |
-| `--workspace-root`     | `-w`  | `false` | Add to workspace root                        |
-| `--workspace`          |       | `false` | Use workspace protocol (pnpm)                |
-| `--filter`             | `-F`  |         | Filter by workspace package name             |
-| `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding      |
-| `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding |
+| Option                 | Alias | Default | Description                                                                                                            |
+| ---------------------- | ----- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `--save-dev`           | `-D`  | `false` | Add as dev dependency                                                                                                  |
+| `--exact`              | `-E`  | `false` | Save exact version                                                                                                     |
+| `--save-peer`          | `-P`  | `false` | Add as peer dependency                                                                                                 |
+| `--save-optional`      | `-O`  | `false` | Add as optional dependency                                                                                             |
+| `--global`             | `-g`  | `false` | Install globally (uses npm)                                                                                            |
+| `--workspace-root`     | `-w`  | `false` | Add to workspace root                                                                                                  |
+| `--workspace`          |       | `false` | Use workspace protocol (pnpm)                                                                                          |
+| `--filter`             | `-F`  |         | Filter by workspace package name                                                                                       |
+| `--run-scripts`        |       | `false` | Run lifecycle scripts (opts out of the universal block-by-default policy; allowlisted packages still run via `security.allowBuilds`) |
+| `--no-typosquat-check` |       | `false` | Skip typosquat name check before adding                                                                                |
+| `--no-socket-check`    |       | `false` | Skip Socket.dev security check before adding                                                                           |
 
 ## How It Works
 

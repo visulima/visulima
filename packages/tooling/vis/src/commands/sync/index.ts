@@ -46,6 +46,6 @@ const sync: Command = {
 export default sync;
 
 export type SyncOptions = CreateOptions<{
-    "out": string | undefined;
-    "check": boolean | undefined;
+    check: boolean | undefined;
+    out: string | undefined;
 }>;

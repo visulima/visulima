@@ -63,8 +63,8 @@ const docker: Command = {
 export default docker;
 
 export type DockerOptions = CreateOptions<{
-    "focus": string | undefined;
-    "out": string | undefined;
+    context: string | undefined;
+    focus: string | undefined;
     "include-sources": boolean | undefined;
-    "context": string | undefined;
+    out: string | undefined;
 }>;

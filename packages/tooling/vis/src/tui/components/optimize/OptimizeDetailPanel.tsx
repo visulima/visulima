@@ -122,6 +122,40 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                     </Box>
                 )}
 
+                {(entry.category === "preferred" || entry.category === "micro-utility") && (
+                    <Box flexDirection="column" marginTop={1}>
+                        <Text dimColor>{"\u2500\u2500 "}</Text>
+                        <Text bold color="yellow">
+                            ACTION
+                        </Text>
+                        <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+                            {entry.hasCodemod
+                                ? (
+                                    <>
+                                        <Text color="green">
+                                            {"\u2713"}
+                                            {' '}
+                                            Codemod will rewrite imports to the recommended alternative.
+                                        </Text>
+                                        <Text dimColor> The original package can then be removed from dependencies.</Text>
+                                    </>
+                                )
+                                : (
+                                    <>
+                                        <Text color="yellow">
+                                            {"\u2139"}
+                                            {' '}
+                                            Manual migration required.
+                                        </Text>
+                                        {entry.docUrl
+                                            ? <Text dimColor> Open the migration guide below for the recommended alternative and steps.</Text>
+                                            : <Text dimColor> Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.</Text>}
+                                    </>
+                                )}
+                        </Box>
+                    </Box>
+                )}
+
                 <Box flexDirection="column" marginTop={1}>
                     <Text dimColor>{"\u2500\u2500 "}</Text>
                     <Text bold color="white">
@@ -132,6 +166,11 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                             https://npmx.dev/
                             {entry.packageName}
                         </Text>
+                        {entry.docUrl && (
+                            <Text color="cyan" underline>
+                                {entry.docUrl}
+                            </Text>
+                        )}
                     </Box>
                 </Box>
             </ScrollView>

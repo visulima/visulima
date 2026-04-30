@@ -92,12 +92,11 @@ const SectionHeader = ({ count, section }: SectionHeaderProps): React.JSX.Elemen
 interface TabLabelProps {
     count: number;
     label: string;
-    overallStatus?: "done" | "running";
     status?: SectionStatus;
 }
 
-const TabLabel = ({ count, label, overallStatus, status }: TabLabelProps): React.JSX.Element => {
-    const showSpinner = status === "running" || overallStatus === "running";
+const TabLabel = ({ count, label, status }: TabLabelProps): React.JSX.Element => {
+    const showSpinner = status === "running";
 
     // Tabs wraps each Tab's children inside <Text>, so the label must be
     // a Text-only tree. <Spinner> renders Text, so it's safe to nest.
@@ -275,26 +274,15 @@ const DoctorListPanel = ({
                     showIndex={false}
                     value={filterType}
                 >
-                    {FILTER_TABS.map(({ id, label }) => {
-                        const isAll = id === "all";
-                        const status = isAll ? undefined : sectionStatus[id as SectionId];
-                        const overallStatus: "done" | "running" | undefined = isAll
-                            ? Object.values(sectionStatus).some((s) => s === "running")
-                                ? "running"
-                                : "done"
-                            : undefined;
-
-                        return (
-                            <Tab key={id} name={id}>
-                                <TabLabel
-                                    count={sectionCounts[id]}
-                                    label={label}
-                                    overallStatus={overallStatus}
-                                    status={status}
-                                />
-                            </Tab>
-                        );
-                    })}
+                    {FILTER_TABS.map(({ id, label }) => (
+                        <Tab key={id} name={id}>
+                            <TabLabel
+                                count={sectionCounts[id]}
+                                label={label}
+                                status={sectionStatus[id]}
+                            />
+                        </Tab>
+                    ))}
                 </Tabs>
             </Box>
 

@@ -82,6 +82,7 @@ interface VisDoctorAppProps {
     autoExitSeconds?: number;
     /** Optional banner shown above the layout (e.g. config load errors). */
     banner?: DoctorBannerInput;
+
     /**
      * Findings were seeded from the on-disk doctor cache rather than a
      * fresh scan. Surface a "(cached)" pill so the user knows to use
@@ -131,7 +132,6 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
 
     const sectionCounts = useMemo<Record<FilterType, number>>(() => {
         const counts: Record<FilterType, number> = {
-            all: state.all.length,
             dependencies: 0,
             optimization: 0,
             runtime: 0,
@@ -152,7 +152,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
     // non-empty message. Reserving the row keeps the list viewport stable
     // as scans complete (avoids a 1-row layout jump).
     const activityLineHeight = useMemo(() => {
-        for (const id of Object.keys(state.sectionStatus) as Array<keyof typeof state.sectionStatus>) {
+        for (const id of Object.keys(state.sectionStatus) as (keyof typeof state.sectionStatus)[]) {
             if (state.sectionStatus[id] === "running" && state.sectionMessage[id]) {
                 return 1;
             }

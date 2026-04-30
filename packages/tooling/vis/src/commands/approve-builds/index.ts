@@ -25,7 +25,7 @@ const approveBuilds: Command = {
 export default approveBuilds;
 
 export type ApproveBuildsOptions = CreateOptions<{
-    "all": boolean | undefined;
-    "scan": boolean | undefined;
+    all: boolean | undefined;
+    scan: boolean | undefined;
     "sync-native": boolean | undefined;
 }>;

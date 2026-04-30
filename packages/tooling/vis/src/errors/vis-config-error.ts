@@ -4,9 +4,9 @@
  * failures from arbitrary user-code exceptions thrown inside a config.
  */
 export class VisConfigError extends Error {
-    public readonly chain: readonly string[];
+    public readonly chain: ReadonlyArray<string>;
 
-    public constructor(message: string, chain: readonly string[], options?: ErrorOptions) {
+    public constructor(message: string, chain: ReadonlyArray<string>, options?: ErrorOptions) {
         super(message, options);
         this.name = this.constructor.name;
         this.chain = chain;

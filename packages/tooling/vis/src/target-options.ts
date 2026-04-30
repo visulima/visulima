@@ -86,9 +86,10 @@ export interface VisTargetOptions {
 
     /**
      * Milliseconds the timeout watchdog waits between sending SIGTERM
-     * and SIGKILL when {@link timeout} fires. Tasks that ignore SIGTERM
-     * (e.g. test runners holding open child processes) get force-killed
-     * after this grace window so a stuck task can't outlive its budget.
+     * and SIGKILL when the `timeout` budget fires. Tasks that ignore
+     * SIGTERM (e.g. test runners holding open child processes) get
+     * force-killed after this grace window so a stuck task can't outlive
+     * its budget.
      *
      * Set to `0` to skip escalation and rely on SIGTERM only.
      * @default 5000
@@ -181,8 +182,8 @@ export interface VisTargetOptions {
      * take before being killed. `0` / `undefined` means no timeout.
      *
      * When the timeout fires the task is sent SIGTERM and, if it has
-     * not exited within {@link killGracePeriodMs}, SIGKILL. The task
-     * exits with a failure status carrying the `[timeout]` marker in
+     * not exited within `killGracePeriodMs`, SIGKILL. The task exits
+     * with a failure status carrying the `[timeout]` marker in
      * `terminalOutput`. Retries count per-attempt, not cumulatively.
      *
      * Use this to prevent runaway tasks from eating CI wall-clock time

@@ -28,6 +28,6 @@ const list: Command = {
 export default list;
 
 export type ListOptions = CreateOptions<{
-    "json": boolean | undefined;
-    "query": string | undefined;
+    json: boolean | undefined;
+    query: string | undefined;
 }>;

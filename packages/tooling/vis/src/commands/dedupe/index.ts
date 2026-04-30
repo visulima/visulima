@@ -15,5 +15,5 @@ const dedupe: Command = {
 export default dedupe;
 
 export type DedupeOptions = CreateOptions<{
-    "check": boolean | undefined;
+    check: boolean | undefined;
 }>;

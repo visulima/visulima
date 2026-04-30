@@ -73,13 +73,13 @@ const affected: Command = {
 export default affected;
 
 export type AffectedCommandOptions = CreateOptions<{
-    "base": string | undefined;
-    "head": string | undefined;
-    "downstream": string | undefined;
-    "upstream": string | undefined;
-    "parallel": number | undefined;
-    "cache": boolean | undefined;
+    base: string | undefined;
+    cache: boolean | undefined;
+    downstream: string | undefined;
     "dry-run": boolean | undefined;
-    "partition": string | undefined;
-    "query": string | undefined;
+    head: string | undefined;
+    parallel: number | undefined;
+    partition: string | undefined;
+    query: string | undefined;
+    upstream: string | undefined;
 }>;

@@ -81,7 +81,21 @@ In those modes, every scan still emits a single completion line so the log stays
 
 ## What It Checks
 
-The dashboard is grouped into four sections.
+The dashboard is grouped into four diagnostic sections plus a static **Supply Chain** posture block. The four sections (`dependencies`, `security`, `optimization`, `runtime`) are gated by `--only` / `--skip`; the supply-chain block is config-only and always runs.
+
+### Supply Chain
+
+A static snapshot of the workspace's hardening posture, derived from `security.*` in `vis.config.ts`. The block lists each knob and flags the unset / permissive ones so you discover them before you need them.
+
+| Setting                  | What it does                                                                                          | Severity when unset / permissive                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `minimumReleaseAge`      | Block packages published in the last N minutes (mitigates same-day supply-chain compromises).         | `warn` when unset or `0`.                                                         |
+| `trustPolicy`            | Block when a package's trust level decreases (e.g. OIDC-published → token-published).                 | `warn` when unset or `off`. `no-downgrade` is the recommended hardened value.     |
+| `blockExoticSubdeps`     | Disallow git/tarball URLs in transitive deps.                                                         | `warn` when unset or `false`.                                                     |
+| `allowBuilds`            | Explicit allowlist of packages permitted to run lifecycle scripts (vis blocks scripts by default).    | `warn` when empty — the block-by-default still applies, but nothing runs at all. |
+| `strictDepBuilds` + empty `allowBuilds` | Active misconfiguration: every package with a build script will be blocked.                | `error` — run `vis approve-builds` to populate the allowlist.                     |
+
+A doctor run with no `security` block at all surfaces a single warning pointing at `defineConfig()` from `@visulima/vis/config`.
 
 ### Dependencies
 
@@ -138,6 +152,15 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
   "dependencies": { "status": "warn", "installed": 1230, "outdated": 4, "duplicates": 0 },
   "security": { "status": "ok", "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
   "optimizations": { "status": "warn", "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
+  "supplyChain": {
+    "status": "warn",
+    "findings": [
+      { "label": "minimumReleaseAge: 1440 minutes", "severity": "ok" },
+      { "label": "trustPolicy: not set", "severity": "warn", "detail": "Packages whose trust level has decreased will not be blocked. Consider 'no-downgrade'." },
+      { "label": "blockExoticSubdeps: true", "severity": "ok" },
+      { "label": "allowBuilds: 3 entries", "severity": "ok" }
+    ]
+  },
   "runtimeStatus": "warn",
   "runtime": [
     { "id": "inotify", "status": "warn", "message": "inotify watcher limit is 8192 — large monorepos can exhaust this. Bump now with `sudo sysctl fs.inotify.max_user_watches=524288` and persist via `/etc/sysctl.d/99-vis.conf` so it survives reboot.", "detail": { "maxWatches": 8192 } },
@@ -148,6 +171,8 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
   "workspaces": 44
 }
 ```
+
+The top-level `status` rolls up the four diagnostic sections **and** `supplyChain.status` — a permissive supply-chain config can flip the overall result to `warn` even when every other section is `ok`.
 
 Status fields:
 

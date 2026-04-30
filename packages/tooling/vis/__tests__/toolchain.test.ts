@@ -1,27 +1,25 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { chmodSync } from "node:fs";
-
+import type { DetectedManager } from "../src/toolchain";
 import {
     buildInstallInvocation,
     buildUseInvocation,
     clearToolchainCache,
     ensureToolchain,
-    pickPrimaryManager,
     findInstalledManagers,
     getToolchainStatus,
     isOnPath,
     parseExpectedTools,
     parseUseArgument,
+    pickPrimaryManager,
     resolveManagerFor,
     satisfies,
     SUPPORTED_MANAGERS,
     updateEnginesField,
     writePackageManagerField,
-    type DetectedManager,
 } from "../src/toolchain";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
@@ -580,11 +578,13 @@ describe(buildInstallInvocation, () => {
 });
 
 describe(resolveManagerFor, () => {
-    const managerFixture = (overrides: Partial<DetectedManager> & { name: DetectedManager["name"] }): DetectedManager => ({
-        configFiles: [],
-        installed: true,
-        ...overrides,
-    });
+    const managerFixture = (overrides: Partial<DetectedManager> & { name: DetectedManager["name"] }): DetectedManager => {
+        return {
+            configFiles: [],
+            installed: true,
+            ...overrides,
+        };
+    };
 
     it("should pick fnm for a .nvmrc pin when fnm is installed", () => {
         expect.assertions(2);
@@ -773,21 +773,22 @@ describe(writePackageManagerField, () => {
 
         writeFileSync(pkgPath, '{ "name": "demo", invalid json here');
 
+        let captured: Error | undefined;
+
         try {
             writePackageManagerField(tmpDirectory, {
                 source: "vis.config.ts",
                 tool: "pnpm",
                 version: "10.32.1",
             });
-            expect.fail("expected throw");
-        } catch (cause: unknown) {
-            const message = (cause as Error).message;
-
-            // Surfaces the file path so the user can go fix it, and
-            // chains the underlying parser error.
-            expect(message).toContain("package.json");
-            expect(message).toContain("not valid JSON");
+        } catch (error: unknown) {
+            captured = error as Error;
         }
+
+        // Surfaces the file path so the user can go fix it, and chains
+        // the underlying parser error.
+        expect(captured?.message).toContain("package.json");
+        expect(captured?.message).toContain("not valid JSON");
     });
 
     it("should default to 2-space indent when none is detected", () => {
@@ -968,6 +969,7 @@ describe(ensureToolchain, () => {
         // that isn't installed (and we recorded a failure). Both are
         // valid outcomes in the sandbox; we just assert ensureToolchain
         // doesn't blow up and either acts or fails cleanly.
+        /* eslint-disable vitest/no-conditional-in-test, vitest/no-conditional-expect */
         if (parsed.packageManager) {
             expect(parsed.packageManager).toBe("pnpm@10.32.1");
             expect(logger.messages.some((m) => m.message.includes("packageManager"))).toBe(true);
@@ -978,6 +980,7 @@ describe(ensureToolchain, () => {
             expect(parsed.packageManager).toBeUndefined();
             expect(true).toBe(true);
         }
+        /* eslint-enable vitest/no-conditional-in-test, vitest/no-conditional-expect */
     });
 
     it("should respect autoInstall=false (no install, no failures recorded)", async () => {
@@ -994,7 +997,7 @@ describe(ensureToolchain, () => {
     });
 });
 
-describe("SUPPORTED_MANAGERS", () => {
+describe("sUPPORTED_MANAGERS", () => {
     it("should list every detectable manager exactly once", () => {
         expect.assertions(2);
 
@@ -1006,32 +1009,23 @@ describe("SUPPORTED_MANAGERS", () => {
 });
 
 describe(isOnPath, () => {
-    it("should find a binary placed on PATH", () => {
+    // On Windows, isOnPath looks for `fake-bin.{EXE,BAT,CMD,COM}` — our
+    // extensionless fixture wouldn't be discoverable, so skip rather
+    // than assert a degenerate "either undefined or string" no-op.
+    it.skipIf(process.platform === "win32")("should find a binary placed on PATH", () => {
         expect.assertions(1);
 
         const binary = join(tmpDirectory, "fake-bin");
 
         writeFileSync(binary, "#!/bin/sh\n", { mode: 0o755 });
-
-        if (process.platform !== "win32") {
-            chmodSync(binary, 0o755);
-        }
+        chmodSync(binary, 0o755);
 
         const originalPath = process.env["PATH"];
 
         try {
             process.env["PATH"] = tmpDirectory;
 
-            const resolved = isOnPath("fake-bin");
-
-            // On Linux/macOS isOnPath returns the full path. On Windows
-            // it would look for fake-bin.{EXE,BAT,CMD,COM} — since our
-            // fixture has no extension, skip the assertion there.
-            if (process.platform === "win32") {
-                expect(resolved === undefined || typeof resolved === "string").toBe(true);
-            } else {
-                expect(resolved).toBe(binary);
-            }
+            expect(isOnPath("fake-bin")).toBe(binary);
         } finally {
             if (originalPath === undefined) {
                 delete process.env["PATH"];
@@ -1098,16 +1092,16 @@ describe(isOnPath, () => {
         }
     });
 
-    it("should strip surrounding quotes from PATH entries (Windows installer artefact)", () => {
+    // Skipped on Windows for the same extensionless-binary reason as
+    // the happy-path test above; the quote-stripping logic is exercised
+    // by the same code path on Linux/macOS.
+    it.skipIf(process.platform === "win32")("should strip surrounding quotes from PATH entries (Windows installer artefact)", () => {
         expect.assertions(1);
 
         const binary = join(tmpDirectory, "fake-bin-quoted");
 
         writeFileSync(binary, "#!/bin/sh\n", { mode: 0o755 });
-
-        if (process.platform !== "win32") {
-            chmodSync(binary, 0o755);
-        }
+        chmodSync(binary, 0o755);
 
         const originalPath = process.env["PATH"];
 
@@ -1116,11 +1110,7 @@ describe(isOnPath, () => {
             process.env["PATH"] = `"${tmpDirectory}"`;
             clearToolchainCache();
 
-            if (process.platform === "win32") {
-                expect(true).toBe(true);
-            } else {
-                expect(isOnPath("fake-bin-quoted")).toBe(binary);
-            }
+            expect(isOnPath("fake-bin-quoted")).toBe(binary);
         } finally {
             if (originalPath === undefined) {
                 delete process.env["PATH"];

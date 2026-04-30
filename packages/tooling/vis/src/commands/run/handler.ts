@@ -28,6 +28,7 @@ import {
 import isInCi from "is-in-ci";
 
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache-directory";
+import { FailureLogLifeCycle } from "../../failure-log";
 import { analyzeFlakiness, formatFlakinessTable } from "../../flakiness";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../hooks";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../run-report";
@@ -1026,6 +1027,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const sharedRetryBudget = retryBudgetLimit === undefined ? undefined : createRetryBudget(retryBudgetLimit);
 
     const hookLifeCycle = new HookableLifeCycle(hooks, onHookError);
+    const failureLogLifeCycle = new FailureLogLifeCycle(workspaceRoot);
 
     const outputStyle = parseOutputStyle(typeof options.outputStyle === "string" ? options.outputStyle.toLowerCase() : undefined);
 
@@ -1038,7 +1040,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // Fan lifecycle events out to both the UI renderer and the
         // plugin hook layer so subscribers see the same events
         // without adding another renderer.
-        const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle]);
+        const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle, failureLogLifeCycle]);
         const mutexPool: MutexPool = new Map();
         const taskExecutor = createConcurrentExecutor({
             affectedFiles,
@@ -1185,7 +1187,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // addition to the CI-style static renderer. Build the
         // lifecycle first so the executor can forward streaming
         // stdout/stderr chunks into it.
-        const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }), hookLifeCycle]);
+        const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }), hookLifeCycle, failureLogLifeCycle]);
 
         const taskExecutor = createConcurrentExecutor({
             affectedFiles,

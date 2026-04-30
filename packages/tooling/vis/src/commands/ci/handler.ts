@@ -72,9 +72,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         wsRoot,
         visConfig?.toolchain,
         {
-            error: (message) => logger.error(message),
-            info: (message) => logger.info(message),
-            warn: (message) => logger.warn(message),
+            error: (message) => { logger.error(message); },
+            info: (message) => { logger.info(message); },
+            warn: (message) => { logger.warn(message); },
         },
         Boolean(options.skipToolchain),
     );

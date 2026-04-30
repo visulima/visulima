@@ -118,9 +118,19 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
 
 // ── Entry builders ──────────────────────────────────────────────────
 
+// Upstream e18e module-replacements docs — slug-keyed markdown files.
+const E18E_DOC_BASE_URL = "https://github.com/es-tooling/module-replacements/blob/main/docs/modules";
+
+const buildE18eDocUrl = (docPath: string): string => `${E18E_DOC_BASE_URL}/${docPath}.md`;
+
 /**
  * Builds a human-readable replacement hint for an e18e entry.
  * Each variant carries its replacement guidance under a different key.
+ *
+ * `documented` entries deliberately point at the migration guide rather than
+ * echoing the bare `docPath` slug (which is sometimes the package name
+ * itself — e.g. `chalk` → "See chalk", which reads as if the package were
+ * its own replacement).
  */
 const e18eReplacementHint = (entry: E18eEntry): string => {
     if (entry.type === "simple" && entry.replacement) {
@@ -134,7 +144,7 @@ const e18eReplacementHint = (entry: E18eEntry): string => {
     }
 
     if (entry.type === "documented" && entry.docPath) {
-        return `See ${entry.docPath}`;
+        return "see migration guide";
     }
 
     return "";
@@ -158,6 +168,7 @@ const buildE18eEntries = (allDeps: Set<string>): OptimizeEntry[] => {
 
             entries.push({
                 category,
+                docUrl: entry.type === "documented" && entry.docPath ? buildE18eDocUrl(entry.docPath) : undefined,
                 hasCodemod: false, // filled in below
                 overrideSpec: undefined,
                 packageName: entry.moduleName,

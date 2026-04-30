@@ -32,7 +32,7 @@ const init: Command = {
 export default init;
 
 export type InitOptions = CreateOptions<{
-    "force": boolean | undefined;
+    force: boolean | undefined;
     "no-interactive": boolean | undefined;
     "sync-native": boolean | undefined;
 }>;

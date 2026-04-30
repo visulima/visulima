@@ -25,7 +25,7 @@ const upgrade: Command = {
 export default upgrade;
 
 export type UpgradeOptions = CreateOptions<{
-    "check": boolean | undefined;
-    "force": boolean | undefined;
-    "silent": boolean | undefined;
+    check: boolean | undefined;
+    force: boolean | undefined;
+    silent: boolean | undefined;
 }>;

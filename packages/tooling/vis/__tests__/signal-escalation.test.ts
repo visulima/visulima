@@ -27,13 +27,16 @@ describe(scheduleTimeoutKill, () => {
         });
 
         vi.advanceTimersByTime(4999);
+
         expect(signals).toStrictEqual([]);
 
         vi.advanceTimersByTime(1);
+
         expect(onTimeout).toHaveBeenCalledTimes(1);
         expect(signals).toStrictEqual(["SIGTERM"]);
 
         vi.advanceTimersByTime(1000);
+
         expect(signals).toStrictEqual(["SIGTERM", "SIGKILL"]);
     });
 
@@ -74,6 +77,7 @@ describe(scheduleTimeoutKill, () => {
         });
 
         vi.advanceTimersByTime(5000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
 
         // Process exits cleanly within the grace window — the host
@@ -99,9 +103,11 @@ describe(scheduleTimeoutKill, () => {
         });
 
         vi.advanceTimersByTime(1000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
 
         vi.advanceTimersByTime(60_000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
     });
 
@@ -118,10 +124,12 @@ describe(scheduleTimeoutKill, () => {
         });
 
         vi.advanceTimersByTime(1000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
 
         // Default grace is 5000ms.
         vi.advanceTimersByTime(4999);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
     });
 
@@ -159,9 +167,11 @@ describe(scheduleTimeoutKill, () => {
         });
 
         vi.advanceTimersByTime(1000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
 
         vi.advanceTimersByTime(60_000);
+
         expect(signals).toStrictEqual(["SIGTERM"]);
     });
 

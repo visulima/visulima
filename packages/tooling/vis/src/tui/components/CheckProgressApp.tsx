@@ -24,13 +24,18 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
                 {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
                 <Text>Checking {String(total)} catalog dependencies</Text>
                 <Text dimColor>
-                    {String(current)}/{String(total)}
+                    {String(current)}
+                    /
+                    {String(total)}
                 </Text>
             </Box>
             <Box>
                 <Text color="cyan">{"\u2501".repeat(filled)}</Text>
                 <Text dimColor>{"\u2500".repeat(empty)}</Text>
-                <Text> {pctText}</Text>
+                <Text>
+                    {' '}
+                    {pctText}
+                </Text>
             </Box>
         </Box>
     );

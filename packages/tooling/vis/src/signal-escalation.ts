@@ -15,18 +15,20 @@ export interface ScheduleTimeoutKillOptions {
      * escalation (SIGTERM only). Defaults to 5000.
      */
     killGracePeriodMs?: number;
+
     /**
      * Called once when the timeout fires, before any signal is sent.
      * Use this to record `timedOut = true` for downstream reporting.
      */
     onTimeout?: () => void;
+
     /**
      * Called with the signal to send. Typically a thin wrapper around
      * the per-process `kill` callback emitted by the task runner's
      * `started` event.
      */
     sendSignal: (signal: "SIGKILL" | "SIGTERM") => void;
-    /** Wall-clock budget. `<= 0` disables the watchdog entirely. */
+    /** Wall-clock budget. `&lt;= 0` disables the watchdog entirely. */
     timeoutMs: number;
 }
 
@@ -44,7 +46,7 @@ export interface TimeoutKillHandle {
  * `cancel()` MUST be called when the task ends so the kill timers
  * don't leak across runs.
  *
- * The returned handle is a no-op when `timeoutMs <= 0`, so callers can
+ * The returned handle is a no-op when `timeoutMs &lt;= 0`, so callers can
  * unconditionally schedule and cancel without branching on the budget.
  */
 export const scheduleTimeoutKill = (options: ScheduleTimeoutKillOptions): TimeoutKillHandle => {
@@ -58,7 +60,7 @@ export const scheduleTimeoutKill = (options: ScheduleTimeoutKillOptions): Timeou
     // escalation" rather than throwing, since this helper runs deep
     // inside the executor and a thrown error here would mask the
     // task failure that motivated the timeout in the first place.
-    const killGracePeriodMs = rawKillGracePeriodMs > 0 ? rawKillGracePeriodMs : 0;
+    const killGracePeriodMs = Math.max(rawKillGracePeriodMs, 0);
 
     let escalationHandle: NodeJS.Timeout | undefined;
 

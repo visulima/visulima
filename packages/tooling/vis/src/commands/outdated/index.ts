@@ -33,14 +33,14 @@ const outdated: Command = {
 export default outdated;
 
 export type OutdatedOptions = CreateOptions<{
-    "long": boolean | undefined;
-    "format": string | undefined;
-    "recursive": boolean | undefined;
-    "workspace-root": boolean | undefined;
-    "prod": boolean | undefined;
-    "dev": boolean | undefined;
+    compatible: boolean | undefined;
+    dev: boolean | undefined;
+    filter: string[] | undefined;
+    format: string | undefined;
+    global: boolean | undefined;
+    long: boolean | undefined;
     "no-optional": boolean | undefined;
-    "compatible": boolean | undefined;
-    "global": boolean | undefined;
-    "filter": string[] | undefined;
+    prod: boolean | undefined;
+    recursive: boolean | undefined;
+    "workspace-root": boolean | undefined;
 }>;

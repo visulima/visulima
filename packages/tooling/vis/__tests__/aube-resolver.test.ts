@@ -131,18 +131,16 @@ describe(resolveAubeInstall, () => {
         ]);
     });
 
-    it("warns about --ignore-scripts being a no-op on aube (lifecycle scripts are off by default)", () => {
+    it("forwards --ignore-scripts silently (it's the universal vis default; aube already blocks scripts so no warning is emitted)", () => {
         expect.assertions(2);
 
         const { args, warnings } = resolveAubeInstall({ ...installDefaults, ignoreScripts: true });
 
-        // Flag is still emitted for argv-level muscle memory, but the
-        // warning makes the user aware that nothing's actually being
-        // skipped that wasn't already.
         expect(args).toContain("--ignore-scripts");
-        expect(warnings).toContain(
-            "aube already skips dependency lifecycle scripts by default; --ignore-scripts is a no-op. Use `aube approve-builds` to allow specific packages.",
-        );
+        // No warning — vis applies --ignore-scripts as the universal
+        // block-by-default policy, so it's not a user-directed flag we
+        // need to flag as a no-op.
+        expect(warnings).toStrictEqual([]);
     });
 });
 

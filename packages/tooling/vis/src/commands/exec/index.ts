@@ -29,10 +29,10 @@ const exec: Command = {
 export default exec;
 
 export type ExecOptions = CreateOptions<{
+    filter: string[] | undefined;
+    parallel: boolean | undefined;
+    recursive: boolean | undefined;
+    reverse: boolean | undefined;
     "shell-mode": boolean | undefined;
-    "recursive": boolean | undefined;
     "workspace-root": boolean | undefined;
-    "filter": string[] | undefined;
-    "parallel": boolean | undefined;
-    "reverse": boolean | undefined;
 }>;

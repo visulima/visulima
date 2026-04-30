@@ -6,6 +6,7 @@ import { dim, green, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
 
 import { error as errorOutput, info, note, success, warn } from "../../output";
+import type { DetectedManager, RuntimeTool, ToolchainConfig, ToolchainStatus, ToolStatus, VersionManagerName } from "../../toolchain";
 import {
     buildInstallInvocation,
     buildUseInvocation,
@@ -19,18 +20,12 @@ import {
     SUPPORTED_MANAGERS,
     updateEnginesField,
     writePackageManagerField,
-    type DetectedManager,
-    type RuntimeTool,
-    type ToolchainConfig,
-    type ToolchainStatus,
-    type ToolStatus,
-    type VersionManagerName,
 } from "../../toolchain";
 import type { ToolchainOptions } from "./index";
 
-const KNOWN_TOOLS: readonly RuntimeTool[] = ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
+const KNOWN_TOOLS: ReadonlyArray<RuntimeTool> = ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"];
 
-const isKnownTool = (value: string): value is RuntimeTool => (KNOWN_TOOLS as readonly string[]).includes(value);
+const isKnownTool = (value: string): value is RuntimeTool => (KNOWN_TOOLS as ReadonlyArray<string>).includes(value);
 
 const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
 const warnIcon = yellow("⚠");
@@ -132,23 +127,27 @@ const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
         process.stdout.write(
             `${JSON.stringify(
                 {
-                    detected: status.detected.map((m) => ({
-                        binPath: m.binPath ?? null,
-                        configFiles: m.configFiles,
-                        installed: m.installed,
-                        name: m.name,
-                        version: m.version ?? null,
-                    })),
-                    tools: status.tools.map((t) => ({
-                        actual: t.actual ?? null,
-                        expected: t.expected.version,
-                        manager: t.manager.name,
-                        managerInstalled: t.manager.installed,
-                        matches: t.matches,
-                        note: t.manager.note ?? null,
-                        source: t.expected.source,
-                        tool: t.expected.tool,
-                    })),
+                    detected: status.detected.map((m) => {
+                        return {
+                            binPath: m.binPath ?? null,
+                            configFiles: m.configFiles,
+                            installed: m.installed,
+                            name: m.name,
+                            version: m.version ?? null,
+                        };
+                    }),
+                    tools: status.tools.map((t) => {
+                        return {
+                            actual: t.actual ?? null,
+                            expected: t.expected.version,
+                            manager: t.manager.name,
+                            managerInstalled: t.manager.installed,
+                            matches: t.matches,
+                            note: t.manager.note ?? null,
+                            source: t.expected.source,
+                            tool: t.expected.tool,
+                        };
+                    }),
                 },
                 undefined,
                 2,
@@ -178,7 +177,7 @@ const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
  * in one shot, so one invocation per bucket is enough. volta and
  * corepack pin per-tool, so the caller iterates the bucket.
  */
-const groupByManager = (tools: readonly ToolStatus[]): Map<VersionManagerName, ToolStatus[]> => {
+const groupByManager = (tools: ReadonlyArray<ToolStatus>): Map<VersionManagerName, ToolStatus[]> => {
     const groups = new Map<VersionManagerName, ToolStatus[]>();
 
     for (const tool of tools) {
@@ -194,7 +193,7 @@ const groupByManager = (tools: readonly ToolStatus[]): Map<VersionManagerName, T
     return groups;
 };
 
-const runInvocation = (bin: string, args: readonly string[], cwd: string): number => {
+const runInvocation = (bin: string, args: ReadonlyArray<string>, cwd: string): number => {
     const result = spawnSync(bin, args as string[], { cwd, stdio: "inherit" });
 
     return result.status ?? 1;
@@ -235,22 +234,22 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
             // the field may not exist yet — write it so pnpm/yarn have
             // something to self-activate from.
             for (const { expected } of tools) {
-                if (expected.source !== "packageManager") {
+                if (expected.source === "packageManager") {
+                    info(`${dim("$")} (${expected.tool} will self-activate from packageManager on next invocation)`);
+                } else {
                     info(`${dim("$")} Writing packageManager=${expected.tool}@${expected.version}`);
 
-                    if (!options.dryRun) {
+                    if (options.dryRun) {
+                        ranAnything = true;
+                    } else {
                         try {
                             writePackageManagerField(workspaceRoot, expected);
                             ranAnything = true;
-                        } catch (cause: unknown) {
-                            errorOutput((cause as Error).message);
+                        } catch (error: unknown) {
+                            errorOutput((error as Error).message);
                             exitCode = 1;
                         }
-                    } else {
-                        ranAnything = true;
                     }
-                } else {
-                    info(`${dim("$")} (${expected.tool} will self-activate from packageManager on next invocation)`);
                 }
 
                 note(`  ${expected.tool} ${expected.version} — no install needed`);
@@ -413,8 +412,8 @@ const executeUse = (
                     success(`Updated package.json engines.${spec.tool} → ${updated}.`);
                 }
             }
-        } catch (cause: unknown) {
-            errorOutput((cause as Error).message);
+        } catch (error: unknown) {
+            errorOutput((error as Error).message);
             process.exitCode = 1;
         }
 
@@ -437,8 +436,8 @@ const executeUse = (
 
         try {
             writeFileSync(nvmrcPath, `${spec.version}\n`);
-        } catch (cause: unknown) {
-            errorOutput(`Failed to write .nvmrc: ${(cause as Error).message}`);
+        } catch (error: unknown) {
+            errorOutput(`Failed to write .nvmrc: ${(error as Error).message}`);
             process.exitCode = 1;
 
             return;
@@ -495,8 +494,8 @@ const executeUse = (
             if (updated) {
                 success(`Updated package.json engines.${spec.tool} → ${updated}.`);
             }
-        } catch (cause: unknown) {
-            warn(`Could not update engines.${spec.tool}: ${(cause as Error).message}`);
+        } catch (error: unknown) {
+            warn(`Could not update engines.${spec.tool}: ${(error as Error).message}`);
         }
     }
 };

@@ -1,5 +1,5 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import colorize from "@visulima/colorize";
+import { dim, green, yellow } from "@visulima/colorize";
 import { isAccessibleSync } from "@visulima/fs";
 import { join, relative, resolve } from "@visulima/path";
 import type { Confidence, Finding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";
@@ -11,8 +11,6 @@ import { formatSarif, formatText } from "../../secrets/format";
 import { filesSince, hasGit, stagedFiles } from "../../secrets/git";
 import { startSpinner } from "../../secrets/spinner";
 import type { SecretsOptions } from "./index";
-
-const { dim, green, yellow } = colorize;
 
 type RepeatableString = string | string[];
 type ReportFormat = "json" | "sarif" | "text";
