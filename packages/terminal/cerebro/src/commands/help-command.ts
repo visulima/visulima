@@ -96,6 +96,72 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const findChildren = <OD extends OptionDefinition<any>>(
+    commands: Map<string, ICommand<OD>>,
+    parentPath: string[],
+): ICommand<OD>[] => {
+    const matches: ICommand<OD>[] = [];
+
+    for (const cmd of commands.values()) {
+        if (cmd.hidden) {
+            continue;
+        }
+
+        const commandPath = cmd.commandPath ?? [];
+
+        if (commandPath.length !== parentPath.length) {
+            continue;
+        }
+
+        let isMatch = true;
+
+        for (let index = 0; index < parentPath.length; index += 1) {
+            if (commandPath[index] !== parentPath[index]) {
+                isMatch = false;
+                break;
+            }
+        }
+
+        if (isMatch) {
+            matches.push(cmd);
+        }
+    }
+
+    return matches;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const printParentHelp = <OD extends OptionDefinition<any>>(
+    logger: Console,
+    runtime: ICli<Console>,
+    parentPath: string[],
+    children: ICommand<OD>[],
+): void => {
+    const parentDisplay = parentPath.join(" ");
+    const usageGroups: Section[] = [
+        {
+            content: `${cyan(runtime.getCliName())} ${green(parentDisplay)} ${green("<subcommand>")} [positional arguments] ${yellow("[options]")}`,
+            header: inverse.cyan(" Usage "),
+        },
+        {
+            content: children.map((child) => {
+                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+
+                return [green(fullPath), child.description ?? ""];
+            }),
+            header: inverse.green(" Subcommands "),
+        },
+        { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
+        {
+            content: `Run "${cyan(runtime.getCliName())} ${green(`${parentDisplay} <subcommand>`)} ${yellow("--help")}" for help with a specific subcommand.`,
+            raw: true,
+        },
+    ];
+
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(commandLineUsage(usageGroups));
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const printCommandHelp = <OD extends OptionDefinition<any>>(
     logger: Console,
     runtime: ICli<Console>,
@@ -119,6 +185,15 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
     }
 
     if (!command) {
+        const parentPath = name.split(" ").filter(Boolean);
+        const children = parentPath.length > 0 ? findChildren(commands, parentPath) : [];
+
+        if (children.length > 0) {
+            printParentHelp(logger, runtime, parentPath, children);
+
+            return;
+        }
+
         logger.error(`Command "${name}" not found`);
 
         return;
@@ -183,6 +258,20 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         usageGroups.push({
             content: command.examples,
             header: "Examples",
+        });
+    }
+
+    const ownPath = [...(command.commandPath ?? []), command.name];
+    const ownChildren = findChildren(commands, ownPath);
+
+    if (ownChildren.length > 0) {
+        usageGroups.push({
+            content: ownChildren.map((child) => {
+                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+
+                return [green(fullPath), child.description ?? ""];
+            }),
+            header: inverse.green(" Subcommands "),
         });
     }
 
