@@ -1,3 +1,11 @@
+## @visulima/dev-toolbar [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.13...@visulima/dev-toolbar@1.0.0-alpha.14) (2026-04-30)
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** upgrade packem to 2.0.0-alpha.76 ([4a496ed](https://github.com/visulima/visulima/commit/4a496edb863ecd414c34ff043d49ba3171538ccd))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.12...@visulima/dev-toolbar@1.0.0-alpha.13) (2026-04-22)
 
 ### Bug Fixes
