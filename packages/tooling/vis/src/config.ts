@@ -603,6 +603,7 @@ const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 const definePlugin = (plugin: VisPlugin): VisPlugin => plugin;
 
 export type { VisHooks, VisPlugin } from "./hooks";
+export type { VisConfig, VisTaskConfig } from "./workspace";
 // Ship the OTel plugin from the `/config` subpath so users can
 // `import { otelPlugin } from "@visulima/vis/config"` — same module
 // they already import `defineConfig`/`definePlugin` from.
