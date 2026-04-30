@@ -35,7 +35,7 @@
         "configuration",
         {
             "title": "Guides",
-            "pages": ["guides/best-practices", "guides/ci-cd", "guides/git-hooks", "guides/plugins"]
+            "pages": ["guides/best-practices", "guides/ci-cd", "guides/conditional-and-finally-tasks", "guides/git-hooks", "guides/plugins"]
         }
     ]
 }

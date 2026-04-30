@@ -420,6 +420,110 @@ Target definitions in `project.json` are merged on top of package.json scripts. 
 
 Targets support all fields from [target options](/commands/run#target-options) including `type`, `preset`, and `options`.
 
+### Conditional execution (`when:`)
+
+`when:` gates a task on the current environment. The orchestrator evaluates it just before launch; tasks that don't match are marked **skipped** (not failed) and the reason is reported in the run summary.
+
+```json
+{
+    "targets": {
+        "deploy": {
+            "command": "pnpm run deploy",
+            "when": {
+                "branch": ["main", "alpha"],
+                "ci": true,
+                "env": { "name": "DEPLOY_TOKEN", "exists": true }
+            }
+        }
+    }
+}
+```
+
+Clauses are AND-ed; an array inside a clause is OR-ed.
+
+| Clause   | Type                            | Meaning                                                              |
+| -------- | ------------------------------- | -------------------------------------------------------------------- |
+| `os`     | `string \| string[]`            | Match `process.platform`. `"windows"` is sugar for `"win32"`.        |
+| `env`    | `string \| object \| array`     | String form: var must be set+non-empty. Object form: `{ name, equals?, exists? }`. |
+| `branch` | `string \| string[]`            | Current git branch (HEAD). Empty when not in a repo or on detached HEAD. |
+| `ci`     | `boolean`                       | `true` → only inside CI; `false` → only outside. Detected via `CI` env var. |
+| `not.*`  | mirrors of all of the above     | Task runs only when *every* `not.*` clause **fails** to match.      |
+
+```json
+// "macOS or Linux, only when running on a release branch, never in CI"
+"when": {
+    "os": ["darwin", "linux"],
+    "branch": ["main", "next"],
+    "not": { "ci": true }
+}
+```
+
+### Finally tasks (`always:`)
+
+Set `always: true` to pull a task out of the dependency graph and run it after the main run completes — **even when upstream tasks fail**. Useful for cleanup, teardown, notifications, or anything that must fire regardless of build outcome.
+
+```json
+{
+    "targets": {
+        "test": { "command": "vitest run" },
+        "stop-db": {
+            "command": "docker compose down",
+            "always": true
+        }
+    }
+}
+```
+
+Always-tasks:
+
+- never block the main graph (they don't appear as dependencies of other tasks)
+- run sequentially after the main run, in declaration order
+- are **not cached** (cleanup must always fire)
+- are **skipped on SIGINT** (the user asked to stop — don't keep going)
+
+### Affected-files tokens
+
+Tasks that should only act on files affected by the current change set can interpolate `${affected.files}` (or its alias `${changed_files}`) into the command string. Vis populates the values from `git diff --name-only` against the affected base.
+
+```json
+{
+    "targets": {
+        "lint": { "command": "eslint ${affected.files}" },
+        "format": { "command": "prettier --write ${affected.files}" }
+    }
+}
+```
+
+Use the `| flag` variant when a tool needs the flag repeated per file:
+
+```json
+{
+    "targets": {
+        "stylelint": { "command": "stylelint ${changed_files | flag '--file'}" }
+    }
+}
+```
+
+Paths are workspace-relative by default and are shell-quoted so paths with spaces or quotes survive the shell. Files outside the project root are filtered out automatically — token interpolation only emits paths the task can act on.
+
+When the affected set is empty the token expands to nothing, so chain a guard if you want to skip rather than run with no arguments:
+
+```json
+{
+    "targets": {
+        "lint": {
+            "command": "test -z \"${affected.files}\" || eslint ${affected.files}"
+        }
+    }
+}
+```
+
+Tokens are **complementary** to the `affectedFiles` target option (`"args"` / `"env"` / `"both"`) — tokens are explicit and embed paths exactly where you want them; the option is implicit and forwards paths to every invocation. Pick whichever matches the tool's expected interface.
+
+Escape with a leading backslash (`\${affected.files}`) to emit the literal token without expansion.
+
+For an end-to-end walkthrough including CI examples, see [Conditional and finally tasks](/guides/conditional-and-finally-tasks).
+
 ---
 
 ## Workspace Discovery

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyPreset, defaultCacheForType, loadEnvFile, matchesOs, resolveTargetShell, shouldRunInCI } from "../src/target-options";
+import { applyPreset, defaultCacheForType, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../src/target-options";
 
 describe(applyPreset, () => {
     it("should return the target unchanged when no preset is set", () => {
@@ -66,39 +66,6 @@ describe(applyPreset, () => {
         const result = applyPreset(target);
 
         expect(result).toStrictEqual(target);
-    });
-});
-
-describe(matchesOs, () => {
-    it("should match all when options are undefined", () => {
-        expect.assertions(1);
-
-        expect(matchesOs(undefined, "linux")).toBe(true);
-    });
-
-    it("should match all when osType is not set", () => {
-        expect.assertions(1);
-
-        expect(matchesOs({}, "linux")).toBe(true);
-    });
-
-    it("should match when current OS is in the list", () => {
-        expect.assertions(1);
-
-        expect(matchesOs({ osType: "linux" }, "linux")).toBe(true);
-    });
-
-    it("should not match when current OS differs", () => {
-        expect.assertions(1);
-
-        expect(matchesOs({ osType: "macos" }, "linux")).toBe(false);
-    });
-
-    it("should support an array of OS types", () => {
-        expect.assertions(2);
-
-        expect(matchesOs({ osType: ["linux", "macos"] }, "linux")).toBe(true);
-        expect(matchesOs({ osType: ["macos", "windows"] }, "linux")).toBe(false);
     });
 });
 

@@ -71,6 +71,9 @@ export const migrateNx = (workspaceRoot: string, options: { dryRun?: boolean }, 
     report.manualSteps.push(
         "Existing project.json files are vis-compatible and have been left untouched. Rename `sourceRoot` -> `sourceRoot` is identical; `tags`, `implicitDependencies`, and `targets` translate directly.",
     );
+    report.manualSteps.push(
+        "vis adds two task primitives nx doesn't expose declaratively: `when: { os, env, branch, ci, not.* }` for conditional execution (replaces ad-hoc `configurations`) and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
+    );
 
     if (nx.affected?.defaultBase || nx.defaultBase) {
         report.manualSteps.push(

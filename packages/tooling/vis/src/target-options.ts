@@ -45,83 +45,11 @@ export type TargetOsType = "linux" | "macos" | "windows";
  * Vis-specific target options that extend the task-runner's
  * base `TargetConfiguration`. These live under `target.options` and are
  * interpreted by vis before handing the task off to task-runner.
+ *
+ * Conditional execution (`when:`) and finally tasks (`always:`) live at
+ * the target top level, not under `options` — they're handled by the
+ * task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`.
  */
-
-/**
- * Object form of the `when` gate. Matches against process.env or
- * process.platform — deliberately small surface area so conditions
- * stay auditable and declarative.
- */
-export interface TargetConditionObject {
-    /** Env var name to compare against `equals` or `in`. */
-    env?: string;
-    /** Value that `env` must match exactly. */
-    equals?: string;
-    /** Any value in this list matches. Ignored when `equals` is set. */
-    in?: string[];
-    /** Run only on this platform (or one of these). */
-    platform?: NodeJS.Platform | NodeJS.Platform[];
-}
-
-/**
- * Evaluates a `when` condition against the current process state.
- * Returns `true` when the task should run, `false` when it should be
- * skipped. Unknown shapes default to `true` — we'd rather over-run
- * than silently hide tasks on malformed config.
- */
-export const evaluateWhen = (
-    when: TargetConditionObject | string | undefined,
-    environment: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
-    platform: NodeJS.Platform = process.platform,
-): boolean => {
-    if (when === undefined) {
-        return true;
-    }
-
-    if (typeof when === "string") {
-        const trimmed = when.trim();
-
-        if (trimmed.startsWith("!")) {
-            const name = trimmed.slice(1);
-
-            return !environment[name];
-        }
-
-        if (trimmed.startsWith("$")) {
-            const name = trimmed.slice(1);
-
-            return Boolean(environment[name]);
-        }
-
-        // Bare string treated as an env-var name, same as "$name"
-        return Boolean(environment[trimmed]);
-    }
-
-    if (when.platform !== undefined) {
-        const targets = Array.isArray(when.platform) ? when.platform : [when.platform];
-
-        if (!targets.includes(platform)) {
-            return false;
-        }
-    }
-
-    if (when.env !== undefined) {
-        const value = environment[when.env];
-
-        if (when.equals !== undefined) {
-            return value === when.equals;
-        }
-
-        if (when.in !== undefined) {
-            return typeof value === "string" && when.in.includes(value);
-        }
-
-        return Boolean(value);
-    }
-
-    return true;
-};
-
 export interface VisTargetOptions {
     /**
      * How to forward affected files to the task process.
@@ -172,12 +100,6 @@ export interface VisTargetOptions {
      * that contend on a shared resource (e.g., a database migration).
      */
     mutex?: string;
-
-    /**
-     * Restricts execution to specific operating systems. Tasks run on
-     * unmatched platforms are skipped with a warning.
-     */
-    osType?: TargetOsType | TargetOsType[];
 
     /**
      * Per-target output verbosity. Overrides the global `--output-style`
@@ -275,20 +197,6 @@ export interface VisTargetOptions {
     unixShell?: string;
 
     /**
-     * Conditional gate: the task is scheduled only when `when` evaluates
-     * truthy. Shapes:
-     * - `"$VAR"` — run only if the env var is non-empty
-     * - `"!VAR"` — run only if the env var is empty/unset
-     * - `{ env: "NAME", equals: "value" }` — run only if env equals
-     * - `{ env: "NAME", in: ["a", "b"] }` — run only if env is in set
-     * - `{ platform: "darwin" | "linux" | "win32" }` — OS gate
-     *
-     * Kept declarative on purpose — no dynamic code execution. For
-     * richer logic, use osType/runInCI or a pre-hook script.
-     */
-    when?: TargetConditionObject | string;
-
-    /**
      * Per-target windows shell override, used on Windows.
      * Takes precedence over `shell` on Windows.
      */
@@ -371,15 +279,6 @@ export const applyPreset = (target: VisTargetConfiguration): VisTargetConfigurat
     };
 };
 
-/** Normalises an `osType` option to an array. */
-const normalizeOsType = (osType: VisTargetOptions["osType"]): TargetOsType[] | undefined => {
-    if (osType === undefined) {
-        return undefined;
-    }
-
-    return Array.isArray(osType) ? osType : [osType];
-};
-
 /** Detects the current operating system as a {@link TargetOsType}. */
 export const detectCurrentOs = (): TargetOsType => {
     const p = platform();
@@ -393,20 +292,6 @@ export const detectCurrentOs = (): TargetOsType => {
     }
 
     return "linux";
-};
-
-/**
- * Returns `true` if the given OS matches the target's `osType` filter.
- * Tasks without an `osType` option always match.
- */
-export const matchesOs = (options: VisTargetOptions | undefined, currentOs: TargetOsType = detectCurrentOs()): boolean => {
-    const osType = normalizeOsType(options?.osType);
-
-    if (!osType || osType.length === 0) {
-        return true;
-    }
-
-    return osType.includes(currentOs);
 };
 
 /**
