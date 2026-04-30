@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "1.0.0-alpha.16",
+    "version": "1.0.0-alpha.17",
     "description": "Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.",
     "keywords": [
         "anolilab",
