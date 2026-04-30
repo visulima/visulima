@@ -1,3 +1,15 @@
+## @visulima/error-handler [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.12...@visulima/error-handler@2.0.0-alpha.13) (2026-04-30)
+
+### Miscellaneous Chores
+
+* **error-handler:** upgrade packem to 2.0.0-alpha.76 ([33bd1ff](https://github.com/visulima/visulima/commit/33bd1ffe927a6637444696b4acfd7a9052b26a8f))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.14
+
 ## @visulima/error-handler [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.11...@visulima/error-handler@2.0.0-alpha.12) (2026-04-22)
 
 ### Bug Fixes
