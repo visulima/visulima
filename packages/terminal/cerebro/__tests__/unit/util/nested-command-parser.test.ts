@@ -44,25 +44,48 @@ describe("nested-command-parser", () => {
             expect(result.argv).toStrictEqual(["--force"]);
         });
 
-        it("should match shorter path first when both exist", () => {
+        it("should prefer the longest matching path when both parent and child are registered", () => {
             expect.assertions(2);
 
-            // The parser checks depth-first (depth 1, then 2, etc.), so shorter paths match first
             const availableCommands = new Map<string, string[]>([
                 ["deploy", ["deploy"]],
                 ["deploy staging", ["deploy", "staging"]],
             ]);
             const result = parseNestedCommand(availableCommands, ["deploy", "staging"]);
 
-            // It matches "deploy" first (depth 1) before checking "deploy staging" (depth 2)
-            expect(result.commandPath).toStrictEqual(["deploy"]);
-            expect(result.argv).toStrictEqual(["staging"]);
+            expect(result.commandPath).toStrictEqual(["deploy", "staging"]);
+            expect(result.argv).toStrictEqual([]);
         });
 
-        it("should match shorter path when it comes first in iteration", () => {
+        it("should fall back to the parent path when a child segment is absent", () => {
             expect.assertions(2);
 
-            // Since we iterate depth-first, shorter paths checked first will match
+            const availableCommands = new Map<string, string[]>([
+                ["deploy", ["deploy"]],
+                ["deploy staging", ["deploy", "staging"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["deploy"]);
+
+            expect(result.commandPath).toStrictEqual(["deploy"]);
+            expect(result.argv).toStrictEqual([]);
+        });
+
+        it("should match the parent path when only options follow the parent segment", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["deploy", ["deploy"]],
+                ["deploy staging", ["deploy", "staging"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["deploy", "--dry-run"]);
+
+            expect(result.commandPath).toStrictEqual(["deploy"]);
+            expect(result.argv).toStrictEqual(["--dry-run"]);
+        });
+
+        it("should fall back to the parent path when an unmatched positional follows it", () => {
+            expect.assertions(2);
+
             const availableCommands = new Map<string, string[]>([["deploy", ["deploy"]]]);
             const result = parseNestedCommand(availableCommands, ["deploy", "staging"]);
 
@@ -98,6 +121,127 @@ describe("nested-command-parser", () => {
 
             expect(result.commandPath).toBeUndefined();
             expect(result.argv).toStrictEqual(["deploy"]);
+        });
+
+        it("should resolve a 3-level child when parent and grandparent both exist", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["db", ["db"]],
+                ["db migrate", ["db", "migrate"]],
+                ["db migrate up", ["db", "migrate", "up"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["db", "migrate", "up"]);
+
+            expect(result.commandPath).toStrictEqual(["db", "migrate", "up"]);
+            expect(result.argv).toStrictEqual([]);
+        });
+
+        it("should resolve to the mid-level path when the deepest child is absent", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["db", ["db"]],
+                ["db migrate", ["db", "migrate"]],
+                ["db migrate up", ["db", "migrate", "up"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["db", "migrate"]);
+
+            expect(result.commandPath).toStrictEqual(["db", "migrate"]);
+            expect(result.argv).toStrictEqual([]);
+        });
+
+        it("should resolve to the grandparent when only the first segment matches", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["db", ["db"]],
+                ["db migrate up", ["db", "migrate", "up"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["db", "migrate"]);
+
+            expect(result.commandPath).toStrictEqual(["db"]);
+            expect(result.argv).toStrictEqual(["migrate"]);
+        });
+
+        it("should return options as remaining argv when only options follow the parent", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["ai", ["ai"]],
+                ["ai providers", ["ai", "providers"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["ai", "--format=json"]);
+
+            expect(result.commandPath).toStrictEqual(["ai"]);
+            expect(result.argv).toStrictEqual(["--format=json"]);
+        });
+
+        it("should not extend the path past a short option flag", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["ai", ["ai"]],
+                ["ai providers", ["ai", "providers"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["ai", "-h"]);
+
+            expect(result.commandPath).toStrictEqual(["ai"]);
+            expect(result.argv).toStrictEqual(["-h"]);
+        });
+
+        it("should ignore non-prefix paths when picking the longest match", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["build", ["build"]],
+                ["build prod", ["build", "prod"]],
+                ["test", ["test"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["build", "dev"]);
+
+            expect(result.commandPath).toStrictEqual(["build"]);
+            expect(result.argv).toStrictEqual(["dev"]);
+        });
+
+        it("should return undefined when only an option flag is supplied", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([["build", ["build"]]]);
+            const result = parseNestedCommand(availableCommands, ["--help"]);
+
+            expect(result.commandPath).toBeUndefined();
+            expect(result.argv).toStrictEqual(["--help"]);
+        });
+
+        it("should resolve to the parent when child segments arrive after an option", () => {
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["ai", ["ai"]],
+                ["ai providers", ["ai", "providers"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["ai", "--verbose", "providers"]);
+
+            expect(result.commandPath).toStrictEqual(["ai"]);
+            expect(result.argv).toStrictEqual(["--verbose", "providers"]);
+        });
+
+        it("should not match a child segment when an option separates it from the parent", () => {
+            // Without option-stop, `deploy --flag staging` could greedily match
+            // `deploy staging`, dropping the user's flag value into the wrong slot.
+            // Stopping at the first `-`-prefixed token preserves the parent-only
+            // route and lets the option parser see the flag.
+            expect.assertions(2);
+
+            const availableCommands = new Map<string, string[]>([
+                ["deploy", ["deploy"]],
+                ["deploy staging", ["deploy", "staging"]],
+            ]);
+            const result = parseNestedCommand(availableCommands, ["deploy", "--flag", "staging"]);
+
+            expect(result.commandPath).toStrictEqual(["deploy"]);
+            expect(result.argv).toStrictEqual(["--flag", "staging"]);
         });
     });
 

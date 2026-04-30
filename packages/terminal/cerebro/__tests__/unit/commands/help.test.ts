@@ -327,4 +327,183 @@ describe("command/help", () => {
         expect(envSection?.content).toStrictEqual([["VISIBLE_VAR", "Visible env var"]]);
         expect(envSection?.content).not.toContainEqual(["HIDDEN_VAR", "Hidden env var"]);
     });
+
+    describe("parent-path help", () => {
+        it("should print a Subcommands section when name resolves to a parent path with children only", () => {
+            expect.assertions(3);
+
+            commandsMap.set("ai providers", {
+                commandPath: ["ai"],
+                description: "List AI providers",
+                execute: () => {},
+                name: "providers",
+            });
+
+            commandsMap.set("ai test", {
+                commandPath: ["ai"],
+                description: "Test the selected provider",
+                execute: () => {},
+                name: "test",
+            });
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const toolboxMock = {
+                commandName: "ai",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+
+            expect(subcommandsSection).toBeDefined();
+
+            const content = subcommandsSection?.content as [string, string][];
+
+            expect(content.some((row) => row[0].includes("ai providers") && row[1] === "List AI providers")).toBe(true);
+            expect(content.some((row) => row[0].includes("ai test") && row[1] === "Test the selected provider")).toBe(true);
+        });
+
+        it("should support multi-segment parent paths", () => {
+            expect.assertions(2);
+
+            commandsMap.set("ai cache stats", {
+                commandPath: ["ai", "cache"],
+                description: "Show cache statistics",
+                execute: () => {},
+                name: "stats",
+            });
+
+            commandsMap.set("ai cache clear", {
+                commandPath: ["ai", "cache"],
+                description: "Clear the cache",
+                execute: () => {},
+                name: "clear",
+            });
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const toolboxMock = {
+                commandName: "ai cache",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+
+            expect(subcommandsSection).toBeDefined();
+
+            const content = subcommandsSection?.content as [string, string][];
+
+            expect(content).toHaveLength(2);
+        });
+
+        it("should hide hidden children from the parent listing", () => {
+            expect.assertions(2);
+
+            commandsMap.set("ai providers", {
+                commandPath: ["ai"],
+                description: "List AI providers",
+                execute: () => {},
+                name: "providers",
+            });
+
+            commandsMap.set("ai secret", {
+                commandPath: ["ai"],
+                description: "Hidden subcommand",
+                execute: () => {},
+                hidden: true,
+                name: "secret",
+            });
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const toolboxMock = {
+                commandName: "ai",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+            const content = subcommandsSection?.content as [string, string][];
+
+            expect(content).toHaveLength(1);
+            expect(content[0][0]).toContain("ai providers");
+        });
+
+        it("should preserve the not-found error when the name matches no command and no parent path", () => {
+            expect.assertions(1);
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const errorMock = vi.fn();
+            const toolboxMock = {
+                commandName: "nonexistent",
+                logger: { ...loggerMock, error: errorMock },
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            expect(errorMock).toHaveBeenCalledWith("Command \"nonexistent\" not found");
+        });
+
+        it("should append a Subcommands section to a flat command's help when it has nested children", () => {
+            expect.assertions(2);
+
+            commandsMap.set("ai", {
+                description: "AI commands",
+                execute: () => {},
+                name: "ai",
+            });
+
+            commandsMap.set("ai providers", {
+                commandPath: ["ai"],
+                description: "List AI providers",
+                execute: () => {},
+                name: "providers",
+            });
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const toolboxMock = {
+                commandName: "ai",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+
+            expect(subcommandsSection).toBeDefined();
+
+            const content = subcommandsSection?.content as [string, string][];
+
+            expect(content.some((row) => row[0].includes("ai providers"))).toBe(true);
+        });
+
+        it("should not add a Subcommands section to a flat command's help when it has no children", () => {
+            expect.assertions(1);
+
+            const helpCommand = new HelpCommand(commandsMap);
+            const toolboxMock = {
+                commandName: "test",
+                logger: loggerMock,
+                runtime: runtimeMock,
+            };
+
+            helpCommand.execute(toolboxMock as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+
+            expect(subcommandsSection).toBeUndefined();
+        });
+    });
 });

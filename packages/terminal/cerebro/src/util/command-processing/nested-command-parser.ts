@@ -1,6 +1,7 @@
 /**
- * Parses nested command paths from argv.
- * Supports both flat commands (e.g., "build") and nested commands (e.g., "deploy staging").
+ * Parses nested command paths from argv. Matching is greedy/longest-prefix
+ * so a parent path can coexist with its nested children (parent wins iff the
+ * child segment is absent).
  * @param availableCommands Map of all available commands keyed by their full path string
  * @param argv Command line arguments to parse
  * @returns Object with the matched command path and remaining argv
@@ -11,11 +12,12 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
     }
 
     const pathKeyParts: string[] = [];
+    let bestMatch: { commandPath: string[]; depth: number } | undefined;
 
     for (let depth = 1; depth <= argv.length; depth += 1) {
         const argument = argv[depth - 1];
 
-        if (argument === undefined) {
+        if (argument === undefined || argument.startsWith("-")) {
             break;
         }
 
@@ -23,10 +25,12 @@ export const parseNestedCommand = (availableCommands: Map<string, string[]>, arg
         const pathKey = pathKeyParts.join(" ");
 
         if (availableCommands.has(pathKey)) {
-            const remainingArgv = argv.slice(depth);
-
-            return { argv: remainingArgv, commandPath: [...pathKeyParts] };
+            bestMatch = { commandPath: [...pathKeyParts], depth };
         }
+    }
+
+    if (bestMatch) {
+        return { argv: argv.slice(bestMatch.depth), commandPath: bestMatch.commandPath };
     }
 
     return { argv, commandPath: undefined };
