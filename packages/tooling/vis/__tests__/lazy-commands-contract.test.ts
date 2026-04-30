@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import actionGraphCommand from "../src/commands/action-graph";
 import addCommand from "../src/commands/add";
 import affectedCommand from "../src/commands/affected";
-import aiCommand from "../src/commands/ai";
+import aiCommands from "../src/commands/ai";
 import analyzeCommand from "../src/commands/analyze";
 import approveBuildsCommand from "../src/commands/approve-builds";
 import auditCommand from "../src/commands/audit";
@@ -51,7 +51,6 @@ const FLAT_COMMANDS: Command[] = [
     actionGraphCommand,
     addCommand,
     affectedCommand,
-    aiCommand,
     analyzeCommand,
     approveBuildsCommand,
     auditCommand,
@@ -92,7 +91,7 @@ const FLAT_COMMANDS: Command[] = [
     whyCommand,
 ];
 
-const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ...cacheCommands, ...hookCommands, ...migrateCommands];
+const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ...aiCommands, ...cacheCommands, ...hookCommands, ...migrateCommands];
 
 describe("vis lazy command contract", () => {
     it.each(ALL_COMMANDS.map((c) => [c.name, c]))(

@@ -16,9 +16,9 @@ const SECURITY_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 // --- Types ---
 
-interface CacheEntry {
+interface CacheEntry<T = AiAnalysisResult> {
     createdAt: number;
-    result: AiAnalysisResult;
+    result: T;
     ttlMs: number;
 }
 
@@ -128,6 +128,45 @@ const getCacheStats = (): CacheStats => {
     return { entries: files.length, newestEntry: newest, oldestEntry: oldest, totalSizeBytes };
 };
 
+const buildHashCacheKey = (payload: unknown): string => xxh3Hash(Buffer.from(JSON.stringify(payload)));
+
+const getCachedJson = <T>(cacheKey: string): T | undefined => {
+    const filePath = join(getCacheDirectory(), `${cacheKey}.json`);
+
+    if (!isAccessibleSync(filePath)) {
+        return undefined;
+    }
+
+    try {
+        const entry = readJsonSync(filePath) as unknown as CacheEntry<T>;
+
+        if (Date.now() - entry.createdAt > entry.ttlMs) {
+            rmSync(filePath, { force: true });
+
+            return undefined;
+        }
+
+        return entry.result;
+    } catch {
+        rmSync(filePath, { force: true });
+
+        return undefined;
+    }
+};
+
+const setCachedJson = <T>(cacheKey: string, result: T, ttlMs: number): void => {
+    ensureCacheDirectory();
+
+    const cacheDirectory = getCacheDirectory();
+    const entry: CacheEntry<T> = {
+        createdAt: Date.now(),
+        result,
+        ttlMs,
+    };
+
+    writeFileSync(join(cacheDirectory, `${cacheKey}.json`), JSON.stringify(entry, undefined, 2), "utf8");
+};
+
 const clearCache = (): number => {
     const cacheDirectory = getCacheDirectory();
 
@@ -146,4 +185,4 @@ const clearCache = (): number => {
 
 export type { CacheEntry, CacheStats };
 
-export { buildCacheKey, clearCache, getCachedAnalysis, getCacheStats, getTtlForAnalysisType, setCachedAnalysis };
+export { buildCacheKey, buildHashCacheKey, clearCache, getCachedAnalysis, getCachedJson, getCacheStats, getTtlForAnalysisType, setCachedAnalysis, setCachedJson };

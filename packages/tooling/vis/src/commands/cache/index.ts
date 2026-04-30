@@ -13,6 +13,12 @@ const scopeOption = {
     type: String,
 } as const;
 
+const typeOption = {
+    description: "Cache type: 'task' (workspace task cache), 'ai' (AI response cache), 'socket' (Socket.dev report cache), or 'all' (default)",
+    name: "type",
+    type: String,
+} as const;
+
 const cacheList: Command = {
     commandPath: ["cache"],
     description: "List all cache entries",
@@ -33,9 +39,11 @@ const cacheList: Command = {
 
 const cacheClean: Command = {
     commandPath: ["cache"],
-    description: "Remove all cache entries",
+    description: "Remove cache entries (defaults to all stores: workspace task cache, AI responses, Socket.dev reports)",
     examples: [
-        ["vis cache clean", "Remove all cache entries"],
+        ["vis cache clean", "Remove all cache entries from every store"],
+        ["vis cache clean --type=ai", "Clear only the AI response cache"],
+        ["vis cache clean --type=task", "Clear only the workspace task cache"],
         ["vis cache clean --dry-run", "Preview what clean would remove"],
     ],
     group: "Workspace",
@@ -43,6 +51,7 @@ const cacheClean: Command = {
     name: "clean",
     options: [
         cacheDirectoryOption,
+        typeOption,
         {
             defaultValue: false,
             description: "Preview without deleting",
@@ -92,14 +101,19 @@ const cachePrune: Command = {
 
 const cacheSize: Command = {
     commandPath: ["cache"],
-    description: "Print the cache directory's on-disk footprint",
-    examples: [["vis cache size --format=json", "Print total size as JSON"]],
+    description: "Print on-disk footprint and stats for one or more cache stores (task / ai / socket)",
+    examples: [
+        ["vis cache size", "Show stats for every cache store"],
+        ["vis cache size --type=ai", "Show only the AI response cache (entries, size, oldest, newest)"],
+        ["vis cache size --type=task --format=json", "Machine-readable task cache size"],
+    ],
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "cacheSizeExecute"),
     name: "size",
     options: [
         cacheDirectoryOption,
         scopeOption,
+        typeOption,
         {
             description: "Output format: table or json (default: table)",
             name: "format",
@@ -171,6 +185,7 @@ export type CacheCleanOptions = CreateOptions<{
     "cache-dir": string | undefined;
     "dry-run": boolean | undefined;
     force: boolean | undefined;
+    type: string | undefined;
 }>;
 
 export type CachePruneOptions = CreateOptions<{
@@ -185,6 +200,7 @@ export type CacheSizeOptions = CreateOptions<{
     "cache-dir": string | undefined;
     format: string | undefined;
     scope: string | undefined;
+    type: string | undefined;
 }>;
 
 export type CacheWhyOptions = CreateOptions<{
