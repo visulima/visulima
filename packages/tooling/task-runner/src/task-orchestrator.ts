@@ -91,6 +91,29 @@ const hashFingerprint = (fingerprint: TaskFingerprint): string => {
 };
 
 /**
+ * Returns `true` on the first warning pattern that matches `output`.
+ * Invalid regex sources are skipped silently — a typo in user config
+ * shouldn't take a green build red.
+ */
+const detectWarnings = (patterns: string[] | undefined, output: string | undefined): boolean => {
+    if (!patterns || patterns.length === 0 || !output) {
+        return false;
+    }
+
+    for (const source of patterns) {
+        try {
+            if (new RegExp(source).test(output)) {
+                return true;
+            }
+        } catch {
+            // ignore invalid regex
+        }
+    }
+
+    return false;
+};
+
+/**
  * A simple deferred promise that can be resolved externally.
  */
 const createDeferred = (): { promise: Promise<void>; resolve: () => void } => {
@@ -462,9 +485,12 @@ class TaskOrchestrator {
                 cwd: resolveTaskCwd(this.#workspaceRoot, task),
             });
 
+            const hadWarnings = code === 0 && detectWarnings(task.warningPattern, terminalOutput);
+
             const result: TaskResult = {
                 code,
                 endTime: Date.now(),
+                hadWarnings: hadWarnings || undefined,
                 startTime,
                 status: code === 0 ? "success" : "failure",
                 task,
@@ -473,7 +499,9 @@ class TaskOrchestrator {
 
             this.#results.set(task.id, result);
 
-            if (code === 0 && task.cache !== false && task.hash) {
+            const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
+
+            if (code === 0 && task.cache !== false && task.hash && !skipCacheOnWarning) {
                 const modified = await this.#detectSelfModifiedInputs(task);
 
                 if (modified.length > 0) {
@@ -592,9 +620,12 @@ class TaskOrchestrator {
                 );
             }
 
+            const hadWarnings = code === 0 && detectWarnings(task.warningPattern, terminalOutput);
+
             const result: TaskResult = {
                 code,
                 endTime: Date.now(),
+                hadWarnings: hadWarnings || undefined,
                 startTime,
                 status: code === 0 ? "success" : "failure",
                 task,
@@ -603,7 +634,9 @@ class TaskOrchestrator {
 
             this.#results.set(task.id, result);
 
-            if (code === 0 && task.cache !== false && fingerprint) {
+            const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
+
+            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning) {
                 const modified = this.#detectSelfModifiedFingerprint(fingerprint);
                 const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 
