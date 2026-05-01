@@ -207,5 +207,26 @@ describe("cacheDoctorExecute", () => {
             // Channel must close even on failure so the test process doesn't leak gRPC handles.
             expect(closeMock).toHaveBeenCalledTimes(1);
         });
+
+        it("surfaces the probe error even when close() throws inside the finally block", async () => {
+            expect.assertions(2);
+
+            // A `close()` failure inside `finally` must not mask the real probe
+            // error — otherwise operators see a confusing teardown message
+            // instead of the actual capability-negotiation failure.
+            probeCapabilitiesMock.mockRejectedValue(new Error("DEADLINE_EXCEEDED"));
+            closeMock.mockImplementation(() => {
+                throw new Error("close failed: handle already disposed");
+            });
+            const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "grpcs://cache.example.com:443" } } });
+
+            await cacheDoctorExecute(toolbox as never);
+
+            const payload = JSON.parse(String(toolbox.logger.log.mock.calls[0]?.[0])) as Record<string, unknown>;
+
+            expect(payload.ok).toBe(false);
+            // The reported error must be the *probe* failure, not the close failure.
+            expect(String(payload.error)).toContain("DEADLINE_EXCEEDED");
+        });
     });
 });
