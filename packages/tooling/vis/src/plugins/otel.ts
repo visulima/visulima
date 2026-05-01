@@ -1,29 +1,9 @@
+import type { Span, Tracer } from "@opentelemetry/api";
+import { SpanStatusCode } from "@opentelemetry/api";
 import type { Task } from "@visulima/task-runner";
 
 import { definePlugin } from "../config/config";
 import type { VisPlugin } from "../util/hooks";
-
-/**
- * Minimal OTel-shaped span. Deliberately structural so users can pass
- * an `@opentelemetry/api` Tracer, an `@opentelemetry/sdk-node` one, or
- * a custom implementation without the plugin depending on any
- * particular OTel package.
- */
-export interface OtelSpan {
-    end: () => void;
-    recordException?: (error: unknown) => void;
-    setAttribute?: (key: string, value: boolean | number | string) => void;
-    setStatus?: (status: { code: number; message?: string }) => void;
-}
-
-/**
- * Minimal Tracer contract. Accepts the real
- * `@opentelemetry/api`'s `Tracer.startSpan(name, options?)` shape —
- * the plugin only calls the two methods it strictly needs.
- */
-export interface OtelTracer {
-    startSpan: (name: string, options?: { attributes?: Record<string, string | number | boolean> }) => OtelSpan;
-}
 
 export interface OtelPluginOptions {
     /**
@@ -31,13 +11,9 @@ export interface OtelPluginOptions {
      * span names. Defaults to passing the id through unchanged.
      */
     renameSpan?: (task: Task) => string;
-    /** Tracer used to emit spans. Required — pass the one from `@opentelemetry/api`'s `trace.getTracer("vis")`. */
-    tracer: OtelTracer;
+    /** Tracer used to emit spans. Pass the one from `@opentelemetry/api`'s `trace.getTracer("vis")`. */
+    tracer: Tracer;
 }
-
-/** OTel status codes (mirrors `@opentelemetry/api`'s `SpanStatusCode`). */
-const SPAN_STATUS_OK = 1;
-const SPAN_STATUS_ERROR = 2;
 
 /**
  * Reference plugin that maps vis hook lifecycle events to OTel spans.
@@ -72,8 +48,8 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
     // wouldn't work because the plugin object is shared across runs.
     // The hook registry itself is run-scoped (see createVisHooks()) so
     // the lookup maps here are effectively per-run anyway.
-    let runSpan: OtelSpan | undefined;
-    const taskSpans = new Map<string, OtelSpan>();
+    let runSpan: Span | undefined;
+    const taskSpans = new Map<string, Span>();
 
     return definePlugin({
         hooks: {
@@ -84,13 +60,13 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
 
                 const failed = [...results.values()].filter((r) => r.status === "failure").length;
 
-                runSpan.setAttribute?.("vis.run.tasks_total", results.size);
-                runSpan.setAttribute?.("vis.run.tasks_failed", failed);
+                runSpan.setAttribute("vis.run.tasks_total", results.size);
+                runSpan.setAttribute("vis.run.tasks_failed", failed);
 
                 if (failed > 0) {
-                    runSpan.setStatus?.({ code: SPAN_STATUS_ERROR, message: `${String(failed)} task(s) failed` });
+                    runSpan.setStatus({ code: SpanStatusCode.ERROR, message: `${String(failed)} task(s) failed` });
                 } else {
-                    runSpan.setStatus?.({ code: SPAN_STATUS_OK });
+                    runSpan.setStatus({ code: SpanStatusCode.OK });
                 }
 
                 runSpan.end();
@@ -113,7 +89,7 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
                 // upstream hook could leave the previous span open. End
                 // it with an abandoned status rather than leak.
                 if (runSpan) {
-                    runSpan.setStatus?.({ code: SPAN_STATUS_ERROR, message: "run:before fired while previous run was still active" });
+                    runSpan.setStatus({ code: SpanStatusCode.ERROR, message: "run:before fired while previous run was still active" });
                     runSpan.end();
                 }
 
@@ -138,8 +114,8 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
                     return;
                 }
 
-                span.setAttribute?.("vis.task.exit_code", result.code ?? 0);
-                span.setAttribute?.("vis.task.cache_status", result.status);
+                span.setAttribute("vis.task.exit_code", result.code ?? 0);
+                span.setAttribute("vis.task.cache_status", result.status);
 
                 span.end();
                 taskSpans.delete(task.id);
@@ -152,7 +128,7 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
                 const existing = taskSpans.get(task.id);
 
                 if (existing) {
-                    existing.setStatus?.({ code: SPAN_STATUS_ERROR, message: "retried — superseded by new attempt" });
+                    existing.setStatus({ code: SpanStatusCode.ERROR, message: "retried — superseded by new attempt" });
                     existing.end();
                 }
 
@@ -174,8 +150,8 @@ export const otelPlugin = (options: OtelPluginOptions): VisPlugin => {
                     return;
                 }
 
-                span.setStatus?.({
-                    code: SPAN_STATUS_ERROR,
+                span.setStatus({
+                    code: SpanStatusCode.ERROR,
                     message: `Task failed with exit code ${String(result.code ?? -1)}`,
                 });
             },
