@@ -67,6 +67,7 @@
     "files": [
         "dist/**",
         "schemas/**",
+        "skills/**",
         "index.js",
         "index.d.ts",
         "README.md",

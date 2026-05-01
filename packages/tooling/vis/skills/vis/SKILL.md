@@ -1,0 +1,59 @@
+---
+name: vis
+description: Use when the workspace contains a vis.config.ts (or vis.config.js/json) at the repo root, or when the user mentions "vis", "task-runner", or "@visulima/vis". This skill orchestrates the vis MCP server's six read-only tools to inspect projects, plan task graphs, and diagnose remote-cache rotations.
+---
+
+# Working with the `vis` task runner
+
+`vis` is the Visulima monorepo task runner — a Turborepo/Nx-class tool with a remote cache, REAPI gRPC backend, and project graph. When this skill is active you have the **`@visulima/vis-mcp` server** mounted, exposing six read-only tools. Use them in preference to running `vis` shell commands yourself: the tools give you structured JSON and run faster.
+
+The MCP server deliberately does NOT execute targets — Nx-style "agent prepares, human executes". When the user wants to run `<project>:<target>`, prepare the command (`list_targets` to confirm it exists) and ask the user to run it themselves; afterwards use `get_run_logs` to read the result.
+
+## Tools available
+
+| Tool | Purpose |
+| --- | --- |
+| `list_projects` | All projects in the workspace, optionally filtered by a vis query (`tag=frontend`, `type=application`, …) |
+| `describe_project` | Full metadata for one project: language, layer, tags, root path, all targets |
+| `list_targets` | Per-target rows across the workspace, optionally narrowed to a single project |
+| `get_run_logs` | Most recent run summary from `.task-runner/`, or a specific `runId`, optionally filtered to one task |
+| `cache_why` | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps) |
+| `cache_hash` | Recorded hash and per-input hash details for a task |
+
+## Workflow patterns
+
+### Discovery — "what's in this repo?"
+Default opening move when the user asks about the workspace:
+1. `list_projects` (no filter). Shows everything with categories and target counts.
+2. If they ask about a specific package, `describe_project` for the full picture rather than re-running list with a filter.
+
+### Plan a build
+1. `list_targets` (optionally with `project: "@scope/name"`) to see what `build`/`test`/`lint`/etc. targets exist.
+2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it.
+3. Use `get_run_logs` afterwards to inspect status, cache hits, and stderr tails.
+
+### Investigate a cache miss
+When a build that should have been cached re-ran:
+1. `get_run_logs` (no args → latest summary) — surfaces all task statuses for the last run.
+2. For any task with status `success` but `cacheStatus: "miss"`, call `cache_why` with that `taskId`. It diffs hashDetails against the previous run and tells you which input rotated (command string, file content, `implicitDependency`, runtime version, …).
+3. If `cache_why` shows the change but the user wants to see the raw hash inputs, `cache_hash` returns the full per-input breakdown.
+
+### Diagnose a failed run
+1. `get_run_logs` to see which task(s) failed.
+2. `get_run_logs` with `taskId` set to the failing task — returns just that entry, including the captured stderr tail.
+3. Decide: is it a code bug (read the project's source), a cache poisoning issue (`cache_why`), or environmental (look at the run summary's `runtime` block)?
+
+## Safety rules
+
+- **All tools are read-only.** The server does not execute targets. If the user wants something built/tested/linted, give them the command and let them run it.
+- **All tools run in the directory where `vis-mcp` was launched.** Override at server startup by setting `VIS_MCP_WORKSPACE_ROOT`. You can read that path from the server's stderr boot line: `[vis-mcp] ready (workspace: …)`.
+
+## When NOT to use this skill
+
+- The user wants to write a `vis.config.ts` — that's editing source, not running the CLI. Use Read/Edit/Write on the config file directly.
+- The user is asking about Turborepo, Nx, or Bazel specifically (not vis). The tools won't help with those.
+- The repo has no `vis.config.*` and no mention of vis. Don't volunteer the tools.
+
+## Tool-result conventions
+
+All tools return JSON-encoded text in the standard MCP `content[].text` slot. On error, `isError: true` is set and the text payload is `{"error": "<message>"}`. Parse the JSON before reasoning about it — the text field is structured data, not prose.
