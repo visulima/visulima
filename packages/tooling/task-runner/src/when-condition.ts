@@ -176,6 +176,24 @@ export const resetBranchCache = (): void => {
     branchCache.clear();
 };
 
+interface ResolvedWhenContext {
+    branch: string;
+    ci: boolean;
+    currentPlatform: NodePlatform;
+    env: Record<string, string | undefined>;
+}
+
+const resolveWhenContext = (context: WhenContext): ResolvedWhenContext => {
+    const env = context.env ?? (process.env as Record<string, string | undefined>);
+
+    return {
+        branch: context.branch ?? "",
+        ci: context.ci ?? detectCi(env),
+        currentPlatform: context.platform ?? (process.platform as NodePlatform),
+        env,
+    };
+};
+
 /**
  * Evaluates a {@link WhenCondition} against the supplied context (or the
  * live process state when omitted). Returns `true` when the task should
@@ -193,10 +211,7 @@ export const evaluateWhen = (when: WhenCondition | undefined, context: WhenConte
         return true;
     }
 
-    const env = context.env ?? (process.env as Record<string, string | undefined>);
-    const currentPlatform = context.platform ?? (process.platform as NodePlatform);
-    const branch = context.branch ?? "";
-    const ci = context.ci ?? detectCi(env);
+    const { branch, ci, currentPlatform, env } = resolveWhenContext(context);
 
     if (when.os !== undefined && !matchPlatform(when.os, currentPlatform)) {
         return false;
@@ -245,11 +260,7 @@ export const explainWhen = (when: WhenCondition | undefined, context: WhenContex
         return "";
     }
 
-    const env = context.env ?? (process.env as Record<string, string | undefined>);
-    const currentPlatform = context.platform ?? (process.platform as NodePlatform);
-    const branch = context.branch ?? "";
-    const ci = context.ci ?? detectCi(env);
-
+    const { branch, ci, currentPlatform, env } = resolveWhenContext(context);
     const reasons: string[] = [];
 
     if (when.os !== undefined && !matchPlatform(when.os, currentPlatform)) {

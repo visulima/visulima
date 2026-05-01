@@ -214,7 +214,7 @@ const isCacheDirectoryInsideWorkspace = (cacheDirectory: string, workspaceRoot: 
     // `".."` component or `"../"` prefix — NOT any name that *starts* with
     // `".."` (e.g. a directory literally named `"..foo"` is fine).
     // `@visulima/path` always uses `"/"` as separator.
-    return !(rel === ".." || rel.startsWith("../")) && !isAbsolute(rel);
+    return rel !== ".." && !rel.startsWith("../") && !isAbsolute(rel);
 };
 
 export { isCacheDirectoryInsideWorkspace, resolveCacheDirectory, resolveSharedCacheDirectory };
