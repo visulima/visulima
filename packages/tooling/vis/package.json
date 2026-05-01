@@ -45,8 +45,8 @@
     },
     "exports": {
         "./config": {
-            "types": "./dist/config.d.ts",
-            "default": "./dist/config.js"
+            "types": "./dist/config/index.d.ts",
+            "default": "./dist/config/index.js"
         },
         "./generate": {
             "types": "./dist/generate/index.d.ts",
