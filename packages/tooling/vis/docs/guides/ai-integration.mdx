@@ -1,0 +1,227 @@
+---
+title: AI Integration
+description: "Drive vis from Claude, Cursor, Zed, ChatGPT, and other AI clients via the bundled MCP server and Claude Skill"
+---
+
+# AI Integration
+
+vis ships an embedded **Model Context Protocol** server (`vis-mcp`) and a companion **Claude Skill**. Together they let an AI assistant inspect your workspace, plan and run targets, and diagnose cache rotations — all through the same task graph the CLI uses.
+
+- **MCP server** is the wire format. It works with any MCP-aware client: Claude Code, Claude Desktop, Cursor, Zed, ChatGPT (Pro+), Continue, and more.
+- **Claude Skill** is workflow guidance layered on top. It teaches Claude *when* to call which tool and ensures the destructive `run_task` is always previewed before execution.
+
+The MCP SDK and `zod` are declared as **optional peer dependencies**. They are only required when you actually launch `vis-mcp` — running plain `vis` does not pull them in.
+
+## Installation
+
+Install the optional peers alongside vis:
+
+```bash
+pnpm add @modelcontextprotocol/sdk zod
+# or
+npm install @modelcontextprotocol/sdk zod
+```
+
+Verify the bin is wired:
+
+```bash
+pnpm exec vis-mcp
+# [vis-mcp] ready (workspace: /path/to/repo)
+```
+
+The server speaks JSON-RPC over stdio and never writes to stdout outside the protocol — all logs go to stderr.
+
+## Client setup
+
+### Claude Code
+
+```bash
+claude mcp add vis -- pnpm exec vis-mcp
+```
+
+Once added, the seven `vis` tools are available in any Claude Code session opened in this repo.
+
+### Claude Desktop
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+    "mcpServers": {
+        "vis": {
+            "command": "pnpm",
+            "args": ["exec", "vis-mcp"],
+            "cwd": "/absolute/path/to/your/repo"
+        }
+    }
+}
+```
+
+Restart Claude Desktop. The `vis` server will appear in the tools panel.
+
+### Cursor
+
+Add to `.cursor/mcp.json` at the repo root (project-scoped) or `~/.cursor/mcp.json` (global):
+
+```json
+{
+    "mcpServers": {
+        "vis": {
+            "command": "pnpm",
+            "args": ["exec", "vis-mcp"]
+        }
+    }
+}
+```
+
+### Zed
+
+Add to your settings:
+
+```json
+{
+    "context_servers": {
+        "vis": {
+            "command": "pnpm",
+            "args": ["exec", "vis-mcp"]
+        }
+    }
+}
+```
+
+### ChatGPT (Developer Mode)
+
+Add the server in **Settings → Connectors → Add MCP server**:
+
+- Name: `vis`
+- Command: `pnpm exec vis-mcp`
+- Working directory: your repo path
+
+### Workspace override
+
+By default `vis-mcp` operates against `process.cwd()`. Override it from the client config:
+
+```json
+{
+    "mcpServers": {
+        "vis": {
+            "command": "pnpm",
+            "args": ["exec", "vis-mcp"],
+            "env": { "VIS_MCP_WORKSPACE_ROOT": "/absolute/path/to/repo" }
+        }
+    }
+}
+```
+
+## Claude Skill
+
+The package also exports a Claude Skill at `node_modules/@visulima/vis/skills/vis/SKILL.md`. The skill encodes opinionated workflow guidance — when to use each tool, the safety story for `run_task`, and how to investigate cache misses.
+
+To activate it project-wide, symlink the skill into your repo:
+
+```bash
+mkdir -p .claude/skills
+ln -s ../../node_modules/@visulima/vis/skills/vis .claude/skills/vis
+```
+
+Or copy it directly if you prefer to keep skills version-controlled:
+
+```bash
+cp -R node_modules/@visulima/vis/skills/vis .claude/skills/vis
+```
+
+Skills and the MCP server are independent — you can use either, or both. The MCP server alone gives Claude tool access; the skill alone gives Claude workflow guidance for the tools it can already see.
+
+## Tool reference
+
+The MCP server exposes seven tools.
+
+### `list_projects`
+
+List all workspace projects with their language, type, layer, tags, and target metadata.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `query` | `string?` | vis query string (e.g. `tag=frontend`, `type=application`) |
+
+### `describe_project`
+
+Return full metadata for a single project.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Project name (e.g. `@visulima/cerebro`) |
+
+### `list_targets`
+
+List per-target rows across the workspace. Optionally narrow to one project.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `project` | `string?` | Limit to one project |
+
+### `run_task`
+
+Execute a vis target. **Side-effecting** — see [Safety](#safety-run_task).
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `project` | `string` | Project name |
+| `target` | `string` | Target name (`build`, `test`, …) |
+| `confirm` | `boolean?` | Must be `true` to execute. Absent or `false` returns a dry-run preview |
+
+Returns: `exitCode`, `success`, `stdoutTail`, `stderrTail` (last 30 lines each), `timedOut`. Hard timeout is 30 minutes.
+
+### `get_run_logs`
+
+Read the run summary from `.task-runner/`. Defaults to `last-summary.json`.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `runId` | `string?` | Specific run ID (defaults to latest) |
+| `taskId` | `string?` | Filter to one task |
+
+### `cache_why`
+
+Diff a task's cache hash against the previous run to pinpoint what changed.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `taskId` | `string` | Task ID like `@my/app:build` |
+| `runId` | `string?` | Specific run (defaults to latest) |
+
+### `cache_hash`
+
+Print the recorded hash and per-input hash details (command, nodes, runtime, implicitDeps).
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `taskId` | `string` | Task ID like `@my/app:build` |
+| `runId` | `string?` | Specific run (defaults to latest) |
+
+## Safety: `run_task`
+
+`run_task` is the only side-effecting tool. It enforces a two-step confirm gate:
+
+1. **First call** without `confirm: true` returns a dry-run preview:
+    ```json
+    {
+        "confirmed": false,
+        "hint": "Pass `confirm: true` to actually run this task.",
+        "taskId": "@my/app:build",
+        "wouldRun": ["vis", "run", "@my/app:build"]
+    }
+    ```
+2. **Second call** with `confirm: true` actually executes the task. The Claude Skill instructs the assistant to never set `confirm: true` on the first turn — surface the preview to the user first.
+
+The 30-minute timeout is a hard ceiling. Long-running CI-style builds will be killed (`SIGTERM` then `SIGKILL` after 2 s). Narrow scope with `list_targets` and project-specific runs rather than relying on `run_task` for full-workspace builds.
+
+## Troubleshooting
+
+**`Cannot find module '@modelcontextprotocol/sdk'`** — install the optional peer: `pnpm add @modelcontextprotocol/sdk zod`.
+
+**Claude doesn't see the tools** — check the client logs. Most clients write MCP startup errors to a debug log; in Claude Desktop it's `~/Library/Logs/Claude/mcp.log`.
+
+**`vis-mcp` reports the wrong workspace** — set `VIS_MCP_WORKSPACE_ROOT` in the MCP server's `env` block. The default `process.cwd()` depends on where the parent client launches the process.
+
+**JSON-RPC framing errors** — something in your `vis` config wrote to stdout. The server is a stdio transport, so any `console.log` in a config plugin or task hook will corrupt the protocol stream. Move logs to `console.error`.
