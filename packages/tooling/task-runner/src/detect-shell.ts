@@ -40,8 +40,11 @@ export const detectScriptShell = (): string | undefined => {
             timeout: 5000,
         }).trim();
 
-        // npm returns "undefined" (literal string) when not configured
-        if (result && result !== "undefined" && result !== "") {
+        // npm prints the literal strings "undefined" or "null" when the
+        // option isn't configured (the exact word depends on the npm version
+        // and the cwd's package.json shape — workspaces roots emit "null",
+        // standalone packages emit "undefined"). Treat both as unset.
+        if (result && result !== "undefined" && result !== "null" && result !== "") {
             cachedShellPath = result;
 
             return result;
