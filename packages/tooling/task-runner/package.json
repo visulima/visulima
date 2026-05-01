@@ -74,7 +74,8 @@
     "dependencies": {
         "@lydell/node-pty": "catalog:dev",
         "@visulima/humanizer": "3.0.0-alpha.11",
-        "@visulima/path": "3.0.0-alpha.10"
+        "@visulima/path": "3.0.0-alpha.10",
+        "nanotar": "catalog:node"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -82,6 +83,8 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@grpc/grpc-js": "1.14.3",
+        "@grpc/proto-loader": "0.8.0",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
@@ -95,12 +98,25 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "prettier": "catalog:lint",
+        "protobufjs": "8.0.1",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@grpc/grpc-js": "*",
+        "@grpc/proto-loader": "*"
+    },
+    "peerDependenciesMeta": {
+        "@grpc/grpc-js": {
+            "optional": true
+        },
+        "@grpc/proto-loader": {
+            "optional": true
+        }
     },
     "optionalDependencies": {
         "@visulima/task-runner-binding-darwin-arm64": "workspace:*",

@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { xxh3Hash } from "@shared/xxh3";
 
+import { createRemoteCacheBackend } from "./backends/factory";
 import { Cache } from "./cache";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
 import { IncrementalFileHasher } from "./incremental-hasher";
-import { RemoteCache } from "./remote-cache";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
@@ -203,8 +203,10 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         return targetConfig?.command ?? defaultConfig?.command;
     };
 
-    // Create remote cache if configured
-    const remoteCache = options.remoteCache ? new RemoteCache(options.remoteCache) : undefined;
+    // Create remote cache if configured. `createRemoteCacheBackend`
+    // centralizes backend selection so new backends (REAPI gRPC) can
+    // land without touching this file.
+    const remoteCache = options.remoteCache ? createRemoteCacheBackend(options.remoteCache) : undefined;
 
     // Merge framework-inferred env patterns with explicitly configured ones
     // This makes frameworkInference work with both Nx-style and autoFingerprint modes
@@ -226,6 +228,10 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         dryRun: options.dryRun,
         fingerprintEnvPatterns,
         lifeCycle,
+        // Bridge-local upload errors (tar/digest in hash-bridge) flow back
+        // through the same callback the wire-level backend uses, so a user
+        // observes upload failures regardless of where they originate.
+        onRemoteUploadError: options.remoteCache?.onUploadError,
         remoteCache,
         resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
         scheduler,
@@ -238,16 +244,25 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         workspaceRoot,
     });
 
-    const results = await orchestrator.run();
+    try {
+        const results = await orchestrator.run();
 
-    // Persist the snapshot so the next invocation starts warm. Best-effort:
-    // a failed save degrades gracefully to a cold run next time, so we
-    // don't surface the error through the run's exit status.
-    if (incrementalHasher) {
-        await incrementalHasher.save().catch(() => {});
+        // Persist the snapshot so the next invocation starts warm. Best-effort:
+        // a failed save degrades gracefully to a cold run next time, so we
+        // don't surface the error through the run's exit status.
+        if (incrementalHasher) {
+            await incrementalHasher.save().catch(() => {});
+        }
+
+        return results;
+    } finally {
+        // Release backend resources (gRPC channels for REAPI, no-op for
+        // HTTP) regardless of whether the run threw. Errors are swallowed
+        // because close failures cannot influence the run's exit status.
+        if (remoteCache) {
+            await remoteCache.close().catch(() => {});
+        }
     }
-
-    return results;
 };
 
 export { defaultTaskRunner };

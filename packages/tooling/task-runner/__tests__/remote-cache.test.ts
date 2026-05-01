@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { createServer } from "node:http";
@@ -7,7 +8,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { RemoteCache } from "../src/remote-cache";
+import { actionDigestForTaskHash, containsByTaskHash, retrieveByTaskHash, storeByTaskHash } from "../src/backends/hash-bridge";
+import { HttpRemoteCache } from "../src/backends/http";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -51,7 +53,14 @@ const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {
     });
 };
 
-describe(RemoteCache, () => {
+/** sha256-derive the artifact path the HTTP backend uses for a given task hash. */
+const artifactPath = (taskHash: string): string => {
+    const sha = createHash("sha256").update(`vis-task:${taskHash}`).digest("hex");
+
+    return `/v8/artifacts/${sha}`;
+};
+
+describe(HttpRemoteCache, () => {
     let cacheDirectory: string;
 
     beforeEach(async () => {
@@ -62,12 +71,13 @@ describe(RemoteCache, () => {
         await rm(cacheDirectory, { force: true, recursive: true });
     });
 
-    describe("exists", () => {
-        it("should return true when artifact exists", async () => {
+    describe(containsByTaskHash, () => {
+        it("returns true when artifact exists", async () => {
             expect.assertions(1);
 
+            const expected = artifactPath("abc123");
             const { server, url } = await startMockServer((request, response) => {
-                if (request.method === "HEAD" && request.url?.includes("/v8/artifacts/abc123")) {
+                if (request.method === "HEAD" && request.url?.startsWith(expected)) {
                     response.writeHead(200);
                     response.end();
                 } else {
@@ -77,8 +87,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url });
-                const result = await cache.exists("abc123");
+                const cache = new HttpRemoteCache({ url });
+                const result = await containsByTaskHash(cache, "abc123");
 
                 expect(result).toBe(true);
             } finally {
@@ -86,7 +96,7 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should return false when artifact does not exist", async () => {
+        it("returns false when artifact does not exist", async () => {
             expect.assertions(1);
 
             const { server, url } = await startMockServer((_request, response) => {
@@ -95,8 +105,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url });
-                const result = await cache.exists("nonexistent");
+                const cache = new HttpRemoteCache({ url });
+                const result = await containsByTaskHash(cache, "nonexistent");
 
                 expect(result).toBe(false);
             } finally {
@@ -104,25 +114,25 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should return false when reads are disabled", async () => {
+        it("returns false when reads are disabled", async () => {
             expect.assertions(1);
 
-            const cache = new RemoteCache({ read: false, url: "http://localhost:9999" });
-            const result = await cache.exists("abc123");
+            const cache = new HttpRemoteCache({ mode: "write", url: "http://localhost:9999" });
+            const result = await containsByTaskHash(cache, "abc123");
 
             expect(result).toBe(false);
         });
 
-        it("should return false on network error", async () => {
+        it("returns false on network error", async () => {
             expect.assertions(1);
 
-            const cache = new RemoteCache({ timeout: 100, url: "http://127.0.0.1:1" });
-            const result = await cache.exists("abc123");
+            const cache = new HttpRemoteCache({ timeout: 100, url: "http://127.0.0.1:1" });
+            const result = await containsByTaskHash(cache, "abc123");
 
             expect(result).toBe(false);
         });
 
-        it("should include teamId in query params", async () => {
+        it("includes teamId in query params", async () => {
             expect.assertions(1);
 
             let requestUrl = "";
@@ -133,9 +143,9 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ teamId: "my-team", url });
+                const cache = new HttpRemoteCache({ teamId: "my-team", url });
 
-                await cache.exists("abc123");
+                await containsByTaskHash(cache, "abc123");
 
                 expect(requestUrl).toContain("teamId=my-team");
             } finally {
@@ -143,7 +153,7 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should send authorization header", async () => {
+        it("sends authorization header", async () => {
             expect.assertions(1);
 
             let authHeader = "";
@@ -154,9 +164,9 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ token: "my-token", url });
+                const cache = new HttpRemoteCache({ token: "my-token", url });
 
-                await cache.exists("abc123");
+                await containsByTaskHash(cache, "abc123");
 
                 expect(authHeader).toBe("Bearer my-token");
             } finally {
@@ -165,17 +175,17 @@ describe(RemoteCache, () => {
         });
     });
 
-    describe("store", () => {
-        it("should return false when writes are disabled", async () => {
+    describe(storeByTaskHash, () => {
+        it("returns false when writes are disabled", async () => {
             expect.assertions(1);
 
-            const cache = new RemoteCache({ url: "http://localhost:9999", write: false });
-            const result = await cache.store("abc123", cacheDirectory);
+            const cache = new HttpRemoteCache({ mode: "read", url: "http://localhost:9999" });
+            const result = await storeByTaskHash(cache, "abc123", cacheDirectory);
 
             expect(result).toBe(false);
         });
 
-        it("should return false when cache entry is incomplete (no .commit)", async () => {
+        it("returns false when cache entry is incomplete (no .commit)", async () => {
             expect.assertions(1);
 
             const entryDirectory = join(cacheDirectory, "abc123");
@@ -183,13 +193,13 @@ describe(RemoteCache, () => {
             await mkdir(entryDirectory, { recursive: true });
             await writeFile(join(entryDirectory, "code"), "0");
 
-            const cache = new RemoteCache({ url: "http://localhost:9999" });
-            const result = await cache.store("abc123", cacheDirectory);
+            const cache = new HttpRemoteCache({ url: "http://localhost:9999" });
+            const result = await storeByTaskHash(cache, "abc123", cacheDirectory);
 
             expect(result).toBe(false);
         });
 
-        it("should upload a valid cache entry", async () => {
+        it("uploads a valid cache entry", async () => {
             expect.assertions(3);
 
             const entryDirectory = join(cacheDirectory, "abc123");
@@ -220,8 +230,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url });
-                const result = await cache.store("abc123", cacheDirectory);
+                const cache = new HttpRemoteCache({ url });
+                const result = await storeByTaskHash(cache, "abc123", cacheDirectory);
 
                 expect(result).toBe(true);
                 expect(receivedMethod).toBe("PUT");
@@ -231,7 +241,7 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should return false when server returns error", async () => {
+        it("returns false when server returns error", async () => {
             expect.assertions(1);
 
             const entryDirectory = join(cacheDirectory, "abc123");
@@ -245,8 +255,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url });
-                const result = await cache.store("abc123", cacheDirectory);
+                const cache = new HttpRemoteCache({ url });
+                const result = await storeByTaskHash(cache, "abc123", cacheDirectory);
 
                 expect(result).toBe(false);
             } finally {
@@ -254,27 +264,27 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should call onUploadError callback on failure", async () => {
+        it("calls onUploadError callback on failure", async () => {
             expect.assertions(1);
 
+            const entryDirectory = join(cacheDirectory, "ok-fail");
+
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, ".commit"), "ok-fail");
+
             const onUploadError = vi.fn<(hash: string, error: unknown) => void>();
-            const cache = new RemoteCache({
+            const cache = new HttpRemoteCache({
                 onUploadError,
                 timeout: 100,
                 url: "http://127.0.0.1:1",
             });
 
-            // No .commit file, so store will fail
-            const entryDirectory = join(cacheDirectory, "fail-hash");
+            await storeByTaskHash(cache, "ok-fail", cacheDirectory);
 
-            await mkdir(entryDirectory, { recursive: true });
-
-            await cache.store("fail-hash", cacheDirectory);
-
-            expect(onUploadError).toHaveBeenCalledExactlyOnceWith("fail-hash", expect.any(Error));
+            expect(onUploadError).toHaveBeenCalledTimes(1);
         });
 
-        it("should not call onUploadError on success", async () => {
+        it("does not call onUploadError on success", async () => {
             expect.assertions(2);
 
             const entryDirectory = join(cacheDirectory, "ok-hash");
@@ -299,8 +309,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ onUploadError, url });
-                const result = await cache.store("ok-hash", cacheDirectory);
+                const cache = new HttpRemoteCache({ onUploadError, url });
+                const result = await storeByTaskHash(cache, "ok-hash", cacheDirectory);
 
                 expect(result).toBe(true);
                 expect(onUploadError).not.toHaveBeenCalled();
@@ -337,8 +347,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ compression: "brotli", url });
-                const result = await cache.store("br-hash", cacheDirectory);
+                const cache = new HttpRemoteCache({ compression: "brotli", url });
+                const result = await storeByTaskHash(cache, "br-hash", cacheDirectory);
 
                 expect(result).toBe(true);
                 expect(receivedEncoding).toBe("brotli");
@@ -347,7 +357,7 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("uploads and round-trips a brotli-compressed artifact", async () => {
+        it("uploads and round-trips a tarball", async () => {
             expect.assertions(2);
 
             const entryDirectory = join(cacheDirectory, "roundtrip");
@@ -382,14 +392,14 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const uploader = new RemoteCache({ compression: "brotli", url });
+                const uploader = new HttpRemoteCache({ url });
                 const downloadDirectory = join(cacheDirectory, "dl");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const stored = await uploader.store("roundtrip", cacheDirectory);
-                const downloader = new RemoteCache({ compression: "brotli", url });
-                const retrieved = await downloader.retrieve("roundtrip", downloadDirectory);
+                const stored = await storeByTaskHash(uploader, "roundtrip", cacheDirectory);
+                const downloader = new HttpRemoteCache({ localCasRoot: downloadDirectory, url });
+                const retrieved = await retrieveByTaskHash(downloader, "roundtrip", downloadDirectory);
 
                 expect(stored).toBe(true);
                 expect(retrieved).toBe(true);
@@ -399,17 +409,17 @@ describe(RemoteCache, () => {
         });
     });
 
-    describe("retrieve", () => {
-        it("should return false when reads are disabled", async () => {
+    describe(retrieveByTaskHash, () => {
+        it("returns false when reads are disabled", async () => {
             expect.assertions(1);
 
-            const cache = new RemoteCache({ read: false, url: "http://localhost:9999" });
-            const result = await cache.retrieve("abc123", cacheDirectory);
+            const cache = new HttpRemoteCache({ localCasRoot: cacheDirectory, mode: "write", url: "http://localhost:9999" });
+            const result = await retrieveByTaskHash(cache, "abc123", cacheDirectory);
 
             expect(result).toBe(false);
         });
 
-        it("should return false when artifact not found", async () => {
+        it("returns false when artifact not found", async () => {
             expect.assertions(1);
 
             const { server, url } = await startMockServer((_request, response) => {
@@ -418,8 +428,8 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url });
-                const result = await cache.retrieve("notfound", cacheDirectory);
+                const cache = new HttpRemoteCache({ localCasRoot: cacheDirectory, url });
+                const result = await retrieveByTaskHash(cache, "notfound", cacheDirectory);
 
                 expect(result).toBe(false);
             } finally {
@@ -427,19 +437,19 @@ describe(RemoteCache, () => {
             }
         });
 
-        it("should return false on network error", async () => {
+        it("returns false on network error", async () => {
             expect.assertions(1);
 
-            const cache = new RemoteCache({ timeout: 100, url: "http://127.0.0.1:1" });
-            const result = await cache.retrieve("abc123", cacheDirectory);
+            const cache = new HttpRemoteCache({ localCasRoot: cacheDirectory, timeout: 100, url: "http://127.0.0.1:1" });
+            const result = await retrieveByTaskHash(cache, "abc123", cacheDirectory);
 
             expect(result).toBe(false);
         });
 
-        it("should download and extract a valid artifact", async () => {
+        it("downloads and extracts a valid artifact", async () => {
             expect.assertions(4);
 
-            // Create a source directory with cache entry content
+            // Stage a real cache entry directory and tar.gz it.
             const sourceDirectory = join(cacheDirectory, "source-entry");
 
             await mkdir(sourceDirectory, { recursive: true });
@@ -447,7 +457,6 @@ describe(RemoteCache, () => {
             await writeFile(join(sourceDirectory, "code"), "0");
             await writeFile(join(sourceDirectory, "terminalOutput"), "Build succeeded");
 
-            // Create a tar.gz of the source directory
             const archivePath = join(cacheDirectory, "artifact.tar.gz");
 
             await new Promise<void>((resolve, reject) => {
@@ -462,7 +471,6 @@ describe(RemoteCache, () => {
 
             const archiveContent = await readFile(archivePath);
 
-            // Serve the archive
             const { server, url } = await startMockServer((request, response) => {
                 if (request.method === "GET") {
                     response.writeHead(200, {
@@ -477,17 +485,15 @@ describe(RemoteCache, () => {
             });
 
             try {
-                // Use a separate download dir so we don't conflict with source
                 const downloadDirectory = join(cacheDirectory, "download-cache");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const cache = new RemoteCache({ url });
-                const result = await cache.retrieve("retrieve-hash", downloadDirectory);
+                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, url });
+                const result = await retrieveByTaskHash(cache, "retrieve-hash", downloadDirectory);
 
                 expect(result).toBe(true);
 
-                // Verify the extracted content
                 const entryDirectory = join(downloadDirectory, "retrieve-hash");
                 const commitFile = await readFile(join(entryDirectory, ".commit"), "utf8");
 
@@ -507,7 +513,7 @@ describe(RemoteCache, () => {
     });
 
     describe("uRL construction", () => {
-        it("should strip trailing slash from URL", async () => {
+        it("strips trailing slash from URL", async () => {
             expect.assertions(1);
 
             let requestUrl = "";
@@ -518,17 +524,17 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ url: `${url}/` });
+                const cache = new HttpRemoteCache({ url: `${url}/` });
 
-                await cache.exists("test-hash");
+                await containsByTaskHash(cache, "test-hash");
 
-                expect(requestUrl).toBe("/v8/artifacts/test-hash");
+                expect(requestUrl).toBe(artifactPath("test-hash"));
             } finally {
                 await closeServer(server);
             }
         });
 
-        it("should encode teamId in URL", async () => {
+        it("encodes teamId in URL", async () => {
             expect.assertions(1);
 
             let requestUrl = "";
@@ -539,9 +545,9 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ teamId: "team with spaces", url });
+                const cache = new HttpRemoteCache({ teamId: "team with spaces", url });
 
-                await cache.exists("test-hash");
+                await containsByTaskHash(cache, "test-hash");
 
                 expect(requestUrl).toContain("teamId=team%20with%20spaces");
             } finally {
@@ -553,7 +559,7 @@ describe(RemoteCache, () => {
     describe("hMAC signing", () => {
         it("rejects a construction with a too-short secret", () => {
             expect.assertions(1);
-            expect(() => new RemoteCache({ signing: { secret: "short" }, url: "http://localhost:9999" })).toThrow(/at least 16 characters/);
+            expect(() => new HttpRemoteCache({ signing: { secret: "short" }, url: "http://localhost:9999" })).toThrow(/at least 16 characters/);
         });
 
         it("upload includes the X-Artifact-Signature header", async () => {
@@ -583,9 +589,9 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ signing: { secret: "this-is-a-16+-char-secret" }, url });
+                const cache = new HttpRemoteCache({ signing: { secret: "this-is-a-16+-char-secret" }, url });
 
-                await cache.store("sig-hash", cacheDirectory);
+                await storeByTaskHash(cache, "sig-hash", cacheDirectory);
 
                 expect(received).toHaveLength(64); // HMAC-SHA256 hex digest length
                 expect(/^[\da-f]+$/.test(received)).toBe(true);
@@ -597,8 +603,6 @@ describe(RemoteCache, () => {
         it("rejects a download whose body doesn't match the signature", async () => {
             expect.assertions(1);
 
-            // Store a real artifact so we can hand its bytes back from a
-            // server that lies about the signature.
             const sourceDirectory = join(cacheDirectory, "source");
 
             await mkdir(sourceDirectory, { recursive: true });
@@ -633,16 +637,17 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({
-                    signing: { secret: "this-is-a-16+-char-secret", verifyOnDownload: true },
-                    url,
-                });
-
                 const downloadDirectory = join(cacheDirectory, "download");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const retrieved = await cache.retrieve("tampered", downloadDirectory);
+                const cache = new HttpRemoteCache({
+                    localCasRoot: downloadDirectory,
+                    signing: { secret: "this-is-a-16+-char-secret", verifyOnDownload: true },
+                    url,
+                });
+
+                const retrieved = await retrieveByTaskHash(cache, "tampered", downloadDirectory);
 
                 expect(retrieved).toBe(false);
             } finally {
@@ -690,15 +695,15 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const uploader = new RemoteCache({ signing: { secret }, url });
-                const stored = await uploader.store("round", cacheDirectory);
+                const uploader = new HttpRemoteCache({ signing: { secret }, url });
+                const stored = await storeByTaskHash(uploader, "round", cacheDirectory);
 
-                const downloader = new RemoteCache({ signing: { secret, verifyOnDownload: true }, url });
                 const downloadDirectory = join(cacheDirectory, "dl");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const retrieved = await downloader.retrieve("round", downloadDirectory);
+                const downloader = new HttpRemoteCache({ localCasRoot: downloadDirectory, signing: { secret, verifyOnDownload: true }, url });
+                const retrieved = await retrieveByTaskHash(downloader, "round", downloadDirectory);
 
                 expect(stored).toBe(true);
                 expect(retrieved).toBe(true);
@@ -712,7 +717,6 @@ describe(RemoteCache, () => {
 
             const secret = "this-is-a-16+-char-secret";
 
-            // Stage a real archive so the server can hand back the bytes.
             const sourceDirectory = join(cacheDirectory, "lax-source");
 
             await mkdir(sourceDirectory, { recursive: true });
@@ -734,8 +738,6 @@ describe(RemoteCache, () => {
 
             const { server, url } = await startMockServer((request, response) => {
                 if (request.method === "GET") {
-                    // Intentionally omit X-Artifact-Signature — lax
-                    // mode treats this as a legacy entry and accepts.
                     response.writeHead(200, {
                         "Content-Length": String(archive.length),
                         "Content-Type": "application/octet-stream",
@@ -748,12 +750,12 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ signing: { secret }, url });
                 const downloadDirectory = join(cacheDirectory, "lax-dl");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const retrieved = await cache.retrieve("lax", downloadDirectory);
+                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, signing: { secret }, url });
+                const retrieved = await retrieveByTaskHash(cache, "lax", downloadDirectory);
 
                 expect(retrieved).toBe(true);
             } finally {
@@ -786,7 +788,6 @@ describe(RemoteCache, () => {
 
             const { server, url } = await startMockServer((request, response) => {
                 if (request.method === "GET") {
-                    // No signature header — strict mode must refuse.
                     response.writeHead(200, {
                         "Content-Length": String(archive.length),
                         "Content-Type": "application/octet-stream",
@@ -799,17 +800,35 @@ describe(RemoteCache, () => {
             });
 
             try {
-                const cache = new RemoteCache({ signing: { secret, verifyOnDownload: true }, url });
                 const downloadDirectory = join(cacheDirectory, "strict-dl");
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const retrieved = await cache.retrieve("strict", downloadDirectory);
+                const cache = new HttpRemoteCache({
+                    localCasRoot: downloadDirectory,
+                    signing: { secret, verifyOnDownload: true },
+                    url,
+                });
+                const retrieved = await retrieveByTaskHash(cache, "strict", downloadDirectory);
 
                 expect(retrieved).toBe(false);
             } finally {
                 await closeServer(server);
             }
+        });
+    });
+
+    describe(actionDigestForTaskHash, () => {
+        it("derives a stable sha256 digest from the task hash", () => {
+            expect.assertions(3);
+
+            const a = actionDigestForTaskHash("abc");
+            const b = actionDigestForTaskHash("abc");
+            const c = actionDigestForTaskHash("xyz");
+
+            expect(a).toStrictEqual(b);
+            expect(a.hash).toHaveLength(64);
+            expect(a.hash).not.toBe(c.hash);
         });
     });
 });

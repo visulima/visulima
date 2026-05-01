@@ -2,10 +2,11 @@
 import { createXxh3Hasher } from "@shared/xxh3";
 import { join, resolve } from "@visulima/path";
 
+import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
+import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
 import type { TaskFingerprint } from "./fingerprint";
 import { FingerprintManager } from "./fingerprint";
-import type { RemoteCache } from "./remote-cache";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
@@ -35,7 +36,15 @@ interface TaskOrchestratorOptions {
     dryRun?: boolean;
     fingerprintEnvPatterns?: string[];
     lifeCycle: LifeCycleInterface;
-    remoteCache?: RemoteCache;
+
+    /**
+     * Surfaces bridge-local upload pipeline failures (tar / digest)
+     * for fire-and-forget remote-cache writes. Wire-level errors are
+     * already reported by the backend's own `onUploadError`; this
+     * fills the gap for steps the backend never sees.
+     */
+    onRemoteUploadError?: (hash: string, error: unknown) => void;
+    remoteCache?: RemoteCacheBackend;
     resolveCommand?: (task: Task) => string | undefined;
     scheduler: TaskScheduler;
     skipCache?: boolean;
@@ -128,7 +137,9 @@ class TaskOrchestrator {
 
     readonly #resolveCommand: ((task: Task) => string | undefined) | undefined;
 
-    readonly #remoteCache: RemoteCache | undefined;
+    readonly #remoteCache: RemoteCacheBackend | undefined;
+
+    readonly #onRemoteUploadError: ((hash: string, error: unknown) => void) | undefined;
 
     readonly #dryRun: boolean;
 
@@ -167,6 +178,7 @@ class TaskOrchestrator {
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
         this.#resolveCommand = options.resolveCommand ?? undefined;
         this.#remoteCache = options.remoteCache ?? undefined;
+        this.#onRemoteUploadError = options.onRemoteUploadError ?? undefined;
         this.#dryRun = options.dryRun ?? false;
         this.#summarize = options.summarize ?? false;
         this.#taskGraph = options.taskGraph ?? undefined;
@@ -364,7 +376,7 @@ class TaskOrchestrator {
             }
 
             if (this.#remoteCache) {
-                const retrieved = await this.#remoteCache.retrieve(hash, this.#cache.cacheDirectory);
+                const retrieved = await retrieveByTaskHash(this.#remoteCache, hash, this.#cache.cacheDirectory);
 
                 if (retrieved) {
                     const remoteCached = await this.#cache.get(hash);
@@ -383,7 +395,7 @@ class TaskOrchestrator {
         const result = await this.#executeTask(task, startTime);
 
         if (result.code === 0 && task.cache !== false && task.hash && this.#remoteCache) {
-            this.#remoteCache.store(task.hash, this.#cache.cacheDirectory).catch(() => {});
+            storeByTaskHash(this.#remoteCache, task.hash, this.#cache.cacheDirectory, this.#onRemoteUploadError).catch(() => {});
         }
 
         return result;

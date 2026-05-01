@@ -1,3 +1,4 @@
+import type { RemoteCacheOptions } from "./backends/types";
 import type { WhenCondition } from "./when-condition";
 
 /**
@@ -52,6 +53,17 @@ export interface Task {
     always?: boolean;
     /** Whether this task is eligible for caching */
     cache?: boolean;
+
+    /**
+     * When `false`, exit-0 runs whose output matched any
+     * {@link Task.warningPattern} are NOT written to the cache. Defaults
+     * to `true` — warnings are recorded on the result but don't suppress
+     * caching, matching the rushstack#1402 / Theme P expectation that a
+     * succeeded-with-warnings build is still incremental on the next run.
+     *
+     * Carried over from {@link TargetConfiguration.cacheOnWarning}.
+     */
+    cacheOnWarning?: boolean;
     /** Hash of the task inputs for caching */
     hash?: string;
     /** Detailed hash information */
@@ -80,6 +92,17 @@ export interface Task {
     projectRoot?: string;
     /** The target this task executes */
     target: TaskTarget;
+
+    /**
+     * Regex strings (JavaScript flavor, anchored as the user writes them)
+     * that classify a successful task's terminal output as "succeeded
+     * with warnings". When any pattern matches, {@link TaskResult.hadWarnings}
+     * is set on the result. Combined with {@link Task.cacheOnWarning} this
+     * controls whether the run still seeds the cache.
+     *
+     * Carried over from {@link TargetConfiguration.warningPattern}.
+     */
+    warningPattern?: string[];
 
     /**
      * Predicate that gates execution. Evaluated by the orchestrator
@@ -201,6 +224,16 @@ export interface TargetConfiguration {
     always?: boolean;
     /** Whether this target is cacheable */
     cache?: boolean;
+
+    /**
+     * When `false`, exit-0 runs whose terminal output matched any
+     * {@link TargetConfiguration.warningPattern} are not seeded into the
+     * cache. Defaults to `true` — warnings are surfaced on the result
+     * (`hadWarnings: true`) but caching still happens, matching the
+     * "succeeded with warnings is incremental" behaviour rush, lage and
+     * wireit users have repeatedly asked for.
+     */
+    cacheOnWarning?: boolean;
     /** The command to run (alternative to executor) */
     command?: string;
     /** Named configurations (e.g., "production", "development") */
@@ -217,6 +250,20 @@ export interface TargetConfiguration {
     outputs?: string[];
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
+
+    /**
+     * Regex source string(s) that mark a successful task as having
+     * emitted warnings. The orchestrator scans the task's combined
+     * terminal output after a 0-exit and, on first match, sets
+     * `hadWarnings` on the result. Combine with `cacheOnWarning: false`
+     * to skip caching for warning-tainted runs. Both bare strings and
+     * arrays are accepted; arrays are tested in order.
+     *
+     *   ```ts
+     *   warningPattern: ["\\bwarning\\b", "TS\\d{4}"]
+     *   ```
+     */
+    warningPattern?: string | string[];
 
     /**
      * Predicate that gates execution. When the condition evaluates
@@ -576,27 +623,11 @@ export interface TaskRunnerOptions {
 
     /**
      * Remote cache configuration.
-     * When configured, the task runner will check the remote cache
-     * after a local cache miss, and upload results after execution.
+     * When configured, the task runner checks the remote cache after a
+     * local miss and uploads results after execution. See
+     * {@link RemoteCacheOptions} for the full HTTP and REAPI surface.
      */
-    remoteCache?: {
-        /**
-         * Called when a fire-and-forget upload fails.
-         * Since uploads are non-blocking, errors are silently swallowed by default.
-         * Provide this callback to log or report upload failures.
-         */
-        onUploadError?: (hash: string, error: unknown) => void;
-        /** Enable remote reads (default: true) */
-        read?: boolean;
-        /** Team/namespace for cache isolation */
-        teamId?: string;
-        /** Authentication token */
-        token?: string;
-        /** Remote cache server URL */
-        url: string;
-        /** Enable remote writes (default: true) */
-        write?: boolean;
-    };
+    remoteCache?: RemoteCacheOptions;
     /** Whether to skip cache reads */
     skipNxCache?: boolean;
 

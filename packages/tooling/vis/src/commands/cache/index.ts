@@ -171,7 +171,43 @@ const cacheHash: Command = {
     options: [formatOption, runOption],
 };
 
-const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash];
+const cacheDoctor: Command = {
+    commandPath: ["cache"],
+    description: "Probe the configured remote cache (HTTP HEAD or REAPI Capabilities) and report reachability, latency, and negotiated capabilities",
+    examples: [
+        ["vis cache doctor", "Probe the remoteCache configured in vis.config.ts"],
+        ["vis cache doctor --url=grpcs://cache.example.com:443 --backend=reapi", "Override URL/backend ad-hoc"],
+        ["vis cache doctor --json", "Machine-readable output"],
+    ],
+    group: "Workspace",
+    loader: lazyNamed(() => import("./doctor-probe"), "cacheDoctorExecute"),
+    name: "doctor",
+    options: [
+        {
+            description: "Override remote cache URL (otherwise read from vis.config.ts remoteCache.url)",
+            name: "url",
+            type: String,
+        },
+        {
+            description: "Override backend selector: 'http' or 'reapi'",
+            name: "backend",
+            type: String,
+        },
+        {
+            description: "Output format: table or json (default: table)",
+            name: "format",
+            type: String,
+        },
+        {
+            defaultValue: 5000,
+            description: "Probe timeout in milliseconds (default: 5000)",
+            name: "timeout",
+            type: Number,
+        },
+    ],
+};
+
+const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheDoctor];
 
 export default cacheCommands;
 
@@ -211,4 +247,11 @@ export type CacheWhyOptions = CreateOptions<{
 export type CacheHashOptions = CreateOptions<{
     format: string | undefined;
     run: string | undefined;
+}>;
+
+export type CacheDoctorOptions = CreateOptions<{
+    backend: string | undefined;
+    format: string | undefined;
+    timeout: number | undefined;
+    url: string | undefined;
 }>;

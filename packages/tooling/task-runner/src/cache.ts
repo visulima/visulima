@@ -1,9 +1,15 @@
+import { createWriteStream } from "node:fs";
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { pipeline } from "node:stream/promises";
 
 import { formatBytes, parseBytes } from "@visulima/humanizer";
 import { dirname, join, resolve } from "@visulima/path";
 
 import { createTarBrotli, extractTarBrotli } from "./archive";
+import type { ActionResult, BlobSource, CasDigest } from "./backends/types";
+import { readActionEntry, readTaskHashIndex, writeActionEntry, writeTaskHashIndex } from "./cas/action-cache";
+import { V2_ROOT } from "./cas/paths";
+import { containsBlob, fetchBlobToFile, putBlobFromFile } from "./cas/store";
 import type { TaskFingerprint } from "./fingerprint";
 import { resolveOutputs } from "./output-resolver";
 import type { OutputSpec } from "./types";
@@ -199,6 +205,110 @@ class Cache {
      */
     public get cacheDirectory(): string {
         return this.#cacheDirectory;
+    }
+
+    /**
+     * Root for v2 CAS-shaped reads/writes. Backend implementations
+     * (HTTP today, REAPI gRPC next) take this path so they can
+     * hydrate fetched blobs into the same CAS the local cache reads
+     * from. Equal to {@link cacheDirectory} — `v2/` lives under that.
+     */
+    public get casRoot(): string {
+        return this.#cacheDirectory;
+    }
+
+    /**
+     * Read a v2 {@link ActionResult} by action digest. Resolves to
+     * `null` on miss. The orchestrator is expected to follow up with
+     * {@link materializeOutputs} to place the referenced blobs into
+     * the workspace.
+     */
+    public async getActionResult(actionDigest: CasDigest): Promise<ActionResult | null> {
+        return readActionEntry(this.#cacheDirectory, actionDigest.hash);
+    }
+
+    /**
+     * Look up an action digest by the legacy task hash. Returns
+     * `null` when the bridge file isn't present — caller falls
+     * through to the legacy `&lt;hash>/` layout (or executes the task).
+     */
+    public async resolveActionDigestForTaskHash(taskHash: string): Promise<string | null> {
+        return readTaskHashIndex(this.#cacheDirectory, taskHash);
+    }
+
+    /**
+     * Persist a v2 entry: writes the AC JSON, copies referenced
+     * blobs into the CAS via the lazy {@link BlobSource} handles,
+     * and binds the task hash → action digest redirect last so a
+     * partial failure can't surface a half-written entry.
+     */
+    public async putActionResult(
+        taskHash: string,
+        actionDigest: CasDigest,
+        result: ActionResult,
+        blobs: ReadonlyArray<BlobSource>,
+    ): Promise<void> {
+        await this.#ensureBlobs(blobs);
+        await writeActionEntry(this.#cacheDirectory, actionDigest.hash, result);
+        await writeTaskHashIndex(this.#cacheDirectory, taskHash, actionDigest.hash);
+    }
+
+    /**
+     * Materialize an action's outputs into the workspace. Streams
+     * each referenced blob from the local CAS to its workspace path.
+     * Returns `false` when any blob is missing — caller treats that
+     * as a cache miss and re-executes.
+     */
+    public async materializeOutputs(result: ActionResult, workspaceRoot: string): Promise<boolean> {
+        for (const file of result.outputFiles) {
+            const destination = resolve(workspaceRoot, file.path);
+            // eslint-disable-next-line no-await-in-loop -- streaming each blob serially keeps fd usage flat
+            const ok = await fetchBlobToFile(this.#cacheDirectory, file.digest, destination);
+
+            if (!ok) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Sequentially materializes each {@link BlobSource} into the local
+     * CAS. Serial on purpose: a single Action typically references a
+     * handful of blobs, and parallelizing would multiply RSS by the
+     * largest payload's size while gaining nothing on disk-bound IO.
+     * The small per-blob loop also keeps tmp-file naming and rename
+     * pressure predictable instead of fanning out a burst of writers.
+     */
+    async #ensureBlobs(blobs: ReadonlyArray<BlobSource>): Promise<void> {
+        for (const blob of blobs) {
+            // eslint-disable-next-line no-await-in-loop -- existence probe gates the rest of the loop body; running it ahead of the put would force us to buffer the open() stream
+            const present = await containsBlob(this.#cacheDirectory, blob.digest);
+
+            if (present) {
+                continue;
+            }
+
+            // Stream the blob into a tmp file under the CAS root so
+            // putBlobFromFile can rename it into place atomically.
+            const tmpPath = join(this.#cacheDirectory, V2_ROOT, "tmp", `.put-${uniqueId()}`);
+
+            // eslint-disable-next-line no-await-in-loop -- serial mkdir matches the serial blob walk
+            await mkdir(dirname(tmpPath), { recursive: true });
+
+            // eslint-disable-next-line no-await-in-loop -- open() may fetch from the wire; serial avoids parallel network spikes
+            const source = await blob.open();
+
+            // eslint-disable-next-line no-await-in-loop -- pipeline backpressure dictates the natural order
+            await pipeline(source, createWriteStream(tmpPath));
+
+            // eslint-disable-next-line no-await-in-loop -- rename happens before the next blob's open() to keep tmp pressure low
+            await putBlobFromFile(this.#cacheDirectory, blob.digest, tmpPath);
+
+            // eslint-disable-next-line no-await-in-loop -- best-effort tmp cleanup completes before the next iteration so failed rename never leaves a visible orphan for the next put
+            await rm(tmpPath, { force: true }).catch(() => {});
+        }
     }
 
     /**

@@ -46,13 +46,13 @@ All options are passed to `defaultTaskRunner` as the second argument.
 
 ## Remote Cache
 
-| Option               | Type      | Default | Description          |
-| -------------------- | --------- | ------- | -------------------- |
-| `remoteCache.url`    | `string`  | -       | Cache server URL     |
-| `remoteCache.token`  | `string`  | -       | Auth token           |
-| `remoteCache.teamId` | `string`  | -       | Team/namespace       |
-| `remoteCache.read`   | `boolean` | `true`  | Enable remote reads  |
-| `remoteCache.write`  | `boolean` | `true`  | Enable remote writes |
+| Option                | Type                                  | Default       | Description                |
+| --------------------- | ------------------------------------- | ------------- | -------------------------- |
+| `remoteCache.url`     | `string`                              | -             | Cache server URL           |
+| `remoteCache.token`   | `string`                              | -             | Auth token                 |
+| `remoteCache.teamId`  | `string`                              | -             | Team/namespace             |
+| `remoteCache.mode`    | `"read" \| "readwrite" \| "write"`    | `"readwrite"` | Read/write semantics       |
+| `remoteCache.backend` | `"http" \| "reapi"`                   | `"http"`      | Wire protocol              |
 
 ## Output
 

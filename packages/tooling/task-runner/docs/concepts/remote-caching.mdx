@@ -1,15 +1,18 @@
 ---
 title: Remote Caching
-description: Share cache across machines with Turborepo-compatible HTTP protocol
+description: Share cache across machines with Turborepo-compatible HTTP and (soon) Bazel REAPI gRPC backends
 ---
 
 # Remote Caching
 
-Remote caching allows team members and CI machines to share cached task results. The task runner implements the Turborepo v8 artifacts protocol, making it compatible with Vercel Remote Cache and self-hosted alternatives.
+Remote caching allows team members and CI machines to share cached task results. The task runner exposes a pluggable backend interface so the same cache contract can run over multiple wire protocols:
+
+- **HTTP** (default) — Turborepo v8 artifacts wire-compatible. Works with Vercel Remote Cache, `ducktors/turborepo-remote-cache`, and any server that speaks the Turborepo protocol.
+- **REAPI** (Bazel Remote Execution API gRPC) — drop-in client for the existing OSS REAPI ecosystem (`bazel-remote`, BuildBuddy, BuildBarn, EngFlow). Implements `GetActionResult` / `BatchReadBlobs` / `Read` / `FindMissingBlobs` / `BatchUpdateBlobs` / `Write` / `UpdateActionResult` / `Capabilities`.
 
 ## Configuration
 
-```typescript
+```ts
 const results = await defaultTaskRunner(
     tasks,
     {
@@ -17,54 +20,58 @@ const results = await defaultTaskRunner(
             url: "https://cache.example.com",
             token: process.env.CACHE_TOKEN,
             teamId: "my-team",
-            read: true, // Enable remote reads (default)
-            write: true, // Enable remote writes (default)
-            compression: "gzip", // "gzip" (default, Turborepo-compatible) or "brotli"
+
+            // Canonical mode — pick one. Defaults to "readwrite".
+            mode: "readwrite", // "read" | "write" | "readwrite"
+
+            // Backend selector. Defaults to "http".
+            backend: "http", // "http" | "reapi"
+
+            // Wire compression (HTTP backend only).
+            compression: "gzip", // "gzip" (default) | "brotli"
+
+            // Surface fire-and-forget upload errors. Without this hook
+            // upload failures are silently dropped (uploads run
+            // off the critical path so they never block the run).
+            onUploadError: (hash, error) => {
+                logger.warn("[remote-cache] upload failed", { error, hash });
+            },
         },
     },
     context,
 );
 ```
 
-## Compression
+The same config object covers both backends. Backend-specific fields (`signing` / `compression` for HTTP; `bearerToken` / `instanceName` / `allowInsecureBearer` for REAPI) are read by the relevant backend and ignored by the other, so flipping `backend` rarely requires more than one line of config.
 
-Artifact tarballs are compressed client-side before upload. Two formats are supported:
+### `mode`: read / write / readwrite
 
-| Compression | Size ratio on typical dist payloads | Compatibility                                        |
-| ----------- | ----------------------------------- | ---------------------------------------------------- |
-| `"gzip"`    | baseline                            | Turborepo wire-compatible — works with any server    |
-| `"brotli"`  | ~15–20% smaller                     | vis clients on both ends (server is format-agnostic) |
+A single canonical knob controls cache access:
 
-Brotli uses Node's built-in `zlib.createBrotliCompress` at quality level 4 — a sweet spot between ratio and upload throughput. Switching formats invalidates existing remote entries (they'll re-populate on the next run).
+| `mode`       | Reads from remote | Writes to remote | Typical use                      |
+| ------------ | ----------------- | ---------------- | -------------------------------- |
+| `readwrite`  | yes (default)     | yes (default)    | CI, default for dev              |
+| `read`       | yes               | no               | branch builds, untrusted CI jobs |
+| `write`      | no                | yes              | warm-the-cache nightly jobs      |
 
-The upload includes an `X-Artifact-Compression` header advertising the format so spec-extended servers can branch if they add format-aware features; stock Turborepo-protocol servers just store the bytes.
+The earlier `read` / `write` boolean pair was removed in favor of this single field — see the migration note below.
 
-## How It Works
-
-1. **Local miss** - Task hash not found in local cache
-2. **Remote check** - `GET /v8/artifacts/{hash}` with bearer token
-3. **Remote hit** - Download artifact, store locally, replay result
-4. **Remote miss** - Execute task normally
-5. **Upload** - `PUT /v8/artifacts/{hash}` (fire-and-forget, non-blocking)
-
-## Environment Variables
-
-You can also configure via environment variables (compatible with Turborepo):
+CLI overrides (work on `vis run`):
 
 ```bash
-TURBO_API=https://cache.example.com
-TURBO_TEAM=my-team
-TURBO_TOKEN=your-auth-token
+vis run build --cache-mode read           # read-only on this run
+vis run build --cache-mode readwrite      # full access
+vis run build --cache-backend http        # default
+vis run build --cache-backend reapi       # selects REAPI gRPC backend
 ```
 
-## Self-Hosted Options
+The CLI flags only take effect when a `remoteCache` block is already configured in `vis.config.ts` — they layer on top of config, never replace it.
 
-Any server implementing the Turborepo v8 artifacts API works:
+## Backends
 
-- [ducktors/turborepo-remote-cache](https://github.com/ducktors/turborepo-remote-cache) - Node.js, supports S3/GCS/Azure
-- Vercel Remote Cache - Free on all plans
+### HTTP (Turborepo-compatible)
 
-## Protocol
+The HTTP backend is the default and works today. It speaks the same wire protocol Turborepo and Vercel Remote Cache use, so any compliant server is a drop-in:
 
 ```
 PUT /v8/artifacts/{hash}?teamId={team}  → Upload cached artifact
@@ -75,3 +82,225 @@ Headers:
   Authorization: Bearer {token}
   Content-Type: application/octet-stream
 ```
+
+#### Compression
+
+Artifact tarballs are compressed client-side before upload:
+
+| Compression | Size ratio on typical dist payloads | Compatibility                                        |
+| ----------- | ----------------------------------- | ---------------------------------------------------- |
+| `"gzip"`    | baseline                            | Turborepo wire-compatible — works with any server    |
+| `"brotli"`  | ~15–20% smaller                     | vis clients on both ends (server is format-agnostic) |
+
+Brotli uses Node's built-in `zlib.createBrotliCompress` at quality level 4. Switching formats invalidates existing remote entries — they'll re-populate on the next run. The upload includes an `X-Artifact-Compression` header so spec-extended servers can branch on format.
+
+#### Self-hosted HTTP servers
+
+- [ducktors/turborepo-remote-cache](https://github.com/ducktors/turborepo-remote-cache) — Node.js, supports S3/GCS/Azure
+- Vercel Remote Cache — managed, free on all plans
+- [bazel-remote](https://github.com/buchgr/bazel-remote) — Go binary, also serves the REAPI gRPC API on the same instance
+
+### REAPI (Bazel Remote Execution API)
+
+REAPI is the lingua franca for self-hostable build caches. The same server can usually serve both the HTTP `/v8/artifacts` endpoint *and* the gRPC REAPI service, so picking REAPI is mostly about wire efficiency on large output sets — gRPC streaming + per-blob deduplication beats single-tarball uploads on builds with many small files.
+
+`@visulima/task-runner` ships the `ReapiRemoteCache` backend over `@grpc/grpc-js`. Both gRPC libraries are listed as **optional peer dependencies** — they're only resolved when `backend: "reapi"` is selected:
+
+```bash
+pnpm add @grpc/grpc-js @grpc/proto-loader
+```
+
+Configuration:
+
+```ts
+remoteCache: {
+    backend: "reapi",
+    url: "grpcs://cache.example.com:443", // grpc:// for cleartext
+    bearerToken: process.env.CACHE_TOKEN, // sent as `authorization: Bearer <token>` metadata
+    instanceName: "my-team",              // optional REAPI `instance_name` for multi-tenant servers
+    mode: "readwrite",
+}
+```
+
+#### Auth model
+
+The REAPI backend reads `bearerToken` (not `token` — that's HTTP-only) and sends it in the `authorization` gRPC metadata header. To prevent token leaks over cleartext, the constructor **throws** if a bearer token is set on a `grpc://` URL:
+
+```text
+[task-runner] remoteCache.backend = "reapi" refuses to send a bearer token over cleartext gRPC.
+Use `grpcs://` (or terminate TLS at a reverse proxy), or pass `allowInsecureBearer: true`
+for trusted-boundary deployments (loopback, mesh mTLS sidecar).
+```
+
+Use `allowInsecureBearer: true` only for trusted boundaries (local Docker, mesh mTLS sidecar that re-encrypts the next hop). The default refuses, so the dangerous case has to be opt-in.
+
+#### Capability negotiation
+
+`Capabilities.GetCapabilities` is called lazily on the first RPC and cached for the connection's lifetime. The negotiation:
+
+- captures `max_batch_total_size_bytes` so `BatchUpdateBlobs` / `BatchReadBlobs` never frame a request over the server limit;
+- captures `digest_functions` and refuses to issue further RPCs if the server advertises a non-empty list that doesn't include `SHA256` (vis pins sha256 for action digests; a server expecting BLAKE3 would reject every call with `INVALID_ARGUMENT`);
+- re-throws `UNAUTHENTICATED` / `PERMISSION_DENIED` from negotiation rather than swallowing them — a misconfigured token surfaces here, not on the next CAS write.
+
+#### Wire flow
+
+| Operation        | Small blob (≤ batch limit)              | Large blob                      |
+| ---------------- | ---------------------------------------- | ------------------------------- |
+| Read             | `BatchReadBlobs`                         | `ByteStream.Read` (streaming)   |
+| Write            | `BatchUpdateBlobs`                       | `ByteStream.Write` (resumable)  |
+
+Before any upload, `FindMissingBlobs` filters out blobs the server already has. Per-batch sizing accounts for ~256 bytes of envelope overhead per entry so a payload exactly at the server limit doesn't push the framed request over.
+
+In-process upload dedup: two concurrent `storeAction` calls referencing the same blob hash share a single in-flight upload promise — matching REAPI's CAS dedup on the wire side.
+
+## Capabilities matrix
+
+| Feature                              | HTTP backend                                 | REAPI backend                                |
+| ------------------------------------ | -------------------------------------------- | -------------------------------------------- |
+| Wire format                          | Turborepo v8                                 | gRPC, REAPI v2                               |
+| Per-blob dedup across actions        | no (one tarball)                             | yes (CAS)                                    |
+| Streaming uploads                    | yes                                          | yes                                          |
+| Capability negotiation               | n/a                                          | `Capabilities` RPC (cached per process)      |
+| Bearer-token auth                    | yes (`token`)                                | yes (`bearerToken`, refused over cleartext)  |
+| HMAC artifact signing                | yes (`signing.secret`)                       | n/a (sha256 content addressing instead)      |
+| mTLS                                 | reverse-proxy                                | future work                                  |
+| Resumable large blob uploads         | no                                           | yes (`Write` RPC)                            |
+| Multi-tenant via instance namespace  | `teamId` query param                         | `instance_name` field                        |
+| In-process upload dedup              | yes (per-digest)                             | yes (per-digest)                             |
+| Wire compression                     | gzip / brotli (client-side, header-tagged)   | identity (REAPI compressors are negotiated; vis pins identity for now) |
+| Servers in OSS today                 | turborepo-remote-cache, Vercel, bazel-remote | bazel-remote, BuildBuddy, BuildBarn, EngFlow |
+
+## Self-hosting with bazel-remote
+
+`bazel-remote` is the simplest path to a self-hosted cache that's ready for both backends. Single Go binary, no managed service required.
+
+### Local Docker quickstart
+
+```bash
+docker run -d \
+    --name bazel-remote \
+    -v /tmp/bazel-remote:/data \
+    -p 9090:9090 \
+    -p 9092:9092 \
+    buchgr/bazel-remote-cache \
+    --max_size=20 \
+    --http_address=0.0.0.0:9090 \
+    --grpc_address=0.0.0.0:9092
+```
+
+Point the HTTP backend at it from your `vis.config.ts`:
+
+```ts
+remoteCache: {
+    url: "http://localhost:9090",
+    token: "any-string-works-locally",
+    mode: "readwrite",
+}
+```
+
+The same instance also serves REAPI on `:9092` — swap to `backend: "reapi"` and `url: "grpc://localhost:9092"` (cleartext) or `grpcs://...` (TLS, behind a reverse proxy) without redeploying anything.
+
+### S3-backed (production)
+
+`bazel-remote` can stream to S3 and serve cached entries to your team:
+
+```bash
+docker run -d \
+    --name bazel-remote \
+    -p 9090:9090 \
+    -p 9092:9092 \
+    -e AWS_ACCESS_KEY_ID=... \
+    -e AWS_SECRET_ACCESS_KEY=... \
+    buchgr/bazel-remote-cache \
+    --s3.bucket=my-vis-cache \
+    --s3.prefix=visulima \
+    --s3.endpoint=s3.us-east-1.amazonaws.com \
+    --max_size=200 \
+    --http_address=0.0.0.0:9090 \
+    --grpc_address=0.0.0.0:9092
+```
+
+Run it behind a reverse proxy that terminates TLS and validates a shared bearer token, then set `url: "https://cache.example.com"` and `token: process.env.CACHE_TOKEN` in `vis.config.ts`.
+
+## Read/write lifecycle
+
+For a single task:
+
+1. **Local lookup** by `task.hash` (xxh3-128 over inputs). Hit → replay outputs.
+2. **Local miss + `mode` includes read** → bridge derives an action digest with `actionDigestForTaskHash(taskHash)` and calls `backend.retrieveAction`. Hit → extract into the local cache, replay outputs.
+3. **Remote miss** → execute task.
+4. **Successful exec** → write local cache.
+5. **`mode` includes write** → fire-and-forget `backend.storeAction` (errors surface through `onUploadError`; never block the run).
+
+The local cache writes blobs first (atomic via `tmp/<uid>` + `rename`, where `uid` is `crypto.randomUUID()`) and the AC entry last, so a partially-written entry is never observable.
+
+### Action digest derivation
+
+The orchestrator hashes inputs with `xxh3-128` for the local task hash, but REAPI servers reject anything other than sha256 on the wire. `actionDigestForTaskHash` bridges the two:
+
+```ts
+const key = `vis-task:${taskHash}`;
+const action = {
+    hash: sha256(key),
+    sizeBytes: 0,            // identifies an *action* (an ActionResult key), not a CAS blob
+};
+```
+
+`sizeBytes` is `0` because this digest names an entry in the Action Cache, not a stored blob — REAPI ignores `size_bytes` for action keys. Setting it to `key.length` would make the server believe a blob of that exact length lives at this hash and any downstream `BatchReadBlobs` against the digest would mismatch.
+
+Every vis client computes the same action digest from the same task hash, so a write from one machine and a read from another converge on the same Action Cache entry.
+
+### Tarball compatibility (HTTP backend)
+
+The HTTP backend ships a single tarball per action. The bridge uses [`nanotar`](https://github.com/unjs/nanotar) for tar/untar — pure-TS, no shellout, deterministic across OSes (forward-slash entry names, sorted directory walks). Path-traversal validation rejects absolute paths, `..` traversal, and Windows drive prefixes before any byte is written, so a malicious cache server cannot ship a tarball that escapes the destination directory.
+
+## Diagnostics: `vis cache doctor`
+
+When a build doesn't hit the remote cache, the question is usually one of: is the URL reachable, does my token work, does the server speak the protocol I think it does. `vis cache doctor` answers all three without forcing you to issue a real cache RPC.
+
+```sh
+vis cache doctor                                     # probes whatever vis.config.ts has wired up
+vis cache doctor --url=grpcs://cache.example.com:443 # ad-hoc URL probe
+vis cache doctor --backend=reapi --json              # machine-readable
+vis cache doctor --timeout=2000                      # fail fast in CI
+```
+
+Backend selection is inferred from the URL scheme (`grpc://`/`grpcs://` → REAPI, anything else → HTTP) unless `--backend` overrides it.
+
+- **HTTP backend**: sends a `HEAD` against the configured URL. Reachable servers typically reply `401`/`403`/`404` (depending on auth/team/no-such-artifact) — anything that isn't a network error proves the server is alive. Reports HTTP status and round-trip latency.
+- **REAPI backend**: dials the gRPC channel, calls `Capabilities`, and reports the negotiated `digest_functions` and `max_batch_total_size_bytes`. Bearer tokens, instance names, and the `allowInsecureBearer` escape hatch are forwarded from `vis.config.ts`. The probe bypasses the read/write `mode` gate so it works even on caches configured `mode: "write"`.
+
+Exit code is `1` on any probe failure (network error, auth failure, missing config), so CI jobs can `vis cache doctor || exit 1` as a pre-flight check before relying on the cache for the real run.
+
+## Environment variables
+
+For Turborepo compatibility the HTTP backend reads:
+
+```bash
+TURBO_API=https://cache.example.com
+TURBO_TEAM=my-team
+TURBO_TOKEN=your-auth-token
+```
+
+These map onto `url`, `teamId`, and `token` respectively when the corresponding fields aren't set in config.
+
+## Migration from earlier vis releases
+
+The earlier `read` / `write` boolean pair was removed. Translate to `mode`:
+
+```ts
+// before
+remoteCache: { url, token, read: true, write: false }
+// after
+remoteCache: { url, token, mode: "read" }
+```
+
+| Old shape                     | New `mode`     |
+| ----------------------------- | -------------- |
+| `{ read: true, write: true }` | `"readwrite"`  |
+| `{ read: true, write: false}` | `"read"`       |
+| `{ read: false, write: true}` | `"write"`      |
+
+Leaving `mode` unset keeps the existing default of `"readwrite"`.
+
+The local cache layout has also been extended with a content-addressable v2 schema (`<cacheDir>/v2/{ac,cas,task-hash-index}/<aa>/...`). Existing `<cacheDir>/<hash>/` entries continue to be readable; new writes still emit the legacy layout for now to keep cache portability across vis versions during the rollout.

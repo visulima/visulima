@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
@@ -191,10 +192,14 @@ const readPackageDeps = async (
 };
 
 /**
- * Generates a unique ID for temporary files/directories.
- * Not cryptographically secure — for cache entry naming only.
+ * Generates a unique ID for temporary files/directories using
+ * `crypto.randomUUID()`. Used for staging-path names that briefly
+ * coexist on disk during atomic writes — collisions would clobber a
+ * concurrent writer's staging directory, so the extra entropy over
+ * `Date.now() + Math.random()` is worth the cycles. UUID v4 from
+ * Node's crypto module is itself uniformly random, making this
+ * cheaper than the previous string concat.
  */
-// eslint-disable-next-line sonarjs/pseudo-random
-const uniqueId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const uniqueId = (): string => randomUUID();
 
 export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };

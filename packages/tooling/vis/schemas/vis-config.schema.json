@@ -326,11 +326,71 @@
                     "required": ["url"],
                     "additionalProperties": false,
                     "properties": {
-                        "url": { "type": "string" },
-                        "token": { "type": "string" },
-                        "teamId": { "type": "string" },
-                        "read": { "type": "boolean", "default": true },
-                        "write": { "type": "boolean", "default": true }
+                        "url": {
+                            "type": "string",
+                            "description": "Cache server URL. HTTP: 'https://cache.example.com'. REAPI: 'grpcs://host:port' (TLS) or 'grpc://host:port' (cleartext)."
+                        },
+                        "backend": {
+                            "type": "string",
+                            "enum": ["http", "reapi"],
+                            "default": "http",
+                            "description": "Wire-protocol selector. 'http' is Turborepo-compatible; 'reapi' speaks the Bazel Remote Execution API over gRPC (bazel-remote, BuildBuddy, BuildBarn, EngFlow)."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": ["read", "readwrite", "write"],
+                            "default": "readwrite",
+                            "description": "Cache mode. 'read' pulls only, 'write' pushes only, 'readwrite' does both."
+                        },
+                        "token": {
+                            "type": "string",
+                            "description": "HTTP backend bearer token sent as 'Authorization: Bearer …'. For REAPI, use 'bearerToken' instead."
+                        },
+                        "teamId": { "type": "string", "description": "Team / namespace for cache isolation." },
+                        "timeout": { "type": "number", "default": 30000, "description": "Per-call request timeout in milliseconds." },
+                        "compression": {
+                            "type": "string",
+                            "enum": ["gzip", "brotli"],
+                            "default": "gzip",
+                            "description": "HTTP-only: tarball compression on the wire."
+                        },
+                        "signing": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["secret"],
+                            "description": "HTTP-only HMAC-SHA256 signing for upload integrity.",
+                            "properties": {
+                                "secret": { "type": "string", "minLength": 16, "description": "Shared secret. Must be at least 16 characters." },
+                                "verifyOnDownload": { "type": "boolean", "default": false, "description": "Reject downloads whose signature doesn't match." }
+                            }
+                        },
+                        "localCasRoot": {
+                            "type": "string",
+                            "description": "Local CAS root used by per-blob backend methods. The HTTP bridge extracts retrieved tarballs into this root so follow-up fetchBlob calls hit local disk."
+                        },
+                        "bearerToken": {
+                            "type": "string",
+                            "description": "REAPI-only: bearer token sent in gRPC 'authorization: Bearer …' metadata."
+                        },
+                        "instanceName": {
+                            "type": "string",
+                            "description": "REAPI-only: 'instance_name' for multi-tenant servers (single gRPC endpoint hosting multiple logical caches)."
+                        },
+                        "allowInsecureBearer": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "REAPI-only: opt out of the safety check that refuses bearer tokens over cleartext gRPC. Only set when the connection terminates inside a trusted boundary (loopback, mTLS sidecar)."
+                        },
+                        "read": {
+                            "type": "boolean",
+                            "deprecated": true,
+                            "description": "Deprecated. Use 'mode' instead. Setting both still works but emits a one-time warning."
+                        },
+                        "write": {
+                            "type": "boolean",
+                            "deprecated": true,
+                            "description": "Deprecated. Use 'mode' instead. Setting both still works but emits a one-time warning."
+                        }
                     }
                 }
             }
