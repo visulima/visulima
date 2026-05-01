@@ -51,6 +51,18 @@ describe(formatAge, () => {
         // Regex because the implicit clock read may give 2s or 3s.
         expect(formatAge(mtime)).toMatch(/^\ds$/u);
     });
+
+    it("returns 0s when mtime is in the future (clock skew)", () => {
+        expect.assertions(1);
+
+        // Cache files written with mtimes in the future (e.g. after a clock
+        // resync, or when a network-mounted cache straddles timezones) must
+        // not render as "-Ns" — clamp to 0s so the table column stays clean.
+        const now = 1_700_000_000_000;
+        const mtime = now + 60 * 1000;
+
+        expect(formatAge(mtime, now)).toBe("0s");
+    });
 });
 
 describe(collectCacheEntries, () => {

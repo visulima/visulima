@@ -98,7 +98,9 @@ export const collectCacheEntries = async (cacheDirectory: string): Promise<Cache
 };
 
 export const formatAge = (mtimeMs: number, now: number = Date.now()): string => {
-    const seconds = Math.floor((now - mtimeMs) / 1000);
+    // Clamp future timestamps to 0 — clock skew or networked filesystems
+    // can produce mtimes ahead of `now`, and "-NNs" in the table is noise.
+    const seconds = Math.max(0, Math.floor((now - mtimeMs) / 1000));
 
     if (seconds < 60) {
         return `${String(seconds)}s`;

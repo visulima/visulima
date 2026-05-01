@@ -90,7 +90,14 @@ const probeReapi = async (options: RemoteCacheOptions, timeoutMs: number): Promi
             url: options.url,
         };
     } finally {
-        await cache.close();
+        // Swallow close() errors so a teardown failure doesn't mask the real
+        // probe outcome — operators need the probe error, not "handle already
+        // disposed" or similar boilerplate from the gRPC channel shutdown.
+        try {
+            await cache.close();
+        } catch {
+            // Intentionally ignored — best-effort shutdown.
+        }
     }
 };
 

@@ -132,6 +132,30 @@ describe(HttpRemoteCache, () => {
             expect(result).toBe(false);
         });
 
+        it("aborts a hung request after the configured timeout", async () => {
+            expect.assertions(2);
+
+            // Server accepts the connection but never writes a response — emulates
+            // a remote cache that's reachable but stalled. Without `AbortSignal.timeout`
+            // the runner would hang indefinitely.
+            const { server, url } = await startMockServer(() => {
+                // No-op handler. The socket stays open until the test tears down.
+            });
+
+            try {
+                const cache = new HttpRemoteCache({ timeout: 150, url });
+                const startedAt = Date.now();
+                const result = await containsByTaskHash(cache, "hang-hash");
+                const elapsedMs = Date.now() - startedAt;
+
+                expect(result).toBe(false);
+                // Resolved well before the test framework's default 5s timeout.
+                expect(elapsedMs).toBeLessThan(2000);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
         it("includes teamId in query params", async () => {
             expect.assertions(1);
 
