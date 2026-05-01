@@ -4,12 +4,12 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Cache } from "../src/cache";
-import { EmptyLifeCycle } from "../src/life-cycle";
-import { InProcessTaskHasher } from "../src/task-hasher";
-import { TaskOrchestrator } from "../src/task-orchestrator";
-import { TaskScheduler } from "../src/task-scheduler";
-import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskResult, TaskStatus } from "../src/types";
+import { Cache } from "../../src/cache";
+import { EmptyLifeCycle } from "../../src/life-cycle";
+import { InProcessTaskHasher } from "../../src/task-hasher";
+import { TaskOrchestrator } from "../../src/task-orchestrator";
+import { TaskScheduler } from "../../src/task-scheduler";
+import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskResult, TaskStatus } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -184,6 +184,113 @@ describe(TaskOrchestrator, () => {
         await orch2.run();
 
         expect(executionCount).toBe(2);
+    });
+
+    it("flags hadWarnings when warningPattern matches a successful run", async () => {
+        expect.assertions(3);
+
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+            warningPattern: ["\\bwarning\\b"],
+        };
+
+        const executor: TaskExecutor = async () => {
+            return { code: 0, terminalOutput: "Built (1 warning)" };
+        };
+
+        const orchestrator = createOrchestrator([task], executor);
+        const results = await orchestrator.run();
+        const result = results.get("app:build");
+
+        expect(result?.status).toBe("success");
+        expect(result?.hadWarnings).toBe(true);
+
+        // Default cacheOnWarning is true, so the run still seeds the cache
+        const orch2 = createOrchestrator([task], executor);
+        const result2 = (await orch2.run()).get("app:build");
+
+        expect(result2?.status).toBe("local-cache");
+    });
+
+    it("does not flag hadWarnings when patterns don't match", async () => {
+        expect.assertions(2);
+
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+            warningPattern: ["TS\\d{4}"],
+        };
+
+        const executor: TaskExecutor = async () => {
+            return { code: 0, terminalOutput: "Built cleanly" };
+        };
+
+        const result = (await createOrchestrator([task], executor).run()).get("app:build");
+
+        expect(result?.status).toBe("success");
+        expect(result?.hadWarnings).toBeUndefined();
+    });
+
+    it("skips caching warning-tainted runs when cacheOnWarning is false", async () => {
+        expect.assertions(3);
+
+        const task: Task = {
+            cacheOnWarning: false,
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+            warningPattern: ["\\bwarning\\b"],
+        };
+
+        let executionCount = 0;
+        const executor: TaskExecutor = async () => {
+            executionCount += 1;
+
+            return { code: 0, terminalOutput: "Built (1 warning)" };
+        };
+
+        const orch1 = createOrchestrator([task], executor);
+        const result1 = (await orch1.run()).get("app:build");
+
+        expect(result1?.hadWarnings).toBe(true);
+
+        // Second run must re-execute because the first didn't seed the cache.
+        const orch2 = createOrchestrator([task], executor);
+        const result2 = (await orch2.run()).get("app:build");
+
+        expect(result2?.status).toBe("success");
+        expect(executionCount).toBe(2);
+    });
+
+    it("ignores invalid warningPattern regex sources without failing the task", async () => {
+        expect.assertions(2);
+
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+            warningPattern: ["[unclosed", "\\bwarning\\b"],
+        };
+
+        const executor: TaskExecutor = async () => {
+            return { code: 0, terminalOutput: "Built (1 warning)" };
+        };
+
+        const result = (await createOrchestrator([task], executor).run()).get("app:build");
+
+        expect(result?.status).toBe("success");
+        expect(result?.hadWarnings).toBe(true);
     });
 
     it("should skip cache when skipCache is true", async () => {

@@ -163,6 +163,15 @@ export interface TaskResult {
     endTime?: number;
 
     /**
+     * Set when the task exited 0 and at least one configured
+     * {@link Task.warningPattern} matched the terminal output. Surfaced
+     * to lifecycle reporters and the run summary so users can see that
+     * a "green" build still emitted warnings, and gates the optional
+     * `cacheOnWarning: false` cache-suppression path.
+     */
+    hadWarnings?: boolean;
+
+    /**
      * Set when the task modified one or more of its own tracked input
      * files during execution. Caching is skipped in this case — the
      * fingerprint captured before the run would mismatch the post-run

@@ -39,6 +39,16 @@ const parseTaskId = (taskId: string): TaskTarget => {
     };
 };
 
+const normalizeWarningPattern = (value: string | string[] | undefined): string[] | undefined => {
+    if (value === undefined) {
+        return undefined;
+    }
+
+    const list = typeof value === "string" ? [value] : value;
+
+    return list.length === 0 ? undefined : list;
+};
+
 /**
  * Extracts the output patterns for a task.
  */
@@ -88,12 +98,16 @@ const getSameProjectTask = (
         {
             always: project.targets?.[targetName]?.always ?? targetDefaults?.[targetName]?.always,
             cache: project.targets?.[targetName]?.cache ?? targetDefaults?.[targetName]?.cache,
+            cacheOnWarning: project.targets?.[targetName]?.cacheOnWarning ?? targetDefaults?.[targetName]?.cacheOnWarning,
             id: getTaskId(target),
             outputs: getTaskOutputs(projectName, targetName, workspace, targetDefaults),
             overrides,
             parallelism: project.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
             projectRoot: project.root,
             target,
+            warningPattern: normalizeWarningPattern(
+                project.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern,
+            ),
             when: project.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
         },
     ];
@@ -131,12 +145,16 @@ const getDependencyProjectTasks = (
             tasks.push({
                 always: depProject.targets?.[targetName]?.always ?? targetDefaults?.[targetName]?.always,
                 cache: depProject.targets?.[targetName]?.cache ?? targetDefaults?.[targetName]?.cache,
+                cacheOnWarning: depProject.targets?.[targetName]?.cacheOnWarning ?? targetDefaults?.[targetName]?.cacheOnWarning,
                 id: getTaskId(target),
                 outputs: getTaskOutputs(dep.target, targetName, workspace, targetDefaults),
                 overrides,
                 parallelism: depProject.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
                 projectRoot: depProject.root,
                 target,
+                warningPattern: normalizeWarningPattern(
+                    depProject.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern,
+                ),
                 when: depProject.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
             });
         }
