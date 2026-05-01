@@ -1,45 +1,51 @@
+import type { Span, SpanOptions, Tracer } from "@opentelemetry/api";
 import type { Task, TaskResult, TaskResults } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
-import type { OtelSpan, OtelTracer } from "../src/plugins/otel";
 import { otelPlugin } from "../src/plugins/otel";
 import { createVisHooks, registerPlugins } from "../src/util/hooks";
 
+type AttributeValue = boolean | number | string;
+
 interface RecordedSpan {
-    attributes: Record<string, boolean | number | string>;
+    attributes: Record<string, AttributeValue>;
     ended: boolean;
     name: string;
     status?: { code: number; message?: string };
 }
 
-const createRecordingTracer = (): { spans: RecordedSpan[]; tracer: OtelTracer } => {
+const createRecordingTracer = (): { spans: RecordedSpan[]; tracer: Tracer } => {
     const spans: RecordedSpan[] = [];
 
-    const tracer: OtelTracer = {
-        startSpan: (name, options) => {
+    const tracer = {
+        startSpan: (name: string, options?: SpanOptions): Span => {
             const record: RecordedSpan = {
-                attributes: { ...options?.attributes },
+                attributes: { ...(options?.attributes as Record<string, AttributeValue> | undefined) },
                 ended: false,
                 name,
             };
 
             spans.push(record);
 
-            const span: OtelSpan = {
-                end: () => {
+            const span = {
+                end: (): void => {
                     record.ended = true;
                 },
-                setAttribute: (key, value) => {
+                setAttribute: (key: string, value: AttributeValue): Span => {
                     record.attributes[key] = value;
+
+                    return span;
                 },
-                setStatus: (status) => {
+                setStatus: (status: { code: number; message?: string }): Span => {
                     record.status = status;
+
+                    return span;
                 },
-            };
+            } as unknown as Span;
 
             return span;
         },
-    };
+    } as unknown as Tracer;
 
     return { spans, tracer };
 };
@@ -187,17 +193,15 @@ describe(otelPlugin, () => {
     it("tracer.startSpan is only called once per task:before", async () => {
         expect.assertions(1);
 
-        const spy = vi.fn<OtelTracer["startSpan"]>(() => {
-            return {
-                end: () => {},
-                setAttribute: () => {},
-                setStatus: () => {},
-            };
-        });
+        const spy = vi.fn<Tracer["startSpan"]>(() => ({
+            end: () => {},
+            setAttribute: () => undefined as unknown as Span,
+            setStatus: () => undefined as unknown as Span,
+        } as unknown as Span));
 
         const hooks = createVisHooks();
 
-        await registerPlugins(hooks, [otelPlugin({ tracer: { startSpan: spy } })]);
+        await registerPlugins(hooks, [otelPlugin({ tracer: { startSpan: spy } as unknown as Tracer })]);
 
         const task = makeTask("app:build");
 

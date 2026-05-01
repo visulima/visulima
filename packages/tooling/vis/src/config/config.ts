@@ -605,7 +605,7 @@ const definePlugin = (plugin: VisPlugin): VisPlugin => plugin;
 // Ship the OTel plugin from the `/config` subpath so users can
 // `import { otelPlugin } from "@visulima/vis/config"` — same module
 // they already import `defineConfig`/`definePlugin` from.
-export type { OtelPluginOptions, OtelSpan, OtelTracer } from "../plugins/otel";
+export type { OtelPluginOptions } from "../plugins/otel";
 export { otelPlugin } from "../plugins/otel";
 export type { VisHooks, VisPlugin } from "../util/hooks";
 export type { VisConfig, VisTaskConfig } from "./types";

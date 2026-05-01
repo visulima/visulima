@@ -136,6 +136,7 @@
         "@eslint-react/eslint-plugin": "catalog:lint",
         "@napi-rs/cli": "catalog:dev",
         "@nkzw/safe-word-list": "^3.1.2",
+        "@opentelemetry/api": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@semantic-release/exec": "catalog:dev",
         "@shared/xxh3": "workspace:*",
@@ -170,6 +171,14 @@
         "typescript": "catalog:tsc",
         "validate-npm-package-name": "^7.0.2",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@opentelemetry/api": "catalog:peer"
+    },
+    "peerDependenciesMeta": {
+        "@opentelemetry/api": {
+            "optional": true
+        }
     },
     "optionalDependencies": {
         "@visulima/vis-binding-darwin-arm64": "workspace:*",
