@@ -1,3 +1,4 @@
+import { shellQuote } from "./shell-quote";
 import type { ConcurrentCommandConfig } from "../types";
 
 /**
@@ -41,13 +42,6 @@ const TOKEN_PATHS: Record<string, "affectedFiles"> = {
  * (`'value"`) are accepted by the regex but rejected by the renderer.
  */
 const TOKEN_REGEX = /\\?\$\{\s*([\w.]+)\s*(?:\|\s*flag\s+(["'])(.*?)\2\s*)?\}/g;
-
-/**
- * Shell-quotes a single argument by wrapping in single quotes. Single
- * quotes inside the value are escaped using the standard `'\''` dance.
- * Mirrors the behaviour of {@link import("./expand-arguments").expandArguments}.
- */
-const shellQuote = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
 
 /**
  * Rewrites a workspace-relative file path to be relative to a project

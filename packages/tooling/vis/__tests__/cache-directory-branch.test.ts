@@ -22,6 +22,15 @@ describe(sanitizeBranchSegment, () => {
         expect.assertions(1);
         expect(sanitizeBranchSegment("a".repeat(120))).toHaveLength(64);
     });
+
+    it("returns empty string when every character is disallowed", () => {
+        expect.assertions(2);
+        // A branch consisting entirely of `/` or special chars sanitises to "" —
+        // applyBranchScope must NOT then resolve `<cache>/branches/` (collision
+        // with the base cache dir).
+        expect(sanitizeBranchSegment("@#!*&")).toBe("");
+        expect(sanitizeBranchSegment("///")).toBe("");
+    });
 });
 
 describe(applyBranchScope, () => {

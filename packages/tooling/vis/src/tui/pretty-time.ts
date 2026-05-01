@@ -1,22 +1,20 @@
 import type { DurationLanguage, DurationOptions } from "@visulima/humanizer";
 import { duration } from "@visulima/humanizer";
 
-const shortLanguage: DurationLanguage = {
-    d: () => " d",
-    future: "in %s",
-    h: () => " h",
-    m: () => " m",
-    mo: () => " mo",
-    ms: () => " ms",
-    past: "%s ago",
-    s: () => " s",
-    w: () => " w",
-    y: () => " y",
-};
-
 const shortOptions: DurationOptions = {
     delimiter: " ",
-    language: shortLanguage,
+    language: {
+        d: () => " d",
+        future: "in %s",
+        h: () => " h",
+        m: () => " m",
+        mo: () => " mo",
+        ms: () => " ms",
+        past: "%s ago",
+        s: () => " s",
+        w: () => " w",
+        y: () => " y",
+    } satisfies DurationLanguage,
     largest: 2,
     round: true,
     spacer: "",
