@@ -29,5 +29,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    }
+    },
+    "libc": [
+        "musl"
+    ]
 }

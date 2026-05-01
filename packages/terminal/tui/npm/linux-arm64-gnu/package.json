@@ -1,7 +1,7 @@
 {
     "name": "@visulima/tui-binding-linux-arm64-gnu",
     "version": "0.0.1",
-    "description": "Native binding for @visulima/tui (Linux ARM64 GNU)",
+    "description": "Native binding for @visulima/tui (Linux ARM64 glibc)",
     "homepage": "https://visulima.com",
     "repository": {
         "type": "git",
@@ -29,5 +29,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    }
+    },
+    "libc": [
+        "glibc"
+    ]
 }
