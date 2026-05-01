@@ -1,0 +1,60 @@
+import { fileURLToPath } from "node:url";
+
+import { describe, expect, it } from "vitest";
+
+import { execVis, execVisJson } from "../src/exec";
+
+const FAKE_VIS = fileURLToPath(new URL("__fixtures__/fake-vis.mjs", import.meta.url));
+
+describe(execVis, () => {
+    it("should capture stdout and exit code on success", async () => {
+        expect.assertions(3);
+
+        const result = await execVis(FAKE_VIS, ["list", "--json"]);
+
+        expect(result.exitCode).toBe(0);
+        expect(result.timedOut).toBe(false);
+        expect(JSON.parse(result.stdout)).toHaveLength(2);
+    });
+
+    it("should preserve non-zero exit codes", async () => {
+        expect.assertions(2);
+
+        const result = await execVis(FAKE_VIS, ["fail-exit-code"]);
+
+        expect(result.exitCode).toBe(7);
+        expect(result.stderr).toContain("boom");
+    });
+
+    it("should mark timedOut when the subprocess exceeds timeoutMs", async () => {
+        expect.assertions(1);
+
+        // The fake binary exits immediately, so to test timeout we point at
+        // the real node interpreter with an inline keep-alive script.
+        const result = await execVis(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { timeoutMs: 100 });
+
+        expect(result.timedOut).toBe(true);
+    });
+});
+
+describe(execVisJson, () => {
+    it("should parse stdout as JSON on success", async () => {
+        expect.assertions(1);
+
+        const result = await execVisJson<unknown[]>(FAKE_VIS, ["list", "--json"]);
+
+        expect(result).toHaveLength(2);
+    });
+
+    it("should throw on non-zero exit", async () => {
+        expect.assertions(1);
+
+        await expect(execVisJson(FAKE_VIS, ["fail-exit-code"])).rejects.toThrow(/exited with code 7/);
+    });
+
+    it("should throw on invalid JSON", async () => {
+        expect.assertions(1);
+
+        await expect(execVisJson(FAKE_VIS, ["fail-bad-json"])).rejects.toThrow(/did not emit valid JSON/);
+    });
+});
