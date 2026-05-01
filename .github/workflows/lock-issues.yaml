@@ -4,6 +4,12 @@ on: # yamllint disable-line rule:truthy
     schedule:
         - cron: "0 * * * *"
 
+permissions:
+    contents: "read"
+    discussions: "write"
+    issues: "write"
+    pull-requests: "write"
+
 jobs:
     lock-closed:
         uses: "anolilab/workflows/.github/workflows/lock-closed.yml@main"
