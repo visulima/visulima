@@ -1,4 +1,4 @@
-import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration } from "@visulima/task-runner";
+import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfiguration, TaskRunnerOptions } from "@visulima/task-runner";
 
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
@@ -641,8 +641,14 @@ interface VisConfig {
      */
     taskGroups?: Record<string, (string | { dependencies?: boolean; projects?: string | string[]; target: string } | { group: string })[]>;
 
-    /** Task runner options */
-    taskRunnerOptions?: Record<string, unknown>;
+    /**
+     * Task runner options forwarded verbatim to `defaultTaskRunner`.
+     *
+     * Includes `remoteCache` (HTTP or REAPI gRPC backend), `cacheDirectory`,
+     * `parallel`, `globalEnv`, `globalInputs`, `targetDefaults`, etc.
+     * See `TaskRunnerOptions` for the full surface.
+     */
+    taskRunnerOptions?: Partial<TaskRunnerOptions>;
 
     /**
      * Toolchain (Node / pnpm / python / rust / ...) management. vis

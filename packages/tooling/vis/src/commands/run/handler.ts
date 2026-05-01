@@ -602,6 +602,30 @@ const renderLastRunSummary = async (
     }
 };
 
+const parseCacheMode = (value: string | undefined): "read" | "readwrite" | "write" | undefined => {
+    if (value === undefined || value === "") {
+        return undefined;
+    }
+
+    if (value !== "read" && value !== "write" && value !== "readwrite") {
+        throw new Error(`--cache-mode must be one of: read, write, readwrite (received "${value}")`);
+    }
+
+    return value;
+};
+
+const parseCacheBackend = (value: string | undefined): "http" | "reapi" | undefined => {
+    if (value === undefined || value === "") {
+        return undefined;
+    }
+
+    if (value !== "http" && value !== "reapi") {
+        throw new Error(`--cache-backend must be one of: http, reapi (received "${value}")`);
+    }
+
+    return value;
+};
+
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RunOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -1013,6 +1037,27 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // against `workspaceRoot` via `resolveCacheDirectory()`.
         cacheDirectory: resolvedCacheDirectory,
     };
+
+    // Layer the CLI cache-mode/backend flags onto the resolved remoteCache
+    // config (CLI > vis.config.ts > env). Rejects malformed values up
+    // front so a typo in `--cache-mode=eread` doesn't silently fall
+    // through to the runner and surface as "no cache hits".
+    if (configTaskRunnerOptions.remoteCache) {
+        const cliMode = parseCacheMode(options.cacheMode);
+        const cliBackend = parseCacheBackend(options.cacheBackend);
+
+        if (cliMode || cliBackend) {
+            runnerOptions.remoteCache = {
+                ...configTaskRunnerOptions.remoteCache,
+                ...(cliMode ? { mode: cliMode } : {}),
+                ...(cliBackend ? { backend: cliBackend } : {}),
+            };
+        }
+    } else if (options.cacheMode || options.cacheBackend) {
+        logger.warn(
+            "[vis run] --cache-mode and --cache-backend require a `remoteCache` block in vis.config.ts; ignoring.",
+        );
+    }
 
     const isTTY = process.stdout.isTTY && !isInCi;
     const autoExitConfig = config.tui?.autoExit ?? false;

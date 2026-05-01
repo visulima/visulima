@@ -52,6 +52,16 @@ const run: Command = {
             type: String,
         },
         {
+            description: "Remote cache mode: read | write | readwrite (defaults to readwrite when remoteCache is configured)",
+            name: "cache-mode",
+            type: String,
+        },
+        {
+            description: "Remote cache wire backend: http (Turborepo-compatible) or reapi (Bazel Remote Execution API gRPC)",
+            name: "cache-backend",
+            type: String,
+        },
+        {
             defaultValue: false,
             description: "Show what would run without executing",
             name: "dry-run",
@@ -143,7 +153,9 @@ export default run;
 export type RunOptions = CreateOptions<{
     affected: boolean | undefined;
     cache: boolean | undefined;
+    "cache-backend": string | undefined;
     "cache-dir": string | undefined;
+    "cache-mode": string | undefined;
     "dry-run": boolean | undefined;
     "fail-fast": boolean | undefined;
     flaky: boolean | undefined;

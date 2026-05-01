@@ -2,10 +2,35 @@
 export type { AffectedOptions, AffectedResult } from "./affected";
 export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
 
+// Remote cache backend factory + cache-mode resolver
+export { createRemoteCacheBackend, resolveCacheMode } from "./backends/factory";
+// Hash bridge: orchestrator's task-hash-keyed flow over the
+// action-digest-keyed `RemoteCacheBackend` API.
+export { actionDigestForTaskHash, containsByTaskHash, retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
+
+// Remote cache: HTTP (Turborepo-compatible) backend
+export { HttpRemoteCache } from "./backends/http";
+// Remote cache: REAPI (Bazel Remote Execution API) gRPC backend
+export type { ReapiRemoteCacheOptions } from "./backends/reapi";
+export { ReapiRemoteCache } from "./backends/reapi";
+// Remote cache backend interface + canonical configuration shape
+export type {
+    ActionResult,
+    BlobSource,
+    CacheMode,
+    CasDigest,
+    RemoteCacheBackend,
+    RemoteCacheCompression,
+    RemoteCacheOptions,
+    RemoteCacheSigning,
+} from "./backends/types";
 // Cache
 export type { CachedResult, CacheOptions } from "./cache";
 export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } from "./cache";
-
+// CAS primitives (v2 layout: digest helpers, sharded paths, blob/AC store)
+export { digestBuffer, digestFile } from "./cas/digest";
+export { acEntryPath, casBlobPath, taskHashIndexPath, V2_AC, V2_CAS, V2_INDEX, V2_ROOT, V2_TMP } from "./cas/paths";
+export { containsBlob, fetchBlobToFile, putBlobFromBytes, putBlobFromFile, touchBlob, verifyBlob } from "./cas/store";
 // Chrome tracing profile (--profile)
 export type { ChromeTraceEvent } from "./chrome-trace";
 export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
@@ -37,7 +62,6 @@ export { projectGraphToDot, toGraphAscii, toGraphHtml, toGraphJson, toGraphvizDo
 // Incremental file hashing (mtime-based, daemon-compatible)
 export type { FileSnapshot, IncrementalHasherOptions } from "./incremental-hasher";
 export { IncrementalFileHasher } from "./incremental-hasher";
-
 // Life cycle
 export { CompositeLifeCycle, ConsoleLifeCycle, EmptyLifeCycle } from "./life-cycle";
 // Smart lockfile hashing
@@ -46,16 +70,11 @@ export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile
 // Log reporter (--log=interleaved|labeled|grouped, matches vite-task)
 export type { LogMode } from "./log-reporter";
 export { createLogReporter, LogReporter } from "./log-reporter";
-
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";
 export { resolveOutputs } from "./output-resolver";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
-
-// Remote cache (Turborepo-compatible HTTP protocol)
-export type { RemoteCacheCompression, RemoteCacheOptions, RemoteCacheSigning } from "./remote-cache";
-export { RemoteCache } from "./remote-cache";
 
 // Run summary (--summarize and --last-details)
 export type { RunSummary, TaskSummary } from "./run-summary";

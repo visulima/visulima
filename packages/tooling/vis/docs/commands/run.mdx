@@ -46,6 +46,8 @@ vis run test --watch                                      # Rerun on file change
 | `--parallel`         |       | `3`     | Maximum number of parallel tasks                                                                                                                                    |
 | `--cache`            |       | `true`  | Enable caching (`--no-cache` to disable)                                                                                                                            |
 | `--cache-dir`        |       |         | Custom cache directory                                                                                                                                              |
+| `--cache-mode`       |       |         | Remote cache mode: `read`, `write`, or `readwrite` (overrides `remoteCache.mode` from config)                                                                       |
+| `--cache-backend`    |       |         | Remote cache wire backend: `http` (Turborepo-compatible) or `reapi` (Bazel REAPI gRPC; reserved)                                                                    |
 | `--dry-run`          |       | `false` | Show what would run without executing                                                                                                                               |
 | `--summarize`        |       | `false` | Generate a JSON run summary                                                                                                                                         |
 | `--partition`        |       |         | Partition for distributed CI (e.g. `1/4`)                                                                                                                           |
