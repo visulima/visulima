@@ -138,6 +138,46 @@ describe("vis list", () => {
         expect(text).toContain("2 project(s)");
     });
 
+    it("renders a per-target table with descriptions when --targets is passed", async () => {
+        expect.assertions(5);
+
+        writeFileSync(
+            join(workspaceRoot, "packages", "a", "project.json"),
+            JSON.stringify({
+                language: "typescript",
+                layer: "library",
+                projectType: "library",
+                tags: ["frontend"],
+                targets: {
+                    build: {
+                        cache: true,
+                        command: "tsc",
+                        description: "Compile TypeScript sources",
+                    },
+                },
+            }),
+        );
+
+        const { calls, logger } = makeLogger();
+
+        await listExecute({
+            argument: [],
+            logger,
+            options: { targets: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
+
+        expect(text).toContain("Target");
+        expect(text).toContain("Description");
+        expect(text).toContain("Compile TypeScript sources");
+        expect(text).toContain("@my/a");
+        expect(text).toContain("2 target(s) across 2 project(s)");
+    });
+
     it("logs 'No projects found' when the query matches nothing", async () => {
         expect.assertions(1);
 
