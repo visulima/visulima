@@ -14,6 +14,7 @@ import {
     updateAnnotation,
 } from "./functions/annotations";
 import { getStaticAssets } from "./functions/assets";
+import { exportSession } from "./functions/export-session";
 import { getModuleGraph } from "./functions/module-graph";
 import { openInEditor } from "./functions/open-in-editor";
 import { getTailwindConfig } from "./functions/tailwind-config";
@@ -27,6 +28,7 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
         addAnnotationAttachment: async (annotationId: string, dataUrl: string, name?: string) => addAnnotationAttachment(server, annotationId, dataUrl, name),
         createAnnotation: async (data: CreateAnnotationData) => createAnnotation(server, data),
         deleteAnnotation: async (id: string) => deleteAnnotation(server, id),
+        exportSession: async (markdown: string) => exportSession(server, markdown),
         getAnnotationAttachment: async (attachmentPath: string) => getAnnotationAttachment(server, attachmentPath),
         getAnnotations: async () => getAnnotations(server),
         getModuleGraph: async () => getModuleGraph(server),

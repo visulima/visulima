@@ -7,8 +7,10 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import type { Annotation, AnnotationIntent, AnnotationSeverity, AnnotationStatus } from "../../types/annotations";
 import type { AppComponentProps } from "../../types/app";
 import { Button, Textarea } from "../../ui";
+import { annotationsToMarkdown } from "../inspector/element-utils";
 import type { AnnotationSettings } from "../inspector/annotation-settings";
 import { loadSettings, MARKER_COLORS, saveSettings } from "../inspector/annotation-settings";
+import { buildSessionZip, type ExportSessionFile, triggerDownload } from "./zip-bundle";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -414,6 +416,22 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         [helpers, load],
     );
 
+    const handleExport = useCallback(async () => {
+        try {
+            const markdown = annotationsToMarkdown(annotations);
+            const result = await (helpers.rpc as unknown as {
+                exportSession: (md: string) => Promise<{ files: ExportSessionFile[]; generatedAt: string }>;
+            }).exportSession(markdown);
+            const blob = buildSessionZip(result.files);
+            const stamp = result.generatedAt.replace(/[:.]/g, "-");
+
+            triggerDownload(blob, `dev-toolbar-session-${stamp}.zip`);
+        } catch (error_) {
+            console.error("[annotations] export failed:", error_);
+            setError(error_ instanceof Error ? error_.message : "Export failed");
+        }
+    }, [annotations, helpers]);
+
     // ── Detail view ──
     if (selected) {
         return <AnnotationDetail annotation={selected} helpers={helpers} onBack={() => setSelectedId(undefined)} onRefresh={() => load().catch(() => {})} />;
@@ -434,6 +452,16 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     variant="ghost"
                 >
                     Settings
+                </Button>
+                <Button
+                    class="text-[0.65rem]"
+                    disabled={annotations.length === 0}
+                    onClick={() => handleExport().catch(() => {})}
+                    size="sm"
+                    title="Download annotations.json + markdown export + every attachment as a zip bundle."
+                    variant="ghost"
+                >
+                    Export session
                 </Button>
                 <span class="flex-1" />
                 <select

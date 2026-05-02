@@ -36,6 +36,17 @@ export interface ServerFunctions {
     deleteAnnotation: (id: string) => Promise<boolean>;
 
     /**
+     * Bundle annotations.json + a markdown export + every attachment file
+     * into a serialisable list of files. The frontend stitches these into
+     * either a flat download or a single zip blob.
+     */
+    exportSession: (markdown: string) => Promise<{
+        annotationCount: number;
+        files: { content: string; encoding: "base64" | "text"; mimeType: string; path: string }[];
+        generatedAt: string;
+    }>;
+
+    /**
      * Read an attachment back as a base64 data URL.
      */
     getAnnotationAttachment: (attachmentPath: string) => Promise<string | null>;
