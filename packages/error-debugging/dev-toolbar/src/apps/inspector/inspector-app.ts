@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { autoUpdate, computePosition, flip, offset, shift } from "@floating-ui/dom";
+
 import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";
 import type { A11yInfo } from "./a11y-capture";
 import { captureA11yInfo, formatA11yText } from "./a11y-capture";
@@ -672,15 +675,14 @@ const createFloatingBadge = (onCancel: () => void): void => {
             // Remove existing bar if any
             document.getElementById(CONFIRM_BAR_ID)?.remove();
 
-            const badgeRect = badge.getBoundingClientRect();
             const bar = document.createElement("div");
 
             bar.id = CONFIRM_BAR_ID;
             bar.style.cssText = [
                 "position:fixed",
                 "z-index:2147483646",
-                `bottom:${window.innerHeight - badgeRect.top + 6}px`,
-                `left:${badgeRect.left}px`,
+                "top:0",
+                "left:0",
                 `background:${c.bg}`,
                 `box-shadow:${pillShadow}`,
                 "padding:6px 12px",
@@ -691,6 +693,29 @@ const createFloatingBadge = (onCancel: () => void): void => {
                 `color:${c.fg}`,
                 "pointer-events:auto",
             ].join(";");
+            // Position via Floating UI so the confirm bar stays inside the
+            // viewport when the toolbar pill is near a screen edge.
+            const positionConfirmBar = (): void => {
+                computePosition(badge, bar, {
+                    middleware: [offset(6), flip({ fallbackPlacements: ["bottom-start", "top-end", "bottom-end"] }), shift({ padding: 8 })],
+                    placement: "top-start",
+                    strategy: "fixed",
+                }).then(({ x, y }) => {
+                    bar.style.top = `${y}px`;
+                    bar.style.left = `${x}px`;
+
+                    return undefined;
+                }).catch(() => {
+                    /* ignore */
+                });
+            };
+            const stopAutoUpdate = autoUpdate(badge, bar, positionConfirmBar);
+            const previousRemove = bar.remove.bind(bar);
+
+            bar.remove = () => {
+                stopAutoUpdate();
+                previousRemove();
+            };
             bar.addEventListener("click", (e) => e.stopPropagation());
             bar.addEventListener("mousedown", (e) => e.stopPropagation());
 

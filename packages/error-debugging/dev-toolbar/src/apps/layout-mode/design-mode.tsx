@@ -814,21 +814,9 @@ export const DesignMode = ({
                         return null;
                     }
 
-                    const ey = ep.y - scrollY;
-                    const centerX = ep.x + ep.width / 2;
-                    const aboveY = ey - 8;
-                    const belowY = ey + ep.height + 8;
-                    const fitsAbove = aboveY > 200;
-                    const fitsBelow = belowY < window.innerHeight - 100;
-                    const popupLeft = Math.max(160, Math.min(window.innerWidth - 160, centerX));
-                    const popupStyle: JSX.CSSProperties = fitsAbove
-                        ? { bottom: window.innerHeight - aboveY, left: popupLeft }
-                        : fitsBelow
-                            ? { left: popupLeft, top: belowY }
-                            : { left: popupLeft, top: Math.max(80, window.innerHeight / 2 - 80) };
-
                     return (
                         <AnnotationPopup
+                            anchorRect={{ height: ep.height, width: ep.width, x: ep.x, y: ep.y }}
                             element={COMPONENT_MAP[ep.type]?.label || ep.type}
                             initialValue={ep.text ?? ""}
                             isExiting={editExiting}
@@ -841,7 +829,6 @@ export const DesignMode = ({
                                 : undefined}
                             onSubmit={submitEdit}
                             placeholder={TEXT_PLACEHOLDERS[ep.type] ?? "Label or content text"}
-                            style={popupStyle}
                             submitLabel={editHadTextRef.current ? "Save" : "Set"}
                         />
                     );

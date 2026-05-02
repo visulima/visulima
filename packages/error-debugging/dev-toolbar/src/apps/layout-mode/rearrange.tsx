@@ -1001,21 +1001,11 @@ export const RearrangeOverlay = ({
                     }
 
                     const rect = es.currentRect;
-                    const screenY = es.isFixed ? rect.y : rect.y - scrollY;
-                    const centerX = rect.x + rect.width / 2;
-                    const aboveY = screenY - 8;
-                    const belowY = screenY + rect.height + 8;
-                    const fitsAbove = aboveY > 200;
-                    const fitsBelow = belowY < window.innerHeight - 100;
-                    const popupLeft = Math.max(160, Math.min(window.innerWidth - 160, centerX));
-                    const popupStyle: JSX.CSSProperties = fitsAbove
-                        ? { bottom: window.innerHeight - aboveY, left: popupLeft }
-                        : fitsBelow
-                            ? { left: popupLeft, top: belowY }
-                            : { left: popupLeft, top: Math.max(80, window.innerHeight / 2 - 80) };
+                    const anchorY = es.isFixed ? rect.y + scrollY : rect.y;
 
                     return (
                         <AnnotationPopup
+                            anchorRect={{ height: rect.height, width: rect.width, x: rect.x, y: anchorY }}
                             element={es.label}
                             initialValue={es.note ?? ""}
                             isExiting={editExiting}
@@ -1028,7 +1018,6 @@ export const RearrangeOverlay = ({
                                 : undefined}
                             onSubmit={submitEdit}
                             placeholder="Add a note about this section"
-                            style={popupStyle}
                             submitLabel={editHadNoteRef.current ? "Save" : "Set"}
                         />
                     );
