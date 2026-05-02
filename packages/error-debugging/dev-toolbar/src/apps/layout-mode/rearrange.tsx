@@ -6,17 +6,15 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { originalSetTimeout } from "../inspector/freeze-animations";
 import AnnotationPopup from "./annotation-popup";
 import { captureElement } from "./section-detection";
+import { computeSnap, type SnapGuide as Guide, type SnapRect } from "./snap";
 import type { DetectedSection, RearrangeState } from "./types";
 
 const SECTION_COLOR = { bg: "rgba(59, 130, 246, 0.08)", border: "rgba(59, 130, 246, 0.5)", pill: "#3b82f6" };
 const HANDLES: HandleDir[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 const MIN_SIZE = 24;
 const MIN_CAPTURE_SIZE = 16;
-const SNAP_THRESHOLD = 5;
 
 type HandleDir = "e" | "n" | "ne" | "nw" | "s" | "se" | "sw" | "w";
-type Guide = { axis: "x" | "y"; pos: number };
-type SnapRect = { height: number; width: number; x: number; y: number };
 
 const SKIP_TAGS = new Set(["br", "hr", "link", "meta", "noscript", "script", "style"]);
 
@@ -40,63 +38,11 @@ const computeSectionSnap = (
     sections: DetectedSection[],
     excludeIds: Set<string>,
     extraRects?: SnapRect[],
-): { dx: number; dy: number; guides: Guide[] } => {
-    let bestDx = Infinity;
-    let bestDy = Infinity;
-    const mL = rect.x;
-    const mR = rect.x + rect.width;
-    const mCx = rect.x + rect.width / 2;
-    const mT = rect.y;
-    const mB = rect.y + rect.height;
-    const mCy = rect.y + rect.height / 2;
-    const allTargets: SnapRect[] = [];
-
-    for (const s of sections) {
-        if (!excludeIds.has(s.id)) {
-            allTargets.push(s.currentRect);
-        }
-    }
-
-    if (extraRects) {
-        allTargets.push(...extraRects);
-    }
-
-    for (const o of allTargets) {
-        const oL = o.x;
-        const oR = o.x + o.width;
-        const oCx = o.x + o.width / 2;
-        const oT = o.y;
-        const oB = o.y + o.height;
-        const oCy = o.y + o.height / 2;
-
-        for (const from of [mL, mR, mCx]) {
-            for (const to of [oL, oR, oCx]) {
-                const d = to - from;
-
-                if (Math.abs(d) < SNAP_THRESHOLD && Math.abs(d) < Math.abs(bestDx)) {
-                    bestDx = d;
-                }
-            }
-        }
-
-        for (const from of [mT, mB, mCy]) {
-            for (const to of [oT, oB, oCy]) {
-                const d = to - from;
-
-                if (Math.abs(d) < SNAP_THRESHOLD && Math.abs(d) < Math.abs(bestDy)) {
-                    bestDy = d;
-                }
-            }
-        }
-    }
-
-    const dx = Math.abs(bestDx) < SNAP_THRESHOLD ? bestDx : 0;
-    const dy = Math.abs(bestDy) < SNAP_THRESHOLD ? bestDy : 0;
-    const guides: Guide[] = [];
-    const seen = new Set<string>();
-
-    return { dx, dy, guides };
-};
+) => computeSnap(rect, {
+    excludeIds,
+    extraRects,
+    others: sections.map((s) => ({ ...s.currentRect, id: s.id })),
+});
 
 const pickTarget = (element_: HTMLElement): HTMLElement | null => {
     let current: HTMLElement | null = element_;

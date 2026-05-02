@@ -1,267 +1,202 @@
-// =============================================================================
-// Section Detection for Rearrange Mode
-// =============================================================================
-
+import { cleanCssClasses, generateSelector as inspectorGenerateSelector, getNearbyText } from "../inspector/element-utils";
 import { getElementLabel } from "../inspector/element-utils";
 
 import type { DetectedSection } from "./types";
 
-// Tags that represent meaningful page sections
-const SECTION_TAGS = new Set([
-  "nav", "header", "main", "section", "article", "footer", "aside",
-]);
+const SECTION_TAGS = new Set(["nav", "header", "main", "section", "article", "footer", "aside"]);
 
-// ARIA roles that map to section semantics
 const SECTION_ROLES: Record<string, string> = {
-  banner: "Header",
-  navigation: "Navigation",
-  main: "Main Content",
-  contentinfo: "Footer",
-  complementary: "Sidebar",
-  region: "Section",
+    banner: "Header",
+    complementary: "Sidebar",
+    contentinfo: "Footer",
+    main: "Main Content",
+    navigation: "Navigation",
+    region: "Section",
 };
 
-// Tag name to human-readable label
 const TAG_LABELS: Record<string, string> = {
-  nav: "Navigation",
-  header: "Header",
-  main: "Main Content",
-  section: "Section",
-  article: "Article",
-  footer: "Footer",
-  aside: "Sidebar",
+    article: "Article",
+    aside: "Sidebar",
+    footer: "Footer",
+    header: "Header",
+    main: "Main Content",
+    nav: "Navigation",
+    section: "Section",
 };
 
-// Elements to always skip
 const SKIP_TAGS = new Set(["script", "style", "noscript", "link", "meta"]);
-
 const MIN_SECTION_HEIGHT = 40;
 
-/**
- * Check if an element is effectively fixed to the viewport.
- * Walks up the DOM tree — if any ancestor is fixed or sticky,
- * the element doesn't scroll with the page.
- */
-function isEffectivelyFixed(el: HTMLElement): boolean {
-  let current: HTMLElement | null = el;
-  while (current && current !== document.body && current !== document.documentElement) {
-    const pos = window.getComputedStyle(current).position;
-    if (pos === "fixed" || pos === "sticky") return true;
-    current = current.parentElement;
-  }
-  return false;
-}
+const isEffectivelyFixed = (element_: HTMLElement): boolean => {
+    let current: HTMLElement | null = element_;
 
-/**
- * Generate a CSS selector that can re-find this element after re-renders.
- */
-export function generateSelector(el: HTMLElement): string {
-  const tag = el.tagName.toLowerCase();
+    while (current && current !== document.body && current !== document.documentElement) {
+        const { position } = window.getComputedStyle(current);
 
-  // Unique semantic tags (usually only one nav, one footer, etc.)
-  if (["nav", "header", "footer", "main"].includes(tag)) {
-    // Check if it's unique
-    if (document.querySelectorAll(tag).length === 1) {
-      return tag;
+        if (position === "fixed" || position === "sticky") {
+            return true;
+        }
+
+        current = current.parentElement;
     }
-  }
 
-  // ID selector
-  if (el.id) {
-    return `#${CSS.escape(el.id)}`;
-  }
+    return false;
+};
 
-  // Tag + first meaningful class
-  if (el.className && typeof el.className === "string") {
-    const classes = el.className.split(/\s+/).filter(c => c.length > 0);
-    // Find a class that isn't just a hash
-    const meaningful = classes.find(c =>
-      c.length > 2 && !/^[a-zA-Z0-9]{6,}$/.test(c) && !/^[a-z]{1,2}$/.test(c)
-    );
-    if (meaningful) {
-      const selector = `${tag}.${CSS.escape(meaningful)}`;
-      if (document.querySelectorAll(selector).length === 1) {
-        return selector;
-      }
+/**
+ * Generate a stable selector for re-finding a section element after re-renders.
+ * Prefers unique semantic tags (e.g. the only `<nav>`) before delegating to
+ * the inspector's general-purpose selector generator.
+ */
+export const generateSelector = (element_: HTMLElement): string => {
+    const tag = element_.tagName.toLowerCase();
+
+    if (["footer", "header", "main", "nav"].includes(tag) && document.querySelectorAll(tag).length === 1) {
+        return tag;
     }
-  }
 
-  // Fallback: nth-child
-  const parent = el.parentElement;
-  if (parent) {
-    const children = Array.from(parent.children);
-    const index = children.indexOf(el) + 1;
-    const parentSelector = parent === document.body ? "body" : generateSelector(parent as HTMLElement);
-    return `${parentSelector} > ${tag}:nth-child(${index})`;
-  }
-
-  return tag;
-}
+    return inspectorGenerateSelector(element_);
+};
 
 /**
  * Determine a human-readable label for a detected section.
  */
-export function labelSection(el: HTMLElement): string {
-  const tag = el.tagName.toLowerCase();
+export const labelSection = (element_: HTMLElement): string => {
+    const tag = element_.tagName.toLowerCase();
+    const ariaLabel = element_.getAttribute("aria-label");
 
-  // 1. aria-label
-  const ariaLabel = el.getAttribute("aria-label");
-  if (ariaLabel) return ariaLabel;
+    if (ariaLabel) {
+        return ariaLabel;
+    }
 
-  // 2. ARIA role mapping
-  const role = el.getAttribute("role");
-  if (role && SECTION_ROLES[role]) return SECTION_ROLES[role];
+    const role = element_.getAttribute("role");
 
-  // 3. Semantic tag name
-  if (TAG_LABELS[tag]) return TAG_LABELS[tag];
+    if (role && SECTION_ROLES[role]) {
+        return SECTION_ROLES[role];
+    }
 
-  // 4. First heading child
-  const heading = el.querySelector("h1, h2, h3, h4, h5, h6");
-  if (heading) {
-    const text = heading.textContent?.trim();
-    if (text && text.length <= 50) return text;
-    if (text) return text.slice(0, 47) + "...";
-  }
+    if (TAG_LABELS[tag]) {
+        return TAG_LABELS[tag];
+    }
 
-  // 5. Fallback to visulima's element label heuristics
-  const name = getElementLabel(el);
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
+    const heading = element_.querySelector("h1, h2, h3, h4, h5, h6");
 
-/**
- * Get the first meaningful class name (strip CSS module hashes).
- */
-function getCleanClassName(el: HTMLElement): string | null {
-  const className = el.className;
-  if (typeof className !== "string" || !className) return null;
+    if (heading) {
+        const text = heading.textContent?.trim();
 
-  const meaningful = className
-    .split(/\s+/)
-    .map(c => c.replace(/[_][a-zA-Z0-9]{5,}.*$/, ""))
-    .find(c => c.length > 2 && !/^[a-z]{1,2}$/.test(c));
+        if (text && text.length <= 50) {
+            return text;
+        }
 
-  return meaningful || null;
-}
+        if (text) {
+            return `${text.slice(0, 47)}...`;
+        }
+    }
 
-/**
- * Get first ~30 chars of visible text content (for forensic output).
- */
-function getTextSnippet(el: HTMLElement): string | null {
-  const text = el.textContent?.trim();
-  if (!text) return null;
-  // Collapse whitespace
-  const clean = text.replace(/\s+/g, " ");
-  if (clean.length <= 30) return clean;
-  return clean.slice(0, 30) + "…";
-}
+    const name = getElementLabel(element_);
+
+    return name.charAt(0).toUpperCase() + name.slice(1);
+};
+
+const getCleanClassName = (element_: HTMLElement): string | null => {
+    if (element_.classList.length === 0) {
+        return null;
+    }
+
+    const cleaned = cleanCssClasses(element_.classList).split(/\s+/).filter((c) => c.length > 2 && !/^[a-z]{1,2}$/.test(c));
+
+    return cleaned[0] ?? null;
+};
+
+const getTextSnippet = (element_: HTMLElement): string | null => {
+    const snippet = getNearbyText(element_, 30);
+
+    return snippet === "" ? null : snippet;
+};
+
+const generateId = (): string => `rs-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+const buildSection = (element_: HTMLElement, originalIndex: number): DetectedSection => {
+    const { scrollY } = window;
+    const rect = element_.getBoundingClientRect();
+    const isFixed = isEffectivelyFixed(element_);
+    const sectionRect = {
+        height: rect.height,
+        width: rect.width,
+        x: rect.x,
+        y: isFixed ? rect.y : rect.y + scrollY,
+    };
+
+    return {
+        className: getCleanClassName(element_),
+        currentRect: { ...sectionRect },
+        id: generateId(),
+        isFixed,
+        label: labelSection(element_),
+        originalIndex,
+        originalRect: sectionRect,
+        role: element_.getAttribute("role"),
+        selector: generateSelector(element_),
+        tagName: element_.tagName.toLowerCase(),
+        textSnippet: getTextSnippet(element_),
+    };
+};
 
 /**
  * Detect significant page sections for rearrange mode.
  */
-export function detectPageSections(): DetectedSection[] {
-  // Find the main content container — prefer <main>, fall back to <body>
-  const main = document.querySelector("main") || document.body;
-  const candidates = Array.from(main.children) as HTMLElement[];
+export const detectPageSections = (): DetectedSection[] => {
+    const main = document.querySelector("main") ?? document.body;
+    const candidates = [...main.children] as HTMLElement[];
+    const allCandidates = main !== document.body && candidates.length < 3
+        ? ([...document.body.children] as HTMLElement[])
+        : candidates;
+    const sections: DetectedSection[] = [];
 
-  // If <main> has few children, also check <body> direct children
-  let allCandidates = candidates;
-  if (main !== document.body && candidates.length < 3) {
-    allCandidates = Array.from(document.body.children) as HTMLElement[];
-  }
+    allCandidates.forEach((element_, index) => {
+        if (!(element_ instanceof HTMLElement)) {
+            return;
+        }
 
-  const sections: DetectedSection[] = [];
+        const tag = element_.tagName.toLowerCase();
 
-  allCandidates.forEach((el, index) => {
-    if (!(el instanceof HTMLElement)) return;
+        if (SKIP_TAGS.has(tag) || element_.hasAttribute("data-feedback-toolbar") || element_.closest("[data-feedback-toolbar]")) {
+            return;
+        }
 
-    const tag = el.tagName.toLowerCase();
+        const style = window.getComputedStyle(element_);
 
-    // Skip non-content elements
-    if (SKIP_TAGS.has(tag)) return;
+        if (style.display === "none" || style.visibility === "hidden") {
+            return;
+        }
 
-    // Skip agentation's own elements
-    if (el.hasAttribute("data-feedback-toolbar")) return;
-    if (el.closest("[data-feedback-toolbar]")) return;
+        const rect = element_.getBoundingClientRect();
 
-    // Skip invisible elements
-    const style = window.getComputedStyle(el);
-    if (style.display === "none" || style.visibility === "hidden") return;
+        if (rect.height < MIN_SECTION_HEIGHT) {
+            return;
+        }
 
-    const rect = el.getBoundingClientRect();
+        const isSemantic = SECTION_TAGS.has(tag);
+        const role = element_.getAttribute("role");
+        const hasRole = role !== null && SECTION_ROLES[role] !== undefined;
+        const isSignificantDiv = tag === "div" && rect.height >= 60;
 
-    // Skip tiny elements
-    if (rect.height < MIN_SECTION_HEIGHT) return;
+        if (!isSemantic && !hasRole && !isSignificantDiv) {
+            return;
+        }
 
-    // Accept: semantic section tags, elements with ARIA roles, or divs with significant height
-    const isSemantic = SECTION_TAGS.has(tag);
-    const hasRole = el.getAttribute("role") && SECTION_ROLES[el.getAttribute("role")!];
-    const isSignificantDiv = tag === "div" && rect.height >= 60;
-
-    if (!isSemantic && !hasRole && !isSignificantDiv) return;
-
-    const scrollY = window.scrollY;
-    const isFixed = isEffectivelyFixed(el);
-
-    const sectionRect = {
-      x: rect.x,
-      y: isFixed ? rect.y : rect.y + scrollY,
-      width: rect.width,
-      height: rect.height,
-    };
-
-    sections.push({
-      id: `rs-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      label: labelSection(el),
-      tagName: tag,
-      selector: generateSelector(el),
-      role: el.getAttribute("role"),
-      className: getCleanClassName(el),
-      textSnippet: getTextSnippet(el),
-      originalRect: sectionRect,
-      currentRect: { ...sectionRect },
-      originalIndex: index,
-      isFixed,
+        sections.push(buildSection(element_, index));
     });
-  });
 
-  return sections;
-}
+    return sections;
+};
 
 /**
  * Create a DetectedSection from a single element (for click-to-capture).
  */
-export function captureElement(el: HTMLElement): DetectedSection {
-  const scrollY = window.scrollY;
-  const rect = el.getBoundingClientRect();
-  const isFixed = isEffectivelyFixed(el);
+export const captureElement = (element_: HTMLElement): DetectedSection => {
+    const parent = element_.parentElement;
+    const originalIndex = parent ? [...parent.children].indexOf(element_) : 0;
 
-  // Fixed elements: store viewport-relative Y (no scroll offset)
-  // Normal elements: store page-absolute Y (add scroll offset)
-  const sectionRect = {
-    x: rect.x,
-    y: isFixed ? rect.y : rect.y + scrollY,
-    width: rect.width,
-    height: rect.height,
-  };
-
-  const parent = el.parentElement;
-  let originalIndex = 0;
-  if (parent) {
-    originalIndex = Array.from(parent.children).indexOf(el);
-  }
-
-  return {
-    id: `rs-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    label: labelSection(el),
-    tagName: el.tagName.toLowerCase(),
-    selector: generateSelector(el),
-    role: el.getAttribute("role"),
-    className: getCleanClassName(el),
-    textSnippet: getTextSnippet(el),
-    originalRect: sectionRect,
-    currentRect: { ...sectionRect },
-    originalIndex,
-    isFixed,
-  };
-}
-
+    return buildSection(element_, originalIndex);
+};
