@@ -257,7 +257,10 @@ export interface InjectSourceIgnore {
  * Returns `undefined` when the file was skipped or contained no JSX to transform.
  */
 export const addSourceToJsx = (code: string, id: string, ignore: InjectSourceIgnore = {}, originalCode?: string): ReturnType<typeof gen> | undefined => {
-    const [filePath] = id.split("?");
+    // Strip both Vite's `?query` suffix and any URL fragment (`#...`) so the
+    // stored path resolves cleanly on disk regardless of upstream transforms.
+    const [withoutQuery] = id.split("?");
+    const [filePath] = withoutQuery!.split("#");
     // Strip the CWD prefix (including the trailing separator) so the stored path is
     // relative without a leading slash, e.g. "src/routes/index.tsx" not "/src/…".
     // The RPC openInEditor handler then resolves it against server.config.root.

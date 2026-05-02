@@ -823,11 +823,24 @@ let removePopupOutsideHandler: (() => void) | undefined;
 // RPC system (HMR WebSocket) to open the file in the editor.  This bypasses
 // Vite's HTTP endpoint, which is not reachable in frameworks (e.g. TanStack
 // Start) that run Nitro/Vinxi as the outer HTTP server.
+//
+// `data-vdt-source` is injected as `<file>:<line>:<col>` by the babel pass.
+// We defensively strip any URL fragment or query suffix from the file portion
+// in case a third-party transform leaked one in (or in case this code is ever
+// repurposed for a hash-routed view that synthesizes a source path on the fly).
+const stripUrlNoise = (file: string): string => {
+    const queryIndex = file.indexOf("?");
+    const withoutQuery = queryIndex === -1 ? file : file.slice(0, queryIndex);
+    const hashIndex = withoutQuery.indexOf("#");
+
+    return hashIndex === -1 ? withoutQuery : withoutQuery.slice(0, hashIndex);
+};
+
 const openInEditor = (source: string): void => {
     const parts = source.split(":");
     const col = Number.parseInt(parts.at(-1) ?? "0", 10) || undefined;
     const line = Number.parseInt(parts.at(-2) ?? "0", 10) || undefined;
-    const file = parts.slice(0, -2).join(":");
+    const file = stripUrlNoise(parts.slice(0, -2).join(":"));
 
     const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
