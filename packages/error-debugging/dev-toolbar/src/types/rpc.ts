@@ -3,7 +3,7 @@ import type { ViteDevServer } from "vite";
 import type { StaticAsset } from "../rpc/functions/assets";
 import type { SerializableModuleNode } from "../rpc/functions/module-graph";
 import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
-import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "./annotations";
+import type { Annotation, AnnotationAttachment, CreateAnnotationData, UpdateAnnotationData } from "./annotations";
 
 /**
  * Server-side RPC functions
@@ -18,6 +18,12 @@ export interface ServerFunctions {
     [key: string]: (...args: any[]) => Promise<any>;
 
     /**
+     * Append an image attachment (paste-from-clipboard or drag-from-desktop)
+     * to an annotation. Stores under .devtoolbar/attachments/<id>/.
+     */
+    addAnnotationAttachment: (annotationId: string, dataUrl: string, name?: string) => Promise<AnnotationAttachment>;
+
+    /**
      * Create a new annotation
      * @param data Annotation data (id, timestamps, status are generated server-side)
      */
@@ -28,6 +34,11 @@ export interface ServerFunctions {
      * @param id Annotation ID
      */
     deleteAnnotation: (id: string) => Promise<boolean>;
+
+    /**
+     * Read an attachment back as a base64 data URL.
+     */
+    getAnnotationAttachment: (attachmentPath: string) => Promise<string | null>;
 
     /**
      * Get all annotations
@@ -75,6 +86,11 @@ export interface ServerFunctions {
      * @param path File path
      */
     readFile: (path: string) => Promise<string>;
+
+    /**
+     * Remove a single image attachment.
+     */
+    removeAnnotationAttachment: (annotationId: string, attachmentPath: string) => Promise<boolean>;
 
     /**
      * Save a screenshot for an annotation

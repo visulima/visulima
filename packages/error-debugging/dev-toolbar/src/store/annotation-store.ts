@@ -7,15 +7,17 @@ import type { Annotation } from "../types/annotations";
 export const STORE_DIR = ".devtoolbar";
 export const ANNOTATIONS_FILE = "annotations.json";
 export const SCREENSHOTS_DIR = "screenshots";
+export const ATTACHMENTS_DIR = "attachments";
 
 /**
  * Resolves absolute paths for the annotation store.
  */
-export const resolvePaths = (root: string): { annotationsFile: string; base: string; screenshotsDir: string } => {
+export const resolvePaths = (root: string): { annotationsFile: string; attachmentsDir: string; base: string; screenshotsDir: string } => {
     const base = path.join(root, STORE_DIR);
 
     return {
         annotationsFile: path.join(base, ANNOTATIONS_FILE),
+        attachmentsDir: path.join(base, ATTACHMENTS_DIR),
         base,
         screenshotsDir: path.join(base, SCREENSHOTS_DIR),
     };
@@ -126,5 +128,53 @@ export const deleteScreenshotFile = async (root: string, screenshotPath: string)
         await fs.unlink(filepath);
     } catch {
         // File already deleted or never existed — ignore
+    }
+};
+
+/**
+ * Deletes a single attachment file. Validates the path stays inside the store
+ * directory to prevent traversal.
+ */
+export const deleteAttachmentFile = async (root: string, attachmentPath: string): Promise<void> => {
+    if (!attachmentPath.startsWith(`${ATTACHMENTS_DIR}/`)) {
+        return;
+    }
+
+    const { base } = resolvePaths(root);
+    const filepath = path.join(base, attachmentPath);
+
+    if (!isPathInsideBase(filepath, base)) {
+        return;
+    }
+
+    try {
+        await fs.unlink(filepath);
+    } catch {
+        /* ignore */
+    }
+};
+
+/**
+ * Recursively delete the attachments directory for a given annotation id.
+ * Used during annotation deletion / session cleanup.
+ */
+export const deleteAttachmentDir = async (root: string, annotationId: string): Promise<void> => {
+    const safeId = sanitizeId(annotationId);
+
+    if (!safeId) {
+        return;
+    }
+
+    const { attachmentsDir, base } = resolvePaths(root);
+    const dir = path.join(attachmentsDir, safeId);
+
+    if (!isPathInsideBase(dir, base)) {
+        return;
+    }
+
+    try {
+        await fs.rm(dir, { force: true, recursive: true });
+    } catch {
+        /* ignore */
     }
 };

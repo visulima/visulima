@@ -62,6 +62,110 @@ const getPalette = getAnnotationPalette;
 
 const getRpc = (): any => (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
+/**
+ * Pending image attachments queued from paste / drag-drop on an annotation
+ * textarea. The annotation has to exist on disk before we can attach files,
+ * so callers collect data URLs synchronously and flush via `flushAttachments`
+ * after createAnnotation / updateAnnotation has resolved.
+ */
+interface AttachmentQueue {
+    flush: (annotationId: string) => Promise<void>;
+    pending: () => number;
+    wireUp: (textarea: HTMLTextAreaElement) => void;
+}
+
+const createAttachmentQueue = (): AttachmentQueue => {
+    const queue: { dataUrl: string; name?: string }[] = [];
+
+    const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.addEventListener("load", () => resolve(reader.result as string));
+        reader.addEventListener("error", () => reject(reader.error));
+        reader.readAsDataURL(file);
+    });
+
+    const queueFiles = async (files: FileList | File[]): Promise<void> => {
+        for (const file of Array.from(files)) {
+            if (!file.type.startsWith("image/")) {
+                continue;
+            }
+
+            try {
+                const dataUrl = await fileToDataUrl(file);
+
+                queue.push({ dataUrl, name: file.name || undefined });
+            } catch {
+                /* ignore unreadable file */
+            }
+        }
+    };
+
+    return {
+        async flush(annotationId: string) {
+            const rpc = getRpc();
+
+            if (!rpc?.addAnnotationAttachment) {
+                queue.length = 0;
+
+                return;
+            }
+
+            while (queue.length > 0) {
+                const item = queue.shift()!;
+
+                try {
+                    await rpc.addAnnotationAttachment(annotationId, item.dataUrl, item.name);
+                } catch {
+                    /* ignore individual upload errors */
+                }
+            }
+        },
+        pending() {
+            return queue.length;
+        },
+        wireUp(textarea: HTMLTextAreaElement) {
+            textarea.addEventListener("paste", (event_) => {
+                const items = event_.clipboardData?.items;
+
+                if (!items) {
+                    return;
+                }
+
+                const files: File[] = [];
+
+                for (const item of items) {
+                    if (item.kind === "file") {
+                        const file = item.getAsFile();
+
+                        if (file) {
+                            files.push(file);
+                        }
+                    }
+                }
+
+                if (files.length > 0) {
+                    event_.preventDefault();
+                    void queueFiles(files);
+                }
+            });
+
+            textarea.addEventListener("dragover", (event_) => {
+                event_.preventDefault();
+            });
+
+            textarea.addEventListener("drop", (event_) => {
+                const files = event_.dataTransfer?.files;
+
+                if (files && files.length > 0) {
+                    event_.preventDefault();
+                    void queueFiles(files);
+                }
+            });
+        },
+    };
+};
+
 /** Safe querySelector — returns null for invalid selectors (e.g. area selection paths like "region at (x, y)"). */
 const safeQuerySelector = (selector: string | undefined): Element | null => {
     if (!selector) {
@@ -1030,6 +1134,10 @@ export const showAnnotationForm = (
             removeAnnotationForm();
         }
     });
+
+    const attachmentQueue = createAttachmentQueue();
+
+    attachmentQueue.wireUp(textarea);
     form.append(textarea);
 
     // Actions
@@ -1070,6 +1178,10 @@ export const showAnnotationForm = (
                     await rpc.saveScreenshot(editAnnotation.id, screenshotDataUrl).catch(() => {
                         /* ignore */
                     });
+                }
+
+                if (attachmentQueue.pending() > 0) {
+                    await attachmentQueue.flush(editAnnotation.id);
                 }
             } else {
                 // Create mode — capture all context
@@ -1114,6 +1226,10 @@ export const showAnnotationForm = (
                     await rpc.saveScreenshot(annotation.id, screenshotDataUrl).catch(() => {
                         /* ignore */
                     });
+                }
+
+                if (attachmentQueue.pending() > 0) {
+                    await attachmentQueue.flush(annotation.id);
                 }
 
                 loadedAnnotations.push(annotation);

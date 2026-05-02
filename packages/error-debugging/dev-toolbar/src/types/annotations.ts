@@ -41,6 +41,29 @@ export interface BoundingBox {
 }
 
 /**
+ * An image (or other small binary) attached to an annotation. Stored under
+ * `.devtoolbar/attachments/<annotation-id>/<filename>` and referenced from
+ * the annotation by relative path. Multiple attachments per annotation are
+ * supported — different from the legacy single `screenshot` field.
+ */
+export interface AnnotationAttachment {
+    /** ISO 8601 creation timestamp */
+    createdAt: string;
+
+    /** MIME type (image/png, image/jpeg, image/webp) */
+    mimeType: string;
+
+    /** Original filename if known (paste-from-clipboard yields no filename). */
+    name?: string;
+
+    /** Relative path within `.devtoolbar/` (e.g. `attachments/<id>/<n>.png`) */
+    path: string;
+
+    /** File size in bytes */
+    sizeBytes: number;
+}
+
+/**
  * Detected framework component information.
  */
 export interface FrameworkContext {
@@ -90,6 +113,9 @@ export interface AccessibilityInfo {
 export interface Annotation {
     /** Captured accessibility attributes */
     accessibility?: AccessibilityInfo;
+
+    /** Image attachments (paste-from-clipboard, drag-from-desktop, etc.) */
+    attachments?: AnnotationAttachment[];
 
     /** Element bounding box at annotation time */
     boundingBox?: BoundingBox;

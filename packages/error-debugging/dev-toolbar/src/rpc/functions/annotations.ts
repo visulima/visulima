@@ -4,6 +4,9 @@ import path from "node:path";
 import type { ViteDevServer } from "vite";
 
 import {
+    ATTACHMENTS_DIR,
+    deleteAttachmentDir,
+    deleteAttachmentFile,
     deleteScreenshotFile,
     ensureStoreDir,
     isPathInsideBase,
@@ -14,7 +17,24 @@ import {
     withLock,
     writeAnnotations,
 } from "../../store/annotation-store";
-import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "../../types/annotations";
+import type { Annotation, AnnotationAttachment, CreateAnnotationData, UpdateAnnotationData } from "../../types/annotations";
+
+const DATA_URL_PATTERNS: { ext: string; mime: string; prefix: string }[] = [
+    { ext: "png", mime: "image/png", prefix: "data:image/png;base64," },
+    { ext: "jpg", mime: "image/jpeg", prefix: "data:image/jpeg;base64," },
+    { ext: "webp", mime: "image/webp", prefix: "data:image/webp;base64," },
+    { ext: "gif", mime: "image/gif", prefix: "data:image/gif;base64," },
+];
+
+const decodeDataUrl = (dataUrl: string): { buffer: Buffer; ext: string; mime: string } => {
+    for (const { ext, mime, prefix } of DATA_URL_PATTERNS) {
+        if (dataUrl.startsWith(prefix)) {
+            return { buffer: Buffer.from(dataUrl.slice(prefix.length), "base64"), ext, mime };
+        }
+    }
+
+    throw new Error("Unsupported attachment format. Expected PNG, JPEG, WebP, or GIF data URL.");
+};
 
 /**
  * Get all annotations.
@@ -152,11 +172,136 @@ export const deleteAnnotation = async (server: ViteDevServer, id: string): Promi
             await deleteScreenshotFile(root, annotation.screenshot);
         }
 
+        // Clean up attachment directory
+        await deleteAttachmentDir(root, annotation.id);
+
         annotations.splice(index, 1);
         await writeAnnotations(root, annotations);
 
         return true;
     });
+
+/**
+ * Append an image attachment to an existing annotation.
+ * Stores the file under `.devtoolbar/attachments/<id>/<n>.<ext>` and updates
+ * the annotation's `attachments` list. Returns the new attachment record.
+ */
+export const addAnnotationAttachment = async (
+    server: ViteDevServer,
+    annotationId: string,
+    dataUrl: string,
+    name?: string,
+): Promise<AnnotationAttachment> =>
+    withLock(async () => {
+        const { root } = server.config;
+        const annotations = await readAnnotations(root);
+        const index = annotations.findIndex((a) => a.id === annotationId);
+
+        if (index === -1) {
+            throw new Error("Annotation not found");
+        }
+
+        const safeId = sanitizeId(annotationId);
+
+        if (!safeId) {
+            throw new Error("Invalid annotation ID");
+        }
+
+        const { attachmentsDir, base } = resolvePaths(root);
+        const dir = path.join(attachmentsDir, safeId);
+
+        if (!isPathInsideBase(dir, base)) {
+            throw new Error("Invalid attachment path");
+        }
+
+        await ensureStoreDir(root);
+        await fs.mkdir(dir, { recursive: true });
+
+        const { buffer, ext, mime } = decodeDataUrl(dataUrl);
+        const existing = annotations[index]!.attachments ?? [];
+        const filename = `${existing.length + 1}-${Date.now()}.${ext}`;
+        const filepath = path.join(dir, filename);
+
+        if (!isPathInsideBase(filepath, base)) {
+            throw new Error("Invalid attachment path");
+        }
+
+        await fs.writeFile(filepath, buffer);
+
+        const attachment: AnnotationAttachment = {
+            createdAt: new Date().toISOString(),
+            mimeType: mime,
+            name,
+            path: `${ATTACHMENTS_DIR}/${safeId}/${filename}`,
+            sizeBytes: buffer.length,
+        };
+
+        annotations[index]!.attachments = [...existing, attachment];
+        annotations[index]!.updatedAt = attachment.createdAt;
+        await writeAnnotations(root, annotations);
+
+        return attachment;
+    });
+
+/**
+ * Remove a single attachment from an annotation. The path must be the
+ * relative `attachments/<id>/<file>` path returned by addAnnotationAttachment;
+ * any traversal attempt is rejected.
+ */
+export const removeAnnotationAttachment = async (server: ViteDevServer, annotationId: string, attachmentPath: string): Promise<boolean> =>
+    withLock(async () => {
+        const { root } = server.config;
+        const annotations = await readAnnotations(root);
+        const index = annotations.findIndex((a) => a.id === annotationId);
+
+        if (index === -1) {
+            return false;
+        }
+
+        const before = annotations[index]!.attachments ?? [];
+        const remaining = before.filter((a) => a.path !== attachmentPath);
+
+        if (remaining.length === before.length) {
+            return false;
+        }
+
+        await deleteAttachmentFile(root, attachmentPath);
+
+        annotations[index]!.attachments = remaining.length > 0 ? remaining : undefined;
+        annotations[index]!.updatedAt = new Date().toISOString();
+        await writeAnnotations(root, annotations);
+
+        return true;
+    });
+
+/**
+ * Read an attachment back as a base64 data URL — used by the annotations
+ * panel to display previews. Returns null on missing file or invalid path.
+ */
+export const getAnnotationAttachment = async (server: ViteDevServer, attachmentPath: string): Promise<string | null> => {
+    const { root } = server.config;
+
+    if (!attachmentPath.startsWith(`${ATTACHMENTS_DIR}/`)) {
+        return null;
+    }
+
+    const { base } = resolvePaths(root);
+    const filepath = path.join(base, attachmentPath);
+
+    if (!isPathInsideBase(filepath, base)) {
+        return null;
+    }
+
+    try {
+        const buffer = await fs.readFile(filepath);
+        const extension = path.extname(filepath).slice(1);
+        const mimeType = extension === "jpg" ? "image/jpeg" : `image/${extension}`;
+
+        return `data:${mimeType};base64,${buffer.toString("base64")}`;
+    } catch {
+        return null;
+    }
+};
 
 /**
  * Save a screenshot from a base64 data URL.

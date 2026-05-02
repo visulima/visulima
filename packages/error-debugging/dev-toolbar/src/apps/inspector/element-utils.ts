@@ -936,6 +936,7 @@ import { type ClipboardField, type ClipboardProfile, isFieldEnabled, loadClipboa
 export const annotationsToMarkdown = (
     annotations: {
         accessibility?: AccessibilityInfo;
+        attachments?: { path: string }[];
         comment: string;
         computedStyles?: string;
         cssClasses?: string;
@@ -1067,7 +1068,17 @@ export const annotationsToMarkdown = (
             lines.push(`**Styles:** \`${a.computedStyles}\``);
         }
 
-        lines.push("", a.comment, "", "---", "");
+        lines.push("", a.comment, "");
+
+        if (a.attachments && a.attachments.length > 0) {
+            for (const attachment of a.attachments) {
+                lines.push(`![attachment](${attachment.path})`);
+            }
+
+            lines.push("");
+        }
+
+        lines.push("---", "");
     }
 
     return lines.join("\n");
