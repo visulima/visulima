@@ -3,9 +3,8 @@ import path from "node:path";
 
 import type { ViteDevServer } from "vite";
 
-import { resolvePaths } from "../../store/annotation-store";
-import type { Annotation, AnnotationAttachment } from "../../types/annotations";
-import { readAnnotations } from "../../store/annotation-store";
+import { readAnnotations, resolvePaths } from "../../store/annotation-store";
+import type { AnnotationAttachment } from "../../types/annotations";
 
 export interface ExportSessionFile {
     /** base64-encoded file content (data URL prefix included for binaries). */
@@ -13,8 +12,12 @@ export interface ExportSessionFile {
     /** "text" for utf8 markdown/json, "base64" for binary attachments. */
     encoding: "base64" | "text";
     mimeType: string;
-    /** Path inside the export bundle, e.g. "annotations.json" or
-     *  "attachments/<id>/<file>.png". */
+
+    /**
+     * Path inside the export bundle.
+     * @example "annotations.json"
+     * @example "attachments/&lt;id>/&lt;file>.png"
+     */
     path: string;
 }
 
@@ -36,74 +39,56 @@ export const exportSession = async (server: ViteDevServer, markdown: string): Pr
     const { root } = server.config;
     const annotations = await readAnnotations(root);
     const { base } = resolvePaths(root);
-    const files: ExportSessionFile[] = [];
+    const resolvedBase = path.resolve(base);
 
-    files.push({
-        content: JSON.stringify(annotations, null, 2),
-        encoding: "text",
-        mimeType: "application/json",
-        path: "annotations.json",
-    });
+    const isInsideStore = (filepath: string): boolean => {
+        const resolved = path.resolve(filepath);
 
-    files.push({
-        content: markdown,
-        encoding: "text",
-        mimeType: "text/markdown",
-        path: "annotations.md",
-    });
+        return resolved === resolvedBase || resolved.startsWith(resolvedBase + path.sep);
+    };
 
-    const collectAttachment = async (annotation: Annotation, attachment: AnnotationAttachment): Promise<void> => {
-        if (!attachment.path.startsWith("attachments/")) {
-            return;
-        }
+    const readBinary = async (relPath: string, mimeType: string): Promise<ExportSessionFile | null> => {
+        const filepath = path.join(base, relPath);
 
-        const filepath = path.join(base, attachment.path);
-
-        // Defensive: ensure the resolved path stays inside .devtoolbar/
-        const resolvedBase = path.resolve(base);
-        const resolvedFile = path.resolve(filepath);
-
-        if (!(resolvedFile === resolvedBase || resolvedFile.startsWith(resolvedBase + path.sep))) {
-            return;
+        if (!isInsideStore(filepath)) {
+            return null;
         }
 
         try {
             const buffer = await fs.readFile(filepath);
 
-            files.push({
-                content: buffer.toString("base64"),
-                encoding: "base64",
-                mimeType: attachment.mimeType,
-                path: attachment.path,
-            });
+            return { content: buffer.toString("base64"), encoding: "base64", mimeType, path: relPath };
         } catch {
-            /* missing file — skip */
+            return null;
         }
     };
 
-    for (const annotation of annotations) {
-        if (annotation.screenshot) {
-            try {
-                const filepath = path.join(base, annotation.screenshot);
-                const buffer = await fs.readFile(filepath);
+    const screenshotJobs = annotations
+        .filter((a): a is typeof a & { screenshot: string } => Boolean(a.screenshot))
+        .map(async (a) => readBinary(a.screenshot, `image/${path.extname(a.screenshot).slice(1) || "png"}`));
 
-                files.push({
-                    content: buffer.toString("base64"),
-                    encoding: "base64",
-                    mimeType: `image/${path.extname(annotation.screenshot).slice(1) || "png"}`,
-                    path: annotation.screenshot,
-                });
-            } catch {
-                /* ignore */
-            }
-        }
+    const attachmentJobs = annotations
+        .flatMap((a) => a.attachments ?? [])
+        .filter((attachment: AnnotationAttachment) => attachment.path.startsWith("attachments/"))
+        .map(async (attachment) => readBinary(attachment.path, attachment.mimeType));
 
-        if (annotation.attachments) {
-            for (const attachment of annotation.attachments) {
-                await collectAttachment(annotation, attachment);
-            }
-        }
-    }
+    const binaryFiles = (await Promise.all([...screenshotJobs, ...attachmentJobs])).filter((f): f is ExportSessionFile => f !== null);
+
+    const files: ExportSessionFile[] = [
+        {
+            content: JSON.stringify(annotations, null, 2),
+            encoding: "text",
+            mimeType: "application/json",
+            path: "annotations.json",
+        },
+        {
+            content: markdown,
+            encoding: "text",
+            mimeType: "text/markdown",
+            path: "annotations.md",
+        },
+        ...binaryFiles,
+    ];
 
     return {
         annotationCount: annotations.length,

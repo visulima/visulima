@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import monitorIcon from "lucide-static/icons/monitor.svg?data-uri&encoding=css";
@@ -18,10 +18,9 @@ import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
 import type { SelectOption } from "../../ui/components/select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../ui/components/select";
+import type { ClipboardField, ClipboardProfile } from "../inspector/clipboard-config";
 import {
     BUILT_IN_PROFILES,
-    type ClipboardField,
-    type ClipboardProfile,
     DETAIL_DEFAULTS,
     isFieldEnabled,
     loadClipboardProfile,
@@ -335,10 +334,12 @@ const FIELD_LABELS: { description: string; key: ClipboardField; label: string }[
     { description: "ARIA role / accessibility metadata.", key: "accessibility", label: "Accessibility" },
 ];
 
-const profileOptions: SelectOption[] = Object.entries(BUILT_IN_PROFILES).map(([id, p]) => ({
-    label: p.name,
-    value: id,
-}));
+const profileOptions: SelectOption[] = Object.entries(BUILT_IN_PROFILES).map(([id, p]) => {
+    return {
+        label: p.name,
+        value: id,
+    };
+});
 
 const ClipboardSection = (): ComponentChildren => {
     const [profile, setProfile] = useState<ClipboardProfile>(loadClipboardProfile);
@@ -358,11 +359,11 @@ const ClipboardSection = (): ComponentChildren => {
 
     const toggleField = (field: ClipboardField, value: boolean): void => {
         const defaultValue = DETAIL_DEFAULTS[profile.detail].has(field);
-        const overrides = { ...(profile.fields ?? {}) };
+        const overrides: Partial<Record<ClipboardField, boolean>> = Object.fromEntries(
+            Object.entries(profile.fields ?? {}).filter(([key]) => key !== field),
+        ) as Partial<Record<ClipboardField, boolean>>;
 
-        if (value === defaultValue) {
-            delete overrides[field];
-        } else {
+        if (value !== defaultValue) {
             overrides[field] = value;
         }
 

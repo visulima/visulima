@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { autoUpdate, computePosition, flip, offset, shift } from "@floating-ui/dom";
 
 import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";

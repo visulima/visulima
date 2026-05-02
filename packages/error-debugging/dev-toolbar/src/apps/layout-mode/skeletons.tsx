@@ -10,708 +10,681 @@ import type { ComponentType } from "./types";
 // Each component type gets a skeleton wireframe that scales to the given dimensions.
 // Uses inline styles referencing CSS custom properties from the layout mode overlay.
 
-type SkeletonProps = { width: number; height: number; text?: string };
+type SkeletonProps = { height: number; text?: string; width: number };
 
-function Bar({ w, h = 3, strong }: Attributes & { w: number | string; h?: number; strong?: boolean }) {
-  return (
+const Bar = ({ h = 3, strong, w }: Readonly<Attributes & { h?: number; strong?: boolean; w: number | string }>): JSX.Element => (
     <div
       style={{
-        width: typeof w === "number" ? `${w}px` : w,
-        height: h,
-        borderRadius: 2,
-        background: strong ? "var(--agd-bar-strong)" : "var(--agd-bar)",
-        flexShrink: 0,
+          background: strong ? "var(--agd-bar-strong)" : "var(--agd-bar)",
+          borderRadius: 2,
+          flexShrink: 0,
+          height: h,
+          width: typeof w === "number" ? `${w}px` : w,
       }}
     />
-  );
-}
+);
 
-function Block({
-  w,
-  h,
-  radius = 3,
-  style,
-}: Attributes & {
-  w: number | string;
-  h: number | string;
-  radius?: number;
-  style?: JSX.CSSProperties;
-}) {
-  return (
+const Block = ({
+    h,
+    radius = 3,
+    style,
+    w,
+}: Readonly<Attributes & {
+    h: number | string;
+    radius?: number;
+    style?: JSX.CSSProperties;
+    w: number | string;
+}>): JSX.Element => (
     <div
       style={{
-        width: typeof w === "number" ? `${w}px` : w,
-        height: typeof h === "number" ? `${h}px` : h,
-        borderRadius: radius,
-        border: "1px dashed var(--agd-stroke)",
-        background: "var(--agd-fill)",
-        flexShrink: 0,
-        ...style,
+          background: "var(--agd-fill)",
+          border: "1px dashed var(--agd-stroke)",
+          borderRadius: radius,
+          flexShrink: 0,
+          height: typeof h === "number" ? `${h}px` : h,
+          width: typeof w === "number" ? `${w}px` : w,
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread -- JSX.CSSProperties is a plain object record
+          ...style,
       }}
     />
-  );
-}
+);
 
-function Circle({ size }: Attributes & { size: number }) {
-  return (
+const Circle = ({ size }: Readonly<Attributes & { size: number }>): JSX.Element => (
     <div
       style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        border: "1px dashed var(--agd-stroke)",
-        background: "var(--agd-fill)",
-        flexShrink: 0,
+          background: "var(--agd-fill)",
+          border: "1px dashed var(--agd-stroke)",
+          borderRadius: "50%",
+          flexShrink: 0,
+          height: size,
+          width: size,
       }}
     />
-  );
-}
+);
 
 // --- Skeleton renderers per type ---
 
-function NavigationSkeleton({ width, height }: SkeletonProps) {
-  const pad = Math.max(8, height * 0.2);
-  return (
-    <div style={{ display: "flex", alignItems: "center", height: "100%", padding: `0 ${pad}px`, gap: width * 0.02 }}>
-      <Block w={Math.max(20, height * 0.5)} h={Math.max(12, height * 0.4)} radius={2} />
-      <div style={{ flex: 1, display: "flex", gap: width * 0.03, marginLeft: width * 0.04 }}>
+const NavigationSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const pad = Math.max(8, height * 0.2);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", gap: width * 0.02, height: "100%", padding: `0 ${pad}px` }}>
+      <Block h={Math.max(12, height * 0.4)} radius={2} w={Math.max(20, height * 0.5)} />
+      <div style={{ display: "flex", flex: 1, gap: width * 0.03, marginLeft: width * 0.04 }}>
         <Bar w={width * 0.06} />
         <Bar w={width * 0.07} />
         <Bar w={width * 0.05} />
         <Bar w={width * 0.06} />
       </div>
-      <Block w={width * 0.1} h={Math.min(28, height * 0.5)} radius={4} />
+      <Block h={Math.min(28, height * 0.5)} radius={4} w={width * 0.1} />
     </div>
-  );
-}
+    );
+};
 
-function HeroSkeleton({ width, height, text }: SkeletonProps) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: height * 0.05 }}>
+const HeroSkeleton = ({ height, text, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.05, height: "100%", justifyContent: "center" }}>
       {text ? (
-        <span style={{ fontSize: Math.min(20, height * 0.08), fontWeight: 600, color: "var(--agd-text-3)", textAlign: "center", maxWidth: "80%" }}>{text}</span>
+        <span style={{ color: "var(--agd-text-3)", fontSize: Math.min(20, height * 0.08), fontWeight: 600, maxWidth: "80%", textAlign: "center" }}>{text}</span>
       ) : (
-        <Bar w={width * 0.5} h={Math.max(6, height * 0.04)} strong />
+        <Bar h={Math.max(6, height * 0.04)} strong w={width * 0.5} />
       )}
       <Bar w={width * 0.6} />
       <Bar w={width * 0.4} />
-      <Block w={Math.min(140, width * 0.2)} h={Math.min(36, height * 0.12)} radius={6} style={{ marginTop: height * 0.06 }} />
+      <Block h={Math.min(36, height * 0.12)} radius={6} style={{ marginTop: height * 0.06 }} w={Math.min(140, width * 0.2)} />
     </div>
-  );
-}
+);
 
-function SidebarSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(3, Math.floor(height / 36));
-  return (
-    <div style={{ padding: width * 0.08, display: "flex", flexDirection: "column", gap: height * 0.03 }}>
-      <Bar w={width * 0.6} h={4} strong />
+const SidebarSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(3, Math.floor(height / 36));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", gap: height * 0.03, padding: width * 0.08 }}>
+      <Bar h={4} strong w={width * 0.6} />
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Block w={10} h={10} radius={2} />
+        <div key={i} style={{ alignItems: "center", display: "flex", gap: 6 }}>
+          <Block h={10} radius={2} w={10} />
           <Bar w={width * (0.4 + ((i * 17) % 30) / 100)} />
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function FooterSkeleton({ width, height }: SkeletonProps) {
-  const cols = Math.max(2, Math.min(4, Math.floor(width / 160)));
-  return (
-    <div style={{ display: "flex", padding: `${height * 0.12}px ${width * 0.03}px`, gap: width * 0.05 }}>
+const FooterSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = Math.max(2, Math.min(4, Math.floor(width / 160)));
+
+    return (
+    <div style={{ display: "flex", gap: width * 0.05, padding: `${height * 0.12}px ${width * 0.03}px` }}>
       {Array.from({ length: cols }, (_, i) => (
-        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-          <Bar w="60%" h={3} strong />
-          <Bar w="80%" h={2} />
-          <Bar w="70%" h={2} />
-          <Bar w="60%" h={2} />
+        <div key={i} style={{ display: "flex", flex: 1, flexDirection: "column", gap: 4 }}>
+          <Bar h={3} strong w="60%" />
+          <Bar h={2} w="80%" />
+          <Bar h={2} w="70%" />
+          <Bar h={2} w="60%" />
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function ModalSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--agd-stroke)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Bar w={width * 0.3} h={4} strong />
-        <div style={{ width: 14, height: 14, border: "1px solid var(--agd-stroke)", borderRadius: 3 }} />
+const ModalSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ alignItems: "center", borderBottom: "1px solid var(--agd-stroke)", display: "flex", justifyContent: "space-between", padding: "10px 12px" }}>
+        <Bar h={4} strong w={width * 0.3} />
+        <div style={{ border: "1px solid var(--agd-stroke)", borderRadius: 3, height: 14, width: 14 }} />
       </div>
-      <div style={{ flex: 1, padding: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 6, padding: 12 }}>
         <Bar w="90%" />
         <Bar w="70%" />
         <Bar w="80%" />
       </div>
-      <div style={{ padding: "10px 12px", borderTop: "1px solid var(--agd-stroke)", display: "flex", justifyContent: "flex-end", gap: 8 }}>
-        <Block w={70} h={26} radius={4} />
-        <Block w={70} h={26} radius={4} style={{ background: "var(--agd-bar)" }} />
+      <div style={{ borderTop: "1px solid var(--agd-stroke)", display: "flex", gap: 8, justifyContent: "flex-end", padding: "10px 12px" }}>
+        <Block h={26} radius={4} w={70} />
+        <Block h={26} radius={4} style={{ background: "var(--agd-bar)" }} w={70} />
       </div>
     </div>
-  );
-}
+);
 
-function CardSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ height: "40%", background: "var(--agd-fill)", borderBottom: "1px dashed var(--agd-stroke)" }} />
-      <div style={{ flex: 1, padding: 10, display: "flex", flexDirection: "column", gap: 5 }}>
-        <Bar w="70%" h={4} strong />
-        <Bar w="95%" h={2} />
-        <Bar w="85%" h={2} />
-        <Bar w="50%" h={2} />
+const CardSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ background: "var(--agd-fill)", borderBottom: "1px dashed var(--agd-stroke)", height: "40%" }} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 5, padding: 10 }}>
+        <Bar h={4} strong w="70%" />
+        <Bar h={2} w="95%" />
+        <Bar h={2} w="85%" />
+        <Bar h={2} w="50%" />
       </div>
     </div>
-  );
-}
+);
 
-function TextSkeleton({ width, height, text }: SkeletonProps) {
-  if (text) {
-    return (
-      <div style={{ padding: 4, fontSize: Math.min(14, height * 0.3), lineHeight: 1.5, color: "var(--agd-text-3)", wordBreak: "break-word", overflow: "hidden" }}>
+const TextSkeleton = ({ height, text, width }: Readonly<SkeletonProps>): JSX.Element => {
+    if (text) {
+        return (
+      <div style={{ color: "var(--agd-text-3)", fontSize: Math.min(14, height * 0.3), lineHeight: 1.5, overflow: "hidden", padding: 4, wordBreak: "break-word" }}>
         {text}
       </div>
-    );
-  }
-  const lines = Math.max(2, Math.floor(height / 18));
-  return (
+        );
+    }
+
+    const lines = Math.max(2, Math.floor(height / 18));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: 4 }}>
-      <Bar w={width * 0.6} h={5} strong />
+      <Bar h={5} strong w={width * 0.6} />
       {Array.from({ length: lines }, (_, i) => (
-        <Bar key={i} w={`${70 + ((i * 13) % 25)}%`} h={2} />
+        <Bar h={2} key={i} w={`${70 + ((i * 13) % 25)}%`} />
       ))}
     </div>
-  );
-}
+    );
+};
 
-function ImageSkeleton({ width, height }: SkeletonProps) {
-  return (
+const ImageSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
     <div style={{ height: "100%", position: "relative" }}>
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" fill="none">
-        <line x1="0" y1="0" x2={width} y2={height} stroke="var(--agd-stroke)" strokeWidth="1" />
-        <line x1={width} y1="0" x2="0" y2={height} stroke="var(--agd-stroke)" strokeWidth="1" />
-        <circle cx={width * 0.3} cy={height * 0.3} r={Math.min(width, height) * 0.08} fill="var(--agd-fill)" stroke="var(--agd-stroke)" strokeWidth="0.8" />
+      <svg fill="none" height="100%" preserveAspectRatio="none" viewBox={`0 0 ${width} ${height}`} width="100%">
+        <line stroke="var(--agd-stroke)" strokeWidth="1" x1="0" x2={width} y1="0" y2={height} />
+        <line stroke="var(--agd-stroke)" strokeWidth="1" x1={width} x2="0" y1="0" y2={height} />
+        <circle cx={width * 0.3} cy={height * 0.3} fill="var(--agd-fill)" r={Math.min(width, height) * 0.08} stroke="var(--agd-stroke)" strokeWidth="0.8" />
       </svg>
     </div>
-  );
-}
+);
 
-function TableSkeleton({ width, height }: SkeletonProps) {
-  const cols = Math.max(2, Math.min(5, Math.floor(width / 100)));
-  const rows = Math.max(2, Math.min(6, Math.floor(height / 32)));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--agd-stroke)", padding: "6px 0" }}>
+const TableSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = Math.max(2, Math.min(5, Math.floor(width / 100)));
+    const rows = Math.max(2, Math.min(6, Math.floor(height / 32)));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ borderBottom: "1px solid var(--agd-stroke)", display: "flex", padding: "6px 0" }}>
         {Array.from({ length: cols }, (_, i) => (
-          <div key={i} style={{ flex: 1, padding: "0 8px" }}><Bar w="70%" h={3} strong /></div>
+          <div key={i} style={{ flex: 1, padding: "0 8px" }}><Bar h={3} strong w="70%" /></div>
         ))}
       </div>
-      {Array.from({ length: rows }, (_, r) => (
-        <div key={r} style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.03)", padding: "6px 0" }}>
-          {Array.from({ length: cols }, (_, c) => (
-            <div key={c} style={{ flex: 1, padding: "0 8px" }}><Bar w={`${50 + ((r * 7 + c * 13) % 40)}%`} h={2} /></div>
+      {Array.from({ length: rows }, (_outer, r) => (
+        <div key={r} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", display: "flex", padding: "6px 0" }}>
+          {Array.from({ length: cols }, (_inner, c) => (
+            <div key={c} style={{ flex: 1, padding: "0 8px" }}><Bar h={2} w={`${50 + ((r * 7 + c * 13) % 40)}%`} /></div>
           ))}
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function ListSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(2, Math.floor(height / 28));
-  return (
+const ListSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(2, Math.floor(height / 28));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: 4 }}>
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+        <div key={i} style={{ alignItems: "center", display: "flex", gap: 8, padding: "4px 0" }}>
           <Circle size={8} />
-          <Bar w={`${55 + ((i * 17) % 35)}%`} h={2} />
+          <Bar h={2} w={`${55 + ((i * 17) % 35)}%`} />
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function ButtonSkeleton({ width, height, text }: SkeletonProps) {
-  return (
+const ButtonSkeleton = ({ height, text, width }: Readonly<SkeletonProps>): JSX.Element => (
     <div style={{
-      height: "100%",
-      borderRadius: Math.min(8, height / 3),
-      border: "1px solid var(--agd-stroke)",
-      background: "var(--agd-fill)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+        alignItems: "center",
+        background: "var(--agd-fill)",
+        border: "1px solid var(--agd-stroke)",
+        borderRadius: Math.min(8, height / 3),
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
     }}>
       {text ? (
-        <span style={{ fontSize: Math.min(13, height * 0.4), fontWeight: 500, color: "var(--agd-text-3)", letterSpacing: "-0.01em" }}>{text}</span>
+        <span style={{ color: "var(--agd-text-3)", fontSize: Math.min(13, height * 0.4), fontWeight: 500, letterSpacing: "-0.01em" }}>{text}</span>
       ) : (
-        <Bar w={Math.max(20, width * 0.5)} h={3} strong />
+        <Bar h={3} strong w={Math.max(20, width * 0.5)} />
       )}
     </div>
-  );
-}
+);
 
-function InputSkeleton({ width, height }: SkeletonProps) {
-  return (
+const InputSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, height: "100%", justifyContent: "center" }}>
-      <Bar w={Math.min(80, width * 0.3)} h={2} />
+      <Bar h={2} w={Math.min(80, width * 0.3)} />
       <div style={{
-        height: Math.min(36, height * 0.6),
-        borderRadius: 4,
-        border: "1px dashed var(--agd-stroke)",
-        background: "var(--agd-fill)",
-        display: "flex",
-        alignItems: "center",
-        paddingLeft: 8,
+          alignItems: "center",
+          background: "var(--agd-fill)",
+          border: "1px dashed var(--agd-stroke)",
+          borderRadius: 4,
+          display: "flex",
+          height: Math.min(36, height * 0.6),
+          paddingLeft: 8,
       }}>
-        <Bar w="40%" h={2} />
+        <Bar h={2} w="40%" />
       </div>
     </div>
-  );
-}
+);
 
-function FormSkeleton({ width, height }: SkeletonProps) {
-  const fields = Math.max(2, Math.min(5, Math.floor(height / 56)));
-  return (
+const FormSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const fields = Math.max(2, Math.min(5, Math.floor(height / 56)));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", gap: height * 0.04, padding: 8 }}>
       {Array.from({ length: fields }, (_, i) => (
         <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <Bar w={60 + ((i * 17) % 30)} h={2} />
-          <Block w="100%" h={28} radius={4} />
+          <Bar h={2} w={60 + ((i * 17) % 30)} />
+          <Block h={28} radius={4} w="100%" />
         </div>
       ))}
-      <Block w={Math.min(120, width * 0.35)} h={30} radius={6} style={{ marginTop: 8, alignSelf: "flex-end", background: "var(--agd-bar)" }} />
+      <Block h={30} radius={6} style={{ alignSelf: "flex-end", background: "var(--agd-bar)", marginTop: 8 }} w={Math.min(120, width * 0.35)} />
     </div>
-  );
-}
+    );
+};
 
-function TabsSkeleton({ width, height }: SkeletonProps) {
-  const tabCount = Math.max(2, Math.min(4, Math.floor(width / 120)));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", gap: 2, borderBottom: "1px solid var(--agd-stroke)" }}>
+const TabsSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => {
+    const tabCount = Math.max(2, Math.min(4, Math.floor(width / 120)));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ borderBottom: "1px solid var(--agd-stroke)", display: "flex", gap: 2 }}>
         {Array.from({ length: tabCount }, (_, i) => (
-          <div key={i} style={{ padding: "8px 12px", borderBottom: i === 0 ? "2px solid var(--agd-bar-strong)" : "none" }}>
-            <Bar w={60} h={3} strong={i === 0} />
+          <div key={i} style={{ borderBottom: i === 0 ? "2px solid var(--agd-bar-strong)" : "none", padding: "8px 12px" }}>
+            <Bar h={3} strong={i === 0} w={60} />
           </div>
         ))}
       </div>
-      <div style={{ flex: 1, padding: 12, display: "flex", flexDirection: "column", gap: 6 }}>
-        <Bar w="80%" h={2} />
-        <Bar w="65%" h={2} />
-        <Bar w="75%" h={2} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 6, padding: 12 }}>
+        <Bar h={2} w="80%" />
+        <Bar h={2} w="65%" />
+        <Bar h={2} w="75%" />
       </div>
     </div>
-  );
-}
+    );
+};
 
-function AvatarSkeleton({ width, height }: SkeletonProps) {
-  const r = Math.min(width, height) / 2;
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
-      <circle cx={width / 2} cy={height / 2} r={r - 1} stroke="var(--agd-stroke)" fill="var(--agd-fill)" strokeWidth="1.5" strokeDasharray="3 2" />
-      <circle cx={width / 2} cy={height * 0.38} r={r * 0.28} stroke="var(--agd-stroke)" fill="var(--agd-fill)" strokeWidth="0.8" />
+const AvatarSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const r = Math.min(width, height) / 2;
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
+      <circle cx={width / 2} cy={height / 2} fill="var(--agd-fill)" r={r - 1} stroke="var(--agd-stroke)" strokeDasharray="3 2" strokeWidth="1.5" />
+      <circle cx={width / 2} cy={height * 0.38} fill="var(--agd-fill)" r={r * 0.28} stroke="var(--agd-stroke)" strokeWidth="0.8" />
       <path
         d={`M${width / 2 - r * 0.55} ${height * 0.78} C${width / 2 - r * 0.55} ${height * 0.55} ${width / 2 + r * 0.55} ${height * 0.55} ${width / 2 + r * 0.55} ${height * 0.78}`}
-        stroke="var(--agd-stroke)"
         fill="var(--agd-fill)"
+        stroke="var(--agd-stroke)"
         strokeWidth="0.8"
       />
     </svg>
-  );
-}
+    );
+};
 
-function BadgeSkeleton({ width, height }: SkeletonProps) {
-  return (
+const BadgeSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
     <div style={{
-      height: "100%",
-      borderRadius: height / 2,
-      border: "1px solid var(--agd-stroke)",
-      background: "var(--agd-fill)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+        alignItems: "center",
+        background: "var(--agd-fill)",
+        border: "1px solid var(--agd-stroke)",
+        borderRadius: height / 2,
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
     }}>
-      <Bar w={Math.max(16, width * 0.5)} h={2} strong />
+      <Bar h={2} strong w={Math.max(16, width * 0.5)} />
     </div>
-  );
-}
+);
 
-function HeaderSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: height * 0.08 }}>
-      <Bar w={width * 0.5} h={Math.max(5, height * 0.06)} strong />
+const HeaderSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.08, height: "100%", justifyContent: "center" }}>
+      <Bar h={Math.max(5, height * 0.06)} strong w={width * 0.5} />
       <Bar w={width * 0.35} />
     </div>
-  );
-}
+);
 
-function SectionSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: height * 0.04, padding: width * 0.04 }}>
-      <Bar w={width * 0.3} h={4} strong />
+const SectionSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", gap: height * 0.04, height: "100%", padding: width * 0.04 }}>
+      <Bar h={4} strong w={width * 0.3} />
       <Bar w={width * 0.7} />
       <Bar w={width * 0.5} />
-      <div style={{ flex: 1, display: "flex", gap: width * 0.03, marginTop: height * 0.06 }}>
-        <Block w="33%" h="100%" radius={4} />
-        <Block w="33%" h="100%" radius={4} />
-        <Block w="33%" h="100%" radius={4} />
+      <div style={{ display: "flex", flex: 1, gap: width * 0.03, marginTop: height * 0.06 }}>
+        <Block h="100%" radius={4} w="33%" />
+        <Block h="100%" radius={4} w="33%" />
+        <Block h="100%" radius={4} w="33%" />
       </div>
     </div>
-  );
-}
+);
 
-function GridSkeleton({ width, height }: SkeletonProps) {
-  const cols = Math.max(2, Math.min(4, Math.floor(width / 140)));
-  const rows = Math.max(1, Math.min(3, Math.floor(height / 120)));
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, gap: 6, height: "100%" }}>
+const GridSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = Math.max(2, Math.min(4, Math.floor(width / 140)));
+    const rows = Math.max(1, Math.min(3, Math.floor(height / 120)));
+
+    return (
+    <div style={{ display: "grid", gap: 6, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, height: "100%" }}>
       {Array.from({ length: cols * rows }, (_, i) => (
-        <Block key={i} w="100%" h="100%" radius={4} />
+        <Block h="100%" key={i} radius={4} w="100%" />
       ))}
     </div>
-  );
-}
+    );
+};
 
-function DropdownSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(2, Math.floor((height - 32) / 28));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "6px 8px", borderBottom: "1px solid var(--agd-stroke)" }}>
-        <Bar w={width * 0.5} h={3} strong />
+const DropdownSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(2, Math.floor((height - 32) / 28));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ borderBottom: "1px solid var(--agd-stroke)", padding: "6px 8px" }}>
+        <Bar h={3} strong w={width * 0.5} />
       </div>
-      <div style={{ flex: 1, padding: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 2, padding: 4 }}>
         {Array.from({ length: items }, (_, i) => (
-          <div key={i} style={{ padding: "4px 6px", borderRadius: 3, background: i === 0 ? "var(--agd-fill)" : "transparent" }}>
-            <Bar w={`${50 + ((i * 17) % 35)}%`} h={2} strong={i === 0} />
+          <div key={i} style={{ background: i === 0 ? "var(--agd-fill)" : "transparent", borderRadius: 3, padding: "4px 6px" }}>
+            <Bar h={2} strong={i === 0} w={`${50 + ((i * 17) % 35)}%`} />
           </div>
         ))}
       </div>
     </div>
-  );
-}
+    );
+};
 
-function ToggleSkeleton({ width, height }: SkeletonProps) {
-  const r = Math.min(width, height) / 2;
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
-      <rect x="1" y="1" width={width - 2} height={height - 2} rx={r} stroke="var(--agd-stroke)" strokeWidth="1" />
-      <circle cx={width - r} cy={height / 2} r={r * 0.7} fill="var(--agd-bar)" />
+const ToggleSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const r = Math.min(width, height) / 2;
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
+      <rect height={height - 2} rx={r} stroke="var(--agd-stroke)" strokeWidth="1" width={width - 2} x="1" y="1" />
+      <circle cx={width - r} cy={height / 2} fill="var(--agd-bar)" r={r * 0.7} />
     </svg>
-  );
-}
+    );
+};
 
-function SearchSkeleton({ width, height }: SkeletonProps) {
-  const r = Math.min(height / 2, 20);
-  return (
-    <div style={{ height: "100%", borderRadius: r, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: `0 ${r * 0.6}px`, gap: 6 }}>
+const SearchSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => {
+    const r = Math.min(height / 2, 20);
+
+    return (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: r, display: "flex", gap: 6, height: "100%", padding: `0 ${r * 0.6}px` }}>
       <Circle size={Math.min(14, height * 0.4)} />
-      <Bar w="50%" h={2} />
+      <Bar h={2} w="50%" />
     </div>
-  );
-}
+    );
+};
 
-function ToastSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", borderRadius: 8, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: "0 10px", gap: 8 }}>
+const ToastSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 8, display: "flex", gap: 8, height: "100%", padding: "0 10px" }}>
       <Circle size={Math.min(20, height * 0.5)} />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-        <Bar w="60%" h={3} strong />
-        <Bar w="80%" h={2} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+        <Bar h={3} strong w="60%" />
+        <Bar h={2} w="80%" />
       </div>
-      <div style={{ width: 14, height: 14, border: "1px solid var(--agd-stroke)", borderRadius: 3, flexShrink: 0 }} />
+      <div style={{ border: "1px solid var(--agd-stroke)", borderRadius: 3, flexShrink: 0, height: 14, width: 14 }} />
     </div>
-  );
-}
+);
 
-function ProgressSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
-      <rect x="0" y="0" width={width} height={height} rx={height / 2} stroke="var(--agd-stroke)" strokeWidth="0.8" />
-      <rect x="1" y="1" width={width * 0.65} height={height - 2} rx={(height - 2) / 2} fill="var(--agd-bar)" />
+const ProgressSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
+      <rect height={height} rx={height / 2} stroke="var(--agd-stroke)" strokeWidth="0.8" width={width} x="0" y="0" />
+      <rect fill="var(--agd-bar)" height={height - 2} rx={(height - 2) / 2} width={width * 0.65} x="1" y="1" />
     </svg>
-  );
-}
+);
 
-function ChartSkeleton({ width, height }: SkeletonProps) {
-  const bars = Math.max(3, Math.min(7, Math.floor(width / 50)));
-  const barW = width / (bars * 2);
-  return (
-    <div style={{ height: "100%", display: "flex", alignItems: "flex-end", justifyContent: "space-around", padding: "0 4px", borderBottom: "1px solid var(--agd-stroke)" }}>
+const ChartSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => {
+    const bars = Math.max(3, Math.min(7, Math.floor(width / 50)));
+    const barW = width / (bars * 2);
+
+    return (
+    <div style={{ alignItems: "flex-end", borderBottom: "1px solid var(--agd-stroke)", display: "flex", height: "100%", justifyContent: "space-around", padding: "0 4px" }}>
       {Array.from({ length: bars }, (_, i) => {
-        const h = 30 + ((i * 37 + 17) % 55);
-        return <Block key={i} w={barW} h={`${h}%`} radius={2} />;
+          const h = 30 + ((i * 37 + 17) % 55);
+
+          return <Block h={`${h}%`} key={i} radius={2} w={barW} />;
       })}
     </div>
-  );
-}
+    );
+};
 
-function VideoSkeleton({ width, height }: SkeletonProps) {
-  const btnR = Math.min(width, height) * 0.12;
-  return (
-    <div style={{ height: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Block w="100%" h="100%" radius={4} />
-      <div style={{ position: "absolute", width: btnR * 2, height: btnR * 2, borderRadius: "50%", border: "1.5px solid var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 0, height: 0, borderLeft: `${btnR * 0.6}px solid var(--agd-bar-strong)`, borderTop: `${btnR * 0.4}px solid transparent`, borderBottom: `${btnR * 0.4}px solid transparent`, marginLeft: btnR * 0.15 }} />
+const VideoSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const btnR = Math.min(width, height) * 0.12;
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "center", position: "relative" }}>
+      <Block h="100%" radius={4} w="100%" />
+      <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1.5px solid var(--agd-stroke)", borderRadius: "50%", display: "flex", height: btnR * 2, justifyContent: "center", position: "absolute", width: btnR * 2 }}>
+        <div style={{ borderBottom: `${btnR * 0.4}px solid transparent`, borderLeft: `${btnR * 0.6}px solid var(--agd-bar-strong)`, borderTop: `${btnR * 0.4}px solid transparent`, height: 0, marginLeft: btnR * 0.15, width: 0 }} />
       </div>
     </div>
-  );
-}
+    );
+};
 
-function TooltipSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={{ flex: 1, width: "100%", borderRadius: 6, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Bar w="60%" h={2} />
+const TooltipSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 6, display: "flex", flex: 1, justifyContent: "center", width: "100%" }}>
+        <Bar h={2} w="60%" />
       </div>
-      <div style={{ width: 8, height: 8, background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderTop: "none", borderLeft: "none", transform: "rotate(45deg)", marginTop: -5 }} />
+      <div style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderLeft: "none", borderTop: "none", height: 8, marginTop: -5, transform: "rotate(45deg)", width: 8 }} />
     </div>
-  );
-}
+);
 
-function BreadcrumbSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(2, Math.min(4, Math.floor(width / 80)));
-  return (
-    <div style={{ display: "flex", alignItems: "center", height: "100%", gap: 4 }}>
+const BreadcrumbSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(2, Math.min(4, Math.floor(width / 80)));
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", gap: 4, height: "100%" }}>
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <div key={i} style={{ alignItems: "center", display: "flex", gap: 4 }}>
           {i > 0 && <span style={{ color: "var(--agd-stroke)", fontSize: 10 }}>/</span>}
-          <Bar w={40 + ((i * 13) % 20)} h={2} strong={i === items - 1} />
+          <Bar h={2} strong={i === items - 1} w={40 + ((i * 13) % 20)} />
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function PaginationSkeleton({ width, height }: SkeletonProps) {
-  const count = Math.max(3, Math.min(5, Math.floor(width / 40)));
-  const sz = Math.min(28, height * 0.8);
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", gap: 4 }}>
+const PaginationSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const count = Math.max(3, Math.min(5, Math.floor(width / 40)));
+    const sz = Math.min(28, height * 0.8);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", gap: 4, height: "100%", justifyContent: "center" }}>
       {Array.from({ length: count }, (_, i) => (
-        <Block key={i} w={sz} h={sz} radius={4} style={i === 1 ? { background: "var(--agd-bar)" } : undefined} />
+        <Block h={sz} key={i} radius={4} style={i === 1 ? { background: "var(--agd-bar)" } : undefined} w={sz} />
       ))}
     </div>
-  );
-}
+    );
+};
 
-function DividerSkeleton({ width }: SkeletonProps) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
-      <div style={{ width: "100%", height: 1, background: "var(--agd-stroke)" }} />
+const DividerSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", height: "100%" }}>
+      <div style={{ background: "var(--agd-stroke)", height: 1, width: "100%" }} />
     </div>
-  );
-}
+);
 
-function AccordionSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(2, Math.min(4, Math.floor(height / 40)));
-  return (
+const AccordionSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(2, Math.min(4, Math.floor(height / 40)));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ borderBottom: "1px solid var(--agd-stroke)", padding: "8px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", flex: i === 0 ? 2 : 1 }}>
-          <Bar w={`${40 + ((i * 17) % 25)}%`} h={3} strong />
-          <span style={{ fontSize: 8, color: "var(--agd-stroke)" }}>{i === 0 ? "▼" : "▶"}</span>
+        <div key={i} style={{ alignItems: "center", borderBottom: "1px solid var(--agd-stroke)", display: "flex", flex: i === 0 ? 2 : 1, justifyContent: "space-between", padding: "8px 6px" }}>
+          <Bar h={3} strong w={`${40 + ((i * 17) % 25)}%`} />
+          <span style={{ color: "var(--agd-stroke)", fontSize: 8 }}>{i === 0 ? "▼" : "▶"}</span>
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function CarouselSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 6 }}>
-      <div style={{ flex: 1, display: "flex", gap: 6, alignItems: "center" }}>
-        <span style={{ fontSize: 12, color: "var(--agd-stroke)" }}>‹</span>
-        <Block w="100%" h="100%" radius={4} />
-        <span style={{ fontSize: 12, color: "var(--agd-stroke)" }}>›</span>
+const CarouselSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, height: "100%" }}>
+      <div style={{ alignItems: "center", display: "flex", flex: 1, gap: 6 }}>
+        <span style={{ color: "var(--agd-stroke)", fontSize: 12 }}>‹</span>
+        <Block h="100%" radius={4} w="100%" />
+        <span style={{ color: "var(--agd-stroke)", fontSize: 12 }}>›</span>
       </div>
-      <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
+      <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
         <Circle size={5} />
         <Circle size={5} />
         <Circle size={5} />
       </div>
     </div>
-  );
-}
+);
 
-function PricingSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", padding: 10, gap: height * 0.04 }}>
-      <Bar w={width * 0.4} h={3} strong />
-      <Bar w={width * 0.3} h={6} strong />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4, width: "100%", padding: "8px 0" }}>
+const PricingSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.04, height: "100%", padding: 10 }}>
+      <Bar h={3} strong w={width * 0.4} />
+      <Bar h={6} strong w={width * 0.3} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 4, padding: "8px 0", width: "100%" }}>
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <div key={i} style={{ alignItems: "center", display: "flex", gap: 4 }}>
             <Circle size={5} />
-            <Bar w={`${50 + ((i * 17) % 35)}%`} h={2} />
+            <Bar h={2} w={`${50 + ((i * 17) % 35)}%`} />
           </div>
         ))}
       </div>
-      <Block w={width * 0.7} h={Math.min(32, height * 0.1)} radius={6} style={{ background: "var(--agd-bar)" }} />
+      <Block h={Math.min(32, height * 0.1)} radius={6} style={{ background: "var(--agd-bar)" }} w={width * 0.7} />
     </div>
-  );
-}
+);
 
-function TestimonialSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", padding: 10, gap: 8 }}>
-      <span style={{ fontSize: 18, lineHeight: 1, color: "var(--agd-stroke)", fontFamily: "serif" }}>&ldquo;</span>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-        <Bar w="90%" h={2} />
-        <Bar w="75%" h={2} />
-        <Bar w="60%" h={2} />
+const TestimonialSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%", padding: 10 }}>
+      <span style={{ color: "var(--agd-stroke)", fontFamily: "serif", fontSize: 18, lineHeight: 1 }}>&ldquo;</span>
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 4 }}>
+        <Bar h={2} w="90%" />
+        <Bar h={2} w="75%" />
+        <Bar h={2} w="60%" />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ alignItems: "center", display: "flex", gap: 6 }}>
         <Circle size={20} />
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Bar w={60} h={3} strong />
-          <Bar w={40} h={2} />
+          <Bar h={3} strong w={60} />
+          <Bar h={2} w={40} />
         </div>
       </div>
     </div>
-  );
-}
+);
 
-function CtaSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: height * 0.08 }}>
-      <Bar w={width * 0.5} h={Math.max(4, height * 0.05)} strong />
+const CtaSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.08, height: "100%", justifyContent: "center" }}>
+      <Bar h={Math.max(4, height * 0.05)} strong w={width * 0.5} />
       <Bar w={width * 0.35} />
-      <Block w={Math.min(140, width * 0.25)} h={Math.min(32, height * 0.15)} radius={6} style={{ marginTop: height * 0.04, background: "var(--agd-bar)" }} />
+      <Block h={Math.min(32, height * 0.15)} radius={6} style={{ background: "var(--agd-bar)", marginTop: height * 0.04 }} w={Math.min(140, width * 0.25)} />
     </div>
-  );
-}
+);
 
-function AlertSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", borderRadius: 6, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: "0 10px", gap: 8 }}>
-      <div style={{ width: 16, height: 16, borderRadius: "50%", border: "1.5px solid var(--agd-bar-strong)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <div style={{ width: 2, height: 6, background: "var(--agd-bar-strong)", borderRadius: 1 }} />
+const AlertSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 6, display: "flex", gap: 8, height: "100%", padding: "0 10px" }}>
+      <div style={{ alignItems: "center", border: "1.5px solid var(--agd-bar-strong)", borderRadius: "50%", display: "flex", flexShrink: 0, height: 16, justifyContent: "center", width: 16 }}>
+        <div style={{ background: "var(--agd-bar-strong)", borderRadius: 1, height: 6, width: 2 }} />
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-        <Bar w="40%" h={3} strong />
-        <Bar w="70%" h={2} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+        <Bar h={3} strong w="40%" />
+        <Bar h={2} w="70%" />
       </div>
     </div>
-  );
-}
+);
 
-function BannerSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", background: "var(--agd-fill)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "0 12px" }}>
-      <Bar w={width * 0.4} h={3} strong />
-      <Block w={60} h={Math.min(24, height * 0.6)} radius={4} />
+const BannerSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", display: "flex", gap: 8, height: "100%", justifyContent: "center", padding: "0 12px" }}>
+      <Bar h={3} strong w={width * 0.4} />
+      <Block h={Math.min(24, height * 0.6)} radius={4} w={60} />
     </div>
-  );
-}
+);
 
-function StatSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: height * 0.06 }}>
-      <Bar w={width * 0.5} h={2} />
-      <Bar w={width * 0.4} h={Math.max(8, height * 0.18)} strong />
-      <Bar w={width * 0.3} h={2} />
+const StatSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.06, height: "100%", justifyContent: "center" }}>
+      <Bar h={2} w={width * 0.5} />
+      <Bar h={Math.max(8, height * 0.18)} strong w={width * 0.4} />
+      <Bar h={2} w={width * 0.3} />
     </div>
-  );
-}
+);
 
-function StepperSkeleton({ width, height }: SkeletonProps) {
-  const steps = Math.max(3, Math.min(5, Math.floor(width / 100)));
-  const dotR = Math.min(12, height * 0.35);
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "100%", padding: "0 8px" }}>
+const StepperSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const steps = Math.max(3, Math.min(5, Math.floor(width / 100)));
+    const dotR = Math.min(12, height * 0.35);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "space-between", padding: "0 8px" }}>
       {Array.from({ length: steps }, (_, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 0, flex: 1 }}>
-          <div style={{ width: dotR, height: dotR, borderRadius: "50%", border: "1.5px solid var(--agd-stroke)", background: i === 0 ? "var(--agd-bar)" : "transparent", flexShrink: 0 }} />
-          {i < steps - 1 && <div style={{ flex: 1, height: 1, background: "var(--agd-stroke)", margin: "0 4px" }} />}
+        <div key={i} style={{ alignItems: "center", display: "flex", flex: 1, gap: 0 }}>
+          <div style={{ background: i === 0 ? "var(--agd-bar)" : "transparent", border: "1.5px solid var(--agd-stroke)", borderRadius: "50%", flexShrink: 0, height: dotR, width: dotR }} />
+          {i < steps - 1 && <div style={{ background: "var(--agd-stroke)", flex: 1, height: 1, margin: "0 4px" }} />}
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function TagSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", borderRadius: 4, border: "1px solid var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "0 6px" }}>
-      <Bar w={Math.max(16, width * 0.5)} h={2} strong />
-      <div style={{ width: 8, height: 8, borderRadius: "50%", border: "1px solid var(--agd-stroke)", flexShrink: 0 }} />
+const TagSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", borderRadius: 4, display: "flex", gap: 4, height: "100%", justifyContent: "center", padding: "0 6px" }}>
+      <Bar h={2} strong w={Math.max(16, width * 0.5)} />
+      <div style={{ border: "1px solid var(--agd-stroke)", borderRadius: "50%", flexShrink: 0, height: 8, width: 8 }} />
     </div>
-  );
-}
+);
 
-function RatingSkeleton({ width, height }: SkeletonProps) {
-  const stars = 5;
-  const sz = Math.min(height * 0.7, width / (stars * 1.5));
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", gap: sz * 0.2 }}>
+const RatingSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const stars = 5;
+    const sz = Math.min(height * 0.7, width / (stars * 1.5));
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", gap: sz * 0.2, height: "100%", justifyContent: "center" }}>
       {Array.from({ length: stars }, (_, i) => (
-        <svg key={i} width={sz} height={sz} viewBox="0 0 16 16" fill="none">
-          <path d="M8 1.5l2 4 4.5.7-3.25 3.1.75 4.5L8 11.4l-4 2.4.75-4.5L1.5 6.2 6 5.5z" stroke="var(--agd-stroke)" strokeWidth="0.8" fill={i < 3 ? "var(--agd-bar)" : "none"} />
+        <svg fill="none" height={sz} key={i} viewBox="0 0 16 16" width={sz}>
+          <path d="M8 1.5l2 4 4.5.7-3.25 3.1.75 4.5L8 11.4l-4 2.4.75-4.5L1.5 6.2 6 5.5z" fill={i < 3 ? "var(--agd-bar)" : "none"} stroke="var(--agd-stroke)" strokeWidth="0.8" />
         </svg>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function MapSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", position: "relative", borderRadius: 4, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", overflow: "hidden" }}>
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none" style={{ position: "absolute", inset: 0 }}>
-        <line x1={0} y1={height * 0.3} x2={width} y2={height * 0.7} stroke="var(--agd-stroke)" strokeWidth="0.5" opacity=".2" />
-        <line x1={0} y1={height * 0.6} x2={width} y2={height * 0.2} stroke="var(--agd-stroke)" strokeWidth="0.5" opacity=".15" />
-        <line x1={width * 0.4} y1={0} x2={width * 0.6} y2={height} stroke="var(--agd-stroke)" strokeWidth="0.5" opacity=".15" />
+const MapSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 4, height: "100%", overflow: "hidden", position: "relative" }}>
+      <svg fill="none" height="100%" style={{ inset: 0, position: "absolute" }} viewBox={`0 0 ${width} ${height}`} width="100%">
+        <line opacity=".2" stroke="var(--agd-stroke)" strokeWidth="0.5" x1={0} x2={width} y1={height * 0.3} y2={height * 0.7} />
+        <line opacity=".15" stroke="var(--agd-stroke)" strokeWidth="0.5" x1={0} x2={width} y1={height * 0.6} y2={height * 0.2} />
+        <line opacity=".15" stroke="var(--agd-stroke)" strokeWidth="0.5" x1={width * 0.4} x2={width * 0.6} y1={0} y2={height} />
       </svg>
-      <div style={{ position: "absolute", left: "50%", top: "40%", transform: "translate(-50%, -100%)" }}>
-        <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+      <div style={{ left: "50%", position: "absolute", top: "40%", transform: "translate(-50%, -100%)" }}>
+        <svg fill="none" height="22" viewBox="0 0 16 22" width="16">
           <path d="M8 0C3.6 0 0 3.6 0 8c0 6 8 14 8 14s8-8 8-14c0-4.4-3.6-8-8-8z" fill="var(--agd-bar)" opacity=".4" />
-          <circle cx="8" cy="8" r="3" fill="var(--agd-fill)" />
+          <circle cx="8" cy="8" fill="var(--agd-fill)" r="3" />
         </svg>
       </div>
     </div>
-  );
-}
+);
 
-function TimelineSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(3, Math.min(5, Math.floor(height / 60)));
-  return (
+const TimelineSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(3, Math.min(5, Math.floor(height / 60)));
+
+    return (
     <div style={{ display: "flex", height: "100%", padding: "8px 0" }}>
-      <div style={{ width: 16, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ alignItems: "center", display: "flex", flexDirection: "column", width: 16 }}>
         {Array.from({ length: items }, (_, i) => (
-          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+          <div key={i} style={{ alignItems: "center", display: "flex", flex: 1, flexDirection: "column" }}>
             <Circle size={8} />
-            {i < items - 1 && <div style={{ flex: 1, width: 1, background: "var(--agd-stroke)" }} />}
+            {i < items - 1 && <div style={{ background: "var(--agd-stroke)", flex: 1, width: 1 }} />}
           </div>
         ))}
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-around", paddingLeft: 8 }}>
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "space-around", paddingLeft: 8 }}>
         {Array.from({ length: items }, (_, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <Bar w={`${35 + ((i * 13) % 25)}%`} h={3} strong />
-            <Bar w={`${50 + ((i * 17) % 30)}%`} h={2} />
+            <Bar h={3} strong w={`${35 + ((i * 13) % 25)}%`} />
+            <Bar h={2} w={`${50 + ((i * 17) % 30)}%`} />
           </div>
         ))}
       </div>
     </div>
-  );
-}
+    );
+};
 
-function FileUploadSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", borderRadius: 8, border: "2px dashed var(--agd-stroke)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: height * 0.06 }}>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+const FileUploadSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", border: "2px dashed var(--agd-stroke)", borderRadius: 8, display: "flex", flexDirection: "column", gap: height * 0.06, height: "100%", justifyContent: "center" }}>
+      <svg fill="none" height="24" viewBox="0 0 24 24" width="24">
         <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="var(--agd-stroke)" strokeWidth="1.5" />
         <path d="M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="var(--agd-stroke)" strokeWidth="1.5" />
       </svg>
-      <Bar w={width * 0.4} h={2} />
-      <Bar w={width * 0.25} h={2} />
+      <Bar h={2} w={width * 0.4} />
+      <Bar h={2} w={width * 0.25} />
     </div>
-  );
-}
+);
 
-function CodeBlockSkeleton({ width, height }: SkeletonProps) {
-  const lines = Math.max(3, Math.min(8, Math.floor(height / 20)));
-  return (
-    <div style={{ height: "100%", borderRadius: 6, background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", padding: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+const CodeBlockSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => {
+    const lines = Math.max(3, Math.min(8, Math.floor(height / 20)));
+
+    return (
+    <div style={{ background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", borderRadius: 6, display: "flex", flexDirection: "column", gap: 4, height: "100%", padding: 8 }}>
       <div style={{ display: "flex", gap: 3, marginBottom: 4 }}>
         <Circle size={6} />
         <Circle size={6} />
@@ -719,232 +692,236 @@ function CodeBlockSkeleton({ width, height }: SkeletonProps) {
       </div>
       {Array.from({ length: lines }, (_, i) => (
         <div key={i} style={{ display: "flex", gap: 6, paddingLeft: ((i > 0 && i < lines - 1) ? 12 : 0) }}>
-          <Bar w={`${25 + ((i * 23) % 50)}%`} h={2} strong={i === 0} />
+          <Bar h={2} strong={i === 0} w={`${25 + ((i * 23) % 50)}%`} />
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function CalendarSkeleton({ width, height }: SkeletonProps) {
-  const cols = 7;
-  const rows = 5;
-  const cellSz = Math.min((width - 16) / cols, (height - 40) / (rows + 1));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px" }}>
-        <span style={{ fontSize: 8, color: "var(--agd-stroke)" }}>‹</span>
-        <Bar w={width * 0.3} h={3} strong />
-        <span style={{ fontSize: 8, color: "var(--agd-stroke)" }}>›</span>
+const CalendarSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = 7;
+    const rows = 5;
+    const cellSz = Math.min((width - 16) / cols, (height - 40) / (rows + 1));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", padding: "6px 8px" }}>
+        <span style={{ color: "var(--agd-stroke)", fontSize: 8 }}>‹</span>
+        <Bar h={3} strong w={width * 0.3} />
+        <span style={{ color: "var(--agd-stroke)", fontSize: 8 }}>›</span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 2, padding: "0 4px", flex: 1 }}>
+      <div style={{ display: "grid", flex: 1, gap: 2, gridTemplateColumns: `repeat(${cols}, 1fr)`, padding: "0 4px" }}>
         {Array.from({ length: cols }, (_, i) => (
-          <div key={`h${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: cellSz * 0.6 }}>
-            <Bar w={cellSz * 0.5} h={2} />
+          <div key={`h${i}`} style={{ alignItems: "center", display: "flex", height: cellSz * 0.6, justifyContent: "center" }}>
+            <Bar h={2} w={cellSz * 0.5} />
           </div>
         ))}
         {Array.from({ length: cols * rows }, (_, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: cellSz }}>
-            <div style={{ width: cellSz * 0.6, height: cellSz * 0.6, borderRadius: "50%", background: i === 12 ? "var(--agd-bar)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: 2, height: 2, borderRadius: 1, background: "var(--agd-bar-strong)", opacity: i === 12 ? 1 : 0.3 }} />
+          <div key={i} style={{ alignItems: "center", display: "flex", height: cellSz, justifyContent: "center" }}>
+            <div style={{ alignItems: "center", background: i === 12 ? "var(--agd-bar)" : "transparent", borderRadius: "50%", display: "flex", height: cellSz * 0.6, justifyContent: "center", width: cellSz * 0.6 }}>
+              <div style={{ background: "var(--agd-bar-strong)", borderRadius: 1, height: 2, opacity: i === 12 ? 1 : 0.3, width: 2 }} />
             </div>
           </div>
         ))}
       </div>
     </div>
-  );
-}
+    );
+};
 
-function NotificationSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", borderRadius: 8, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: "0 10px", gap: 8 }}>
+const NotificationSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 8, display: "flex", gap: 8, height: "100%", padding: "0 10px" }}>
       <Circle size={Math.min(32, height * 0.55)} />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-        <Bar w="50%" h={3} strong />
-        <Bar w="75%" h={2} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+        <Bar h={3} strong w="50%" />
+        <Bar h={2} w="75%" />
       </div>
-      <Bar w={30} h={2} />
+      <Bar h={2} w={30} />
     </div>
-  );
-}
+);
 
-function ProductCardSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ height: "50%", background: "var(--agd-fill)", borderBottom: "1px dashed var(--agd-stroke)" }} />
-      <div style={{ flex: 1, padding: 10, display: "flex", flexDirection: "column", gap: 5 }}>
-        <Bar w="65%" h={4} strong />
-        <Bar w="40%" h={3} />
+const ProductCardSkeleton = ({ width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ background: "var(--agd-fill)", borderBottom: "1px dashed var(--agd-stroke)", height: "50%" }} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 5, padding: 10 }}>
+        <Bar h={4} strong w="65%" />
+        <Bar h={3} w="40%" />
         <div style={{ flex: 1 }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Bar w="30%" h={5} strong />
-          <Block w={Math.min(70, width * 0.3)} h={26} radius={4} style={{ background: "var(--agd-bar)" }} />
+        <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+          <Bar h={5} strong w="30%" />
+          <Block h={26} radius={4} style={{ background: "var(--agd-bar)" }} w={Math.min(70, width * 0.3)} />
         </div>
       </div>
     </div>
-  );
-}
+);
 
-function ProfileSkeleton({ width, height }: SkeletonProps) {
-  const avatarSz = Math.min(48, height * 0.3);
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: height * 0.06 }}>
+const ProfileSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const avatarSz = Math.min(48, height * 0.3);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.06, height: "100%", justifyContent: "center" }}>
       <Circle size={avatarSz} />
-      <Bar w={width * 0.45} h={4} strong />
-      <Bar w={width * 0.3} h={2} />
+      <Bar h={4} strong w={width * 0.45} />
+      <Bar h={2} w={width * 0.3} />
       <div style={{ display: "flex", gap: width * 0.08, marginTop: height * 0.04 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <Bar w={20} h={3} strong />
-          <Bar w={28} h={2} />
+        <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Bar h={3} strong w={20} />
+          <Bar h={2} w={28} />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <Bar w={20} h={3} strong />
-          <Bar w={28} h={2} />
+        <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Bar h={3} strong w={20} />
+          <Bar h={2} w={28} />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <Bar w={20} h={3} strong />
-          <Bar w={28} h={2} />
+        <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Bar h={3} strong w={20} />
+          <Bar h={2} w={28} />
         </div>
       </div>
     </div>
-  );
-}
+    );
+};
 
-function DrawerSkeleton({ width, height }: SkeletonProps) {
-  const panelW = Math.max(width * 0.6, 80);
-  const items = Math.max(3, Math.floor(height / 40));
-  return (
-    <div style={{ height: "100%", display: "flex" }}>
-      <div style={{ width: width - panelW, background: "var(--agd-fill)", opacity: 0.3 }} />
-      <div style={{ flex: 1, borderLeft: "1px solid var(--agd-stroke)", display: "flex", flexDirection: "column", padding: width * 0.04 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: height * 0.06 }}>
-          <Bar w={panelW * 0.4} h={4} strong />
-          <div style={{ width: 12, height: 12, border: "1px solid var(--agd-stroke)", borderRadius: 3 }} />
+const DrawerSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const panelW = Math.max(width * 0.6, 80);
+    const items = Math.max(3, Math.floor(height / 40));
+
+    return (
+    <div style={{ display: "flex", height: "100%" }}>
+      <div style={{ background: "var(--agd-fill)", opacity: 0.3, width: width - panelW }} />
+      <div style={{ borderLeft: "1px solid var(--agd-stroke)", display: "flex", flex: 1, flexDirection: "column", padding: width * 0.04 }}>
+        <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", marginBottom: height * 0.06 }}>
+          <Bar h={4} strong w={panelW * 0.4} />
+          <div style={{ border: "1px solid var(--agd-stroke)", borderRadius: 3, height: 12, width: 12 }} />
         </div>
         {Array.from({ length: items }, (_, i) => (
           <div key={i} style={{ padding: "6px 0" }}>
-            <Bar w={`${50 + ((i * 17) % 35)}%`} h={2} strong={i === 0} />
+            <Bar h={2} strong={i === 0} w={`${50 + ((i * 17) % 35)}%`} />
           </div>
         ))}
       </div>
     </div>
-  );
-}
+    );
+};
 
-function PopoverSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={{ flex: 1, width: "100%", borderRadius: 8, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", padding: 10, display: "flex", flexDirection: "column", gap: 5 }}>
-        <Bar w="70%" h={3} strong />
-        <Bar w="90%" h={2} />
-        <Bar w="60%" h={2} />
+const PopoverSkeleton = (_props: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 8, display: "flex", flex: 1, flexDirection: "column", gap: 5, padding: 10, width: "100%" }}>
+        <Bar h={3} strong w="70%" />
+        <Bar h={2} w="90%" />
+        <Bar h={2} w="60%" />
       </div>
-      <div style={{ width: 10, height: 10, background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderTop: "none", borderLeft: "none", transform: "rotate(45deg)", marginTop: -6 }} />
+      <div style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderLeft: "none", borderTop: "none", height: 10, marginTop: -6, transform: "rotate(45deg)", width: 10 }} />
     </div>
-  );
-}
+);
 
-function LogoSkeleton({ width, height }: SkeletonProps) {
-  const iconSz = Math.min(height * 0.7, width * 0.3);
-  return (
-    <div style={{ height: "100%", display: "flex", alignItems: "center", gap: width * 0.08 }}>
-      <Block w={iconSz} h={iconSz} radius={iconSz * 0.25} />
-      <Bar w={width * 0.45} h={Math.max(4, height * 0.2)} strong />
+const LogoSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const iconSz = Math.min(height * 0.7, width * 0.3);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", gap: width * 0.08, height: "100%" }}>
+      <Block h={iconSz} radius={iconSz * 0.25} w={iconSz} />
+      <Bar h={Math.max(4, height * 0.2)} strong w={width * 0.45} />
     </div>
-  );
-}
+    );
+};
 
-function FaqSkeleton({ width, height }: SkeletonProps) {
-  const items = Math.max(2, Math.min(5, Math.floor(height / 56)));
-  return (
+const FaqSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const items = Math.max(2, Math.min(5, Math.floor(height / 56)));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ borderBottom: "1px solid var(--agd-stroke)", padding: "8px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", flex: i === 0 ? 2 : 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--agd-stroke)" }}>Q</span>
-            <Bar w={width * (0.3 + ((i * 13) % 25) / 100)} h={3} strong />
+        <div key={i} style={{ alignItems: "center", borderBottom: "1px solid var(--agd-stroke)", display: "flex", flex: i === 0 ? 2 : 1, justifyContent: "space-between", padding: "8px 6px" }}>
+          <div style={{ alignItems: "center", display: "flex", gap: 6 }}>
+            <span style={{ color: "var(--agd-stroke)", fontSize: 9, fontWeight: 700 }}>Q</span>
+            <Bar h={3} strong w={width * (0.3 + ((i * 13) % 25) / 100)} />
           </div>
-          <span style={{ fontSize: 8, color: "var(--agd-stroke)" }}>{i === 0 ? "▼" : "▶"}</span>
+          <span style={{ color: "var(--agd-stroke)", fontSize: 8 }}>{i === 0 ? "▼" : "▶"}</span>
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function GallerySkeleton({ width, height }: SkeletonProps) {
-  const cols = Math.max(2, Math.min(4, Math.floor(width / 120)));
-  const rows = Math.max(1, Math.min(3, Math.floor(height / 120)));
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, gap: 4, height: "100%" }}>
+const GallerySkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = Math.max(2, Math.min(4, Math.floor(width / 120)));
+    const rows = Math.max(1, Math.min(3, Math.floor(height / 120)));
+
+    return (
+    <div style={{ display: "grid", gap: 4, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, height: "100%" }}>
       {Array.from({ length: cols * rows }, (_, i) => (
-        <div key={i} style={{ borderRadius: 4, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", position: "relative", overflow: "hidden" }}>
-          <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none">
-            <line x1="0" y1="0" x2="100" y2="100" stroke="var(--agd-stroke)" strokeWidth="0.5" />
-            <line x1="100" y1="0" x2="0" y2="100" stroke="var(--agd-stroke)" strokeWidth="0.5" />
+        <div key={i} style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
+          <svg fill="none" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100" width="100%">
+            <line stroke="var(--agd-stroke)" strokeWidth="0.5" x1="0" x2="100" y1="0" y2="100" />
+            <line stroke="var(--agd-stroke)" strokeWidth="0.5" x1="100" x2="0" y1="0" y2="100" />
           </svg>
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function CheckboxSkeleton({ width, height }: SkeletonProps) {
-  const sz = Math.min(width, height);
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
-      <rect x="1" y={(height - sz + 2) / 2} width={sz - 2} height={sz - 2} rx={sz * 0.15} stroke="var(--agd-stroke)" strokeWidth="1.5" />
-      <path d={`M${sz * 0.25} ${height / 2}l${sz * 0.2} ${sz * 0.2} ${sz * 0.3}-${sz * 0.35}`} stroke="var(--agd-bar)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+const CheckboxSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const sz = Math.min(width, height);
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
+      <rect height={sz - 2} rx={sz * 0.15} stroke="var(--agd-stroke)" strokeWidth="1.5" width={sz - 2} x="1" y={(height - sz + 2) / 2} />
+      <path d={`M${sz * 0.25} ${height / 2}l${sz * 0.2} ${sz * 0.2} ${sz * 0.3}-${sz * 0.35}`} fill="none" stroke="var(--agd-bar)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
     </svg>
-  );
-}
+    );
+};
 
-function RadioSkeleton({ width, height }: SkeletonProps) {
-  const r = Math.min(width, height) / 2 - 1;
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
+const RadioSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const r = Math.min(width, height) / 2 - 1;
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
       <circle cx={width / 2} cy={height / 2} r={r} stroke="var(--agd-stroke)" strokeWidth="1.5" />
-      <circle cx={width / 2} cy={height / 2} r={r * 0.45} fill="var(--agd-bar)" />
+      <circle cx={width / 2} cy={height / 2} fill="var(--agd-bar)" r={r * 0.45} />
     </svg>
-  );
-}
+    );
+};
 
-function SliderSkeleton({ width, height }: SkeletonProps) {
-  const trackH = Math.max(2, height * 0.12);
-  const thumbR = Math.min(height * 0.35, 10);
-  const fillW = width * 0.55;
-  return (
-    <div style={{ height: "100%", display: "flex", alignItems: "center", position: "relative" }}>
-      <div style={{ width: "100%", height: trackH, borderRadius: trackH / 2, background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", position: "relative" }}>
-        <div style={{ width: fillW, height: "100%", borderRadius: trackH / 2, background: "var(--agd-bar)" }} />
+const SliderSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const trackH = Math.max(2, height * 0.12);
+    const thumbR = Math.min(height * 0.35, 10);
+    const fillW = width * 0.55;
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", height: "100%", position: "relative" }}>
+      <div style={{ background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", borderRadius: trackH / 2, height: trackH, position: "relative", width: "100%" }}>
+        <div style={{ background: "var(--agd-bar)", borderRadius: trackH / 2, height: "100%", width: fillW }} />
       </div>
-      <div style={{ position: "absolute", left: fillW - thumbR, width: thumbR * 2, height: thumbR * 2, borderRadius: "50%", border: "1.5px solid var(--agd-stroke)", background: "var(--agd-fill)" }} />
+      <div style={{ background: "var(--agd-fill)", border: "1.5px solid var(--agd-stroke)", borderRadius: "50%", height: thumbR * 2, left: fillW - thumbR, position: "absolute", width: thumbR * 2 }} />
     </div>
-  );
-}
+    );
+};
 
-function DatePickerSkeleton({ width, height }: SkeletonProps) {
-  const inputH = Math.min(36, height * 0.15);
-  const cols = 7;
-  const rows = 4;
-  const cellSz = Math.min((width - 16) / cols, (height - inputH - 40) / (rows + 1));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 4 }}>
-      <div style={{ height: inputH, borderRadius: 4, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: "0 8px", justifyContent: "space-between" }}>
-        <Bar w="40%" h={2} />
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="var(--agd-stroke)" strokeWidth="1" /><line x1="2" y1="6" x2="14" y2="6" stroke="var(--agd-stroke)" strokeWidth="0.5" /></svg>
+const DatePickerSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const inputH = Math.min(36, height * 0.15);
+    const cols = 7;
+    const rows = 4;
+    const cellSz = Math.min((width - 16) / cols, (height - inputH - 40) / (rows + 1));
+
+    return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, height: "100%" }}>
+      <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 4, display: "flex", height: inputH, justifyContent: "space-between", padding: "0 8px" }}>
+        <Bar h={2} w="40%" />
+        <svg fill="none" height="12" viewBox="0 0 16 16" width="12"><rect height="11" rx="1" stroke="var(--agd-stroke)" strokeWidth="1" width="12" x="2" y="3" /><line stroke="var(--agd-stroke)" strokeWidth="0.5" x1="2" x2="14" y1="6" y2="6" /></svg>
       </div>
-      <div style={{ flex: 1, borderRadius: 6, border: "1px dashed var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 6px" }}>
-          <span style={{ fontSize: 7, color: "var(--agd-stroke)" }}>‹</span>
-          <Bar w={width * 0.25} h={2} strong />
-          <span style={{ fontSize: 7, color: "var(--agd-stroke)" }}>›</span>
+      <div style={{ background: "var(--agd-fill)", border: "1px dashed var(--agd-stroke)", borderRadius: 6, display: "flex", flex: 1, flexDirection: "column" }}>
+        <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", padding: "4px 6px" }}>
+          <span style={{ color: "var(--agd-stroke)", fontSize: 7 }}>‹</span>
+          <Bar h={2} strong w={width * 0.25} />
+          <span style={{ color: "var(--agd-stroke)", fontSize: 7 }}>›</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 1, padding: "0 4px", flex: 1 }}>
+        <div style={{ display: "grid", flex: 1, gap: 1, gridTemplateColumns: `repeat(${cols}, 1fr)`, padding: "0 4px" }}>
           {Array.from({ length: cols * rows }, (_, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: cellSz }}>
-              <div style={{ width: cellSz * 0.5, height: cellSz * 0.5, borderRadius: "50%", background: i === 10 ? "var(--agd-bar)" : "transparent" }}>
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 1.5, height: 1.5, borderRadius: 1, background: "var(--agd-bar-strong)", opacity: i === 10 ? 1 : 0.25 }} />
+            <div key={i} style={{ alignItems: "center", display: "flex", height: cellSz, justifyContent: "center" }}>
+              <div style={{ background: i === 10 ? "var(--agd-bar)" : "transparent", borderRadius: "50%", height: cellSz * 0.5, width: cellSz * 0.5 }}>
+                <div style={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "center", width: "100%" }}>
+                  <div style={{ background: "var(--agd-bar-strong)", borderRadius: 1, height: 1.5, opacity: i === 10 ? 1 : 0.25, width: 1.5 }} />
                 </div>
               </div>
             </div>
@@ -952,223 +929,224 @@ function DatePickerSkeleton({ width, height }: SkeletonProps) {
         </div>
       </div>
     </div>
-  );
-}
+    );
+};
 
-function SkeletonSkeletonRenderer({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: height * 0.08, padding: 4 }}>
-      <div style={{ width: "100%", height: height * 0.2, borderRadius: 4, background: "var(--agd-fill)" }} />
-      <div style={{ width: "70%", height: Math.max(6, height * 0.1), borderRadius: 3, background: "var(--agd-fill)" }} />
-      <div style={{ width: "90%", height: Math.max(4, height * 0.06), borderRadius: 3, background: "var(--agd-fill)" }} />
-      <div style={{ width: "50%", height: Math.max(4, height * 0.06), borderRadius: 3, background: "var(--agd-fill)" }} />
+const SkeletonSkeletonRenderer = ({ height }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", gap: height * 0.08, height: "100%", padding: 4 }}>
+      <div style={{ background: "var(--agd-fill)", borderRadius: 4, height: height * 0.2, width: "100%" }} />
+      <div style={{ background: "var(--agd-fill)", borderRadius: 3, height: Math.max(6, height * 0.1), width: "70%" }} />
+      <div style={{ background: "var(--agd-fill)", borderRadius: 3, height: Math.max(4, height * 0.06), width: "90%" }} />
+      <div style={{ background: "var(--agd-fill)", borderRadius: 3, height: Math.max(4, height * 0.06), width: "50%" }} />
     </div>
-  );
-}
+);
 
-function ChipSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", alignItems: "center", gap: 6 }}>
-      <div style={{ height: "100%", flex: 1, borderRadius: height / 2, border: "1px solid var(--agd-stroke)", background: "var(--agd-fill)", display: "flex", alignItems: "center", padding: `0 ${height * 0.3}px`, gap: 4 }}>
-        <Bar w="60%" h={2} strong />
-        <div style={{ width: Math.max(6, height * 0.3), height: Math.max(6, height * 0.3), borderRadius: "50%", border: "1px solid var(--agd-stroke)", flexShrink: 0, marginLeft: "auto" }} />
+const ChipSkeleton = ({ height }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ alignItems: "center", display: "flex", gap: 6, height: "100%" }}>
+      <div style={{ alignItems: "center", background: "var(--agd-fill)", border: "1px solid var(--agd-stroke)", borderRadius: height / 2, display: "flex", flex: 1, gap: 4, height: "100%", padding: `0 ${height * 0.3}px` }}>
+        <Bar h={2} strong w="60%" />
+        <div style={{ border: "1px solid var(--agd-stroke)", borderRadius: "50%", flexShrink: 0, height: Math.max(6, height * 0.3), marginLeft: "auto", width: Math.max(6, height * 0.3) }} />
       </div>
     </div>
-  );
-}
+);
 
-function IconSkeleton({ width, height }: SkeletonProps) {
-  const sz = Math.min(width, height);
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
+const IconSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const sz = Math.min(width, height);
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
       <path
         d={`M${width / 2} ${(height - sz) / 2 + sz * 0.1}l${sz * 0.12} ${sz * 0.25} ${sz * 0.28} ${sz * 0.04}-${sz * 0.2} ${sz * 0.2} ${sz * 0.05} ${sz * 0.28}-${sz * 0.25}-${sz * 0.12}-${sz * 0.25} ${sz * 0.12} ${sz * 0.05}-${sz * 0.28}-${sz * 0.2}-${sz * 0.2} ${sz * 0.28}-${sz * 0.04}z`}
+        fill="var(--agd-fill)"
         stroke="var(--agd-stroke)"
         strokeWidth="1"
-        fill="var(--agd-fill)"
       />
     </svg>
-  );
-}
+    );
+};
 
-function SpinnerSkeleton({ width, height }: SkeletonProps) {
-  const r = Math.min(width, height) / 2 - 2;
-  return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} fill="none">
-      <circle cx={width / 2} cy={height / 2} r={r} stroke="var(--agd-stroke)" strokeWidth="1.5" opacity=".2" />
-      <path d={`M${width / 2} ${height / 2 - r}a${r} ${r} 0 0 1 ${r} ${r}`} stroke="var(--agd-bar-strong)" strokeWidth="1.5" strokeLinecap="round" />
+const SpinnerSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const r = Math.min(width, height) / 2 - 2;
+
+    return (
+    <svg fill="none" height="100%" viewBox={`0 0 ${width} ${height}`} width="100%">
+      <circle cx={width / 2} cy={height / 2} opacity=".2" r={r} stroke="var(--agd-stroke)" strokeWidth="1.5" />
+      <path d={`M${width / 2} ${height / 2 - r}a${r} ${r} 0 0 1 ${r} ${r}`} stroke="var(--agd-bar-strong)" strokeLinecap="round" strokeWidth="1.5" />
     </svg>
-  );
-}
+    );
+};
 
-function FeatureSkeleton({ width, height }: SkeletonProps) {
-  const iconSz = Math.min(36, height * 0.25, width * 0.12);
-  const items = Math.max(1, Math.min(3, Math.floor(height / 80)));
-  return (
+const FeatureSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const iconSz = Math.min(36, height * 0.25, width * 0.12);
+    const items = Math.max(1, Math.min(3, Math.floor(height / 80)));
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-around", padding: 8 }}>
       {Array.from({ length: items }, (_, i) => (
-        <div key={i} style={{ display: "flex", gap: width * 0.04, alignItems: "flex-start" }}>
-          <Block w={iconSz} h={iconSz} radius={iconSz * 0.25} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-            <Bar w={`${40 + ((i * 13) % 20)}%`} h={3} strong />
-            <Bar w={`${60 + ((i * 17) % 25)}%`} h={2} />
+        <div key={i} style={{ alignItems: "flex-start", display: "flex", gap: width * 0.04 }}>
+          <Block h={iconSz} radius={iconSz * 0.25} w={iconSz} />
+          <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 4 }}>
+            <Bar h={3} strong w={`${40 + ((i * 13) % 20)}%`} />
+            <Bar h={2} w={`${60 + ((i * 17) % 25)}%`} />
           </div>
         </div>
       ))}
     </div>
-  );
-}
+    );
+};
 
-function TeamSkeleton({ width, height }: SkeletonProps) {
-  const cols = Math.max(2, Math.min(4, Math.floor(width / 120)));
-  const avatarSz = Math.min(36, height * 0.25);
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: height * 0.06, padding: height * 0.06 }}>
-      <Bar w={width * 0.3} h={4} strong />
-      <div style={{ display: "flex", gap: width * 0.06, justifyContent: "center", flex: 1, alignItems: "center" }}>
+const TeamSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const cols = Math.max(2, Math.min(4, Math.floor(width / 120)));
+    const avatarSz = Math.min(36, height * 0.25);
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.06, height: "100%", padding: height * 0.06 }}>
+      <Bar h={4} strong w={width * 0.3} />
+      <div style={{ alignItems: "center", display: "flex", flex: 1, gap: width * 0.06, justifyContent: "center" }}>
         {Array.from({ length: cols }, (_, i) => (
-          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <div key={i} style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: 6 }}>
             <Circle size={avatarSz} />
-            <Bar w={width * 0.12} h={3} strong />
-            <Bar w={width * 0.08} h={2} />
+            <Bar h={3} strong w={width * 0.12} />
+            <Bar h={2} w={width * 0.08} />
           </div>
         ))}
       </div>
     </div>
-  );
-}
+    );
+};
 
-function LoginSkeleton({ width, height }: SkeletonProps) {
-  const fields = Math.max(2, Math.min(3, Math.floor(height / 80)));
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", padding: width * 0.06, gap: height * 0.04 }}>
-      <Bar w={width * 0.5} h={Math.max(5, height * 0.04)} strong />
-      <Bar w={width * 0.35} h={2} />
-      <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: height * 0.03, marginTop: height * 0.04 }}>
+const LoginSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => {
+    const fields = Math.max(2, Math.min(3, Math.floor(height / 80)));
+
+    return (
+    <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: height * 0.04, height: "100%", padding: width * 0.06 }}>
+      <Bar h={Math.max(5, height * 0.04)} strong w={width * 0.5} />
+      <Bar h={2} w={width * 0.35} />
+      <div style={{ display: "flex", flexDirection: "column", gap: height * 0.03, marginTop: height * 0.04, width: "100%" }}>
         {Array.from({ length: fields }, (_, i) => (
           <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <Bar w={Math.min(60, width * 0.2)} h={2} />
-            <Block w="100%" h={Math.min(32, height * 0.1)} radius={4} />
+            <Bar h={2} w={Math.min(60, width * 0.2)} />
+            <Block h={Math.min(32, height * 0.1)} radius={4} w="100%" />
           </div>
         ))}
       </div>
-      <Block w="100%" h={Math.min(36, height * 0.12)} radius={6} style={{ marginTop: height * 0.03, background: "var(--agd-bar)" }} />
-      <Bar w={width * 0.4} h={2} />
+      <Block h={Math.min(36, height * 0.12)} radius={6} style={{ background: "var(--agd-bar)", marginTop: height * 0.03 }} w="100%" />
+      <Bar h={2} w={width * 0.4} />
     </div>
-  );
-}
+    );
+};
 
-function ContactSkeleton({ width, height }: SkeletonProps) {
-  return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", padding: width * 0.04, gap: height * 0.03 }}>
-      <Bar w={width * 0.4} h={4} strong />
-      <Bar w={width * 0.6} h={2} />
+const ContactSkeleton = ({ height, width }: Readonly<SkeletonProps>): JSX.Element => (
+    <div style={{ display: "flex", flexDirection: "column", gap: height * 0.03, height: "100%", padding: width * 0.04 }}>
+      <Bar h={4} strong w={width * 0.4} />
+      <Bar h={2} w={width * 0.6} />
       <div style={{ display: "flex", gap: 6, marginTop: height * 0.03 }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-          <Bar w={50} h={2} />
-          <Block w="100%" h={Math.min(28, height * 0.1)} radius={4} />
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+          <Bar h={2} w={50} />
+          <Block h={Math.min(28, height * 0.1)} radius={4} w="100%" />
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-          <Bar w={40} h={2} />
-          <Block w="100%" h={Math.min(28, height * 0.1)} radius={4} />
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+          <Bar h={2} w={40} />
+          <Block h={Math.min(28, height * 0.1)} radius={4} w="100%" />
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Bar w={50} h={2} />
-        <Block w="100%" h={Math.min(28, height * 0.1)} radius={4} />
+        <Bar h={2} w={50} />
+        <Block h={Math.min(28, height * 0.1)} radius={4} w="100%" />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
-        <Bar w={60} h={2} />
-        <Block w="100%" h="100%" radius={4} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 3 }}>
+        <Bar h={2} w={60} />
+        <Block h="100%" radius={4} w="100%" />
       </div>
-      <Block w={Math.min(120, width * 0.3)} h={Math.min(30, height * 0.1)} radius={6} style={{ alignSelf: "flex-end", background: "var(--agd-bar)" }} />
+      <Block h={Math.min(30, height * 0.1)} radius={6} style={{ alignSelf: "flex-end", background: "var(--agd-bar)" }} w={Math.min(120, width * 0.3)} />
     </div>
-  );
-}
+);
 
 // --- Skeleton registry ---
 
 const SKELETON_RENDERERS: Partial<Record<ComponentType, (props: SkeletonProps) => JSX.Element>> = {
-  navigation: NavigationSkeleton,
-  hero: HeroSkeleton,
-  sidebar: SidebarSkeleton,
-  footer: FooterSkeleton,
-  modal: ModalSkeleton,
-  card: CardSkeleton,
-  text: TextSkeleton,
-  image: ImageSkeleton,
-  table: TableSkeleton,
-  list: ListSkeleton,
-  button: ButtonSkeleton,
-  input: InputSkeleton,
-  form: FormSkeleton,
-  tabs: TabsSkeleton,
-  avatar: AvatarSkeleton,
-  badge: BadgeSkeleton,
-  header: HeaderSkeleton,
-  section: SectionSkeleton,
-  grid: GridSkeleton,
-  dropdown: DropdownSkeleton,
-  toggle: ToggleSkeleton,
-  search: SearchSkeleton,
-  toast: ToastSkeleton,
-  progress: ProgressSkeleton,
-  chart: ChartSkeleton,
-  video: VideoSkeleton,
-  tooltip: TooltipSkeleton,
-  breadcrumb: BreadcrumbSkeleton,
-  pagination: PaginationSkeleton,
-  divider: DividerSkeleton,
-  accordion: AccordionSkeleton,
-  carousel: CarouselSkeleton,
-  pricing: PricingSkeleton,
-  testimonial: TestimonialSkeleton,
-  cta: CtaSkeleton,
-  alert: AlertSkeleton,
-  banner: BannerSkeleton,
-  stat: StatSkeleton,
-  stepper: StepperSkeleton,
-  tag: TagSkeleton,
-  rating: RatingSkeleton,
-  map: MapSkeleton,
-  timeline: TimelineSkeleton,
-  fileUpload: FileUploadSkeleton,
-  codeBlock: CodeBlockSkeleton,
-  calendar: CalendarSkeleton,
-  notification: NotificationSkeleton,
-  productCard: ProductCardSkeleton,
-  profile: ProfileSkeleton,
-  drawer: DrawerSkeleton,
-  popover: PopoverSkeleton,
-  logo: LogoSkeleton,
-  faq: FaqSkeleton,
-  gallery: GallerySkeleton,
-  checkbox: CheckboxSkeleton,
-  radio: RadioSkeleton,
-  slider: SliderSkeleton,
-  datePicker: DatePickerSkeleton,
-  skeleton: SkeletonSkeletonRenderer,
-  chip: ChipSkeleton,
-  icon: IconSkeleton,
-  spinner: SpinnerSkeleton,
-  feature: FeatureSkeleton,
-  team: TeamSkeleton,
-  login: LoginSkeleton,
-  contact: ContactSkeleton,
+    accordion: AccordionSkeleton,
+    alert: AlertSkeleton,
+    avatar: AvatarSkeleton,
+    badge: BadgeSkeleton,
+    banner: BannerSkeleton,
+    breadcrumb: BreadcrumbSkeleton,
+    button: ButtonSkeleton,
+    calendar: CalendarSkeleton,
+    card: CardSkeleton,
+    carousel: CarouselSkeleton,
+    chart: ChartSkeleton,
+    checkbox: CheckboxSkeleton,
+    chip: ChipSkeleton,
+    codeBlock: CodeBlockSkeleton,
+    contact: ContactSkeleton,
+    cta: CtaSkeleton,
+    datePicker: DatePickerSkeleton,
+    divider: DividerSkeleton,
+    drawer: DrawerSkeleton,
+    dropdown: DropdownSkeleton,
+    faq: FaqSkeleton,
+    feature: FeatureSkeleton,
+    fileUpload: FileUploadSkeleton,
+    footer: FooterSkeleton,
+    form: FormSkeleton,
+    gallery: GallerySkeleton,
+    grid: GridSkeleton,
+    header: HeaderSkeleton,
+    hero: HeroSkeleton,
+    icon: IconSkeleton,
+    image: ImageSkeleton,
+    input: InputSkeleton,
+    list: ListSkeleton,
+    login: LoginSkeleton,
+    logo: LogoSkeleton,
+    map: MapSkeleton,
+    modal: ModalSkeleton,
+    navigation: NavigationSkeleton,
+    notification: NotificationSkeleton,
+    pagination: PaginationSkeleton,
+    popover: PopoverSkeleton,
+    pricing: PricingSkeleton,
+    productCard: ProductCardSkeleton,
+    profile: ProfileSkeleton,
+    progress: ProgressSkeleton,
+    radio: RadioSkeleton,
+    rating: RatingSkeleton,
+    search: SearchSkeleton,
+    section: SectionSkeleton,
+    sidebar: SidebarSkeleton,
+    skeleton: SkeletonSkeletonRenderer,
+    slider: SliderSkeleton,
+    spinner: SpinnerSkeleton,
+    stat: StatSkeleton,
+    stepper: StepperSkeleton,
+    table: TableSkeleton,
+    tabs: TabsSkeleton,
+    tag: TagSkeleton,
+    team: TeamSkeleton,
+    testimonial: TestimonialSkeleton,
+    text: TextSkeleton,
+    timeline: TimelineSkeleton,
+    toast: ToastSkeleton,
+    toggle: ToggleSkeleton,
+    tooltip: TooltipSkeleton,
+    video: VideoSkeleton,
 };
 
-export function Skeleton({ type, width, height, text }: { type: ComponentType; width: number; height: number; text?: string }) {
-  const Renderer = SKELETON_RENDERERS[type];
-  if (!Renderer) {
-    return (
-      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 10, fontWeight: 600, color: "var(--agd-text-3)", textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.5 }}>{type}</span>
+export const Skeleton = ({ height, text, type, width }: Readonly<{ height: number; text?: string; type: ComponentType; width: number }>): JSX.Element => {
+    const Renderer = SKELETON_RENDERERS[type];
+
+    if (!Renderer) {
+        return (
+      <div style={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "center", width: "100%" }}>
+        <span style={{ color: "var(--agd-text-3)", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", opacity: 0.5, textTransform: "uppercase" }}>{type}</span>
       </div>
-    );
-  }
-  return (
-    <div style={{ width: "100%", height: "100%", padding: 8, position: "relative", pointerEvents: "none" }}>
-      <Renderer width={width} height={height} text={text} />
+        );
+    }
+
+    return (
+    <div style={{ height: "100%", padding: 8, pointerEvents: "none", position: "relative", width: "100%" }}>
+      <Renderer height={height} text={text} width={width} />
     </div>
-  );
-}
+    );
+};

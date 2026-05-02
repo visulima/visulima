@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";

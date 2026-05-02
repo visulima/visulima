@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 import type { JSX } from "preact";
 import type { ForwardRefExoticComponent, RefAttributes } from "preact/compat";

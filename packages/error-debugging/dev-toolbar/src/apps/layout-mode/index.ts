@@ -2,8 +2,8 @@
 import layoutIcon from "lucide-static/icons/layout-template.svg?raw";
 
 import type { DevToolbarApp } from "../../types/app";
-import { unmountLayoutModeOverlay } from "./overlay-mount";
 import LayoutModeApp from "./layout-mode-app";
+import { unmountLayoutModeOverlay } from "./overlay-mount";
 import { resetLayoutMode } from "./store";
 
 const layoutModeApp: DevToolbarApp = {

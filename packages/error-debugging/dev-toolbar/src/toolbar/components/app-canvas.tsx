@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";

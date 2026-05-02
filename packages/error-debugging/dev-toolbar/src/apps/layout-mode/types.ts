@@ -2,269 +2,270 @@
 // Layout Mode Types
 // =============================================================================
 
-export type ComponentType =
-  | "navigation"
-  | "hero"
-  | "card"
-  | "button"
-  | "sidebar"
-  | "table"
-  | "form"
-  | "input"
-  | "modal"
-  | "footer"
-  | "avatar"
-  | "badge"
-  | "text"
-  | "image"
-  | "list"
-  | "tabs"
-  | "header"
-  | "section"
-  | "grid"
-  | "dropdown"
-  | "toggle"
-  | "breadcrumb"
-  | "pagination"
-  | "progress"
-  | "divider"
-  | "accordion"
-  | "carousel"
-  | "chart"
-  | "video"
-  | "search"
-  | "toast"
-  | "tooltip"
-  | "pricing"
-  | "testimonial"
-  | "cta"
-  | "alert"
-  | "banner"
-  | "stat"
-  | "stepper"
-  | "tag"
-  | "rating"
-  | "map"
-  | "timeline"
-  | "fileUpload"
-  | "codeBlock"
-  | "calendar"
-  | "notification"
-  | "productCard"
-  | "profile"
-  | "drawer"
-  | "popover"
-  | "logo"
-  | "faq"
-  | "gallery"
-  | "checkbox"
-  | "radio"
-  | "slider"
-  | "datePicker"
-  | "skeleton"
-  | "chip"
-  | "icon"
-  | "spinner"
-  | "feature"
-  | "team"
-  | "login"
-  | "contact";
+export type ComponentType
+    = | "navigation"
+        | "hero"
+        | "card"
+        | "button"
+        | "sidebar"
+        | "table"
+        | "form"
+        | "input"
+        | "modal"
+        | "footer"
+        | "avatar"
+        | "badge"
+        | "text"
+        | "image"
+        | "list"
+        | "tabs"
+        | "header"
+        | "section"
+        | "grid"
+        | "dropdown"
+        | "toggle"
+        | "breadcrumb"
+        | "pagination"
+        | "progress"
+        | "divider"
+        | "accordion"
+        | "carousel"
+        | "chart"
+        | "video"
+        | "search"
+        | "toast"
+        | "tooltip"
+        | "pricing"
+        | "testimonial"
+        | "cta"
+        | "alert"
+        | "banner"
+        | "stat"
+        | "stepper"
+        | "tag"
+        | "rating"
+        | "map"
+        | "timeline"
+        | "fileUpload"
+        | "codeBlock"
+        | "calendar"
+        | "notification"
+        | "productCard"
+        | "profile"
+        | "drawer"
+        | "popover"
+        | "logo"
+        | "faq"
+        | "gallery"
+        | "checkbox"
+        | "radio"
+        | "slider"
+        | "datePicker"
+        | "skeleton"
+        | "chip"
+        | "icon"
+        | "spinner"
+        | "feature"
+        | "team"
+        | "login"
+        | "contact";
 
 export type DesignPlacement = {
-  id: string;
-  type: ComponentType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  scrollY: number;
-  timestamp: number;
-  text?: string;
+    height: number;
+    id: string;
+    scrollY: number;
+    text?: string;
+    timestamp: number;
+    type: ComponentType;
+    width: number;
+    x: number;
+    y: number;
 };
 
 export type ComponentDefinition = {
-  type: ComponentType;
-  label: string;
-  width: number;
-  height: number;
+    height: number;
+    label: string;
+    type: ComponentType;
+    width: number;
 };
 
 export type ComponentSection = {
-  section: string;
-  items: ComponentDefinition[];
+    items: ComponentDefinition[];
+    section: string;
 };
 
 // Default sizes for each component type
-export const DEFAULT_SIZES: Record<ComponentType, { width: number; height: number }> = {
-  navigation: { width: 800, height: 56 },
-  hero: { width: 800, height: 320 },
-  header: { width: 800, height: 80 },
-  section: { width: 800, height: 400 },
-  sidebar: { width: 240, height: 400 },
-  footer: { width: 800, height: 160 },
-  modal: { width: 480, height: 300 },
-  card: { width: 280, height: 240 },
-  text: { width: 400, height: 120 },
-  image: { width: 320, height: 200 },
-  video: { width: 480, height: 270 },
-  table: { width: 560, height: 220 },
-  grid: { width: 600, height: 300 },
-  list: { width: 300, height: 180 },
-  chart: { width: 400, height: 240 },
-  button: { width: 140, height: 40 },
-  input: { width: 280, height: 56 },
-  form: { width: 360, height: 320 },
-  tabs: { width: 480, height: 240 },
-  dropdown: { width: 200, height: 200 },
-  toggle: { width: 44, height: 24 },
-  search: { width: 320, height: 44 },
-  avatar: { width: 48, height: 48 },
-  badge: { width: 80, height: 28 },
-  breadcrumb: { width: 300, height: 24 },
-  pagination: { width: 300, height: 36 },
-  progress: { width: 240, height: 8 },
-  divider: { width: 600, height: 1 },
-  accordion: { width: 400, height: 200 },
-  carousel: { width: 600, height: 300 },
-  toast: { width: 320, height: 64 },
-  tooltip: { width: 180, height: 40 },
-  pricing: { width: 300, height: 360 },
-  testimonial: { width: 360, height: 200 },
-  cta: { width: 600, height: 160 },
-  alert: { width: 400, height: 56 },
-  banner: { width: 800, height: 48 },
-  stat: { width: 200, height: 120 },
-  stepper: { width: 480, height: 48 },
-  tag: { width: 72, height: 28 },
-  rating: { width: 160, height: 28 },
-  map: { width: 480, height: 300 },
-  timeline: { width: 360, height: 320 },
-  fileUpload: { width: 360, height: 180 },
-  codeBlock: { width: 480, height: 200 },
-  calendar: { width: 300, height: 300 },
-  notification: { width: 360, height: 72 },
-  productCard: { width: 280, height: 360 },
-  profile: { width: 280, height: 200 },
-  drawer: { width: 320, height: 400 },
-  popover: { width: 240, height: 160 },
-  logo: { width: 120, height: 40 },
-  faq: { width: 560, height: 320 },
-  gallery: { width: 560, height: 360 },
-  checkbox: { width: 20, height: 20 },
-  radio: { width: 20, height: 20 },
-  slider: { width: 240, height: 32 },
-  datePicker: { width: 300, height: 320 },
-  skeleton: { width: 320, height: 120 },
-  chip: { width: 96, height: 32 },
-  icon: { width: 24, height: 24 },
-  spinner: { width: 32, height: 32 },
-  feature: { width: 360, height: 200 },
-  team: { width: 560, height: 280 },
-  login: { width: 360, height: 360 },
-  contact: { width: 400, height: 320 },
+export const DEFAULT_SIZES: Record<ComponentType, { height: number; width: number }> = {
+    accordion: { height: 200, width: 400 },
+    alert: { height: 56, width: 400 },
+    avatar: { height: 48, width: 48 },
+    badge: { height: 28, width: 80 },
+    banner: { height: 48, width: 800 },
+    breadcrumb: { height: 24, width: 300 },
+    button: { height: 40, width: 140 },
+    calendar: { height: 300, width: 300 },
+    card: { height: 240, width: 280 },
+    carousel: { height: 300, width: 600 },
+    chart: { height: 240, width: 400 },
+    checkbox: { height: 20, width: 20 },
+    chip: { height: 32, width: 96 },
+    codeBlock: { height: 200, width: 480 },
+    contact: { height: 320, width: 400 },
+    cta: { height: 160, width: 600 },
+    datePicker: { height: 320, width: 300 },
+    divider: { height: 1, width: 600 },
+    drawer: { height: 400, width: 320 },
+    dropdown: { height: 200, width: 200 },
+    faq: { height: 320, width: 560 },
+    feature: { height: 200, width: 360 },
+    fileUpload: { height: 180, width: 360 },
+    footer: { height: 160, width: 800 },
+    form: { height: 320, width: 360 },
+    gallery: { height: 360, width: 560 },
+    grid: { height: 300, width: 600 },
+    header: { height: 80, width: 800 },
+    hero: { height: 320, width: 800 },
+    icon: { height: 24, width: 24 },
+    image: { height: 200, width: 320 },
+    input: { height: 56, width: 280 },
+    list: { height: 180, width: 300 },
+    login: { height: 360, width: 360 },
+    logo: { height: 40, width: 120 },
+    map: { height: 300, width: 480 },
+    modal: { height: 300, width: 480 },
+    navigation: { height: 56, width: 800 },
+    notification: { height: 72, width: 360 },
+    pagination: { height: 36, width: 300 },
+    popover: { height: 160, width: 240 },
+    pricing: { height: 360, width: 300 },
+    productCard: { height: 360, width: 280 },
+    profile: { height: 200, width: 280 },
+    progress: { height: 8, width: 240 },
+    radio: { height: 20, width: 20 },
+    rating: { height: 28, width: 160 },
+    search: { height: 44, width: 320 },
+    section: { height: 400, width: 800 },
+    sidebar: { height: 400, width: 240 },
+    skeleton: { height: 120, width: 320 },
+    slider: { height: 32, width: 240 },
+    spinner: { height: 32, width: 32 },
+    stat: { height: 120, width: 200 },
+    stepper: { height: 48, width: 480 },
+    table: { height: 220, width: 560 },
+    tabs: { height: 240, width: 480 },
+    tag: { height: 28, width: 72 },
+    team: { height: 280, width: 560 },
+    testimonial: { height: 200, width: 360 },
+    text: { height: 120, width: 400 },
+    timeline: { height: 320, width: 360 },
+    toast: { height: 64, width: 320 },
+    toggle: { height: 24, width: 44 },
+    tooltip: { height: 40, width: 180 },
+    video: { height: 270, width: 480 },
 };
 
 // Component registry with sections and labels
 export const COMPONENT_REGISTRY: ComponentSection[] = [
-  {
-    section: "Layout",
-    items: [
-      { type: "navigation", label: "Navigation", ...DEFAULT_SIZES.navigation },
-      { type: "header", label: "Header", ...DEFAULT_SIZES.header },
-      { type: "hero", label: "Hero", ...DEFAULT_SIZES.hero },
-      { type: "section", label: "Section", ...DEFAULT_SIZES.section },
-      { type: "sidebar", label: "Sidebar", ...DEFAULT_SIZES.sidebar },
-      { type: "footer", label: "Footer", ...DEFAULT_SIZES.footer },
-      { type: "modal", label: "Modal", ...DEFAULT_SIZES.modal },
-      { type: "banner", label: "Banner", ...DEFAULT_SIZES.banner },
-      { type: "drawer", label: "Drawer", ...DEFAULT_SIZES.drawer },
-      { type: "popover", label: "Popover", ...DEFAULT_SIZES.popover },
-      { type: "divider", label: "Divider", ...DEFAULT_SIZES.divider },
-    ],
-  },
-  {
-    section: "Content",
-    items: [
-      { type: "card", label: "Card", ...DEFAULT_SIZES.card },
-      { type: "text", label: "Text", ...DEFAULT_SIZES.text },
-      { type: "image", label: "Image", ...DEFAULT_SIZES.image },
-      { type: "video", label: "Video", ...DEFAULT_SIZES.video },
-      { type: "table", label: "Table", ...DEFAULT_SIZES.table },
-      { type: "grid", label: "Grid", ...DEFAULT_SIZES.grid },
-      { type: "list", label: "List", ...DEFAULT_SIZES.list },
-      { type: "chart", label: "Chart", ...DEFAULT_SIZES.chart },
-      { type: "codeBlock", label: "Code Block", ...DEFAULT_SIZES.codeBlock },
-      { type: "map", label: "Map", ...DEFAULT_SIZES.map },
-      { type: "timeline", label: "Timeline", ...DEFAULT_SIZES.timeline },
-      { type: "calendar", label: "Calendar", ...DEFAULT_SIZES.calendar },
-      { type: "accordion", label: "Accordion", ...DEFAULT_SIZES.accordion },
-      { type: "carousel", label: "Carousel", ...DEFAULT_SIZES.carousel },
-      { type: "logo", label: "Logo", ...DEFAULT_SIZES.logo },
-      { type: "faq", label: "FAQ", ...DEFAULT_SIZES.faq },
-      { type: "gallery", label: "Gallery", ...DEFAULT_SIZES.gallery },
-    ],
-  },
-  {
-    section: "Controls",
-    items: [
-      { type: "button", label: "Button", ...DEFAULT_SIZES.button },
-      { type: "input", label: "Input", ...DEFAULT_SIZES.input },
-      { type: "search", label: "Search", ...DEFAULT_SIZES.search },
-      { type: "form", label: "Form", ...DEFAULT_SIZES.form },
-      { type: "tabs", label: "Tabs", ...DEFAULT_SIZES.tabs },
-      { type: "dropdown", label: "Dropdown", ...DEFAULT_SIZES.dropdown },
-      { type: "toggle", label: "Toggle", ...DEFAULT_SIZES.toggle },
-      { type: "stepper", label: "Stepper", ...DEFAULT_SIZES.stepper },
-      { type: "rating", label: "Rating", ...DEFAULT_SIZES.rating },
-      { type: "fileUpload", label: "File Upload", ...DEFAULT_SIZES.fileUpload },
-      { type: "checkbox", label: "Checkbox", ...DEFAULT_SIZES.checkbox },
-      { type: "radio", label: "Radio", ...DEFAULT_SIZES.radio },
-      { type: "slider", label: "Slider", ...DEFAULT_SIZES.slider },
-      { type: "datePicker", label: "Date Picker", ...DEFAULT_SIZES.datePicker },
-    ],
-  },
-  {
-    section: "Elements",
-    items: [
-      { type: "avatar", label: "Avatar", ...DEFAULT_SIZES.avatar },
-      { type: "badge", label: "Badge", ...DEFAULT_SIZES.badge },
-      { type: "tag", label: "Tag", ...DEFAULT_SIZES.tag },
-      { type: "breadcrumb", label: "Breadcrumb", ...DEFAULT_SIZES.breadcrumb },
-      { type: "pagination", label: "Pagination", ...DEFAULT_SIZES.pagination },
-      { type: "progress", label: "Progress", ...DEFAULT_SIZES.progress },
-      { type: "alert", label: "Alert", ...DEFAULT_SIZES.alert },
-      { type: "toast", label: "Toast", ...DEFAULT_SIZES.toast },
-      { type: "notification", label: "Notification", ...DEFAULT_SIZES.notification },
-      { type: "tooltip", label: "Tooltip", ...DEFAULT_SIZES.tooltip },
-      { type: "stat", label: "Stat", ...DEFAULT_SIZES.stat },
-      { type: "skeleton", label: "Skeleton", ...DEFAULT_SIZES.skeleton },
-      { type: "chip", label: "Chip", ...DEFAULT_SIZES.chip },
-      { type: "icon", label: "Icon", ...DEFAULT_SIZES.icon },
-      { type: "spinner", label: "Spinner", ...DEFAULT_SIZES.spinner },
-    ],
-  },
-  {
-    section: "Blocks",
-    items: [
-      { type: "pricing", label: "Pricing", ...DEFAULT_SIZES.pricing },
-      { type: "testimonial", label: "Testimonial", ...DEFAULT_SIZES.testimonial },
-      { type: "cta", label: "CTA", ...DEFAULT_SIZES.cta },
-      { type: "productCard", label: "Product Card", ...DEFAULT_SIZES.productCard },
-      { type: "profile", label: "Profile", ...DEFAULT_SIZES.profile },
-      { type: "feature", label: "Feature", ...DEFAULT_SIZES.feature },
-      { type: "team", label: "Team", ...DEFAULT_SIZES.team },
-      { type: "login", label: "Login", ...DEFAULT_SIZES.login },
-      { type: "contact", label: "Contact", ...DEFAULT_SIZES.contact },
-    ],
-  },
+    {
+        items: [
+            { label: "Navigation", type: "navigation", ...DEFAULT_SIZES.navigation },
+            { label: "Header", type: "header", ...DEFAULT_SIZES.header },
+            { label: "Hero", type: "hero", ...DEFAULT_SIZES.hero },
+            { label: "Section", type: "section", ...DEFAULT_SIZES.section },
+            { label: "Sidebar", type: "sidebar", ...DEFAULT_SIZES.sidebar },
+            { label: "Footer", type: "footer", ...DEFAULT_SIZES.footer },
+            { label: "Modal", type: "modal", ...DEFAULT_SIZES.modal },
+            { label: "Banner", type: "banner", ...DEFAULT_SIZES.banner },
+            { label: "Drawer", type: "drawer", ...DEFAULT_SIZES.drawer },
+            { label: "Popover", type: "popover", ...DEFAULT_SIZES.popover },
+            { label: "Divider", type: "divider", ...DEFAULT_SIZES.divider },
+        ],
+        section: "Layout",
+    },
+    {
+        items: [
+            { label: "Card", type: "card", ...DEFAULT_SIZES.card },
+            { label: "Text", type: "text", ...DEFAULT_SIZES.text },
+            { label: "Image", type: "image", ...DEFAULT_SIZES.image },
+            { label: "Video", type: "video", ...DEFAULT_SIZES.video },
+            { label: "Table", type: "table", ...DEFAULT_SIZES.table },
+            { label: "Grid", type: "grid", ...DEFAULT_SIZES.grid },
+            { label: "List", type: "list", ...DEFAULT_SIZES.list },
+            { label: "Chart", type: "chart", ...DEFAULT_SIZES.chart },
+            { label: "Code Block", type: "codeBlock", ...DEFAULT_SIZES.codeBlock },
+            { label: "Map", type: "map", ...DEFAULT_SIZES.map },
+            { label: "Timeline", type: "timeline", ...DEFAULT_SIZES.timeline },
+            { label: "Calendar", type: "calendar", ...DEFAULT_SIZES.calendar },
+            { label: "Accordion", type: "accordion", ...DEFAULT_SIZES.accordion },
+            { label: "Carousel", type: "carousel", ...DEFAULT_SIZES.carousel },
+            { label: "Logo", type: "logo", ...DEFAULT_SIZES.logo },
+            { label: "FAQ", type: "faq", ...DEFAULT_SIZES.faq },
+            { label: "Gallery", type: "gallery", ...DEFAULT_SIZES.gallery },
+        ],
+        section: "Content",
+    },
+    {
+        items: [
+            { label: "Button", type: "button", ...DEFAULT_SIZES.button },
+            { label: "Input", type: "input", ...DEFAULT_SIZES.input },
+            { label: "Search", type: "search", ...DEFAULT_SIZES.search },
+            { label: "Form", type: "form", ...DEFAULT_SIZES.form },
+            { label: "Tabs", type: "tabs", ...DEFAULT_SIZES.tabs },
+            { label: "Dropdown", type: "dropdown", ...DEFAULT_SIZES.dropdown },
+            { label: "Toggle", type: "toggle", ...DEFAULT_SIZES.toggle },
+            { label: "Stepper", type: "stepper", ...DEFAULT_SIZES.stepper },
+            { label: "Rating", type: "rating", ...DEFAULT_SIZES.rating },
+            { label: "File Upload", type: "fileUpload", ...DEFAULT_SIZES.fileUpload },
+            { label: "Checkbox", type: "checkbox", ...DEFAULT_SIZES.checkbox },
+            { label: "Radio", type: "radio", ...DEFAULT_SIZES.radio },
+            { label: "Slider", type: "slider", ...DEFAULT_SIZES.slider },
+            { label: "Date Picker", type: "datePicker", ...DEFAULT_SIZES.datePicker },
+        ],
+        section: "Controls",
+    },
+    {
+        items: [
+            { label: "Avatar", type: "avatar", ...DEFAULT_SIZES.avatar },
+            { label: "Badge", type: "badge", ...DEFAULT_SIZES.badge },
+            { label: "Tag", type: "tag", ...DEFAULT_SIZES.tag },
+            { label: "Breadcrumb", type: "breadcrumb", ...DEFAULT_SIZES.breadcrumb },
+            { label: "Pagination", type: "pagination", ...DEFAULT_SIZES.pagination },
+            { label: "Progress", type: "progress", ...DEFAULT_SIZES.progress },
+            { label: "Alert", type: "alert", ...DEFAULT_SIZES.alert },
+            { label: "Toast", type: "toast", ...DEFAULT_SIZES.toast },
+            { label: "Notification", type: "notification", ...DEFAULT_SIZES.notification },
+            { label: "Tooltip", type: "tooltip", ...DEFAULT_SIZES.tooltip },
+            { label: "Stat", type: "stat", ...DEFAULT_SIZES.stat },
+            { label: "Skeleton", type: "skeleton", ...DEFAULT_SIZES.skeleton },
+            { label: "Chip", type: "chip", ...DEFAULT_SIZES.chip },
+            { label: "Icon", type: "icon", ...DEFAULT_SIZES.icon },
+            { label: "Spinner", type: "spinner", ...DEFAULT_SIZES.spinner },
+        ],
+        section: "Elements",
+    },
+    {
+        items: [
+            { label: "Pricing", type: "pricing", ...DEFAULT_SIZES.pricing },
+            { label: "Testimonial", type: "testimonial", ...DEFAULT_SIZES.testimonial },
+            { label: "CTA", type: "cta", ...DEFAULT_SIZES.cta },
+            { label: "Product Card", type: "productCard", ...DEFAULT_SIZES.productCard },
+            { label: "Profile", type: "profile", ...DEFAULT_SIZES.profile },
+            { label: "Feature", type: "feature", ...DEFAULT_SIZES.feature },
+            { label: "Team", type: "team", ...DEFAULT_SIZES.team },
+            { label: "Login", type: "login", ...DEFAULT_SIZES.login },
+            { label: "Contact", type: "contact", ...DEFAULT_SIZES.contact },
+        ],
+        section: "Blocks",
+    },
 ];
 
 // Flat lookup map
 export const COMPONENT_MAP: Record<string, ComponentDefinition> = {};
+
 for (const section of COMPONENT_REGISTRY) {
-  for (const item of section.items) {
-    COMPONENT_MAP[item.type] = item;
-  }
+    for (const item of section.items) {
+        COMPONENT_MAP[item.type] = item;
+    }
 }
 
 // =============================================================================
@@ -274,33 +275,32 @@ for (const section of COMPONENT_REGISTRY) {
 export type CanvasPurpose = "new-page" | "replace-current";
 
 export type WireframeOptions = {
-  wireframePurpose?: string;
+    wireframePurpose?: string;
 };
 
 // =============================================================================
 // Rearrange Mode Types
 // =============================================================================
 
-export type SectionRect = { x: number; y: number; width: number; height: number };
+export type SectionRect = { height: number; width: number; x: number; y: number };
 
 export type DetectedSection = {
-  id: string;
-  label: string;
-  tagName: string;
-  selector: string;
-  role: string | null;
-  className: string | null;
-  textSnippet: string | null;
-  originalRect: SectionRect;
-  currentRect: SectionRect;
-  originalIndex: number;
-  isFixed?: boolean;
-  note?: string;
+    className: string | null;
+    currentRect: SectionRect;
+    id: string;
+    isFixed?: boolean;
+    label: string;
+    note?: string;
+    originalIndex: number;
+    originalRect: SectionRect;
+    role: string | null;
+    selector: string;
+    tagName: string;
+    textSnippet: string | null;
 };
 
 export type RearrangeState = {
-  sections: DetectedSection[];
-  originalOrder: string[];
-  detectedAt: number;
+    detectedAt: number;
+    originalOrder: string[];
+    sections: DetectedSection[];
 };
-

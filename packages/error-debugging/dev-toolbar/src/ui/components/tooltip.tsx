@@ -1,6 +1,5 @@
 /** @jsxImportSource preact */
 import { computePosition, flip, offset, shift } from "@floating-ui/dom";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
 import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";

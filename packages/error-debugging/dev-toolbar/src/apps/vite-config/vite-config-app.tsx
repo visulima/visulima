@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import eyeIcon from "lucide-static/icons/eye.svg?data-uri&encoding=css";

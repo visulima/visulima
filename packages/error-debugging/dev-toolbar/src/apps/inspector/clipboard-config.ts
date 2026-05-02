@@ -124,7 +124,7 @@ export const isFieldEnabled = (profile: ClipboardProfile, field: ClipboardField)
 };
 
 export const loadClipboardProfile = (): ClipboardProfile => {
-    if (typeof globalThis.localStorage === "undefined") {
+    if (globalThis.localStorage === undefined) {
         return BUILT_IN_PROFILES[DEFAULT_PROFILE_KEY]!;
     }
 

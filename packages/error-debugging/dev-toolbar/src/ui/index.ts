@@ -15,5 +15,4 @@ export { default as Switch } from "./components/switch";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { default as Textarea } from "./components/textarea";
 export { Tooltip, TooltipContent, TooltipTrigger } from "./components/tooltip";
-// eslint-disable-next-line import/no-extraneous-dependencies
 export { clsx } from "clsx";

@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise, unicorn/prefer-code-point */
+
 /**
  * Minimal in-browser zip writer (store-only, no compression). Sufficient for
  * a session export: the bundle holds JSON + markdown text plus already-
@@ -5,6 +7,10 @@
  *
  * Output format: ZIP 2.0, store method (0x0000), with central directory.
  * Compatible with macOS Archive Utility, Windows Explorer, `unzip`, etc.
+ *
+ * Bitwise operators are required for CRC-32 and the little-endian header
+ * encoding mandated by the ZIP spec; charCodeAt() is required to encode raw
+ * bytes from a base64-decoded binary string.
  */
 
 interface ZipEntry {
@@ -47,17 +53,19 @@ const crcTable = (() => {
 const crc32 = (bytes: Uint8Array): number => {
     let c = 0xff_ff_ff_ff;
 
-    for (let i = 0; i < bytes.length; i += 1) {
-        c = (c >>> 8) ^ crcTable[(c ^ bytes[i]!) & 0xff]!;
+    for (const byte of bytes) {
+        c = (c >>> 8) ^ crcTable[(c ^ byte) & 0xff]!;
     }
 
     return (c ^ 0xff_ff_ff_ff) >>> 0;
 };
 
-const dosTime = (date: Date): { date: number; time: number } => ({
-    date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
-    time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >>> 1),
-});
+const dosTime = (date: Date): { date: number; time: number } => {
+    return {
+        date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+        time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >>> 1),
+    };
+};
 
 export interface ExportSessionFile {
     content: string;
@@ -70,10 +78,12 @@ export interface ExportSessionFile {
  * Build a zip blob from the flat file list returned by `exportSession`.
  */
 export const buildSessionZip = (files: ExportSessionFile[]): Blob => {
-    const entries: ZipEntry[] = files.map((file) => ({
-        bytes: file.encoding === "text" ? textEncoder.encode(file.content) : decodeBase64(file.content),
-        name: file.path,
-    }));
+    const entries: ZipEntry[] = files.map((file) => {
+        return {
+            bytes: file.encoding === "text" ? textEncoder.encode(file.content) : decodeBase64(file.content),
+            name: file.path,
+        };
+    });
 
     const localChunks: Uint8Array[] = [];
     const centralChunks: Uint8Array[] = [];

@@ -1,9 +1,7 @@
-import { cleanCssClasses, generateSelector as inspectorGenerateSelector, getNearbyText } from "../inspector/element-utils";
-import { getElementLabel } from "../inspector/element-utils";
-
+import { cleanCssClasses, generateSelector as inspectorGenerateSelector, getElementLabel, getNearbyText } from "../inspector/element-utils";
 import type { DetectedSection } from "./types";
 
-const SECTION_TAGS = new Set(["nav", "header", "main", "section", "article", "footer", "aside"]);
+const SECTION_TAGS = new Set(["article", "aside", "footer", "header", "main", "nav", "section"]);
 
 const SECTION_ROLES: Record<string, string> = {
     banner: "Header",
@@ -24,14 +22,14 @@ const TAG_LABELS: Record<string, string> = {
     section: "Section",
 };
 
-const SKIP_TAGS = new Set(["script", "style", "noscript", "link", "meta"]);
+const SKIP_TAGS = new Set(["link", "meta", "noscript", "script", "style"]);
 const MIN_SECTION_HEIGHT = 40;
 
 const isEffectivelyFixed = (element_: HTMLElement): boolean => {
     let current: HTMLElement | null = element_;
 
     while (current && current !== document.body && current !== document.documentElement) {
-        const { position } = window.getComputedStyle(current);
+        const { position } = globalThis.getComputedStyle(current);
 
         if (position === "fixed" || position === "sticky") {
             return true;
@@ -45,7 +43,7 @@ const isEffectivelyFixed = (element_: HTMLElement): boolean => {
 
 /**
  * Generate a stable selector for re-finding a section element after re-renders.
- * Prefers unique semantic tags (e.g. the only `<nav>`) before delegating to
+ * Prefers unique semantic tags (e.g. the only `&lt;nav>`) before delegating to
  * the inspector's general-purpose selector generator.
  */
 export const generateSelector = (element_: HTMLElement): string => {
@@ -103,9 +101,9 @@ const getCleanClassName = (element_: HTMLElement): string | null => {
         return null;
     }
 
-    const cleaned = cleanCssClasses(element_.classList).split(/\s+/).filter((c) => c.length > 2 && !/^[a-z]{1,2}$/.test(c));
+    const cleaned = cleanCssClasses(element_.classList).split(/\s+/).find((c) => c.length > 2 && !/^[a-z]{1,2}$/.test(c));
 
-    return cleaned[0] ?? null;
+    return cleaned ?? null;
 };
 
 const getTextSnippet = (element_: HTMLElement): string | null => {
@@ -114,10 +112,13 @@ const getTextSnippet = (element_: HTMLElement): string | null => {
     return snippet === "" ? null : snippet;
 };
 
+// IDs are scoped to a single rearrange-mode session, never persisted, never used
+// for any security purpose — Math.random() is fine here.
+// eslint-disable-next-line sonarjs/pseudo-random
 const generateId = (): string => `rs-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 const buildSection = (element_: HTMLElement, originalIndex: number): DetectedSection => {
-    const { scrollY } = window;
+    const { scrollY } = globalThis;
     const rect = element_.getBoundingClientRect();
     const isFixed = isEffectivelyFixed(element_);
     const sectionRect = {
@@ -160,11 +161,11 @@ export const detectPageSections = (): DetectedSection[] => {
 
         const tag = element_.tagName.toLowerCase();
 
-        if (SKIP_TAGS.has(tag) || element_.hasAttribute("data-feedback-toolbar") || element_.closest("[data-feedback-toolbar]")) {
+        if (SKIP_TAGS.has(tag) || Object.hasOwn(element_.dataset, "feedbackToolbar") || element_.closest("[data-feedback-toolbar]")) {
             return;
         }
 
-        const style = window.getComputedStyle(element_);
+        const style = globalThis.getComputedStyle(element_);
 
         if (style.display === "none" || style.visibility === "hidden") {
             return;

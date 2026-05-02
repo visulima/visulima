@@ -20,12 +20,12 @@ export type SnapEdges = { bottom?: boolean; left?: boolean; right?: boolean; top
 export interface ComputeSnapOptions {
     /** When provided, only listed edges contribute to snap-from candidates (used for resize). */
     activeEdges?: SnapEdges;
-    /** Additional non-id'd rects (e.g. cross-overlay rects) to snap against. */
-    extraRects?: SnapRect[];
     /** When the moving rect originates from a list of identifiable items, exclude these ids. */
     excludeIds?: Set<string>;
+    /** Additional non-id'd rects (e.g. cross-overlay rects) to snap against. */
+    extraRects?: SnapRect[];
     /** Identifiable rects from the same overlay; rects whose id is in `excludeIds` are skipped. */
-    others?: ({ id: string } & SnapRect)[];
+    others?: (SnapRect & { id: string })[];
 }
 
 export interface ComputeSnapResult {

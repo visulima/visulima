@@ -3,7 +3,7 @@ import path from "node:path";
 import type { ViteDevServer } from "vite";
 
 /**
- * Strip Vite's query suffixes (e.g. `?vue&type=script`, `?import`,
+ * Strip Vite's query suffixes (e.g. `?vue&amp;type=script`, `?import`,
  * `?__visulima-dev-toolbar-resource`) and any URL fragment so the path
  * resolves cleanly on disk. Defensive against module IDs leaking through
  * `data-vdt-source` and against client-side routers (hash routing) that

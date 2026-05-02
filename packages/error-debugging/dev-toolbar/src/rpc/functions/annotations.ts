@@ -183,7 +183,7 @@ export const deleteAnnotation = async (server: ViteDevServer, id: string): Promi
 
 /**
  * Append an image attachment to an existing annotation.
- * Stores the file under `.devtoolbar/attachments/<id>/<n>.<ext>` and updates
+ * Stores the file under `.devtoolbar/attachments/&lt;id>/&lt;n>.&lt;ext>` and updates
  * the annotation's `attachments` list. Returns the new attachment record.
  */
 export const addAnnotationAttachment = async (
@@ -245,7 +245,7 @@ export const addAnnotationAttachment = async (
 
 /**
  * Remove a single attachment from an annotation. The path must be the
- * relative `attachments/<id>/<file>` path returned by addAnnotationAttachment;
+ * relative `attachments/&lt;id>/&lt;file>` path returned by addAnnotationAttachment;
  * any traversal attempt is rejected.
  */
 export const removeAnnotationAttachment = async (server: ViteDevServer, annotationId: string, attachmentPath: string): Promise<boolean> =>

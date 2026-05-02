@@ -1,6 +1,8 @@
+/* eslint-disable jsdoc/check-tag-names -- jsxImportSource is a TS pragma, not a JSDoc tag */
+
 /** @jsxImportSource preact */
-import { render } from "preact";
 import type { ComponentChild } from "preact";
+import { render } from "preact";
 
 import { sharedToolbarStylesheet } from "../../toolbar/stylesheet";
 import { ensureLayoutModeStyleTag, getLayoutModeKeyframesSheet } from "./styles";
@@ -23,7 +25,7 @@ const createMount = (): OverlayMount => {
     host.style.inset = "0";
     host.style.pointerEvents = "none";
     host.style.zIndex = "99995";
-    host.setAttribute("data-feedback-toolbar", "");
+    host.dataset.feedbackToolbar = "";
 
     const shadow = host.attachShadow({ mode: "open" });
     const sheets: CSSStyleSheet[] = [];

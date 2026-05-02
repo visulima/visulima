@@ -1,13 +1,15 @@
 /** @jsxImportSource preact */
-/* eslint-disable max-lines */
+
 import type { JSX } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { originalSetTimeout } from "../inspector/freeze-animations";
 import AnnotationPopup from "./annotation-popup";
 import { Skeleton } from "./skeletons";
-import { computeSnap, type SnapGuide as Guide, type SnapRect } from "./snap";
-import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from "./types";
+import type { SnapGuide as Guide, SnapRect } from "./snap";
+import { computeSnap } from "./snap";
+import type { ComponentType, DesignPlacement } from "./types";
+import { COMPONENT_MAP, DEFAULT_SIZES } from "./types";
 
 const MIN_SIZE = 24;
 
@@ -32,6 +34,9 @@ interface DesignModeProps {
     wireframe?: boolean;
 }
 
+// IDs are scoped to a single layout-mode session, never persisted, never used
+// for any security purpose — Math.random() is fine here.
+// eslint-disable-next-line sonarjs/pseudo-random
 const generateId = (): string => `dp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 const TEXT_PLACEHOLDERS: Partial<Record<ComponentType, string>> = {
@@ -77,7 +82,7 @@ export const DesignMode = ({
     placements,
     wireframe,
 }: DesignModeProps): JSX.Element => {
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [drawBox, setDrawBox] = useState<{ h: number; w: number; x: number; y: number } | null>(null);
     const [selectBox, setSelectBox] = useState<{ h: number; w: number; x: number; y: number } | null>(null);
     const [sizeIndicator, setSizeIndicator] = useState<{ text: string; x: number; y: number } | null>(null);
@@ -85,8 +90,8 @@ export const DesignMode = ({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editExiting, setEditExiting] = useState(false);
     const editHadTextRef = useRef(false);
-    const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
-    const lastAnnotationTextRef = useRef<Map<string, string>>(new Map());
+    const [exitingIds, setExitingIds] = useState(new Set<string>());
+    const lastAnnotationTextRef = useRef(new Map());
     const interactionRef = useRef<string | null>(null);
     const placementsRef = useRef(placements);
 
@@ -200,7 +205,7 @@ export const DesignMode = ({
             event_.preventDefault();
             event_.stopPropagation();
 
-            const { scrollY } = window;
+            const { scrollY } = globalThis;
             const startX = event_.clientX;
             const startY = event_.clientY;
 
@@ -235,8 +240,8 @@ export const DesignMode = ({
                 };
 
                 const onUp = (): void => {
-                    window.removeEventListener("mousemove", onMove);
-                    window.removeEventListener("mouseup", onUp);
+                    globalThis.removeEventListener("mousemove", onMove);
+                    globalThis.removeEventListener("mouseup", onUp);
                     setDrawBox(null);
                     setSizeIndicator(null);
                     interactionRef.current = null;
@@ -279,8 +284,8 @@ export const DesignMode = ({
                     onActiveComponentChange(null);
                 };
 
-                window.addEventListener("mousemove", onMove);
-                window.addEventListener("mouseup", onUp);
+                globalThis.addEventListener("mousemove", onMove);
+                globalThis.addEventListener("mouseup", onUp);
             } else {
                 if (!event_.shiftKey) {
                     setSelectedIds(new Set());
@@ -307,8 +312,8 @@ export const DesignMode = ({
                 };
 
                 const onUp = (event_v: MouseEvent): void => {
-                    window.removeEventListener("mousemove", onMove);
-                    window.removeEventListener("mouseup", onUp);
+                    globalThis.removeEventListener("mousemove", onMove);
+                    globalThis.removeEventListener("mouseup", onUp);
                     interactionRef.current = null;
 
                     if (isDrag) {
@@ -330,8 +335,8 @@ export const DesignMode = ({
                     setSelectBox(null);
                 };
 
-                window.addEventListener("mousemove", onMove);
-                window.addEventListener("mouseup", onUp);
+                globalThis.addEventListener("mousemove", onMove);
+                globalThis.addEventListener("mouseup", onUp);
             }
         },
         [activeComponent, passthrough, placements, onChange, selectedIds, onInteractionChange, onActiveComponentChange],
@@ -474,16 +479,16 @@ export const DesignMode = ({
             };
 
             const onUp = (): void => {
-                window.removeEventListener("mousemove", onMove);
-                window.removeEventListener("mouseup", onUp);
+                globalThis.removeEventListener("mousemove", onMove);
+                globalThis.removeEventListener("mouseup", onUp);
                 interactionRef.current = null;
                 onInteractionChange?.(false);
                 setGuides([]);
                 onDragEndRef.current?.(lastSnappedDx, lastSnappedDy, moved);
             };
 
-            window.addEventListener("mousemove", onMove);
-            window.addEventListener("mouseup", onUp);
+            globalThis.addEventListener("mousemove", onMove);
+            globalThis.addEventListener("mouseup", onUp);
         },
         [selectedIds, placements, onChange, onInteractionChange, extraSnapRects],
     );
@@ -577,16 +582,16 @@ export const DesignMode = ({
             };
 
             const onUp = (): void => {
-                window.removeEventListener("mousemove", onMove);
-                window.removeEventListener("mouseup", onUp);
+                globalThis.removeEventListener("mousemove", onMove);
+                globalThis.removeEventListener("mouseup", onUp);
                 setSizeIndicator(null);
                 interactionRef.current = null;
                 onInteractionChange?.(false);
                 setGuides([]);
             };
 
-            window.addEventListener("mousemove", onMove);
-            window.addEventListener("mouseup", onUp);
+            globalThis.addEventListener("mousemove", onMove);
+            globalThis.addEventListener("mouseup", onUp);
         },
         [placements, onChange, onInteractionChange, extraSnapRects],
     );
@@ -653,7 +658,6 @@ export const DesignMode = ({
         if (exiting && editingId) {
             dismissEdit();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [exiting]);
 
     const submitEdit = useCallback(
@@ -668,7 +672,7 @@ export const DesignMode = ({
         [editingId, placements, onChange, dismissEdit],
     );
 
-    const scrollY = typeof window === "undefined" ? 0 : window.scrollY;
+    const scrollY = globalThis.window === undefined ? 0 : window.scrollY;
     const arrowColor = wireframe ? "#f97316" : "#3c82f7";
     const edgeHandles: { arrow: JSX.Element; dir: HandleDir }[] = [
         { arrow: <svg fill="none" height="6" viewBox="0 0 8 6" width="8"><path d="M4 0.5L1 4.5h6z" fill={arrowColor} /></svg>, dir: "n" },
@@ -691,7 +695,6 @@ export const DesignMode = ({
 
     const accentClass = wireframe ? "border-orange-500" : "border-blue-500";
     const accentBgClass = wireframe ? "bg-orange-500/10" : "bg-blue-500/10";
-    const accentRingClass = wireframe ? "ring-orange-500/20" : "ring-blue-500/20";
     const labelColorClass = wireframe ? "text-orange-500" : "text-blue-500";
 
     return (
@@ -865,7 +868,6 @@ export const DesignMode = ({
                 <div
                     class="pointer-events-none z-[100001] bg-fuchsia-500 opacity-50"
                     data-feedback-toolbar
-                    // eslint-disable-next-line react/no-array-index-key
                     key={`${g.axis}-${g.pos}-${index}`}
                     style={
                         g.axis === "x"

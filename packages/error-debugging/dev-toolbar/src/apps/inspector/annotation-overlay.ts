@@ -86,19 +86,20 @@ const createAttachmentQueue = (): AttachmentQueue => {
     });
 
     const queueFiles = async (files: FileList | File[]): Promise<void> => {
-        for (const file of Array.from(files)) {
-            if (!file.type.startsWith("image/")) {
-                continue;
-            }
+        // Read every image file in parallel — they're independent.
+        const reads = [...files]
+            .filter((file) => file.type.startsWith("image/"))
+            .map(async (file) => {
+                try {
+                    const dataUrl = await fileToDataUrl(file);
 
-            try {
-                const dataUrl = await fileToDataUrl(file);
+                    queue.push({ dataUrl, name: file.name || undefined });
+                } catch {
+                    /* ignore unreadable file */
+                }
+            });
 
-                queue.push({ dataUrl, name: file.name || undefined });
-            } catch {
-                /* ignore unreadable file */
-            }
-        }
+        await Promise.all(reads);
     };
 
     return {
@@ -111,10 +112,12 @@ const createAttachmentQueue = (): AttachmentQueue => {
                 return;
             }
 
+            // Sequential upload preserves attachment ordering on disk.
             while (queue.length > 0) {
                 const item = queue.shift()!;
 
                 try {
+                    // eslint-disable-next-line no-await-in-loop -- intentional: serial upload
                     await rpc.addAnnotationAttachment(annotationId, item.dataUrl, item.name);
                 } catch {
                     /* ignore individual upload errors */

@@ -20,30 +20,32 @@ export interface LayoutModeState {
 
 const STORE_KEY = "__vdt_layout_mode_store";
 
-const createInitial = (): LayoutModeState => ({
-    activeComponent: null,
-    blankCanvas: false,
-    canvasOpacity: 1,
-    clearSignal: 0,
-    deselectSignal: 0,
-    detailLevel: "standard",
-    placements: [],
-    rearrange: {
-        detectedAt: 0,
-        originalOrder: [],
-        sections: [],
-    },
-    wireframePurpose: "",
-});
+const createInitial = (): LayoutModeState => {
+    return {
+        activeComponent: null,
+        blankCanvas: false,
+        canvasOpacity: 1,
+        clearSignal: 0,
+        deselectSignal: 0,
+        detailLevel: "standard",
+        placements: [],
+        rearrange: {
+            detectedAt: 0,
+            originalOrder: [],
+            sections: [],
+        },
+        wireframePurpose: "",
+    };
+};
 
-const getStateContainer = (): { state: LayoutModeState; listeners: Set<(s: LayoutModeState) => void> } => {
+const getStateContainer = (): { listeners: Set<(s: LayoutModeState) => void>; state: LayoutModeState } => {
     const w = globalThis as unknown as Record<string, unknown>;
 
     if (!w[STORE_KEY]) {
         w[STORE_KEY] = { listeners: new Set(), state: createInitial() };
     }
 
-    return w[STORE_KEY] as { state: LayoutModeState; listeners: Set<(s: LayoutModeState) => void> };
+    return w[STORE_KEY] as { listeners: Set<(s: LayoutModeState) => void>; state: LayoutModeState };
 };
 
 export const getLayoutModeState = (): LayoutModeState => getStateContainer().state;

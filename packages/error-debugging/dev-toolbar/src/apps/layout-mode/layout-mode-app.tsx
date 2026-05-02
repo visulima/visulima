@@ -10,13 +10,14 @@ import { generateDesignOutput, generateRearrangeOutput } from "./output";
 import { mountLayoutModeOverlay, unmountLayoutModeOverlay } from "./overlay-mount";
 import { RearrangeOverlay } from "./rearrange";
 import { detectPageSections } from "./section-detection";
+import type { LayoutModeState } from "./store";
 import {
     getLayoutModeState,
     setLayoutModeState,
     subscribeLayoutMode,
-    type LayoutModeState,
 } from "./store";
-import { COMPONENT_REGISTRY, type ComponentType } from "./types";
+import type { ComponentType } from "./types";
+import { COMPONENT_REGISTRY } from "./types";
 
 type DetailLevel = LayoutModeState["detailLevel"];
 
@@ -128,7 +129,7 @@ const Section = ({ children, title }: Attributes & { children: ComponentChildren
     </div>
 );
 
-const LayoutModeApp = ({}: AppComponentProps): ComponentChildren => {
+const LayoutModeApp = (_props: AppComponentProps): ComponentChildren => {
     const state = useLayoutModeStore();
     const { copied, copy } = useCopy();
 
@@ -136,15 +137,17 @@ const LayoutModeApp = ({}: AppComponentProps): ComponentChildren => {
     const totalPlacements = state.placements.length;
 
     const handleSelect = useCallback((type: ComponentType) => {
-        setLayoutModeState((s) => ({ activeComponent: s.activeComponent === type ? null : type }));
+        setLayoutModeState((s) => { return { activeComponent: s.activeComponent === type ? null : type }; });
     }, []);
 
     const handleClear = useCallback(() => {
-        setLayoutModeState((s) => ({
-            clearSignal: s.clearSignal + 1,
-            placements: [],
-            rearrange: { detectedAt: 0, originalOrder: [], sections: [] },
-        }));
+        setLayoutModeState((s) => {
+            return {
+                clearSignal: s.clearSignal + 1,
+                placements: [],
+                rearrange: { detectedAt: 0, originalOrder: [], sections: [] },
+            };
+        });
     }, []);
 
     const handleDetectSections = useCallback(() => {
@@ -160,7 +163,7 @@ const LayoutModeApp = ({}: AppComponentProps): ComponentChildren => {
     }, []);
 
     const handleToggleBlankCanvas = useCallback(() => {
-        setLayoutModeState((s) => ({ blankCanvas: !s.blankCanvas }));
+        setLayoutModeState((s) => { return { blankCanvas: !s.blankCanvas }; });
     }, []);
 
     const handleCopyOutput = useCallback(() => {
@@ -336,7 +339,7 @@ const LayoutOverlay = (): JSX.Element => {
                 isDarkMode={isDark}
                 onActiveComponentChange={(t) => setLayoutModeState({ activeComponent: t })}
                 onChange={(placements) => setLayoutModeState({ placements })}
-                onSelectionChange={() => setLayoutModeState((s) => ({ deselectSignal: s.deselectSignal + 1 }))}
+                onSelectionChange={() => setLayoutModeState((s) => { return { deselectSignal: s.deselectSignal + 1 }; })}
                 placements={state.placements}
                 wireframe={state.blankCanvas}
             />
@@ -346,7 +349,7 @@ const LayoutOverlay = (): JSX.Element => {
                 deselectSignal={state.deselectSignal}
                 isDarkMode={isDark}
                 onChange={(rearrange) => setLayoutModeState({ rearrange })}
-                onSelectionChange={() => setLayoutModeState((s) => ({ deselectSignal: s.deselectSignal + 1 }))}
+                onSelectionChange={() => setLayoutModeState((s) => { return { deselectSignal: s.deselectSignal + 1 }; })}
                 rearrangeState={state.rearrange}
             />
         </>

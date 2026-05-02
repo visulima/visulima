@@ -19,7 +19,7 @@ export interface ServerFunctions {
 
     /**
      * Append an image attachment (paste-from-clipboard or drag-from-desktop)
-     * to an annotation. Stores under .devtoolbar/attachments/<id>/.
+     * to an annotation. Stores under .devtoolbar/attachments/&lt;id>/.
      */
     addAnnotationAttachment: (annotationId: string, dataUrl: string, name?: string) => Promise<AnnotationAttachment>;
 

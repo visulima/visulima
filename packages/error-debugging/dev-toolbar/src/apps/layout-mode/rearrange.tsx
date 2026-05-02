@@ -1,12 +1,13 @@
 /** @jsxImportSource preact */
-/* eslint-disable max-lines */
+
 import type { JSX } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { originalSetTimeout } from "../inspector/freeze-animations";
 import AnnotationPopup from "./annotation-popup";
 import { captureElement } from "./section-detection";
-import { computeSnap, type SnapGuide as Guide, type SnapRect } from "./snap";
+import type { SnapGuide as Guide, SnapRect } from "./snap";
+import { computeSnap } from "./snap";
 import type { DetectedSection, RearrangeState } from "./types";
 
 const SECTION_COLOR = { bg: "rgba(59, 130, 246, 0.08)", border: "rgba(59, 130, 246, 0.5)", pill: "#3b82f6" };
@@ -41,7 +42,7 @@ const computeSectionSnap = (
 ) => computeSnap(rect, {
     excludeIds,
     extraRects,
-    others: sections.map((s) => ({ ...s.currentRect, id: s.id })),
+    others: sections.map((s) => { return { ...s.currentRect, id: s.id }; }),
 });
 
 const pickTarget = (element_: HTMLElement): HTMLElement | null => {
@@ -110,21 +111,21 @@ export const RearrangeOverlay = ({
 
     rearrangeStateRef.current = rearrangeState;
 
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [exitingAll, setExitingAll] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editExiting, setEditExiting] = useState(false);
     const editHadNoteRef = useRef(false);
-    const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
-    const lastNoteTextRef = useRef<Map<string, string>>(new Map());
+    const [exitingIds, setExitingIds] = useState(new Set<string>());
+    const lastNoteTextRef = useRef(new Map<string, string>());
     const [hoverHighlight, setHoverHighlight] = useState<{ h: number; w: number; x: number; y: number } | null>(null);
     const [sizeIndicator, setSizeIndicator] = useState<{ text: string; x: number; y: number } | null>(null);
     const [snapGuides, setSnapGuides] = useState<Guide[]>([]);
     const [scrollY, setScrollY] = useState(0);
     const interactionRef = useRef<string | null>(null);
-    const seenGhostIdsRef = useRef<Set<string>>(new Set());
-    const firstActionRef = useRef<Map<string, "move" | "resize">>(new Map());
-    const [dragPositions, setDragPositions] = useState<Map<string, { height: number; width: number; x: number; y: number }>>(new Map());
+    const seenGhostIdsRef = useRef(new Set<string>());
+    const firstActionRef = useRef(new Map<string, "move" | "resize">());
+    const [dragPositions, setDragPositions] = useState(new Map<string, { height: number; width: number; x: number; y: number }>());
     const onSelectionChangeRef = useRef(onSelectionChange);
 
     onSelectionChangeRef.current = onSelectionChange;
@@ -440,7 +441,7 @@ export const RearrangeOverlay = ({
 
             for (const s of sections) {
                 if (newSelected.has(s.id)) {
-                    const outlineEl = document.querySelector(`[data-rearrange-section="${s.id}"]`) as HTMLElement | null;
+                    const outlineEl = document.querySelector<HTMLElement>(`[data-rearrange-section="${s.id}"]`);
 
                     dragEls.set(s.id, { curH: s.currentRect.height, curW: s.currentRect.width, outlineEl });
                 }
@@ -511,8 +512,8 @@ export const RearrangeOverlay = ({
             };
 
             const onUp = (event_v: MouseEvent): void => {
-                window.removeEventListener("mousemove", onMove);
-                window.removeEventListener("mouseup", onUp);
+                globalThis.removeEventListener("mousemove", onMove);
+                globalThis.removeEventListener("mouseup", onUp);
                 interactionRef.current = null;
                 setSnapGuides([]);
                 setDragPositions(new Map());
@@ -565,8 +566,8 @@ export const RearrangeOverlay = ({
                 onDragEndRef.current?.(0, 0, false);
             };
 
-            window.addEventListener("mousemove", onMove);
-            window.addEventListener("mouseup", onUp);
+            globalThis.addEventListener("mousemove", onMove);
+            globalThis.addEventListener("mouseup", onUp);
         },
         [selectedIds, sections, rearrangeState, onChange, extraSnapRects],
     );
@@ -590,7 +591,7 @@ export const RearrangeOverlay = ({
             const startRect = { ...section.currentRect };
             const aspectRatio = startRect.width / startRect.height;
             let lastRect = { ...startRect };
-            const resizeOutlineEl = document.querySelector(`[data-rearrange-section="${id}"]`) as HTMLElement | null;
+            const resizeOutlineEl = document.querySelector<HTMLElement>(`[data-rearrange-section="${id}"]`);
 
             const onMove = (event_v: MouseEvent): void => {
                 const dx = event_v.clientX - startX;
@@ -669,8 +670,8 @@ export const RearrangeOverlay = ({
             };
 
             const onUp = (): void => {
-                window.removeEventListener("mousemove", onMove);
-                window.removeEventListener("mouseup", onUp);
+                globalThis.removeEventListener("mousemove", onMove);
+                globalThis.removeEventListener("mouseup", onUp);
                 setSizeIndicator(null);
                 interactionRef.current = null;
                 setDragPositions(new Map());
@@ -680,8 +681,8 @@ export const RearrangeOverlay = ({
                 });
             };
 
-            window.addEventListener("mousemove", onMove);
-            window.addEventListener("mouseup", onUp);
+            globalThis.addEventListener("mousemove", onMove);
+            globalThis.addEventListener("mouseup", onUp);
         },
         [sections, rearrangeState, onChange, scrollY],
     );
@@ -768,7 +769,6 @@ export const RearrangeOverlay = ({
         if (exiting && editingId) {
             dismissEdit();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [exiting]);
 
     for (const s of sections) {
@@ -842,13 +842,11 @@ export const RearrangeOverlay = ({
         }
 
         const isExitingNow = exitingAll || exiting || exitingIds.has(section.id);
-        const baseClass = ghost
-            ? "group/sec absolute rounded-sm cursor-grab active:cursor-grabbing select-none pointer-events-auto"
-            : "group/sec absolute rounded-sm cursor-grab active:cursor-grabbing select-none pointer-events-auto";
+        const baseClass = "group/sec absolute rounded-sm cursor-grab active:cursor-grabbing select-none pointer-events-auto";
         const outlineStyle: JSX.CSSProperties = {
             animation: ghost ? "vdt-lm-ghost-enter 0.25s ease" : "vdt-lm-section-enter 0.2s ease",
             backgroundColor: ghost ? "rgba(59, 130, 246, 0.04)" : SECTION_COLOR.bg,
-            border: `${isSelected && ghost ? "2px solid" : "2px solid"} ${ghost ? (isSelected ? "#3b82f6" : "rgba(59,130,246,0.4)") : SECTION_COLOR.border}`,
+            border: `2px solid ${ghost ? (isSelected ? "#3b82f6" : "rgba(59,130,246,0.4)") : SECTION_COLOR.border}`,
             borderRadius: 4,
             boxShadow: isSelected ? "0 0 0 2px rgba(59,130,246,0.15), 0 2px 8px rgba(59,130,246,0.15)" : undefined,
             height: rect.height,
@@ -1033,7 +1031,6 @@ export const RearrangeOverlay = ({
             {snapGuides.map((g, index) => (
                 <div
                     class="pointer-events-none z-[100001] bg-fuchsia-500 opacity-50"
-                    // eslint-disable-next-line react/no-array-index-key
                     key={`${g.axis}-${g.pos}-${index}`}
                     style={
                         g.axis === "x"

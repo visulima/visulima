@@ -5,6 +5,9 @@
  */
 
 import type { AccessibilityInfo, BoundingBox, FrameworkContext } from "../../types/annotations";
+import type { ClipboardField, ClipboardProfile } from "./clipboard-config";
+// ─── Markdown Export ─────────────────────────────────────────────────────────
+import { isFieldEnabled, loadClipboardProfile } from "./clipboard-config";
 
 // ─── Shadow DOM Piercing ─────────────────────────────────────────────────────
 
@@ -916,10 +919,6 @@ export const getElementBoundingBoxes = (elements: Element[]): BoundingBox[] =>
 
         return { height: r.height, width: r.width, x: r.x, y: r.y };
     });
-
-// ─── Markdown Export ─────────────────────────────────────────────────────────
-
-import { type ClipboardField, type ClipboardProfile, isFieldEnabled, loadClipboardProfile } from "./clipboard-config";
 
 /**
  * Output detail levels:

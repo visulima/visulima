@@ -36,7 +36,7 @@ const KEYFRAMES = `
 let cachedSheet: CSSStyleSheet | undefined;
 
 export const getLayoutModeKeyframesSheet = (): CSSStyleSheet | undefined => {
-    if (typeof globalThis.CSSStyleSheet === "undefined") {
+    if (globalThis.CSSStyleSheet === undefined) {
         return undefined;
     }
 

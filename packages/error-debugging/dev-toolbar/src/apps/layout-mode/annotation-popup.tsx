@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { autoUpdate, computePosition, flip, offset, shift, size } from "@floating-ui/dom";
 import { clsx } from "clsx";
 import type { JSX } from "preact";
@@ -15,9 +15,11 @@ interface AnchorRect {
 }
 
 interface AnnotationPopupProps {
-    /** Page-coordinate rect of the element being annotated. The popup
+    /**
+     * Page-coordinate rect of the element being annotated. The popup
      * positions itself adjacent via Floating UI, automatically flipping
-     * and shifting to stay inside the viewport. */
+     * and shifting to stay inside the viewport.
+     */
     anchorRect: AnchorRect;
     element: string;
     initialValue: string;
@@ -86,7 +88,7 @@ const AnnotationPopup = ({
 
         const reference = {
             getBoundingClientRect: () => {
-                const { scrollY } = window;
+                const { scrollY } = globalThis;
 
                 return {
                     bottom: anchorRect.y + anchorRect.height - scrollY,

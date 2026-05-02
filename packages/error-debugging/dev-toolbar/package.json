@@ -134,6 +134,7 @@
         "@babel/parser": "catalog:prod",
         "@babel/traverse": "catalog:prod",
         "@floating-ui/dom": "catalog:prod",
+        "clsx": "catalog:prod",
         "launch-editor": "catalog:prod",
         "preact": "catalog:prod"
     },
@@ -161,7 +162,6 @@
         "@vitest/ui": "catalog:test",
         "axe-core": "catalog:dev",
         "babel-plugin-transform-hook-names": "catalog:dev",
-        "clsx": "catalog:prod",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "cssnano": "catalog:dev",
         "esbuild": "catalog:build",

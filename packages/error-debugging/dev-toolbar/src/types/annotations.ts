@@ -42,7 +42,7 @@ export interface BoundingBox {
 
 /**
  * An image (or other small binary) attached to an annotation. Stored under
- * `.devtoolbar/attachments/<annotation-id>/<filename>` and referenced from
+ * `.devtoolbar/attachments/&lt;annotation-id>/&lt;filename>` and referenced from
  * the annotation by relative path. Multiple attachments per annotation are
  * supported — different from the legacy single `screenshot` field.
  */
@@ -56,7 +56,7 @@ export interface AnnotationAttachment {
     /** Original filename if known (paste-from-clipboard yields no filename). */
     name?: string;
 
-    /** Relative path within `.devtoolbar/` (e.g. `attachments/<id>/<n>.png`) */
+    /** Relative path within `.devtoolbar/` (e.g. `attachments/&lt;id>/&lt;n>.png`) */
     path: string;
 
     /** File size in bytes */

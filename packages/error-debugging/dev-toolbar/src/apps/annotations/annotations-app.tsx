@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
@@ -7,10 +7,11 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import type { Annotation, AnnotationIntent, AnnotationSeverity, AnnotationStatus } from "../../types/annotations";
 import type { AppComponentProps } from "../../types/app";
 import { Button, Textarea } from "../../ui";
-import { annotationsToMarkdown } from "../inspector/element-utils";
 import type { AnnotationSettings } from "../inspector/annotation-settings";
 import { loadSettings, MARKER_COLORS, saveSettings } from "../inspector/annotation-settings";
-import { buildSessionZip, type ExportSessionFile, triggerDownload } from "./zip-bundle";
+import { annotationsToMarkdown } from "../inspector/element-utils";
+import type { ExportSessionFile } from "./zip-bundle";
+import { buildSessionZip, triggerDownload } from "./zip-bundle";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -423,7 +424,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 exportSession: (md: string) => Promise<{ files: ExportSessionFile[]; generatedAt: string }>;
             }).exportSession(markdown);
             const blob = buildSessionZip(result.files);
-            const stamp = result.generatedAt.replace(/[:.]/g, "-");
+            const stamp = result.generatedAt.replaceAll(/[:.]/g, "-");
 
             triggerDownload(blob, `dev-toolbar-session-${stamp}.zip`);
         } catch (error_) {
