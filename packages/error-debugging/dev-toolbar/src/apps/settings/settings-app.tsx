@@ -18,6 +18,15 @@ import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
 import type { SelectOption } from "../../ui/components/select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../ui/components/select";
+import {
+    BUILT_IN_PROFILES,
+    type ClipboardField,
+    type ClipboardProfile,
+    DETAIL_DEFAULTS,
+    isFieldEnabled,
+    loadClipboardProfile,
+    saveClipboardProfile,
+} from "../inspector/clipboard-config";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 
@@ -307,6 +316,102 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
     );
 };
 
+// ─── Clipboard section ────────────────────────────────────────────────────────
+
+const FIELD_LABELS: { description: string; key: ClipboardField; label: string }[] = [
+    { description: "Page URL where the annotation was captured.", key: "url", label: "URL" },
+    { description: "Annotation status (open / resolved / ...).", key: "status", label: "Status" },
+    { description: "CSS selector that re-finds the element.", key: "selector", label: "Selector" },
+    { description: "Source file path from data-vdt-source.", key: "source", label: "Source attribute" },
+    { description: "Detected React/Vue/Svelte component name.", key: "frameworkComponent", label: "Component" },
+    { description: "Component file:line for direct IDE jumps.", key: "componentSource", label: "Component file" },
+    { description: "Full component tree above the element.", key: "componentStack", label: "Component stack" },
+    { description: "Text the user had selected when annotating.", key: "selectedText", label: "Selected text" },
+    { description: "Cleaned CSS class list on the element.", key: "classes", label: "CSS classes" },
+    { description: "Visible text near the element for context.", key: "nearbyText", label: "Nearby text" },
+    { description: "Full DOM ancestry path.", key: "domPath", label: "DOM path" },
+    { description: "Computed styles on the element.", key: "computedStyles", label: "Computed styles" },
+    { description: "Sibling tags around the element.", key: "nearbyElements", label: "Nearby elements" },
+    { description: "ARIA role / accessibility metadata.", key: "accessibility", label: "Accessibility" },
+];
+
+const profileOptions: SelectOption[] = Object.entries(BUILT_IN_PROFILES).map(([id, p]) => ({
+    label: p.name,
+    value: id,
+}));
+
+const ClipboardSection = (): ComponentChildren => {
+    const [profile, setProfile] = useState<ClipboardProfile>(loadClipboardProfile);
+
+    const apply = (next: ClipboardProfile): void => {
+        setProfile(next);
+        saveClipboardProfile(next);
+    };
+
+    const onPickProfile = (id: string): void => {
+        const p = BUILT_IN_PROFILES[id];
+
+        if (p) {
+            apply({ ...p });
+        }
+    };
+
+    const toggleField = (field: ClipboardField, value: boolean): void => {
+        const defaultValue = DETAIL_DEFAULTS[profile.detail].has(field);
+        const overrides = { ...(profile.fields ?? {}) };
+
+        if (value === defaultValue) {
+            delete overrides[field];
+        } else {
+            overrides[field] = value;
+        }
+
+        apply({ ...profile, fields: Object.keys(overrides).length > 0 ? overrides : undefined, name: "Custom" });
+    };
+
+    const matchedProfileId = Object.entries(BUILT_IN_PROFILES).find(([, p]) =>
+        p.detail === profile.detail
+        && JSON.stringify(p.fields ?? {}) === JSON.stringify(profile.fields ?? {}))?.[0] ?? "custom";
+
+    return (
+        <Section title="Clipboard">
+            <SettingRow
+                control={
+                    <Select onValueChange={onPickProfile} value={matchedProfileId === "custom" ? "" : matchedProfileId}>
+                        <SelectTrigger class="w-44">
+                            <SelectValue options={profileOptions} placeholder={matchedProfileId === "custom" ? "Custom" : "Pick a profile"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {profileOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                }
+                description="Preset that controls which fields are included when copying annotations or inspector output to the clipboard."
+                label="Format profile"
+            />
+            {FIELD_LABELS.map(({ description, key, label }) => (
+                <SettingRow
+                    control={
+                        <Toggle
+                            checked={isFieldEnabled(profile, key)}
+                            onChange={(v) => {
+                                toggleField(key, v);
+                            }}
+                        />
+                    }
+                    description={description}
+                    key={key}
+                    label={label}
+                />
+            ))}
+        </Section>
+    );
+};
+
 // ─── Settings app ─────────────────────────────────────────────────────────────
 
 const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
@@ -391,6 +496,9 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     label="Preferred editor"
                 />
             </Section>
+
+            {/* Clipboard format */}
+            <ClipboardSection />
 
             {/* Keyboard Shortcuts */}
             <Section title="Keyboard Shortcuts">

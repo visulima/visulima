@@ -919,12 +919,19 @@ export const getElementBoundingBoxes = (elements: Element[]): BoundingBox[] =>
 
 // ─── Markdown Export ─────────────────────────────────────────────────────────
 
+import { type ClipboardField, type ClipboardProfile, isFieldEnabled, loadClipboardProfile } from "./clipboard-config";
+
 /**
  * Output detail levels:
  * - compact: "Element: comment (re: "selected text...")"
  * - standard: Element + location + component + feedback
  * - detailed: + classes, position, context text
  * - forensic: + full DOM path, styles, accessibility, nearby elements
+ *
+ * Pass either a detail-level string (legacy callers) or a full
+ * `ClipboardProfile` to override individual fields. When both arguments are
+ * omitted the user's persisted profile (or the default) is read from
+ * localStorage.
  */
 export const annotationsToMarkdown = (
     annotations: {
@@ -946,11 +953,24 @@ export const annotationsToMarkdown = (
         status: string;
         url: string;
     }[],
-    detail: "compact" | "detailed" | "forensic" | "standard" = "standard",
+    detailOrProfile?: "compact" | "detailed" | "forensic" | "standard" | ClipboardProfile,
 ): string => {
     if (annotations.length === 0) {
         return "# Annotations\n\nNo annotations found.";
     }
+
+    let profile: ClipboardProfile;
+
+    if (typeof detailOrProfile === "string") {
+        profile = { detail: detailOrProfile, name: detailOrProfile };
+    } else if (detailOrProfile) {
+        profile = detailOrProfile;
+    } else {
+        profile = loadClipboardProfile();
+    }
+
+    const include = (field: ClipboardField): boolean => isFieldEnabled(profile, field);
+    const { detail } = profile;
 
     // ── Compact: one line per annotation ──
     if (detail === "compact") {
@@ -958,9 +978,25 @@ export const annotationsToMarkdown = (
 
         for (const a of annotations) {
             const label = a.elementLabel ?? a.elementTag;
-            const sel = a.selectedText ? ` (re: "${a.selectedText.slice(0, 30)}...")` : "";
+            const parts: string[] = [`- **${label}:** ${a.comment}`];
 
-            lines.push(`- **${label}:** ${a.comment}${sel}`);
+            if (include("selectedText") && a.selectedText) {
+                parts.push(` (re: "${a.selectedText.slice(0, 30)}...")`);
+            }
+
+            if (include("selector") && a.elementPath) {
+                parts.push(` \`${a.elementPath}\``);
+            }
+
+            if (include("source") && a.source) {
+                parts.push(` (\`${a.source}\`)`);
+            }
+
+            if (include("componentSource") && a.frameworkContext?.sourceFile) {
+                parts.push(` [${a.frameworkContext.sourceFile}${a.frameworkContext.sourceLine ? `:${a.frameworkContext.sourceLine}` : ""}]`);
+            }
+
+            lines.push(parts.join(""));
         }
 
         return lines.join("\n");
@@ -971,62 +1007,64 @@ export const annotationsToMarkdown = (
     for (const [i, a] of annotations.entries()) {
         const label = a.elementLabel ?? a.elementTag;
 
-        lines.push(`## ${i + 1}. [${a.intent.toUpperCase()}] ${a.severity} \u2014 ${label}`, "", `**Status:** ${a.status}`, `**URL:** ${a.url}`);
+        lines.push(`## ${i + 1}. [${a.intent.toUpperCase()}] ${a.severity} \u2014 ${label}`, "");
 
-        if (a.elementPath) {
+        if (include("status")) {
+            lines.push(`**Status:** ${a.status}`);
+        }
+
+        if (include("url")) {
+            lines.push(`**URL:** ${a.url}`);
+        }
+
+        if (include("selector") && a.elementPath) {
             lines.push(`**Selector:** \`${a.elementPath}\``);
         }
 
-        if (a.source) {
+        if (include("source") && a.source) {
             lines.push(`**Source:** \`${a.source}\``);
         }
 
-        if (a.frameworkContext) {
+        if (include("frameworkComponent") && a.frameworkContext) {
             const fc = a.frameworkContext;
 
             lines.push(`**Component:** ${fc.componentName} (${fc.framework})`);
 
-            if (fc.componentStack && fc.componentStack.length > 1) {
+            if (include("componentStack") && fc.componentStack && fc.componentStack.length > 1) {
                 lines.push(`**Stack:** ${fc.componentStack.join(" > ")}`);
             }
 
-            if (fc.sourceFile) {
+            if (include("componentSource") && fc.sourceFile) {
                 lines.push(`**File:** \`${fc.sourceFile}${fc.sourceLine ? `:${fc.sourceLine}` : ""}\``);
             }
         }
 
-        if (a.selectedText) {
+        if (include("selectedText") && a.selectedText) {
             lines.push(`**Selected:** "${a.selectedText}"`);
         }
 
-        // Detailed: add classes, position, context
-        if (detail === "detailed" || detail === "forensic") {
-            if (a.cssClasses) {
-                lines.push(`**Classes:** \`${a.cssClasses}\``);
-            }
-
-            if (a.nearbyText) {
-                lines.push(`**Context:** ${a.nearbyText}`);
-            }
-
-            if (a.fullPath) {
-                lines.push(`**DOM Path:** \`${a.fullPath}\``);
-            }
+        if (include("classes") && a.cssClasses) {
+            lines.push(`**Classes:** \`${a.cssClasses}\``);
         }
 
-        // Forensic: everything
-        if (detail === "forensic") {
-            if (a.accessibility?.role) {
-                lines.push(`**Role:** ${a.accessibility.role}`);
-            }
+        if (include("nearbyText") && a.nearbyText) {
+            lines.push(`**Context:** ${a.nearbyText}`);
+        }
 
-            if (a.nearbyElements) {
-                lines.push(`**Nearby:** ${a.nearbyElements}`);
-            }
+        if (include("domPath") && a.fullPath) {
+            lines.push(`**DOM Path:** \`${a.fullPath}\``);
+        }
 
-            if (a.computedStyles) {
-                lines.push(`**Styles:** \`${a.computedStyles}\``);
-            }
+        if (include("accessibility") && a.accessibility?.role) {
+            lines.push(`**Role:** ${a.accessibility.role}`);
+        }
+
+        if (include("nearbyElements") && a.nearbyElements) {
+            lines.push(`**Nearby:** ${a.nearbyElements}`);
+        }
+
+        if (include("computedStyles") && a.computedStyles) {
+            lines.push(`**Styles:** \`${a.computedStyles}\``);
         }
 
         lines.push("", a.comment, "", "---", "");
