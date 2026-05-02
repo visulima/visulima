@@ -5,6 +5,8 @@ import { clsx } from "clsx";
 import type { JSX } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
+import { SUPPORTS_POPOVER } from "./feature-detect";
+
 interface AnchorRect {
     height: number;
     width: number;
@@ -44,8 +46,32 @@ const AnnotationPopup = ({
     const popupRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        // Promote the popup to the top layer when the Popover API is
+        // available — bypasses z-index stacking battles and gives us native
+        // ESC-to-dismiss + screen-reader semantics for free. Falls through to
+        // plain z-index ordering on browsers without support.
+        const popup = popupRef.current;
+
+        if (SUPPORTS_POPOVER && popup && !popup.matches(":popover-open")) {
+            try {
+                (popup as HTMLElement & { showPopover?: () => void }).showPopover?.();
+            } catch {
+                /* element not connected yet — autoUpdate will retry next tick */
+            }
+        }
+
         textareaRef.current?.focus();
         textareaRef.current?.select();
+
+        return () => {
+            if (SUPPORTS_POPOVER && popup?.matches(":popover-open")) {
+                try {
+                    (popup as HTMLElement & { hidePopover?: () => void }).hidePopover?.();
+                } catch {
+                    /* ignore */
+                }
+            }
+        };
     }, []);
 
     // Position via Floating UI. The "reference" is a virtual element built
@@ -129,6 +155,7 @@ const AnnotationPopup = ({
             )}
             data-annotation-popup
             data-feedback-toolbar
+            popover={SUPPORTS_POPOVER ? "manual" : undefined}
             ref={popupRef}
             style={{ animation: isExiting ? undefined : "vdt-lm-popup-in 0.18s cubic-bezier(0.34,1.2,0.64,1)" }}
         >
