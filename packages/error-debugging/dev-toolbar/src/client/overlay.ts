@@ -42,6 +42,7 @@ const loadAppModules = (appConfig: (typeof devToolbarOptions)["apps"]) =>
         appConfig.tailwind ? import("virtual:visulima-dev-toolbar-path:apps/tailwind/index.js") : undefined,
         appConfig.assets ? import("virtual:visulima-dev-toolbar-path:apps/assets/index.js") : undefined,
         appConfig.annotations ? import("virtual:visulima-dev-toolbar-path:apps/annotations/index.js") : undefined,
+        appConfig.layoutMode ? import("virtual:visulima-dev-toolbar-path:apps/layout-mode/index.js") : undefined,
     ]);
 
 /**
@@ -61,6 +62,7 @@ const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppMo
         tailwindModule,
         assetsModule,
         annotationsModule,
+        layoutModeModule,
     ] = modules;
 
     if (!toolbar.registerApp) {
@@ -78,6 +80,7 @@ const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppMo
         tailwindModule,
         assetsModule,
         annotationsModule,
+        layoutModeModule,
     ];
 
     for (const appModule of optionalApps) {

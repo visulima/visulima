@@ -9,6 +9,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
             annotations: boolean;
             assets: boolean;
             inspector: boolean;
+            layoutMode: boolean;
             moduleGraph: boolean;
             performance: boolean;
             seo: boolean;

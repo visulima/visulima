@@ -69,6 +69,7 @@ export interface DevToolbarOptions {
         annotations?: boolean;
         assets?: boolean;
         inspector?: boolean;
+        layoutMode?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;
         seo?: boolean;
@@ -388,6 +389,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                         annotations: options.apps?.annotations ?? options.apps?.inspector ?? false,
                         assets: options.apps?.assets ?? false,
                         inspector: options.apps?.inspector ?? false,
+                        layoutMode: options.apps?.layoutMode ?? false,
                         moduleGraph: options.apps?.moduleGraph ?? false,
                         performance: options.apps?.performance ?? false,
                         seo: options.apps?.seo ?? false,
