@@ -209,6 +209,24 @@ Print the recorded hash and per-input hash details (command, nodes, runtime, imp
 
 If you want the assistant to actually run something for you, paste the suggested command into your terminal — or wire it through a separate tool you trust (e.g. Claude Code's bash tool with explicit per-call approval).
 
+## Self-healing CI
+
+`vis ai heal` ([command reference](/commands/ai#heal)) closes the loop on a failed CI run: it reads the latest failed task from `.task-runner/runs/`, asks the configured AI provider for a structured patch, applies it, validates the fix by re-running the failing target with `--no-cache --summarize --fail-fast`, and — when validation passes — posts the proposal back to the PR/MR.
+
+CI surface detection lives in [`src/ai/ci-context.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/ai/ci-context.ts):
+
+- **GitHub Actions** (`GITHUB_ACTIONS=true`): resolves the PR number from `GITHUB_REF` (`refs/pull/<n>/merge`) or the `GITHUB_EVENT_PATH` payload, captures the head SHA from the event, and reads `GITHUB_TOKEN` for REST fallback.
+- **GitLab CI** (`GITLAB_CI=true`): reads `CI_MERGE_REQUEST_IID`, `CI_API_V4_URL`, `CI_PROJECT_ID` (with `CI_PROJECT_PATH` fallback), and `GITLAB_TOKEN` / `CI_TOKEN` (the auto-injected `CI_JOB_TOKEN` cannot post MR notes — `vis ai heal` skips it deliberately).
+- **Anything else**: provider is reported as `unknown` and the comment step is skipped — the patch is still applied and validated locally.
+
+Comment posting in [`src/ai/pr-comment.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/ai/pr-comment.ts) dispatches on the resolved provider:
+
+- **GitHub**: tries `gh pr comment --body-file -` first (uses the runner's bundled `gh` and auto-injected token, falls back to `--repo` when the local clone lacks `origin`). On failure, falls back to `POST /repos/:owner/:repo/issues/:n/comments` with `GITHUB_TOKEN`.
+- **GitLab**: posts directly to `POST /projects/:id/merge_requests/:iid/notes` via the REST API. `glab` is not preinstalled on shared runners and project tokens are the standard auth shape, so `vis` skips the CLI path entirely.
+- **Push-event runs**: report `posted: false, method: "skipped"` — there's no PR/MR to comment on.
+
+Pass `--dry-run` to inspect the proposal without applying or commenting; pass `--validation-timeout <seconds>` to cap how long the re-run is allowed to take (default 30 min). The PR/MR comment is bounded at ~60 KB; oversized patch sets drop the inline diff body and leave a pointer to `vis ai fix … --apply`.
+
 ## Troubleshooting
 
 **`Cannot find module '@modelcontextprotocol/sdk'`** — install the optional peer: `pnpm add @modelcontextprotocol/sdk zod`.

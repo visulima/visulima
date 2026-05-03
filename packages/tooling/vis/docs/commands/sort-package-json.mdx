@@ -1,0 +1,42 @@
+---
+title: "vis sort-package-json"
+description: "Sort package.json files across the workspace using the sort-package-json Rust crate"
+---
+
+# vis sort-package-json
+
+Normalise every `package.json` in the workspace using the `sort-package-json` Rust implementation. Use `--check` in CI to assert the tree is already sorted without writing.
+
+## Usage
+
+```bash
+vis sort-package-json [options]
+```
+
+## Examples
+
+```bash
+vis sort-package-json
+vis sort-package-json --check                                  # CI: exit 1 if unsorted
+vis sort-package-json --sort-scripts                           # also alphabetise the scripts field
+vis sort-package-json --indent 4                               # force 4-space indent
+vis sort-package-json --indent tab                             # force tab indent
+vis sort-package-json --ignore '**/fixtures/**'                # skip globs (repeatable)
+vis sort-package-json --sort-order name,version,license        # custom prefix order
+vis sort-package-json --unsorted dependencies,devDependencies  # preserve key order in those sections
+vis sort-package-json --no-final-newline                       # no trailing newline
+vis sort-package-json --line-ending crlf                       # force CRLF
+```
+
+## Options
+
+| Option                | Alias | Default | Description                                                                                                  |
+| --------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| `--check`             | `-c`  | `false` | Check if `package.json` files are sorted without writing (exits 1 if unsorted)                               |
+| `--sort-scripts`      |       | `false` | Also sort the `scripts` field alphabetically                                                                 |
+| `--indent`            |       |         | Indent override: a number of spaces, `tab`, or a literal whitespace string. When unset, the file's indent is preserved. |
+| `--ignore`            |       |         | Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.  |
+| `--sort-order`        |       |         | Comma-separated list of top-level keys to place first. Repeatable.                                           |
+| `--unsorted`          |       |         | Comma-separated list of top-level sections whose key order should be preserved. Repeatable.                  |
+| `--no-final-newline`  |       | `false` | Do not append a trailing newline (default: append one).                                                      |
+| `--line-ending`       |       | `auto`  | Line ending to write: `auto` (per-file detection), `lf`, or `crlf`.                                          |

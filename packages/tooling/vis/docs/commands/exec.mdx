@@ -1,0 +1,34 @@
+---
+title: "vis exec"
+description: "Execute a local node_modules/.bin command (no remote fallback)"
+---
+
+# vis exec
+
+Run a binary from the workspace's `node_modules/.bin/` (or a project's local one). Unlike [`vis dlx`](./dlx), `exec` never falls back to fetching the package from the network — if it's not installed, it fails.
+
+## Usage
+
+```bash
+vis exec <command> [args...] [options]
+```
+
+## Examples
+
+```bash
+vis exec eslint .
+vis exec tsc --noEmit
+vis exec -r -- eslint .          # run in every workspace package
+vis exec -c 'echo $PATH'         # shell mode
+```
+
+## Options
+
+| Option              | Alias | Default | Description                                                  |
+| ------------------- | ----- | ------- | ------------------------------------------------------------ |
+| `--shell-mode`      | `-c`  | `false` | Execute within shell environment                             |
+| `--recursive`       | `-r`  | `false` | Run in every workspace package                               |
+| `--workspace-root`  | `-w`  | `false` | Run on workspace root only                                   |
+| `--filter`          | `-F`  |         | Filter packages by name pattern (repeatable)                 |
+| `--parallel`        |       | `false` | Run concurrently without topological ordering                |
+| `--reverse`         |       | `false` | Reverse topological execution order                          |

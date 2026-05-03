@@ -1,0 +1,39 @@
+---
+title: "vis outdated"
+description: "Check for outdated packages using the detected package manager"
+---
+
+# vis outdated
+
+Report packages whose installed version is behind the latest published version. Delegates to the detected PM (`pnpm outdated`, `npm outdated`, `yarn outdated`, `bun outdated`) and normalizes the output.
+
+## Usage
+
+```bash
+vis outdated [packages...] [options]
+```
+
+## Examples
+
+```bash
+vis outdated
+vis outdated react
+vis outdated --format json
+vis outdated -r                      # all workspaces
+vis outdated --compatible            # only semver-compatible updates (pnpm)
+```
+
+## Options
+
+| Option              | Alias | Default | Description                                                        |
+| ------------------- | ----- | ------- | ------------------------------------------------------------------ |
+| `--long`            |       | `false` | Show extended information                                          |
+| `--format`          |       | `table` | Output format: `table`, `list`, or `json`                          |
+| `--recursive`       | `-r`  | `false` | Check all workspaces                                               |
+| `--workspace-root`  | `-w`  | `false` | Include workspace root                                             |
+| `--prod`            | `-P`  | `false` | Production dependencies only (pnpm)                                |
+| `--dev`             | `-D`  | `false` | Dev dependencies only (pnpm)                                       |
+| `--no-optional`     |       | `false` | Exclude optional dependencies (pnpm)                               |
+| `--compatible`      |       | `false` | Show only semver-compatible updates (pnpm)                         |
+| `--global`          | `-g`  | `false` | Check globally installed packages                                  |
+| `--filter`          | `-F`  |         | Filter by workspace package name (repeatable)                      |

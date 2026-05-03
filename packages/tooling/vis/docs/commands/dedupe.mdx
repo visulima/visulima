@@ -1,0 +1,27 @@
+---
+title: "vis dedupe"
+description: "Deduplicate dependencies using the detected package manager"
+---
+
+# vis dedupe
+
+Run the package manager's deduplication routine to collapse duplicate package versions in the lockfile. Use `--check` in CI to assert the lockfile is already deduped without modifying it.
+
+## Usage
+
+```bash
+vis dedupe [options]
+```
+
+## Examples
+
+```bash
+vis dedupe
+vis dedupe --check     # CI: exits non-zero when changes would be made
+```
+
+## Options
+
+| Option      | Default | Description                                                  |
+| ----------- | ------- | ------------------------------------------------------------ |
+| `--check`   | `false` | Preview changes without modifying files (dry-run)            |

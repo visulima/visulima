@@ -1,0 +1,30 @@
+---
+title: "vis approve-builds"
+description: "Review and approve dependencies with build scripts"
+---
+
+# vis approve-builds
+
+Scan installed dependencies for packages with lifecycle (build) scripts and surface them for explicit approval. vis blocks dependency build scripts by default; use this command to populate `security.allowBuilds` (or the native PM equivalent) for the packages you trust.
+
+## Usage
+
+```bash
+vis approve-builds [options]
+```
+
+## Examples
+
+```bash
+vis approve-builds                  # interactively review pending builds
+vis approve-builds --all            # approve everything (pnpm only, no prompts)
+vis approve-builds --sync-native    # mirror allowBuilds into the native PM config
+```
+
+## Options
+
+| Option            | Default | Description                                                                                              |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| `--all`           | `false` | Approve all pending builds without prompting (pnpm only)                                                 |
+| `--scan`          | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                        |
+| `--sync-native`   | `false` | Sync `allowBuilds` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`) |

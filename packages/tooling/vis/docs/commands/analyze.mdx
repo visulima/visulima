@@ -1,0 +1,31 @@
+---
+title: "vis analyze"
+description: "Analyze a single package update with AI"
+---
+
+# vis analyze
+
+Analyze the impact, security posture, or compatibility of updating a single package using the configured AI provider. Useful before merging a `vis update` candidate.
+
+## Usage
+
+```bash
+vis analyze <package> [version] [options]
+```
+
+## Examples
+
+```bash
+vis analyze react
+vis analyze react 19.0.0
+vis analyze react --ai-type security
+vis analyze react --format json
+```
+
+## Options
+
+| Option        | Default  | Description                                                                  |
+| ------------- | -------- | ---------------------------------------------------------------------------- |
+| `--ai-type`   | `impact` | AI analysis type: `impact`, `security`, `compatibility`, or `recommend`      |
+| `--security`  | `false`  | Check for known security vulnerabilities                                     |
+| `--format`    | `table`  | Output format: `table` or `json`                                             |

@@ -47,6 +47,27 @@ When the user asks for "a new X" / "scaffold Y":
 3. Construct the command: `vis generate <name> -- --var1=value1 --var2=value2`. For interactive prompts, drop the `--` overrides and let the user step through. For `--defaults`-friendly templates, add `--defaults` to skip prompts.
 4. Hand the command to the user to execute. Don't fabricate variable values — if the user hasn't told you what to pass for a required variable, ask.
 
+#### Worked example
+
+User: *"Scaffold a new React button component called PrimaryButton."*
+
+1. Call `list_templates` → response contains an entry `{ "name": "component", "source": "native", "description": "Scaffold a React component" }`. That's the closest match.
+2. Call `describe_template` with `{ "name": "component" }` → response shows `variables`:
+   ```json
+   [
+     { "name": "name",     "type": "string", "required": true,  "prompt": "Component name?" },
+     { "name": "withTest", "type": "boolean", "required": false, "default": true },
+     { "name": "style",    "type": "enum",   "required": false, "default": "primary",
+       "values": ["primary", "secondary"] }
+   ]
+   ```
+3. The user supplied `name` (`PrimaryButton`) and implied `style=primary` (default already matches). `withTest` is unspecified — the default is fine, no need to override.
+4. Suggested command for the user to run:
+   ```sh
+   vis generate component -- --name=PrimaryButton --style=primary
+   ```
+   Do **not** invent values for required variables the user never mentioned — ask first.
+
 ### Diagnose a failed run
 1. `get_run_logs` to see which task(s) failed.
 2. `get_run_logs` with `taskId` set to the failing task — returns just that entry, including the captured stderr tail.

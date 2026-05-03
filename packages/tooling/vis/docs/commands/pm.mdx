@@ -1,0 +1,29 @@
+---
+title: "vis pm"
+description: "Package manager utilities (cache, publish, audit, list, config, etc.)"
+---
+
+# vis pm
+
+Pass-through to the detected package manager's miscellaneous subcommands — cache management, publishing, auditing, listing, config, identity. The first positional becomes the PM subcommand and everything after it is forwarded.
+
+## Usage
+
+```bash
+vis pm <subcommand> [args...]
+```
+
+## Examples
+
+```bash
+vis pm cache dir              # show cache directory
+vis pm cache clean            # clean cache
+vis pm publish --dry-run      # preview publishing
+vis pm list --depth 0         # list direct dependencies
+vis pm audit                  # run security audit
+vis pm whoami                 # show logged-in user
+```
+
+## Options
+
+This command takes no flags of its own — every argument is forwarded to the resolved package manager. The PM is selected via the same precedence as [`vis install`](./install) (CLI `--installer` > `VIS_INSTALLER` > `install.backend` > auto).

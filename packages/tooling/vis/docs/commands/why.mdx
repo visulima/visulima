@@ -1,0 +1,38 @@
+---
+title: "vis why"
+description: "Show why a package is installed (dependency chain)"
+---
+
+# vis why
+
+Walk the dependency graph backwards to explain how a package ended up in `node_modules`. Aliased as `vis explain` for npm-compatibility.
+
+## Usage
+
+```bash
+vis why <packages...> [options]
+```
+
+## Examples
+
+```bash
+vis why react
+vis why react --json
+vis why react -r            # all workspaces
+vis explain react           # npm-compatible alias
+```
+
+## Options
+
+| Option           | Alias | Default | Description                                       |
+| ---------------- | ----- | ------- | ------------------------------------------------- |
+| `--json`         |       | `false` | Output as JSON                                    |
+| `--long`         |       | `false` | Show extended information (pnpm)                  |
+| `--parseable`    |       | `false` | Machine-readable output (pnpm)                    |
+| `--recursive`    | `-r`  | `false` | Check across all workspaces                       |
+| `--dev`          | `-D`  | `false` | Filter to dev dependencies (pnpm)                 |
+| `--prod`         | `-P`  | `false` | Filter to production dependencies (pnpm)          |
+| `--no-optional`  |       | `false` | Exclude optional dependencies (pnpm)              |
+| `--global`       | `-g`  | `false` | Check globally installed packages (pnpm)          |
+| `--depth`        |       |         | Limit dependency tree depth                       |
+| `--filter`       | `-F`  |         | Filter by workspace package name (repeatable)     |

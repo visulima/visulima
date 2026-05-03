@@ -1,0 +1,27 @@
+---
+title: "vis link"
+description: "Link a local package for development"
+---
+
+# vis link
+
+Wire a local package into the consuming project for live-reload development. With a directory argument, links by path (works on every PM). With no argument or a global package name, registers/uses the global symlink (pnpm ≤ 10, yarn, npm, bun). Aliased as `vis ln`.
+
+## Usage
+
+```bash
+vis link [target]
+vis ln [target]
+```
+
+## Examples
+
+```bash
+vis link ./packages/utils    # link a local directory (works on all PMs)
+vis link                     # register current package globally
+vis link react               # link a previously-registered global package into the cwd
+```
+
+## Options
+
+This command takes no flags — its behavior is determined by the positional `target`.
