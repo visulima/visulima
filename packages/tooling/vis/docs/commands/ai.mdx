@@ -1,0 +1,120 @@
+---
+title: "vis ai"
+description: "AI-assisted commands: provider detection, failure-fix proposals, and self-healing CI"
+---
+
+# vis ai
+
+`vis ai` groups AI-assisted commands behind a common namespace. The root prints the subcommand catalogue (text or JSON) so a coding agent can discover what's available; the subcommands live underneath. Cache management is handled by [`vis cache`](./cache).
+
+## Usage
+
+```bash
+vis ai [subcommand] [options]
+```
+
+## Subcommands
+
+| Subcommand                | Purpose                                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [`providers`](#providers) | List detected AI providers and show which one is selected                                                        |
+| [`test`](#test)           | Run a one-shot prompt against the selected provider to verify it works                                           |
+| [`fix`](#fix)             | Read a failed task's logs and propose a structured patch (Phase 1: local, no git side effects)                   |
+| [`heal`](#heal)           | Self-healing CI loop: propose a fix, validate it via re-run, post the result to the PR/MR                        |
+
+Agent discovery is served by `vis ai --format json` on the root command — see [Help discovery for agents](#help-discovery-for-agents).
+
+## Root: `vis ai`
+
+Lists subcommands. Pass `--format json` for a machine-readable catalogue (intended for agents).
+
+| Option       | Default | Description                                  |
+| ------------ | ------- | -------------------------------------------- |
+| `--format`   | `text`  | Output format: `text` or `json`              |
+
+```bash
+vis ai                       # human-readable list
+vis ai --format json         # machine-readable subcommand catalogue
+```
+
+## providers
+
+List every detected AI provider with its detection method, version, path, priority, and whether it's the one vis would use.
+
+| Option       | Default | Description                          |
+| ------------ | ------- | ------------------------------------ |
+| `--format`   | `table` | Output format: `table` or `json`     |
+
+```bash
+vis ai providers
+vis ai providers --format json
+```
+
+The table marks the selected provider with `>>>` and prints a footer line naming it. With no provider available, the footer hints at installing one.
+
+## test
+
+Send a fixed prompt (`Reply with exactly: OK`) to the selected provider with a 30-second timeout. Useful for verifying configuration before relying on `fix`/`heal`.
+
+```bash
+vis ai test
+```
+
+Exits non-zero if no provider is available or the provider call fails.
+
+## fix
+
+Read the latest run summary, find the requested failed task, and ask the AI to propose a structured patch. Phase 1 is local-only — no git operations, no auto-apply unless `--apply` is passed.
+
+| Option        | Default | Description                                                                                |
+| ------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `--format`    | `table` | Output format: `table` or `json`                                                           |
+| `--run`       |         | Use a specific run ID from `.task-runner/runs/` instead of the latest run                  |
+| `--apply`     | `false` | Apply the proposed patch to disk after printing it (prompts for confirmation unless `--yes`) |
+| `--no-cache`  | `false` | Bypass the AI response cache                                                               |
+| `--yes`       | `false` | Skip the confirmation prompt before applying                                               |
+
+```bash
+vis ai fix @myorg/app:build
+vis ai fix @myorg/app:build --apply --yes
+vis ai fix @myorg/app:build --run 2026-04-28T12-00-00 --format json
+```
+
+## heal
+
+Self-healing CI loop. Reads the latest failed task, asks the AI for a patch, applies it, validates it by re-running just the failing target with `--no-cache --summarize --fail-fast`, and — when the validation passes — posts the proposal to the PR/MR.
+
+The CI surface is auto-detected:
+
+- **GitHub Actions** (`GITHUB_ACTIONS=true`): tries `gh pr comment` first, falls back to the GitHub REST API (`POST /repos/:owner/:repo/issues/:n/comments`) when `gh` is missing or fails. Uses `GITHUB_TOKEN` for the REST fallback.
+- **GitLab CI** (`GITLAB_CI=true`): posts via the GitLab REST API (`POST /projects/:id/merge_requests/:iid/notes`). Requires `GITLAB_TOKEN` (or `CI_TOKEN`) — `CI_JOB_TOKEN` cannot post MR notes.
+- **Push events / unrecognised CI**: skipped with a notice — the patch is still applied + validated locally.
+
+| Option                  | Default | Description                                                                            |
+| ----------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `--run`                 |         | Use a specific run ID from `.task-runner/runs/` instead of the latest run              |
+| `--dry-run`             | `false` | Print the proposal but skip apply, validation, and PR/MR comment                       |
+| `--no-cache`            | `false` | Bypass the AI response cache                                                           |
+| `--validation-timeout`  | `1800`  | Validation re-run timeout in seconds (default 30 min)                                  |
+
+```bash
+vis ai heal                                # heal latest failure, comment on the PR/MR
+vis ai heal --dry-run                      # print proposal, skip apply/validate/comment
+vis ai heal --run 2026-04-28T12-00-00      # heal a specific historical failure
+vis ai heal --validation-timeout 600       # cap validation at 10 minutes
+```
+
+The PR/MR comment includes the failing task ID, the AI's root-cause explanation, an inline diff per file (with a backtick fence chosen to survive content collisions), and a `vis ai fix … --apply` snippet for local re-application. Comments larger than 60 KB drop the diff body and link back to `vis ai fix`.
+
+## Help discovery for agents
+
+`vis ai --format json` emits the subcommand catalogue as structured JSON — names, descriptions, examples, and option schemas — so a coding agent (Claude, Cursor, Zed, …) can introspect the namespace without parsing prose. The same payload is surfaced through the bundled MCP server; see the [AI Integration guide](/guides/ai-integration).
+
+```bash
+vis ai --format json
+```
+
+## Related
+
+- [AI Integration guide](/guides/ai-integration) — MCP server, Claude Skill, and the self-healing CI workflow.
+- [`vis cache`](./cache) — manage the AI response cache (`vis cache rotate`, `vis cache stats`).

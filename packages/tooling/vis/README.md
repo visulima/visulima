@@ -119,10 +119,12 @@ brew install endevco/tap/aube
 
 Resolution precedence (highest first):
 
-1. `--installer <name>` CLI flag (or `--no-aube` to force the lockfile-detected PM for one run)
-2. `VIS_INSTALLER` environment variable
-3. `install.backend` in `vis.config.ts`
-4. Auto-detect — uses `aube` when it's on `PATH`, otherwise the lockfile-detected PM
+1. `--installer <name>` CLI flag — `auto`, `aube`, `pnpm`, `npm`, `yarn`, or `bun` (or `--no-aube` to force the lockfile-detected PM for a single run; `--no-aube` wins over every other source).
+2. `VIS_INSTALLER` environment variable — same accepted values as the flag.
+3. `install.backend` in `vis.config.ts` — same accepted values; the team-wide pin.
+4. Auto-detect — `aube` when it's on `PATH`, otherwise the lockfile-detected PM (`pnpm-lock.yaml` → pnpm, `package-lock.json` → npm, `yarn.lock` → yarn, `bun.lockb` → bun).
+
+Each step is consulted in order; the first one that resolves to a concrete backend wins. Picking an explicit value (`pnpm`, `npm`, …) at any level always beats the auto-detect step below it, so you can override the team default for a single shell session via `VIS_INSTALLER=pnpm vis install` without touching the config file.
 
 ```ts
 // vis.config.ts — pin the installer for the team

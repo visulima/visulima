@@ -1,0 +1,27 @@
+---
+title: "vis status"
+description: "Show a workspace health dashboard at a glance"
+---
+
+# vis status
+
+One-screen overview of the workspace: project counts, recent run results, cache health, security posture. Pair with `--json` for CI dashboards.
+
+## Usage
+
+```bash
+vis status [options]
+```
+
+## Examples
+
+```bash
+vis status
+vis status --json
+```
+
+## Options
+
+| Option    | Default | Description                         |
+| --------- | ------- | ----------------------------------- |
+| `--json`  | `false` | Emit JSON output                    |

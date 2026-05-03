@@ -66,6 +66,8 @@ vis doctor --exit-code --strict
 | `--fix`         | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install). Also SIGTERMs orphaned `vis` / `task-runner` processes the runtime check found. |
 | `--fix-force`   | `false` | With `--fix`: escalate orphan cleanup to `SIGKILL` (or `taskkill /F` on Windows). Use when SIGTERM is ignored — Windows child trees, blocked event loops. |
 | `--strict`      | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings |
+| `--no-cache`    | `false` | Bypass the doctor result cache (`~/.vis/cache/doctor`)                       |
+| `--filter`      |         | Comma-separated package name patterns to scope findings (supports `*` globs, e.g. `'@types/*,react'`) |
 
 ### Live progress
 

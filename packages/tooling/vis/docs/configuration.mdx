@@ -106,6 +106,8 @@ export default defineConfig({
 
 Entries are processed left-to-right (later entries win). The consumer file always overrides anything pulled in from `extends`. Cycles raise `VisConfigCycleError`; missing entries raise `VisConfigNotFoundError`. Both errors include the full chain of files for debugging deep `extends` graphs.
 
+By default the consumer's arrays replace inherited arrays wholesale. Use the [`@inherit` array sentinel](#inherit-array-sentinel) when you want to extend an array from `extends` (or from `targetDefaults`) instead of replacing it.
+
 #### Per-package `vis.task.ts`
 
 Drop a `vis.task.ts` in a project to override its targets with full type-safety. `project.json` stays the canonical home for static metadata (`tags`, `layer`, `stack`, `language`, `owners`, `projectType`); `vis.task.ts` is the canonical home for dynamic, type-checked target overrides.

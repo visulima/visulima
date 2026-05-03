@@ -48,15 +48,18 @@ vis generate --list
 
 ## Options
 
-| Option             | Default | Description                                               |
-| ------------------ | ------- | --------------------------------------------------------- |
-| `--list`           | `false` | Show discovered templates and exit.                       |
-| `--to <dir>`       | cwd     | Destination directory for written files.                  |
-| `--dry-run`        | `false` | Print planned writes; skip disk I/O and scripts.          |
-| `--force`          | `false` | Overwrite existing files without prompting.               |
-| `--defaults`       | `false` | Skip prompts; use template defaults / CLI overrides only. |
-| `--skip-scripts`   | `false` | Don't run post-generation scripts.                        |
-| `--no-interactive` | `false` | Never prompt; error on missing required values.           |
+| Option              | Default | Description                                                                                    |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `--list`            | `false` | List discovered templates                                                                      |
+| `--describe`        | `false` | Print template metadata (about, destination, variables) without running produce                |
+| `--json`            | `false` | Emit JSON output (with `--list` or `--describe`)                                               |
+| `--to <dir>`        | cwd     | Destination directory                                                                          |
+| `--dry-run`         | `false` | Print planned writes without touching disk                                                     |
+| `--force`           | `false` | Overwrite existing files without prompting                                                     |
+| `--defaults`        | `false` | Skip prompts; use template defaults                                                            |
+| `--skip-scripts`    | `false` | Skip running post-generation scripts                                                           |
+| `--no-interactive`  | `false` | Skip interactive prompts (errors on missing required values)                                   |
+| `--prefer-offline`  | `false` | Prefer locally cached remote templates over re-downloading                                     |
 
 Anything after `--` is forwarded as variable overrides (`--name=Button` → `options.name = "Button"`, `--no-flag` → `options.flag = false`).
 

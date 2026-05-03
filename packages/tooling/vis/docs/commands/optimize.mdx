@@ -1,0 +1,35 @@
+---
+title: "vis optimize"
+description: "Analyze and optimize dependencies using e18e replacements and @socketregistry overrides"
+---
+
+# vis optimize
+
+Two-phase dependency optimization with an interactive TUI. Phase 1 surfaces packages replaceable with native builtins or lighter alternatives (via [e18e](https://e18e.dev) `module-replacements`) and runs codemods on selected entries. Phase 2 writes `overrides` / `resolutions` for packages that have security-hardened `@socketregistry` alternatives.
+
+In TTY mode it presents a picker; in non-TTY (CI) it prints a static report.
+
+## Usage
+
+```bash
+vis optimize [options]
+```
+
+## Examples
+
+```bash
+vis optimize                  # interactive TUI
+vis optimize --dry-run        # preview only
+vis optimize --pin            # pin Socket overrides to exact versions
+vis optimize --prod           # only optimize production deps
+```
+
+## Options
+
+| Option           | Alias | Default | Description                                              |
+| ---------------- | ----- | ------- | -------------------------------------------------------- |
+| `--dry-run`      | `-d`  | `false` | Preview available optimizations without applying         |
+| `--pin`          |       | `false` | Pin Socket.dev overrides to exact versions               |
+| `--prod`         |       | `false` | Only optimize production dependencies                    |
+| `--no-install`   |       | `false` | Skip running install after applying overrides            |
+| `--format`       |       | `table` | Output format: `table` or `json`                         |

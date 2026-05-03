@@ -1,0 +1,31 @@
+---
+title: "vis devcontainer"
+description: "Create or update .devcontainer/devcontainer.json interactively"
+---
+
+# vis devcontainer
+
+Interactive editor for `.devcontainer/devcontainer.json`. Pick a starter template (Node, Node + pnpm, Postgres, full-stack, Python, Go, Rust, Java, DevOps, minimal, custom) and step through the prompts. Aliased as `vis dc`.
+
+## Usage
+
+```bash
+vis devcontainer [options]
+vis dc [options]
+```
+
+## Examples
+
+```bash
+vis devcontainer
+vis dc
+vis devcontainer --template node-pnpm
+vis devcontainer --output .devcontainer/dev.json
+```
+
+## Options
+
+| Option         | Alias | Default                            | Description                                                                                                          |
+| -------------- | ----- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--template`   | `-t`  |                                    | Start from a template: `node`, `node-pnpm`, `node-postgres`, `node-dind`, `fullstack`, `python`, `go`, `rust`, `java`, `devops`, `minimal`, `custom` |
+| `--output`     | `-o`  | `.devcontainer/devcontainer.json`  | Output path                                                                                                          |
