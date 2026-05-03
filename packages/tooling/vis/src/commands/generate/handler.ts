@@ -6,9 +6,90 @@ import { discoverTemplates } from "../../generate/discover";
 import { collectOptions } from "../../generate/prompts";
 import { fetchRemoteTemplate, isRemoteSource } from "../../generate/remote";
 import { runTemplate } from "../../generate/runner";
-import type { DiscoveredTemplate, Template } from "../../generate/types";
+import type { DiscoveredTemplate, Template, Variable } from "../../generate/types";
 import { pail } from "../../io/logger";
 import type { GenerateOptions } from "./index";
+
+interface TemplateListEntry {
+    description?: string;
+    name: string;
+    path: string;
+    source: DiscoveredTemplate["source"];
+}
+
+const toListEntry = async (template: DiscoveredTemplate): Promise<TemplateListEntry> => {
+    let description: string | undefined;
+
+    try {
+        const loaded = await template.load();
+
+        description = loaded.about?.description;
+    } catch {
+        // Best-effort — listing must not fail if a single template throws on load.
+    }
+
+    return { description, name: template.name, path: template.path, source: template.source };
+};
+
+interface VariableSummary {
+    default?: boolean | number | string | string[];
+    multiple?: boolean;
+    name: string;
+    order?: number;
+    prompt?: string;
+    required?: boolean;
+    type: Variable["type"];
+    values?: string[];
+}
+
+const summarizeVariable = (name: string, variable: Variable): VariableSummary => {
+    const summary: VariableSummary = {
+        default: variable.default,
+        name,
+        order: variable.order,
+        prompt: variable.prompt,
+        required: variable.required,
+        type: variable.type,
+    };
+
+    if (variable.type === "enum") {
+        summary.multiple = variable.multiple;
+        summary.values = variable.values;
+    }
+
+    return summary;
+};
+
+const describeTemplate = async (
+    discovered: DiscoveredTemplate,
+): Promise<{
+    description: string;
+    destination?: string;
+    name: string;
+    path: string;
+    source: DiscoveredTemplate["source"];
+    variables: VariableSummary[];
+}> => {
+    const loaded = await discovered.load();
+    // Match the prompt sort: missing order behaves as 0, then alphabetical.
+    const variables = Object.entries(loaded.options ?? {})
+        .sort(([nameA, a], [nameB, b]) => {
+            const orderA = a.order ?? 0;
+            const orderB = b.order ?? 0;
+
+            return orderA === orderB ? nameA.localeCompare(nameB) : orderA - orderB;
+        })
+        .map(([name, variable]) => summarizeVariable(name, variable));
+
+    return {
+        description: loaded.about?.description ?? "",
+        destination: loaded.destination,
+        name: discovered.name,
+        path: discovered.path,
+        source: discovered.source,
+        variables,
+    };
+};
 
 const printList = (templates: DiscoveredTemplate[]): void => {
     if (templates.length === 0) {
@@ -104,7 +185,73 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
             workspaceRoot,
         });
 
+        if (options.json) {
+            const entries = await Promise.all(discovered.map((t) => toListEntry(t)));
+
+            process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
+
+            return;
+        }
+
         printList(discovered);
+
+        return;
+    }
+
+    // --describe short-circuits before remote fetch / produce.
+    if (options.describe) {
+        const wanted = args[0];
+
+        if (!wanted) {
+            throw new Error("`--describe` requires a template name. Run `vis generate --list` to see available templates.");
+        }
+
+        const discovered = discoverTemplates({
+            extraDirectories: generatorConfig?.templates ?? [],
+            onWarning: (message: string) => { pail.warn(message); },
+            workspaceRoot,
+        });
+        const match = discovered.find((t) => t.name === wanted);
+
+        if (!match) {
+            throw new Error(`Template "${wanted}" not found. Run \`vis generate --list\` to see available templates.`);
+        }
+
+        const described = await describeTemplate(match);
+
+        if (options.json) {
+            process.stdout.write(`${JSON.stringify(described, null, 2)}\n`);
+
+            return;
+        }
+
+        pail.info(`Template: ${bold(cyan(described.name))} ${dim(`(${described.source})`)}`);
+
+        if (described.description) {
+            pail.info(described.description);
+        }
+
+        if (described.destination) {
+            pail.info(`Destination: ${dim(described.destination)}`);
+        }
+
+        if (described.variables.length === 0) {
+            pail.info("No variables.");
+        } else {
+            pail.info("Variables:");
+
+            for (const variable of described.variables) {
+                const flags: string[] = [variable.type];
+
+                if (variable.required) flags.push("required");
+
+                if (variable.default !== undefined) flags.push(`default=${JSON.stringify(variable.default)}`);
+
+                if (variable.values) flags.push(`values=${variable.values.join("|")}`);
+
+                process.stderr.write(`  ${bold(cyan(variable.name))} ${dim(`(${flags.join(", ")})`)}\n`);
+            }
+        }
 
         return;
     }
