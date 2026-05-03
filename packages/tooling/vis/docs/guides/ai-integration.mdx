@@ -5,10 +5,10 @@ description: "Drive vis from Claude, Cursor, Zed, ChatGPT, and other AI clients 
 
 # AI Integration
 
-vis ships an embedded **Model Context Protocol** server (`vis-mcp`) and a companion **Claude Skill**. Together they let an AI assistant inspect your workspace, plan and run targets, and diagnose cache rotations — all through the same task graph the CLI uses.
+vis ships an embedded **Model Context Protocol** server (`vis-mcp`) and a companion **Claude Skill**. Together they let an AI assistant inspect your workspace, plan target runs and scaffolds, and diagnose cache rotations — all through the same task graph the CLI uses.
 
 - **MCP server** is the wire format. It works with any MCP-aware client: Claude Code, Claude Desktop, Cursor, Zed, ChatGPT (Pro+), Continue, and more.
-- **Claude Skill** is workflow guidance layered on top. It teaches Claude *when* to call which tool and ensures the destructive `run_task` is always previewed before execution.
+- **Claude Skill** is workflow guidance layered on top. It teaches Claude *when* to call which tool, and reinforces the "agent prepares, human executes" pattern: every tool is read-only, so the assistant builds the right `vis run` / `vis generate` command and a person actually runs it.
 
 The MCP SDK and `zod` are declared as **optional peer dependencies**. They are only required when you actually launch `vis-mcp` — running plain `vis` does not pull them in.
 
@@ -39,7 +39,7 @@ The server speaks JSON-RPC over stdio and never writes to stdout outside the pro
 claude mcp add vis -- pnpm exec vis-mcp
 ```
 
-Once added, the seven `vis` tools are available in any Claude Code session opened in this repo.
+Once added, the eight `vis` tools are available in any Claude Code session opened in this repo.
 
 ### Claude Desktop
 
@@ -134,7 +134,7 @@ Skills and the MCP server are independent — you can use either, or both. The M
 
 ## Tool reference
 
-The MCP server exposes seven tools.
+The MCP server exposes eight read-only tools.
 
 ### `list_projects`
 
@@ -160,17 +160,21 @@ List per-target rows across the workspace. Optionally narrow to one project.
 | --- | --- | --- |
 | `project` | `string?` | Limit to one project |
 
-### `run_task`
+### `list_templates`
 
-Execute a vis target. **Side-effecting** — see [Safety](#safety-run_task).
+List scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates`.
+
+Takes no arguments. Returns each template's `name`, `source` (`native` | `moon` | `config` | `remote`), on-disk `path`, and one-line `description`.
+
+### `describe_template`
+
+Return the full schema for a single template — useful before suggesting a `vis generate` invocation.
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `project` | `string` | Project name |
-| `target` | `string` | Target name (`build`, `test`, …) |
-| `confirm` | `boolean?` | Must be `true` to execute. Absent or `false` returns a dry-run preview |
+| `name` | `string` | Template name (e.g. `package`, `component`) |
 
-Returns: `exitCode`, `success`, `stdoutTail`, `stderrTail` (last 30 lines each), `timedOut`. Hard timeout is 30 minutes.
+Returns: `description`, `destination` (default target dir), and `variables[]` with `name`, `type`, `required`, `default`, `prompt`, and (for enums) `values`. The agent uses this to build a fully-qualified `vis generate <name> -- --foo=bar` command for the user to run.
 
 ### `get_run_logs`
 
@@ -199,22 +203,11 @@ Print the recorded hash and per-input hash details (command, nodes, runtime, imp
 | `taskId` | `string` | Task ID like `@my/app:build` |
 | `runId` | `string?` | Specific run (defaults to latest) |
 
-## Safety: `run_task`
+## Safety: agent prepares, human executes
 
-`run_task` is the only side-effecting tool. It enforces a two-step confirm gate:
+`vis-mcp` deliberately ships **no side-effecting tools**. There is no `run_task` and no template-applying tool — the agent's job is to investigate (`list_*` / `describe_*` / `get_run_logs` / `cache_*`) and then propose the exact `vis run` or `vis generate` command for a human to execute. This mirrors the Nx MCP design and removes a whole class of failure modes (runaway builds, accidental writes, long timeouts) that come with letting an LLM drive the runner directly.
 
-1. **First call** without `confirm: true` returns a dry-run preview:
-    ```json
-    {
-        "confirmed": false,
-        "hint": "Pass `confirm: true` to actually run this task.",
-        "taskId": "@my/app:build",
-        "wouldRun": ["vis", "run", "@my/app:build"]
-    }
-    ```
-2. **Second call** with `confirm: true` actually executes the task. The Claude Skill instructs the assistant to never set `confirm: true` on the first turn — surface the preview to the user first.
-
-The 30-minute timeout is a hard ceiling. Long-running CI-style builds will be killed (`SIGTERM` then `SIGKILL` after 2 s). Narrow scope with `list_targets` and project-specific runs rather than relying on `run_task` for full-workspace builds.
+If you want the assistant to actually run something for you, paste the suggested command into your terminal — or wire it through a separate tool you trust (e.g. Claude Code's bash tool with explicit per-call approval).
 
 ## Troubleshooting
 
