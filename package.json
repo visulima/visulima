@@ -97,6 +97,7 @@
         "lint:eslint:fix:storybook": "pnpm --filter \"storybook\" run lint:eslint:fix",
         "lint:eslint:fix:string": "pnpm --filter \"string\" run lint:eslint:fix",
         "lint:eslint:fix:tabular": "pnpm --filter \"tabular\" run lint:eslint:fix",
+        "lint:eslint:fix:vis-mcp": "pnpm --filter \"vis-mcp\" run lint:eslint:fix",
         "lint:eslint:fix:vite-overlay": "pnpm --filter \"vite-overlay\" run lint:eslint:fix",
         "lint:eslint:fix:web": "pnpm --filter \"www\" run lint:eslint:fix",
         "lint:eslint:fmt": "pnpm --filter \"fmt\" run lint:eslint",
@@ -119,6 +120,7 @@
         "lint:eslint:storybook": "pnpm --filter \"storybook\" run lint:eslint",
         "lint:eslint:string": "pnpm --filter \"string\" run lint:eslint",
         "lint:eslint:tabular": "pnpm --filter \"tabular\" run lint:eslint",
+        "lint:eslint:vis-mcp": "pnpm --filter \"vis-mcp\" run lint:eslint",
         "lint:eslint:vite-overlay": "pnpm --filter \"vite-overlay\" run lint:eslint",
         "lint:eslint:web": "pnpm --filter \"www\" run lint:eslint",
         "lint:fix": "pnpm run lint:prettier:fix && pnpm run lint:eslint:fix && pnpm run sort-package-json",
@@ -167,6 +169,7 @@
         "lint:types:storage-client": "pnpm --filter \"storage-client\" run lint:types",
         "lint:types:string": "pnpm --filter \"string\" run lint:types",
         "lint:types:tabular": "pnpm --filter \"tabular\" run lint:types",
+        "lint:types:vis-mcp": "pnpm --filter \"vis-mcp\" run lint:types",
         "lint:types:vite-overlay": "pnpm --filter \"vite-overlay\" run lint:types",
         "lint:types:web": "pnpm --filter \"www\" run lint:types",
         "list:packages": "node scripts/list-packages.js",
@@ -228,6 +231,7 @@
         "test:coverage:storage-client": "pnpm --filter \"storage-client\" run test:coverage",
         "test:coverage:string": "pnpm --filter \"string\" run test:coverage",
         "test:coverage:tabular": "pnpm --filter \"tabular\" run test:coverage",
+        "test:coverage:vis-mcp": "pnpm --filter \"vis-mcp\" run test:coverage",
         "test:coverage:vite-overlay": "pnpm --filter \"vite-overlay\" run test:coverage",
         "test:coverage:web": "pnpm --filter \"www\" run test:coverage",
         "test:crud": "pnpm --filter \"crud\" run test",
@@ -289,8 +293,10 @@
         "test:ui:storage-client": "pnpm --filter \"storage-client\" run test:ui",
         "test:ui:string": "pnpm --filter \"string\" run test:ui",
         "test:ui:tabular": "pnpm --filter \"tabular\" run test:ui",
+        "test:ui:vis-mcp": "pnpm --filter \"vis-mcp\" run test:ui",
         "test:ui:vite-overlay": "pnpm --filter \"vite-overlay\" run test:ui",
         "test:ui:web": "pnpm --filter \"www\" run test:ui",
+        "test:vis-mcp": "pnpm --filter \"vis-mcp\" run test",
         "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
         "test:web": "pnpm --filter \"www\" run test"
     },
@@ -328,7 +334,7 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "packageManager": "pnpm@10.33.0",
+    "packageManager": "pnpm@10.33.2",
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
     }
