@@ -1,13 +1,13 @@
 ---
 name: vis
-description: Use when the workspace contains a vis.config.ts (or vis.config.js/json) at the repo root, or when the user mentions "vis", "task-runner", or "@visulima/vis". This skill orchestrates the vis MCP server's six read-only tools to inspect projects, plan task graphs, and diagnose remote-cache rotations.
+description: Use when the workspace contains a vis.config.ts (or vis.config.js/json) at the repo root, or when the user mentions "vis", "task-runner", or "@visulima/vis". This skill orchestrates the vis MCP server's eight read-only tools to inspect projects, plan task graphs, and diagnose remote-cache rotations.
 ---
 
 # Working with the `vis` task runner
 
-`vis` is the Visulima monorepo task runner — a Turborepo/Nx-class tool with a remote cache, REAPI gRPC backend, and project graph. When this skill is active you have the **`@visulima/vis-mcp` server** mounted, exposing six read-only tools. Use them in preference to running `vis` shell commands yourself: the tools give you structured JSON and run faster.
+`vis` is the Visulima monorepo task runner — a Turborepo/Nx-class tool with a remote cache, REAPI gRPC backend, and project graph. When this skill is active you have the **`@visulima/vis-mcp` server** mounted, exposing eight read-only tools. Use them in preference to running `vis` shell commands yourself: the tools give you structured JSON and run faster.
 
-The MCP server deliberately does NOT execute targets — Nx-style "agent prepares, human executes". When the user wants to run `<project>:<target>`, prepare the command (`list_targets` to confirm it exists) and ask the user to run it themselves; afterwards use `get_run_logs` to read the result.
+The MCP server deliberately does NOT execute targets or scaffold templates — Nx-style "agent prepares, human executes". When the user wants to run `<project>:<target>` or `vis generate <template>`, prepare the command (use `list_targets`/`describe_template` to confirm it exists and capture required arguments) and ask the user to run it themselves; afterwards use `get_run_logs` to read the result of any task run.
 
 ## Tools available
 
@@ -16,6 +16,8 @@ The MCP server deliberately does NOT execute targets — Nx-style "agent prepare
 | `list_projects` | All projects in the workspace, optionally filtered by a vis query (`tag=frontend`, `type=application`, …) |
 | `describe_project` | Full metadata for one project: language, layer, tags, root path, all targets |
 | `list_targets` | Per-target rows across the workspace, optionally narrowed to a single project |
+| `list_templates` | Scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates` |
+| `describe_template` | Variable schema, default destination, and description for a single template — required before suggesting a `vis generate` command |
 | `get_run_logs` | Most recent run summary from `.task-runner/`, or a specific `runId`, optionally filtered to one task |
 | `cache_why` | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps) |
 | `cache_hash` | Recorded hash and per-input hash details for a task |
@@ -37,6 +39,13 @@ When a build that should have been cached re-ran:
 1. `get_run_logs` (no args → latest summary) — surfaces all task statuses for the last run.
 2. For any task with status `success` but `cacheStatus: "miss"`, call `cache_why` with that `taskId`. It diffs hashDetails against the previous run and tells you which input rotated (command string, file content, `implicitDependency`, runtime version, …).
 3. If `cache_why` shows the change but the user wants to see the raw hash inputs, `cache_hash` returns the full per-input breakdown.
+
+### Scaffold a new package or component
+When the user asks for "a new X" / "scaffold Y":
+1. `list_templates` — pick the template whose `name` or `description` matches the user's request.
+2. `describe_template` with that name — read the `variables[]` schema. Identify which variables are `required` and which have sensible `default` values.
+3. Construct the command: `vis generate <name> -- --var1=value1 --var2=value2`. For interactive prompts, drop the `--` overrides and let the user step through. For `--defaults`-friendly templates, add `--defaults` to skip prompts.
+4. Hand the command to the user to execute. Don't fabricate variable values — if the user hasn't told you what to pass for a required variable, ask.
 
 ### Diagnose a failed run
 1. `get_run_logs` to see which task(s) failed.
