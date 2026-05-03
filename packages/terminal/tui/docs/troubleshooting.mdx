@@ -18,6 +18,10 @@ printf '' | ./app
 
 Run in an interactive terminal session instead.
 
+## Scrollback History Is Cleared on Exit
+
+`render()` uses `clearScreenAndHomeCursor` (CSI H + CSI 2J — viewport-only clear) when exiting and on rerender, replacing the older `resetTerminal` call. The terminal scrollback buffer is preserved so users can scroll back through prior output after the app exits.
+
 ## Terminal Left in Raw Mode After Crash
 
 If the process dies hard (`kill -9`, OOM, host crash), cleanup hooks do not run.
