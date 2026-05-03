@@ -523,18 +523,19 @@ Applies a transform function to the collected text output of its subtree.
 
 ## `Spinner`
 
+Animated spinner. Backed by [`@visulima/spinner`](https://visulima.com/packages/spinner) (replaces the previous `cli-spinners` dependency). The frame set and tick interval are determined by the named preset; pass `type` to switch presets.
+
 ```tsx
 <Spinner />
-<Spinner color="cyan" />
-<Spinner frames={["-", "\\", "|", "/"]} interval={100} />
+<Spinner type="dots" />
+<Spinner type="wave" />
 ```
 
-Props (plus all `Text` props):
+| Prop   | Type           | Default  | Description                            |
+| ------ | -------------- | -------- | -------------------------------------- |
+| `type` | `SpinnerName`  | `"dots"` | Any preset name from `@visulima/spinner` |
 
-| Prop       | Type       | Default        |
-| ---------- | ---------- | -------------- |
-| `frames`   | `string[]` | Braille frames |
-| `interval` | `number`   | `80`           |
+Available presets include `dots`, `breathe`, `cascade`, `checkerboard`, `columns`, `diagSwipe`, `dna`, `doubleArrow`, `fillSweep`, `helix`, `infinity`, `orbit`, `pulse`, `rain`, `scan`, `scanline`, `snake`, `sparkle`, `wave`, `waveRows`, plus every preset re-exported from `cli-spinners`. See `packages/terminal/spinner/src/spinners.ts` for the full list.
 
 ## `Stopwatch`
 
@@ -1059,17 +1060,29 @@ import { Tab, Tabs } from "@visulima/tui";
 
 ### `Tabs` Props
 
-| Prop            | Type                                                           | Default      | Description                                              |
-| --------------- | -------------------------------------------------------------- | ------------ | -------------------------------------------------------- |
-| `children`      | `ReactNode`                                                    | _(required)_ | `<Tab>` elements                                         |
-| `onChange`      | `(name: string, tab: ReactElement) => void`                    | _(required)_ | Called when the active tab changes                       |
-| `defaultValue`  | `string`                                                       | —            | Name of the initially active tab                         |
-| `flexDirection` | `"row"` \| `"column"` \| `"row-reverse"` \| `"column-reverse"` | `"row"`      | Layout direction                                         |
-| `isFocused`     | `boolean \| null`                                              | `undefined`  | Focus state; `false` disables input, `null` = unmanaged  |
-| `showIndex`     | `boolean`                                                      | `true`       | Show 1-based index numbers before tab names              |
-| `width`         | `number \| string`                                             | —            | Container width (also separator width in column layouts) |
-| `keyMap`        | `KeyMap`                                                       | —            | Custom keyboard bindings                                 |
-| `colors`        | `TabColors`                                                    | —            | Active tab color customization                           |
+| Prop            | Type                                                           | Default      | Description                                                                            |
+| --------------- | -------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------- |
+| `children`      | `ReactNode`                                                    | _(required)_ | `<Tab>` elements                                                                       |
+| `onChange`      | `(name: string, tab: ReactElement) => void`                    | _(required)_ | Fired when the active tab changes (both modes). In controlled mode the parent must update `value` from this callback. |
+| `value`         | `string`                                                       | —            | Controlled active tab name. When set, the component is controlled and `defaultValue` is ignored. |
+| `defaultValue`  | `string`                                                       | —            | Initial active tab in uncontrolled mode                                                |
+| `flexDirection` | `"row"` \| `"column"` \| `"row-reverse"` \| `"column-reverse"` | `"row"`      | Layout direction                                                                       |
+| `isFocused`     | `boolean \| null`                                              | `undefined`  | Focus state; `false` disables input, `null` = unmanaged                                |
+| `showIndex`     | `boolean`                                                      | `true`       | Show 1-based index numbers before tab names                                            |
+| `width`         | `number \| string`                                             | —            | Container width (also separator width in column layouts)                               |
+| `keyMap`        | `KeyMap`                                                       | —            | Custom keyboard bindings                                                               |
+| `colors`        | `TabColors`                                                    | —            | Active tab color customization                                                         |
+
+### Controlled mode
+
+```tsx
+const [active, setActive] = useState("files");
+
+<Tabs value={active} onChange={(name) => setActive(name)}>
+    <Tab name="files">Files</Tab>
+    <Tab name="search">Search</Tab>
+</Tabs>;
+```
 
 ### `Tab` Props
 
@@ -1503,3 +1516,807 @@ import { treeViewTheme } from "@visulima/tui";
 ```
 
 For full visual customization, prefer `renderNode` over theme overrides.
+
+## `Accordion`
+
+Keyboard-navigable accordion. Arrow keys (or `j`/`k`) move between panels; Enter or Space toggles.
+
+| Prop              | Type                  | Default  | Description                              |
+| ----------------- | --------------------- | -------- | ---------------------------------------- |
+| `items`           | `AccordionItem[]`     | required | Panels (`{ id, title, content }`)        |
+| `allowMultiple`   | `boolean`             | `false`  | Allow multiple panels open at once       |
+| `defaultExpanded` | `readonly string[]`   | —        | Ids open on mount                        |
+| `accentColor`     | `string`              | `"blue"` | Color of the focused header              |
+| `autoFocus`       | `boolean`             | `false`  | Auto-focus the first item on mount       |
+| `isDisabled`      | `boolean`             | `false`  | Disable input                            |
+
+```tsx
+<Accordion items={[{ id: "one", title: "Section 1", content: <Text>Body</Text> }]} />
+```
+
+## `AnimatePresence`
+
+Orchestrates enter / exit animations for keyed children. Wrap a dynamic list of `<Transition />` (or any component accepting `show: boolean` + `onExit`) to keep outgoing children mounted until their exit animation finishes.
+
+```tsx
+<AnimatePresence>
+    {visible && (
+        <Transition key="banner" preset="slide-down">
+            <Text>Saved!</Text>
+        </Transition>
+    )}
+</AnimatePresence>
+```
+
+Children must have a `key` to be tracked. Components opt in by exposing `show` + `onExit` props or by setting a static `isAnimatable = true` on the component type.
+
+## `ApprovalPrompt`
+
+Three-way prompt for tool calls. `y` / Enter → `allow-once`, `a` → `allow-always`, `n` / Esc → `deny`.
+
+| Prop          | Type                                     | Default     | Description                       |
+| ------------- | ---------------------------------------- | ----------- | --------------------------------- |
+| `tool`        | `string`                                 | required    | Name of the action under review   |
+| `onDecision`  | `(d: ApprovalDecision) => void`          | required    | Resolution callback               |
+| `risk`        | `"low" \| "medium" \| "high"`            | `"medium"`  | Severity badge / border color     |
+| `description` | `string`                                 | —           | Body text                         |
+| `params`      | `Record<string, unknown>`                | —           | Key=value preview                 |
+| `children`    | `ReactNode`                              | —           | Optional body (diff, command preview) |
+| `accentColor` | `string`                                 | risk color  | Override option-letter color      |
+| `autoFocus`   | `boolean`                                | `true`      | Auto-focus on mount               |
+| `isDisabled`  | `boolean`                                | `false`     | Disable input                     |
+
+```tsx
+<ApprovalPrompt tool="bash" risk="high" params={{ cmd: "rm -rf /" }} onDecision={resolve} />
+```
+
+## `AreaChart`
+
+Line chart with the area between each line and the baseline filled with shaded blocks.
+
+| Prop          | Type                | Default    | Description                                |
+| ------------- | ------------------- | ---------- | ------------------------------------------ |
+| `series`      | `LineSeries[]`      | required   | Series to plot (same shape as `LineChart`) |
+| `width`       | `number`            | `40`       | Plot width in columns                      |
+| `height`      | `number`            | `10`       | Plot height in rows                        |
+| `fillDensity` | `"light" \| "medium" \| "heavy"` | `"medium"` | Glyph used for the fill                    |
+| `minY`/`maxY` | `number`            | auto       | Y-axis bounds                              |
+| `palette`     | `string[]`          | default    | Fallback colors                            |
+| `axisColor`   | `string`            | `"gray"`   | Axis label color                           |
+| `showLegend`  | `boolean`           | `true`     | Render the legend                          |
+
+```tsx
+<AreaChart series={[{ name: "load", data: [1, 4, 2, 5, 3] }]} />
+```
+
+## `BarChart`
+
+Vertical or horizontal bar chart. Uses braille / block glyphs.
+
+| Prop          | Type                              | Default      | Description                                |
+| ------------- | --------------------------------- | ------------ | ------------------------------------------ |
+| `data`        | `BarDatum[]`                      | required     | `{ value, label?, color? }` per bar        |
+| `orientation` | `"vertical" \| "horizontal"`      | `"vertical"` | Bar orientation                            |
+| `width`       | `number`                          | auto         | Plot width in columns                      |
+| `height`      | `number`                          | `10`         | Plot height in rows                        |
+| `max`         | `number`                          | auto         | Upper bound for the axis                   |
+| `palette`     | `string[]`                        | default      | Fallback colors                            |
+| `showLabels`  | `boolean`                         | `true`       | Render labels under (or beside) each bar   |
+| `showValues`  | `boolean`                         | `false`      | Render numeric values next to each bar     |
+
+```tsx
+<BarChart data={[{ value: 12, label: "Mon" }, { value: 8, label: "Tue" }]} />
+```
+
+## `BlinkDot`
+
+Steady or blinking indicator dot.
+
+| Prop        | Type      | Default | Description                                       |
+| ----------- | --------- | ------- | ------------------------------------------------- |
+| `character` | `string`  | `"●"`   | Glyph                                             |
+| `color`     | `string`  | `"red"` | Color                                             |
+| `interval`  | `number`  | `800`   | Milliseconds per blink cycle                      |
+| `isActive`  | `boolean` | `true`  | When `false`, the dot stays solid (no animation)  |
+
+```tsx
+<BlinkDot color="green" /> Connected
+```
+
+## `Breadcrumb`
+
+Render a breadcrumb trail; the last item is highlighted as the current location.
+
+| Prop           | Type                 | Default  | Description                  |
+| -------------- | -------------------- | -------- | ---------------------------- |
+| `items`        | `BreadcrumbItem[]`   | required | `{ label, icon?, key? }`     |
+| `separator`    | `string`             | `"›"`    | Separator glyph              |
+| `currentColor` | `string`             | `"blue"` | Color applied to last item   |
+
+```tsx
+<Breadcrumb items={[{ label: "Home" }, { label: "Settings" }, { label: "Profile" }]} />
+```
+
+## `Button`
+
+Focusable button. Triggers `onPress` on Enter or Space.
+
+| Prop          | Type                                              | Default     | Description                       |
+| ------------- | ------------------------------------------------- | ----------- | --------------------------------- |
+| `children`    | `ReactNode`                                       | required    | Label                             |
+| `onPress`     | `() => void`                                      | —           | Pressed callback                  |
+| `variant`     | `"primary" \| "secondary" \| "outline" \| "ghost"` | `"primary"` | Visual style                      |
+| `accentColor` | `string`                                          | `"blue"`    | Color when focused                |
+| `autoFocus`   | `boolean`                                         | `false`     | Focus on mount                    |
+| `isDisabled`  | `boolean`                                         | `false`     | Ignores input and renders dim     |
+
+```tsx
+<Button onPress={() => save()} autoFocus>Save</Button>
+```
+
+## `Calendar`
+
+Month grid with keyboard navigation. Arrow keys move day-by-day; Enter submits.
+
+| Prop             | Type                  | Default  | Description                            |
+| ---------------- | --------------------- | -------- | -------------------------------------- |
+| `value`          | `Date`                | —        | Controlled selected date               |
+| `defaultValue`   | `Date`                | today    | Initial selection (uncontrolled)       |
+| `onChange`       | `(d: Date) => void`   | —        | Called on navigation or selection      |
+| `onSubmit`       | `(d: Date) => void`   | —        | Called on Enter                        |
+| `minDate`        | `Date`                | —        | Lower bound                            |
+| `maxDate`        | `Date`                | —        | Upper bound                            |
+| `firstDayOfWeek` | `0 \| 1`              | `1`      | Sunday (`0`) or Monday (`1`)           |
+| `accentColor`    | `string`              | `"blue"` | Color of today / focused cell         |
+| `selectedColor`  | `string`              | `"green"`| Color of the selected day             |
+| `autoFocus`      | `boolean`             | `false`  | Auto-focus on mount                    |
+| `isDisabled`    | `boolean`              | `false`  | Disable input                          |
+
+```tsx
+<Calendar onSubmit={(d) => setDate(d)} autoFocus />
+```
+
+## `Canvas`
+
+A fixed-size cell grid backed by typed arrays. The imperative `draw` callback paints into a `CanvasContext`; only rows the draw pass dirties are re-serialized. Bumping `version` invalidates the cache.
+
+| Prop      | Type                              | Description                                 |
+| --------- | --------------------------------- | ------------------------------------------- |
+| `width`   | `number`                          | Columns (cells horizontally)                |
+| `height`  | `number`                          | Rows                                        |
+| `draw`    | `(ctx: CanvasContext) => void`    | Draw callback                               |
+| `version` | `unknown`                         | Cache invalidation key (data hash, counter) |
+
+```tsx
+<Canvas
+    width={20}
+    height={5}
+    version={frame}
+    draw={(ctx) => ctx.setCell(0, 0, "█", { color: "cyan" })}
+/>
+```
+
+This is the foundation for chart components (`LineChart`, `BarChart`, `Heatmap`, `ScatterPlot`).
+
+## `Card`
+
+Container with optional title, subtitle, header-right, and footer.
+
+| Prop          | Type                           | Default   | Description                          |
+| ------------- | ------------------------------ | --------- | ------------------------------------ |
+| `children`    | `ReactNode`                    | required  | Body                                 |
+| `title`       | `string`                       | —         | Heading                              |
+| `subtitle`    | `string`                       | —         | Sub-heading                          |
+| `headerRight` | `ReactNode`                    | —         | Content rendered after the title     |
+| `footer`      | `ReactNode`                    | —         | Footer below body                    |
+| `borderColor` | `string`                       | —         | Border color                         |
+| `titleColor`  | `string`                       | —         | Title color                          |
+| `borderStyle` | border preset                  | `"round"` | Passed to `Box`                      |
+| `width`       | `number \| string`             | fill      | Card width                           |
+
+```tsx
+<Card title="Build" subtitle="Step 2 of 3" footer={<Text dimColor>Press q to cancel</Text>}>
+    <Text>Bundling…</Text>
+</Card>
+```
+
+## `Checkbox`
+
+Toggleable boolean input.
+
+| Prop             | Type                       | Default  | Description                            |
+| ---------------- | -------------------------- | -------- | -------------------------------------- |
+| `isChecked`      | `boolean`                  | —        | Controlled checked state               |
+| `defaultChecked` | `boolean`                  | `false`  | Initial state (uncontrolled)           |
+| `onChange`       | `(checked: boolean) => void` | —      | Called on toggle                       |
+| `children`       | `ReactNode`                | —        | Label                                  |
+| `accentColor`    | `string`                   | `"blue"` | Color when focused                     |
+| `autoFocus`      | `boolean`                  | `false`  | Focus on mount                         |
+| `isDisabled`     | `boolean`                  | `false`  | Disable input                          |
+
+```tsx
+<Checkbox onChange={setEnabled}>Enable notifications</Checkbox>
+```
+
+## `Collapsible`
+
+Toggleable section with a focusable header.
+
+| Prop          | Type                         | Default  | Description                       |
+| ------------- | ---------------------------- | -------- | --------------------------------- |
+| `title`       | `ReactNode`                  | required | Header label                      |
+| `children`    | `ReactNode`                  | required | Body shown when open              |
+| `defaultOpen` | `boolean`                    | `false`  | Initial state (uncontrolled)      |
+| `isOpen`      | `boolean`                    | —        | Controlled open state             |
+| `onToggle`    | `(open: boolean) => void`    | —        | Called on toggle                  |
+| `accentColor` | `string`                     | `"blue"` | Header color when focused         |
+| `autoFocus`   | `boolean`                    | `false`  | Focus on mount                    |
+| `isDisabled`  | `boolean`                    | `false`  | Disable interaction               |
+
+## `CommandBlock`
+
+Render a shell command and its output with a status header.
+
+| Prop            | Type                                            | Default  | Description                                    |
+| --------------- | ----------------------------------------------- | -------- | ---------------------------------------------- |
+| `command`       | `string`                                        | required | Command rendered in the header                 |
+| `status`        | `"idle" \| "running" \| "success" \| "error"`   | `"idle"` | Lifecycle state — drives icon and color        |
+| `cwd`           | `string`                                        | —        | Working directory shown after command          |
+| `output`        | `ReactNode`                                     | —        | Output (string or any node)                    |
+| `exitCode`      | `number`                                        | —        | Exit code shown when finished                  |
+| `durationMs`    | `number`                                        | —        | Duration shown when finished                   |
+| `maxOutputRows` | `number`                                        | —        | Truncate output beyond this many rows          |
+
+## `CommandPalette`
+
+Searchable command palette.
+
+| Prop          | Type                                          | Default                       | Description                       |
+| ------------- | --------------------------------------------- | ----------------------------- | --------------------------------- |
+| `commands`    | `CommandEntry[]`                              | required                      | Entries to search                 |
+| `onSelect`    | `(id: string, query: string) => void`         | required                      | Selection callback                |
+| `onCancel`    | `() => void`                                  | —                             | Called on Escape                  |
+| `limit`       | `number`                                      | `8`                           | Max rows                          |
+| `placeholder` | `string`                                      | `"Type a command or search..."`| Search field placeholder          |
+| `emptyText`   | `string`                                      | `"No results"`                | Shown when no matches             |
+| `accentColor` | `string`                                      | `"cyan"`                      | Border / focused row color        |
+| `autoFocus`   | `boolean`                                     | `false`                       | Auto-focus on mount               |
+
+## `ConfirmDialog`
+
+Modal confirm prompt with focusable buttons.
+
+| Prop           | Type                            | Default     | Description                          |
+| -------------- | ------------------------------- | ----------- | ------------------------------------ |
+| `onConfirm`    | `() => void`                    | required    | Confirm callback                     |
+| `onCancel`     | `() => void`                    | required    | Cancel callback                      |
+| `title`        | `string`                        | —           | Heading                              |
+| `children`     | `ReactNode`                     | —           | Body content                         |
+| `confirmLabel` | `string`                        | `"Confirm"` | Confirm button label                 |
+| `cancelLabel`  | `string`                        | `"Cancel"`  | Cancel button label                  |
+| `defaultFocus` | `"confirm" \| "cancel"`         | `"confirm"` | Initially focused button             |
+| `tone`         | `"info" \| "warning" \| "danger"` | `"info"`  | Border color                         |
+| `width`        | `number`                        | —           | Dialog width                         |
+| `autoFocus`    | `boolean`                       | `true`      | Auto-focus on mount                  |
+| `isDisabled`   | `boolean`                       | `false`     | Disable input                        |
+
+## `ContentSwitcher`
+
+Segmented control for picking among 2–5 options.
+
+| Prop           | Type                              | Default  | Description                         |
+| -------------- | --------------------------------- | -------- | ----------------------------------- |
+| `options`      | `ContentSwitcherOption[]`         | required | Segments (`{ id, label, icon? }`)   |
+| `value`        | `string`                          | —        | Controlled selected id              |
+| `defaultValue` | `string`                          | first    | Initial selection (uncontrolled)    |
+| `onChange`     | `(id: string) => void`            | —        | Called when the selection changes   |
+| `accentColor`  | `string`                          | `"blue"` | Color of the selected segment       |
+| `autoFocus`    | `boolean`                         | `false`  | Auto-focus on mount                 |
+| `isDisabled`   | `boolean`                         | `false`  | Disable input                       |
+
+## `DatePicker`
+
+Input row that opens an inline `Calendar` on focus / Enter.
+
+| Prop          | Type                              | Default        | Description                        |
+| ------------- | --------------------------------- | -------------- | ---------------------------------- |
+| `value`       | `Date`                            | —              | Controlled selected date           |
+| `defaultValue`| `Date`                            | —              | Initial date (uncontrolled)        |
+| `onChange`    | `(d: Date) => void`               | —              | Called when the user commits       |
+| `placeholder` | `string`                          | `"Pick a date"`| Shown when no value is selected    |
+| `formatValue` | `(d: Date) => string`             | locale         | Custom display formatter           |
+| `minDate`     | `Date`                            | —              | Lower bound                        |
+| `maxDate`     | `Date`                            | —              | Upper bound                        |
+| `accentColor` | `string`                          | `"blue"`       | Calendar accent color              |
+| `autoFocus`   | `boolean`                         | `false`        | Auto-focus on mount                |
+| `isDisabled`  | `boolean`                         | `false`        | Disable input                      |
+
+## `DefinitionList`
+
+Term/definition pairs.
+
+| Prop         | Type                       | Default    | Description                                    |
+| ------------ | -------------------------- | ---------- | ---------------------------------------------- |
+| `items`      | `DefinitionItem[]`         | required   | `{ term, description }` entries                |
+| `layout`     | `"inline" \| "stacked"`    | `"inline"` | Inline = same row; stacked = term above        |
+| `termColor`  | `string`                   | `"cyan"`   | Color applied to the term                      |
+| `termWidth`  | `number`                   | —          | Min width to align inline terms                |
+| `columnGap`  | `number`                   | `2`        | Spacing between term and description columns   |
+
+## `Dialog`
+
+Bordered, scrollable container that fills a fraction of the terminal. Used for modal-style overlays.
+
+| Prop           | Type                | Default          | Description                                 |
+| -------------- | ------------------- | ---------------- | ------------------------------------------- |
+| `children`     | `ReactNode`         | required         | Dialog body                                 |
+| `title`        | `ReactNode`         | —                | Heading                                     |
+| `footer`       | `ReactNode`         | —                | Footer below the scrollable area            |
+| `visible`      | `boolean`           | `true`           | Render only when truthy                     |
+| `width`        | `number`            | `60`             | Width in columns                            |
+| `maxHeight`    | `number`            | `0.8`            | Fraction (≤1) or absolute rows              |
+| `borderStyle`  | border preset       | `"round"`        | Passed to `Box`                             |
+| `borderColor`  | `string`            | `"cyan"`         | Border color                                |
+| `backgroundColor` | `string`         | terminal bg      | Dialog background                           |
+| `paddingX`     | `number`            | `2`              | Inner horizontal padding                    |
+| `paddingY`     | `number`            | `1`              | Inner vertical padding                      |
+| `scrollRef`    | `Ref<ScrollViewRef>`| —                | Ref to the inner `ScrollView`               |
+| `scrollbarStyle` | scrollbar preset  | `"block"`        | Scrollbar visual style                      |
+
+## `Divider`
+
+Horizontal or vertical rule with an optional centered label.
+
+| Prop           | Type                          | Default        | Description                           |
+| -------------- | ----------------------------- | -------------- | ------------------------------------- |
+| `orientation`  | `"horizontal" \| "vertical"`  | `"horizontal"` | Direction                             |
+| `length`       | `number`                      | fill           | Total length                          |
+| `character`    | `string`                      | `─`/`│`        | Override the line glyph               |
+| `label`        | `string`                      | —              | Text rendered in the middle (horizontal only) |
+| `labelPadding` | `number`                      | `1`            | Padding around the label              |
+| `color`        | `string`                      | —              | Line color                            |
+| `dimColor`     | `boolean`                     | `false`        | Render dim                            |
+
+```tsx
+<Divider label="Settings" />
+```
+
+## `Form`
+
+Layout primitive for forms — pairs nicely with `useForm` and the `<Form.Field>` sub-component for label/error styling.
+
+| Prop          | Type        | Default  | Description                       |
+| ------------- | ----------- | -------- | --------------------------------- |
+| `children`    | `ReactNode` | required | `<Form.Field>` rows (or any node) |
+| `title`       | `string`    | —        | Heading                           |
+| `description` | `string`    | —        | Subtitle below the heading        |
+| `footer`      | `ReactNode` | —        | Footer (buttons, hints)           |
+| `bordered`    | `boolean`   | `true`   | Render with a border              |
+| `accentColor` | `string`    | `"blue"` | Form chrome accent                |
+| `width`       | `number`    | —        | Fixed width                       |
+
+`Form.Field` accepts `{ label, description?, error?, required?, isDisabled?, children }` and renders consistent label + error styling around any control.
+
+## `Gauge`
+
+Numeric range display. Useful for usage / load / capacity readouts.
+
+| Prop          | Type                         | Default     | Description                                                    |
+| ------------- | ---------------------------- | ----------- | -------------------------------------------------------------- |
+| `value`       | `number`                     | required    | Current value (clamped into `[min, max]`)                      |
+| `min`         | `number`                     | `0`         | Lower bound                                                    |
+| `max`         | `number`                     | `100`       | Upper bound                                                    |
+| `size`        | `"small" \| "medium" \| "large"` | `"medium"` | Dimension preset                                               |
+| `label`       | `string`                     | —           | Label rendered above the readout                               |
+| `formatValue` | `(v: number) => string`      | round       | Format the numeric readout                                     |
+| `thresholds`  | `GaugeThreshold[]`           | —           | Color thresholds (see source)                                  |
+| `showValue`   | `boolean`                    | `true`      | Show the numeric readout in the middle                         |
+| `showLegend`  | `boolean`                    | `false`     | Show a threshold legend below the gauge                        |
+
+## `Heading`
+
+Convenience wrapper around `Text` that picks color and decoration by level.
+
+| Prop        | Type                           | Default | Description                              |
+| ----------- | ------------------------------ | ------- | ---------------------------------------- |
+| `children`  | `ReactNode`                    | required| Heading content                          |
+| `level`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6`   | `1`     | Determines decoration / color            |
+| `color`     | `string`                       | —       | Explicit color override                  |
+| `underline` | `boolean`                      | `false` | Render an underline on a second line     |
+
+## `Heatmap`
+
+2D matrix rendered as a colored cell grid.
+
+| Prop           | Type                              | Default | Description                                  |
+| -------------- | --------------------------------- | ------- | -------------------------------------------- |
+| `data`         | `number[][]`                      | required| Rows × cols matrix                           |
+| `cellWidth`    | `number`                          | `2`     | Width of each cell in columns                |
+| `character`    | `string`                          | `"█"`   | Glyph painted in each cell                   |
+| `palette`      | `string[]`                        | default | Color ramp from low → high                   |
+| `min`/`max`    | `number`                          | data    | Fixed bounds for consistent scales           |
+| `rowLabels`    | `string[]`                        | —       | Labels rendered to the left                  |
+| `columnLabels` | `string[]`                        | —       | Labels rendered below                        |
+
+(Type is `HeatmapProps`.)
+
+## `Histogram`
+
+Bin numeric values into bars.
+
+| Prop          | Type                | Default | Description                                |
+| ------------- | ------------------- | ------- | ------------------------------------------ |
+| `data`        | `number[]`          | required| Raw values to bin                          |
+| `bins`        | `number`            | `10`    | Number of equal-width buckets              |
+| `thresholds`  | `number[]`          | —       | Explicit bin edges (overrides `bins`)      |
+| `min`/`max`   | `number`            | auto    | Fixed min/max                              |
+| `width`       | `number`            | auto    | Plot width                                 |
+| `height`      | `number`            | `10`    | Plot height                                |
+| `color`       | `string`            | —       | Bar color                                  |
+| `showValues`  | `boolean`           | `false` | Show the numeric count above each bar      |
+
+## `Kbd`
+
+Render a single key cap.
+
+| Prop      | Type                              | Default  | Description                |
+| --------- | --------------------------------- | -------- | -------------------------- |
+| `children`| `ReactNode`                       | required | Key label                  |
+| `color`   | `string`                          | `"gray"` | Background color           |
+| `variant` | `"solid" \| "outline" \| "bare"`  | `"solid"`| Visual style               |
+
+```tsx
+Press <Kbd>Ctrl</Kbd>+<Kbd>C</Kbd> to copy.
+```
+
+## `LineChart`
+
+Multi-series line chart drawn on a `Canvas` braille grid.
+
+| Prop          | Type                  | Default  | Description                            |
+| ------------- | --------------------- | -------- | -------------------------------------- |
+| `series`      | `LineSeries[]`        | required | Series (`{ name?, data, color? }`)     |
+| `width`       | `number`              | `40`     | Plot width in columns                  |
+| `height`      | `number`              | `10`     | Plot height in rows                    |
+| `minY`/`maxY` | `number`              | auto     | Y-axis bounds                          |
+| `palette`     | `string[]`            | default  | Fallback colors                        |
+| `axisColor`   | `string`              | `"gray"` | Axis tick color                        |
+| `showLegend`  | `boolean`             | `true`   | Show legend                            |
+
+(Type is `LineChartProps`.)
+
+## `LoadingIndicator`
+
+Spinner + optional inline message.
+
+| Prop       | Type           | Default  | Description                                 |
+| ---------- | -------------- | -------- | ------------------------------------------- |
+| `type`     | `SpinnerName`  | `"dots"` | `@visulima/spinner` preset                  |
+| `color`    | `string`       | `"cyan"` | Spinner and label color                     |
+| `children` | `ReactNode`    | —        | Optional message rendered after the spinner |
+
+```tsx
+<LoadingIndicator>Building…</LoadingIndicator>
+```
+
+## `MaskedInput`
+
+Single-line input constrained by a literal mask. `#` (or a custom token) marks editable positions; every other character is rendered literally.
+
+| Prop              | Type                       | Default | Description                                 |
+| ----------------- | -------------------------- | ------- | ------------------------------------------- |
+| `mask`            | `string`                   | required| Mask, e.g. `"(###) ###-####"`               |
+| `defaultValue`    | `string`                   | `""`    | Initial raw value (no mask characters)      |
+| `onChange`        | `(value: string) => void`  | —       | Called whenever the raw value changes       |
+| `onSubmit`        | `(value: string) => void`  | —       | Called on Enter                             |
+| `token`           | `string`                   | `"#"`   | Editable-position marker                    |
+| `placeholderChar` | `string`                   | `"_"`   | Character shown in empty positions          |
+| `isDisabled`      | `boolean`                  | `false` | Disable input                               |
+
+## `Menu`
+
+Vertical menu with optional sections, icons, and shortcuts.
+
+| Prop          | Type              | Default  | Description                                                           |
+| ------------- | ----------------- | -------- | --------------------------------------------------------------------- |
+| `onSelect`    | `(id: string) => void` | required | Selection callback                                                    |
+| `items`       | `MenuItem[]`      | —        | Flat list (ignored if `sections` is set)                              |
+| `sections`    | `MenuSection[]`   | —        | Grouped items                                                         |
+| `title`       | `string`          | —        | Header                                                                |
+| `bordered`    | `boolean`         | `true`   | Render a border                                                       |
+| `accentColor` | `string`          | `"blue"` | Color of the focused row                                              |
+| `autoFocus`   | `boolean`         | `false`  | Auto-focus on mount                                                   |
+
+## `MessageBubble`
+
+Conversation bubble with a role-based icon and color.
+
+| Prop       | Type                                          | Default       | Description                                |
+| ---------- | --------------------------------------------- | ------------- | ------------------------------------------ |
+| `children` | `ReactNode`                                   | required      | Bubble body                                |
+| `role`     | `"user" \| "assistant" \| "system" \| "tool"` | `"assistant"` | Determines alignment, color, icon          |
+| `label`    | `string`                                      | —             | Text rendered above the bubble             |
+| `meta`     | `string`                                      | —             | Metadata next to the label (e.g. timestamp)|
+| `color`    | `string`                                      | —             | Override the role color                    |
+| `flat`     | `boolean`                                     | `false`       | Render without a border                    |
+
+## `ModelBadge`
+
+Compact badge for model names.
+
+| Prop       | Type                              | Default     | Description                                          |
+| ---------- | --------------------------------- | ----------- | ---------------------------------------------------- |
+| `model`    | `string`                          | required    | Model identifier                                     |
+| `provider` | `string`                          | —           | Provider chip rendered before the model              |
+| `icon`     | `ReactNode`                       | —           | Optional icon                                        |
+| `color`    | `string`                          | `"magenta"` | Background color                                     |
+| `variant`  | `"solid" \| "subtle" \| "outline"`| `"solid"`   | Visual style                                         |
+
+```tsx
+<ModelBadge model="claude-opus-4.7" provider="Anthropic" />
+```
+
+## `OperationTree`
+
+Tree-shaped task list. Each node carries a status (`pending`, `running`, `completed`, `error`, `skipped`); running nodes show a spinner.
+
+| Prop          | Type              | Default | Description                                |
+| ------------- | ----------------- | ------- | ------------------------------------------ |
+| `nodes`       | `OperationNode[]` | required| Tree of operations                         |
+| `showSpinner` | `boolean`         | `true`  | Animate running nodes                      |
+
+## `OptionList`
+
+Static list with optional icons / descriptions / shortcuts. Non-interactive (use `SelectInput` or `Menu` for navigable lists).
+
+| Prop              | Type                | Default  | Description                                |
+| ----------------- | ------------------- | -------- | ------------------------------------------ |
+| `options`         | `OptionListEntry[]` | required | Entries (`{ id, label, ... }`)             |
+| `currentId`       | `string`            | —        | Id of the row to highlight                 |
+| `accentColor`     | `string`            | —        | Highlight color                            |
+| `bordered`        | `boolean`           | `false`  | Render with a border                       |
+| `iconColumnWidth` | `number`            | `2`      | Icon column width for alignment            |
+
+## `Paragraph`
+
+Block-level wrapper around `Text` with vertical margin. Useful inside long-form layouts.
+
+| Prop           | Type        | Default | Description                                   |
+| -------------- | ----------- | ------- | --------------------------------------------- |
+| `children`     | `ReactNode` | required| Paragraph body                                |
+| `color`        | `string`    | —       | Foreground color                              |
+| `dimColor`     | `boolean`   | `false` | Render dim                                    |
+| `marginTop`    | `number`    | `0`     | Blank lines before                            |
+| `marginBottom` | `number`    | `1`     | Blank lines after                             |
+
+## `Placeholder`
+
+Skeleton blocks for loading states.
+
+| Prop        | Type        | Default          | Description                                |
+| ----------- | ----------- | ---------------- | ------------------------------------------ |
+| `rows`      | `number`    | `3`              | Number of skeleton rows                    |
+| `widths`    | `number[]`  | `[1, 0.85, 0.6]` | Per-row width fractions (cycled)           |
+| `width`     | `number`    | fill             | Total width reference                      |
+| `character` | `string`    | `"█"`            | Fill character                             |
+| `color`     | `string`    | `"gray"`         | Block color                                |
+| `animated`  | `boolean`   | `true`           | Pulse the blocks                           |
+| `interval`  | `number`    | `500`            | Pulse interval (ms)                        |
+
+## `RadioGroup`
+
+Single-choice list of options.
+
+| Prop              | Type                              | Default      | Description                                                  |
+| ----------------- | --------------------------------- | ------------ | ------------------------------------------------------------ |
+| `options`         | `RadioOption[]`                   | required     | Choices (`{ value, label, ... }`)                            |
+| `value`           | `string`                          | —            | Controlled selected value                                    |
+| `defaultValue`    | `string`                          | —            | Initial value (uncontrolled)                                 |
+| `onChange`        | `(value: string) => void`         | —            | Called when selection changes                                |
+| `onSubmit`        | `(value: string) => void`         | —            | Called on Enter                                              |
+| `orientation`     | `"vertical" \| "horizontal"`      | `"vertical"` | Layout direction                                             |
+| `commitOnNavigate`| `boolean`                         | `true`       | If true, arrow keys commit and fire `onChange`. If false, focus is independent and Space/Enter commits. |
+| `accentColor`     | `string`                          | `"blue"`     | Color of focused / selected indicator                        |
+| `autoFocus`       | `boolean`                         | `false`      | Auto-focus on mount                                          |
+| `isDisabled`      | `boolean`                         | `false`      | Disable input                                                |
+
+## `ScatterPlot`
+
+Scatter chart drawn on a braille `Canvas`. Uses `LineSeries` (the `data` array supplies points).
+
+| Prop          | Type             | Default | Description                  |
+| ------------- | ---------------- | ------- | ---------------------------- |
+| `series`      | `LineSeries[]`   | required| Series of points             |
+| `width`       | `number`         | `40`    | Plot width                   |
+| `height`      | `number`         | `10`    | Plot height                  |
+| `minX`/`maxX` | `number`         | auto    | X-axis bounds                |
+| `minY`/`maxY` | `number`         | auto    | Y-axis bounds                |
+| `palette`     | `string[]`       | default | Series fallback colors       |
+| `axisColor`   | `string`         | `"gray"`| Axis label color             |
+| `showLegend`  | `boolean`        | `true`  | Show legend                  |
+
+## `SearchInput`
+
+Single-line search input with leading icon and optional autocomplete suggestions.
+
+| Prop           | Type                       | Default      | Description                          |
+| -------------- | -------------------------- | ------------ | ------------------------------------ |
+| `defaultValue` | `string`                   | `""`         | Initial value                        |
+| `onChange`     | `(value: string) => void`  | —            | Fired on every keystroke             |
+| `onSubmit`     | `(value: string) => void`  | —            | Fired on Enter                       |
+| `placeholder`  | `string`                   | `"Search..."`| Empty-state text                     |
+| `icon`         | `ReactNode`                | `"⌕"`        | Leading icon                         |
+| `suggestions`  | `string[]`                 | —            | Autocomplete candidates              |
+| `accentColor`  | `string`                   | `"blue"`     | Border / icon color                  |
+| `isDisabled`   | `boolean`                  | `false`      | Disable input                        |
+
+## `SelectInputIndicator` / `SelectInputItem`
+
+Default sub-components used by `<SelectInput>` for the indicator and item rendering. Exported so custom components can re-use the styling primitives, or so consumers can pass them through `indicatorComponent`/`itemComponent` props.
+
+`SelectInputIndicator` accepts `{ isSelected?, isFocused?, accentColor? }`.
+
+`SelectInputItem` accepts `{ label, isSelected?, isFocused?, accentColor?, defaultColor? }`.
+
+## `ShimmerText`
+
+Text with a sweeping highlight band — a lightweight skeleton/loading effect.
+
+| Prop             | Type     | Default   | Description                                |
+| ---------------- | -------- | --------- | ------------------------------------------ |
+| `text`           | `string` | required  | Text to render                             |
+| `bandWidth`      | `number` | `3`       | Width of the highlight in characters       |
+| `interval`       | `number` | `60`      | Frame interval (ms)                        |
+| `color`          | `string` | —         | Base text color                            |
+| `highlightColor` | `string` | `"white"` | Highlight band color                       |
+
+## `Sparkline`
+
+Tiny inline chart drawn with the eight Unicode block glyphs.
+
+| Prop    | Type        | Default  | Description                                |
+| ------- | ----------- | -------- | ------------------------------------------ |
+| `data`  | `number[]`  | required | Values to plot                             |
+| `min`   | `number`    | data     | Fixed minimum                              |
+| `max`   | `number`    | data     | Fixed maximum                              |
+| `color` | `string`    | —        | Glyph color                                |
+
+```tsx
+<Sparkline data={[1, 4, 2, 5, 3, 7, 6]} color="cyan" />
+```
+
+## `StaticRender`
+
+Pre-renders its children once and caches the result on the underlying DOM node. The next layout pass composites the cached region directly via `addRegionTree()`, skipping the entire subtree traversal.
+
+`StaticRender` is a featured perf primitive used heavily by `vis` for completed-task output, log lines, and other content that does not change.
+
+```tsx
+<StaticRender deps={[completed.length]}>
+    {() => (
+        <Box flexDirection="column">
+            {completed.map((task) => (
+                <Text key={task.id} color="green">✓ {task.name}</Text>
+            ))}
+        </Box>
+    )}
+</StaticRender>
+```
+
+| Prop       | Type                  | Default  | Description                                                                                                                                                                          |
+| ---------- | --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `children` | `() => ReactNode`     | required | Render function invoked once. The result is cached and composited on subsequent renders.                                                                                             |
+| `deps`     | `DependencyList`      | —        | React-style dependency array (shallow `Object.is` comparison). When any entry changes the cache is invalidated and `children()` is invoked again. If omitted, the cache invalidates whenever the `children` function reference changes. |
+| `style`    | `Styles`              | —        | Style applied to the static-render container                                                                                                                                         |
+| `width`    | `number`              | —        | Fixed width for the cached region                                                                                                                                                    |
+
+Pass a stable `deps` array (or memoize the `children` function) — otherwise a fresh function identity on every render forces a re-render.
+
+> Distinct from `<Static>`, which is the append-only Ink primitive for completed log lines.
+
+## `StatusLine`
+
+Single-row status bar with `left` / `center` / `right` slots.
+
+| Prop              | Type        | Default | Description                                  |
+| ----------------- | ----------- | ------- | -------------------------------------------- |
+| `left`            | `ReactNode` | —       | Content rendered flush-left                  |
+| `center`          | `ReactNode` | —       | Content rendered centered                    |
+| `right`           | `ReactNode` | —       | Content rendered flush-right                 |
+| `color`           | `string`    | —       | Default foreground                           |
+| `backgroundColor` | `string`    | —       | Background spanning the row                  |
+
+```tsx
+<StatusLine left={<Text>main</Text>} right={<Text>UTF-8 · LF</Text>} />
+```
+
+## `Stepper`
+
+Progress indicator across discrete steps.
+
+| Prop           | Type                              | Default        | Description                                       |
+| -------------- | --------------------------------- | -------------- | ------------------------------------------------- |
+| `steps`        | `StepperStep[]`                   | required       | List of steps                                     |
+| `activeIndex`  | `number`                          | `0`            | Index of the current step (when steps lack a status) |
+| `orientation`  | `"horizontal" \| "vertical"`      | `"horizontal"` | Layout direction                                  |
+| `accentColor`  | `string`                          | `"blue"`       | Color for active / completed steps                |
+| `errorColor`   | `string`                          | `"red"`        | Color for error steps                             |
+
+## `StreamingText`
+
+Reveal text one character at a time. Useful for typing-style output (LLM streaming, intros).
+
+| Prop                 | Type          | Default | Description                                       |
+| -------------------- | ------------- | ------- | ------------------------------------------------- |
+| `text`               | `string`      | required| Full text to stream                               |
+| `interval`           | `number`      | `20`    | Milliseconds between characters                   |
+| `cursor`             | `string`      | `"▊"`   | Cursor character shown while streaming            |
+| `showCursorWhenDone` | `boolean`     | `false` | Keep the cursor after streaming completes         |
+| `onComplete`         | `() => void`  | —       | Called once per `text` value when complete        |
+| `color`              | `string`      | —       | Text color                                        |
+
+## `Switch`
+
+Toggle switch with a labelled track.
+
+| Prop           | Type                            | Default          | Description                                       |
+| -------------- | ------------------------------- | ---------------- | ------------------------------------------------- |
+| `value`        | `boolean`                       | —                | Controlled value                                  |
+| `defaultValue` | `boolean`                       | `false`          | Initial value (uncontrolled)                      |
+| `onChange`     | `(value: boolean) => void`      | —                | Called on toggle                                  |
+| `children`     | `ReactNode`                     | —                | Label rendered after the switch                   |
+| `labels`       | `[string, string]`              | `["off", "on"]`  | Track labels                                      |
+| `accentColor`  | `string`                        | `"green"`        | Color when on                                     |
+| `autoFocus`    | `boolean`                       | `false`          | Focus on mount                                    |
+| `isDisabled`   | `boolean`                       | `false`          | Disable input                                     |
+
+## `Tag`
+
+Inline label / chip.
+
+| Prop       | Type                              | Default     | Description                  |
+| ---------- | --------------------------------- | ----------- | ---------------------------- |
+| `children` | `ReactNode`                       | required    | Tag content                  |
+| `color`    | `string`                          | `"blue"`    | Base color                   |
+| `icon`     | `ReactNode`                       | —           | Optional leading symbol      |
+| `variant`  | `"subtle" \| "solid" \| "outline"`| `"subtle"`  | Visual style                 |
+
+## `Toast`
+
+Auto-dismissing notification.
+
+| Prop        | Type                                                  | Default  | Description                                  |
+| ----------- | ----------------------------------------------------- | -------- | -------------------------------------------- |
+| `children`  | `ReactNode`                                           | required | Body                                         |
+| `title`     | `string`                                              | —        | Optional title before the body               |
+| `variant`   | `"info" \| "success" \| "warning" \| "error"`         | `"info"` | Determines icon and border color             |
+| `duration`  | `number`                                              | `4000`   | Auto-dismiss timeout (ms); `0` disables      |
+| `onDismiss` | `() => void`                                          | —        | Called after auto-dismiss                    |
+| `visible`   | `boolean`                                             | —        | Manually control visibility (disables `duration`) |
+| `width`     | `number`                                              | —        | Optional fixed width                         |
+
+## `Tooltip`
+
+Inline tooltip attached to an anchor element. Terminal rendering does not support floating layers, so the tooltip is placed inline next to (or above / below) the anchor.
+
+| Prop        | Type                                          | Default   | Description                            |
+| ----------- | --------------------------------------------- | --------- | -------------------------------------- |
+| `children`  | `ReactNode`                                   | required  | Anchor content                         |
+| `content`   | `ReactNode`                                   | required  | Tooltip body                           |
+| `placement` | `"top" \| "right" \| "bottom" \| "left"`      | `"right"` | Relative position                      |
+| `color`     | `string`                                      | `"gray"`  | Border color                           |
+| `isVisible` | `boolean`                                     | `true`    | Render only when truthy                |
+
+## `Transition`
+
+Animate enter / exit of a child subtree. Pair with `<AnimatePresence>` to keep outgoing children mounted until exit completes.
+
+| Prop           | Type                                                                              | Default  | Description                                                                       |
+| -------------- | --------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------- |
+| `children`     | `ReactNode`                                                                       | required | Content to animate                                                                |
+| `show`         | `boolean`                                                                         | `true`   | Drive towards `entered` (true) or `exited` (false). Flip to trigger an animation. |
+| `preset`       | `"fade" \| "slide-up" \| "slide-down" \| "slide-left" \| "slide-right" \| "reveal"` | `"fade"` | Animation preset                                                                  |
+| `duration`     | `number`                                                                          | `240`    | Total duration in milliseconds                                                    |
+| `distance`     | `number`                                                                          | `4`      | Slide offset (slide presets) or row span (reveal)                                 |
+| `tickInterval` | `number`                                                                          | `30`     | Frame interval in milliseconds                                                    |
+| `onExit`       | `() => void`                                                                      | —        | Called once the exit animation finishes (used by `<AnimatePresence>`)             |

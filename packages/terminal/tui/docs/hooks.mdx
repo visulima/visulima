@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useKeyBindings, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useTimer, useStopwatch, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useKeyBindings, useHotkey, useInterval, useForm, usePersistentState, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useTimer, useStopwatch, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -859,3 +859,126 @@ useTreeView({
 | `isDisabled`    | `boolean`                                       | `false`  | Ignores all keyboard input       |
 | `loadChildren`  | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>` | —        | Async child loader               |
 | `onLoadError`   | `(nodeId: string, error: Error) => void`        | —        | Error callback for async loading |
+
+## `useForm`
+
+Headless form state machine. Tracks values, touched state, errors, and submission in-flight. Pair with `<Form>` and `<Form.Field>` for default layout, or wire your own inputs.
+
+```tsx
+import { useForm } from "@visulima/tui";
+
+const { values, errors, touched, setValue, setTouched, submit, isSubmitting, reset } = useForm({
+    fields: {
+        email: {
+            initialValue: "",
+            validate: (v) => (v.includes("@") ? undefined : "Invalid email"),
+        },
+        name: { initialValue: "" },
+    },
+    onSubmit: async (vs) => {
+        await api.create(vs);
+    },
+});
+```
+
+### Options
+
+| Option     | Type                                                          | Description                                              |
+| ---------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| `fields`   | `Record<string, FieldConfig<V>>`                              | Field declarations (`{ initialValue, validate? }`)       |
+| `onSubmit` | `(values) => void \| Promise<void>`                           | Called by `submit()` when all fields validate            |
+
+### Return Value
+
+| Field           | Type                                                | Description                                              |
+| --------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| `values`        | `FormValues<S>`                                     | Current values                                           |
+| `errors`        | `Partial<Record<keyof S, string>>`                  | Validation errors (per field)                            |
+| `touched`       | `Partial<Record<keyof S, boolean>>`                 | Per-field touched flag                                   |
+| `isSubmitting`  | `boolean`                                           | True while the last `submit()` is in-flight              |
+| `setValue`      | `(name, value) => void`                             | Update a single field (validates the field)              |
+| `setTouched`    | `(name, touched?) => void`                          | Mark a field as touched                                  |
+| `submit`        | `() => Promise<boolean>`                            | Validate all, mark touched, call `onSubmit`. Returns `true` on success. |
+| `reset`         | `() => void`                                        | Reset to initial values; clear errors and touched        |
+
+`submit()` returns `false` (and skips `onSubmit`) when any field is invalid.
+
+## `useHotkey`
+
+Bind a single keyboard shortcut to a callback. Accepts either a short string (`"ctrl+s"`, `"shift+tab"`, `"?"`, `"escape"`) or a structured `HotkeyDescriptor`.
+
+```tsx
+import { useHotkey } from "@visulima/tui";
+
+useHotkey("ctrl+s", () => save());
+useHotkey("?", () => setShowHelp(true));
+useHotkey({ ctrl: true, input: "k" }, () => openPalette());
+```
+
+### Shortcut string syntax
+
+`+`-separated tokens. Modifiers: `ctrl`/`control`, `shift`, `meta`/`cmd`/`alt`. Named keys: `escape`/`esc`, `enter`/`return`, `tab`, `up`/`down`/`left`/`right` (or `upArrow`/...), `home`/`end`, `pageUp`/`pageDown`, `backspace`/`delete`. Anything else is matched against the typed character.
+
+### Options
+
+| Option     | Type      | Default | Description                                  |
+| ---------- | --------- | ------- | -------------------------------------------- |
+| `isActive` | `boolean` | `true`  | Disable the binding while keeping the component rendered |
+
+For multiple bindings with help-bar integration, use [`useKeyBindings`](#usekeybindings) + `<Help>` instead.
+
+## `useInterval`
+
+Invoke `callback` every `interval` ms. The callback ref is captured, so re-renders do not rebuild the timer; only `interval` and `isActive` do.
+
+```tsx
+import { useInterval } from "@visulima/tui";
+
+const { clear } = useInterval(() => poll(), 5_000);
+useInterval(() => tick(), 1_000, { isActive: !paused });
+```
+
+### Options
+
+| Option     | Type      | Default | Description                                                |
+| ---------- | --------- | ------- | ---------------------------------------------------------- |
+| `isActive` | `boolean` | `true`  | When `false` the timer is paused; flipping back restarts it |
+
+Returns `{ clear }` for manual cancellation. Invalid intervals (`0`, `NaN`, `Infinity`) pause the timer.
+
+## `usePersistentState`
+
+`useState` that persists its value through a configurable storage backend (file on disk by default).
+
+```tsx
+import { usePersistentState } from "@visulima/tui";
+
+const [theme, setTheme] = usePersistentState("theme", "dark");
+const [recent, setRecent] = usePersistentState<string[]>("recent", [], { namespace: "vis" });
+```
+
+### Options
+
+| Option      | Type                | Default                              | Description                                     |
+| ----------- | ------------------- | ------------------------------------ | ----------------------------------------------- |
+| `namespace` | `string`            | `"tui"`                              | Used by the default file storage to scope keys  |
+| `storage`   | `PersistentStorage` | `createFileStorage(namespace)`       | Custom storage backend                          |
+
+The backend is captured once on mount; mutating `options.storage` later has no effect. Remount the hook (e.g. via a `key` prop) to swap backends.
+
+### Storage backends
+
+```tsx
+import { createFileStorage, createMemoryStorage, usePersistentState } from "@visulima/tui";
+
+// File storage — JSON file at ~/.cache/visulima-tui/<namespace>.json,
+// written via temp-file + rename so partial writes can't corrupt the file.
+const fileStorage = createFileStorage("vis");
+
+// In-memory storage — useful in tests or read-only environments.
+const memoryStorage = createMemoryStorage();
+
+const [value, setValue] = usePersistentState("layout", "single", { storage: memoryStorage });
+```
+
+A custom backend just needs to implement `{ read(key): string | undefined, write(key, value): void }`. Values are JSON-encoded by the hook before they reach `write`. Errors thrown by the backend are swallowed by the hook so the UI keeps working in read-only environments.
