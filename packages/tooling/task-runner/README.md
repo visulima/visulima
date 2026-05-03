@@ -36,12 +36,14 @@
 - **Two caching modes**: Nx-style explicit inputs or Vite Task-style auto-fingerprinting
 - **Smart lockfile hashing**: Only hashes resolved versions relevant to each package (like Turborepo)
 - **Framework env inference**: Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, and more
-- **Remote caching**: Turborepo-compatible HTTP cache protocol
+- **Remote caching**: Turborepo-compatible HTTP cache protocol, plus a Bazel REAPI gRPC backend (bazel-remote, BuildBuddy, BuildBarn, EngFlow)
 - **Native Rust addon**: Parallel file hashing (xxHash), concurrent process management via tokio
 - **Dependency-aware scheduling**: Topological task ordering with priority-based batching
 - **Incremental file hashing**: mtime-based change detection for near-instant cache checks
 - **Affected detection**: Git diff-based filtering to only run tasks for changed packages
+- **Conditional tasks**: `when:` predicates (`os`, `env`, `branch`, `ci`) and `always: true` finally-tasks for cleanup/notifications
 - **Graph visualization**: DOT, JSON, HTML, and ASCII output formats
+- **Log reporter modes**: `interleaved`, `labeled` (per-line `[project#target]` prefix), and `grouped` (header/footer wrapping) for vite-task parity
 - **Run summaries**: Detailed JSON reports for debugging cache behavior
 - **Cache diagnostics**: Explains exactly why a cache miss occurred
 - **Output archiving**: Caches and restores build outputs (dist/ directories)

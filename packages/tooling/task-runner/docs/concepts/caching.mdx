@@ -70,6 +70,24 @@ Files that invalidate every task's cache when changed:
 }
 ```
 
+## Outputs
+
+Each task declares the files it produces via `outputs`. Entries can be:
+
+- **Glob patterns** — relative to the workspace root (`"packages/app/dist/**"`). Resolved via `fs.glob` and filtered to files only.
+- **Negations** — `"!dist/cache/**"` excludes paths the positive globs would otherwise capture. Applied after the combined positive set is expanded.
+- **`{ auto: true }`** — uses whatever files the task actually wrote, as recorded by the file-access tracker. Silently behaves as "no outputs" when tracking isn't active for this task.
+
+```typescript
+targets: {
+    build: {
+        outputs: ["dist/**", "!dist/cache/**", { auto: true }],
+    },
+}
+```
+
+Resolved paths are deduped, sorted, and filtered to files inside the workspace before archiving — archives are byte-reproducible across invocations.
+
 ## Cache Storage
 
 Cache entries are stored atomically in `.task-runner-cache/`:
@@ -92,6 +110,11 @@ Cache entries are stored atomically in `.task-runner-cache/`:
     maxCacheAge: 7 * 24 * 60 * 60 * 1000, // 7 days (default)
 }
 ```
+
+## Performance
+
+- **Parallel cache I/O** — output staging and restore swap run with bounded concurrency (16 in flight by default), so tasks with many small files saturate disk without overwhelming it.
+- **Streaming HMAC verification** — when `remoteCache.signing.secret` is set, downloads from the HTTP backend recompute `HMAC-SHA256(secret, hash || body)` chunk-by-chunk off disk. Constant-time comparison rejects tampered or replayed artifacts before they ever land in the local cache. With `verifyOnDownload: true` the client also rejects unsigned downloads outright.
 
 ## Dry Run
 

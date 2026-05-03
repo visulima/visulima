@@ -1,0 +1,92 @@
+---
+title: Conditional Tasks
+description: Gate execution with `when:` predicates and run cleanup with `always: true`
+---
+
+# Conditional Tasks
+
+Two target-level keys control when a task runs: `when:` (predicate gate, evaluated before execution) and `always: true` (run after the main graph regardless of upstream state).
+
+## `when:` predicates
+
+`when:` accepts four positive clauses and a `not.*` mirror. All positive clauses must match (AND); array values mean any-of (OR). Tasks whose `when` evaluates to `false` are recorded with status `"skipped"` (not `"failure"`) and never reach the executor.
+
+| Clause   | Type                                | Example                                                                  |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| `os`     | `NodePlatform \| NodePlatform[]`    | `os: "linux"` — `"windows"` is sugar for `"win32"`                       |
+| `env`    | `EnvMatcher \| EnvMatcher[]`        | `env: "DEPLOY_TOKEN"` (set & non-empty) or `{ name, equals?, exists? }`  |
+| `branch` | `string \| string[]`                | `branch: ["main", "alpha"]` — matches `git rev-parse --abbrev-ref HEAD`  |
+| `ci`     | `boolean`                           | `ci: true` — detects CI via `process.env.CI` (truthy, not `"false"`/`"0"`) |
+
+### Examples
+
+Run a release task only on `main`, only in CI, and only when a deploy token is present:
+
+```ts
+targets: {
+    deploy: {
+        command: "node ./scripts/deploy.mjs",
+        when: {
+            branch: "main",
+            ci: true,
+            env: { name: "DEPLOY_TOKEN", exists: true },
+        },
+    },
+}
+```
+
+Skip a task on Windows without an explicit alternative:
+
+```ts
+targets: {
+    "build:native": {
+        command: "make native",
+        when: { not: { os: "windows" } },
+    },
+}
+```
+
+Match an exact env value:
+
+```ts
+when: {
+    env: { name: "NODE_ENV", equals: "production" },
+}
+```
+
+## `always:` finally-tasks
+
+Targets marked `always: true` run **sequentially** after the main task graph completes — even if upstream tasks failed. They are intended for cleanup, teardown, or notifications.
+
+Behaviour:
+
+- bypass the cache entirely (no lookup, no fingerprint, no store) — every invocation re-runs;
+- still honour `when`, so an `always`-task can stay branch- or env-gated;
+- skipped on SIGINT — the user's explicit ask is to stop now;
+- not part of the dependency graph and never block other tasks.
+
+```ts
+targets: {
+    "notify-slack": {
+        always: true,
+        command: "node ./scripts/notify.mjs",
+        when: { ci: true, branch: "main" },
+    },
+}
+```
+
+## Combining the two
+
+A common shape is a CI-only finally-task that posts a build status regardless of outcome:
+
+```ts
+targets: {
+    "build-status": {
+        always: true,
+        command: "node ./scripts/post-status.mjs",
+        when: { ci: true },
+    },
+}
+```
+
+The skipped status surfaces through `printWhenSkip(task, reason)` on `LifeCycleInterface` (with a short diagnostic such as `branch=feat/foo does not match "main"`) and as the standard `"skipped"` status in run summaries.

@@ -239,11 +239,41 @@ Parallel tasks are packed into synthetic `tid` lanes via sweep-line scheduling, 
 
 Optional hooks on `LifeCycleInterface` (implement what you need):
 
-| Hook                                          | When                                                                                     |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                      |
-| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                           |
-| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace |
+| Hook                                          | When                                                                                                                               |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                                                                |
+| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                                                                     |
+| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace                                           |
+| `printWhenSkip(task, reason)`                 | A `when:` clause did not match the current environment. Co-fires with `printTaskTerminalOutput` (status `"skipped"`) — pick one    |
+| `onTaskStdout(task, chunk)`                   | Streaming stdout chunk in arrival order. Non-blocking — the orchestrator does not await. Buffered executors skip this hook        |
+| `onTaskStderr(task, chunk)`                   | Streaming stderr chunk in arrival order. Same contract as `onTaskStdout`                                                          |
+
+`onTaskStdout` / `onTaskStderr` are forwarded by streaming executors (e.g. `vis run`'s concurrent executor). Buffered executors (the simple test executor) skip them — rely on `printTaskTerminalOutput` for the final dump.
+
+## Native Bindings
+
+The native (Rust / NAPI) addon is exposed through `loadNativeBindings()` and `isNativeAvailable()`. The loader is lazy and cached after the first attempt — when the addon is missing the loader returns `undefined` and callers fall through to TypeScript implementations.
+
+```typescript
+import { loadNativeBindings, isNativeAvailable } from "@visulima/task-runner";
+
+if (isNativeAvailable()) {
+    const native = loadNativeBindings();
+    const main = native?.getMainWorktreeRoot(workspaceRoot);
+}
+```
+
+### Worktree detection
+
+When the addon is loaded, the bindings expose three worktree helpers used by affected detection and lockfile resolution to point at the right `.git` directory inside linked git worktrees:
+
+| Function                            | Returns                  | Notes                                                                    |
+| ----------------------------------- | ------------------------ | ------------------------------------------------------------------------ |
+| `getMainWorktreeRoot(workspaceRoot)` | `string \| undefined`    | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
+| `isLinkedWorktree(workspaceRoot)`   | `boolean`                | `true` when `workspaceRoot` is a linked worktree (not the primary)        |
+| `resetWorktreeCache()`              | `void`                   | Clears the per-process resolution cache. Test-only escape hatch          |
+
+Pure-TypeScript fallbacks ship for everything else the native addon exposes (parallel file hashing, cycle detection, concurrent process runner) so callers never need to branch on platform.
 
 ## Types
 
