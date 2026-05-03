@@ -217,6 +217,9 @@
 "package: vis":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/**/*"
+"package: vis-mcp":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis-mcp/**/*"
 "package: vis/darwin-arm64":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/npm/darwin-arm64/**/*"
