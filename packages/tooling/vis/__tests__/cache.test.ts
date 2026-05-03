@@ -1,10 +1,12 @@
 import { existsSync, mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { Cache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { cacheHashExecute, cacheWhyExecute, collectCacheEntries, formatAge, runClean, runHash, runPrune, runWhy } from "../src/commands/cache/handler";
+import { cacheHashExecute, cacheVerifyExecute, cacheWhyExecute, collectCacheEntries, formatAge, runClean, runHash, runPrune, runWhy } from "../src/commands/cache/handler";
 
 describe(formatAge, () => {
     it("returns seconds for sub-minute ages", () => {
@@ -937,5 +939,162 @@ describe(cacheHashExecute, () => {
         const parsed = JSON.parse(written);
 
         expect(parsed.hash).toBe("exec-hash");
+    });
+});
+
+describe(cacheVerifyExecute, () => {
+    let workspaceRoot: string;
+    let cacheDirectory: string;
+    let stdoutSpy: ReturnType<typeof vi.spyOn>;
+
+    /**
+     * Build a real cache entry from a `dist/` tree under `workspaceRoot`,
+     * captured at a pinned mtime so verify has a stable baseline. Returns
+     * the hash so callers can later restore-and-diff against it.
+     */
+    const seedCacheEntry = async (taskId: string, hash: string, fileBody: string, mtimeSeconds = 1_700_000_000): Promise<void> => {
+        const distributable = join(workspaceRoot, "dist");
+
+        mkdirSync(distributable, { recursive: true });
+
+        await writeFile(join(distributable, "artifact.bin"), fileBody);
+
+        const pinned = new Date(mtimeSeconds * 1000);
+
+        utimesSync(join(distributable, "artifact.bin"), pinned, pinned);
+
+        const cache = new Cache({ cacheDirectory, workspaceRoot });
+
+        await cache.put(hash, "built", ["dist"], 0);
+        await cache.setTaskIndex(taskId, hash);
+    };
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-verify-exec-"));
+        cacheDirectory = join(workspaceRoot, ".task-runner-cache");
+        mkdirSync(cacheDirectory, { recursive: true });
+        stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+        stdoutSpy.mockRestore();
+        process.exitCode = 0;
+    });
+
+    it("exits with 1 when no task ID is provided", async () => {
+        expect.assertions(1);
+
+        const logger = createMockLogger();
+
+        await cacheVerifyExecute({
+            argument: [],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": cacheDirectory, format: undefined, scope: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+    });
+
+    it("emits a JSON 'no-cached-entry' error when the task is unknown", async () => {
+        expect.assertions(2);
+
+        const logger = createMockLogger();
+
+        await cacheVerifyExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed).toMatchObject({ error: "no-cached-entry", taskId: "app:build" });
+    });
+
+    it("reports status: 'ok' when the cached entry matches the workspace", async () => {
+        expect.assertions(3);
+
+        await seedCacheEntry("app:build", "verify-ok", "hello");
+
+        const logger = createMockLogger();
+
+        await cacheVerifyExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        // Surface the per-file diffs on failure so any future regression
+        // points directly at the broken column instead of just "drift".
+        expect(parsed.diffs).toStrictEqual([]);
+        expect(parsed.status).toBe("ok");
+        // Ok path leaves exit code untouched (0 / undefined).
+        expect(process.exitCode === 0 || process.exitCode === undefined).toBe(true);
+    });
+
+    it("reports status: 'drift' and exit 1 when a workspace file is mutated post-cache", async () => {
+        expect.assertions(3);
+
+        await seedCacheEntry("app:build", "verify-drift", "original");
+
+        // Mutate the live file so verify sees content drift.
+        await writeFile(join(workspaceRoot, "dist", "artifact.bin"), "tampered");
+
+        const logger = createMockLogger();
+
+        await cacheVerifyExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.status).toBe("drift");
+        expect(parsed.diffs.some((diff: { issues: string[] }) => diff.issues.includes("content"))).toBe(true);
+    });
+
+    it("reports a 'missing' diff when a cached output was deleted from the workspace", async () => {
+        expect.assertions(3);
+
+        await seedCacheEntry("app:build", "verify-missing", "x");
+
+        rmSync(join(workspaceRoot, "dist", "artifact.bin"), { force: true });
+
+        const logger = createMockLogger();
+
+        await cacheVerifyExecute({
+            argument: ["app:build"],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(process.exitCode).toBe(1);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const parsed = JSON.parse(written);
+
+        expect(parsed.status).toBe("drift");
+        expect(parsed.diffs.some((diff: { issues: string[] }) => diff.issues.includes("missing"))).toBe(true);
     });
 });

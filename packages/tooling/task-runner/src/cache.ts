@@ -5,6 +5,7 @@ import { pipeline } from "node:stream/promises";
 import { formatBytes, parseBytes } from "@visulima/humanizer";
 import { dirname, join, resolve } from "@visulima/path";
 
+import type { ExtractOptions } from "./archive";
 import { createTarBrotli, extractTarBrotli } from "./archive";
 import type { ActionResult, BlobSource, CasDigest } from "./backends/types";
 import { readActionEntry, readTaskHashIndex, writeActionEntry, writeTaskHashIndex } from "./cas/action-cache";
@@ -415,10 +416,10 @@ class Cache {
      * extracted staging become the set of swap roots. Still accepted
      * for backward compat.
      */
-    public async restoreOutputs(hash: string, _outputs?: OutputSpec[]): Promise<boolean> {
+    public async restoreOutputs(hash: string, _outputs?: OutputSpec[], options?: ExtractOptions): Promise<boolean> {
         const cacheEntryDirectory = join(this.#cacheDirectory, hash);
 
-        return restoreOutputsCompressed(cacheEntryDirectory, this.#workspaceRoot);
+        return restoreOutputsCompressed(cacheEntryDirectory, this.#workspaceRoot, options);
     }
 
     /**
@@ -625,7 +626,12 @@ const archiveOutputsCompressed = async (
 
             try {
                 await mkdir(dirname(stagedOutput), { recursive: true });
-                await cp(absoluteOutput, stagedOutput, { recursive: true });
+                // preserveTimestamps so collectEntries below captures
+                // the original file mtime, not the cp time. Without
+                // this the tar header records "now" and a later
+                // restore would faithfully replay an mtime stamped at
+                // archive time — defeating the whole point.
+                await cp(absoluteOutput, stagedOutput, { preserveTimestamps: true, recursive: true });
 
                 return true;
             } catch {
@@ -699,7 +705,7 @@ const runBounded = async <T, R>(limit: number, items: ReadonlyArray<T>, fn: (ite
  * appear in the archive and therefore won't be touched on restore —
  * matching the user's "exclude from cache, keep on disk" intent.
  */
-const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRoot: string): Promise<boolean> => {
+const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRoot: string, options?: ExtractOptions): Promise<boolean> => {
     const archivePath = join(cacheEntryDirectory, OUTPUTS_ARCHIVE_FILENAME);
 
     try {
@@ -713,15 +719,27 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
 
     const stagingDirectory = join(cacheEntryDirectory, `.restore-${uniqueId()}`);
     const backups: { backup: string; original: string }[] = [];
+    // The extract above already applied the captured mtime to each
+    // staged file via utimes(); without `preserveTimestamps` here, the
+    // subsequent `cp` would silently re-stamp every restored file to
+    // "now" and undo the work. Mode bits are always preserved by cp.
+    const preserveMtime = options?.preserveMtime ?? true;
 
     try {
         await mkdir(stagingDirectory, { recursive: true });
-        await extractTarBrotli(archivePath, stagingDirectory);
+        await extractTarBrotli(archivePath, stagingDirectory, options);
 
         // Derive swap roots from what's actually in the archive.
         // Avoids the caller having to re-resolve globs against the
         // post-task workspace, which may have moved on.
-        const topLevel = await readdir(stagingDirectory);
+        //
+        // readdir order is fs-dependent (ext4 returns inode order, APFS
+        // by creation, NTFS alphabetic-ish); sort here so the swap loop
+        // visits roots in the same order across machines and reruns.
+        // Ordering only matters for failure-mode determinism — the
+        // bounded parallel runBounded below interleaves writes either
+        // way — but it makes diffs and bug reports reproducible.
+        const topLevel = (await readdir(stagingDirectory)).sort();
 
         // Swap roots are disjoint subtrees by construction (archive
         // top-levels), so placement can run in parallel. Each task
@@ -748,7 +766,7 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
                 // No existing tree to back up — nothing to rollback later.
             }
 
-            await cp(stagedOutput, absoluteOutput, { recursive: true });
+            await cp(stagedOutput, absoluteOutput, { preserveTimestamps: preserveMtime, recursive: true });
         });
 
         // All outputs placed successfully — drop the backups in parallel.

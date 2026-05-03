@@ -64,6 +64,13 @@ export interface Task {
      * Carried over from {@link TargetConfiguration.cacheOnWarning}.
      */
     cacheOnWarning?: boolean;
+
+    /**
+     * Per-task overrides for cache restore fidelity. Carried over
+     * from {@link TargetConfiguration.cacheRestore}. When absent, the
+     * runner uses faithful defaults (mtime + mode preserved).
+     */
+    cacheRestore?: CacheRestoreOptions;
     /** Hash of the task inputs for caching */
     hash?: string;
     /** Detailed hash information */
@@ -220,6 +227,32 @@ export interface ProjectConfiguration {
 }
 
 /**
+ * Per-target controls over how the cache rehydrates outputs.
+ *
+ * Both default to `true` — faithful restoration is the contract:
+ * cached outputs come back with the same mtime and mode bits the
+ * task originally produced. Override only when downstream tooling
+ * needs the opposite (e.g. a bundler that uses "newer than source"
+ * heuristics, or a CI step that compares mtimes against a deploy
+ * artifact).
+ */
+export interface CacheRestoreOptions {
+    /**
+     * Restore each file's modification time from the captured tar
+     * header (second precision). When `false`, restored files take
+     * the current wall-clock time, matching the legacy behaviour.
+     */
+    preserveMtime?: boolean;
+
+    /**
+     * Restore each file's POSIX mode bits (rwx triplets, low 12
+     * bits). When `false`, restored files take the process umask.
+     * Only meaningful on POSIX hosts; Windows ignores tar mode.
+     */
+    preservePerms?: boolean;
+}
+
+/**
  * Configuration for a target within a project.
  */
 export interface TargetConfiguration {
@@ -243,6 +276,14 @@ export interface TargetConfiguration {
      * wireit users have repeatedly asked for.
      */
     cacheOnWarning?: boolean;
+
+    /**
+     * Fine-grained controls over how cached outputs are rehydrated.
+     * See {@link CacheRestoreOptions}. Both fields default to `true`
+     * (faithful restore); flip individually when downstream tooling
+     * needs the legacy "now"-stamped behaviour.
+     */
+    cacheRestore?: CacheRestoreOptions;
     /** The command to run (alternative to executor) */
     command?: string;
     /** Named configurations (e.g., "production", "development") */

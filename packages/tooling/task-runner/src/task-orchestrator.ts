@@ -461,7 +461,7 @@ class TaskOrchestrator {
     }
 
     async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number): Promise<TaskResult> {
-        const restored = await this.#cache.restoreOutputs(cachedResult.hash, task.outputs);
+        const restored = await this.#cache.restoreOutputs(cachedResult.hash, task.outputs, task.cacheRestore);
         const status: TaskStatus = restored ? "local-cache" : "local-cache-kept-existing";
 
         const result: TaskResult = {

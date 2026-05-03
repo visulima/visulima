@@ -19,10 +19,19 @@ Shipped as `vis cache why <task>` and `vis cache hash <task>` (the bare `why` an
 
 ---
 
-### 2. REAPI gRPC backend + explicit `cacheMode: read | write | readwrite`
+### 2. REAPI gRPC backend + explicit `cacheMode: read | write | readwrite` ✅ shipped
 **Leverage:** Strategic moat. **Effort:** L (weeks). **Demand:** ★★★
 
-Already in `todo.md` as Tier-3. Ship the protocol *with* a sane mode story — Nx's `ciMode`/`localMode` confusion (#31398, #33335) is the #1 reason teams give up on remote cache. Pair with the existing HTTP backend, don't replace it. Also ship a standalone `vis-cache` server binary (most-reacted feature request across all repos surveyed: turborepo#683, 140 thumbs).
+Shipped across `@visulima/task-runner` and `vis`:
+- **Backend abstraction** (`task-runner/src/backends/{types,factory,http,reapi}.ts`): pluggable `RemoteCacheBackend` interface with `retrieveAction` / `storeAction` / `containsAction` / `fetchBlob` / `close`. Factory routes by `backend: "http" | "reapi"`.
+- **HTTP backend**: existing Turborepo wire format preserved; `AbortSignal.timeout` for hung-request safety.
+- **REAPI backend** over `@grpc/grpc-js`: `Capabilities` negotiation, `GetActionResult` / `BatchReadBlobs` / `Read` / `FindMissingBlobs` / `BatchUpdateBlobs` / `Write` / `UpdateActionResult`. In-flight blob upload dedup. `allowInsecureBearer` guard refuses to send a bearer token over `grpc://` cleartext.
+- **v2 CAS layout** (`task-runner/src/cas/{paths,digest,store,action-cache}.ts`): content-addressed `<cacheDir>/v2/{ac,cas,task-hash-index}/<aa>/...`; reader honours both v2 and legacy. Writer dual-emits legacy for portability during the alpha rollout — `vis cache migrate` deferred since alpha caches are throwaway.
+- **`cacheMode`**: `mode: "read" | "readwrite" | "write"` on `taskRunnerOptions.remoteCache` replaces the prior `read`/`write` boolean pair. `--cache-mode` / `--cache-backend` flags on `vis run`.
+- **`vis cache doctor`**: probes URL reachability for HTTP, calls `Capabilities` for REAPI, reports digests + max batch size + latency. `--format=json` for CI gating.
+- **Docs**: `task-runner/docs/concepts/remote-caching.mdx` covers both backends, `bazel-remote` Docker quickstart, action-digest derivation, capability matrix, env var compat (`TURBO_API` / `TURBO_TEAM` / `TURBO_TOKEN`), and the read/write lifecycle.
+
+Per Decision 1, no server binary ships in this repo — `bazel-remote` (Docker, S3, NAS) is documented as the self-host path.
 
 **Sources:** Section 7 Theme A + 8.3 #3. moon (REAPI shipped), Bazel/Buck2/Pants ecosystem, turborepo#683.
 
@@ -181,8 +190,8 @@ Quarters are illustrative; adjust to actual capacity.
 **Q1: Foundation + first-impression (items 1, 3, 4, 7)**
 Diagnostics + watch UX + cache retention + output styles. All small-to-medium, all directly competitive on a feature axis vs Turbo/Nx/moon. Ship together as "vis 1.0 polish."
 
-**Q2: Strategic moats (items 2, 5, 5b)**
-REAPI gRPC + standalone cache binary + MCP with introspection + worktree-aware shared cache. Two big differentiators (REAPI, MCP) plus one fast-follow that pairs with both: worktree-share unlocks parallel-agent UX whether you back it with the local cache or REAPI.
+**Q2: Strategic moats (items 2 ✅, 5, 5b ✅)**
+REAPI gRPC ✅ + MCP with introspection + worktree-aware shared cache ✅. Two big differentiators (REAPI shipped, MCP open) plus one fast-follow that pairs with both: worktree-share unlocks parallel-agent UX whether you back it with the local cache or REAPI. Standalone cache binary explicitly dropped — `bazel-remote` is the documented self-host.
 
 **Q3: Devloop + correctness (items 6 ✅, 9 ✅, 10, 11)**
 Conditional/affected/finally tasks ✅ + config layering ✅ + shared services registry (cross-invocation lifecycle) + cache restoration fidelity. Closes the "I keep restarting Postgres" papercut and locks down cache correctness before `docker scaffold` scales.

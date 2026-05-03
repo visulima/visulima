@@ -171,6 +171,27 @@ const cacheHash: Command = {
     options: [formatOption, runOption],
 };
 
+const cacheVerify: Command = {
+    argument: {
+        description: "Task ID to verify (e.g. @my/app:build)",
+        name: "taskId",
+        type: String,
+    },
+    commandPath: ["cache"],
+    description:
+        "Verify cache restore fidelity: extract the cached entry into a tmp directory and diff each file's content, mode, and mtime against the live workspace. Exits 1 on any drift (changed content, mode, mtime) or if a cached output is missing from the workspace. With --scope=all, the first cache directory containing the task is used.",
+    examples: [
+        ["vis cache verify @myorg/app:build", "Diff cached outputs vs live workspace files"],
+        ["vis cache verify @myorg/app:build --format=json", "Machine-readable diff (status: ok | drift)"],
+        ["vis cache verify @myorg/app:build --cache-dir=.alt-cache", "Verify against a non-default cache directory"],
+        ["vis cache verify @myorg/app:build --scope=all", "Search shared and worktree caches for the task"],
+    ],
+    group: "Workspace",
+    loader: lazyNamed(() => import("./handler"), "cacheVerifyExecute"),
+    name: "verify",
+    options: [cacheDirectoryOption, scopeOption, formatOption],
+};
+
 const cacheDoctor: Command = {
     commandPath: ["cache"],
     description: "Probe the configured remote cache (HTTP HEAD or REAPI Capabilities) and report reachability, latency, and negotiated capabilities",
@@ -207,7 +228,7 @@ const cacheDoctor: Command = {
     ],
 };
 
-const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheDoctor];
+const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheVerify, cacheDoctor];
 
 export default cacheCommands;
 
@@ -254,4 +275,10 @@ export type CacheDoctorOptions = CreateOptions<{
     format: string | undefined;
     timeout: number | undefined;
     url: string | undefined;
+}>;
+
+export type CacheVerifyOptions = CreateOptions<{
+    "cache-dir": string | undefined;
+    format: string | undefined;
+    scope: string | undefined;
 }>;
