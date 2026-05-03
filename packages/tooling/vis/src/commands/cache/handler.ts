@@ -1,11 +1,12 @@
-import { readdir, realpath, rm, stat } from "node:fs/promises";
+import { mkdtemp, readdir, realpath, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { createInterface } from "node:readline";
 
 import type { Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
-import { join } from "@visulima/path";
-import { Cache, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
+import { join, relative } from "@visulima/path";
+import { Cache, digestFile, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
 import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai/ai-cache";
 import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
@@ -17,7 +18,15 @@ import {
     readRunSummaryById,
 } from "../../report/run-summary-utils";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
-import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheWhyOptions } from "./index";
+import type {
+    CacheCleanOptions,
+    CacheHashOptions,
+    CacheListOptions,
+    CachePruneOptions,
+    CacheSizeOptions,
+    CacheVerifyOptions,
+    CacheWhyOptions,
+} from "./index";
 
 /**
  * Shape returned by `collectCacheEntries`. Kept close to what `removeOldEntries`
@@ -668,6 +677,288 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
     pail.info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
 };
 
+interface RunVerifyOptions {
+    /**
+     * Ordered list of cache directories to consult. The first one
+     * containing the requested task entry is used; the rest are
+     * ignored. Use a single-element array for the common case.
+     */
+    cacheDirectories: string[];
+    format: string;
+    workspaceRoot: string;
+}
+
+interface CachedFileMeta {
+    hash: string;
+    mode: number;
+    mtimeMs: number;
+    relativePath: string;
+    sizeBytes: number;
+}
+
+interface VerifyDiff {
+    actual?: { hash?: string; mode?: number; mtimeMs?: number };
+    expected?: { hash: string; mode: number; mtimeMs: number };
+    issues: ReadonlyArray<"content" | "missing" | "mode" | "mtime">;
+    relativePath: string;
+}
+
+const walkAndDigest = async (root: string): Promise<CachedFileMeta[]> => {
+    const out: CachedFileMeta[] = [];
+
+    const walk = async (absolute: string): Promise<void> => {
+        const items = (await readdir(absolute, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
+
+        for (const item of items) {
+            const childAbsolute = join(absolute, item.name);
+
+            if (item.isDirectory()) {
+                // eslint-disable-next-line no-await-in-loop -- ordered traversal keeps the diff output stable
+                await walk(childAbsolute);
+
+                continue;
+            }
+
+            if (!item.isFile()) {
+                continue;
+            }
+
+            // eslint-disable-next-line no-await-in-loop -- per-file IO; verify is one-shot, parallelism not worth the complexity
+            const [info, digest] = await Promise.all([stat(childAbsolute), digestFile(childAbsolute)]);
+
+            out.push({
+                hash: digest?.hash ?? "",
+                // eslint-disable-next-line no-bitwise -- low 12 bits hold the rwx triplet
+                mode: info.mode & 0o7777,
+                mtimeMs: info.mtimeMs,
+                relativePath: relative(root, childAbsolute).replaceAll("\\", "/"),
+                sizeBytes: info.size,
+            });
+        }
+    };
+
+    await walk(root);
+
+    return out;
+};
+
+const compareSecondsTruncated = (a: number, b: number): boolean => Math.floor(a / 1000) === Math.floor(b / 1000);
+
+const VERIFY_DIFF_CONCURRENCY = 16;
+
+const computeFileDiff = async (file: CachedFileMeta, workspaceRoot: string): Promise<VerifyDiff | undefined> => {
+    const livePath = join(workspaceRoot, file.relativePath);
+    const liveStat = await stat(livePath).catch(() => undefined);
+
+    if (!liveStat) {
+        return {
+            expected: { hash: file.hash, mode: file.mode, mtimeMs: file.mtimeMs },
+            issues: ["missing"],
+            relativePath: file.relativePath,
+        };
+    }
+
+    const liveDigest = await digestFile(livePath);
+
+    const issues: ("content" | "mode" | "mtime")[] = [];
+
+    if ((liveDigest?.hash ?? "") !== file.hash) {
+        issues.push("content");
+    }
+
+    // eslint-disable-next-line no-bitwise -- low 12 bits hold the rwx triplet
+    const liveMode = liveStat.mode & 0o7777;
+
+    if (process.platform !== "win32" && liveMode !== file.mode) {
+        issues.push("mode");
+    }
+
+    // Tar headers are second precision; a sub-second mismatch never
+    // indicates a real problem.
+    if (!compareSecondsTruncated(liveStat.mtimeMs, file.mtimeMs)) {
+        issues.push("mtime");
+    }
+
+    if (issues.length === 0) {
+        return undefined;
+    }
+
+    return {
+        actual: { hash: liveDigest?.hash, mode: liveMode, mtimeMs: liveStat.mtimeMs },
+        expected: { hash: file.hash, mode: file.mode, mtimeMs: file.mtimeMs },
+        issues,
+        relativePath: file.relativePath,
+    };
+};
+
+// Logging convention in this command: `pail.error` / `pail.info` /
+// `pail.success` carry the status banner (one-line summary, errors), and
+// the cerebro `logger.info` carries body text (the per-file drift
+// listing). Matches `runWhy` / `runHash`.
+export const runVerify = async (taskId: string, options: RunVerifyOptions, logger: Console): Promise<void> => {
+    const { cacheDirectories, format, workspaceRoot } = options;
+
+    if (cacheDirectories.length === 0) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "no-cache-directory", taskId }, undefined, 2)}\n`);
+        } else {
+            pail.error("No cache directory resolved — pass --cache-dir or run inside a workspace.");
+        }
+
+        process.exitCode = 1;
+
+        return;
+    }
+
+    // Walk the resolved directories in order — the entry can only live
+    // in one cache (task hashes are content-addressed), and we want the
+    // first match to win so --scope=all has predictable semantics
+    // (shared first, then worktree).
+    let cacheDirectory: string | undefined;
+    let cached: { hash: string } | undefined;
+
+    for (const directory of cacheDirectories) {
+        // eslint-disable-next-line no-await-in-loop -- short list, ordered lookup; parallelism would obscure the "shared wins over worktree" semantics
+        const found = await new Cache({ cacheDirectory: directory, workspaceRoot }).getByTaskId(taskId);
+
+        if (found) {
+            cacheDirectory = directory;
+            cached = found;
+            break;
+        }
+    }
+
+    if (!cached || !cacheDirectory) {
+        if (format === "json") {
+            process.stdout.write(`${JSON.stringify({ error: "no-cached-entry", searchedCaches: cacheDirectories, taskId }, undefined, 2)}\n`);
+        } else {
+            pail.error(`No cached entry found for task "${taskId}". Run it once before verifying.`);
+        }
+
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const stagingRoot = await mkdtemp(join(tmpdir(), "vis-cache-verify-"));
+
+    try {
+        // Restore into a throwaway workspaceRoot so we can compare the
+        // restored files against the live tree without disturbing it.
+        const stagingCache = new Cache({ cacheDirectory, workspaceRoot: stagingRoot });
+        const restored = await stagingCache.restoreOutputs(cached.hash);
+
+        if (!restored) {
+            if (format === "json") {
+                process.stdout.write(`${JSON.stringify({ error: "restore-failed", hash: cached.hash, taskId }, undefined, 2)}\n`);
+            } else {
+                pail.error(`Cache restore failed for ${taskId} (hash ${cached.hash}).`);
+            }
+
+            process.exitCode = 1;
+
+            return;
+        }
+
+        const cachedFiles = await walkAndDigest(stagingRoot);
+
+        if (cachedFiles.length === 0) {
+            if (format === "json") {
+                process.stdout.write(`${JSON.stringify({ diffs: [], hash: cached.hash, status: "no-outputs", taskId }, undefined, 2)}\n`);
+            } else {
+                pail.info(`Cached entry for ${taskId} has no recorded outputs — nothing to verify.`);
+            }
+
+            return;
+        }
+
+        // Bounded parallel: per-file IO (stat + sha256 stream) is
+        // independent across files, but unbounded parallelism on a
+        // 10k-file output tree would exhaust fd limits on common Linux
+        // setups (default 1024). 16 keeps us well below that while
+        // still saturating typical SSD read throughput.
+        const diffSlots: (VerifyDiff | undefined)[] = Array.from({ length: cachedFiles.length });
+
+        for (let offset = 0; offset < cachedFiles.length; offset += VERIFY_DIFF_CONCURRENCY) {
+            const chunk = cachedFiles.slice(offset, offset + VERIFY_DIFF_CONCURRENCY);
+
+            // eslint-disable-next-line no-await-in-loop -- chunked concurrency: each chunk runs in parallel, chunks themselves serialize
+            const results = await Promise.all(chunk.map(async (file) => computeFileDiff(file, workspaceRoot)));
+
+            for (const [index, result] of results.entries()) {
+                diffSlots[offset + index] = result;
+            }
+        }
+
+        const diffs: VerifyDiff[] = diffSlots.filter((slot): slot is VerifyDiff => slot !== undefined);
+
+        if (format === "json") {
+            process.stdout.write(
+                `${JSON.stringify(
+                    {
+                        cacheDirectory,
+                        cachedFileCount: cachedFiles.length,
+                        diffs,
+                        hash: cached.hash,
+                        status: diffs.length === 0 ? "ok" : "drift",
+                        taskId,
+                    },
+                    undefined,
+                    2,
+                )}\n`,
+            );
+
+            if (diffs.length > 0) {
+                process.exitCode = 1;
+            }
+
+            return;
+        }
+
+        pail.info(`Verify ${taskId}  (hash ${cached.hash})`);
+        logger.info("");
+        logger.info(`  cache:      ${cacheDirectory}`);
+        logger.info(`  files:      ${String(cachedFiles.length)}`);
+
+        if (diffs.length === 0) {
+            logger.info("");
+            pail.success("Cache restore is faithful — all files match content, mode, and mtime.");
+
+            return;
+        }
+
+        logger.info(`  drift:      ${String(diffs.length)} file(s)`);
+        logger.info("");
+
+        for (const diff of diffs) {
+            const tag = diff.issues.includes("missing") ? "MISSING" : diff.issues.join(",").toUpperCase();
+
+            logger.info(`  [${tag}] ${diff.relativePath}`);
+
+            if (!diff.issues.includes("missing") && diff.expected && diff.actual) {
+                if (diff.issues.includes("content")) {
+                    logger.info(`    expected hash: ${diff.expected.hash || "(none)"}`);
+                    logger.info(`    actual   hash: ${diff.actual.hash ?? "(unreadable)"}`);
+                }
+
+                if (diff.issues.includes("mode")) {
+                    logger.info(`    expected mode: ${diff.expected.mode.toString(8)}`);
+                    logger.info(`    actual   mode: ${(diff.actual.mode ?? 0).toString(8)}`);
+                }
+
+                if (diff.issues.includes("mtime")) {
+                    logger.info(`    expected mtime: ${new Date(diff.expected.mtimeMs).toISOString()}`);
+                    logger.info(`    actual   mtime: ${diff.actual.mtimeMs === undefined ? "(unreadable)" : new Date(diff.actual.mtimeMs).toISOString()}`);
+                }
+            }
+        }
+
+        process.exitCode = 1;
+    } finally {
+        await rm(stagingRoot, { force: true, recursive: true }).catch(() => {});
+    }
+};
+
 // Which cache stores does an operation touch? "task" is the workspace task
 // runner cache (resolved with --scope/--cache-dir), "ai" is the global AI
 // response cache under ~/.vis/cache/ai, "socket" is the Socket.dev report
@@ -964,4 +1255,27 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
     if (includesTarget(target, "socket")) {
         printAuxStatsBlock("Socket.dev report cache", getSocketCacheStats());
     }
+};
+
+export const cacheVerifyExecute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheVerifyOptions>): Promise<void> => {
+    const taskId = argument[0];
+
+    if (!taskId) {
+        pail.error("No task ID specified. Usage: vis cache verify <project>:<target>");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    // Pass every directory the chosen --scope produced. With
+    // `--scope=all`, that's [shared, worktree]; verify will look up the
+    // task hash in each, in order, and use the first match. Other
+    // scopes resolve to a single-element list.
+    const { cacheDirectories, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
+    await runVerify(taskId, {
+        cacheDirectories,
+        format: options.format ?? "table",
+        workspaceRoot,
+    }, logger);
 };

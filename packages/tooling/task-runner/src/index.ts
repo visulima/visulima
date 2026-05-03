@@ -114,6 +114,7 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 // Core types
 export type {
     AffectedScope,
+    CacheRestoreOptions,
     ConcurrentCloseEvent,
     ConcurrentCommandConfig,
     ConcurrentCommandInput,

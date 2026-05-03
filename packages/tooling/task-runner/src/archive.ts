@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, utimes, writeFile } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import {
@@ -116,7 +116,31 @@ const safeJoinForExtract = (destinationDirectory: string, entryName: string): st
     return resolvedEntry;
 };
 
-const writeTarEntries = async (entries: ReadonlyArray<{ attrs?: { mode?: string }; data?: Uint8Array; name: string }>, destinationDirectory: string): Promise<void> => {
+/**
+ * Per-call control over restore fidelity. Both default to `true` —
+ * the cache's job is to recreate exactly what was captured, and any
+ * deviation is opt-in. Callers (e.g. vis target config) can flip
+ * either off when downstream tooling needs a "fresh" mtime/mode.
+ */
+export interface ExtractOptions {
+    preserveMtime?: boolean;
+    preservePerms?: boolean;
+}
+
+/**
+ * nanotar's parsed `attrs.mtime` is the raw POSIX seconds value from
+ * the tar header (despite the type description claiming milliseconds —
+ * that label only applies on the create side, where nanotar divides by
+ * 1000 internally). Treat it as seconds-since-epoch on the read path.
+ */
+const writeTarEntries = async (
+    entries: ReadonlyArray<{ attrs?: { mode?: string; mtime?: number }; data?: Uint8Array; name: string }>,
+    destinationDirectory: string,
+    options: ExtractOptions = {},
+): Promise<void> => {
+    const preserveMtime = options.preserveMtime ?? true;
+    const preservePerms = options.preservePerms ?? true;
+
     await mkdir(destinationDirectory, { recursive: true });
 
     for (const entry of entries) {
@@ -133,10 +157,17 @@ const writeTarEntries = async (entries: ReadonlyArray<{ attrs?: { mode?: string 
         // eslint-disable-next-line no-await-in-loop -- entries write sequentially; the tarball is the unit of concurrency, not its members
         await mkdir(join(writePath, ".."), { recursive: true });
 
-        const mode = entry.attrs?.mode === undefined ? undefined : Number.parseInt(entry.attrs.mode, 8);
+        const mode = preservePerms && entry.attrs?.mode !== undefined ? Number.parseInt(entry.attrs.mode, 8) : undefined;
 
         // eslint-disable-next-line no-await-in-loop -- see above
         await writeFile(writePath, entry.data, mode === undefined ? undefined : { mode });
+
+        if (preserveMtime && entry.attrs?.mtime !== undefined) {
+            const mtime = new Date(entry.attrs.mtime * 1000);
+
+            // eslint-disable-next-line no-await-in-loop -- see above; pairing utimes with the writeFile keeps the per-entry effect atomic from the caller's view
+            await utimes(writePath, mtime, mtime);
+        }
     }
 };
 
@@ -168,11 +199,11 @@ export const createTar = async (sourceDirectory: string, outputPath: string): Pr
 };
 
 /** Plain tar extract into `destinationDirectory`, with path-traversal validation. */
-export const extractTar = async (archivePath: string, destinationDirectory: string): Promise<void> => {
+export const extractTar = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
     const buffer = await readFile(archivePath);
     const entries = nanoParseTar(buffer);
 
-    await writeTarEntries(entries, destinationDirectory);
+    await writeTarEntries(entries, destinationDirectory, options);
 };
 
 /** tar + gzip. Used when Turborepo-protocol compatibility matters. */
@@ -184,11 +215,11 @@ export const createTarGz = async (sourceDirectory: string, outputPath: string): 
 };
 
 /** tar + gzip extract, with path-traversal validation. */
-export const extractTarGz = async (archivePath: string, destinationDirectory: string): Promise<void> => {
+export const extractTarGz = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
     const tarBuffer = await decompressBuffer(archivePath, createGunzip());
     const entries = nanoParseTar(tarBuffer);
 
-    await writeTarEntries(entries, destinationDirectory);
+    await writeTarEntries(entries, destinationDirectory, options);
 };
 
 /**
@@ -204,9 +235,9 @@ export const createTarBrotli = async (sourceDirectory: string, outputPath: strin
 };
 
 /** Inverse of {@link createTarBrotli}, with path-traversal validation. */
-export const extractTarBrotli = async (archivePath: string, destinationDirectory: string): Promise<void> => {
+export const extractTarBrotli = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
     const tarBuffer = await decompressBuffer(archivePath, createBrotliDecompress());
     const entries = nanoParseTar(tarBuffer);
 
-    await writeTarEntries(entries, destinationDirectory);
+    await writeTarEntries(entries, destinationDirectory, options);
 };

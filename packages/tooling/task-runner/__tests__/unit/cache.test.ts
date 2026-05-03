@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -133,6 +133,63 @@ describe(Cache, () => {
             const restored = await cache.restoreOutputs("noout", ["dist"]);
 
             expect(restored).toBe(true);
+        });
+
+        it("preserves file mtime on restore by default (faithful rehydrate)", async () => {
+            expect.assertions(2);
+
+            const outputDirectory = join(workspaceRoot, "dist");
+
+            await mkdir(outputDirectory, { recursive: true });
+            await writeFile(join(outputDirectory, "artifact.bin"), "x".repeat(100));
+
+            const pinnedSeconds = 1_700_000_000;
+            const pinnedDate = new Date(pinnedSeconds * 1000);
+
+            await utimes(join(outputDirectory, "artifact.bin"), pinnedDate, pinnedDate);
+
+            await cache.put("mtime-build", "built", ["dist"], 0);
+            await rm(outputDirectory, { force: true, recursive: true });
+
+            const restored = await cache.restoreOutputs("mtime-build", ["dist"]);
+
+            expect(restored).toBe(true);
+
+            const restoredStat = await stat(join(outputDirectory, "artifact.bin"));
+
+            // Tar headers truncate to seconds; comparison must allow
+            // the same truncation.
+            expect(Math.floor(restoredStat.mtimeMs / 1000)).toBe(pinnedSeconds);
+        });
+
+        it("uses 'now' for mtime when preserveMtime: false is passed", async () => {
+            expect.assertions(2);
+
+            const outputDirectory = join(workspaceRoot, "dist");
+
+            await mkdir(outputDirectory, { recursive: true });
+            await writeFile(join(outputDirectory, "artifact.bin"), "x");
+
+            const pinnedSeconds = 1_700_000_000;
+            const pinnedDate = new Date(pinnedSeconds * 1000);
+
+            await utimes(join(outputDirectory, "artifact.bin"), pinnedDate, pinnedDate);
+
+            await cache.put("mtime-skip", "built", ["dist"], 0);
+            await rm(outputDirectory, { force: true, recursive: true });
+
+            const beforeRestore = Date.now();
+
+            await cache.restoreOutputs("mtime-skip", ["dist"], { preserveMtime: false });
+
+            const afterRestore = Date.now();
+            const restoredStat = await stat(join(outputDirectory, "artifact.bin"));
+
+            // 1s slack on either side covers fs rounding; together the
+            // two bounds prove the restore stamped "now" rather than
+            // either the pinned past or some future moment.
+            expect(restoredStat.mtimeMs).toBeGreaterThanOrEqual(beforeRestore - 1000);
+            expect(restoredStat.mtimeMs).toBeLessThanOrEqual(afterRestore + 1000);
         });
 
         it("round-trips outputs through the compressed archive", async () => {
