@@ -57,6 +57,14 @@ describe("vis generate — CLI surface", () => {
                 "vis generate --list",
                 "Show discovered templates",
               ],
+              [
+                "vis generate --list --json",
+                "Machine-readable template list",
+              ],
+              [
+                "vis generate package --describe --json",
+                "Print template metadata (variables, destination) as JSON",
+              ],
             ],
             "group": "Scaffold & Config",
             "name": "generate",
@@ -65,6 +73,18 @@ describe("vis generate — CLI surface", () => {
                 "defaultValue": false,
                 "description": "List discovered templates",
                 "name": "list",
+                "type": [Function],
+              },
+              {
+                "defaultValue": false,
+                "description": "Print template metadata (about, destination, variables) without running produce",
+                "name": "describe",
+                "type": [Function],
+              },
+              {
+                "defaultValue": false,
+                "description": "Emit JSON output (with --list or --describe)",
+                "name": "json",
                 "type": [Function],
               },
               {

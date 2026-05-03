@@ -23,12 +23,16 @@ const generate: Command = {
         ["vis generate package --dry-run", "Print planned writes without touching disk"],
         ["vis generate git://github.com/org/template#main", "Fetch and run a remote template"],
         ["vis generate --list", "Show discovered templates"],
+        ["vis generate --list --json", "Machine-readable template list"],
+        ["vis generate package --describe --json", "Print template metadata (variables, destination) as JSON"],
     ],
     group: "Scaffold & Config",
     loader: () => import("./handler"),
     name: "generate",
     options: [
         { defaultValue: false, description: "List discovered templates", name: "list", type: Boolean },
+        { defaultValue: false, description: "Print template metadata (about, destination, variables) without running produce", name: "describe", type: Boolean },
+        { defaultValue: false, description: "Emit JSON output (with --list or --describe)", name: "json", type: Boolean },
         { description: "Destination directory", name: "to", type: String },
         { defaultValue: false, description: "Print planned writes without touching disk", name: "dry-run", type: Boolean },
         { defaultValue: false, description: "Overwrite existing files without prompting", name: "force", type: Boolean },
@@ -43,8 +47,10 @@ export default generate;
 
 export type GenerateOptions = CreateOptions<{
     defaults: boolean | undefined;
+    describe: boolean | undefined;
     "dry-run": boolean | undefined;
     force: boolean | undefined;
+    json: boolean | undefined;
     list: boolean | undefined;
     "no-interactive": boolean | undefined;
     "prefer-offline": boolean | undefined;
