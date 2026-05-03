@@ -188,6 +188,7 @@ Packages are grouped into eight categories. Jump to the section you need:
 | [@visulima/task-runner](packages/tooling/task-runner/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftask-runner?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftask-runner) | A task runner with caching support for monorepo workspaces |
 | [@visulima/tsconfig](packages/tooling/tsconfig/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftsconfig?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftsconfig) | Find and/or parse the tsconfig.json file from a directory path. |
 | [@visulima/vis](packages/tooling/vis/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fvis?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fvis) | A CLI task runner for monorepo workspaces, powered by @visulima/task-runner |
+| [@visulima/vis-mcp](packages/tooling/vis-mcp/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fvis-mcp?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fvis-mcp) | MCP (Model Context Protocol) server for @visulima/vis — exposes vis tooling to AI agents over stdio |
 <!-- END_TABLE_PLACEHOLDER -->
 
 ## Getting Started
