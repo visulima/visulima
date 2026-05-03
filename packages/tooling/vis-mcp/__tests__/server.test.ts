@@ -31,7 +31,7 @@ interface ToolListResult {
 }
 
 describe(createMcpServer, () => {
-    it("registers all six tools and round-trips a tools/list request through an in-memory transport", async () => {
+    it("registers all eight tools and round-trips a tools/list request through an in-memory transport", async () => {
         expect.assertions(1);
 
         const { server } = await createMcpServer({ visBin: FAKE_VIS, workspaceRoot });
@@ -47,7 +47,16 @@ describe(createMcpServer, () => {
 
             // run_task is intentionally absent — Nx-style "agent prepares,
             // human executes" model. See ../README.md for rationale.
-            expect(names).toStrictEqual(["cache_hash", "cache_why", "describe_project", "get_run_logs", "list_projects", "list_targets"]);
+            expect(names).toStrictEqual([
+                "cache_hash",
+                "cache_why",
+                "describe_project",
+                "describe_template",
+                "get_run_logs",
+                "list_projects",
+                "list_targets",
+                "list_templates",
+            ]);
         } finally {
             await client.close();
             await server.close();

@@ -9,9 +9,11 @@ import type { McpToolResponse, ToolContext, ToolDeps } from "../src/response";
 import { registerCacheHash } from "../src/tools/cache-hash";
 import { registerCacheWhy } from "../src/tools/cache-why";
 import { registerDescribeProject } from "../src/tools/describe-project";
+import { registerDescribeTemplate } from "../src/tools/describe-template";
 import { registerGetRunLogs } from "../src/tools/get-run-logs";
 import { registerListProjects } from "../src/tools/list-projects";
 import { registerListTargets } from "../src/tools/list-targets";
+import { registerListTemplates } from "../src/tools/list-templates";
 
 const FAKE_VIS = fileURLToPath(new URL("__fixtures__/fake-vis.mjs", import.meta.url));
 
@@ -282,6 +284,56 @@ describe(registerCacheWhy, () => {
 
         expect(result.taskId).toBe("@scope/alpha:build");
         expect(result.runId).toBe("run-42");
+    });
+});
+
+describe(registerListTemplates, () => {
+    it("should list discovered templates with descriptions and sources", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListTemplates({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("list_templates");
+
+        const result = parseOk(await calls[0]!.handler({})) as { count: number; templates: { name: string; source: string }[] };
+
+        expect(result.count).toBe(2);
+        expect(result.templates.map((t) => t.name)).toStrictEqual(["package", "component"]);
+    });
+});
+
+describe(registerDescribeTemplate, () => {
+    it("should return the template metadata including the variable schema", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerDescribeTemplate({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("describe_template");
+
+        const result = parseOk(await calls[0]!.handler({ name: "package" })) as {
+            destination: string;
+            name: string;
+            variables: { name: string; required?: boolean }[];
+        };
+
+        expect(result.destination).toBe("packages");
+        expect(result.variables.find((v) => v.name === "packageName")!.required).toBe(true);
+    });
+
+    it("should surface a CLI error when the template is missing", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerDescribeTemplate({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ name: "nope" }));
+
+        expect(error.error).toContain("not found");
     });
 });
 

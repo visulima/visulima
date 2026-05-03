@@ -11,9 +11,11 @@ import type { ToolContext, ToolDeps } from "./response";
 import { registerCacheHash } from "./tools/cache-hash";
 import { registerCacheWhy } from "./tools/cache-why";
 import { registerDescribeProject } from "./tools/describe-project";
+import { registerDescribeTemplate } from "./tools/describe-template";
 import { registerGetRunLogs } from "./tools/get-run-logs";
 import { registerListProjects } from "./tools/list-projects";
 import { registerListTargets } from "./tools/list-targets";
+import { registerListTemplates } from "./tools/list-templates";
 
 interface PackageJsonShape {
     bin?: Record<string, string> | string;
@@ -88,6 +90,8 @@ export const registerAllTools = (deps: ToolDeps, context: ToolContext): void => 
     registerListProjects(deps, context);
     registerDescribeProject(deps, context);
     registerListTargets(deps, context);
+    registerListTemplates(deps, context);
+    registerDescribeTemplate(deps, context);
     registerGetRunLogs(deps, context);
     registerCacheWhy(deps, context);
     registerCacheHash(deps, context);

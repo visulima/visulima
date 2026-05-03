@@ -40,6 +40,36 @@ if (command.startsWith("list --json")) {
     process.exit(0);
 }
 
+if (command === "generate --list --json") {
+    writeJson([
+        { name: "package", source: "native", path: "/ws/.vis/templates/package.ts", description: "Scaffold a workspace package" },
+        { name: "component", source: "moon", path: "/ws/.moon/templates/component", description: "React component" },
+    ]);
+    process.exit(0);
+}
+
+if (argv[0] === "generate" && argv.includes("--describe") && argv.includes("--json")) {
+    const name = argv[1];
+
+    if (name === "package") {
+        writeJson({
+            name: "package",
+            source: "native",
+            path: "/ws/.vis/templates/package.ts",
+            description: "Scaffold a workspace package",
+            destination: "packages",
+            variables: [
+                { name: "packageName", type: "string", required: true, prompt: "Package name" },
+                { name: "license", type: "enum", values: ["MIT", "Apache-2.0"], default: "MIT" },
+            ],
+        });
+        process.exit(0);
+    }
+
+    writeStderr(`Template "${name}" not found.\n`);
+    process.exit(1);
+}
+
 if (command.startsWith("cache why")) {
     writeJson({
         taskId: argv[2],
