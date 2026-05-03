@@ -20,7 +20,7 @@
  * Requires @modelcontextprotocol/sdk to be installed.
  */
 
-// eslint-disable-next-line antfu/no-import-dist, import/no-unresolved -- bin entry point runs after build
+// eslint-disable-next-line antfu/no-import-dist -- bin entry point runs after build
 import { startMcpServer } from "../dist/mcp/server";
 
 startMcpServer().catch((error) => {

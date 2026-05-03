@@ -73,7 +73,6 @@ const DEFAULT_PROFILE_KEY = "ai-agent";
 export const DETAIL_DEFAULTS: Record<ClipboardDetail, Set<ClipboardField>> = {
     compact: new Set(["selectedText"]),
     detailed: new Set([
-        "accessibility",
         "classes",
         "componentSource",
         "componentStack",
@@ -104,6 +103,7 @@ export const DETAIL_DEFAULTS: Record<ClipboardDetail, Set<ClipboardField>> = {
     ]),
     standard: new Set([
         "componentSource",
+        "componentStack",
         "frameworkComponent",
         "selectedText",
         "selector",
