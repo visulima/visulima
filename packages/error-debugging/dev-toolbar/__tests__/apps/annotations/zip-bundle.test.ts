@@ -8,7 +8,7 @@ const view = (blob: Blob): Promise<DataView> =>
 
 describe(buildSessionZip, () => {
     it("emits a valid ZIP local file header signature", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const files: ExportSessionFile[] = [
             { content: "hello", encoding: "text", mimeType: "text/plain", path: "a.txt" },
@@ -22,7 +22,7 @@ describe(buildSessionZip, () => {
     });
 
     it("ends with the EOCD signature and the right entry count", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const files: ExportSessionFile[] = [
             { content: "one", encoding: "text", mimeType: "text/plain", path: "1.txt" },
@@ -43,7 +43,7 @@ describe(buildSessionZip, () => {
     });
 
     it("handles base64-encoded binary attachments", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         // 4 bytes of arbitrary data as base64
         const payload = "AAECAw=="; // [0x00, 0x01, 0x02, 0x03]
@@ -59,7 +59,7 @@ describe(buildSessionZip, () => {
     });
 
     it("computes a CRC-32 that varies with content", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const a = await view(buildSessionZip([{ content: "hello", encoding: "text", mimeType: "t/p", path: "a" }]));
         const b = await view(buildSessionZip([{ content: "world", encoding: "text", mimeType: "t/p", path: "a" }]));
@@ -69,7 +69,7 @@ describe(buildSessionZip, () => {
     });
 
     it("produces an empty central directory when given no files", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const blob = buildSessionZip([]);
         const v = await view(blob);

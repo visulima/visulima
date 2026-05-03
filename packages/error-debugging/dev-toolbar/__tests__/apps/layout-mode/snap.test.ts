@@ -7,12 +7,12 @@ const rect = (x: number, y: number, w = 100, h = 50): SnapRect => { return { hei
 
 describe(computeSnap, () => {
     it("returns zero deltas when there are no candidates", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
         expect(computeSnap(rect(10, 10))).toEqual({ dx: 0, dy: 0, guides: [] });
     });
 
     it("snaps left edge to a nearby candidate left edge", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const moving = rect(102, 10); // 2px to the right of x=100
         const others = [{ ...rect(100, 200), id: "anchor" }];
@@ -24,7 +24,7 @@ describe(computeSnap, () => {
     });
 
     it("does not snap when the gap exceeds SNAP_THRESHOLD", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const moving = rect(120, 10); // 20px away
         const others = [{ ...rect(100, 200), id: "anchor" }];
@@ -35,7 +35,7 @@ describe(computeSnap, () => {
     });
 
     it("excludes ids in excludeIds from candidates", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const moving = rect(102, 10);
         const others = [
@@ -49,7 +49,7 @@ describe(computeSnap, () => {
     });
 
     it("respects activeEdges so resize from the right doesn't snap the left edge", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const moving = rect(100, 10, 50); // left=100, right=150
         // Anchor rect placed so its left edge is 2px to the right of the
@@ -64,7 +64,7 @@ describe(computeSnap, () => {
     });
 
     it("snaps centerX when only candidates' center matches", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const moving = rect(0, 10, 100); // centerX = 50
         const others = [{ ...rect(0, 0, 100), id: "x" }]; // centerX = 50 — already aligned
@@ -77,7 +77,7 @@ describe(computeSnap, () => {
     });
 
     it("merges extraRects with others as snap targets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const moving = rect(102, 10);
         const result = computeSnap(moving, { extraRects: [rect(100, 200)] });

@@ -13,7 +13,7 @@ describe("layout-mode store", () => {
     });
 
     it("returns the initial state shape", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const state = getLayoutModeState();
 
@@ -25,7 +25,7 @@ describe("layout-mode store", () => {
     });
 
     it("merges partial updates without losing other fields", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         setLayoutModeState({ blankCanvas: true });
         const state = getLayoutModeState();
@@ -36,7 +36,7 @@ describe("layout-mode store", () => {
     });
 
     it("supports functional updates that derive from previous state", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         setLayoutModeState({ deselectSignal: 1 });
         setLayoutModeState((p) => { return { deselectSignal: p.deselectSignal + 1 }; });
@@ -45,7 +45,7 @@ describe("layout-mode store", () => {
     });
 
     it("notifies subscribers when state changes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const seen: string[] = [];
         const unsubscribe = subscribeLayoutMode((s) => {
@@ -61,7 +61,7 @@ describe("layout-mode store", () => {
     });
 
     it("stops notifying after unsubscribe", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         let calls = 0;
         const unsubscribe = subscribeLayoutMode(() => {
@@ -76,7 +76,7 @@ describe("layout-mode store", () => {
     });
 
     it("isolates subscriber errors from each other", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         let goodCalls = 0;
         const unsubscribeBad = subscribeLayoutMode(() => {
@@ -96,7 +96,7 @@ describe("layout-mode store", () => {
     });
 
     it("resetLayoutMode restores the initial state", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         setLayoutModeState({
             activeComponent: "hero",
