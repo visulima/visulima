@@ -155,7 +155,9 @@ describe("orchestrator: when + always", () => {
             when: { branch: "main" },
         };
 
-        const executor: TaskExecutor = async () => { return { code: 0, terminalOutput: "" }; };
+        const executor: TaskExecutor = async () => {
+            return { code: 0, terminalOutput: "" };
+        };
 
         await buildOrchestrator([task], executor, {
             lifeCycle,

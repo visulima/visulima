@@ -239,14 +239,14 @@ Parallel tasks are packed into synthetic `tid` lanes via sweep-line scheduling, 
 
 Optional hooks on `LifeCycleInterface` (implement what you need):
 
-| Hook                                          | When                                                                                                                               |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                                                                |
-| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                                                                     |
-| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace                                           |
-| `printWhenSkip(task, reason)`                 | A `when:` clause did not match the current environment. Co-fires with `printTaskTerminalOutput` (status `"skipped"`) — pick one    |
-| `onTaskStdout(task, chunk)`                   | Streaming stdout chunk in arrival order. Non-blocking — the orchestrator does not await. Buffered executors skip this hook        |
-| `onTaskStderr(task, chunk)`                   | Streaming stderr chunk in arrival order. Same contract as `onTaskStdout`                                                          |
+| Hook                                          | When                                                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                                                             |
+| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                                                                  |
+| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace                                        |
+| `printWhenSkip(task, reason)`                 | A `when:` clause did not match the current environment. Co-fires with `printTaskTerminalOutput` (status `"skipped"`) — pick one |
+| `onTaskStdout(task, chunk)`                   | Streaming stdout chunk in arrival order. Non-blocking — the orchestrator does not await. Buffered executors skip this hook      |
+| `onTaskStderr(task, chunk)`                   | Streaming stderr chunk in arrival order. Same contract as `onTaskStdout`                                                        |
 
 `onTaskStdout` / `onTaskStderr` are forwarded by streaming executors (e.g. `vis run`'s concurrent executor). Buffered executors (the simple test executor) skip them — rely on `printTaskTerminalOutput` for the final dump.
 
@@ -277,11 +277,11 @@ const mainRoot = getMainWorktreeRoot(workspaceRoot);
 // worktree, or undefined for primary checkouts / non-git directories.
 ```
 
-| Function                              | Returns                | Notes                                                                                                            |
-| ------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `getMainWorktreeRoot(workspaceRoot)`  | `string \| undefined`  | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
-| `isLinkedWorktree(workspaceRoot)`     | `boolean`              | `true` when `workspaceRoot` is a linked worktree (not the primary)                                               |
-| `resetWorktreeCache()`                | `void`                 | Clears the per-process resolution cache. Test-only escape hatch                                                  |
+| Function                             | Returns               | Notes                                                                                                            |
+| ------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `getMainWorktreeRoot(workspaceRoot)` | `string \| undefined` | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
+| `isLinkedWorktree(workspaceRoot)`    | `boolean`             | `true` when `workspaceRoot` is a linked worktree (not the primary)                                               |
+| `resetWorktreeCache()`               | `void`                | Clears the per-process resolution cache. Test-only escape hatch                                                  |
 
 ## Types
 

@@ -11,12 +11,12 @@ Two target-level keys control when a task runs: `when:` (predicate gate, evaluat
 
 `when:` accepts four positive clauses and a `not.*` mirror. All positive clauses must match (AND); array values mean any-of (OR). Tasks whose `when` evaluates to `false` are recorded with status `"skipped"` (not `"failure"`) and never reach the executor.
 
-| Clause   | Type                                | Example                                                                  |
-| -------- | ----------------------------------- | ------------------------------------------------------------------------ |
-| `os`     | `NodePlatform \| NodePlatform[]`    | `os: "linux"` — `"windows"` is sugar for `"win32"`                       |
-| `env`    | `EnvMatcher \| EnvMatcher[]`        | `env: "DEPLOY_TOKEN"` (set & non-empty) or `{ name, equals?, exists? }`  |
-| `branch` | `string \| string[]`                | `branch: ["main", "alpha"]` — matches `git rev-parse --abbrev-ref HEAD`  |
-| `ci`     | `boolean`                           | `ci: true` — detects CI via `process.env.CI` (truthy, not `"false"`/`"0"`) |
+| Clause   | Type                             | Example                                                                    |
+| -------- | -------------------------------- | -------------------------------------------------------------------------- |
+| `os`     | `NodePlatform \| NodePlatform[]` | `os: "linux"` — `"windows"` is sugar for `"win32"`                         |
+| `env`    | `EnvMatcher \| EnvMatcher[]`     | `env: "DEPLOY_TOKEN"` (set & non-empty) or `{ name, equals?, exists? }`    |
+| `branch` | `string \| string[]`             | `branch: ["main", "alpha"]` — matches `git rev-parse --abbrev-ref HEAD`    |
+| `ci`     | `boolean`                        | `ci: true` — detects CI via `process.env.CI` (truthy, not `"false"`/`"0"`) |
 
 ### Examples
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputUri } from "../../src/parse-input-uri";
 
-describe("parseInputUri", () => {
+describe(parseInputUri, () => {
     it("returns undefined for bare globs", () => {
         expect.assertions(3);
 
@@ -132,7 +132,7 @@ describe("parseInputUri", () => {
     });
 });
 
-describe("looksLikeInputUri", () => {
+describe(looksLikeInputUri, () => {
     it("matches all recognized schemes (with and without negation)", () => {
         expect.assertions(10);
 

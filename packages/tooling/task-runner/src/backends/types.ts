@@ -262,9 +262,5 @@ export interface RemoteCacheBackend {
      * must enforce blobs-before-AC ordering on the wire so a partial
      * failure cannot leave a cached result pointing at missing bytes.
      */
-    storeAction: (
-        actionDigest: CasDigest,
-        result: ActionResult,
-        blobs: ReadonlyArray<BlobSource>,
-    ) => Promise<boolean>;
+    storeAction: (actionDigest: CasDigest, result: ActionResult, blobs: ReadonlyArray<BlobSource>) => Promise<boolean>;
 }

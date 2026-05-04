@@ -38,7 +38,7 @@ describe(expandTokensInString, () => {
     it("supports double-quoted flag form", () => {
         expect.assertions(1);
 
-        const out = expandTokensInString("tool ${affected.files | flag \"-f\"}", {
+        const out = expandTokensInString('tool ${affected.files | flag "-f"}', {
             affectedFiles: ["a", "b"],
         });
 

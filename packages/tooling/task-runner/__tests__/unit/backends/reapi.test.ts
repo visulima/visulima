@@ -178,11 +178,15 @@ const startFixtureServer = async (): Promise<{ close: () => Promise<void>; serve
             recordCall("FindMissingBlobs", call);
 
             if (state.findMissingResponseOverride) {
-                const digests = (call.request.blob_digests ?? []).map((d) => { return { hash: d.hash, sizeBytes: d.size_bytes }; });
+                const digests = (call.request.blob_digests ?? []).map((d) => {
+                    return { hash: d.hash, sizeBytes: d.size_bytes };
+                });
                 const missing = state.findMissingResponseOverride(digests);
 
                 callback(null, {
-                    missing_blob_digests: missing.map((digest) => { return { hash: digest.hash, size_bytes: digest.sizeBytes }; }),
+                    missing_blob_digests: missing.map((digest) => {
+                        return { hash: digest.hash, size_bytes: digest.sizeBytes };
+                    }),
                 });
 
                 return;
@@ -231,7 +235,7 @@ const startFixtureServer = async (): Promise<{ close: () => Promise<void>; serve
             request: { resource_name: string };
             write: (chunk: unknown) => void;
         }) => {
-            recordCall("Read", call as never);
+            recordCall("Read", call);
             const match = /blobs\/([^/]+)\/\d+/.exec(call.request.resource_name);
 
             if (!match) {
@@ -266,7 +270,7 @@ const startFixtureServer = async (): Promise<{ close: () => Promise<void>; serve
             },
             callback: (error: Error | null, response: unknown) => void,
         ) => {
-            recordCall("Write", call as never);
+            recordCall("Write", call);
 
             const chunks: Buffer[] = [];
             let resourceName = "";
@@ -467,6 +471,7 @@ describe(ReapiRemoteCache, () => {
                 const ok = await cache.fetchBlob(blob.digest, target);
 
                 expect(ok).toBe(true);
+
                 const fetched = await readFile(target);
 
                 expect(fetched.toString("utf8")).toBe("small-payload");
@@ -561,11 +566,7 @@ describe(ReapiRemoteCache, () => {
             expect.assertions(2);
 
             const cache = new ReapiRemoteCache({ mode: "read", url: fixture.server.address });
-            const stored = await cache.storeAction(
-                { hash: "1".repeat(64), sizeBytes: 1 },
-                { exitCode: 0, outputDirectories: [], outputFiles: [] },
-                [],
-            );
+            const stored = await cache.storeAction({ hash: "1".repeat(64), sizeBytes: 1 }, { exitCode: 0, outputDirectories: [], outputFiles: [] }, []);
 
             expect(stored).toBe(false);
             expect(fixture.server.requests.some((entry) => entry.method === "UpdateActionResult")).toBe(false);
@@ -630,9 +631,7 @@ describe(ReapiRemoteCache, () => {
         it("allows bearer tokens over cleartext when explicitly opted in", () => {
             expect.assertions(1);
 
-            expect(
-                () => new ReapiRemoteCache({ allowInsecureBearer: true, bearerToken: "ok", url: "grpc://localhost:1" }),
-            ).not.toThrow();
+            expect(() => new ReapiRemoteCache({ allowInsecureBearer: true, bearerToken: "ok", url: "grpc://localhost:1" })).not.toThrow();
         });
 
         it("allows bearer tokens over grpcs:// without the escape hatch", () => {
@@ -739,7 +738,7 @@ describe(ReapiRemoteCache, () => {
         });
     });
 
-    describe("actionDigestForTaskHash", () => {
+    describe(actionDigestForTaskHash, () => {
         it("returns sizeBytes: 0 because action digests key the AC, not a CAS blob", () => {
             expect.assertions(2);
 

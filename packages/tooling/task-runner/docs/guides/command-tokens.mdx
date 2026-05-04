@@ -9,12 +9,12 @@ description: Interpolate affected/changed file lists into command strings
 
 ## Supported tokens
 
-| Token                                  | Expands to                                                                          |
-| -------------------------------------- | ----------------------------------------------------------------------------------- |
-| `${affected.files}`                    | Space-joined, shell-quoted paths from the supplied `affectedFiles` list             |
-| `${changed_files}`                     | Alias of `${affected.files}` — same source list, different name                     |
-| `${affected.files \| flag '--file'}`   | One `--file <path>` pair per file: `--file 'a.ts' --file 'b.ts' …`                  |
-| `${changed_files \| flag "-i"}`        | Same, with double-quoted flag value                                                 |
+| Token                                | Expands to                                                              |
+| ------------------------------------ | ----------------------------------------------------------------------- |
+| `${affected.files}`                  | Space-joined, shell-quoted paths from the supplied `affectedFiles` list |
+| `${changed_files}`                   | Alias of `${affected.files}` — same source list, different name         |
+| `${affected.files \| flag '--file'}` | One `--file <path>` pair per file: `--file 'a.ts' --file 'b.ts' …`      |
+| `${changed_files \| flag "-i"}`      | Same, with double-quoted flag value                                     |
 
 Both `'single'` and `"double"` quotes around the flag value are accepted. An empty flag value (`| flag ''`) is a no-op — the renderer emits the bare paths as if the flag were omitted.
 
@@ -43,18 +43,12 @@ The regex consumes at most one leading backslash, so use a different surrounding
 ```typescript
 import { parseCommands, runConcurrently } from "@visulima/task-runner";
 
-const commands = parseCommands(
-    [
-        "eslint ${affected.files}",
-        "prettier --write ${changed_files | flag '--file'}",
-    ],
-    {
-        tokens: {
-            affectedFiles: ["packages/app/src/index.ts", "packages/lib/src/util.ts"],
-            projectRoot: "packages/app", // optional — drops paths outside this root
-        },
+const commands = parseCommands(["eslint ${affected.files}", "prettier --write ${changed_files | flag '--file'}"], {
+    tokens: {
+        affectedFiles: ["packages/app/src/index.ts", "packages/lib/src/util.ts"],
+        projectRoot: "packages/app", // optional — drops paths outside this root
     },
-);
+});
 
 await runConcurrently(commands);
 ```

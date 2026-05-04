@@ -106,9 +106,7 @@ const getSameProjectTask = (
             parallelism: project.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
             projectRoot: project.root,
             target,
-            warningPattern: normalizeWarningPattern(
-                project.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern,
-            ),
+            warningPattern: normalizeWarningPattern(project.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern),
             when: project.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
         },
     ];
@@ -154,9 +152,7 @@ const getDependencyProjectTasks = (
                 parallelism: depProject.targets?.[targetName]?.parallelism ?? targetDefaults?.[targetName]?.parallelism,
                 projectRoot: depProject.root,
                 target,
-                warningPattern: normalizeWarningPattern(
-                    depProject.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern,
-                ),
+                warningPattern: normalizeWarningPattern(depProject.targets?.[targetName]?.warningPattern ?? targetDefaults?.[targetName]?.warningPattern),
                 when: depProject.targets?.[targetName]?.when ?? targetDefaults?.[targetName]?.when,
             });
         }

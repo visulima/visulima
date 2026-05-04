@@ -56,7 +56,7 @@ const actionDigest = (label: string): CasDigest => {
     return digestBuffer(key);
 };
 
-describe.skipIf(!shouldRun)("ReapiRemoteCache against real bazel-remote", () => {
+describe.skipIf(!shouldRun)("reapiRemoteCache against real bazel-remote", () => {
     let cache: ReapiRemoteCache;
     let tmpRoot: string;
 

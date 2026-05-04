@@ -48,11 +48,11 @@ The same config object covers both backends. Backend-specific fields (`signing` 
 
 A single canonical knob controls cache access:
 
-| `mode`       | Reads from remote | Writes to remote | Typical use                      |
-| ------------ | ----------------- | ---------------- | -------------------------------- |
-| `readwrite`  | yes (default)     | yes (default)    | CI, default for dev              |
-| `read`       | yes               | no               | branch builds, untrusted CI jobs |
-| `write`      | no                | yes              | warm-the-cache nightly jobs      |
+| `mode`      | Reads from remote | Writes to remote | Typical use                      |
+| ----------- | ----------------- | ---------------- | -------------------------------- |
+| `readwrite` | yes (default)     | yes (default)    | CI, default for dev              |
+| `read`      | yes               | no               | branch builds, untrusted CI jobs |
+| `write`     | no                | yes              | warm-the-cache nightly jobs      |
 
 The earlier `read` / `write` boolean pair was removed in favor of this single field — see the migration note below.
 
@@ -102,7 +102,7 @@ Brotli uses Node's built-in `zlib.createBrotliCompress` at quality level 4. Swit
 
 ### REAPI (Bazel Remote Execution API)
 
-REAPI is the lingua franca for self-hostable build caches. The same server can usually serve both the HTTP `/v8/artifacts` endpoint *and* the gRPC REAPI service, so picking REAPI is mostly about wire efficiency on large output sets — gRPC streaming + per-blob deduplication beats single-tarball uploads on builds with many small files.
+REAPI is the lingua franca for self-hostable build caches. The same server can usually serve both the HTTP `/v8/artifacts` endpoint _and_ the gRPC REAPI service, so picking REAPI is mostly about wire efficiency on large output sets — gRPC streaming + per-blob deduplication beats single-tarball uploads on builds with many small files.
 
 `@visulima/task-runner` ships the `ReapiRemoteCache` backend over `@grpc/grpc-js`. Both gRPC libraries are listed as **optional peer dependencies** — they're only resolved when `backend: "reapi"` is selected:
 
@@ -144,10 +144,10 @@ Use `allowInsecureBearer: true` only for trusted boundaries (local Docker, mesh 
 
 #### Wire flow
 
-| Operation        | Small blob (≤ batch limit)              | Large blob                      |
-| ---------------- | ---------------------------------------- | ------------------------------- |
-| Read             | `BatchReadBlobs`                         | `ByteStream.Read` (streaming)   |
-| Write            | `BatchUpdateBlobs`                       | `ByteStream.Write` (resumable)  |
+| Operation | Small blob (≤ batch limit) | Large blob                     |
+| --------- | -------------------------- | ------------------------------ |
+| Read      | `BatchReadBlobs`           | `ByteStream.Read` (streaming)  |
+| Write     | `BatchUpdateBlobs`         | `ByteStream.Write` (resumable) |
 
 Before any upload, `FindMissingBlobs` filters out blobs the server already has. Per-batch sizing accounts for ~256 bytes of envelope overhead per entry so a payload exactly at the server limit doesn't push the framed request over.
 
@@ -155,20 +155,20 @@ In-process upload dedup: two concurrent `storeAction` calls referencing the same
 
 ## Capabilities matrix
 
-| Feature                              | HTTP backend                                 | REAPI backend                                |
-| ------------------------------------ | -------------------------------------------- | -------------------------------------------- |
-| Wire format                          | Turborepo v8                                 | gRPC, REAPI v2                               |
-| Per-blob dedup across actions        | no (one tarball)                             | yes (CAS)                                    |
-| Streaming uploads                    | yes                                          | yes                                          |
-| Capability negotiation               | n/a                                          | `Capabilities` RPC (cached per process)      |
-| Bearer-token auth                    | yes (`token`)                                | yes (`bearerToken`, refused over cleartext)  |
-| HMAC artifact signing                | yes (`signing.secret`)                       | n/a (sha256 content addressing instead)      |
-| mTLS                                 | reverse-proxy                                | future work                                  |
-| Resumable large blob uploads         | no                                           | yes (`Write` RPC)                            |
-| Multi-tenant via instance namespace  | `teamId` query param                         | `instance_name` field                        |
-| In-process upload dedup              | yes (per-digest)                             | yes (per-digest)                             |
-| Wire compression                     | gzip / brotli (client-side, header-tagged)   | identity (REAPI compressors are negotiated; vis pins identity for now) |
-| Servers in OSS today                 | turborepo-remote-cache, Vercel, bazel-remote | bazel-remote, BuildBuddy, BuildBarn, EngFlow |
+| Feature                             | HTTP backend                                 | REAPI backend                                                          |
+| ----------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| Wire format                         | Turborepo v8                                 | gRPC, REAPI v2                                                         |
+| Per-blob dedup across actions       | no (one tarball)                             | yes (CAS)                                                              |
+| Streaming uploads                   | yes                                          | yes                                                                    |
+| Capability negotiation              | n/a                                          | `Capabilities` RPC (cached per process)                                |
+| Bearer-token auth                   | yes (`token`)                                | yes (`bearerToken`, refused over cleartext)                            |
+| HMAC artifact signing               | yes (`signing.secret`)                       | n/a (sha256 content addressing instead)                                |
+| mTLS                                | reverse-proxy                                | future work                                                            |
+| Resumable large blob uploads        | no                                           | yes (`Write` RPC)                                                      |
+| Multi-tenant via instance namespace | `teamId` query param                         | `instance_name` field                                                  |
+| In-process upload dedup             | yes (per-digest)                             | yes (per-digest)                                                       |
+| Wire compression                    | gzip / brotli (client-side, header-tagged)   | identity (REAPI compressors are negotiated; vis pins identity for now) |
+| Servers in OSS today                | turborepo-remote-cache, Vercel, bazel-remote | bazel-remote, BuildBuddy, BuildBarn, EngFlow                           |
 
 ## Self-hosting with bazel-remote
 
@@ -242,7 +242,7 @@ The orchestrator hashes inputs with `xxh3-128` for the local task hash, but REAP
 const key = `vis-task:${taskHash}`;
 const action = {
     hash: sha256(key),
-    sizeBytes: 0,            // identifies an *action* (an ActionResult key), not a CAS blob
+    sizeBytes: 0, // identifies an *action* (an ActionResult key), not a CAS blob
 };
 ```
 
@@ -295,11 +295,11 @@ remoteCache: { url, token, read: true, write: false }
 remoteCache: { url, token, mode: "read" }
 ```
 
-| Old shape                     | New `mode`     |
-| ----------------------------- | -------------- |
-| `{ read: true, write: true }` | `"readwrite"`  |
-| `{ read: true, write: false}` | `"read"`       |
-| `{ read: false, write: true}` | `"write"`      |
+| Old shape                     | New `mode`    |
+| ----------------------------- | ------------- |
+| `{ read: true, write: true }` | `"readwrite"` |
+| `{ read: true, write: false}` | `"read"`      |
+| `{ read: false, write: true}` | `"write"`     |
 
 Leaving `mode` unset keeps the existing default of `"readwrite"`.
 

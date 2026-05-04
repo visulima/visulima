@@ -51,8 +51,8 @@ const importGrpc = async (): Promise<{ grpc: typeof import("@grpc/grpc-js"); pro
         grpc = await import("@grpc/grpc-js");
     } catch (error) {
         throw new Error(
-            "[task-runner] remoteCache.backend = \"reapi\" needs the optional peer dependency `@grpc/grpc-js`. "
-            + "Install it with `pnpm add @grpc/grpc-js` (or your package manager's equivalent), or switch to backend: \"http\".",
+            '[task-runner] remoteCache.backend = "reapi" needs the optional peer dependency `@grpc/grpc-js`. '
+            + 'Install it with `pnpm add @grpc/grpc-js` (or your package manager\'s equivalent), or switch to backend: "http".',
             { cause: error },
         );
     }
@@ -61,8 +61,8 @@ const importGrpc = async (): Promise<{ grpc: typeof import("@grpc/grpc-js"); pro
         protoLoader = await import("@grpc/proto-loader");
     } catch (error) {
         throw new Error(
-            "[task-runner] remoteCache.backend = \"reapi\" needs the optional peer dependency `@grpc/proto-loader`. "
-            + "Install it with `pnpm add @grpc/proto-loader` (or your package manager's equivalent), or switch to backend: \"http\".",
+            '[task-runner] remoteCache.backend = "reapi" needs the optional peer dependency `@grpc/proto-loader`. '
+            + 'Install it with `pnpm add @grpc/proto-loader` (or your package manager\'s equivalent), or switch to backend: "http".',
             { cause: error },
         );
     }
@@ -89,7 +89,7 @@ export const loadReapiProto = async (): Promise<{ clients: ReapiGrpcClients; grp
             protobufjs = await import("protobufjs");
         } catch (error) {
             throw new Error(
-                "[task-runner] remoteCache.backend = \"reapi\" needs `protobufjs` (normally installed transitively via `@grpc/proto-loader`). "
+                '[task-runner] remoteCache.backend = "reapi" needs `protobufjs` (normally installed transitively via `@grpc/proto-loader`). '
                 + "Install it with `pnpm add protobufjs` (or your package manager's equivalent) if your installer does not hoist transitive deps.",
                 { cause: error },
             );

@@ -195,7 +195,7 @@ describe(TaskOrchestrator, () => {
             overrides: {},
             projectRoot: "packages/app",
             target: { project: "app", target: "build" },
-            warningPattern: ["\\bwarning\\b"],
+            warningPattern: [String.raw`\bwarning\b`],
         };
 
         const executor: TaskExecutor = async () => {
@@ -225,7 +225,7 @@ describe(TaskOrchestrator, () => {
             overrides: {},
             projectRoot: "packages/app",
             target: { project: "app", target: "build" },
-            warningPattern: ["TS\\d{4}"],
+            warningPattern: [String.raw`TS\d{4}`],
         };
 
         const executor: TaskExecutor = async () => {
@@ -248,7 +248,7 @@ describe(TaskOrchestrator, () => {
             overrides: {},
             projectRoot: "packages/app",
             target: { project: "app", target: "build" },
-            warningPattern: ["\\bwarning\\b"],
+            warningPattern: [String.raw`\bwarning\b`],
         };
 
         let executionCount = 0;
@@ -280,7 +280,7 @@ describe(TaskOrchestrator, () => {
             overrides: {},
             projectRoot: "packages/app",
             target: { project: "app", target: "build" },
-            warningPattern: ["[unclosed", "\\bwarning\\b"],
+            warningPattern: ["[unclosed", String.raw`\bwarning\b`],
         };
 
         const executor: TaskExecutor = async () => {

@@ -22,25 +22,25 @@ All options are passed to `defaultTaskRunner` as the second argument.
 
 These keys live on a `TargetConfiguration` (under `targetDefaults` or a project's own `targets`) and are carried onto each `Task` at graph creation.
 
-| Option            | Type                      | Default              | Description                                                                                       |
-| ----------------- | ------------------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
-| `outputs`         | `OutputSpec[]`            | `[]`                 | Glob patterns, negations (`!dist/cache/**`), or `{ auto: true }` markers. See [Outputs](#outputs) |
-| `when`            | `WhenCondition`           | -                    | Predicate gating execution. Failing tasks are marked `"skipped"`, not failed                      |
-| `always`          | `boolean`                 | `false`              | Run after the main graph completes, even on upstream failures. See [`always`](#always-tasks)      |
-| `warningPattern`  | `string \| string[]`      | -                    | JS-flavor regex(es); first match flips `TaskResult.hadWarnings`                                   |
-| `cacheOnWarning`  | `boolean`                 | `true`               | When `false`, exit-0 runs that tripped `warningPattern` are not seeded into the cache             |
-| `cacheRestore`    | `CacheRestoreOptions`     | `{ preserveMtime: true, preservePerms: true }` | Per-target cache rehydration controls (see below)                       |
+| Option           | Type                  | Default                                        | Description                                                                                       |
+| ---------------- | --------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `outputs`        | `OutputSpec[]`        | `[]`                                           | Glob patterns, negations (`!dist/cache/**`), or `{ auto: true }` markers. See [Outputs](#outputs) |
+| `when`           | `WhenCondition`       | -                                              | Predicate gating execution. Failing tasks are marked `"skipped"`, not failed                      |
+| `always`         | `boolean`             | `false`                                        | Run after the main graph completes, even on upstream failures. See [`always`](#always-tasks)      |
+| `warningPattern` | `string \| string[]`  | -                                              | JS-flavor regex(es); first match flips `TaskResult.hadWarnings`                                   |
+| `cacheOnWarning` | `boolean`             | `true`                                         | When `false`, exit-0 runs that tripped `warningPattern` are not seeded into the cache             |
+| `cacheRestore`   | `CacheRestoreOptions` | `{ preserveMtime: true, preservePerms: true }` | Per-target cache rehydration controls (see below)                                                 |
 
 ### `when`
 
 `when` accepts the following predicates. All positive clauses must match (AND); array values mean any-of (OR). `not.*` mirrors apply the inverse.
 
-| Clause   | Type                                        | Notes                                                                                                  |
-| -------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `os`     | `NodePlatform \| NodePlatform[]`            | `process.platform` values (`"linux"`, `"darwin"`, `"win32"`, ...). `"windows"` is sugar for `"win32"`. |
-| `env`    | `EnvMatcher \| EnvMatcher[]`                | A bare string asserts the var is set & non-empty; the object form supports `equals` or `exists`.       |
-| `branch` | `string \| string[]`                        | Matches the current `git rev-parse --abbrev-ref HEAD`. Detached HEAD never matches.                    |
-| `ci`     | `boolean`                                   | Detects CI via the `CI` env var (truthy, not `"false"`/`"0"`).                                         |
+| Clause   | Type                             | Notes                                                                                                  |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `os`     | `NodePlatform \| NodePlatform[]` | `process.platform` values (`"linux"`, `"darwin"`, `"win32"`, ...). `"windows"` is sugar for `"win32"`. |
+| `env`    | `EnvMatcher \| EnvMatcher[]`     | A bare string asserts the var is set & non-empty; the object form supports `equals` or `exists`.       |
+| `branch` | `string \| string[]`             | Matches the current `git rev-parse --abbrev-ref HEAD`. Detached HEAD never matches.                    |
+| `ci`     | `boolean`                        | Detects CI via the `CI` env var (truthy, not `"false"`/`"0"`).                                         |
 
 ```ts
 when: { os: ["linux", "darwin"], ci: true, env: { name: "DEPLOY_TOKEN", exists: true } }
@@ -72,11 +72,11 @@ build: {
 
 Each entry is one of:
 
-| Form                      | Behavior                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------- |
-| `"dist/**"` (string)      | Glob relative to workspace root. Literal paths and metacharacters (`* ? [ ] { }`) both supported. |
-| `"!dist/cache/**"`        | Negation — applied to the combined positive set after expansion.                                  |
-| `{ auto: true }`          | Use the file-access tracker's recorded writes for this run. No-op when tracking isn't active.     |
+| Form                 | Behavior                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `"dist/**"` (string) | Glob relative to workspace root. Literal paths and metacharacters (`* ? [ ] { }`) both supported. |
+| `"!dist/cache/**"`   | Negation — applied to the combined positive set after expansion.                                  |
+| `{ auto: true }`     | Use the file-access tracker's recorded writes for this run. No-op when tracking isn't active.     |
 
 Resolved paths are deduped, sorted, and filtered to files inside the workspace before archiving.
 
@@ -84,10 +84,10 @@ Resolved paths are deduped, sorted, and filtered to files inside the workspace b
 
 Per-target overrides for how cached outputs are rehydrated.
 
-| Field            | Type      | Default | Description                                                                              |
-| ---------------- | --------- | ------- | ---------------------------------------------------------------------------------------- |
-| `preserveMtime`  | `boolean` | `true`  | Restore each file's mtime from the captured tar header (second precision).               |
-| `preservePerms`  | `boolean` | `true`  | Restore POSIX mode bits (low 12 bits). Ignored on Windows.                               |
+| Field           | Type      | Default | Description                                                                |
+| --------------- | --------- | ------- | -------------------------------------------------------------------------- |
+| `preserveMtime` | `boolean` | `true`  | Restore each file's mtime from the captured tar header (second precision). |
+| `preservePerms` | `boolean` | `true`  | Restore POSIX mode bits (low 12 bits). Ignored on Windows.                 |
 
 Flip individually when downstream tooling needs the legacy "now"-stamped behaviour (e.g. bundlers that use newer-than-source heuristics).
 
@@ -119,20 +119,20 @@ Flip individually when downstream tooling needs the legacy "now"-stamped behavio
 
 ## Remote Cache
 
-| Option                            | Type                                                | Default       | Description                                                                                              |
-| --------------------------------- | --------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------- |
-| `remoteCache.url`                 | `string`                                            | -             | Cache server URL. HTTP: `https://...`. REAPI: `grpcs://host:port` (TLS) or `grpc://host:port` (cleartext) |
-| `remoteCache.token`               | `string`                                            | -             | HTTP `Authorization: Bearer …` token. HTTP-only — REAPI uses `bearerToken`                                |
-| `remoteCache.teamId`              | `string`                                            | -             | Team / namespace for cache isolation                                                                      |
-| `remoteCache.mode`                | `"read" \| "readwrite" \| "write"`                  | `"readwrite"` | Canonical read/write flag (replaces the removed `read` / `write` boolean pair)                            |
-| `remoteCache.backend`             | `"http" \| "reapi"`                                 | `"http"`      | Wire protocol selector. `"reapi"` requires the optional peers `@grpc/grpc-js` + `@grpc/proto-loader`     |
-| `remoteCache.compression`         | `"gzip" \| "brotli"`                                | `"gzip"`      | HTTP-only tarball compression                                                                             |
-| `remoteCache.signing`             | `{ secret: string, verifyOnDownload?: boolean }`    | -             | HTTP HMAC-SHA256 signing. Secret must be ≥ 16 chars. Streaming verification on download                  |
-| `remoteCache.bearerToken`         | `string`                                            | -             | REAPI bearer token. Refused over `grpc://` unless `allowInsecureBearer: true`                             |
-| `remoteCache.instanceName`        | `string`                                            | -             | REAPI `instance_name` for multi-tenant servers                                                            |
-| `remoteCache.allowInsecureBearer` | `boolean`                                           | `false`       | Opt out of REAPI's cleartext-bearer guard (loopback / mesh-mTLS sidecar only)                             |
-| `remoteCache.timeout`             | `number`                                            | `30000`       | Per-call request timeout in ms                                                                            |
-| `remoteCache.onUploadError`       | `(hash, error) => void`                             | -             | Surfaces fire-and-forget upload errors (otherwise silently dropped)                                       |
+| Option                            | Type                                             | Default       | Description                                                                                               |
+| --------------------------------- | ------------------------------------------------ | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `remoteCache.url`                 | `string`                                         | -             | Cache server URL. HTTP: `https://...`. REAPI: `grpcs://host:port` (TLS) or `grpc://host:port` (cleartext) |
+| `remoteCache.token`               | `string`                                         | -             | HTTP `Authorization: Bearer …` token. HTTP-only — REAPI uses `bearerToken`                                |
+| `remoteCache.teamId`              | `string`                                         | -             | Team / namespace for cache isolation                                                                      |
+| `remoteCache.mode`                | `"read" \| "readwrite" \| "write"`               | `"readwrite"` | Canonical read/write flag (replaces the removed `read` / `write` boolean pair)                            |
+| `remoteCache.backend`             | `"http" \| "reapi"`                              | `"http"`      | Wire protocol selector. `"reapi"` requires the optional peers `@grpc/grpc-js` + `@grpc/proto-loader`      |
+| `remoteCache.compression`         | `"gzip" \| "brotli"`                             | `"gzip"`      | HTTP-only tarball compression                                                                             |
+| `remoteCache.signing`             | `{ secret: string, verifyOnDownload?: boolean }` | -             | HTTP HMAC-SHA256 signing. Secret must be ≥ 16 chars. Streaming verification on download                   |
+| `remoteCache.bearerToken`         | `string`                                         | -             | REAPI bearer token. Refused over `grpc://` unless `allowInsecureBearer: true`                             |
+| `remoteCache.instanceName`        | `string`                                         | -             | REAPI `instance_name` for multi-tenant servers                                                            |
+| `remoteCache.allowInsecureBearer` | `boolean`                                        | `false`       | Opt out of REAPI's cleartext-bearer guard (loopback / mesh-mTLS sidecar only)                             |
+| `remoteCache.timeout`             | `number`                                         | `30000`       | Per-call request timeout in ms                                                                            |
+| `remoteCache.onUploadError`       | `(hash, error) => void`                          | -             | Surfaces fire-and-forget upload errors (otherwise silently dropped)                                       |
 
 The earlier `read` / `write` boolean pair was removed in favor of `mode`. There is no automatic migration — translate manually:
 

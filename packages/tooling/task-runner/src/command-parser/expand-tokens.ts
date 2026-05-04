@@ -1,5 +1,5 @@
-import { shellQuote } from "./shell-quote";
 import type { ConcurrentCommandConfig } from "../types";
+import { shellQuote } from "./shell-quote";
 
 /**
  * Context for token interpolation.
@@ -99,9 +99,7 @@ export const expandTokensInString = (command: string, context: TokenContext): st
 
         const rawFiles = context[sourceKey] ?? [];
         const files = context.projectRoot
-            ? rawFiles
-                .map((f) => rewriteForProjectRoot(f, context.projectRoot as string))
-                .filter((f): f is string => f !== undefined)
+            ? rawFiles.map((f) => rewriteForProjectRoot(f, context.projectRoot as string)).filter((f): f is string => f !== undefined)
             : rawFiles;
 
         if (files.length === 0) {

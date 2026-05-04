@@ -21,17 +21,14 @@
  */
 import { createHash } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { createServer, type IncomingMessage, type Server } from "node:http";
+import type { IncomingMessage, Server } from "node:http";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterAll, bench, beforeAll, describe } from "vitest";
+import { afterAll, beforeAll, bench, describe } from "vitest";
 
-import {
-    containsByTaskHash,
-    retrieveByTaskHash,
-    storeByTaskHash,
-} from "../src/backends/hash-bridge";
+import { containsByTaskHash, retrieveByTaskHash, storeByTaskHash } from "../src/backends/hash-bridge";
 import { HttpRemoteCache } from "../src/backends/http";
 
 interface MockServerHandle {
@@ -45,14 +42,14 @@ const collectBody = (request: IncomingMessage): Promise<Buffer> => {
 
     return new Promise((resolve) => {
         request.on("data", (chunk: Buffer) => chunks.push(chunk));
-        request.on("end", () => resolve(Buffer.concat(chunks)));
+        request.on("end", () => { resolve(Buffer.concat(chunks)); });
     });
 };
 
 const ARTIFACT_PREFIX = "/v8/artifacts/";
 
 const parseArtifactHash = (url: string | undefined): string | undefined => {
-    if (url === undefined || !url.startsWith(ARTIFACT_PREFIX)) {
+    if (!url?.startsWith(ARTIFACT_PREFIX)) {
         return undefined;
     }
 
@@ -128,7 +125,7 @@ const startMockServer = (): Promise<MockServerHandle> =>
 
 const closeMockServer = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => resolve());
+        server.close(() => { resolve(); });
     });
 
 const createTempDir = async (label: string): Promise<string> => {
@@ -140,7 +137,7 @@ const createTempDir = async (label: string): Promise<string> => {
     return directory;
 };
 
-/** Populate `<cacheDir>/<taskHash>/` with a committed cache entry of the requested size. */
+/** Populate `&lt;cacheDir>/&lt;taskHash>/` with a committed cache entry of the requested size. */
 const seedLocalEntry = async (cacheDirectory: string, taskHash: string, payloadBytes: number): Promise<void> => {
     const entry = join(cacheDirectory, taskHash);
 
@@ -150,8 +147,7 @@ const seedLocalEntry = async (cacheDirectory: string, taskHash: string, payloadB
     await writeFile(join(entry, "terminalOutput"), "x".repeat(payloadBytes));
 };
 
-const artifactKey = (taskHash: string): string =>
-    createHash("sha256").update(`vis-task:${taskHash}`).digest("hex");
+const artifactKey = (taskHash: string): string => createHash("sha256").update(`vis-task:${taskHash}`).digest("hex");
 
 describe("http backend - HEAD probe", () => {
     let handle: MockServerHandle;

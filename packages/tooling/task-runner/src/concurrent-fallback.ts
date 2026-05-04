@@ -73,7 +73,7 @@ const killTree = (pid: number, signal: string): void => {
             spawn("taskkill", ["/F", "/T", "/PID", String(pid)], { stdio: "ignore" });
         } else {
             // Kill the process group (created via detached: true)
-            process.kill(-pid, signal as NodeJS.Signals);
+            process.kill(-pid, signal);
         }
     } catch {
         // Process may already be dead
