@@ -56,7 +56,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig> = defineProvider((co
                 let provider: Provider;
 
                 if (isProviderFactory(mailer)) {
-                    provider = mailer({} as never);
+                    provider = mailer({});
                 } else if (isProvider(mailer)) {
                     provider = mailer;
                 } else {

@@ -52,7 +52,7 @@ const provider: ProviderFactory<FailoverConfig> = defineProvider((config: Failov
                     let mailerProvider: Provider;
 
                     if (isProviderFactory(mailer)) {
-                        mailerProvider = mailer({} as never);
+                        mailerProvider = mailer({});
                     } else if (isProvider(mailer)) {
                         mailerProvider = mailer;
                     } else {

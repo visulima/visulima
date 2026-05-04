@@ -146,7 +146,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider> = de
     const initializeProvider = async (): Promise<void> => {
         try {
             if (isProviderFactory(options.provider)) {
-                wrappedProvider = options.provider({} as never);
+                wrappedProvider = options.provider({});
             } else if (isProvider(options.provider)) {
                 wrappedProvider = options.provider;
             } else {

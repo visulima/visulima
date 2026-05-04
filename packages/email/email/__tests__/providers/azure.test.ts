@@ -36,7 +36,7 @@ describe(azureProvider, () => {
             expect.assertions(1);
 
             expect(() => {
-                azureProvider({ region: "eastus" } as any);
+                azureProvider({ region: "eastus" });
             }).toThrow(RequiredOptionError);
         });
 
