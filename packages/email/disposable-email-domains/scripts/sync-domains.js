@@ -73,7 +73,7 @@ const updateLastUpdatedTimestamp = async (packageRootPath, stats) => {
     const readmePath = join(packageRootPath, "README.md");
     let readmeContent = await fs.readFile(readmePath, "utf8");
 
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString().slice(0, 10);
     const startPlaceholder = "<!-- START_PLACEHOLDER_LAST_UPDATED -->";
     const endPlaceholder = "<!-- END_PLACEHOLDER_LAST_UPDATED -->";
 
