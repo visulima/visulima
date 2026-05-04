@@ -102,7 +102,8 @@ Hermetic-experiment users opt out via `sharedWorktreeCache: false` in `vis-confi
 
 Shipped across three pieces:
 
-- **Affected-files forwarding** via per-target `options.affectedFiles: "args" | "env" | "both"` (`src/task/types.ts:35`, `src/commands/run/handler.ts:53,93,372`). Sets `VIS_AFFECTED_FILES` env (newline-separated) and/or appends paths as args. Pragmatically chosen over the `${affected.files}` token-in-command form from the spec — same outcome, no string-interpolation surface.
+- **Affected-files forwarding** via per-target `options.affectedFiles: "args" | "env" | "both"` (`src/task/types.ts:35`, `src/commands/run/handler.ts:53,93,372`). Sets `VIS_AFFECTED_FILES` env (newline-separated) and/or appends paths as args.
+- **`${affected.files}` / `${changed_files | flag '--file'}` tokens** wired through `expandTokensInString` (`@visulima/task-runner/src/command-parser/expand-tokens.ts`) at `src/commands/run/handler.ts:109,419`. Tokens expand at the user-specified position with project-root scoping (out-of-project paths dropped, in-project paths rewritten relative to project root). Supports the bare token (`eslint ${affected.files}`) and the flag form (`stylelint ${changed_files | flag '--file'}`); a leading backslash escapes (`\${affected.files}`). Coexists with `affectedFiles: "args"` — token wins position, mode appends at the end. End-to-end coverage in `__tests__/commands/run/run-affected-tokens.test.ts`.
 - **Conditional tasks** via `WhenCondition` in `@visulima/task-runner` (`packages/tooling/task-runner/src/when-condition.ts:18`, `evaluateWhen`, `explainWhen`). Top-level `when:` on targets (`types.ts:90,231`) covers os/env/branch/ci.
 - **Finally / always-run tasks** via top-level `always: true`. Pulled out of the main graph in `default-task-runner.ts:187` and run sequentially after the main task graph in `task-orchestrator.ts:24,231`.
 
