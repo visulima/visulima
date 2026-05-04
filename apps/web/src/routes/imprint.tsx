@@ -35,7 +35,8 @@ const RouteComponent = () => (
 
                 <h2>Streitschlichtung</h2>
                 <p>
-                    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{" "}
+                    Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
+{" "}
                     <a href="https://ec.europa.eu/consumers/odr" rel="noopener noreferrer" target="_blank">
                         https://ec.europa.eu/consumers/odr
                     </a>

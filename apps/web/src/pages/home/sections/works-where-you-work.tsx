@@ -85,7 +85,8 @@ const WorksWhereYouWork: FC = () => (
                         <div className="mb-6 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-900">Frameworks</h3>
                             <span className="border border-gray-200 bg-gray-50 px-3 py-1 font-mono text-xs text-gray-500">
-                                ${"{"}
+                                $
+{"{"}
                                 <span className="text-sky-sapphire">any</span>
                                 {"}"}
                             </span>

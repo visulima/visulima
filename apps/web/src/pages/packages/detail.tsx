@@ -195,7 +195,7 @@ const PackageDetail: FC = () => {
                     applicationCategory: "DeveloperApplication",
                     author: { "@type": "Organization", name: "Visulima", url: "https://visulima.com" },
                     description: pkg.description,
-                    ...(totalDownloads > 0 ? { downloadCount: totalDownloads } : {}),
+                    ...totalDownloads > 0 ? { downloadCount: totalDownloads } : {},
                     license: "https://opensource.org/licenses/MIT",
                     name: pkg.name,
                     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
