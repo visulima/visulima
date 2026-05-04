@@ -336,7 +336,9 @@ class TaskOrchestrator {
             for (const task of batch) {
                 const startPromise = this.#shouldSkipForWhen(task)
                     ? Promise.resolve(this.#whenSkipResult(task))
-                    : (this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task));
+                    : this.#autoFingerprint
+                        ? this.#processTaskWithFingerprint(task)
+                        : this.#processTask(task);
 
                 const taskPromise = startPromise
                     .catch((error: unknown) => {
@@ -589,7 +591,7 @@ class TaskOrchestrator {
                     trackedResult.accesses,
                     taskCommand,
                     task.overrides,
-                    process.env as Record<string, string | undefined>,
+                    process.env,
                     this.#fingerprintEnvPatterns,
                     this.#untrackedEnvVars,
                 );
@@ -614,7 +616,7 @@ class TaskOrchestrator {
                     fileAccesses,
                     taskCommand,
                     task.overrides,
-                    process.env as Record<string, string | undefined>,
+                    process.env,
                     this.#fingerprintEnvPatterns,
                     this.#untrackedEnvVars,
                 );

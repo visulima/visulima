@@ -1,13 +1,7 @@
 import { mkdir, readdir, readFile, stat, utimes, writeFile } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import {
-    constants as zlibConstants,
-    createBrotliCompress,
-    createBrotliDecompress,
-    createGunzip,
-    createGzip,
-} from "node:zlib";
+import { constants as zlibConstants, createBrotliCompress, createBrotliDecompress, createGunzip, createGzip } from "node:zlib";
 
 import { join, resolve, sep } from "@visulima/path";
 import type { TarFileInput } from "nanotar";

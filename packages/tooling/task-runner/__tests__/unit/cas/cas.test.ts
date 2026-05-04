@@ -152,9 +152,7 @@ describe("cas/action-cache", () => {
         const result = {
             exitCode: 0,
             outputDirectories: [],
-            outputFiles: [
-                { digest: { hash: "b".repeat(64), sizeBytes: 10 }, isExecutable: false, path: "dist/index.js" },
-            ],
+            outputFiles: [{ digest: { hash: "b".repeat(64), sizeBytes: 10 }, isExecutable: false, path: "dist/index.js" }],
         };
 
         await writeActionEntry(casRoot, actionHash, result);

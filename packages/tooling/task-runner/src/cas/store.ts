@@ -149,7 +149,7 @@ const isAlreadyExistsError = (error: unknown): boolean => {
         return false;
     }
 
-    const { code } = (error as { code?: string });
+    const { code } = error as { code?: string };
 
     return code === "EEXIST" || code === "ENOTEMPTY";
 };

@@ -1,5 +1,5 @@
-import { shellQuote } from "./shell-quote";
 import type { ConcurrentCommandConfig } from "../types";
+import { shellQuote } from "./shell-quote";
 
 const PLACEHOLDER_REGEX = /\\?\{([@*]|[1-9]\d*)\}/g;
 

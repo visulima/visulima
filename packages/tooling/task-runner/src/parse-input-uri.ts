@@ -1,4 +1,4 @@
-import type { InputDefinition } from "./types";
+import type { EnvironmentInput, ExternalDependencyInput, FileSetInput, InputDefinition, RuntimeInput } from "./types";
 
 /**
  * URI schemes recognized by {@link parseInputUri}. Each maps to one of the
@@ -60,36 +60,6 @@ export const parseInputUri = (input: string): InputDefinition | undefined => {
     const rest = body.slice(match[0].length);
 
     switch (scheme) {
-        case "file":
-        case "glob": {
-            if (rest.length === 0) {
-                throw new InvalidInputUriError(`${scheme}:// input requires a path or pattern (got "${input}").`);
-            }
-
-            return { fileset: negated ? `!${rest}` : rest };
-        }
-        case "env": {
-            if (negated) {
-                throw new InvalidInputUriError(`Negation is not supported for env:// inputs (got "${input}"). Drop env vars from the named-input set instead.`);
-            }
-
-            if (rest.length === 0) {
-                throw new InvalidInputUriError(`env:// input requires a variable name (got "${input}").`);
-            }
-
-            return { env: rest };
-        }
-        case "func": {
-            if (negated) {
-                throw new InvalidInputUriError(`Negation is not supported for func:// inputs (got "${input}").`);
-            }
-
-            if (rest.length === 0) {
-                throw new InvalidInputUriError(`func:// input requires a command (got "${input}").`);
-            }
-
-            return { runtime: rest };
-        }
         case "dep": {
             if (negated) {
                 throw new InvalidInputUriError(`Negation is not supported for dep:// inputs (got "${input}").`);
@@ -109,6 +79,36 @@ export const parseInputUri = (input: string): InputDefinition | undefined => {
             }
 
             return { externalDependencies: names };
+        }
+        case "env": {
+            if (negated) {
+                throw new InvalidInputUriError(`Negation is not supported for env:// inputs (got "${input}"). Drop env vars from the named-input set instead.`);
+            }
+
+            if (rest.length === 0) {
+                throw new InvalidInputUriError(`env:// input requires a variable name (got "${input}").`);
+            }
+
+            return { env: rest };
+        }
+        case "file":
+        case "glob": {
+            if (rest.length === 0) {
+                throw new InvalidInputUriError(`${scheme}:// input requires a path or pattern (got "${input}").`);
+            }
+
+            return { fileset: negated ? `!${rest}` : rest };
+        }
+        case "func": {
+            if (negated) {
+                throw new InvalidInputUriError(`Negation is not supported for func:// inputs (got "${input}").`);
+            }
+
+            if (rest.length === 0) {
+                throw new InvalidInputUriError(`func:// input requires a command (got "${input}").`);
+            }
+
+            return { runtime: rest };
         }
         default: {
             throw new InvalidInputUriError(

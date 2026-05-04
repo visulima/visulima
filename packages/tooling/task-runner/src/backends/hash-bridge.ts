@@ -74,11 +74,7 @@ export const containsByTaskHash = async (backend: RemoteCacheBackend, taskHash: 
  * up after themselves so the local cache never observes a half-populated
  * entry.
  */
-export const retrieveByTaskHash = async (
-    backend: RemoteCacheBackend,
-    taskHash: string,
-    localCacheDirectory: string,
-): Promise<boolean> => {
+export const retrieveByTaskHash = async (backend: RemoteCacheBackend, taskHash: string, localCacheDirectory: string): Promise<boolean> => {
     const action = await backend.retrieveAction(actionDigestForTaskHash(taskHash));
 
     if (action === null || action.outputFiles.length === 0) {

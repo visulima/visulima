@@ -57,7 +57,7 @@ export interface WhenCondition {
 export type EnvMatcher
     = | string
         | {
-            /** Match this exact value. Mutually exclusive with `exists`. */
+        /** Match this exact value. Mutually exclusive with `exists`. */
             equals?: string;
             /** Assert the variable is set & non-empty (`true`) or unset/empty (`false`). */
             exists?: boolean;
@@ -184,7 +184,7 @@ interface ResolvedWhenContext {
 }
 
 const resolveWhenContext = (context: WhenContext): ResolvedWhenContext => {
-    const env = context.env ?? (process.env as Record<string, string | undefined>);
+    const env = context.env ?? (process.env);
 
     return {
         branch: context.branch ?? "",

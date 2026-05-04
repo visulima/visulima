@@ -39,11 +39,7 @@ const getNativeBindings = (): WorktreeBindings | undefined => {
 
     const bindings = loadNativeBindings();
 
-    if (
-        bindings
-        && typeof bindings.getMainWorktreeRoot === "function"
-        && typeof bindings.isLinkedWorktree === "function"
-    ) {
+    if (bindings && typeof bindings.getMainWorktreeRoot === "function" && typeof bindings.isLinkedWorktree === "function") {
         nativeWorktreeBindings = {
             getMainWorktreeRoot: bindings.getMainWorktreeRoot,
             isLinkedWorktree: bindings.isLinkedWorktree,

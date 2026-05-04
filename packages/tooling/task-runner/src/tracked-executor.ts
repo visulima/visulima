@@ -115,7 +115,7 @@ export class TrackedTaskExecutor {
                         ...process.env,
                         ...env,
                         NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
-                    } as Record<string, string>,
+                    },
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 async (_error, stdout, stderr) => {

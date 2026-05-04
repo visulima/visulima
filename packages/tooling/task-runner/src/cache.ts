@@ -243,12 +243,7 @@ class Cache {
      * and binds the task hash → action digest redirect last so a
      * partial failure can't surface a half-written entry.
      */
-    public async putActionResult(
-        taskHash: string,
-        actionDigest: CasDigest,
-        result: ActionResult,
-        blobs: ReadonlyArray<BlobSource>,
-    ): Promise<void> {
+    public async putActionResult(taskHash: string, actionDigest: CasDigest, result: ActionResult, blobs: ReadonlyArray<BlobSource>): Promise<void> {
         await this.#ensureBlobs(blobs);
         await writeActionEntry(this.#cacheDirectory, actionDigest.hash, result);
         await writeTaskHashIndex(this.#cacheDirectory, taskHash, actionDigest.hash);
@@ -739,7 +734,8 @@ const restoreOutputsCompressed = async (cacheEntryDirectory: string, workspaceRo
         // Ordering only matters for failure-mode determinism — the
         // bounded parallel runBounded below interleaves writes either
         // way — but it makes diffs and bug reports reproducible.
-        const topLevel = (await readdir(stagingDirectory)).sort();
+        const stagingEntries = await readdir(stagingDirectory);
+        const topLevel = stagingEntries.sort();
 
         // Swap roots are disjoint subtrees by construction (archive
         // top-levels), so placement can run in parallel. Each task

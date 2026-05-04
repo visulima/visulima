@@ -166,7 +166,7 @@ export class FileAccessTracker {
                 straceCommand,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: { ...process.env, ...options.env } as Record<string, string>,
+                    env: { ...process.env, ...options.env },
                     maxBuffer: 50 * 1024 * 1024, // 50MB
                 },
                 async (_error, stdout, stderr) => {
@@ -332,7 +332,7 @@ export class FileAccessTracker {
                 command,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: { ...process.env, ...options.env } as Record<string, string>,
+                    env: { ...process.env, ...options.env },
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 (_error, stdout, stderr) => {

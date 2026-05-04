@@ -52,13 +52,7 @@ const buildWriteResourceName = (instanceName: string, digest: CasDigest): string
     return `${prefix}uploads/${randomUUID()}/blobs/${digest.hash}/${String(digest.sizeBytes)}`;
 };
 
-const callUnary = async <Response>(
-    client: GrpcClientLike,
-    method: string,
-    request: unknown,
-    metadata: unknown,
-    deadlineMs: number,
-): Promise<Response> => {
+const callUnary = async <Response>(client: GrpcClientLike, method: string, request: unknown, metadata: unknown, deadlineMs: number): Promise<Response> => {
     const fn = client[method];
 
     if (typeof fn !== "function") {
@@ -68,21 +62,23 @@ const callUnary = async <Response>(
     return new Promise<Response>((resolve, reject) => {
         const callOptions = { deadline: Date.now() + deadlineMs } as Record<string, unknown>;
 
-        (fn as (this: GrpcClientLike, request: unknown, metadata: unknown, options: unknown, callback: (error: Error | null, response: Response) => void) => unknown).call(
-            client,
-            request,
-            metadata,
-            callOptions,
-            (error, response) => {
-                if (error) {
-                    reject(error);
+        (
+            fn as (
+                this: GrpcClientLike,
+                request: unknown,
+                metadata: unknown,
+                options: unknown,
+                callback: (error: Error | null, response: Response) => void,
+            ) => unknown
+        ).call(client, request, metadata, callOptions, (error, response) => {
+            if (error) {
+                reject(error);
 
-                    return;
-                }
+                return;
+            }
 
-                resolve(response);
-            },
-        );
+            resolve(response);
+        });
     });
 };
 
@@ -116,14 +112,16 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
     readonly #inflightUploads = new Map<string, Promise<boolean>>();
 
-    #clientsPromise: Promise<{
-        actionCache: GrpcClientLike;
-        byteStream: GrpcClientLike;
-        capabilities: GrpcClientLike;
-        cas: GrpcClientLike;
-        clients: ReapiGrpcClients;
-        grpc: typeof import("@grpc/grpc-js");
-    }> | undefined;
+    #clientsPromise:
+        | Promise<{
+            actionCache: GrpcClientLike;
+            byteStream: GrpcClientLike;
+            capabilities: GrpcClientLike;
+            cas: GrpcClientLike;
+            clients: ReapiGrpcClients;
+            grpc: typeof import("@grpc/grpc-js");
+        }>
+        | undefined;
 
     #capabilities: { digestFunctions: ReadonlyArray<string>; maxBatchTotalSizeBytes: number } | undefined;
 
@@ -144,7 +142,7 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         if (this.#bearerToken !== undefined && !this.#useTls && options.allowInsecureBearer !== true) {
             throw new Error(
-                "[task-runner] remoteCache.backend = \"reapi\" refuses to send a bearer token over cleartext gRPC. "
+                '[task-runner] remoteCache.backend = "reapi" refuses to send a bearer token over cleartext gRPC. '
                 + "Use `grpcs://` (or terminate TLS at a reverse proxy), or pass `allowInsecureBearer: true` "
                 + "for trusted-boundary deployments (loopback, mesh mTLS sidecar).",
             );
@@ -351,10 +349,10 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
                 const credentials = this.#useTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
 
                 return {
-                    actionCache: new clients.ActionCache(this.#target, credentials) as unknown as GrpcClientLike,
-                    byteStream: new clients.ByteStream(this.#target, credentials) as unknown as GrpcClientLike,
-                    capabilities: new clients.Capabilities(this.#target, credentials) as unknown as GrpcClientLike,
-                    cas: new clients.ContentAddressableStorage(this.#target, credentials) as unknown as GrpcClientLike,
+                    actionCache: new clients.ActionCache(this.#target, credentials),
+                    byteStream: new clients.ByteStream(this.#target, credentials),
+                    capabilities: new clients.Capabilities(this.#target, credentials),
+                    cas: new clients.ContentAddressableStorage(this.#target, credentials),
                     clients,
                     grpc,
                 };
@@ -621,11 +619,18 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         await new Promise<void>((resolve, reject) => {
             const callOptions = { deadline: Date.now() + this.#timeout * STREAM_DEADLINE_MULTIPLIER };
-            const call = (writeFn as (this: GrpcClientLike, metadata: unknown, options: unknown, callback: (error: Error | null) => void) => {
-                cancel?: () => void;
-                end: () => void;
-                write: (request: unknown) => boolean;
-            }).call(byteStream, metadata, callOptions, (error) => {
+            const call = (
+                writeFn as (
+                    this: GrpcClientLike,
+                    metadata: unknown,
+                    options: unknown,
+                    callback: (error: Error | null) => void,
+                ) => {
+                    cancel?: () => void;
+                    end: () => void;
+                    write: (request: unknown) => boolean;
+                }
+            ).call(byteStream, metadata, callOptions, (error) => {
                 if (error) {
                     reject(error);
 
@@ -678,7 +683,7 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
                         // call already settled — nothing to cancel
                     }
 
-                    reject(error as Error);
+                    reject(error);
                 }
             })();
         });
@@ -741,7 +746,7 @@ export class ReapiRemoteCache implements RemoteCacheBackend {
 
         try {
             for await (const message of call) {
-                const { data } = (message as { data?: Buffer | Uint8Array });
+                const { data } = message as { data?: Buffer | Uint8Array };
 
                 if (data === undefined) {
                     continue;
@@ -870,7 +875,7 @@ const isNotFoundError = (error: unknown): boolean => {
         return false;
     }
 
-    const { code } = (error as { code?: number });
+    const { code } = error as { code?: number };
 
     return code === STATUS_NOT_FOUND;
 };
@@ -880,7 +885,7 @@ const isAuthError = (error: unknown): boolean => {
         return false;
     }
 
-    const { code } = (error as { code?: number });
+    const { code } = error as { code?: number };
 
     return code === STATUS_UNAUTHENTICATED || code === STATUS_PERMISSION_DENIED;
 };

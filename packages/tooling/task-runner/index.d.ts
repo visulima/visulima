@@ -4,108 +4,108 @@
  * Collects all files in a directory recursively, ignoring common non-source directories.
  * Returns a list of absolute file paths.
  */
-export declare function collectFiles(dir: string): Array<string>
+export declare function collectFiles(dir: string): Array<string>;
 
 /**
  * Computes the final combined hash from task hash details using xxh3-128.
  * This produces the cache key used for lookup.
  */
-export declare function computeTaskHash(details: NativeTaskHashDetails): string
+export declare function computeTaskHash(details: NativeTaskHashDetails): string;
 
 /** Result of a close event for a single command. */
 export interface ConcurrentCloseEvent {
-  /** Index of the command. */
-  index: number
-  /** The command string that was executed. */
-  command: string
-  /** The command name (if provided). */
-  name?: string
-  /** Exit code. -1 if killed by signal. */
-  exitCode: number
-  /** Whether the process was forcefully killed. */
-  killed: boolean
-  /** Duration in milliseconds. */
-  durationMs: number
+    /** Index of the command. */
+    index: number;
+    /** The command string that was executed. */
+    command: string;
+    /** The command name (if provided). */
+    name?: string;
+    /** Exit code. -1 if killed by signal. */
+    exitCode: number;
+    /** Whether the process was forcefully killed. */
+    killed: boolean;
+    /** Duration in milliseconds. */
+    durationMs: number;
 }
 
 /** Configuration for a single command to run concurrently. */
 export interface ConcurrentCommandConfig {
-  /** The command string to execute (passed to shell). */
-  command: string
-  /** Human-readable name for this command (used in prefixes/logs). */
-  name?: string
-  /** Working directory for the command. */
-  cwd?: string
-  /** Additional environment variables merged with process env. */
-  env?: Record<string, string>
-  /** Whether to use shell execution (default: true). */
-  shell?: boolean
-  /** Stdin mode: "null" (default), "pipe", or "inherit". */
-  stdin?: string
+    /** The command string to execute (passed to shell). */
+    command: string;
+    /** Human-readable name for this command (used in prefixes/logs). */
+    name?: string;
+    /** Working directory for the command. */
+    cwd?: string;
+    /** Additional environment variables merged with process env. */
+    env?: Record<string, string>;
+    /** Whether to use shell execution (default: true). */
+    shell?: boolean;
+    /** Stdin mode: "null" (default), "pipe", or "inherit". */
+    stdin?: string;
 }
 
 /** Options controlling the concurrent runner behavior. */
 export interface ConcurrentRunnerOptions {
-  /**
-   * Maximum number of processes to run simultaneously.
-   * 0 or absent means unlimited.
-   */
-  maxProcesses?: number
-  /** Signal to send when killing processes (default: "SIGTERM"). */
-  killSignal?: string
-  /**
-   * Conditions under which to kill other processes.
-   * Values: "success", "failure". Empty = never kill others.
-   */
-  killOthers?: Array<string>
-  /** Success condition: "first", "last", "all", or "command-<name|index>". */
-  successCondition?: string
-  /** Milliseconds to wait after sending kill signal before sending SIGKILL. */
-  killTimeout?: number
-  /**
-   * Custom shell path for command execution (e.g., from npm script-shell config).
-   * When set, used instead of the platform default (/bin/sh or cmd.exe).
-   * Format: "/path/to/shell" — args are always ["-c", command].
-   */
-  shellPath?: string
+    /**
+     * Maximum number of processes to run simultaneously.
+     * 0 or absent means unlimited.
+     */
+    maxProcesses?: number;
+    /** Signal to send when killing processes (default: "SIGTERM"). */
+    killSignal?: string;
+    /**
+     * Conditions under which to kill other processes.
+     * Values: "success", "failure". Empty = never kill others.
+     */
+    killOthers?: Array<string>;
+    /** Success condition: "first", "last", "all", or "command-<name|index>". */
+    successCondition?: string;
+    /** Milliseconds to wait after sending kill signal before sending SIGKILL. */
+    killTimeout?: number;
+    /**
+     * Custom shell path for command execution (e.g., from npm script-shell config).
+     * When set, used instead of the platform default (/bin/sh or cmd.exe).
+     * Format: "/path/to/shell" — args are always ["-c", command].
+     */
+    shellPath?: string;
 }
 
 /** Overall result of a concurrent run. */
 export interface ConcurrentRunResult {
-  /** Close events for all commands, in completion order. */
-  closeEvents: Array<ConcurrentCloseEvent>
-  /** Whether the run succeeded according to the success condition. */
-  success: boolean
+    /** Close events for all commands, in completion order. */
+    closeEvents: Array<ConcurrentCloseEvent>;
+    /** Whether the run succeeded according to the success condition. */
+    success: boolean;
 }
 
 /** Result of cycle detection. */
 export interface CycleResult {
-  /** Whether a cycle was found. */
-  hasCycle: boolean
-  /** The cycle as a list of task IDs, or empty if no cycle. */
-  cycle: Array<string>
+    /** Whether a cycle was found. */
+    hasCycle: boolean;
+    /** The cycle as a list of task IDs, or empty if no cycle. */
+    cycle: Array<string>;
 }
 
 /** A single file hash result. */
 export interface FileHash {
-  path: string
-  hash: string
+    path: string;
+    hash: string;
 }
 
 /** Finds all cycles in the task graph. */
-export declare function findAllCycles(graph: NativeTaskGraph): Array<Array<string>>
+export declare function findAllCycles(graph: NativeTaskGraph): Array<Array<string>>;
 
 /**
  * Makes the graph acyclic by removing back edges.
  * Returns the edges that were removed.
  */
-export declare function findBackEdges(graph: NativeTaskGraph): Array<Array<string>>
+export declare function findBackEdges(graph: NativeTaskGraph): Array<Array<string>>;
 
 /** Finds a single cycle in the task graph using DFS. */
-export declare function findCycle(graph: NativeTaskGraph): CycleResult
+export declare function findCycle(graph: NativeTaskGraph): CycleResult;
 
 /** Gets all tasks that depend on the given task (reverse transitive dependencies). */
-export declare function getDependentTasks(graph: NativeTaskGraph, taskId: string): Array<string>
+export declare function getDependentTasks(graph: NativeTaskGraph, taskId: string): Array<string>;
 
 /**
  * Detects whether the given workspace is a linked git worktree, and if so,
@@ -121,19 +121,19 @@ export declare function getDependentTasks(graph: NativeTaskGraph, taskId: string
  * the process. Symlinks in the input path are resolved before lookup so that
  * `/tmp/foo` and `/private/tmp/foo` share a cache entry.
  */
-export declare function getMainWorktreeRoot(workspaceRoot: string): string | null
+export declare function getMainWorktreeRoot(workspaceRoot: string): string | null;
 
 /** Gets all transitive dependencies of a task. */
-export declare function getTransitiveDeps(graph: NativeTaskGraph, taskId: string): Array<string>
+export declare function getTransitiveDeps(graph: NativeTaskGraph, taskId: string): Array<string>;
 
 /**
  * Computes the command hash for a task using xxh3-128.
  * Takes project name, target name, optional configuration, and sorted overrides JSON.
  */
-export declare function hashCommand(project: string, target: string, configuration: string | undefined | null, overridesJson: string): string
+export declare function hashCommand(project: string, target: string, configuration: string | undefined | null, overridesJson: string): string;
 
 /** Hashes an environment variable name + value pair using xxh3-128. */
-export declare function hashEnvVar(name: string, value: string): string
+export declare function hashEnvVar(name: string, value: string): string;
 
 /**
  * Computes the xxh3-128 hash of a single file.
@@ -142,13 +142,13 @@ export declare function hashEnvVar(name: string, value: string): string
  * Uses xxHash xxh3 (same as Nx) for maximum hashing throughput.
  * xxh3 is ~5-10x faster than SHA-256 on modern CPUs with SIMD.
  */
-export declare function hashFile(filePath: string): string
+export declare function hashFile(filePath: string): string;
 
 /**
  * Computes xxh3-128 hashes for multiple files in parallel.
  * Takes absolute file paths, returns relative_path + hash pairs.
  */
-export declare function hashFilesBatch(filePaths: Array<string>, workspaceRoot: string): Array<FileHash>
+export declare function hashFilesBatch(filePaths: Array<string>, workspaceRoot: string): Array<FileHash>;
 
 /**
  * Collects all files in a directory and computes xxh3-128 hashes for each,
@@ -156,45 +156,45 @@ export declare function hashFilesBatch(filePaths: Array<string>, workspaceRoot: 
  *
  * Returns a list of { path, hash } objects where path is relative to workspace_root.
  */
-export declare function hashFilesInDirectory(dir: string, workspaceRoot: string): Array<FileHash>
+export declare function hashFilesInDirectory(dir: string, workspaceRoot: string): Array<FileHash>;
 
 /**
  * Computes an xxh3-128 hash from a string.
  * Useful for hashing command strings, JSON, etc.
  */
-export declare function hashString(input: string): string
+export declare function hashString(input: string): string;
 
 /**
  * Computes a combined xxh3-128 hash from multiple strings.
  * Strings are concatenated and hashed, producing a single deterministic hash.
  */
-export declare function hashStrings(inputs: Array<string>): string
+export declare function hashStrings(inputs: Array<string>): string;
 
 /**
  * Returns true when `<workspace_root>/.git` exists and is a regular file
  * (the gitlink pointer used by `git worktree add`). False for primary
  * checkouts (where `.git` is a directory) and for non-git directories.
  */
-export declare function isLinkedWorktree(workspaceRoot: string): boolean
+export declare function isLinkedWorktree(workspaceRoot: string): boolean;
 
 /** Represents a task graph for native graph operations. */
 export interface NativeTaskGraph {
-  /** All task IDs in the graph. */
-  taskIds: Array<string>
-  /** Dependencies as pairs of [from_task_id, to_task_id]. */
-  edges: Array<Array<string>>
+    /** All task IDs in the graph. */
+    taskIds: Array<string>;
+    /** Dependencies as pairs of [from_task_id, to_task_id]. */
+    edges: Array<Array<string>>;
 }
 
 /** Represents the hash details for a task. */
 export interface NativeTaskHashDetails {
-  /** The command hash. */
-  command: string
-  /** File/node hashes as key-value pairs [key, hash]. */
-  nodes: Array<Array<string>>
-  /** Implicit dependency hashes as key-value pairs [key, hash]. */
-  implicitDeps?: Array<Array<string>>
-  /** Runtime hashes as key-value pairs [key, hash]. */
-  runtime?: Array<Array<string>>
+    /** The command hash. */
+    command: string;
+    /** File/node hashes as key-value pairs [key, hash]. */
+    nodes: Array<Array<string>>;
+    /** Implicit dependency hashes as key-value pairs [key, hash]. */
+    implicitDeps?: Array<Array<string>>;
+    /** Runtime hashes as key-value pairs [key, hash]. */
+    runtime?: Array<Array<string>>;
 }
 
 /**
@@ -202,29 +202,29 @@ export interface NativeTaskHashDetails {
  * Discriminated by the `kind` field.
  */
 export interface ProcessEvent {
-  /** Event type: "stdout", "stderr", "close", "error". */
-  kind: string
-  /** Index of the command that produced this event. */
-  index: number
-  /** Text content (for stdout/stderr events). */
-  text?: string
-  /** Exit code (for close events). -1 if killed by signal. */
-  exitCode?: number
-  /** Whether the process was killed (for close events). */
-  killed?: boolean
-  /** Error message (for error events). */
-  message?: string
-  /** Command name (for close events). */
-  commandName?: string
-  /** Duration in milliseconds (for close events). */
-  durationMs?: number
+    /** Event type: "stdout", "stderr", "close", "error". */
+    kind: string;
+    /** Index of the command that produced this event. */
+    index: number;
+    /** Text content (for stdout/stderr events). */
+    text?: string;
+    /** Exit code (for close events). -1 if killed by signal. */
+    exitCode?: number;
+    /** Whether the process was killed (for close events). */
+    killed?: boolean;
+    /** Error message (for error events). */
+    message?: string;
+    /** Command name (for close events). */
+    commandName?: string;
+    /** Duration in milliseconds (for close events). */
+    durationMs?: number;
 }
 
 /**
  * Clears the memoization cache. Primarily useful for tests; production code
  * should never call this since worktree topology does not change at runtime.
  */
-export declare function resetWorktreeCache(): void
+export declare function resetWorktreeCache(): void;
 
 /**
  * Run commands concurrently with real-time event streaming.
@@ -235,7 +235,11 @@ export declare function resetWorktreeCache(): void
  *
  * Commands originate from package.json scripts (trusted input).
  */
-export declare function runConcurrent(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions, onEvent: (event: ProcessEvent) => void): Promise<ConcurrentRunResult>
+export declare function runConcurrent(
+    commands: Array<ConcurrentCommandConfig>,
+    options: ConcurrentRunnerOptions,
+    onEvent: (event: ProcessEvent) => void,
+): Promise<ConcurrentRunResult>;
 
 /**
  * Run commands concurrently without event streaming.
@@ -245,10 +249,10 @@ export declare function runConcurrent(commands: Array<ConcurrentCommandConfig>, 
  *
  * Commands originate from package.json scripts (trusted input).
  */
-export declare function runConcurrentBatch(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult>
+export declare function runConcurrentBatch(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult>;
 
 /**
  * Performs a topological sort of the task graph.
  * Returns task IDs in topological order (dependencies first).
  */
-export declare function topologicalSort(graph: NativeTaskGraph): Array<string>
+export declare function topologicalSort(graph: NativeTaskGraph): Array<string>;
