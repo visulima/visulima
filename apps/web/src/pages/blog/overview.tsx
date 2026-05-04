@@ -49,6 +49,7 @@ const Overview = () => {
 
     // `getRouteApi("/blog/" as "/")` casts to root (no /blog route file yet), so
     // search params come back as `{}`. Re-type to the shape the page actually uses.
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const { includeCategories, pageIndex = 1 } = routeApi.useSearch() as { includeCategories?: string[]; pageIndex?: number };
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
@@ -273,11 +274,13 @@ const Overview = () => {
 
                         <Pagination>
                             <PaginationContent>
-                                {pageIndex > 1 ? (
+                                {pageIndex > 1
+                                    ? (
                                     <PaginationItem>
                                         <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 } as never} to="/blog/" />
                                     </PaginationItem>
-                                ) : null}
+                                    )
+                                    : null}
 
                                 {pageNumbersForLinks.map((pageNumber) => (
                                     <PaginationItem key={`pagination-item-${pageNumber}`}>
@@ -291,17 +294,21 @@ const Overview = () => {
                                     </PaginationItem>
                                 ))}
 
-                                {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages ? (
+                                {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages
+                                    ? (
                                     <PaginationItem>
                                         <PaginationEllipsis />
                                     </PaginationItem>
-                                ) : null}
+                                    )
+                                    : null}
 
-                                {pageIndex < totalPages ? (
+                                {pageIndex < totalPages
+                                    ? (
                                     <PaginationItem>
                                         <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 } as never} to="/blog/" />
                                     </PaginationItem>
-                                ) : null}
+                                    )
+                                    : null}
                             </PaginationContent>
                         </Pagination>
                     </>
