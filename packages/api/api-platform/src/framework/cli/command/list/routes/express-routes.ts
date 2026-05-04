@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- type-only import; express is a supported integration target for the route-listing CLI
 import type { Express } from "express";
 
 import expressPathParser from "./express/express-path-parser";

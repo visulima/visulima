@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import serialize from "../../src/serializers/serialize";
 
+const JSON_REGEX = /json/u;
+
 describe(serialize, () => {
     it("should correctly sets the Content-Type header in the response when a serializer is found for the given type in the accept header", () => {
         expect.assertions(1);
@@ -25,13 +27,14 @@ describe(serialize, () => {
 
         const serializers = [
             {
-                regex: /json/u,
-                serializer: (d: any) => JSON.stringify(d),
+                regex: JSON_REGEX,
+                serializer: (d: unknown) => JSON.stringify(d),
             },
         ];
 
         serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- referencing the spy for assertion does not invoke the method
         expect(response.setHeader).toHaveBeenNthCalledWith(1, "Content-Type", "application/json");
     });
 
@@ -85,13 +88,14 @@ describe(serialize, () => {
 
         const serializers = [
             {
-                regex: /json/u,
-                serializer: (d: any) => JSON.stringify(d),
+                regex: JSON_REGEX,
+                serializer: (d: unknown) => JSON.stringify(d),
             },
         ];
 
         const result = serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- referencing the spy for assertion does not invoke the method
         expect(response.setHeader).not.toHaveBeenCalled();
         expect(result).toStrictEqual(data);
     });
@@ -116,13 +120,14 @@ describe(serialize, () => {
 
         const serializers = [
             {
-                regex: /json/u,
-                serializer: (d: any) => JSON.stringify(d),
+                regex: JSON_REGEX,
+                serializer: (d: unknown) => JSON.stringify(d),
             },
         ];
 
         const result = serialize(serializers, request, response, data, options);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- referencing the spy for assertion does not invoke the method
         expect(response.setHeader).toHaveBeenCalledExactlyOnceWith("Content-Type", "application/json");
         expect(result).toStrictEqual(JSON.stringify(data));
     });

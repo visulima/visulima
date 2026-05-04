@@ -4,7 +4,7 @@ import { parse } from "@visulima/path";
 import type { PackageJson } from "type-fest";
 
 interface AppExport {
-    [key: string]: any;
+    [key: string]: unknown;
     app?: string | { app?: string };
 }
 
@@ -14,7 +14,6 @@ export const getAppWorkingDirectoryPath = (appFilePath: string): string | null =
     let lastParsedPath = parse(appFilePath);
 
     // Once the following condition returns false it means we traversed the whole file system
-    // eslint-disable-next-line no-loops/no-loops
     while (lastParsedPath.base && lastParsedPath.root !== lastParsedPath.dir) {
         const parentDirectionItems = readdirSync(lastParsedPath.dir);
 
@@ -27,6 +26,7 @@ export const getAppWorkingDirectoryPath = (appFilePath: string): string | null =
         lastParsedPath = parse(lastParsedPath.dir);
     }
 
+    // eslint-disable-next-line unicorn/no-null -- public sentinel value preserved for backwards compatibility
     return null;
 };
 
@@ -39,7 +39,7 @@ export const getFrameworkName = (directory: string): "express" | "fastify" | "ha
         return "express";
     }
 
-    if (dependencies?.koa && (dependencies["@koa/router"] || dependencies["koa-router"])) {
+    if (dependencies?.koa && (dependencies["@koa/router"] ?? dependencies["koa-router"])) {
         return "koa";
     }
 
@@ -55,13 +55,16 @@ export const getFrameworkName = (directory: string): "express" | "fastify" | "ha
         return "fastify";
     }
 
+    // eslint-disable-next-line unicorn/no-null -- public sentinel value preserved for backwards compatibility
     return null;
 };
 
+// eslint-disable-next-line sonarjs/function-return-type -- intentional union: returns the resolved app object, an extracted hapi app reference, or null when the export is empty
 export const getApp = (appExport: AppExport, frameworkName: "express" | "fastify" | "hapi" | "koa" | "next" | null): AppExport | string | null => {
     const isExportEmpty = Object.keys(appExport).length === 0;
 
     if (isExportEmpty) {
+        // eslint-disable-next-line unicorn/no-null -- public sentinel value preserved for backwards compatibility
         return null;
     }
 

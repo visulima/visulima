@@ -4,7 +4,9 @@ import process from "node:process";
 
 import type { Server } from "@hapi/hapi";
 import { extname, join } from "@visulima/path";
+// eslint-disable-next-line e18e/ban-dependencies -- chalk is the established colored-output dep for this CLI; util.styleText migration is tracked separately
 import chalk from "chalk";
+// eslint-disable-next-line e18e/ban-dependencies -- type-only import; express is a supported integration target for the route-listing CLI
 import type { Express } from "express";
 import type { FastifyInstance } from "fastify";
 import type Koa from "koa";
@@ -52,6 +54,7 @@ const listCommand = async (
         framework = frameworkName;
     }
 
+    // eslint-disable-next-line unicorn/no-null -- public sentinel value for unsupported framework
     let routes: Route[] | null = null;
 
     if (framework === "next") {
@@ -70,11 +73,9 @@ const listCommand = async (
         if (existsSync(environmentFilePath)) {
             // Loads environment vars in the current process so application
             // that depends on them can be loaded properly below
-            // @ts-expect-error - dotenv module exists but lacks type declarations
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const dotenv = await import("dotenv");
+            // eslint-disable-next-line e18e/ban-dependencies -- dotenv is the established loader for legacy CLI integrations; --env-file requires Node 20.6+ and changes UX
+            const dotenv = (await import("dotenv")) as { config: (options: { path: string }) => unknown };
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             dotenv.config({ path: environmentFilePath });
         }
 
@@ -90,8 +91,9 @@ const listCommand = async (
                 // || rm -r ./framework-list removes framework-list directory in case tsc fails
 
                 try {
+                    // eslint-disable-next-line sonarjs/os-command -- tscPath resolved from user's local node_modules; pre-existing CLI behavior
                     execSync(`${tscPath} --outDir framework-list >&2`, { cwd: appWorkingDirectoryPath });
-                } catch (error: any) {
+                } catch (error) {
                     // eslint-disable-next-line no-console
                     console.log("TSC compilation failed. Please resolve issues in your project.\n");
                     // eslint-disable-next-line no-console
@@ -105,7 +107,7 @@ const listCommand = async (
                 ? join(appWorkingDirectoryPath, "framework-list", frameworkPath.replace(appWorkingDirectoryPath, "").replace(".ts", ".js"))
                 : frameworkPath;
 
-            const dynamicImport = new Function("path", "return import(path)") as (path: string) => Promise<{ default: unknown }>;
+            const dynamicImport = new Function("path", "return import(path)") as (path: string) => Promise<{ default: unknown }>; // eslint-disable-line @typescript-eslint/no-implied-eval -- preserves dynamic import semantics in the CJS build target
 
             const { default: defaultExport } = await dynamicImport(appJsFilePath);
 

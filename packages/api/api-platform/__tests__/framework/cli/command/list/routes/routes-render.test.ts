@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- chalk is used in tests to assert exact ANSI output produced by routes-render; util.styleText would change the byte-level expectation
 import chalk from "chalk";
 import { describe, expect, it } from "vitest";
 

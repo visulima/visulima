@@ -19,8 +19,8 @@ const withOpenApi
         sources: string[];
         verbose?: boolean;
     }): (nextConfig: NextConfig) => NextConfig =>
-        (nextConfig: NextConfig): NextConfig =>
-            ({
+        (nextConfig: NextConfig): NextConfig => {
+            return {
                 ...nextConfig,
                 webpack: (config: Configuration, options: WebpackConfigContext) => {
                     if (!options.isServer) {
@@ -68,6 +68,7 @@ const withOpenApi
 
                     return config as NextJsWebpackConfig;
                 },
-            }) as NextConfig;
+            };
+        };
 
 export default withOpenApi;

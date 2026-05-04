@@ -24,16 +24,16 @@ export const sendJson = (response: ServerResponse, jsonBody: unknown): void => {
 };
 
 export const addStatusCodeToResponse = (response: ServerResponse, error: unknown): void => {
-    // respect err.statusCode
+    const httpError = error as Partial<HttpError>;
 
-    if ((error as HttpError).statusCode !== undefined) {
-        response.statusCode = (error as HttpError).statusCode;
+    // respect err.statusCode
+    if (httpError.statusCode !== undefined) {
+        response.statusCode = httpError.statusCode;
     }
 
     // respect err.status
-
-    if ((error as HttpError).status !== undefined) {
-        response.statusCode = (error as HttpError).status;
+    if (httpError.status !== undefined) {
+        response.statusCode = httpError.status;
     }
 
     // default status code to 500

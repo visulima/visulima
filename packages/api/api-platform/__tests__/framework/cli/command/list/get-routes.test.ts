@@ -1,7 +1,10 @@
 import type { Server } from "@hapi/hapi";
 import Hapi from "@hapi/hapi";
+// eslint-disable-next-line import/no-named-as-default -- @koa/router exposes Router as both default and named export; using the default is the documented pattern
 import Router from "@koa/router";
+// eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
 import type { Express } from "express";
+// eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
 import express from "express";
 import type { FastifyInstance } from "fastify";
 import fastify from "fastify";
@@ -59,6 +62,7 @@ describe(getRoutes, () => {
             app.use(router.routes());
 
             app.use(() => {
+                // eslint-disable-next-line no-console -- intentional console statement inside the test fixture middleware to mirror real-world koa app
                 console.log("Non-router middleware");
             });
         });

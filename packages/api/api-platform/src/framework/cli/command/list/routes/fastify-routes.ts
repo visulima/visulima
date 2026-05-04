@@ -50,6 +50,7 @@ const fastifyRoutes = (app: FastifyInstance): Route[] => {
 
         const depth = spaces.length / 4;
         const isRoute = line.includes("(");
+        // eslint-disable-next-line unicorn/no-null -- sentinel value identifying non-route segments in fastify's printRoutes output
         const methods = isRoute ? [getMethod(line)] : null;
 
         allSegments.push({

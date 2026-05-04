@@ -17,12 +17,14 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
 
         sendJson(response, serializer.serialize(error));
     } else if (error instanceof HttpError) {
-        const { message, statusCode, title } = error;
+        const { message, statusCode } = error;
+        const { title } = error as HttpError & { title?: string };
 
         sendJson(response, {
             errors: [
                 {
                     code: statusCode,
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional: getReasonPhrase returns "" for unknown codes; falsy fallback chain is required to skip empty strings
                     title: title || getReasonPhrase(statusCode) || defaultTitle,
                     // eslint-disable-next-line perfectionist/sort-objects
                     detail: message,

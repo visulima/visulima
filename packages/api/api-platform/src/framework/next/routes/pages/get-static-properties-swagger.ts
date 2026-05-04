@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- debug is a stable runtime dep used for swagger preview tooling; obug migration tracked separately
 import debug from "debug";
 import type { GetStaticProps } from "next/types";
 import type { OpenAPIV3 } from "openapi-types";
@@ -12,15 +13,14 @@ const getStaticProps: (swaggerUrl: string) => GetStaticProps
                 swaggerUrl: string;
             };
         }> => {
-        // eslint-disable-next-line compat/compat
             const response = await fetch(swaggerUrl);
-            const swaggerData = await response.json();
+            const swaggerData = (await response.json()) as OpenAPIV3.Document;
 
             swaggerDebug(swaggerData);
 
             return {
                 props: {
-                    swaggerData: JSON.parse(JSON.stringify(swaggerData)) as OpenAPIV3.Document,
+                    swaggerData: structuredClone(swaggerData),
                     swaggerUrl,
                 },
             };

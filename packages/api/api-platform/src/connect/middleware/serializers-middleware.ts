@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { NextHandler, ValueOrPromise } from "@visulima/connect";
+// eslint-disable-next-line e18e/ban-dependencies -- debug is a stable runtime dep of the connect serializer middleware; migrating to obug is tracked separately
 import debug from "debug";
 import type { NextApiResponse } from "next/types";
 
@@ -9,6 +10,7 @@ import { serialize } from "../../serializers";
 
 const log = debug("api-platform:connect:serializers-middleware");
 
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters -- Request/Response generics flow into the returned function so callers retain their concrete types */
 const serializersMiddleware
     = (
         serializers: Serializers = [],
@@ -24,7 +26,7 @@ const serializersMiddleware
             next: NextHandler,
         ): Promise<ValueOrPromise<void>> => {
             if (typeof (response as NextApiResponse).send === "function") {
-                const oldSend = (response as NextApiResponse).send;
+                const oldSend: NextApiResponse["send"] = (response as NextApiResponse).send;
 
                 (response as NextApiResponse).send = (data) => {
                     (response as NextApiResponse).send = oldSend;
@@ -37,6 +39,7 @@ const serializersMiddleware
             } else if (typeof (response as NextApiResponse).json === "function") {
                 log("response.json() is not supported by @visulima/api-platform serializer. Use response.send() or response.end() instead.");
             } else {
+            // eslint-disable-next-line @typescript-eslint/unbound-method -- captured to restore original response.end after one-shot interception
                 const oldEnd = response.end;
 
                 // @ts-expect-error TS2322: Type
@@ -53,5 +56,6 @@ const serializersMiddleware
 
             await next();
         };
+/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
 
 export default serializersMiddleware;
