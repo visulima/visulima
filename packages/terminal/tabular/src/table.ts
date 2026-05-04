@@ -270,7 +270,7 @@ export class Table {
             const applyFooterColspan = isFooterRow && row.length === 1 && numberColumns > 1;
 
             for (const element of row) {
-                let cellInput: Content | TableItem = element as Content | TableItem;
+                let cellInput: Content | TableItem = element;
                 let cellOptions: Omit<GridItem, "content"> = {};
 
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
