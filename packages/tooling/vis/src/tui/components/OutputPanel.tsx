@@ -66,14 +66,14 @@ const OutputPanel = ({ duration, focused, interactiveMode, output, scrollRef, sh
         ? interactiveMode
             ? "Esc cancel | Enter send"
             : focused && statusValue === "running" && showFullscreenHint
-              ? "\u23CE FULLSCREEN  i INPUT"
-              : focused && statusValue === "running"
-                ? "i INPUT"
-                : focused && showFullscreenHint
-                  ? "<enter> full screen"
-                  : focused
-                    ? undefined
-                    : "<tab> or <enter> to focus"
+                ? "\u23CE FULLSCREEN  i INPUT"
+                : focused && statusValue === "running"
+                    ? "i INPUT"
+                    : focused && showFullscreenHint
+                        ? "<enter> full screen"
+                        : focused
+                            ? undefined
+                            : "<tab> or <enter> to focus"
         : undefined;
 
     // Empty state

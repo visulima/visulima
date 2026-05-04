@@ -75,13 +75,13 @@ describe("cacheDoctorExecute", () => {
         });
     });
 
-    describe("HTTP probe", () => {
+    describe("hTTP probe", () => {
         it("infers HTTP backend from https:// URL and reports success", async () => {
             expect.assertions(4);
 
             const fetchMock = vi.fn().mockResolvedValue({ status: 401 });
 
-            globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+            globalThis.fetch = fetchMock;
             const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
@@ -96,12 +96,13 @@ describe("cacheDoctorExecute", () => {
         it("reports failure when fetch throws (e.g. ECONNREFUSED)", async () => {
             expect.assertions(2);
 
-            globalThis.fetch = vi.fn().mockRejectedValue(new Error("ECONNREFUSED")) as unknown as typeof globalThis.fetch;
+            vi.spyOn(globalThis, 'fetch').mockImplementation().mockRejectedValue(new Error("ECONNREFUSED"));
             const toolbox = buildToolbox({}, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
             expect(process.exitCode).toBe(1);
+
             const output = String(toolbox.logger.log.mock.calls[0]?.[0] ?? "");
 
             expect(output).toContain("ECONNREFUSED");
@@ -112,7 +113,7 @@ describe("cacheDoctorExecute", () => {
 
             const fetchMock = vi.fn().mockResolvedValue({ status: 200 });
 
-            globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+            globalThis.fetch = fetchMock;
             const toolbox = buildToolbox(
                 { url: "https://override.example.com" },
                 { taskRunnerOptions: { remoteCache: { url: "https://config.example.com" } } },
@@ -126,7 +127,7 @@ describe("cacheDoctorExecute", () => {
         it("--format=json emits parseable JSON", async () => {
             expect.assertions(3);
 
-            globalThis.fetch = vi.fn().mockResolvedValue({ status: 401 }) as unknown as typeof globalThis.fetch;
+            vi.spyOn(globalThis, 'fetch').mockImplementation().mockResolvedValue({ status: 401 });
             const toolbox = buildToolbox({ format: "json" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
@@ -139,7 +140,7 @@ describe("cacheDoctorExecute", () => {
         });
     });
 
-    describe("REAPI probe", () => {
+    describe("rEAPI probe", () => {
         it("infers REAPI backend from grpcs:// URL", async () => {
             expect.assertions(3);
 
@@ -157,7 +158,7 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(2);
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 16 });
-            globalThis.fetch = vi.fn() as unknown as typeof globalThis.fetch;
+            vi.spyOn(globalThis, 'fetch').mockImplementation();
             const toolbox = buildToolbox({ backend: "reapi" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);

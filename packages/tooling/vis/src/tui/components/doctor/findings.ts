@@ -25,13 +25,13 @@ interface BaseFinding {
     readonly title: string;
 }
 
-export type DoctorFinding =
-    | (BaseFinding & { entry: OutdatedEntry; kind: "outdated" })
-    | (BaseFinding & { kind: "duplicate"; pkg: DuplicatePackage })
-    | (BaseFinding & { entry: OutdatedEntry; kind: "vulnerability"; packageName: string })
-    | (BaseFinding & { entry: OutdatedEntry; kind: "socket"; packageName: string })
-    | (BaseFinding & { entry: OptimizeEntry; kind: "optimization" })
-    | (BaseFinding & { diagnostic: RuntimeDiagnostic; kind: "runtime" });
+export type DoctorFinding
+    = | (BaseFinding & { entry: OutdatedEntry; kind: "outdated" })
+        | (BaseFinding & { kind: "duplicate"; pkg: DuplicatePackage })
+        | (BaseFinding & { entry: OutdatedEntry; kind: "vulnerability"; packageName: string })
+        | (BaseFinding & { entry: OutdatedEntry; kind: "socket"; packageName: string })
+        | (BaseFinding & { entry: OptimizeEntry; kind: "optimization" })
+        | (BaseFinding & { diagnostic: RuntimeDiagnostic; kind: "runtime" });
 
 const SEVERITY_RANK: Record<FindingSeverity, number> = { error: 0, warn: 1 };
 

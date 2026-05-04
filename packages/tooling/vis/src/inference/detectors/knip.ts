@@ -12,28 +12,30 @@ export const knipDetector: Detector = {
         ".knip.json",
         ".knip.jsonc",
     ],
-    detect: ({ matchedConfigs }) => ({
-        targets: {
+    detect: ({ matchedConfigs }) => {
+        return {
+            targets: {
             // `knip` reports unused files/exports/deps. The bare target
             // name avoids the `lint` slot — knip is orthogonal to ESLint
             // and projects often run both in CI.
-            knip: {
-                command: "knip",
-                description: "knip (inferred)",
-                inputs: [
-                    "{projectRoot}/src/**/*",
-                    "{projectRoot}/__tests__/**/*",
-                    "{projectRoot}/test/**/*",
-                    "{projectRoot}/tests/**/*",
-                    ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
-                    "{projectRoot}/package.json",
-                    "{projectRoot}/tsconfig.json",
-                ],
-                outputs: [],
-                type: "build",
+                knip: {
+                    command: "knip",
+                    description: "knip (inferred)",
+                    inputs: [
+                        "{projectRoot}/src/**/*",
+                        "{projectRoot}/__tests__/**/*",
+                        "{projectRoot}/test/**/*",
+                        "{projectRoot}/tests/**/*",
+                        ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
+                        "{projectRoot}/package.json",
+                        "{projectRoot}/tsconfig.json",
+                    ],
+                    outputs: [],
+                    type: "build",
+                },
             },
-        },
-    }),
+        };
+    },
     fallbackDependency: "knip",
     name: "knip",
 };

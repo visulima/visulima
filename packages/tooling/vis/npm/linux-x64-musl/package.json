@@ -3,34 +3,34 @@
     "version": "0.0.1",
     "description": "Native binding for @visulima/vis (Linux x64 musl)",
     "homepage": "https://visulima.com",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/vis"
-    },
     "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "main": "vis-native.linux-x64-musl.node",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/vis"
+    },
     "files": [
         "vis-native.linux-x64-musl.node"
     ],
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
     "os": [
         "linux"
     ],
     "cpu": [
         "x64"
     ],
+    "libc": [
+        "musl"
+    ],
+    "main": "vis-native.linux-x64-musl.node",
     "publishConfig": {
         "access": "public",
         "provenance": true
     },
-    "libc": [
-        "musl"
-    ]
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    }
 }

@@ -274,7 +274,7 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
     if (isTTY && !options.noInteractive) {
         await runInteractiveInit(cwd, pm, configPath);
     } else {
-        runStaticInit(cwd, pm, options as Record<string, unknown>, configPath);
+        runStaticInit(cwd, pm, options, configPath);
     }
 };
 

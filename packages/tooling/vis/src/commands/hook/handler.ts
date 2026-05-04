@@ -244,7 +244,7 @@ const hookRunImpl = ({ argument, logger, options }: Toolbox<Console, HookRunOpti
             allFiles: Boolean(options.allFiles),
             fromRef: options.fromRef,
             lastCommit: Boolean(options.lastCommit),
-            stage: argument[0] as string | undefined,
+            stage: argument[0],
             toRef: options.toRef,
         },
         logger,
@@ -252,7 +252,7 @@ const hookRunImpl = ({ argument, logger, options }: Toolbox<Console, HookRunOpti
 };
 
 const hookAddImpl = ({ argument, logger, options }: Toolbox<Console, HookAddOptions, HookEnv>): void => {
-    executeAdd(argument[0] as string | undefined, resolveHooksDirectory(options), logger);
+    executeAdd(argument[0], resolveHooksDirectory(options), logger);
 };
 
 export const hookInstallExecute = hookInstallImpl as CommandExecute<Toolbox>;

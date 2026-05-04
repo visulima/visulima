@@ -6,21 +6,23 @@ export const changesetDetector: Detector = {
     // monorepos that release through other tooling (multi-semantic-release,
     // changelogen, …). Only emit changeset targets when an actual
     // `.changeset/config.json` exists.
-    detect: () => ({
-        targets: {
-            "changeset:publish": {
-                command: "changeset publish",
-                description: "changeset publish (inferred)",
+    detect: () => {
+        return {
+            targets: {
+                "changeset:publish": {
+                    command: "changeset publish",
+                    description: "changeset publish (inferred)",
+                },
+                "changeset:status": {
+                    command: "changeset status",
+                    description: "changeset status (inferred)",
+                },
+                "changeset:version": {
+                    command: "changeset version",
+                    description: "changeset version (inferred)",
+                },
             },
-            "changeset:status": {
-                command: "changeset status",
-                description: "changeset status (inferred)",
-            },
-            "changeset:version": {
-                command: "changeset version",
-                description: "changeset version (inferred)",
-            },
-        },
-    }),
+        };
+    },
     name: "changeset",
 };

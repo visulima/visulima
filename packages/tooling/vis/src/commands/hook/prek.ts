@@ -448,7 +448,7 @@ const parsePrekConfig = (content: string): PrekConfig | undefined => {
     const parsed = parseYaml(content) as unknown;
 
     if (parsed && typeof parsed === "object") {
-        return parsed as PrekConfig;
+        return parsed;
     }
 
     return undefined;
@@ -465,7 +465,7 @@ const loadPrekConfig = (configPath: string): PrekConfig | undefined => {
         const parsed = readTomlSync(configPath) as unknown;
 
         if (parsed && typeof parsed === "object") {
-            return parsed as PrekConfig;
+            return parsed;
         }
 
         return undefined;
@@ -650,9 +650,9 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
 
     const { added, skipped: skippedDeps } = dryRun
         ? {
-              added: additionalDeps.map((d) => d.name),
-              skipped: [] as string[],
-          }
+            added: additionalDeps.map((d) => d.name),
+            skipped: [] as string[],
+        }
         : mergeAdditionalDependencies(root, additionalDeps);
 
     if (added.length > 0) {

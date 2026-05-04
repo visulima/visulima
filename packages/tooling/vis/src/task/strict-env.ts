@@ -19,9 +19,9 @@
  *   even when `VAR` is unset — the shell would expand the default.
  */
 
-const PLACEHOLDER_REGEX = /\$(\{([A-Z_][\w]*)(:-[^}]*)?\}|([A-Z_][\w]*))/gi;
+const PLACEHOLDER_REGEX = /\$(\{([A-Z_]\w*)(:-[^}]*)?\}|([A-Z_]\w*))/gi;
 
-const POSIX_SPECIALS = new Set(["@", "*", "#", "?", "$", "!", "0", "_", "-"]);
+const POSIX_SPECIALS = new Set(["0", "!", "#", "$", "*", "-", "?", "@", "_"]);
 
 /**
  * Extracts every distinct `${VAR}` / `$VAR` reference from a command
@@ -58,7 +58,7 @@ export const extractEnvReferences = (command: string): { hasDefault: boolean; na
         }
     }
 
-    return [...found.entries()].map(([name, hasDefault]) => ({ hasDefault, name }));
+    return [...found.entries()].map(([name, hasDefault]) => { return { hasDefault, name }; });
 };
 
 export interface StrictEnvViolation {
@@ -69,12 +69,12 @@ export interface StrictEnvViolation {
 }
 
 export interface StrictEnvCheckOptions {
-    /** Effective env for the task — envFile + service env + per-task env. */
-    taskEnv: Record<string, string | undefined>;
-    /** Process env — fallback when the task env doesn't define a name. */
-    processEnv: Record<string, string | undefined>;
     /** The shell command that will be spawned. */
     command: string;
+    /** Process env — fallback when the task env doesn't define a name. */
+    processEnv: Record<string, string | undefined>;
+    /** Effective env for the task — envFile + service env + per-task env. */
+    taskEnv: Record<string, string | undefined>;
     /** The task id (for error reporting). */
     taskId: string;
 }
@@ -128,7 +128,7 @@ export const formatStrictEnvError = (violation: StrictEnvViolation): string => {
     const list = violation.missing.map((name) => `$${name}`).join(", ");
 
     return (
-        `Strict env: ${violation.taskId} references unset variable${violation.missing.length === 1 ? "" : "s"} ${list}. ` +
-        `Set ${violation.missing.length === 1 ? "it" : "them"} in the task env, an envFile, or the parent shell — or opt out with options.strictEnv: false.`
+        `Strict env: ${violation.taskId} references unset variable${violation.missing.length === 1 ? "" : "s"} ${list}. `
+        + `Set ${violation.missing.length === 1 ? "it" : "them"} in the task env, an envFile, or the parent shell — or opt out with options.strictEnv: false.`
     );
 };

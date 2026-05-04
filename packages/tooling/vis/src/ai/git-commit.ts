@@ -31,18 +31,20 @@ export interface CommitFilesOptions {
     ciContext: CiContext;
     /** Workspace-relative file paths to include in the commit. */
     files: string[];
-    /**
-     * Test override: pre-built GitLab client (Gitbeaker `Gitlab` instance).
-     * When set, skips the SDK load + auth steps.
-     */
-    gitlabClient?: GitlabRestClient;
+
     /**
      * Test override: pre-built GitHub client (Octokit instance).
      * When set, skips the SDK load + auth steps.
      */
     githubClient?: GithubRestClient;
+
+    /**
+     * Test override: pre-built GitLab client (Gitbeaker `Gitlab` instance).
+     * When set, skips the SDK load + auth steps.
+     */
+    gitlabClient?: GitlabRestClient;
     /** Test override for the SDK loader. */
-    loadSdk?: <T>(sdk: OptionalSdk) => Promise<{ default?: T; [key: string]: unknown }>;
+    loadSdk?: <T>(sdk: OptionalSdk) => Promise<{ [key: string]: unknown; default?: T }>;
     message: string;
     /** Test override for filesystem reads. */
     readFile?: (absolutePath: string) => Promise<string>;
@@ -73,7 +75,7 @@ interface GithubRestClient {
                 base_tree?: string;
                 owner: string;
                 repo: string;
-                tree: Array<{ mode: string; path: string; sha: string; type: string }>;
+                tree: { mode: string; path: string; sha: string; type: string }[];
             }) => Promise<{ data: { sha: string } }>;
             getCommit: (parameters: { commit_sha: string; owner: string; repo: string }) => Promise<{ data: { tree: { sha: string } } }>;
             getRef: (parameters: { owner: string; ref: string; repo: string }) => Promise<{ data: { object: { sha: string } } }>;
@@ -122,7 +124,7 @@ const loadGithubClient = async (token: string, options: CommitFilesOptions): Pro
     }
 
     const loader = options.loadSdk ?? loadOptionalSdk;
-    const module_ = await loader<unknown>("@octokit/rest");
+    const module_ = await loader("@octokit/rest");
     const OctokitCtor = (module_ as { Octokit?: new (config: { auth: string }) => GithubRestClient }).Octokit;
 
     if (!OctokitCtor) {
@@ -138,7 +140,7 @@ const loadGitlabClient = async (token: string, host: string, options: CommitFile
     }
 
     const loader = options.loadSdk ?? loadOptionalSdk;
-    const module_ = await loader<unknown>("@gitbeaker/rest");
+    const module_ = await loader("@gitbeaker/rest");
     const GitlabCtor = (module_ as { Gitlab?: new (config: { host: string; token: string }) => GitlabRestClient }).Gitlab;
 
     if (!GitlabCtor) {
@@ -148,12 +150,12 @@ const loadGitlabClient = async (token: string, host: string, options: CommitFile
     return new GitlabCtor({ host, token });
 };
 
-const apiBaseToHost = (apiBaseUrl: string): string => {
+const apiBaseToHost = (apiBaseUrl: string): string =>
     // Gitbeaker wants the bare host (`https://gitlab.example.com`), not
     // the API path (`https://gitlab.example.com/api/v4`). Strip the
     // `/api/vN` suffix if present.
-    return apiBaseUrl.replace(/\/api\/v\d+\/?$/, "");
-};
+    apiBaseUrl.replace(/\/api\/v\d+\/?$/, "")
+;
 
 const commitToGithub = async (options: CommitFilesOptions): Promise<CommitFilesResult> => {
     const { branch, ciContext, files, message, workspaceRoot } = options;

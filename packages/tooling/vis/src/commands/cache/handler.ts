@@ -56,7 +56,7 @@ export const collectCacheEntries = async (cacheDirectory: string): Promise<Cache
     let dirents: string[];
 
     try {
-        dirents = (await readdir(cacheDirectory)) as unknown as string[];
+        dirents = await readdir(cacheDirectory);
     } catch {
         return [];
     }
@@ -244,8 +244,8 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         pail.info(
-            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} ` +
-                `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
+            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
+            + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
 
         return;
@@ -466,10 +466,10 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
                     previousRunId: previousSummary?.id ?? null,
                     previousTask: previousTask
                         ? {
-                              cacheStatus: previousTask.cacheStatus,
-                              hash: previousTask.hash ?? null,
-                              hashDetails: previousTask.hashDetails ?? null,
-                          }
+                            cacheStatus: previousTask.cacheStatus,
+                            hash: previousTask.hash ?? null,
+                            hashDetails: previousTask.hashDetails ?? null,
+                        }
                         : null,
                     runId: summary.id,
                     task: {
@@ -506,17 +506,17 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         return;
     }
 
-    const noChanges =
-        !diff.commandChanged &&
-        diff.nodes.added.length === 0 &&
-        diff.nodes.changed.length === 0 &&
-        diff.nodes.removed.length === 0 &&
-        diff.runtime.added.length === 0 &&
-        diff.runtime.changed.length === 0 &&
-        diff.runtime.removed.length === 0 &&
-        diff.implicitDeps.added.length === 0 &&
-        diff.implicitDeps.changed.length === 0 &&
-        diff.implicitDeps.removed.length === 0;
+    const noChanges
+        = !diff.commandChanged
+            && diff.nodes.added.length === 0
+            && diff.nodes.changed.length === 0
+            && diff.nodes.removed.length === 0
+            && diff.runtime.added.length === 0
+            && diff.runtime.changed.length === 0
+            && diff.runtime.removed.length === 0
+            && diff.implicitDeps.added.length === 0
+            && diff.implicitDeps.changed.length === 0
+            && diff.implicitDeps.removed.length === 0;
 
     if (noChanges) {
         pail.success("No hash inputs changed since the previous run.");
@@ -708,7 +708,6 @@ const walkAndDigest = async (root: string): Promise<CachedFileMeta[]> => {
             const childAbsolute = join(absolute, item.name);
 
             if (item.isDirectory()) {
-                // eslint-disable-next-line no-await-in-loop -- ordered traversal keeps the diff output stable
                 await walk(childAbsolute);
 
                 continue;
@@ -718,7 +717,6 @@ const walkAndDigest = async (root: string): Promise<CachedFileMeta[]> => {
                 continue;
             }
 
-            // eslint-disable-next-line no-await-in-loop -- per-file IO; verify is one-shot, parallelism not worth the complexity
             const [info, digest] = await Promise.all([stat(childAbsolute), digestFile(childAbsolute)]);
 
             out.push({
@@ -813,7 +811,6 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
     let cached: { hash: string } | undefined;
 
     for (const directory of cacheDirectories) {
-        // eslint-disable-next-line no-await-in-loop -- short list, ordered lookup; parallelism would obscure the "shared wins over worktree" semantics
         const found = await new Cache({ cacheDirectory: directory, workspaceRoot }).getByTaskId(taskId);
 
         if (found) {
@@ -877,7 +874,6 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
         for (let offset = 0; offset < cachedFiles.length; offset += VERIFY_DIFF_CONCURRENCY) {
             const chunk = cachedFiles.slice(offset, offset + VERIFY_DIFF_CONCURRENCY);
 
-            // eslint-disable-next-line no-await-in-loop -- chunked concurrency: each chunk runs in parallel, chunks themselves serialize
             const results = await Promise.all(chunk.map(async (file) => computeFileDiff(file, workspaceRoot)));
 
             for (const [index, result] of results.entries()) {
@@ -891,8 +887,8 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
             process.stdout.write(
                 `${JSON.stringify(
                     {
-                        cacheDirectory,
                         cachedFileCount: cachedFiles.length,
+                        cacheDirectory,
                         diffs,
                         hash: cached.hash,
                         status: diffs.length === 0 ? "ok" : "drift",

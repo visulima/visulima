@@ -248,7 +248,7 @@ const pkgFieldConfigFiles = (workspaceRoot: string, field: "packageManager" | "v
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
         const value = pkg[field];
 
-        if (field === "volta" && typeof value === "object" && value !== null && Object.keys(value as Record<string, unknown>).length > 0) {
+        if (field === "volta" && typeof value === "object" && value !== null && Object.keys(value).length > 0) {
             return ["package.json"];
         }
 
@@ -400,9 +400,9 @@ export const pickPrimaryManager = (workspaceRoot: string, config?: ToolchainConf
     }
 
     return (
-        found.find((d) => d.installed && d.configFiles.length > 0) ??
-        found.find((d) => d.installed) ??
-        found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
+        found.find((d) => d.installed && d.configFiles.length > 0)
+        ?? found.find((d) => d.installed)
+        ?? found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
     );
 };
 
@@ -956,10 +956,10 @@ export const resolveManagerFor = (spec: ToolSpec, detected: ReadonlyArray<Detect
         return override
             ? { installed: override.installed, name: override.name }
             : {
-                  installed: false,
-                  name: config.preferredManager,
-                  note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
-              };
+                installed: false,
+                name: config.preferredManager,
+                note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
+            };
     }
 
     const preference = preferenceFor(spec.source, spec.tool);
@@ -1273,12 +1273,12 @@ export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): 
     const aliases = TOOL_VERSION_QUERY[tool].binaries;
 
     if (
-        manager.installed &&
-        manager.binPath && // proto/mise/asdf expose `which`; volta has `volta which`; fnm
+        manager.installed
+        && manager.binPath // proto/mise/asdf expose `which`; volta has `volta which`; fnm
         // prints to stdout from `fnm which`. Try each alias in order so
         // `mise which rust` (which doesn't know "rust") falls back to
         // `mise which rustc`.
-        (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
+        && (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
     ) {
         for (const alias of aliases) {
             try {

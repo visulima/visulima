@@ -58,9 +58,9 @@ export const parseTargetSelector = (input: string): Omit<ParsedSelector, "projec
     const projectMatch = NAMED_PROJECT_RE.exec(input);
 
     if (
-        projectMatch?.[1] &&
-        projectMatch[2] && // Distinguish `pkg-name:target` from a bare `target` that happens to contain `:`.
-        (projectMatch[1].startsWith("@") || projectMatch[1].includes("/") || projectMatch[1].includes("-"))
+        projectMatch?.[1]
+        && projectMatch[2] // Distinguish `pkg-name:target` from a bare `target` that happens to contain `:`.
+        && (projectMatch[1].startsWith("@") || projectMatch[1].includes("/") || projectMatch[1].includes("-"))
     ) {
         return { kind: "project", projects: [projectMatch[1]], target: projectMatch[2] } as Omit<ParsedSelector, "projects"> & { projects: string[] };
     }
@@ -105,7 +105,7 @@ export const resolveSelector = async (
     if (parsed.kind === "tag") {
         const tag = parsed.tag!;
         const matched = allProjects.filter((name) => {
-            const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+            const project = workspace.projects[name];
 
             return project?.tags?.includes(tag) ?? false;
         });
@@ -311,7 +311,7 @@ export const filterProjectsByQuery = (projectNames: string[], workspace: Workspa
     }
 
     return projectNames.filter((name) => {
-        const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+        const project = workspace.projects[name];
 
         if (!project) {
             return false;

@@ -34,9 +34,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     }
 
     const affectedOptions: AffectedOptions = {
-        base: options.base as string,
+        base: options.base,
         downstream: downstreamValue as AffectedScope,
-        head: options.head as string,
+        head: options.head,
         projectGraph,
         projects: workspace.projects,
         upstream: upstreamValue as AffectedScope,

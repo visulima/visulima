@@ -25,17 +25,25 @@ const ProjectRow = ({ isSelected, node }: ProjectRowProps): React.JSX.Element =>
 
     return (
         <Box flexShrink={0} height={1}>
-            <Text>{isSelected ? "\u25B6" : " "} </Text>
+            <Text>
+{isSelected ? "\u25B6" : " "}
+{' '}
+            </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {node.name}
                 </Text>
             </Box>
-            <Text color={typeColor}> {typeLabel}</Text>
+            <Text color={typeColor}>
+{' '}
+{typeLabel}
+            </Text>
             <Text dimColor>
                 {" "}
                 {"\u2192"}
-                {node.deps.length} {"\u2190"}
+                {node.deps.length}
+{' '}
+{"\u2190"}
                 {node.reverseDeps.length}
             </Text>
         </Box>
@@ -49,11 +57,19 @@ interface TypeHeaderProps {
 
 const TypeHeader = ({ count, label }: TypeHeaderProps): React.JSX.Element => (
     <Box flexShrink={0} height={1} marginTop={1}>
-        <Text dimColor>{"\u25BC"} </Text>
+        <Text dimColor>
+{"\u25BC"}
+{' '}
+        </Text>
         <Text bold color="white">
             {label.toUpperCase()}
         </Text>
-        <Text dimColor> ({count})</Text>
+        <Text dimColor>
+{' '}
+(
+{count}
+)
+        </Text>
     </Box>
 );
 
@@ -134,9 +150,24 @@ const ProjectListPanel = ({
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text wrap="truncate">{stats.total} packages</Text>
+                <Text wrap="truncate">
+{stats.total}
+{' '}
+packages
+                </Text>
                 <Text dimColor>
-                    ({stats.apps} apps, {stats.libs} libs, {stats.deps} deps)
+                    (
+{stats.apps}
+{' '}
+apps,
+{' '}
+{stats.libs}
+{' '}
+libs,
+{' '}
+{stats.deps}
+{' '}
+deps)
                 </Text>
             </Box>
 
@@ -152,7 +183,10 @@ const ProjectListPanel = ({
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
+                            <Text color={isActive ? "white" : "gray"}>
+{' '}
+{f.label}
+                            </Text>
                         </Box>
                     );
                 })}

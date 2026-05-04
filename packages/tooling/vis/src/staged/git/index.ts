@@ -119,8 +119,8 @@ export class GitWorkflow {
         } else if (this.partiallyStaged.length > 0) {
             // Without a backup stash, a failed re-apply of the captured patch leaves the user with no recovery route.
             this.warnings.push(
-                "Running with --no-stash on partially-staged files — unstaged deltas will be captured to a patch, " +
-                    "but if re-applying the patch fails after tasks run the changes cannot be recovered.",
+                "Running with --no-stash on partially-staged files — unstaged deltas will be captured to a patch, "
+                + "but if re-applying the patch fails after tasks run the changes cannot be recovered.",
             );
         }
 
@@ -223,8 +223,8 @@ export class GitWorkflow {
             const detail = error instanceof GitError && error.stderr ? error.stderr : String(error);
 
             throw new RestoreOriginalStateError(
-                "Failed to re-apply unstaged changes after running tasks. Original changes remain in the backup stash — recover with `git stash list` and `git stash apply`.\n" +
-                    `First attempt: ${firstError ?? "(no stderr)"}\nSecond attempt: ${detail}`,
+                "Failed to re-apply unstaged changes after running tasks. Original changes remain in the backup stash — recover with `git stash list` and `git stash apply`.\n"
+                + `First attempt: ${firstError ?? "(no stderr)"}\nSecond attempt: ${detail}`,
                 { cause: error as Error },
             );
         }
@@ -302,8 +302,8 @@ export class GitWorkflow {
         const candidatesRelative = this.shouldHideUnstaged
             ? [...stagedRelative]
             : this.shouldHidePartial
-              ? this.partiallyStaged.filter((path) => stagedRelative.has(path))
-              : [];
+                ? this.partiallyStaged.filter((path) => stagedRelative.has(path))
+                : [];
 
         if (candidatesRelative.length === 0) {
             return;

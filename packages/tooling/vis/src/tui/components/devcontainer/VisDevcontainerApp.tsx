@@ -803,8 +803,15 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small ({columns}x{rows}
-                    ), need {MIN_VIEWPORT_WIDTH}x{MIN_VIEWPORT_HEIGHT}
+                    Terminal too small (
+{columns}
+x
+{rows}
+                    ), need
+{' '}
+{MIN_VIEWPORT_WIDTH}
+x
+{MIN_VIEWPORT_HEIGHT}
                 </Text>
             </Box>
         );
@@ -829,7 +836,11 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                                 <Text color={isSelected ? "cyan" : undefined} inverse={isSelected}>
                                     {isSelected ? " \u276F " : "   "}
                                     <Text bold={isSelected}>{template.name}</Text>
-                                    <Text dimColor> -{template.description}</Text>
+                                    <Text dimColor>
+{' '}
+-
+{template.description}
+                                    </Text>
                                 </Text>
                             </Box>
                         );
@@ -838,17 +849,20 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                         <Text dimColor>
                             <Text bold color="white">
                                 {"\u2191\u2193"}
-                            </Text>{" "}
+                            </Text>
+{" "}
                             navigate
                             {"  "}
                             <Text bold color="white">
                                 Enter
-                            </Text>{" "}
+                            </Text>
+{" "}
                             select
                             {"  "}
                             <Text bold color="white">
                                 Esc
-                            </Text>{" "}
+                            </Text>
+{" "}
                             blank
                         </Text>
                     </Box>
@@ -883,17 +897,30 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                     {addingEnv !== null && (
                         <Box marginTop={1} paddingX={1}>
                             <Text color="cyan">
-                                Add {addingEnv} env:{" "}
-                                {addEnvPhase === "key" ? (
+                                Add
+{' '}
+{addingEnv}
+{' '}
+env:
+{" "}
+                                {addEnvPhase === "key"
+                                    ? (
                                     <Text>
                                         key=
-                                        <Text color="yellow">{addEnvKey || "_"}</Text> (Enter to set value)
+                                        <Text color="yellow">{addEnvKey || "_"}</Text>
+{' '}
+(Enter to set value)
                                     </Text>
-                                ) : (
+                                    )
+                                    : (
                                     <Text>
-                                        {addEnvKey}=<Text color="yellow">{addEnvValue || "_"}</Text> (Enter to confirm, Esc to cancel)
+                                        {addEnvKey}
+=
+<Text color="yellow">{addEnvValue || "_"}</Text>
+{' '}
+(Enter to confirm, Esc to cancel)
                                     </Text>
-                                )}
+                                    )}
                             </Text>
                         </Box>
                     )}
@@ -1042,7 +1069,12 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 </Box>
             </Box>
             <Box paddingX={1}>
-                {saveMessage && <Text color={saveMessage.startsWith("Error") ? "red" : "green"}>{saveMessage} </Text>}
+                {saveMessage && (
+<Text color={saveMessage.startsWith("Error") ? "red" : "green"}>
+{saveMessage}
+{' '}
+</Text>
+                )}
                 {state.isDirty && <Text color="yellow">[modified]</Text>}
                 {!state.isDirty && !saveMessage && <Text dimColor>[saved]</Text>}
             </Box>
@@ -1053,22 +1085,25 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
 
     const helpPopup = (
         <Dialog
-            footer={
+            footer={(
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>{" "}
-                    scroll{" "}
+                    </Text>
+{" "}
+                    scroll
+{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>{" "}
+                    </Text>
+{" "}
                     close
                 </Text>
-            }
+              )}
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -1225,7 +1260,11 @@ const VisDevcontainerApp = ({ onSave, store }: VisDevcontainerAppProps): React.J
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text wrap="truncate">{state.mode === "create" ? "Create" : "Edit"} devcontainer</Text>
+                <Text wrap="truncate">
+{state.mode === "create" ? "Create" : "Edit"}
+{' '}
+devcontainer
+                </Text>
             </Box>
 
             {/* Tab bar */}

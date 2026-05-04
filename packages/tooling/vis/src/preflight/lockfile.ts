@@ -37,6 +37,7 @@ const LOCKFILE_FILES_BY_MANAGER: Record<LockfilePackageManager, string[]> = {
 export interface LockfilePreflightResult {
     /** Whether the preflight ran (false when no lockfile was detected). */
     checked: boolean;
+
     /**
      * What we observed; useful for `vis doctor` and tests. All paths
      * are workspace-root-relative — consumers should `join(workspaceRoot, ...)`

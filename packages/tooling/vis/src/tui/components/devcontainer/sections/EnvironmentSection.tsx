@@ -55,7 +55,8 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
                 })}
                 <Box flexShrink={0} marginTop={containerKeys.length > 0 ? 1 : 0}>
                     <Text color={fieldIndex === containerAddIndex ? "cyan" : "gray"} inverse={fieldIndex === containerAddIndex}>
-                        {"   "}+ Add variable...
+                        {"   "}
++ Add variable...
                     </Text>
                 </Box>
             </Box>
@@ -85,7 +86,8 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
                 })}
                 <Box flexShrink={0} marginTop={remoteKeys.length > 0 ? 1 : 0}>
                     <Text color={fieldIndex === remoteAddIndex ? "cyan" : "gray"} inverse={fieldIndex === remoteAddIndex}>
-                        {"   "}+ Add variable...
+                        {"   "}
++ Add variable...
                     </Text>
                 </Box>
             </Box>
@@ -98,15 +100,20 @@ const EnvironmentSection = ({ config, fieldIndex }: EnvironmentSectionProps): Re
                     /
                     <Text bold color="white">
                         Enter
-                    </Text>{" "}
-                    add on + row{" "}
+                    </Text>
+{" "}
+                    add on + row
+{" "}
                     <Text bold color="white">
                         d
-                    </Text>{" "}
-                    remove{" "}
+                    </Text>
+{" "}
+                    remove
+{" "}
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>{" "}
+                    </Text>
+{" "}
                     navigate
                 </Text>
             </Box>

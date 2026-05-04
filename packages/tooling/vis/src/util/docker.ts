@@ -195,7 +195,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
     }
 
     for (const name of projects) {
-        const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+        const project = workspace.projects[name];
 
         if (!project?.root) {
             continue;
@@ -210,7 +210,7 @@ export const scaffoldDockerContext = (options: ScaffoldOptions): { projects: str
         ensureDir(sourcesDir);
 
         for (const name of focus) {
-            const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+            const project = workspace.projects[name];
 
             if (!project?.root) {
                 continue;

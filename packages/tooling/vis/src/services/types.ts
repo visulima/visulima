@@ -49,7 +49,7 @@ export interface ServiceConfig {
 
 /**
  * Persisted registry entry. One JSON file per running service in
- * `~/.vis-services/<workspaceHash>/<slug>.json`.
+ * `~/.vis-services/&lt;workspaceHash>/&lt;slug>.json`.
  */
 export interface ServiceEntry {
     /** Resolved command actually spawned. Used for stale-PID detection. */

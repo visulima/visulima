@@ -134,8 +134,8 @@ const scanMoonDirectory = (directory: string, source: DiscoveredTemplate["source
  * Resolve the builtin templates directory shipped with the vis package.
  *
  * In dev (running from `src/`) `import.meta.url` points at
- * `<root>/src/generate/discover.ts`; in prod (bundled into `dist/`) it
- * points at `<root>/dist/generate/index.js`. Going up two levels lands
+ * `&lt;root>/src/generate/discover.ts`; in prod (bundled into `dist/`) it
+ * points at `&lt;root>/dist/generate/index.js`. Going up two levels lands
  * on the package root in both layouts, so the same `templates/` path
  * resolves correctly without a build-time substitution.
  *

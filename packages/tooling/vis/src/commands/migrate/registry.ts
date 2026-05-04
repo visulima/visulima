@@ -110,7 +110,7 @@ const createCapturingLogger = (): { lines: string[]; logger: MigrateLogger } => 
 const MIGRATIONS: MigrationEntry[] = [
     {
         apply: ({ packageManager, root, visConfig }, report, logger) => {
-            migrateDeps(root, packageManager, visConfig as Record<string, unknown> & { overrides?: Record<string, string> }, { dryRun: false }, logger, report);
+            migrateDeps(root, packageManager, visConfig, { dryRun: false }, logger, report);
         },
         description: "Remove husky/lint-staged/nano-staged from package.json and rewrite scripts to `vis staged`.",
         detect: ({ root, visConfig }) => detectDepsNeedsMigration(root, visConfig),
@@ -119,7 +119,7 @@ const MIGRATIONS: MigrationEntry[] = [
             const { lines, logger } = createCapturingLogger();
             const report = createMigrationReport();
 
-            migrateDeps(root, packageManager, visConfig as Record<string, unknown> & { overrides?: Record<string, string> }, { dryRun: true }, logger, report);
+            migrateDeps(root, packageManager, visConfig, { dryRun: true }, logger, report);
 
             return lines;
         },

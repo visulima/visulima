@@ -3,7 +3,6 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import type { VisProjectConfiguration } from "../../config/workspace";
 import { discoverWorkspace } from "../../config/workspace";
 import { filterProjectsByQuery } from "../../task/selectors";
-import type { VisTargetConfiguration } from "../../task/target-options";
 import type { ListOptions } from "./index";
 
 const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ListOptions>): Promise<void> => {
@@ -33,7 +32,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             const visTargets = projectOptions.get(name) ?? {};
             const targets = Object.entries(project.targets ?? {})
                 .map(([targetName]) => {
-                    const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+                    const visTarget = visTargets[targetName];
                     const isInferred = visTarget?.inferred === true;
 
                     return {
@@ -92,7 +91,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             const visTargets = projectOptions.get(name) ?? {};
 
             for (const targetName of Object.keys(project.targets ?? {}).sort()) {
-                const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+                const visTarget = visTargets[targetName];
                 const isInferred = visTarget?.inferred === true;
 
                 if (inferredOnly && !isInferred) {

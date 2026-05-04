@@ -59,15 +59,15 @@ const GIT_REF_RE = /^[\w./~^@{}][\w.\-/~^@{}]*$/;
 // ─── Types ───────────────────────────────────────────────────────────
 
 /** Machine-readable reason codes for the ignore decision. */
-type IgnoreReason =
-    | "commit-force-deploy"
-    | "commit-skip"
-    | "missing-project-argument"
-    | "no-changes"
-    | "project-affected"
-    | "project-not-affected"
-    | "project-unknown"
-    | "workspace-error";
+type IgnoreReason
+    = | "commit-force-deploy"
+        | "commit-skip"
+        | "missing-project-argument"
+        | "no-changes"
+        | "project-affected"
+        | "project-not-affected"
+        | "project-unknown"
+        | "workspace-error";
 
 /**
  * Structured decision record emitted on stdout in `--json` mode and

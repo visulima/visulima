@@ -1,7 +1,7 @@
 import { join } from "@visulima/path";
 
-import { deleteEntry, getRegistryDir, isAlive, readEntry, slugify, withServiceLock, writeEntry } from "./registry";
 import { runReadiness } from "./readiness";
+import { deleteEntry, getRegistryDir, isAlive, readEntry, slugify, withServiceLock, writeEntry } from "./registry";
 import { spawnDetached } from "./spawn";
 import type { ServiceConfig, ServiceEntry } from "./types";
 
@@ -34,7 +34,7 @@ export interface StartServiceResult {
  *
  * Refuses to start when an alive entry already exists for the same id.
  *
- * Wrapped in a per-id lock so two concurrent `vis service start <id>`
+ * Wrapped in a per-id lock so two concurrent `vis service start &lt;id>`
  * invocations can't both spawn children and orphan one — without the
  * lock, the second `writeEntry` overwrites the first entry and the
  * first child becomes an unreachable port-holder.
@@ -145,7 +145,6 @@ const stopServiceByPid = async (pid: number, graceMs: number): Promise<void> => 
             return;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await new Promise<void>((resolve) => {
             setTimeout(resolve, 100);
         });

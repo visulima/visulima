@@ -156,7 +156,7 @@ describe(runLockfilePreflight, () => {
         const result = runLockfilePreflight(tmp, false, { warn });
 
         expect(result.shouldContinue).toBe(true);
-        expect(warn).toHaveBeenCalledOnce();
+        expect(warn).toHaveBeenCalledTimes(1);
     });
 
     it("should stop and surface formattedMessage (without logging) in CI on drift", () => {
@@ -185,7 +185,7 @@ describe(runLockfilePreflight, () => {
         const result = runLockfilePreflight(tmp, true, { warn }, { ciAsWarning: true });
 
         expect(result.shouldContinue).toBe(true);
-        expect(warn).toHaveBeenCalledOnce();
+        expect(warn).toHaveBeenCalledTimes(1);
     });
 
     it("should silently continue when no lockfile is present", () => {

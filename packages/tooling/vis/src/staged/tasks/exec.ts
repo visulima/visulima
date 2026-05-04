@@ -206,8 +206,8 @@ export const execCommand = async (command: string, files: ReadonlyArray<string>,
             const reason = result.isCanceled
                 ? "Task aborted by earlier failure."
                 : result.isTerminated
-                  ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
-                  : merged.trim() || `Task exited without a numeric status code.`;
+                    ? `Task killed by signal ${result.signal ?? "(unknown)"}.`
+                    : merged.trim() || `Task exited without a numeric status code.`;
 
             throw new TaskError(command, reason);
         }

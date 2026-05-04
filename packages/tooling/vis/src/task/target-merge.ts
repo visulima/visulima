@@ -83,5 +83,5 @@ export const mergeTargetWithInherit = (
         }
     }
 
-    return merged as Partial<VisTargetConfiguration>;
+    return merged;
 };

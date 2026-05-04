@@ -138,13 +138,13 @@ describe(checkOrphanedRunners, () => {
         expect.assertions(2);
 
         const diagnostic = checkOrphanedRunners();
-        const pidList =
-            diagnostic.detail?.pids === undefined
+        const pidList
+            = diagnostic.detail?.pids === undefined
                 ? []
                 : String(diagnostic.detail.pids)
-                      .split(",")
-                      .map((p) => Number.parseInt(p, 10))
-                      .filter((p) => Number.isFinite(p));
+                    .split(",")
+                    .map((p) => Number.parseInt(p, 10))
+                    .filter((p) => Number.isFinite(p));
 
         expect(diagnostic.id).toBe("orphans");
         // Self must never appear regardless of whether other orphans exist;

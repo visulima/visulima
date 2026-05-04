@@ -6,8 +6,8 @@ import type { DoctorFinding } from "../../../src/tui/components/doctor/findings"
 
 const baseResults: DoctorResults = {
     duplicates: [
-        { name: "react", versions: ["17.0.0", "18.0.0"] } as DoctorResults["duplicates"][number],
-        { name: "lodash", versions: ["4.0.0", "4.17.21"] } as DoctorResults["duplicates"][number],
+        { name: "react", versions: ["17.0.0", "18.0.0"] },
+        { name: "lodash", versions: ["4.0.0", "4.17.21"] },
     ],
     elapsedMs: 0,
     installedCount: 0,
@@ -24,7 +24,7 @@ const baseResults: DoctorResults = {
             targetVersion: "1.1",
             updateType: "minor",
             vulnerabilities: [],
-        } as DoctorResults["outdated"][number],
+        },
         {
             catalogName: "default",
             currentRange: "1.0",
@@ -33,7 +33,7 @@ const baseResults: DoctorResults = {
             targetVersion: "1.1",
             updateType: "minor",
             vulnerabilities: [],
-        } as DoctorResults["outdated"][number],
+        },
     ],
     runtime: [],
     sections: new Set(["dependencies", "optimization", "runtime", "security"]),
@@ -124,7 +124,7 @@ describe(filterFindingsByPattern, () => {
                 return {
                     id: `dup:${name}`,
                     kind: "duplicate",
-                    pkg: { name, versions: [] } as never,
+                    pkg: { name, versions: [] },
                     section: "dependencies",
                     severity: "warn",
                     title: name,

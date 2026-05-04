@@ -80,12 +80,12 @@ const tokenize = (source: string): Token[] => {
 
 // ── AST ──────────────────────────────────────────────────────────
 
-type Node =
-    | { type: "text"; value: string }
-    | { expression: string; line: number; type: "expr" }
-    | { alternate?: Node[]; condition: string; consequent: Node[]; line: number; type: "if" }
-    | { binding: string; body: Node[]; collection: string; line: number; type: "for" }
-    | { line: number; name: string; type: "include" };
+type Node
+    = | { type: "text"; value: string }
+        | { expression: string; line: number; type: "expr" }
+        | { alternate?: Node[]; condition: string; consequent: Node[]; line: number; type: "if" }
+        | { binding: string; body: Node[]; collection: string; line: number; type: "for" }
+        | { line: number; name: string; type: "include" };
 
 const UNSUPPORTED_KEYWORDS = new Set(["block", "endblock", "endfilter", "endmacro", "extends", "filter", "import", "macro", "set"]);
 
@@ -124,8 +124,8 @@ const parse = (tokens: Token[], filename: string): Node[] => {
             if (UNSUPPORTED_KEYWORDS.has(head)) {
                 error(
                     token.line,
-                    `Tera feature "{% ${head} %}" is not supported. Supported: if/else/endif, for/endfor, include. ` +
-                        "Rewrite the template to avoid macros, set, extends, block, and import.",
+                    `Tera feature "{% ${head} %}" is not supported. Supported: if/else/endif, for/endfor, include. `
+                    + "Rewrite the template to avoid macros, set, extends, block, and import.",
                 );
             }
 

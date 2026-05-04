@@ -17,24 +17,26 @@ export const graphqlCodegenDetector: Detector = {
         ".graphqlrc.ts",
         ".graphqlrc.js",
     ],
-    detect: ({ matchedConfigs }) => ({
-        targets: {
-            codegen: {
-                command: "graphql-codegen",
-                description: "graphql-codegen (inferred)",
-                inputs: [
-                    "{projectRoot}/src/**/*",
-                    "{projectRoot}/schema/**/*",
-                    "{projectRoot}/**/*.graphql",
-                    "{projectRoot}/**/*.gql",
-                    ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
-                    "{projectRoot}/package.json",
-                ],
-                outputs: ["{projectRoot}/src/generated", "{projectRoot}/src/__generated__", "{projectRoot}/src/gql"],
-                type: "build",
+    detect: ({ matchedConfigs }) => {
+        return {
+            targets: {
+                codegen: {
+                    command: "graphql-codegen",
+                    description: "graphql-codegen (inferred)",
+                    inputs: [
+                        "{projectRoot}/src/**/*",
+                        "{projectRoot}/schema/**/*",
+                        "{projectRoot}/**/*.graphql",
+                        "{projectRoot}/**/*.gql",
+                        ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
+                        "{projectRoot}/package.json",
+                    ],
+                    outputs: ["{projectRoot}/src/generated", "{projectRoot}/src/__generated__", "{projectRoot}/src/gql"],
+                    type: "build",
+                },
             },
-        },
-    }),
+        };
+    },
     fallbackDependency: "@graphql-codegen/cli",
     name: "graphql-codegen",
 };

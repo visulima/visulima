@@ -1,4 +1,3 @@
-import type { TaskStatus } from "@visulima/task-runner";
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Spinner, Text } from "@visulima/tui";
 
@@ -96,7 +95,7 @@ const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): 
             </Box>
             {!compact && (
                 <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
-                    <Text dimColor={!isCacheStatus(status as TaskStatus)}>{getCacheLabel(status)}</Text>
+                    <Text dimColor={!isCacheStatus(status)}>{getCacheLabel(status)}</Text>
                 </Box>
             )}
             {!compact && (

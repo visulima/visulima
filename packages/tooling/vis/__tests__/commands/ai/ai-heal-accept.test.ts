@@ -87,7 +87,7 @@ describe(loadGithubTriggerForTesting, () => {
                 eventPath,
                 JSON.stringify({
                     action: "created",
-                    comment: { body: `${TRIGGER_PHRASE}`, user: { login: "alice" } },
+                    comment: { body: TRIGGER_PHRASE, user: { login: "alice" } },
                     issue: { number: 42, pull_request: {} },
                     repository: { full_name: "owner/repo" },
                 }),
@@ -135,7 +135,7 @@ describe(loadGithubTriggerForTesting, () => {
 
     it("should return undefined when the event file is missing", async () => {
         expect.assertions(1);
-        expect(await loadGithubTriggerForTesting("/no/such/path.json")).toBeUndefined();
+        await expect(loadGithubTriggerForTesting("/no/such/path.json")).resolves.toBeUndefined();
     });
 });
 
@@ -287,7 +287,7 @@ describe(fetchGithubHeadRefForTesting, () => {
         const fetchImpl = vi.fn(async () => Response.json({ head: { ref: "feat/cool" } }, { status: 200 }));
 
         const ref = await fetchGithubHeadRefForTesting({
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
             prNumber: 42,
             repo: "owner/repo",
             token: "ghs_test",
@@ -305,14 +305,14 @@ describe(fetchGithubHeadRefForTesting, () => {
 
         const fetchImpl = vi.fn(async () => new Response("nope", { status: 404 }));
 
-        expect(
-            await fetchGithubHeadRefForTesting({
-                fetchImpl: fetchImpl as unknown as typeof fetch,
+        await expect(
+            fetchGithubHeadRefForTesting({
+                fetchImpl,
                 prNumber: 42,
                 repo: "owner/repo",
                 token: "ghs_test",
             }),
-        ).toBeUndefined();
+        ).resolves.toBeUndefined();
     });
 });
 
@@ -342,16 +342,18 @@ describe(runHealAcceptForTesting, () => {
 
         try {
             await runHealAcceptForTesting(fakeToolbox(), {
-                detectCi: async () => ({
-                    apiBaseUrl: undefined,
-                    buildId: undefined,
-                    buildNumber: undefined,
-                    prNumber: undefined,
-                    provider: "unknown",
-                    repo: undefined,
-                    sha: undefined,
-                    token: undefined,
-                }),
+                detectCi: async () => {
+                    return {
+                        apiBaseUrl: undefined,
+                        buildId: undefined,
+                        buildNumber: undefined,
+                        prNumber: undefined,
+                        provider: "unknown",
+                        repo: undefined,
+                        sha: undefined,
+                        token: undefined,
+                    };
+                },
                 env: {},
             });
 

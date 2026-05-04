@@ -9,13 +9,13 @@ import { createPlainRenderer } from "./plain";
  */
 export const pickRenderer = async (options: RunOptions): Promise<Renderer> => {
     const { env } = process;
-    const forcePlain =
-        options.debug === true ||
-        options.quiet === true ||
-        env["NODE_ENV"] === "test" ||
-        env["TERM"] === "dumb" ||
-        env["CI"] !== undefined ||
-        !process.stderr.isTTY;
+    const forcePlain
+        = options.debug === true
+            || options.quiet === true
+            || env["NODE_ENV"] === "test"
+            || env["TERM"] === "dumb"
+            || env["CI"] !== undefined
+            || !process.stderr.isTTY;
 
     if (forcePlain) {
         return createPlainRenderer({ quiet: options.quiet, verbose: options.verbose });

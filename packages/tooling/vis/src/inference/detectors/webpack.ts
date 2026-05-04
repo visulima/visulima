@@ -6,16 +6,18 @@ export const webpackDetector: Detector = {
     // toolchains (storybook, react-scripts, …). A root-level
     // `webpack.config.*` is the reliable "this project drives webpack
     // itself" signal.
-    detect: ({ matchedConfigs }) => ({
-        targets: {
-            build: {
-                command: "webpack --mode=production",
-                description: "webpack production build (inferred)",
-                inputs: ["{projectRoot}/src/**/*", `{projectRoot}/${matchedConfigs[0]!}`, "{projectRoot}/package.json", "{projectRoot}/tsconfig.json"],
-                outputs: ["{projectRoot}/dist"],
-                type: "build",
+    detect: ({ matchedConfigs }) => {
+        return {
+            targets: {
+                build: {
+                    command: "webpack --mode=production",
+                    description: "webpack production build (inferred)",
+                    inputs: ["{projectRoot}/src/**/*", `{projectRoot}/${matchedConfigs[0]!}`, "{projectRoot}/package.json", "{projectRoot}/tsconfig.json"],
+                    outputs: ["{projectRoot}/dist"],
+                    type: "build",
+                },
             },
-        },
-    }),
+        };
+    },
     name: "webpack",
 };

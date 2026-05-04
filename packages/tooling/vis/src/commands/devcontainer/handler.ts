@@ -28,7 +28,7 @@ const execute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox<Conso
     try {
         const pmInfo = detectPm(workspaceRoot);
 
-        detectedPm = pmInfo.name as PackageManager;
+        detectedPm = pmInfo.name;
     } catch {
         // Could not detect — will be null
     }
