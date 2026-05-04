@@ -116,7 +116,7 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
 
                 const parsed = envRaw === undefined ? undefined : Number.parseInt(envRaw, 10);
 
-                envMinVersion = Number.isNaN(parsed as number) ? undefined : parsed;
+                envMinVersion = Number.isNaN(parsed) ? undefined : parsed;
             } catch {
                 // getEnv() may not be available in some runtimes
                 envMinVersion = undefined;

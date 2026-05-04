@@ -73,7 +73,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                     );
                 }
             } catch (error) {
-                logger.debug("Update notifier: failed to check for updates", error as Error);
+                logger.debug("Update notifier: failed to check for updates", error);
             }
         },
         description: "Checks for package updates and notifies users",

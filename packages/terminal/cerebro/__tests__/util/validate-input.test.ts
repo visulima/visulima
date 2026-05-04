@@ -37,8 +37,8 @@ describe("validate-input", () => {
         it("should throw for non-string values", () => {
             expect.assertions(3);
 
-            expect(() => validateNonEmptyString(123 as unknown as string, "field")).toThrow(CerebroError);
-            expect(() => validateNonEmptyString(null as unknown as string, "field")).toThrow(CerebroError);
+            expect(() => validateNonEmptyString(123, "field")).toThrow(CerebroError);
+            expect(() => validateNonEmptyString(null, "field")).toThrow(CerebroError);
             expect(() => validateNonEmptyString(undefined as unknown as string, "field")).toThrow(CerebroError);
         });
     });

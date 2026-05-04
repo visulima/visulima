@@ -62,7 +62,7 @@ const loadLazyHandler = async <OD extends OptionDefinition<unknown>, TLogger ext
     let loadedModule: { default?: unknown };
 
     try {
-        loadedModule = (await command.loader()) as { default?: unknown };
+        loadedModule = await command.loader();
     } catch (error) {
         throw new CommandLoaderError(command.name, error instanceof Error ? error.message : String(error), error);
     }

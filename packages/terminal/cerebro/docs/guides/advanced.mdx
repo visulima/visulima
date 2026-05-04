@@ -190,8 +190,8 @@ Co-locate the option type with the metadata using `CreateOptions<T>`:
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
 export type BuildOptions = CreateOptions<{
-    "output": string | undefined;
-    "production": boolean | undefined;
+    output: string | undefined;
+    production: boolean | undefined;
 }>;
 
 const build: Command = {
@@ -221,8 +221,12 @@ together as **named exports** in one module and load each via `lazyNamed`:
 
 ```typescript
 // commands/cache.handlers.ts
-export const cacheList: CommandExecute<Toolbox> = async (toolbox) => { /* … */ };
-export const cacheClean: CommandExecute<Toolbox> = async (toolbox) => { /* … */ };
+export const cacheList: CommandExecute<Toolbox> = async (toolbox) => {
+    /* … */
+};
+export const cacheClean: CommandExecute<Toolbox> = async (toolbox) => {
+    /* … */
+};
 
 // commands/cache.ts
 import { lazyNamed, type Command } from "@visulima/cerebro";

@@ -42,7 +42,7 @@ const removeBooleanValues = <OD extends OptionDefinition<any>>(
 
         const newArgs = [...argumentsAndLastValue.args, argument];
 
-        return { args: newArgs, lastOption: option as PossibleOptionDefinition<OD> };
+        return { args: newArgs, lastOption: option };
     };
 
     // eslint-disable-next-line unicorn/no-array-callback-reference,unicorn/no-array-reduce

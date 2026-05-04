@@ -13,7 +13,7 @@ describe("line-usage/content-section", () => {
         expect.assertions(1);
 
         const sections = { header: "header" };
-        const result = new ContentSection(sections as IContent).toString();
+        const result = new ContentSection(sections).toString();
 
         expect(result).toContain("header");
     });
@@ -25,7 +25,7 @@ describe("line-usage/content-section", () => {
             content: ["one", "two"],
         };
 
-        const result = new ContentSection(sections as IContent).toString();
+        const result = new ContentSection(sections).toString();
 
         expect(CONTENT_ARRAY_RE.test(result)).toBe(true);
     });
@@ -40,7 +40,7 @@ describe("line-usage/content-section", () => {
             ],
         };
 
-        const result = new ContentSection(sections as IContent).toString();
+        const result = new ContentSection(sections).toString();
 
         expect(CONTENT_NESTED_ARRAY_RE.test(result)).toBe(true);
     });
@@ -72,7 +72,7 @@ describe("line-usage/content-section", () => {
             raw: true,
         };
 
-        const result = new ContentSection(sections as IContent);
+        const result = new ContentSection(sections);
 
         expect(result.toString()).toBe(`user-defined\nnew\nlines${isWindows ? "\r\n" : "\n"}`);
     });

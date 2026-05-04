@@ -165,7 +165,7 @@ export const getEnv = (): Record<string, string | undefined> => {
 
                 return false;
             },
-        }) as Record<string, string | undefined>;
+        });
     }
 
     // Check for Bun

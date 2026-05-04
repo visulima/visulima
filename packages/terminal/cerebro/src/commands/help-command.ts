@@ -96,10 +96,7 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const findChildren = <OD extends OptionDefinition<any>>(
-    commands: Map<string, ICommand<OD>>,
-    parentPath: string[],
-): ICommand<OD>[] => {
+const findChildren = <OD extends OptionDefinition<any>>(commands: Map<string, ICommand<OD>>, parentPath: string[]): ICommand<OD>[] => {
     const matches: ICommand<OD>[] = [];
 
     for (const cmd of commands.values()) {
@@ -115,8 +112,8 @@ const findChildren = <OD extends OptionDefinition<any>>(
 
         let isMatch = true;
 
-        for (let index = 0; index < parentPath.length; index += 1) {
-            if (commandPath[index] !== parentPath[index]) {
+        for (const [index, element] of parentPath.entries()) {
+            if (commandPath[index] !== element) {
                 isMatch = false;
                 break;
             }
@@ -131,12 +128,7 @@ const findChildren = <OD extends OptionDefinition<any>>(
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const printParentHelp = <OD extends OptionDefinition<any>>(
-    logger: Console,
-    runtime: ICli<Console>,
-    parentPath: string[],
-    children: ICommand<OD>[],
-): void => {
+const printParentHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli<Console>, parentPath: string[], children: ICommand<OD>[]): void => {
     const parentDisplay = parentPath.join(" ");
     const usageGroups: Section[] = [
         {
@@ -145,7 +137,7 @@ const printParentHelp = <OD extends OptionDefinition<any>>(
         },
         {
             content: children.map((child) => {
-                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),
@@ -261,13 +253,13 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    const ownPath = [...(command.commandPath ?? []), command.name];
+    const ownPath = [...command.commandPath ?? [], command.name];
     const ownChildren = findChildren(commands, ownPath);
 
     if (ownChildren.length > 0) {
         usageGroups.push({
             content: ownChildren.map((child) => {
-                const fullPath = [...(child.commandPath ?? []), child.name].join(" ");
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
 
                 return [green(fullPath), child.description ?? ""];
             }),
@@ -286,7 +278,7 @@ class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionD
             description: "Display only the specified group",
             name: "group",
             type: String,
-        } as OptionDefinition<string>,
+        },
     ];
 
     private readonly commands: Map<string, ICommand<OptionDefinition<unknown>, TLogger>>;

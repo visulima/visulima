@@ -127,7 +127,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
      */
     #getAllGlobalOptions(): OptionDefinition<unknown>[] {
         if (this.#customGlobalOptions.length === 0) {
-            return defaultOptions as OptionDefinition<unknown>[];
+            return defaultOptions;
         }
 
         return [...(defaultOptions as OptionDefinition<unknown>[]), ...this.#customGlobalOptions];
@@ -230,14 +230,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         if (hasBooleanValues) {
             // eslint-disable-next-line no-underscore-dangle
-            commandArgs = { ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } } as typeof parsedArgs;
+            commandArgs = { ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } };
         }
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
         const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions);
 
-        toolbox.runtime = this as ICli<T>;
+        toolbox.runtime = this;
         toolbox.argv = this.#getArgv();
 
         const hasOptions = command.options && command.options.length > 0;
@@ -463,19 +463,13 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         const hasLoader = typeof command.loader === "function";
 
         if (hasExecute && hasLoader) {
-            throw new CerebroError(
-                `Command "${command.name}" cannot define both "execute" and "loader" — choose one`,
-                "INVALID_COMMAND",
-                { commandName: command.name },
-            );
+            throw new CerebroError(`Command "${command.name}" cannot define both "execute" and "loader" — choose one`, "INVALID_COMMAND", {
+                commandName: command.name,
+            });
         }
 
         if (!hasExecute && !hasLoader) {
-            throw new CerebroError(
-                `Command "${command.name}" must define either "execute" or "loader"`,
-                "INVALID_COMMAND",
-                { commandName: command.name },
-            );
+            throw new CerebroError(`Command "${command.name}" must define either "execute" or "loader"`, "INVALID_COMMAND", { commandName: command.name });
         }
 
         if (command.alias) {
@@ -522,14 +516,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         }
 
         validateDuplicateOptions(command as unknown as ICommand);
-        addNegatableOptions(command as { name: string; options?: OptionDefinition<unknown>[] });
-        processOptionNames(command as { options?: OptionDefinition<unknown>[] });
+        addNegatableOptions(command);
+        processOptionNames(command);
 
         if (command.options) {
             // eslint-disable-next-line no-param-reassign,no-underscore-dangle
-            command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined) as typeof command.__conflictingOptions__;
+            command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined);
             // eslint-disable-next-line no-param-reassign,no-underscore-dangle
-            command.__requiredOptions__ = command.options.filter((option) => option.required === true) as typeof command.__requiredOptions__;
+            command.__requiredOptions__ = command.options.filter((option) => option.required === true);
         }
 
         this.#commands.set(command.name, command);
@@ -885,7 +879,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         try {
             if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
                 await pluginManager.init({
-                    cli: this as ICli<T>,
+                    cli: this,
                     cwd: this.#cwd,
                     logger: this.#logger,
                 });
@@ -993,7 +987,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         try {
             if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
                 await pluginManager.init({
-                    cli: this as ICli<T>,
+                    cli: this,
                     cwd: this.#cwd,
                     logger: this.#logger,
                 });
