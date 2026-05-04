@@ -15,10 +15,7 @@ const writeProject = (
 
     mkdirSync(directory, { recursive: true });
 
-    writeFileSync(
-        join(directory, "package.json"),
-        JSON.stringify({ name: `@fix/${name}`, scripts: {}, ...files.packageJson }, undefined, 2),
-    );
+    writeFileSync(join(directory, "package.json"), JSON.stringify({ name: `@fix/${name}`, scripts: {}, ...files.packageJson }, undefined, 2));
 
     if (files.projectJson) {
         writeFileSync(join(directory, "project.json"), JSON.stringify(files.projectJson, undefined, 2));

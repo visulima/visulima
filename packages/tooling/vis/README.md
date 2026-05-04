@@ -46,6 +46,7 @@
 - **Graph visualization**: View your project dependency graph in ASCII, DOT, JSON, or HTML
 - **Git hooks**: Install, manage, and migrate git hooks (husky migration supported)
 - **Configurable**: `vis.json` for target defaults, cache settings, and task runner options
+- **Inferred targets**: Optional Project Crystal-style synthesis of `build`/`test`/`dev`/`lint`/`format` from 36 tools (Vite, Vitest, Next, Nuxt, packem, ESLint, Biome, Prisma, …). Opt in with `inferTargets: true`; explicit scripts and `project.json`/`vis.task.ts` overrides always win
 - **Built on Cerebro**: Uses `@visulima/cerebro` for a robust CLI experience with built-in help, version, and completion
 
 ## Install

@@ -97,8 +97,8 @@ import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
     extends: [
-        "@acme/vis-preset",                  // npm package
-        "./shared/security.config.ts",       // relative path
+        "@acme/vis-preset", // npm package
+        "./shared/security.config.ts", // relative path
     ],
     security: { allowBuilds: { esbuild: true } },
 });
@@ -138,7 +138,7 @@ Lowest to highest priority — later overrides earlier:
 3. `taskDefaults` blocks (in declaration order)
 4. `project.json#targets`
 5. **`vis.task.ts#targets`**
-6. `package.json#scripts` *(fallback only — fills `command` if still undefined)*
+6. `package.json#scripts` _(fallback only — fills `command` if still undefined)_
 7. Preset
 8. `defaultCacheForType`
 
@@ -198,6 +198,66 @@ Scope fields (all optional, must all match):
 | `layer`       | `string \| string[]`         | Layer match                         |
 | `stack`       | `string \| string[]`         | Stack match                         |
 | `language`    | `string \| string[]`         | Language match                      |
+
+### Inferred Targets
+
+Project Crystal-style inference: vis can synthesize default targets (`build`, `test`, `dev`, `lint`, `format`, …) for each project by sniffing config files and `package.json` dependencies. Off by default.
+
+```typescript
+export default defineConfig({
+    inferTargets: true,
+});
+```
+
+Inferred targets are the **lowest-priority layer** in the merge chain — `package.json` scripts, `project.json`, and per-package `vis.task.ts` always win on a per-target-name basis. Add `"build": "vite build --mode foo"` to `package.json` and that script overrides whatever the Vite detector would have generated; everything else (e.g. `dev`, `preview`) keeps the inferred value.
+
+Run `vis list --inferred` to see exactly what was synthesized in each project.
+
+#### Per-detector opt-in / opt-out
+
+Use the object form to disable individual detectors. Detectors omitted from the object stay enabled:
+
+```typescript
+export default defineConfig({
+    inferTargets: {
+        // Drop Jest tests in favour of an explicit script
+        jest: false,
+        // Drop the legacy webpack detector workspace-wide
+        webpack: false,
+    },
+});
+```
+
+To opt **in** to only specific detectors, set the rest to `false` — there is no implicit allow-list. (For most workspaces `true` plus a handful of overrides is the right shape.)
+
+#### Detector coverage
+
+| Category           | Detectors (target names)                                                                                                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App frameworks     | `nuxt`, `next`, `remix`, `astro`, `gatsby`, `docusaurus` — emit `build`, `dev`, `start`/`preview`/`serve`, plus framework-specific (`generate`, `develop`, …)                                                                                     |
+| Bundlers           | `vite`, `rolldown`, `tsdown`, `tsup`, `packem`, `rollup`, `webpack` — emit `build` (and `dev`/`preview` where the tool supports it)                                                                                                               |
+| Server frameworks  | `nest` — emits `build`, `dev`, `start`                                                                                                                                                                                                            |
+| Test runners       | `vitest`, `jest`, `bun`, `deno`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                                                                                                                  |
+| Stories            | `storybook` — emits `storybook`, `build-storybook`                                                                                                                                                                                                |
+| Typecheck / docs   | `typescript` (→ `typecheck`), `typedoc` (→ `docs`), `vitepress` (→ `docs:dev`, `docs:build`, `docs:preview`)                                                                                                                                      |
+| Lint / format      | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                                                                                                                   |
+| DB tooling         | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                                                                                                    |
+| Release plumbing   | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)                                                                                                  |
+
+When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
+
+- `build`: nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack
+- `test`: vitest > jest > bun > deno
+- `test:e2e`: playwright > cypress
+- `lint`: eslint > biome > oxlint > deno
+- `format` / `format:check`: prettier > biome > oxfmt
+- `db:*`: prisma > drizzle
+
+Stylelint and knip use distinct names (`lint:css`, `knip`) so they coexist with the primary linter. Mutating commands (`prettier --write`, `oxfmt`, `deno fmt`) deliberately omit `type` so the cache won't skip a re-format the user expected.
+
+#### Trigger surface
+
+Most detectors fire when **either** a config file or a known dependency is present. Tools that frequently appear as transitive deps require a config file to avoid phantom targets — currently: `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`. Detectors with a `fallbackDependency` (e.g. `vitest`) work even with the tool's default config (no `vitest.config.ts` needed).
 
 ### Constraints
 
@@ -414,11 +474,11 @@ export default defineConfig({
 });
 ```
 
-| Value                                     | Behavior                                                                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `"auto"` _(default)_                      | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                           |
-| `"aube"`                                  | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back            |
-| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"`   | Pin to the named PM regardless of what's on PATH                                                                          |
+| Value                                   | Behavior                                                                                                       |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `"auto"` _(default)_                    | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                |
+| `"aube"`                                | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back |
+| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"` | Pin to the named PM regardless of what's on PATH                                                               |
 
 #### Resolution precedence
 
@@ -473,12 +533,12 @@ export default defineConfig({
 });
 ```
 
-| Field                  | Default        | Description                                                                                  |
-| ---------------------- | -------------- | -------------------------------------------------------------------------------------------- |
-| `ai.provider`          | auto-detect    | Pin a specific AI runner (`"claude"`, `"gemini"`, etc.). Skips detection.                    |
-| `ai.priority`          | built-in order | Override the per-provider priority. Higher numbers win when multiple are detected.           |
-| `ai.cacheTtl`          | 1 h (30 min for security analyses) | AI response cache TTL in milliseconds.                              |
-| `ai.heal.allowedActors`| `[]`           | Usernames/emails authorised to trigger `vis ai heal accept`. Empty list disables auto-commit. |
+| Field                   | Default                            | Description                                                                                   |
+| ----------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| `ai.provider`           | auto-detect                        | Pin a specific AI runner (`"claude"`, `"gemini"`, etc.). Skips detection.                     |
+| `ai.priority`           | built-in order                     | Override the per-provider priority. Higher numbers win when multiple are detected.            |
+| `ai.cacheTtl`           | 1 h (30 min for security analyses) | AI response cache TTL in milliseconds.                                                        |
+| `ai.heal.allowedActors` | `[]`                               | Usernames/emails authorised to trigger `vis ai heal accept`. Empty list disables auto-commit. |
 
 The allow-list is the only gate between an AI proposal and a real commit, so vendoring `vis.config.ts` in a shared preset is the recommended way to manage it. A mismatched entry yields a provider-aware refusal that names the env var checked (`BUILDKITE_UNBLOCKER_EMAIL` on Buildkite, comment-author login on GitHub/GitLab) so the operator can fix the right thing. See the [AI integration guide](/guides/ai-integration#acceptance-vis-ai-heal-accept) for the full per-provider trigger flow.
 
@@ -499,11 +559,11 @@ export default defineConfig({
 });
 ```
 
-| Field                      | Default | Description                                                                                                                                                |
-| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `generator.templates`      | `[]`    | Extra directories to scan. Each is checked for both native templates (`<name>.ts`) and moon-format directories (`<name>/template.yml`).                    |
-| `generator.auth`           |         | Auth token for downloading private remote templates via giget. Falls back to `GIGET_AUTH` / `GITHUB_TOKEN` / `GH_TOKEN` env vars.                          |
-| `generator.preferOffline`  | `false` | Prefer the giget cache over re-downloading. Override per-invocation with `--prefer-offline`.                                                               |
+| Field                     | Default | Description                                                                                                                             |
+| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `generator.templates`     | `[]`    | Extra directories to scan. Each is checked for both native templates (`<name>.ts`) and moon-format directories (`<name>/template.yml`). |
+| `generator.auth`          |         | Auth token for downloading private remote templates via giget. Falls back to `GIGET_AUTH` / `GITHUB_TOKEN` / `GH_TOKEN` env vars.       |
+| `generator.preferOffline` | `false` | Prefer the giget cache over re-downloading. Override per-invocation with `--prefer-offline`.                                            |
 
 Discovery and override semantics — including how to vendor a customised copy of a builtin (e.g. `buildkite-ci`) at `.vis/templates/<name>/` — are in the [`vis generate` reference](/commands/generate#discovery).
 
@@ -586,13 +646,13 @@ Targets support all fields from [target options](/commands/run#target-options) i
 
 Clauses are AND-ed; an array inside a clause is OR-ed.
 
-| Clause   | Type                            | Meaning                                                              |
-| -------- | ------------------------------- | -------------------------------------------------------------------- |
-| `os`     | `string \| string[]`            | Match `process.platform`. `"windows"` is sugar for `"win32"`.        |
-| `env`    | `string \| object \| array`     | String form: var must be set+non-empty. Object form: `{ name, equals?, exists? }`. |
-| `branch` | `string \| string[]`            | Current git branch (HEAD). Empty when not in a repo or on detached HEAD. |
-| `ci`     | `boolean`                       | `true` → only inside CI; `false` → only outside. Detected via `CI` env var. |
-| `not.*`  | mirrors of all of the above     | Task runs only when *every* `not.*` clause **fails** to match.      |
+| Clause   | Type                        | Meaning                                                                            |
+| -------- | --------------------------- | ---------------------------------------------------------------------------------- |
+| `os`     | `string \| string[]`        | Match `process.platform`. `"windows"` is sugar for `"win32"`.                      |
+| `env`    | `string \| object \| array` | String form: var must be set+non-empty. Object form: `{ name, equals?, exists? }`. |
+| `branch` | `string \| string[]`        | Current git branch (HEAD). Empty when not in a repo or on detached HEAD.           |
+| `ci`     | `boolean`                   | `true` → only inside CI; `false` → only outside. Detected via `CI` env var.        |
+| `not.*`  | mirrors of all of the above | Task runs only when _every_ `not.*` clause **fails** to match.                     |
 
 ```json
 // "macOS or Linux, only when running on a release branch, never in CI"

@@ -355,20 +355,57 @@ interface VisConfig {
 
     /**
      * Auto-create targets from detected config files (Project Crystal-style).
-     * v1 detectors: `vite.config.*` (build/dev/preview), `packem.config.*`
-     * (build), `vitest.config.*` (test/test:watch). Inferred targets sit
-     * *below* explicit ones — anything in `package.json#scripts`,
-     * `project.json#targets`, or `vis.task.ts` wins per-key, so opting in
-     * never overrides existing setups.
+     * Inferred targets sit *below* explicit ones — anything in
+     * `package.json#scripts`, `project.json#targets`, or `vis.task.ts`
+     * wins per-key, so opting in never overrides existing setups.
+     *
+     * Built-in detectors and the targets they synthesize:
+     *
+     * - **App frameworks** — `nuxt` (build/dev/preview/generate),
+     *   `next` (build/dev/start), `remix` (build/dev/start), `astro`
+     *   (build/dev), `gatsby` (build/develop/serve), `docusaurus`
+     *   (build/start/serve).
+     * - **Bundlers** — `vite` (build/dev/preview), `rolldown` (build),
+     *   `tsdown` (build), `tsup` (build), `packem` (build), `rollup`
+     *   (build), `webpack` (build).
+     * - **Docs sites** — `vitepress` (docs:build/docs:dev/docs:preview),
+     *   `typedoc` (docs).
+     * - **Server frameworks** — `nest` (build/start/start:dev).
+     * - **Test runners** — `vitest` (test/test:watch), `jest`
+     *   (test/test:watch), `bun` (test), `playwright` (test:e2e),
+     *   `cypress` (test:e2e/cypress:open).
+     * - **Stories** — `storybook` (storybook/build-storybook).
+     * - **Type checking** — `typescript` (typecheck via `tsc --noEmit`).
+     * - **Lint / format** — `eslint` (lint), `prettier` (format /
+     *   format:check), `biome` (lint, format), `oxlint` (lint),
+     *   `oxfmt` (format / format:check), `stylelint` (lint:css),
+     *   `knip` (knip).
+     * - **Runtimes** — `deno` (test/lint/fmt/check).
+     * - **Database tooling** — `prisma` (db:generate/db:migrate/
+     *   db:push/db:studio), `drizzle` (db:generate/db:migrate/
+     *   db:push/db:studio).
+     * - **Codegen / release** — `graphql-codegen` (codegen),
+     *   `api-extractor` (api-extract), `changeset` (changeset:version /
+     *   changeset:publish / changeset:status).
      *
      * Trigger: presence of any matching config file in the project root.
-     * Some detectors (currently `vitest`, `packem`) additionally match
-     * when their framework appears in `dependencies` /
-     * `devDependencies` / `peerDependencies` / `optionalDependencies`
-     * — covering convention-only setups (e.g. vitest with default
-     * config). The `vite` detector intentionally requires a config
-     * file: pulling vite in transitively (plugin types, helpers)
-     * doesn't reliably mean the project bundles itself with `vite build`.
+     * Most detectors additionally match when their framework appears in
+     * `dependencies` / `devDependencies` / `peerDependencies` /
+     * `optionalDependencies` — covering convention-only setups (e.g.
+     * vitest with default config). Detectors that intentionally require
+     * a config file (because the package frequently appears transitively
+     * and a dep-only match would synthesize broken commands): `vite`,
+     * `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`,
+     * `vitepress`, `bun`, `deno`, `changeset`.
+     *
+     * Conflict resolution: detectors are evaluated in registration order
+     * (see `BUILT_IN_DETECTORS`) and the first to claim a target name
+     * wins. Per-name priorities: `build` → nuxt > next > remix > astro
+     * > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup >
+     * packem > rollup > webpack; `test` → vitest > jest > bun > deno;
+     * `test:e2e` → playwright > cypress; `lint` → eslint > biome >
+     * oxlint > deno; `format` → prettier > biome > oxfmt; `db:*` →
+     * prisma > drizzle.
      *
      * Also accepts an object form (`{ vite: false, vitest: true }`) to
      * opt individual detectors in or out by name. Detectors omitted from

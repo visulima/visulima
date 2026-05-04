@@ -13,7 +13,7 @@ export const vitestDetector: Detector = {
                     "{projectRoot}/__tests__/**/*",
                     "{projectRoot}/test/**/*",
                     "{projectRoot}/tests/**/*",
-                    ...configRef ? [configRef] : [],
+                    ...(configRef ? [configRef] : []),
                     "{projectRoot}/package.json",
                 ],
                 outputs: ["{projectRoot}/coverage"],
