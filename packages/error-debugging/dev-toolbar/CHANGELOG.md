@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.14...@visulima/dev-toolbar@1.0.0-alpha.15) (2026-05-04)
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** allow zod v4 and align eslint-plugin-zod with catalog ([70733ad](https://github.com/visulima/visulima/commit/70733ad6155c3bc460d2bc0943f88af59b7b6725))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.13...@visulima/dev-toolbar@1.0.0-alpha.14) (2026-04-30)
 
 ### Miscellaneous Chores
