@@ -9,11 +9,14 @@ const createServerHelpers = (): ServerHelpers => {
     const rpcContext = createClientRPCContext();
 
     return {
-        rpc: new Proxy({} as ServerHelpers["rpc"], {
-            get(_target, prop: string) {
-                return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
+        rpc: new Proxy(
+            {},
+            {
+                get(_target, prop: string) {
+                    return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
+                },
             },
-        }),
+        ),
     };
 };
 

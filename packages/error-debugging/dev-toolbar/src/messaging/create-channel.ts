@@ -10,8 +10,8 @@ import type { MessageEnvelope, MessageHandler, MessageHandlers } from "./types";
 export const createMessageChannel = <TEvents extends Record<string, (...args: any[]) => void>>(
     handlers: MessageHandlers,
     sendFunction: (event: string, ...args: any[]) => void,
-): MessageChannel<TEvents> =>
-    ({
+): MessageChannel<TEvents> => {
+    return {
         off<K extends keyof TEvents>(event: K, handler?: TEvents[K]): void {
             const eventName = String(event);
             const eventHandlers = handlers.get(eventName);
@@ -67,7 +67,8 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
         send<K extends keyof TEvents>(event: K, ...args: Parameters<TEvents[K]>): void {
             sendFunction(String(event), ...args);
         },
-    }) as MessageChannel<TEvents>;
+    };
+};
 
 /**
  * Handles incoming messages.

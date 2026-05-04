@@ -41,7 +41,7 @@ const getState = (): FreezeState => {
             frozenRAFQueue: [],
             frozenTimeoutQueue: [],
             installed: true, // prevent patching on server
-            origRAF: (() => 0) as unknown as typeof requestAnimationFrame,
+            origRAF: () => 0,
             origSetInterval: (() => 0) as unknown as typeof setInterval,
             origSetTimeout: (() => 0) as unknown as typeof setTimeout,
             pausedAnimations: [],
@@ -79,7 +79,7 @@ if (globalThis.window !== undefined && !_s.installed) {
 
     (globalThis as any).setTimeout = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
-            return _s.origSetTimeout(handler, timeout) as unknown as number;
+            return _s.origSetTimeout(handler, timeout);
         }
 
         return _s.origSetTimeout(
@@ -106,7 +106,7 @@ if (globalThis.window !== undefined && !_s.installed) {
 
     (globalThis as any).setInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
-            return _s.origSetInterval(handler, timeout) as unknown as number;
+            return _s.origSetInterval(handler, timeout);
         }
 
         return _s.origSetInterval(

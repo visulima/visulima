@@ -17,7 +17,7 @@ const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): Cli
             // Default implementation
         },
         ...customFunctions,
-    } as ClientFunctions;
+    };
 
     // Pending RPC requests map
 
