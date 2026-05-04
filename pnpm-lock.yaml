@@ -2340,7 +2340,7 @@ importers:
   packages/api/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: 4.0.0-alpha.10
+        specifier: 4.0.0-alpha.11
         version: link:../connect
       '@visulima/fs':
         specifier: 5.0.0-alpha.12
@@ -4076,7 +4076,7 @@ importers:
         specifier: catalog:types
         version: 8.0.0
       '@visulima/error':
-        specifier: 6.0.0-alpha.13
+        specifier: 6.0.0-alpha.14
         version: link:../../error-debugging/error
       '@visulima/fs':
         specifier: 5.0.0-alpha.12
@@ -4779,7 +4779,7 @@ importers:
         specifier: 3.0.0-alpha.10
         version: link:../../terminal/boxen
       '@visulima/error':
-        specifier: 6.0.0-alpha.13
+        specifier: 6.0.0-alpha.14
         version: link:../error
       http-errors:
         specifier: catalog:prod
@@ -5018,7 +5018,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.13
+        specifier: 6.0.0-alpha.14
         version: link:../error
       ai:
         specifier: ^4.0.0 || ^5.0.0
@@ -5232,7 +5232,7 @@ importers:
         version: link:../../terminal/ansi
       '@visulima/error':
         specifier: 6.0.0-alpha.13
-        version: link:../error
+        version: 6.0.0-alpha.13
       '@visulima/fmt':
         specifier: 2.0.0-alpha.10
         version: link:../../terminal/fmt
@@ -5483,7 +5483,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: 6.0.0-alpha.13
+        specifier: 6.0.0-alpha.14
         version: link:../error
       fastest-levenshtein:
         specifier: catalog:prod
@@ -6122,7 +6122,7 @@ importers:
         version: 4.0.3
       '@visulima/error':
         specifier: 6.0.0-alpha.13
-        version: link:../../error-debugging/error
+        version: 6.0.0-alpha.13
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.77(a2bb5316fe3f7715997e333f2ed8936a)
@@ -7669,7 +7669,7 @@ importers:
         specifier: 2.0.0-alpha.9
         version: link:../command-line-args
       '@visulima/error':
-        specifier: 6.0.0-alpha.13
+        specifier: 6.0.0-alpha.14
         version: link:../../error-debugging/error
       '@visulima/find-cache-dir':
         specifier: 3.0.0-alpha.9
@@ -8035,7 +8035,7 @@ importers:
         version: 25.6.0
       '@visulima/error':
         specifier: 6.0.0-alpha.13
-        version: link:../../error-debugging/error
+        version: 6.0.0-alpha.13
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.77(a2bb5316fe3f7715997e333f2ed8936a)
@@ -9516,7 +9516,7 @@ importers:
         specifier: 4.0.0-alpha.13
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.0-alpha.12
+        specifier: 3.0.0-alpha.13
         version: link:../../terminal/cerebro
       '@visulima/colorize':
         specifier: 2.0.0-alpha.10
@@ -9558,7 +9558,7 @@ importers:
         specifier: 3.0.0-alpha.11
         version: link:../../data-manipulation/string
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.7
+        specifier: 1.0.0-alpha.8
         version: link:../task-runner
       '@visulima/tui':
         specifier: 1.0.0-alpha.5
@@ -19368,6 +19368,16 @@ packages:
   '@visulima/css-style-inject@1.0.0-alpha.15':
     resolution: {integrity: sha512-BsCKXf26Cyhz3Il2ZycZRHJmUUykk3PETkmowsOgWjCgnkAmv6OyWnrIrEaREFHkg+CnpTOZb/SizjkvT6vd/Q==}
     engines: {node: '>=20.19 <=25.*'}
+
+  '@visulima/error@6.0.0-alpha.13':
+    resolution: {integrity: sha512-PrEvfcfwRaTQFEOamtLEc4BppIV6pMw0s2YPmKmwowUwjT3guUQ2xOSvIrBl84SIhsyTL628PUV/5UYgEw2Y6Q==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ai: 6.0.168
+    peerDependenciesMeta:
+      ai:
+        optional: true
 
   '@visulima/find-cache-dir@3.0.0-alpha.9':
     resolution: {integrity: sha512-fp4h/pUodZWV64gLLriyEi6iZpkOO3+TCQHore8PPJC9ldVUgvOfFQ2Vb+Y92cFBQ7h24lDpQa/Tgjxr0oNA0w==}
@@ -45261,6 +45271,8 @@ snapshots:
       '@visulima/is-ansi-color-supported': 3.0.0-alpha.10
 
   '@visulima/css-style-inject@1.0.0-alpha.15': {}
+
+  '@visulima/error@6.0.0-alpha.13': {}
 
   '@visulima/find-cache-dir@3.0.0-alpha.9': {}
 
