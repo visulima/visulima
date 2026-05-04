@@ -29,10 +29,10 @@ interface EnhancedError extends Error {
  */
 const createEnhancedError = (rawError: unknown): EnhancedError => {
     if (rawError instanceof Error) {
-        return rawError as EnhancedError;
+        return rawError;
     }
 
-    return new Error(String(rawError)) as EnhancedError;
+    return new Error(String(rawError));
 };
 
 /**
@@ -40,7 +40,7 @@ const createEnhancedError = (rawError: unknown): EnhancedError => {
  */
 const safeSsrFixStacktrace = (server: ViteDevServer, error: EnhancedError): void => {
     try {
-        server.ssrFixStacktrace(error as Error);
+        server.ssrFixStacktrace(error);
     } catch (fixError) {
         // eslint-disable-next-line no-console
         console.warn("[visulima:vite-overlay:server] SSR stack trace fix failed:", fixError);

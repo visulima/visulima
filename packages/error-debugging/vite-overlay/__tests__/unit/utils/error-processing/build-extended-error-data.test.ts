@@ -303,7 +303,7 @@ src/components/Test.vue
                 plugin: "vite-plugin-test",
             };
 
-            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, rawError as ErrorPayload["err"]);
+            const result = await buildExtendedErrorData(error, mockServer, 0, undefined, rawError);
 
             expectTypeOf(result).toBeObject();
 

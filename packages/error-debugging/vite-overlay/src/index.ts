@@ -278,7 +278,7 @@ const buildExtendedError = async (
         errorType,
         rootPath,
         solution,
-    } as VisulimaViteOverlayErrorPayload;
+    };
 };
 
 /**
