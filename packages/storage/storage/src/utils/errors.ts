@@ -26,7 +26,7 @@ export enum ERRORS {
     TOO_MANY_REQUESTS = "TooManyRequests",
     UNKNOWN_ERROR = "UnknownError",
     UNPROCESSABLE_ENTITY = "UnprocessableEntity",
-    // eslint-disable-next-line no-secrets/no-secrets
+
     UNSUPPORTED_CHECKSUM_ALGORITHM = "UnsupportedChecksumAlgorithm",
     UNSUPPORTED_MEDIA_TYPE = "UnsupportedMediaType",
 }
@@ -57,7 +57,7 @@ export const ErrorMap: ErrorResponses<ERRORS> = (() => {
         InvalidFileName: [400, "Invalid file name or it cannot be retrieved"],
         InvalidFileSize: [400, "File size cannot be retrieved"],
         InvalidRange: [400, "Invalid or missing content-range header"],
-        Invalidtype: [400, "Invalid or missing \"content-type\" header"],
+        Invalidtype: [400, 'Invalid or missing "content-type" header'],
         MethodNotAllowed: [405, "Method not allowed"],
         RequestAborted: [499, "Request aborted"],
         RequestEntityTooLarge: [413, "Request entity too large"],
@@ -133,13 +133,13 @@ export const throwErrorCode = (UploadErrorCode: ERRORS | string, detail?: string
         errorResponse = ErrorMap[errorCode];
     }
 
-    const message
-        = detail
-            || (errorResponse?.body && typeof errorResponse.body === "object" && "message" in errorResponse.body
-                ? (errorResponse.body as { message: string }).message
-                : undefined)
-            || (errorResponse?.message as string | undefined)
-            || ERRORS.UNKNOWN_ERROR;
+    const message =
+        detail ||
+        (errorResponse?.body && typeof errorResponse.body === "object" && "message" in errorResponse.body
+            ? (errorResponse.body as { message: string }).message
+            : undefined) ||
+        (errorResponse?.message as string | undefined) ||
+        ERRORS.UNKNOWN_ERROR;
     const error = new UploadError(errorCode, message);
 
     error.UploadErrorCode = errorCode;

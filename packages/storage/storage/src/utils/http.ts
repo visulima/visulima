@@ -12,7 +12,6 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
     let proto = "";
     let host = "";
 
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const header = getHeader(request, "forwarded");
 
     if (header) {

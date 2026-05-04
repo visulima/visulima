@@ -99,7 +99,7 @@ const swaggerSpec = (
                                         },
                                         metadata: {
                                             description: "JSON stringifies metadata",
-                                            example: "{ \"name\": \"video.mp4\", \"mimeType\": \"video/mp4\", \"size\": 741, \"lastModified\": 1631750105530 }",
+                                            example: '{ "name": "video.mp4", "mimeType": "video/mp4", "size": 741, "lastModified": 1631750105530 }',
                                             type: "string",
                                         },
                                     },
@@ -124,7 +124,6 @@ const swaggerSpec = (
                                 Location: {
                                     description: "Resumable URI",
                                     schema: {
-                                        // eslint-disable-next-line no-secrets/no-secrets
                                         example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
                                         format: "uri",
                                         type: "string",
@@ -153,7 +152,6 @@ const swaggerSpec = (
                                 Location: {
                                     description: "Resumable URI",
                                     schema: {
-                                        // eslint-disable-next-line no-secrets/no-secrets
                                         example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
                                         format: "uri",
                                         type: "string",

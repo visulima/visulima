@@ -22,7 +22,7 @@ class StreamLength extends Transform {
      * @param _encoding Unused encoding parameter
      * @param callback Callback called with error if limit exceeded
      */
-    // eslint-disable-next-line no-underscore-dangle
+
     public override _transform(chunk: Buffer, _encoding: string, callback: (error?: Error) => void): void {
         const expected = this.length + chunk.length;
 

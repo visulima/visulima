@@ -4,8 +4,8 @@ import type { ResponseMetadata } from "@aws-sdk/types";
 import type { LocalMetaStorageOptions } from "../local/local-meta-storage";
 import type { BaseStorageOptions, MetaStorageOptions } from "../types";
 
-export type S3MetaStorageOptions = MetaStorageOptions
-    & S3ClientConfig & {
+export type S3MetaStorageOptions = MetaStorageOptions &
+    S3ClientConfig & {
         bucket?: string;
 
         /**
@@ -16,8 +16,8 @@ export type S3MetaStorageOptions = MetaStorageOptions
         keyFile?: string;
     };
 
-export type S3StorageOptions = BaseStorageOptions
-    & S3ClientConfig & {
+export type S3StorageOptions = BaseStorageOptions &
+    S3ClientConfig & {
         /**
          * Specifying access rules for uploaded files.
          */

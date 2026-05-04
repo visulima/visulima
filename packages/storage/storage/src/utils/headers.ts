@@ -2,7 +2,7 @@
  * Enhanced HTTP header utilities using remix-run/headers for type-safe header manipulation.
  * This module provides internal utilities for the storage package to handle complex headers.
  */
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { Accept, ContentDisposition, ContentType } from "@remix-run/headers";
 
 import type { Headers as UploadHeaders } from "./types";
@@ -130,8 +130,8 @@ export const HeaderUtilities = {
     createContentDisposition(options: { filename?: string; filenameSplat?: string; type: "inline" | "attachment" }): string {
         const disposition = new ContentDisposition({
             type: options.type,
-            ...options.filename && { filename: options.filename },
-            ...options.filenameSplat && { filenameSplat: options.filenameSplat },
+            ...(options.filename && { filename: options.filename }),
+            ...(options.filenameSplat && { filenameSplat: options.filenameSplat }),
         });
 
         return disposition.toString();
@@ -148,8 +148,8 @@ export const HeaderUtilities = {
     createContentType(options: { boundary?: string; charset?: string; mediaType: string }): string {
         const contentType = new ContentType({
             mediaType: options.mediaType,
-            ...options.charset && { charset: options.charset },
-            ...options.boundary && { boundary: options.boundary },
+            ...(options.charset && { charset: options.charset }),
+            ...(options.boundary && { boundary: options.boundary }),
         });
 
         return contentType.toString();

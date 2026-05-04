@@ -2,9 +2,7 @@ import { Readable } from "node:stream";
 import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, normalize } from "@visulima/path";
 import typeis from "type-is";
 
@@ -76,7 +74,7 @@ export const defaultFilesystemFileNameValidation = (name: string): boolean => {
     }
 
     const upperCase = name.toUpperCase();
-    const filesystemInvalidChars = ["\"", "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
+    const filesystemInvalidChars = ['"', "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
 
     return !filesystemInvalidChars.some((char) => upperCase.includes(char));
 };
@@ -507,8 +505,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 headers: {
                     "Content-Length": String(file.size),
                     "Content-Type": file.contentType,
-                    ...file.ETag && { ETag: file.ETag },
-                    ...file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() },
+                    ...(file.ETag && { ETag: file.ETag }),
+                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
                 },
                 size: typeof file.size === "number" ? file.size : undefined,
                 stream,
@@ -895,13 +893,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     protected updateTimestamps(file: TFile): TFile {
-        // eslint-disable-next-line no-param-reassign
         file.createdAt ??= new Date().toISOString();
 
         const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
 
         if (maxAgeMs && !file.expiredAt) {
-            // eslint-disable-next-line no-param-reassign
             file.expiredAt = this.expiration?.rolling ? Date.now() + maxAgeMs : +new Date(file.createdAt) + maxAgeMs;
         }
 

@@ -4,7 +4,6 @@ import { Readable } from "node:stream";
 
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
@@ -60,7 +59,7 @@ class Multipart<
         // Create MultipartBase instance with access to this Multipart instance
         const multipartInstance = this;
 
-        this.multipartBase = new class extends MultipartBase<TFile> {
+        this.multipartBase = new (class extends MultipartBase<TFile> {
             // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return multipartInstance.storage;
@@ -98,7 +97,7 @@ class Multipart<
             protected createEmptyStream(): unknown {
                 return Readable.from(new Uint8Array(0));
             }
-        }();
+        })();
     }
 
     /**

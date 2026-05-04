@@ -183,8 +183,10 @@ describe(detectFileTypeFromStream, () => {
             if (outputStream.readableEnded) {
                 resolve();
             } else {
-                outputStream.once("end", () => resolve());
-                setTimeout(() => resolve(), 200);
+                outputStream.once("end", () => {
+                    resolve();
+                });
+                setTimeout(resolve, 200);
             }
         });
 
@@ -199,7 +201,7 @@ describe(detectFileTypeFromStream, () => {
         const mockFileType = { ext: "gif", mime: "image/gif" };
 
         // Delay detection to simulate stream ending first
-        vi.mocked(fileTypeFromBuffer).mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(mockFileType), 200)));
+        vi.mocked(fileTypeFromBuffer).mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 200, mockFileType)));
 
         const stream = Readable.from(Buffer.from([0x47, 0x49, 0x46, 0x38])); // GIF magic bytes
 
@@ -259,8 +261,10 @@ describe(detectFileTypeFromStream, () => {
             if (outputStream.readableEnded) {
                 resolve();
             } else {
-                outputStream.once("end", () => resolve());
-                setTimeout(() => resolve(), 200);
+                outputStream.once("end", () => {
+                    resolve();
+                });
+                setTimeout(resolve, 200);
             }
         });
 
@@ -306,8 +310,10 @@ describe(detectFileTypeFromStream, () => {
             if (outputStream.readableEnded) {
                 resolve();
             } else {
-                outputStream.once("end", () => resolve());
-                setTimeout(() => resolve(), 500);
+                outputStream.once("end", () => {
+                    resolve();
+                });
+                setTimeout(resolve, 500);
             }
         });
 

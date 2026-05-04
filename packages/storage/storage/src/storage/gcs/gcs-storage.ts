@@ -98,7 +98,6 @@ class GCStorage extends BaseStorage<GCSFile> {
             ...retryOptions,
         };
 
-        // eslint-disable-next-line no-param-reassign
         config.scopes ||= GCSConfig.authScopes;
 
         this.authClient = new GoogleAuth(config);
@@ -267,9 +266,9 @@ class GCStorage extends BaseStorage<GCSFile> {
                 // Detect file type from stream if contentType is not set or is default
                 // Only detect on first write (when bytesWritten is 0 or NaN)
                 if (
-                    hasContent(part)
-                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                    && (!file.contentType || file.contentType === "application/octet-stream")
+                    hasContent(part) &&
+                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                    (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -280,7 +279,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                         }
 
                         // Use the stream from file type detection
-                        // eslint-disable-next-line no-param-reassign
+
                         part.body = detectedStream;
                     } catch {
                         // If file type detection fails, continue with original stream
@@ -368,7 +367,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             do {
                 requestOptions.body = progress.rewriteToken ? JSON.stringify({ rewriteToken: progress.rewriteToken }) : "";
-                // eslint-disable-next-line no-await-in-loop
+
                 const response = await this.makeRequest<CopyProgress>(requestOptions);
 
                 progress = response.data || ({} as CopyProgress);
@@ -482,7 +481,6 @@ class GCStorage extends BaseStorage<GCSFile> {
 
                 while (truncated) {
                     try {
-                        // eslint-disable-next-line no-await-in-loop
                         const { data } = await this.makeRequest<{
                             items: { metadata?: GCSFile; name: string; timeCreated: string; updated: string }[];
                             nextPageToken?: string;
@@ -505,7 +503,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                         const httpError = this.normalizeError((error instanceof Error ? error : new Error(String(error))) as ClientError);
 
                         // Sequential error handling is intentional
-                        // eslint-disable-next-line no-await-in-loop
+
                         await this.onError(httpError);
                         throw error;
                     }
@@ -536,7 +534,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         options.headers = {
             Accept: "application/json",
             "Content-Range": contentRange,
-            ...size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {},
+            ...(size === bytesWritten ? { "X-Goog-Upload-Command": "upload, finalize" } : {}),
         };
 
         try {
@@ -569,7 +567,6 @@ class GCStorage extends BaseStorage<GCSFile> {
 
     private async makeRequest<T = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<T>> {
         if (typeof data.url === "string") {
-            // eslint-disable-next-line no-param-reassign
             data.url = data.url
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
@@ -577,7 +574,6 @@ class GCStorage extends BaseStorage<GCSFile> {
                 .replaceAll("/:", ":");
         }
 
-        // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
             headers: {
@@ -585,7 +581,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...this.userProject === undefined ? {} : { userProject: this.userProject },
+                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
             },
             retry: true,
             retryConfig: this.retryOptions,

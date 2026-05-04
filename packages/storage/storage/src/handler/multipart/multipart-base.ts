@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-returns-check */
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
@@ -21,7 +20,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @param requestUrl Request URL for Location header
      * @returns Promise resolving to ResponseFile with upload result
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
     public async handlePost(
         filePart: { bytes: unknown; filename?: string; mediaType?: string; size: number },
         metadataParts: { isFile: boolean; name?: string; text?: string }[],
@@ -92,8 +91,8 @@ abstract class MultipartBase<TFile extends UploadFile> {
             ...finalFile,
             headers: {
                 Location: locationUrl,
-                ...finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() },
-                ...finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag },
+                ...(finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() }),
+                ...(finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag }),
             },
             statusCode: 200,
         };

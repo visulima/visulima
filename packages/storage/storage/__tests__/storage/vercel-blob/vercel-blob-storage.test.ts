@@ -44,13 +44,13 @@ describe(VercelBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 url: "https://example.com/blob/test-file",
-            } as never);
+            });
 
             // Mock fetch HEAD request to return success
             (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 status: 200,
-            } as Response);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -75,7 +75,7 @@ describe(VercelBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 url: undefined,
-            } as never);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -89,13 +89,13 @@ describe(VercelBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 url: "https://example.com/blob/test-file",
-            } as never);
+            });
 
             // Mock fetch HEAD request to return 404 (doesn't exist)
             (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: false,
                 status: 404,
-            } as Response);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -109,7 +109,7 @@ describe(VercelBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 url: "https://example.com/blob/test-file",
-            } as never);
+            });
 
             // Mock fetch to throw error
             (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Network error"));

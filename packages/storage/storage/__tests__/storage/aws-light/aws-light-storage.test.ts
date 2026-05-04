@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets -- XML test data strings are false positives */
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 // Import AFTER the mock is set up to ensure import calls are intercepted
@@ -14,7 +13,6 @@ vi.mock(import("aws4fetch"), () => {
     // Store it in globalThis so tests can access it
     const sharedMockFetch = vi.fn();
 
-    // eslint-disable-next-line no-underscore-dangle
     globalThis.__aws4fetchMockFetch = sharedMockFetch;
 
     // Return a mock AwsClient class that uses the shared mock fetch
@@ -29,7 +27,7 @@ vi.mock(import("aws4fetch"), () => {
 });
 
 // Helper function to get the shared mock fetch function from globalThis
-// eslint-disable-next-line no-underscore-dangle
+
 const getMockFetch = (): ReturnType<typeof vi.fn> => globalThis.__aws4fetchMockFetch || vi.fn();
 
 // Legacy mockStore for backward compatibility (deprecated, use getMockFetch() instead)
@@ -38,7 +36,6 @@ const mockStore: { fetch: ReturnType<typeof vi.fn> } = {
         return getMockFetch();
     },
     set fetch(value: ReturnType<typeof vi.fn>) {
-        // eslint-disable-next-line no-underscore-dangle
         globalThis.__aws4fetchMockFetch = value;
     },
 };
@@ -917,7 +914,7 @@ describe("awsLightPresignedStorage", () => {
                 }),
                 ok: true,
                 status: 200,
-            } as Response);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -937,7 +934,7 @@ describe("awsLightPresignedStorage", () => {
             mockFetch.mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-            } as Response);
+            });
 
             const exists = await storage.exists({ id: "non-existent-id" });
 
@@ -968,7 +965,7 @@ describe("awsLightPresignedStorage", () => {
             mockFetch.mockResolvedValueOnce({
                 ok: false,
                 status: 404,
-            } as Response);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 

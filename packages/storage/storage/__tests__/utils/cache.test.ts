@@ -57,7 +57,9 @@ describe("cache", () => {
 
             const cache = new NoOpCache();
 
-            expect(() => cache.clear()).not.toThrow();
+            expect(() => {
+                cache.clear();
+            }).not.toThrow();
         });
 
         it("should handle multiple operations without side effects", () => {

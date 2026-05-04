@@ -41,7 +41,6 @@ describe(GCStorage, async () => {
 
     let storage: GCStorage;
 
-    // eslint-disable-next-line sonarjs/no-clear-text-protocols
     const uri = "http://api.com?upload_id=123456789";
 
     const metafileResponse = (): { data: GCSFile; status: number } =>
@@ -154,7 +153,6 @@ describe(GCStorage, async () => {
 
             mockAuthRequest.mockResolvedValue(metafileResponse());
 
-            // eslint-disable-next-line radar/no-duplicate-string
             const gcsFile = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
             expect(gcsFile.metadata.name).toBe("newname.mp4");
@@ -244,7 +242,6 @@ describe(GCStorage, async () => {
             try {
                 await storage.write({ contentLength: 0, id: metafile.id });
             } catch (error) {
-                // eslint-disable-next-line no-secrets/no-secrets
                 expect(error).toStrictEqual(new FetchError("Bad Request", "GCS400", { uri: "http://api.com?upload_id=123456789" }));
                 expect(error).toMatchSnapshot();
             }
@@ -375,7 +372,7 @@ describe(GCStorage, async () => {
                     params: {},
                     retry: true,
                     timeout: 60_000,
-                    // eslint-disable-next-line no-secrets/no-secrets
+
                     url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
                 }),
             );
@@ -428,7 +425,7 @@ describe(GCStorage, async () => {
 
             const error: ClientError = {
                 code: "400",
-                // eslint-disable-next-line no-secrets/no-secrets
+
                 config: { uri: "http://api.com?upload_id=123456789" },
                 message: "Bad Request",
                 name: "ClientError",

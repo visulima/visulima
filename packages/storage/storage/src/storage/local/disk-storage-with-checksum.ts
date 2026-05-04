@@ -2,7 +2,6 @@ import { createWriteStream } from "node:fs";
 import { truncate } from "node:fs/promises";
 import { pipeline } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureFile, remove } from "@visulima/fs";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -104,9 +103,9 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
                 const isFirstChunk = part.start === 0 || part.start === undefined;
 
                 if (
-                    isFirstChunk
-                    && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                    && (!file.contentType || file.contentType === "application/octet-stream")
+                    isFirstChunk &&
+                    (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                    (!file.contentType || file.contentType === "application/octet-stream")
                 ) {
                     try {
                         const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);

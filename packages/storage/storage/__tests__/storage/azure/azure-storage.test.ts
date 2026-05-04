@@ -65,7 +65,7 @@ describe(AzureStorage, () => {
             expect.assertions(1);
 
             // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile } as never);
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
 
             // Mock blob exists to return true
             (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
@@ -90,7 +90,7 @@ describe(AzureStorage, () => {
             expect.assertions(1);
 
             // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile } as never);
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
 
             // Mock blob exists to return false
             (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(false);

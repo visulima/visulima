@@ -42,7 +42,7 @@ export class StreamChecksum extends Transform {
      * @param _encoding Unused encoding parameter
      * @param done Callback to signal completion
      */
-    // eslint-disable-next-line no-underscore-dangle
+
     public override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
         this.push(chunk);
         this.hash.update(chunk);
@@ -55,7 +55,7 @@ export class StreamChecksum extends Transform {
      * Finalization method that validates the checksum.
      * @param callback Callback called with error if checksum validation fails
      */
-    // eslint-disable-next-line no-underscore-dangle
+
     public override _flush(callback: (error?: Error) => void): void {
         this.digest = this.hash.digest(this.encoding);
 
