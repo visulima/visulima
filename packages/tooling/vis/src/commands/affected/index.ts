@@ -10,6 +10,7 @@ const affected: Command = {
     examples: [
         ["vis affected build", "Run build on affected projects"],
         ["vis affected test --base=main", "Run tests on projects changed since main"],
+        ["vis affected destroy --reverse", "Tear down affected projects leaves-first"],
     ],
     group: "Run & Execute",
     loader: () => import("./handler"),
@@ -67,6 +68,13 @@ const affected: Command = {
             name: "query",
             type: String,
         },
+        {
+            defaultValue: false,
+            description:
+                "Run the dependency graph in reverse (leaves first, then their dependents). Useful for teardown targets like `destroy`/`undeploy` where dependents must run before the things they depend on.",
+            name: "reverse",
+            type: Boolean,
+        },
     ],
 };
 
@@ -81,5 +89,6 @@ export type AffectedCommandOptions = CreateOptions<{
     parallel: number | undefined;
     partition: string | undefined;
     query: string | undefined;
+    reverse: boolean | undefined;
     upstream: string | undefined;
 }>;

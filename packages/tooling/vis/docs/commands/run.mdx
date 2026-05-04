@@ -36,6 +36,7 @@ vis run test --projects=pkg-a,pkg-b                       # Explicit list
 vis run build --parallel=5                                # Concurrency
 vis run build --no-cache                                  # Skip cache
 vis run test --watch                                      # Rerun on file change
+vis run destroy --reverse                                 # Leaves-first (teardown order)
 ```
 
 ## Options
@@ -60,6 +61,7 @@ vis run test --watch                                      # Rerun on file change
 | `--pty`              |       | `false` | Run every task through a PTY so color-aware tools render as if attached to a TTY                                                                                    |
 | `--retry-budget`     |       |         | Global cap on total retries across the run (per-target `retryCount` is honored up to budget)                                                                        |
 | `--profile`          |       |         | Write a Chrome Tracing JSON of the run to this path (open in chrome://tracing or Perfetto)                                                                          |
+| `--reverse`          |       | `false` | Run the dependency graph leaves-first (dependents before deps). Use for teardown targets like `destroy`/`undeploy` — see [Reverse order](#reverse-order-teardown).  |
 
 ### Positional args after the target
 
@@ -337,6 +339,32 @@ Set `killGracePeriodMs: 0` to disable the escalation entirely (SIGTERM only). Se
 The escalation matters on Windows and for tasks that swallow `SIGTERM` (test runners holding open child processes, deep child trees) — without it, a single hung task can outlive its budget indefinitely.
 
 On Windows the underlying task-runner spawns each child in its own process group (`CREATE_NEW_PROCESS_GROUP`) so SIGINT / `Ctrl+C` is delivered as `CTRL_BREAK_EVENT` first, with a Job Object `TerminateJobObject` as the hard backstop after the grace window. This mirrors the Unix `setsid` + `killpg(SIGTERM)` → `SIGKILL` flow and means well-behaved CLIs (Node, Python, Go) get a chance to clean up before being force-killed. Tools that ignore Ctrl+Break are still terminated by the Job Object.
+
+## Reverse order (teardown)
+
+`--reverse` flips the dependency graph so dependents run before the things they depend on. Use it for teardown-style targets where the build-time order is exactly wrong:
+
+```bash
+vis run destroy --reverse           # tear stacks down leaves-first
+vis run undeploy --reverse          # mirror of `vis run deploy`
+vis affected destroy --reverse      # same, scoped to git-affected projects
+```
+
+### Why this matters
+
+If `app` depends on `lib` (so `app` builds *after* `lib`), then a CDK/Pulumi/CloudFormation `destroy` must run on `app` **before** `lib`, because `lib`'s outputs (an `Fn::ImportValue`, a shared VPC, a network stack) are still being consumed by `app`. Tearing down `lib` first leaves dangling exports and blocks the destroy.
+
+`--reverse` reuses the same `dependsOn` declarations you already have — no duplicate "destroy graph" to maintain. The reversal happens after service auto-attach and project resolution, so `--affected`, `--query`, `--projects`, and persistent services all keep working unchanged.
+
+```bash
+vis run destroy --reverse --dry-run    # preview the teardown order
+```
+
+The dry-run plan reflects the reversed order, so you can verify the sequence before letting it touch anything.
+
+### When you don't need it
+
+If your `destroy` target already declares `dependsOn` pointing the right way (e.g. `dependsOn: ["^destroy"]` reversed manually as `dependents: ["destroy"]`-style hand-roll), you don't need the flag — but most teams use the same `dependsOn` for both directions and toggle the order with `--reverse` instead.
 
 ## How It Works
 

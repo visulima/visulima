@@ -21,6 +21,7 @@ vis affected test --base=main
 vis affected lint --base=HEAD~5 --head=HEAD
 vis affected test --query "language=typescript"
 vis affected build --downstream=direct
+vis affected destroy --reverse
 ```
 
 ## Options
@@ -36,6 +37,7 @@ vis affected build --downstream=direct
 | `--dry-run`    | `false`  | Show what would run without executing                     |
 | `--partition`  |          | Partition for distributed CI (e.g. `1/4`)                 |
 | `--query`      |          | Filter affected projects by query                         |
+| `--reverse`    | `false`  | Run leaves-first (teardown order). Forwarded to `vis run`. See [Reverse order](./run#reverse-order-teardown). |
 
 ## Affected Files Forwarding
 
@@ -100,3 +102,13 @@ Run tests only on affected TypeScript libraries:
 ```bash
 vis affected test --query "language=typescript && layer=library"
 ```
+
+### Teardown of changed stacks
+
+Tear down only the stacks affected by a change, in reverse order so dependents go first:
+
+```bash
+vis affected destroy --reverse --base=origin/main
+```
+
+Mirrors `vis affected deploy` — same project set, opposite order. See [`vis run` reverse order](./run#reverse-order-teardown) for the full mechanics.

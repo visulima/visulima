@@ -19,6 +19,7 @@ import {
     generateRunSummary,
     parsePartition,
     readLastRunSummary,
+    reverseTaskGraph,
     runConcurrently,
     TaskScheduler,
     TerminalBuffer,
@@ -791,6 +792,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             argv.push(`--query=${String(options.query)}`);
         }
 
+        if (options.reverse) {
+            argv.push("--reverse");
+        }
+
         await runtime.runCommand("affected", { argv });
 
         return;
@@ -1099,6 +1104,19 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         logger.debug?.(`Auto-attached to running services: ${names}`);
     }
 
+    // Flip the task graph for teardown targets (CDK/Pulumi `destroy`,
+    // `undeploy`, etc.) where dependents must run before the things
+    // they depend on. Runs after service auto-attach so service
+    // detection still uses the natural graph; runs before the
+    // dry-run walk and scheduler so both reflect the reversed order.
+    // `reverseTaskGraph` recomputes `roots` from the flipped edges,
+    // so the dry-run printer and `TaskScheduler` need no further
+    // changes — they already walk topologically over `dependencies`.
+    if (options.reverse) {
+        taskGraph = reverseTaskGraph(taskGraph);
+        logger.debug?.(`Reversed task graph: ${String(taskGraph.roots.length)} new root(s) (originally leaves)`);
+    }
+
     if (options.dryRun) {
         const taskCount = Object.keys(taskGraph.tasks).length;
         const rootCount = taskGraph.roots.length;
@@ -1126,6 +1144,16 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         for (const root of taskGraph.roots) {
             walkPlan(root, 0);
+        }
+
+        // Visit any tasks not reachable from `roots`. Two cases hit
+        // this: disconnected graph components, and reversed graphs
+        // where reverse-roots don't reach the original-leaves through
+        // outbound `dependencies` (the printer recurses into deps,
+        // and original-leaves are reverse-dependents — so we'd
+        // otherwise drop them silently from the plan).
+        for (const taskId of Object.keys(taskGraph.tasks)) {
+            walkPlan(taskId, 0);
         }
 
         if (persistentTasks.length > 0) {

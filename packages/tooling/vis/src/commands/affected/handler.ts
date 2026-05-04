@@ -93,6 +93,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         argv.push(`--partition=${String(options.partition)}`);
     }
 
+    if (options.reverse) {
+        argv.push("--reverse");
+    }
+
     try {
         await runtime.runCommand("run", { argv });
     } finally {
