@@ -7,8 +7,8 @@ import { loadMoonTemplate } from "../../src/generate/moon-adapter";
 import type { CreationDirectory, CreationFile } from "../../src/generate/types";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const MOON_COMPONENT = join(here, "../__fixtures__/generate/moon-component");
-const MOON_ADVANCED = join(here, "../__fixtures__/generate/moon-advanced");
+const MOON_COMPONENT = join(here, "../../__fixtures__/generate/moon-component");
+const MOON_ADVANCED = join(here, "../../__fixtures__/generate/moon-advanced");
 
 const baseBuiltins = {
     dest_dir: "/tmp/dest",
@@ -116,12 +116,12 @@ describe("moon adapter — error paths", () => {
     it("should throw when template.yml is missing", () => {
         expect.assertions(1);
 
-        expect(() => loadMoonTemplate(join(here, "../__fixtures__/generate/does-not-exist"), "x")).toThrow();
+        expect(() => loadMoonTemplate(join(here, "../../__fixtures__/generate/does-not-exist"), "x")).toThrow();
     });
 });
 
 describe("moon adapter — destination path normalization", () => {
-    const MOON_NORMALIZE = join(here, "../__fixtures__/generate/moon-normalize");
+    const MOON_NORMALIZE = join(here, "../../__fixtures__/generate/moon-normalize");
 
     it("should normalise `./path` and collapsed slashes so filesMeta keys match the runner's flattened paths", async () => {
         expect.assertions(3);

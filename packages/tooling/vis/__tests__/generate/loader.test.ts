@@ -7,7 +7,7 @@ import { loadNativeTemplate } from "../../src/generate/loader";
 import type { CreationDirectory, CreationFile } from "../../src/generate/types";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const FIXTURE = join(here, "../__fixtures__/generate/native/package.ts");
+const FIXTURE = join(here, "../../__fixtures__/generate/native/package.ts");
 
 const flatten = (tree: CreationDirectory, prefix = ""): Record<string, CreationFile> => {
     const out: Record<string, CreationFile> = {};
@@ -55,6 +55,6 @@ describe(loadNativeTemplate, () => {
     it("should reject modules without a default export", async () => {
         expect.assertions(1);
 
-        await expect(loadNativeTemplate(join(here, "../__fixtures__/generate/native/missing.ts"))).rejects.toThrow();
+        await expect(loadNativeTemplate(join(here, "../../__fixtures__/generate/native/missing.ts"))).rejects.toThrow();
     });
 });

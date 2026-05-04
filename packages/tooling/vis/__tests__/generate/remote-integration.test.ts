@@ -20,7 +20,7 @@ import { fetchRemoteTemplate, isRemoteSource } from "../../src/generate/remote";
 import type { CreationDirectory, CreationFile } from "../../src/generate/types";
 
 const INTEGRATION = process.env.VITEST_INTEGRATION === "1";
-const REMOTE_SOURCE = "github:visulima/visulima/packages/tooling/vis/__tests__/__fixtures__/generate/moon-component#alpha";
+const REMOTE_SOURCE = "github:visulima/visulima/packages/tooling/vis/__fixtures__/generate/moon-component#alpha";
 
 const flatten = (tree: CreationDirectory, prefix = ""): Record<string, CreationFile> => {
     const out: Record<string, CreationFile> = {};
