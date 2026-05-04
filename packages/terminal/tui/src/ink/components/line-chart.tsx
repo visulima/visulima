@@ -206,6 +206,7 @@ export default function LineChart({
                 version={[series, width, height, minY, maxY, axisColor, palette]}
                 width={width}
             />
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (

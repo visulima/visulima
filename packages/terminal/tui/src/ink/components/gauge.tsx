@@ -241,28 +241,26 @@ export default function Gauge({
                 version={[value, min, max, size, thresholds, backgroundColor]}
                 width={cols}
             />
-            {showValue || label
-                ? (
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+            {showValue || label ? (
                 <Box flexDirection="column">
-                    {label === undefined
-                        ? undefined
-                        : (
+                    {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+                    {label === undefined ? undefined : (
                         <Box justifyContent="center">
                             <Text dimColor>{label}</Text>
                         </Box>
-                        )}
-                    {showValue
-                        ? (
+                    )}
+                    {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+                    {showValue ? (
                         <Box justifyContent="center">
                             <Text bold color={activeThreshold?.color ?? "white"}>
                                 {readout}
                             </Text>
                         </Box>
-                        )
-                        : undefined}
+                    ) : undefined}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
             {showLegend && thresholds && thresholds.length > 0 ? (
                 <Box gap={2} justifyContent="center" marginTop={1}>
                     {thresholds.map((threshold, index) => (

@@ -113,9 +113,8 @@ export default function Heatmap({
 
     return (
         <Box>
-            {rowLabels === undefined
-                ? undefined
-                : (
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+            {rowLabels === undefined ? undefined : (
                 <Box flexDirection="column" marginRight={1}>
                     {Array.from({ length: rows }, (_, index) => (
                         <Text dimColor key={index}>
@@ -123,7 +122,7 @@ export default function Heatmap({
                         </Text>
                     ))}
                 </Box>
-                )}
+            )}
             <Box flexDirection="column">
                 <Canvas
                     // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
@@ -137,8 +136,9 @@ export default function Heatmap({
                         for (let row = 0; row < rows; row += 1) {
                             for (let col = 0; col < cols; col += 1) {
                                 const value = data[row]?.[col];
-                                const background
-                                    = value === undefined
+                                // eslint-disable-next-line @stylistic/operator-linebreak -- prettier places `=` at end of line
+                                const background =
+                                    value === undefined
                                         ? undefined
                                         : palette[Math.max(0, Math.min(paletteLast, Math.round(((value - min) / range) * paletteLast)))];
 
@@ -156,6 +156,7 @@ export default function Heatmap({
                     version={[data, palette, cellWidth, minOverride, maxOverride]}
                     width={width}
                 />
+                {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
                 {columnLabels === undefined ? undefined : (
                     <Box>
                         {columnLabels.map((label, index) => (
