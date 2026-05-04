@@ -100,7 +100,67 @@ const aiDiscoverHelp: Command = {
     options: [],
 };
 
-const aiCommands: Command[] = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix];
+const aiHeal: Command = {
+    commandPath: ["ai"],
+    description: "Diagnose the most recent failed task and post a structured patch as a PR/MR comment",
+    examples: [
+        ["vis ai heal", "Heal the most recent failure"],
+        ["vis ai heal --dry-run", "Propose a patch but skip apply / validate / post"],
+        ["vis ai heal --run 2026-04-28T...", "Heal a specific historical run"],
+    ],
+    group: "System",
+    loader: lazyNamed(() => import("./heal"), "aiHeal"),
+    name: "heal",
+    options: [
+        {
+            defaultValue: false,
+            description: "Show the proposal and exit without applying or posting it",
+            name: "dry-run",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Bypass the AI response cache",
+            name: "no-cache",
+            type: Boolean,
+        },
+        {
+            description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+            name: "run",
+            type: String,
+        },
+        {
+            description: "Per-task validation timeout in seconds (default: 1800)",
+            name: "validation-timeout",
+            type: Number,
+        },
+    ],
+};
+
+const aiHealAccept: Command = {
+    commandPath: ["ai", "heal"],
+    description: "Re-run the proposed fix and commit it to the PR/MR branch when validation passes",
+    examples: [
+        ["vis ai heal accept", "Triggered automatically by a `/vis heal accept` PR comment in CI"],
+    ],
+    group: "System",
+    loader: lazyNamed(() => import("./heal-accept"), "aiHealAccept"),
+    name: "accept",
+    options: [
+        {
+            description: "Use a specific run ID from .task-runner/runs/ instead of the latest run",
+            name: "run",
+            type: String,
+        },
+        {
+            description: "Per-task validation timeout in seconds (default: 1800)",
+            name: "validation-timeout",
+            type: Number,
+        },
+    ],
+};
+
+const aiCommands: Command[] = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix, aiHeal, aiHealAccept];
 
 export default aiCommands;
 
@@ -120,4 +180,16 @@ export type AiFixOptions = CreateOptions<{
     "no-cache": boolean | undefined;
     run: string | undefined;
     yes: boolean | undefined;
+}>;
+
+export type AiHealOptions = CreateOptions<{
+    "dry-run": boolean | undefined;
+    "no-cache": boolean | undefined;
+    run: string | undefined;
+    "validation-timeout": number | undefined;
+}>;
+
+export type AiHealAcceptOptions = CreateOptions<{
+    run: string | undefined;
+    "validation-timeout": number | undefined;
 }>;

@@ -10,9 +10,20 @@ import type { AiAnalysisResult, AiRecommendation, AnalysisType } from "./types";
 
 // --- Provider selection (vis-specific) ---
 
+interface AiHealConfig {
+    /**
+     * Usernames allowed to trigger `vis ai heal accept`. Empty list (the
+     * default) disables auto-commit entirely. Comparison is case-sensitive
+     * against the comment author's login (GitHub) or username (GitLab).
+     */
+    allowedActors?: string[];
+}
+
 interface AiConfig {
     /** Cache TTL in milliseconds. Overrides default (1h / 30min for security). */
     cacheTtl?: number;
+    /** `vis ai heal` and `vis ai heal accept` configuration. */
+    heal?: AiHealConfig;
     /** Override default provider priority. Higher = preferred. */
     priority?: Record<string, number>;
     /** Use a specific provider, skip auto-detection. */
@@ -474,7 +485,7 @@ const runAiAnalysis = async (
     }
 };
 
-export type { AiConfig };
+export type { AiConfig, AiHealConfig };
 
 export {
     buildAnalysisPrompt,

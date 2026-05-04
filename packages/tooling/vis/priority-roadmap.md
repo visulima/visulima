@@ -59,10 +59,17 @@ Shipped: `vis cache prune` already supported `--max-age-days` and `--max-size`; 
 
 ---
 
-### 5. MCP server + generator/template introspection
+### 5. MCP server + generator/template introspection ✅ shipped
 **Leverage:** AI-tooling year. **Effort:** M. **Demand:** ★★★
 
-Don't ship MCP without `list_templates` / `describe_template` / `list_projects` / `describe_project` / `run_task` / `get_run_logs`. moon#2437 explicit: bare MCP without discovery tools means AI agents fly blind. In JS-land, only Nx has shipped this — direct moat play.
+Shipped as `@visulima/vis-mcp`, an MCP stdio server with eight read-only tools and a paired Claude Skill that documents optimal usage:
+- **Workspace introspection**: `list_projects` (with vis-query filter), `describe_project`, `list_targets` (per-target rows with type, command, description).
+- **Template introspection**: `list_templates`, `describe_template` (variable schema for `vis generate`) — closes the moon#2437 "agents fly blind" gap.
+- **Run forensics**: `get_run_logs` (reads `.task-runner/last-summary.json` or a specific `runId`, optionally filters to one task), `cache_why` (hash-rotation diff), `cache_hash` (recorded hash + per-input details).
+- **Resolution path**: `createRequire` from `VIS_MCP_WORKSPACE_ROOT` finds the workspace-local `@visulima/vis`; `VIS_MCP_VIS_BIN` overrides for linked checkouts.
+- **Wire safety**: argv-form spawn (no shell), `isValidTaskId` / `isValidRunId` guards reject leading-`-` flag injection and path traversal, all logs go to stderr to keep the JSON-RPC stdout pristine.
+
+**Design decision — read-only by intent.** The roadmap originally named `run_task`. We deliberately diverged to the Nx-style "agent prepares, human executes" model: the MCP surface stays read-only so an LLM client cannot mutate the workspace through the protocol. Mutating commands (`vis run`, `vis generate`) are something the agent recommends and the human invokes. README.md and `__tests__/server.test.ts` codify the eight-tool contract.
 
 **Sources:** Section 7 Theme F + 8.1 Theme Z. Nx MCP, moon#2437.
 
@@ -102,10 +109,15 @@ Shipped: `vis run --output-style=quiet` swallows stdout/stderr from successful a
 
 ---
 
-### 8. Self-healing CI on top of `vis ai`
+### 8. Self-healing CI on top of `vis ai` ✅ shipped
 **Leverage:** Strategic differentiator. **Effort:** M–L. **Demand:** ★ (novel)
 
-vis already has `vis ai` / `ai-analysis.ts` primitives. Extend with a CI PR-comment loop: read failure logs, propose a fix, validate by re-running affected targets, comment on the PR, auto-commit when accepted.
+Shipped as `vis ai heal` (proposal loop) + `vis ai heal accept` (auto-commit). The v1 loop reads the latest failed task, asks the configured AI provider for a structured patch, applies it, validates it by re-running the task on the CI runner, and posts a markdown summary to the PR (GitHub Actions) or MR (GitLab CI). When a maintainer comments `/vis heal accept`, a follow-up workflow re-derives the proposal, validates it, and commits via the platform's REST API. Implementation:
+- **CI provider detection** (`src/ai/ci-context.ts`): dispatches on `GITHUB_ACTIONS=true` and `GITLAB_CI=true`; falls back to `GITHUB_EVENT_PATH` JSON for the PR head SHA when `GITHUB_REF` isn't a `refs/pull/<n>/...` ref. GitLab side reads `CI_MERGE_REQUEST_IID`, `CI_API_V4_URL`, and `GITLAB_TOKEN` (auto-injected `CI_JOB_TOKEN` is intentionally rejected — it cannot post MR notes).
+- **Comment posting** (`src/ai/pr-comment.ts`): GitHub side prefers bundled `gh pr comment` and falls back to the REST `/issues/{n}/comments` endpoint when gh is missing or fails; GitLab side goes straight to REST `/projects/{enc}/merge_requests/{iid}/notes` with the `PRIVATE-TOKEN` header. Argv-form spawn — no shell metachars in the path. Comment body capped at 60 KB so a multi-file patch can't trip GitHub's 65 KB ceiling; markdown fence auto-escalates so patches containing triple backticks render correctly.
+- **Heal orchestrator** (`src/commands/ai/heal.ts`): split into reusable phases (`findHealCandidate` → `proposeAndApply` → `validateAppliedFix` → `postHealComment`) so `accept` can replay the propose path deterministically. Public flags unchanged: `--dry-run`, `--validation-timeout`, `--no-cache`.
+- **Auto-commit** (`src/commands/ai/heal-accept.ts` + `src/ai/git-commit.ts`): triggered by `/vis heal accept` in a PR/MR comment. Validates the actor against `ai.heal.allowedActors` (vis-config), refuses fork PRs (token has no write access), resolves the head ref, replays the propose flow, then commits via Octokit's Git Trees API (GitHub) or Gitbeaker's `Commits.create` (GitLab). GitHub commits are auto-signed as `github-actions[bot]` because they're created with `GITHUB_TOKEN`; GitLab v1 ships unsigned. Both SDKs are **optional peer-deps** — the lazy loader (`src/ai/sdk-loader.ts`) prompts the user to install on first run in an interactive shell, or fails loud with the install command in CI. After a successful commit, a confirmation comment with the new SHA is posted to the PR/MR.
+- **Tests**: `ai-ci-context.test.ts`, `ai-pr-comment.test.ts`, `ai-heal.test.ts` cover env detection, comment dispatch, and the rendering layer; `ai-sdk-loader.test.ts` covers prompt/install/decline/import-error paths; `ai-git-commit.test.ts` covers the GitHub Git Trees ordering, GitLab `Commits.create`, and missing-token / missing-API-base errors; `ai-heal-accept.test.ts` covers trigger parsing (GitHub event payload + GitLab env-var bridge), actor allow-list, fork rejection, and missing-trigger-phrase no-op.
 
 **Sources:** Section 4 Tier-1 #4. Nx is the only competitor with this; massive moat in JS-land.
 
@@ -134,14 +146,16 @@ Long-lived DB/mock/devserver lifecycle that survives across multiple `vis run` c
 
 ---
 
-### 11. Cache restoration fidelity (timestamps, perms, ordering)
+### 11. Cache restoration fidelity (timestamps, perms, ordering) ✅ shipped
 **Leverage:** Correctness foundation. **Effort:** S–M. **Demand:** ★★
 
-Restore-from-cache should preserve mtime, perms, and stable directory ordering so Docker layer caching, Make-style downstream tools, and any mtime-sensitive heuristic keep working after a cache hit. Concrete: per-target `cacheRestore: { preserveMtime, preservePerms }` defaulting on; a reproducibility cross-check (re-run vs cache restore) exposed via `vis cache verify <task>`. Pairs directly with shipped `vis docker scaffold`.
+Shipped across `@visulima/task-runner` and `vis`:
+- **Archive round-trip preserves mtime + mode bits** (`task-runner/src/archive.ts`): tar streams capture and restore file timestamps and permission bits, so cache hits no longer reset mtime to "now" or drop the executable bit.
+- **Deterministic readdir ordering** (`task-runner/src/cache.ts`): directory entries are sorted with a locale-aware comparator before hashing and archive emission, so two runs that produce the same files always produce the same digest regardless of FS order.
+- **Per-target `cacheRestore` config** (`task-runner/src/types.ts`): `cacheRestore: { preserveMtime, preservePerms }` defaults on; opt-out per target for hermetic-experiment cases.
+- **`vis cache verify <task>`** (`vis/src/commands/cache/handler.ts`, `index.ts`): diffs the cached archive against the live workspace, surfacing content/mtime/perm drift. `--scope=all` searches across worktree + shared caches; per-file diff runs in parallel with bounded concurrency. Missing entries exit 1 (documented).
 
 **Sources:** Section 8.1 Theme O. wireit#1316, lage#766, lage#839, lage#690.
-
-**Why first-class:** Quiet correctness pain — most users hit it once, file an issue, then work around. Cheap to fix at vis's stage; expensive to retrofit once `docker scaffold` ships at scale.
 
 ---
 
@@ -190,14 +204,14 @@ Quarters are illustrative; adjust to actual capacity.
 **Q1: Foundation + first-impression (items 1, 3, 4, 7)**
 Diagnostics + watch UX + cache retention + output styles. All small-to-medium, all directly competitive on a feature axis vs Turbo/Nx/moon. Ship together as "vis 1.0 polish."
 
-**Q2: Strategic moats (items 2 ✅, 5, 5b ✅)**
-REAPI gRPC ✅ + MCP with introspection + worktree-aware shared cache ✅. Two big differentiators (REAPI shipped, MCP open) plus one fast-follow that pairs with both: worktree-share unlocks parallel-agent UX whether you back it with the local cache or REAPI. Standalone cache binary explicitly dropped — `bazel-remote` is the documented self-host.
+**Q2: Strategic moats (items 2 ✅, 5 ✅, 5b ✅)**
+REAPI gRPC ✅ + MCP with introspection ✅ + worktree-aware shared cache ✅. All three landed: REAPI unlocks bazel-remote/BuildBuddy as drop-in backends, MCP ships as a read-only agent surface (mutating commands stay human-invoked), and worktree-share unlocks parallel-agent UX. Standalone cache binary explicitly dropped — `bazel-remote` is the documented self-host.
 
-**Q3: Devloop + correctness (items 6 ✅, 9 ✅, 10, 11)**
-Conditional/affected/finally tasks ✅ + config layering ✅ + shared services registry (cross-invocation lifecycle) + cache restoration fidelity. Closes the "I keep restarting Postgres" papercut and locks down cache correctness before `docker scaffold` scales.
+**Q3: Devloop + correctness (items 6 ✅, 9 ✅, 10, 11 ✅)**
+Conditional/affected/finally tasks ✅ + config layering ✅ + cache restoration fidelity ✅ + shared services registry (cross-invocation lifecycle). Cache correctness locked down before `docker scaffold` scales; the "I keep restarting Postgres" papercut is the open item.
 
-**Q4: AI moat (item 8)**
-Self-healing CI on `vis ai`. Builds on Q2's MCP server; needs Q1's diagnostics to read failure logs cleanly.
+**Q4: AI moat (item 8 ✅)**
+`vis ai heal` shipped end-to-end: read failure → propose → apply → validate by re-running → comment to PR/MR (GitHub Actions + GitLab CI), and `vis ai heal accept` lands the patch as a signed commit when an allow-listed maintainer comments `/vis heal accept`.
 
 After the ranked items: pull from Tier B opportunistically, in order of community demand.
 
@@ -213,8 +227,8 @@ After the ranked items: pull from Tier B opportunistically, in order of communit
 
 - Items 1, 4, 7 assume the existing `run-summary.ts` and `task-runner` cache APIs can be extended cleanly. Verify before scoping.
 - Item 2 assumes `@grpc/grpc-js` is acceptable as a runtime dep (~3 MB).
-- Item 5 assumes MCP SDK stability through 2026.
-- Item 8 assumes `vis ai` already has the primitives needed for CI invocation; if not, scope grows by ~M.
+- ~~Item 5 assumes MCP SDK stability through 2026~~ — resolved: shipped against `@modelcontextprotocol/sdk` with a stable eight-tool contract; future tools are additive.
+- ~~Item 8 assumes `vis ai` already has the primitives needed for CI invocation~~ — resolved: shipped on top of `aggregateFailureContext` / `runFixAnalysis` / `applyFixProposal` with no new primitives. Auto-commit-on-accept landed via `vis ai heal accept` with optional `@octokit/rest` + `@gitbeaker/rest` peer deps (lazy-loaded; the loader prompts to install on first need or fails loud in CI).
 - Item 10 assumes the existing `server`/`utility` task types can attach to a registry without re-modeling task lifetimes.
-- Item 11 assumes the cache backend stores enough metadata to reproduce mtime/perms; verify before scoping (may require a cache-format bump).
+- ~~Item 11 assumes the cache backend stores enough metadata to reproduce mtime/perms~~ — resolved: archive layer carries mtime + mode bits, no cache-format bump needed.
 - Tier C "explicitly out of scope" should be revisited once the top items land — community feedback may move things up.
