@@ -1,6 +1,6 @@
 {
     "name": "@visulima/task-runner",
-    "version": "1.0.0-alpha.8",
+    "version": "1.0.0-alpha.9",
     "description": "A task runner with caching support for monorepo workspaces",
     "keywords": [
         "cache",
