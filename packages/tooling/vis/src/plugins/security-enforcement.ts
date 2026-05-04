@@ -125,10 +125,11 @@ const securityEnforcementPlugin: Plugin = {
 
         if (PM_COMMANDS.has(command) && toolbox.visConfig && toolbox.workspaceRoot) {
             const pm = detectPm(toolbox.workspaceRoot);
+            const willEnforce = INSTALL_COMMANDS.has(command);
 
-            emitSecurityWarnings(toolbox.visConfig, pm.name);
+            emitSecurityWarnings(toolbox.visConfig, pm.name, willEnforce);
 
-            if (INSTALL_COMMANDS.has(command)) {
+            if (willEnforce) {
                 const enforcement = enforceScriptSecurity(pm.name, toolbox.workspaceRoot, toolbox.visConfig);
 
                 for (const w of enforcement.warnings) {
