@@ -1,3 +1,10 @@
+## @visulima/cerebro [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.13...@visulima/cerebro@3.0.0-alpha.14) (2026-05-04)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.15
+
 ## @visulima/cerebro [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.12...@visulima/cerebro@3.0.0-alpha.13) (2026-04-30)
 
 ### Features
