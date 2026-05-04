@@ -350,7 +350,9 @@ const planConformedSpecs = async (packages: string[], catalogs: Map<string, Map<
         const version = latest.get(slot.name);
 
         if (version === undefined) {
-            throw new Error(`--to: cannot resolve a version for "${slot.name}" (not in any catalog or sibling, and registry lookup failed). Pass ${slot.name}@<version> explicitly.`);
+            throw new Error(
+                `--to: cannot resolve a version for "${slot.name}" (not in any catalog or sibling, and registry lookup failed). Pass ${slot.name}@<version> explicitly.`,
+            );
         }
 
         const spec = `^${version}`;
@@ -367,12 +369,7 @@ const planConformedSpecs = async (packages: string[], catalogs: Map<string, Map<
  * so the same name doesn't end up in both `dependencies` and
  * `devDependencies`. Mutates `pkgJson` in place.
  */
-const applyPlannedSpecsToPackageJson = (
-    pkgJson: Record<string, unknown>,
-    planned: ReadonlyArray<PlannedSpec>,
-    section: DepSection,
-    exact: boolean,
-): void => {
+const applyPlannedSpecsToPackageJson = (pkgJson: Record<string, unknown>, planned: ReadonlyArray<PlannedSpec>, section: DepSection, exact: boolean): void => {
     for (const { name, spec } of planned) {
         const finalSpec = applyExactPrefix(spec, exact);
 

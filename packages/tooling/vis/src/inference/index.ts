@@ -65,7 +65,7 @@ export type { DetectContext, DetectedTargets, Detector } from "./types";
  * `codegen` (graphql), `api-extract`, `changeset:*`, deno's `fmt` /
  * `check`.
  */
-export const BUILT_IN_DETECTORS: readonly Detector[] = [
+export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     nuxtDetector,
     nextDetector,
     remixDetector,
@@ -104,20 +104,20 @@ export const BUILT_IN_DETECTORS: readonly Detector[] = [
     changesetDetector,
 ];
 
-const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean => {
+const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>
     // `Object.hasOwn` so a pinned-but-empty version (`"vitest": ""`,
     // workspace-link sentinels, `"file:..."` style entries) still counts
     // as "this dep is declared". `Boolean(value)` would drop the empty
     // string and miss the dep.
-    return (
-        (pkg.dependencies !== undefined && Object.hasOwn(pkg.dependencies, name)) ||
-        (pkg.devDependencies !== undefined && Object.hasOwn(pkg.devDependencies, name)) ||
-        (pkg.peerDependencies !== undefined && Object.hasOwn(pkg.peerDependencies, name)) ||
-        (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name))
-    );
-};
+    (
+        (pkg.dependencies !== undefined && Object.hasOwn(pkg.dependencies, name))
+        || (pkg.devDependencies !== undefined && Object.hasOwn(pkg.devDependencies, name))
+        || (pkg.peerDependencies !== undefined && Object.hasOwn(pkg.peerDependencies, name))
+        || (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name))
+    )
+;
 
-const matchConfigFiles = (projectRoot: string, configFiles: readonly string[]): string[] => {
+const matchConfigFiles = (projectRoot: string, configFiles: ReadonlyArray<string>): string[] => {
     const matched: string[] = [];
 
     for (const file of configFiles) {
@@ -144,7 +144,7 @@ const matchConfigFiles = (projectRoot: string, configFiles: readonly string[]): 
  */
 export const inferProjectTargets = (
     context: Omit<DetectContext, "hasConfigFile" | "matchedConfigs">,
-    detectors: readonly Detector[] = BUILT_IN_DETECTORS,
+    detectors: ReadonlyArray<Detector> = BUILT_IN_DETECTORS,
 ): { sources: string[]; targets: Record<string, Partial<VisTargetConfiguration>> } => {
     const targets: Record<string, Partial<VisTargetConfiguration>> = {};
     const sources: string[] = [];

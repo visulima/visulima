@@ -145,7 +145,7 @@ const defaultPromptFilter = async (input: NodeJS.ReadableStream, output: NodeJS.
  */
 export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle => {
     const { handlers } = options;
-    const input = options.input ?? (process.stdin as InstallKeybindsOptions["input"]);
+    const input = options.input ?? (process.stdin);
     const output = options.output ?? process.stdout;
     const promptFilter = options.promptFilter ?? defaultPromptFilter;
 
@@ -153,7 +153,7 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
         return { close: () => {} };
     }
 
-    emitKeypressEvents(input as NodeJS.ReadableStream);
+    emitKeypressEvents(input);
 
     const previousIsRaw = (input as { isRaw?: boolean }).isRaw === true;
 
@@ -199,7 +199,7 @@ export const installKeybinds = (options: InstallKeybindsOptions): KeybindHandle 
                 prompting = true;
 
                 try {
-                    const pattern = await promptFilter(input as NodeJS.ReadableStream, output);
+                    const pattern = await promptFilter(input, output);
 
                     if (pattern === undefined) {
                         output.write("filter cancelled.\n");

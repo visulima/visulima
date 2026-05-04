@@ -80,17 +80,27 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                             ACTION
                         </Text>
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-                            {entry.hasCodemod ? (
+                            {entry.hasCodemod
+                                ? (
                                 <>
-                                    <Text color="green">{"\u2713"} Codemod will rewrite imports to use native API.</Text>
+                                    <Text color="green">
+{"\u2713"}
+{' '}
+Codemod will rewrite imports to use native API.
+                                    </Text>
                                     <Text dimColor> The package can then be removed from dependencies.</Text>
                                 </>
-                            ) : (
+                                )
+                                : (
                                 <>
-                                    <Text color="yellow">{"\u2139"} No automated codemod available.</Text>
+                                    <Text color="yellow">
+{"\u2139"}
+{' '}
+No automated codemod available.
+                                    </Text>
                                     <Text dimColor> Manual migration required — replace usage with native equivalent.</Text>
                                 </>
-                            )}
+                                )}
                         </Box>
                     </Box>
                 )}
@@ -102,7 +112,11 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                             ACTION
                         </Text>
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-                            <Text color="cyan">{"\u2713"} Override will redirect resolution to the hardened package.</Text>
+                            <Text color="cyan">
+{"\u2713"}
+{' '}
+Override will redirect resolution to the hardened package.
+                            </Text>
                             <Text dimColor> No source code changes needed — drop-in replacement.</Text>
                         </Box>
                     </Box>
@@ -115,21 +129,33 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                             ACTION
                         </Text>
                         <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-                            {entry.hasCodemod ? (
+                            {entry.hasCodemod
+                                ? (
                                 <>
-                                    <Text color="green">{"\u2713"} Codemod will rewrite imports to the recommended alternative.</Text>
+                                    <Text color="green">
+{"\u2713"}
+{' '}
+Codemod will rewrite imports to the recommended alternative.
+                                    </Text>
                                     <Text dimColor> The original package can then be removed from dependencies.</Text>
                                 </>
-                            ) : (
+                                )
+                                : (
                                 <>
-                                    <Text color="yellow">{"\u2139"} Manual migration required.</Text>
-                                    {entry.docUrl ? (
+                                    <Text color="yellow">
+{"\u2139"}
+{' '}
+Manual migration required.
+                                    </Text>
+                                    {entry.docUrl
+                                        ? (
                                         <Text dimColor> Open the migration guide below for the recommended alternative and steps.</Text>
-                                    ) : (
+                                        )
+                                        : (
                                         <Text dimColor> Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.</Text>
-                                    )}
+                                        )}
                                 </>
-                            )}
+                                )}
                         </Box>
                     </Box>
                 )}

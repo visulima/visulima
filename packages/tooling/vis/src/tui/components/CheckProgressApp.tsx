@@ -28,7 +28,10 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
             <Box>
                 <Text color="cyan">{"━".repeat(filled)}</Text>
                 <Text dimColor>{"─".repeat(empty)}</Text>
-                <Text dimColor> {pctText}</Text>
+                <Text dimColor>
+{' '}
+{pctText}
+                </Text>
             </Box>
         </Box>
     );

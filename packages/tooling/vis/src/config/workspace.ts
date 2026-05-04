@@ -503,7 +503,7 @@ const mergeProjectTargets = (
     const out: Record<string, VisTargetConfiguration> = {};
 
     for (const name of names) {
-        out[name] = mergeTargetWithInherit(projectJsonTargets?.[name], visTaskTargets?.[name]) as VisTargetConfiguration;
+        out[name] = mergeTargetWithInherit(projectJsonTargets?.[name], visTaskTargets?.[name]);
     }
 
     return out;
@@ -602,7 +602,7 @@ const discoverWorkspace = (
         for (const [targetName, target] of Object.entries(visTargets)) {
             const { inferred: _inferred, options, preset: _preset, type: _type, ...rest } = target;
             const expandedDependsOn = target.dependsOn
-                ? expandTaskGroups(target.dependsOn as Parameters<typeof expandTaskGroups>[0], config.taskGroups)
+                ? expandTaskGroups(target.dependsOn, config.taskGroups)
                 : undefined;
 
             sanitizedTargets[targetName] = {

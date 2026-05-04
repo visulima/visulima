@@ -21,6 +21,7 @@ export type OptionalSdk = "@gitbeaker/rest" | "@octokit/rest";
 export interface LoadSdkOptions {
     /** Override the dynamic `import()` call for tests. Defaults to native `import(sdk)`. */
     importImpl?: (sdk: OptionalSdk) => Promise<unknown>;
+
     /**
      * Override TTY detection for tests. Defaults to checking
      * `process.stdout.isTTY` and the absence of `CI`.
@@ -35,9 +36,9 @@ export interface LoadSdkOptions {
 }
 
 interface LoadedModule<T> {
+    [key: string]: unknown;
     /** Default export (or the namespace itself when no default). */
     default?: T;
-    [key: string]: unknown;
 }
 
 const isInteractive = (): boolean => Boolean(process.stdout.isTTY) && process.env.CI !== "true";
@@ -49,6 +50,7 @@ const defaultPrompt = (question: string): Promise<boolean> =>
         rl.question(`${question} (Y/n) `, (answer) => {
             rl.close();
             const trimmed = answer.trim().toLowerCase();
+
             // Default to yes — the user explicitly invoked a command that
             // needs the SDK; saying nothing should mean "go ahead."
             resolve(trimmed === "" || trimmed === "y" || trimmed === "yes");
@@ -81,7 +83,7 @@ const defaultRunInstall = (sdk: OptionalSdk, workspaceRoot: string): Promise<{ e
             workspaceRoot: false,
         },
         workspaceRoot,
-        // eslint-disable-next-line no-console
+
         console,
     );
 
@@ -130,7 +132,7 @@ export const loadOptionalSdk = async <T = unknown>(sdk: OptionalSdk, options: Lo
     try {
         return (await importImpl(sdk)) as LoadedModule<T>;
     } catch (error: unknown) {
-        const code = (error as NodeJS.ErrnoException).code;
+        const { code } = (error as NodeJS.ErrnoException);
 
         // Anything other than "module not found" — bubble. A failed-to-
         // parse SDK is the user's broken install, not something we can

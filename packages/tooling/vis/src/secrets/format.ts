@@ -47,12 +47,12 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean,
     const color = useColor
         ? { cyan, dim, green, red, yellow }
         : {
-              cyan: (s: string) => s,
-              dim: (s: string) => s,
-              green: (s: string) => s,
-              red: (s: string) => s,
-              yellow: (s: string) => s,
-          };
+            cyan: (s: string) => s,
+            dim: (s: string) => s,
+            green: (s: string) => s,
+            red: (s: string) => s,
+            yellow: (s: string) => s,
+        };
     const lines: string[] = [];
     const byFile = groupByFile(findings);
 

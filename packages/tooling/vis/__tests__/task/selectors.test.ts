@@ -8,10 +8,10 @@ const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>
     const full: Record<string, VisProjectConfiguration> = {};
 
     for (const [name, partial] of Object.entries(projects)) {
-        full[name] = { root: partial.root ?? `packages/${name}`, ...partial } as VisProjectConfiguration;
+        full[name] = { root: partial.root ?? `packages/${name}`, ...partial };
     }
 
-    return { projects: full } as WorkspaceConfiguration;
+    return { projects: full };
 };
 
 describe(parseTargetSelector, () => {

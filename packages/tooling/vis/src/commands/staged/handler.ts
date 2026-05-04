@@ -143,18 +143,18 @@ const execute = async ({ options, visConfig }: Toolbox<Console, StagedOptions>):
 
     if (!stagedConfig) {
         throw new Error(
-            'No "staged" config found in vis.config.ts. Add one:\n\n' +
-                "  // vis.config.ts\n" +
-                '  import { defineConfig } from "@visulima/vis/config";\n\n' +
-                "  export default defineConfig({\n" +
-                "    staged: { '*': 'vis check --fix' },\n" +
-                "  });\n\n" +
-                "Migrating from lint-staged or nano-staged? Run `vis migrate lint-staged`" +
-                " (or `vis migrate nano-staged`) to move the config in and remove the legacy files.",
+            'No "staged" config found in vis.config.ts. Add one:\n\n'
+            + "  // vis.config.ts\n"
+            + '  import { defineConfig } from "@visulima/vis/config";\n\n'
+            + "  export default defineConfig({\n"
+            + "    staged: { '*': 'vis check --fix' },\n"
+            + "  });\n\n"
+            + "Migrating from lint-staged or nano-staged? Run `vis migrate lint-staged`"
+            + " (or `vis migrate nano-staged`) to move the config in and remove the legacy files.",
         );
     }
 
-    const result = await runStaged(buildRunOptions(options as unknown as Record<string, unknown>, stagedConfig));
+    const result = await runStaged(buildRunOptions(options, stagedConfig));
 
     if (!result.success) {
         process.exitCode = 1;

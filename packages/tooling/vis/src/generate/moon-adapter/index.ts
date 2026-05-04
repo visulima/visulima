@@ -351,7 +351,7 @@ export const loadMoonTemplate = (templateDir: string, name: string): Template =>
             continue;
         }
 
-        const buffer = readFileSync(entry.path, { buffer: true }) as Buffer;
+        const buffer = readFileSync(entry.path, { buffer: true });
 
         files.push({ binary: buffer, isRaw: false, rawText: null, relativePath });
     }

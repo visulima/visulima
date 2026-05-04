@@ -50,8 +50,8 @@ const renderRunHeader = (summary: RunSummary, logger: Console): void => {
     logger.info(`  end:      ${summary.endTime}`);
     logger.info(`  duration: ${formatDuration(summary.duration)}`);
     logger.info(
-        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · ` +
-            `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
+        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · `
+        + `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
     );
     logger.info(`  env:      node ${summary.environment.nodeVersion} · ${summary.environment.platform}/${summary.environment.arch}`);
     logger.info("");
@@ -64,12 +64,14 @@ const renderTaskTable = (tasks: TaskSummary[], logger: Console): void => {
         return;
     }
 
-    const rows = tasks.map((task) => ({
-        duration: formatDuration(task.duration),
-        hash: task.hash ? task.hash.slice(0, 12) : "-",
-        status: formatStatus(task),
-        taskId: task.taskId,
-    }));
+    const rows = tasks.map((task) => {
+        return {
+            duration: formatDuration(task.duration),
+            hash: task.hash ? task.hash.slice(0, 12) : "-",
+            status: formatStatus(task),
+            taskId: task.taskId,
+        };
+    });
 
     const widths = {
         duration: Math.max("duration".length, ...rows.map((r) => r.duration.length)),
@@ -112,11 +114,13 @@ const renderTaskDetail = (summary: RunSummary, task: TaskSummary, logger: Consol
 const renderListJson = (entries: { id: string; mtimeMs: number; path: string }[]): void => {
     process.stdout.write(
         `${JSON.stringify(
-            entries.map((entry) => ({
-                id: entry.id,
-                mtime: new Date(entry.mtimeMs).toISOString(),
-                path: entry.path,
-            })),
+            entries.map((entry) => {
+                return {
+                    id: entry.id,
+                    mtime: new Date(entry.mtimeMs).toISOString(),
+                    path: entry.path,
+                };
+            }),
             undefined,
             2,
         )}\n`,
@@ -144,7 +148,7 @@ const renderListTable = (entries: { id: string; mtimeMs: number }[], logger: Con
 };
 
 const filterTasks = (summary: RunSummary, options: { failed: boolean; task: string | undefined }): TaskSummary[] => {
-    let tasks = summary.tasks;
+    let { tasks } = summary;
 
     if (options.task !== undefined) {
         tasks = tasks.filter((t) => t.taskId === options.task);
@@ -221,16 +225,18 @@ export const runReplay = async (options: RunReplayOptions, logger: Console): Pro
                     runId: summary.id,
                     startTime: summary.startTime,
                     stats: summary.stats,
-                    tasks: filteredTasks.map((t) => ({
-                        cacheStatus: t.cacheStatus,
-                        dependencies: t.dependencies,
-                        duration: t.duration,
-                        endTime: t.endTime,
-                        exitCode: t.exitCode,
-                        hash: t.hash ?? null,
-                        startTime: t.startTime,
-                        taskId: t.taskId,
-                    })),
+                    tasks: filteredTasks.map((t) => {
+                        return {
+                            cacheStatus: t.cacheStatus,
+                            dependencies: t.dependencies,
+                            duration: t.duration,
+                            endTime: t.endTime,
+                            exitCode: t.exitCode,
+                            hash: t.hash ?? null,
+                            startTime: t.startTime,
+                            taskId: t.taskId,
+                        };
+                    }),
                 },
                 undefined,
                 2,

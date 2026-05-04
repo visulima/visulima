@@ -12,26 +12,28 @@ export const eslintDetector: Detector = {
         ".eslintrc.cjs",
         ".eslintrc",
     ],
-    detect: ({ matchedConfigs }) => ({
-        targets: {
-            lint: {
-                command: "eslint .",
-                description: "eslint . (inferred)",
-                inputs: [
-                    "{projectRoot}/src/**/*",
-                    "{projectRoot}/__tests__/**/*",
-                    "{projectRoot}/test/**/*",
-                    "{projectRoot}/tests/**/*",
-                    ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
-                    "{projectRoot}/package.json",
-                ],
-                // ESLint emits diagnostics, not files — empty outputs makes
-                // the success/failure result cacheable on the input hash.
-                outputs: [],
-                type: "build",
+    detect: ({ matchedConfigs }) => {
+        return {
+            targets: {
+                lint: {
+                    command: "eslint .",
+                    description: "eslint . (inferred)",
+                    inputs: [
+                        "{projectRoot}/src/**/*",
+                        "{projectRoot}/__tests__/**/*",
+                        "{projectRoot}/test/**/*",
+                        "{projectRoot}/tests/**/*",
+                        ...matchedConfigs.map((file) => `{projectRoot}/${file}`),
+                        "{projectRoot}/package.json",
+                    ],
+                    // ESLint emits diagnostics, not files — empty outputs makes
+                    // the success/failure result cacheable on the input hash.
+                    outputs: [],
+                    type: "build",
+                },
             },
-        },
-    }),
+        };
+    },
     fallbackDependency: "eslint",
     name: "eslint",
 };

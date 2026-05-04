@@ -84,7 +84,7 @@ describe(buildAliasMap, () => {
         expect.assertions(2);
 
         const index = makeIndex({
-            test: { aliases: ["t", "spec"], command: "vitest" } as VisTargetConfiguration,
+            test: { aliases: ["t", "spec"], command: "vitest" },
         });
 
         const map = buildAliasMap(index);
@@ -97,8 +97,8 @@ describe(buildAliasMap, () => {
         expect.assertions(1);
 
         const index: ProjectOptionsIndex = new Map([
-            ["a", { test: { aliases: ["x"] } as VisTargetConfiguration }],
-            ["b", { build: { aliases: ["x"] } as VisTargetConfiguration }],
+            ["a", { test: { aliases: ["x"] } }],
+            ["b", { build: { aliases: ["x"] } }],
         ]);
 
         const map = buildAliasMap(index);
@@ -111,7 +111,7 @@ describe(buildAliasMap, () => {
         expect.assertions(1);
 
         const index = makeIndex({
-            test: { command: "vitest" } as VisTargetConfiguration,
+            test: { command: "vitest" },
         });
 
         expect(buildAliasMap(index).has("test")).toBe(false);

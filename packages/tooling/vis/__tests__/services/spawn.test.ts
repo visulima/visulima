@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { isAlive } from "../../src/services/registry";
 import { spawnDetached } from "../../src/services/spawn";
@@ -36,7 +36,8 @@ describe(spawnDetached, () => {
         });
 
         try {
-            expect(typeof pid).toBe("number");
+            expectTypeOf(pid).toBeNumber();
+
             expect(isAlive(pid)).toBe(true);
         } finally {
             // Clean up the orphaned process so test runs don't leak children.

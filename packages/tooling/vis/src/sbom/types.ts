@@ -14,19 +14,19 @@
  */
 
 /** Hash algorithms permitted by CycloneDX 1.6. */
-export type HashAlgorithm =
-    | "BLAKE2b-256"
-    | "BLAKE2b-384"
-    | "BLAKE2b-512"
-    | "BLAKE3"
-    | "MD5"
-    | "SHA-1"
-    | "SHA-256"
-    | "SHA-384"
-    | "SHA-512"
-    | "SHA3-256"
-    | "SHA3-384"
-    | "SHA3-512";
+export type HashAlgorithm
+    = | "BLAKE2b-256"
+        | "BLAKE2b-384"
+        | "BLAKE2b-512"
+        | "BLAKE3"
+        | "MD5"
+        | "SHA-1"
+        | "SHA-256"
+        | "SHA-384"
+        | "SHA-512"
+        | "SHA3-256"
+        | "SHA3-384"
+        | "SHA3-512";
 
 /** A single hash entry on a component. */
 export interface Hash {
@@ -36,20 +36,20 @@ export interface Hash {
 }
 
 /** Component type enumeration. */
-export type ComponentType =
-    | "application"
-    | "container"
-    | "cryptographic-asset"
-    | "data"
-    | "device"
-    | "device-driver"
-    | "file"
-    | "firmware"
-    | "framework"
-    | "library"
-    | "machine-learning-model"
-    | "operating-system"
-    | "platform";
+export type ComponentType
+    = | "application"
+        | "container"
+        | "cryptographic-asset"
+        | "data"
+        | "device"
+        | "device-driver"
+        | "file"
+        | "firmware"
+        | "framework"
+        | "library"
+        | "machine-learning-model"
+        | "operating-system"
+        | "platform";
 
 /** Dependency scope on a component. */
 export type ComponentScope = "excluded" | "optional" | "required";
@@ -144,50 +144,50 @@ export interface OrganizationalEntity {
  * All 43 values from the CycloneDX 1.6 `externalReferenceType` enum. Kept
  * exhaustive so any spec-legal reference type type-checks.
  */
-export type ExternalReferenceType =
-    | "adversary-model"
-    | "advisories"
-    | "attestation"
-    | "bom"
-    | "build-meta"
-    | "build-system"
-    | "certification-report"
-    | "chat"
-    | "codified-infrastructure"
-    | "component-analysis-report"
-    | "configuration"
-    | "digital-signature"
-    | "distribution"
-    | "distribution-intake"
-    | "documentation"
-    | "dynamic-analysis-report"
-    | "electronic-signature"
-    | "evidence"
-    | "exploitability-statement"
-    | "formulation"
-    | "issue-tracker"
-    | "license"
-    | "log"
-    | "mailing-list"
-    | "maturity-report"
-    | "model-card"
-    | "other"
-    | "pentest-report"
-    | "poam"
-    | "quality-metrics"
-    | "release-notes"
-    | "rfc-9116"
-    | "risk-assessment"
-    | "runtime-analysis-report"
-    | "security-contact"
-    | "social"
-    | "source-distribution"
-    | "static-analysis-report"
-    | "support"
-    | "threat-model"
-    | "vcs"
-    | "vulnerability-assertion"
-    | "website";
+export type ExternalReferenceType
+    = | "adversary-model"
+        | "advisories"
+        | "attestation"
+        | "bom"
+        | "build-meta"
+        | "build-system"
+        | "certification-report"
+        | "chat"
+        | "codified-infrastructure"
+        | "component-analysis-report"
+        | "configuration"
+        | "digital-signature"
+        | "distribution"
+        | "distribution-intake"
+        | "documentation"
+        | "dynamic-analysis-report"
+        | "electronic-signature"
+        | "evidence"
+        | "exploitability-statement"
+        | "formulation"
+        | "issue-tracker"
+        | "license"
+        | "log"
+        | "mailing-list"
+        | "maturity-report"
+        | "model-card"
+        | "other"
+        | "pentest-report"
+        | "poam"
+        | "quality-metrics"
+        | "release-notes"
+        | "rfc-9116"
+        | "risk-assessment"
+        | "runtime-analysis-report"
+        | "security-contact"
+        | "social"
+        | "source-distribution"
+        | "static-analysis-report"
+        | "support"
+        | "threat-model"
+        | "vcs"
+        | "vulnerability-assertion"
+        | "website";
 
 /** External reference (website, VCS, distribution, etc.). */
 export interface ExternalReference {

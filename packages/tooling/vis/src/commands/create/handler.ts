@@ -335,8 +335,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
 
         extraArgs = [...legacyExtras, ...passthroughArgv];
 
-        templateInput = ownArgs[0] as string;
-        projectName = ownArgs[1] as string | undefined;
+        [templateInput, projectName] = ownArgs;
 
         if (!projectName) {
             // Extract a sensible name: "user/repo" → "repo", URL → last path segment

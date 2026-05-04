@@ -214,8 +214,8 @@ const executeCatalogUpdate = async (
         const pmConfigFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
 
         logger.warn(
-            `${yellow("⚠")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, ` +
-                `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
+            `${yellow("⚠")} minimumReleaseAge mismatch: vis config = ${String(configDefaults.minimumReleaseAge)} min, `
+            + `${pmConfigFile} = ${String(pmNativeAge)} min. Consider keeping them in sync.`,
         );
     }
 
@@ -246,21 +246,21 @@ const executeCatalogUpdate = async (
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-              if (progressInstance) {
-                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-              } else {
-                  // Leading newline keeps the spinner from colliding with any
-                  // prior pail.warn / security messages emitted in beforeCommand.
-                  process.stdout.write("\n");
-                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                      interactive: true,
-                      patchConsole: false,
-                  });
-              }
-          }
+            if (progressInstance) {
+                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+            } else {
+                // Leading newline keeps the spinner from colliding with any
+                // prior pail.warn / security messages emitted in beforeCommand.
+                process.stdout.write("\n");
+                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                    interactive: true,
+                    patchConsole: false,
+                });
+            }
+        }
         : (current: number, total: number): void => {
-              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-          };
+            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+        };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
@@ -295,8 +295,8 @@ const executeCatalogUpdate = async (
 
     if (!isTTY && checkedCount > outdated.length) {
         const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-        const dedupeNote =
-            totalCatalogEntries > checkedCount
+        const dedupeNote
+            = totalCatalogEntries > checkedCount
                 ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
                 : "";
 
@@ -310,9 +310,9 @@ const executeCatalogUpdate = async (
     if (outdated.length === 0) {
         if (filteredByTarget.length > 0) {
             logger.info(
-                `All catalog dependencies are up to date within the current target.` +
-                    `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:` +
-                    `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} → ${e.newRange}  (${e.updateType})`).join("\n")}`,
+                `All catalog dependencies are up to date within the current target.`
+                + `\n${String(filteredByTarget.length)} package${filteredByTarget.length === 1 ? " has" : "s have"} newer versions available with --target latest:`
+                + `\n${filteredByTarget.map((e) => `  ${e.packageName}  ${e.currentRange} → ${e.newRange}  (${e.updateType})`).join("\n")}`,
             );
         } else {
             logger.info("All catalog dependencies are up to date.");
@@ -415,8 +415,8 @@ const executeCatalogUpdate = async (
 
         if (checkedCount > outdated.length) {
             const totalCatalogEntries = [...catalogs.values()].reduce((sum, deps) => sum + deps.size, 0);
-            const dedupeNote =
-                totalCatalogEntries > checkedCount
+            const dedupeNote
+                = totalCatalogEntries > checkedCount
                     ? ` (${String(totalCatalogEntries)} catalog entries, ${String(totalCatalogEntries - checkedCount)} duplicates)`
                     : "";
 
@@ -649,9 +649,9 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     if (useCatalogMode) {
         await executeCatalogUpdate(
             workspaceRoot,
-            packageManager as CatalogPackageManager,
+            packageManager,
             visConfig ?? {},
-            options as Record<string, unknown>,
+            options,
             argument,
             logger,
         );
@@ -661,7 +661,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend });
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
-        executePmWrapper(workspaceRoot, installer.name, installerVersion, options as Record<string, unknown>, argument, logger);
+        executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
     }
 };
 

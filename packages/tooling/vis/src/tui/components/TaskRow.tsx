@@ -47,7 +47,8 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
             <Box>
                 <Box width={3}>
                     <Text bold color="white">
-                        {">"}{" "}
+                        {">"}
+{" "}
                     </Text>
                     <Text dimColor>.</Text>
                 </Box>

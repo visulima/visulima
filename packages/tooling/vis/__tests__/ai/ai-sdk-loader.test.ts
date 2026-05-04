@@ -15,10 +15,10 @@ describe(loadOptionalSdk, () => {
     it("should return the module when the import resolves on first try", async () => {
         expect.assertions(2);
 
-        const stub = { Octokit: class FakeOctokit {} };
+        const stub = { Octokit: vi.fn() };
         const importImpl = vi.fn(async () => stub);
 
-        const loaded = await loadOptionalSdk<unknown>("@octokit/rest", { importImpl });
+        const loaded = await loadOptionalSdk("@octokit/rest", { importImpl });
 
         expect(loaded).toBe(stub);
         expect(importImpl).toHaveBeenCalledTimes(1);
@@ -45,7 +45,7 @@ describe(loadOptionalSdk, () => {
     it("should prompt and install in interactive mode, then re-import", async () => {
         expect.assertions(4);
 
-        const stub = { Gitlab: class FakeGitlab {} };
+        const stub = { Gitlab: vi.fn() };
         let importsAttempted = 0;
         const importImpl = vi.fn(async (specifier: OptionalSdk) => {
             importsAttempted += 1;
@@ -57,7 +57,7 @@ describe(loadOptionalSdk, () => {
             return stub;
         });
         const prompt = vi.fn(async () => true);
-        const runInstall = vi.fn(async () => ({ exitCode: 0 }));
+        const runInstall = vi.fn(async () => { return { exitCode: 0 }; });
 
         const loaded = await loadOptionalSdk("@gitbeaker/rest", {
             importImpl,
@@ -80,7 +80,7 @@ describe(loadOptionalSdk, () => {
             throw moduleNotFound(specifier);
         });
         const prompt = vi.fn(async () => false);
-        const runInstall = vi.fn(async () => ({ exitCode: 0 }));
+        const runInstall = vi.fn(async () => { return { exitCode: 0 }; });
 
         await expect(
             loadOptionalSdk("@octokit/rest", {
@@ -106,7 +106,7 @@ describe(loadOptionalSdk, () => {
                 importImpl,
                 interactive: true,
                 prompt: async () => true,
-                runInstall: async () => ({ exitCode: 1 }),
+                runInstall: async () => { return { exitCode: 1 }; },
             }),
         ).rejects.toThrow(/Install of @octokit\/rest failed/);
     });

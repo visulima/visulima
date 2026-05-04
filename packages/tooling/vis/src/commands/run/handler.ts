@@ -29,7 +29,6 @@ import {
 import isInCi from "is-in-ci";
 
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache-directory";
-import type { VisProjectConfiguration } from "../../config/workspace";
 import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
 import { runLockfilePreflight } from "../../preflight/lockfile";
 import { FailureLogLifeCycle } from "../../report/failure-log";
@@ -110,8 +109,8 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv =
-                affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+            const affectedEnv
+                = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
 
@@ -178,7 +177,7 @@ const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
     const options = task.overrides["visOptions"];
 
     if (options && typeof options === "object") {
-        return options as VisTargetOptions;
+        return options;
     }
 
     return undefined;
@@ -530,8 +529,8 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
             const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
-            const killGracePeriodMs =
-                typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
+            const killGracePeriodMs
+                = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
             let timedOut = false;
 
             const timeoutKill = scheduleTimeoutKill({
@@ -557,9 +556,9 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                             name: task.id,
                             ...(isPty
                                 ? {
-                                      ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                      stdin: "pty" as const,
-                                  }
+                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                    stdin: "pty" as const,
+                                }
                                 : {}),
                         },
                     ],
@@ -1068,14 +1067,14 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         probe: options.dryRun
             ? undefined
             : async (entry) => {
-                  try {
-                      await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+                try {
+                    await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
 
-                      return true;
-                  } catch {
-                      return false;
-                  }
-              },
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
         registeredEntries,
         taskGraph,
         visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
@@ -1435,8 +1434,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     } else {
         const mutexPool: MutexPool = new Map();
         const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
-        const logMode: LogMode | undefined =
-            logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
+        const logMode: LogMode | undefined
+            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption) : undefined;
         const logReporter = logMode ? createLogReporter(logMode) : undefined;
         // Composite so plugin hooks see every task boundary event in
         // addition to the CI-style static renderer. Build the
@@ -1512,7 +1511,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         if (options.watch) {
             const absoluteRoots = projectsWithTarget
                 .map((name) => {
-                    const project = workspace.projects[name] as VisProjectConfiguration | undefined;
+                    const project = workspace.projects[name];
                     const root = project?.root;
 
                     if (!root) {
@@ -1599,8 +1598,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
             currentHandle = initial.handle;
 
-            const scope =
-                initial.mode === "tracked"
+            const scope
+                = initial.mode === "tracked"
                     ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
                     : `Watching ${String(absoluteRoots.length)} project root(s)`;
 

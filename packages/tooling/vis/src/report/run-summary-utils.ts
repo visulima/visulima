@@ -74,7 +74,7 @@ export const readPreviousRunSummary = async (workspaceRoot: string, currentId: s
     let dirents: string[];
 
     try {
-        dirents = (await readdir(runsDirectory)) as unknown as string[];
+        dirents = await readdir(runsDirectory);
     } catch {
         return undefined;
     }
@@ -129,7 +129,7 @@ export const listRunSummaries = async (workspaceRoot: string): Promise<{ id: str
     let dirents: string[];
 
     try {
-        dirents = (await readdir(runsDirectory)) as unknown as string[];
+        dirents = await readdir(runsDirectory);
     } catch {
         return [];
     }

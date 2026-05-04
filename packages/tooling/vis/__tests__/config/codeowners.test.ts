@@ -85,7 +85,7 @@ describe(buildCodeownersLines, () => {
             projects: {
                 empty: {
                     root: "packages/empty",
-                } as VisProjectConfiguration,
+                },
             },
         };
 

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { pail } from "../../../src/io/logger";
 import {
     serviceListExecute,
     serviceLogsExecute,
@@ -9,6 +8,7 @@ import {
     serviceStatusExecute,
     serviceStopExecute,
 } from "../../../src/commands/service/handler";
+import { pail } from "../../../src/io/logger";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
 interface ToolboxShape {
@@ -48,8 +48,8 @@ describe("commands/service/handler — argument validation", () => {
 
         // Silence + capture pail so test output stays clean and we can
         // assert on the messages that prove the validation path fired.
-        pailErrorSpy = vi.spyOn(pail, "error").mockImplementation(() => undefined as never);
-        pailInfoSpy = vi.spyOn(pail, "info").mockImplementation(() => undefined as never);
+        pailErrorSpy = vi.spyOn(pail, "error").mockImplementation(() => undefined);
+        pailInfoSpy = vi.spyOn(pail, "info").mockImplementation(() => undefined);
     });
 
     afterEach(() => {
@@ -125,6 +125,7 @@ describe("commands/service/handler — argument validation", () => {
             await serviceListExecute(buildToolbox({ options: { format: "json" }, workspaceRoot }) as never);
 
             stdoutSpy.mockRestore();
+
             expect(pailErrorSpy).not.toHaveBeenCalled();
         });
     });

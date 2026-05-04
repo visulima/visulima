@@ -17,6 +17,7 @@ export interface PostPrCommentResult {
 
 export interface PostPrCommentOptions {
     body: string;
+
     /**
      * Override the `buildkite-agent` lookup for tests. Defaults to
      * whichever `buildkite-agent` binary is on PATH. Pass `"/bin/false"`
@@ -250,7 +251,9 @@ const postBuildkiteAnnotation = async (body: string, context: CiContext, buildki
         const missing: string[] = [];
 
         if (!context.repo) missing.push("BUILDKITE_ORGANIZATION_SLUG / BUILDKITE_PIPELINE_SLUG");
+
         if (context.buildNumber === undefined) missing.push("BUILDKITE_BUILD_NUMBER");
+
         if (!context.token) missing.push("BUILDKITE_API_TOKEN (with `write_build_annotations` scope)");
 
         return {

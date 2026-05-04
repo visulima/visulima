@@ -16,41 +16,45 @@ interface ToolboxShape {
     workspaceRoot: string | undefined;
 }
 
-const buildToolbox = (overrides: Partial<ToolboxShape> = {}): ToolboxShape => ({
-    argument: [],
-    logger: { error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() },
-    options: {},
-    visConfig: undefined,
-    workspaceRoot: "/tmp/replay-not-used",
-    ...overrides,
-});
+const buildToolbox = (overrides: Partial<ToolboxShape> = {}): ToolboxShape => {
+    return {
+        argument: [],
+        logger: { error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() },
+        options: {},
+        visConfig: undefined,
+        workspaceRoot: "/tmp/replay-not-used",
+        ...overrides,
+    };
+};
 
-const buildSummary = (overrides: Partial<RunSummary> = {}): RunSummary => ({
-    duration: 1234,
-    endTime: "2026-05-04T12:34:56.789Z",
-    environment: { arch: "x64", nodeVersion: "v22.14.0", platform: "linux" },
-    id: "2026-05-04T12-34-56-789Z_abc123",
-    startTime: "2026-05-04T12:34:55.555Z",
-    stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
-    taskGraph: { dependencies: { "@app:test": [] }, roots: ["@app:test"] },
-    tasks: [
-        {
-            cacheable: true,
-            cacheStatus: "MISS",
-            dependencies: [],
-            duration: 234,
-            endTime: "2026-05-04T12:34:55.789Z",
-            exitCode: 0,
-            hash: "abcdef0123456789aabbccdd",
-            hashDetails: undefined,
-            outputs: [],
-            startTime: "2026-05-04T12:34:55.555Z",
-            target: { project: "@app", target: "test" },
-            taskId: "@app:test",
-        },
-    ],
-    ...overrides,
-});
+const buildSummary = (overrides: Partial<RunSummary> = {}): RunSummary => {
+    return {
+        duration: 1234,
+        endTime: "2026-05-04T12:34:56.789Z",
+        environment: { arch: "x64", nodeVersion: "v22.14.0", platform: "linux" },
+        id: "2026-05-04T12-34-56-789Z_abc123",
+        startTime: "2026-05-04T12:34:55.555Z",
+        stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
+        taskGraph: { dependencies: { "@app:test": [] }, roots: ["@app:test"] },
+        tasks: [
+            {
+                cacheable: true,
+                cacheStatus: "MISS",
+                dependencies: [],
+                duration: 234,
+                endTime: "2026-05-04T12:34:55.789Z",
+                exitCode: 0,
+                hash: "abcdef0123456789aabbccdd",
+                hashDetails: undefined,
+                outputs: [],
+                startTime: "2026-05-04T12:34:55.555Z",
+                target: { project: "@app", target: "test" },
+                taskId: "@app:test",
+            },
+        ],
+        ...overrides,
+    };
+};
 
 const writeSummary = async (workspaceRoot: string, summary: RunSummary, kind: "last" | "run" = "run"): Promise<void> => {
     const directory = kind === "last" ? join(workspaceRoot, ".task-runner") : join(workspaceRoot, ".task-runner", "runs");
@@ -73,8 +77,8 @@ describe("commands/replay/handler", () => {
         workspaceRoot = createTemporaryDirectory("vis-replay-ws-");
         originalExitCode = process.exitCode;
         process.exitCode = 0;
-        pailErrorSpy = vi.spyOn(pail, "error").mockImplementation(() => undefined as never);
-        pailInfoSpy = vi.spyOn(pail, "info").mockImplementation(() => undefined as never);
+        pailErrorSpy = vi.spyOn(pail, "error").mockImplementation(() => undefined);
+        pailInfoSpy = vi.spyOn(pail, "info").mockImplementation(() => undefined);
         stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
     });
 
@@ -159,7 +163,7 @@ describe("commands/replay/handler", () => {
 
             await replayExecute(toolbox as never);
 
-            const lines = (toolbox.logger.info as ReturnType<typeof vi.fn>).mock.calls.map((call) => call[0] as string);
+            const lines = (toolbox.logger.info).mock.calls.map((call) => call[0] as string);
             const newerIndex = lines.findIndex((line) => line.includes("newer-run-id"));
             const olderIndex = lines.findIndex((line) => line.includes("older-run-id"));
 

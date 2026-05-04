@@ -70,18 +70,6 @@ export interface VisTargetOptions {
     envFile?: boolean | string | string[];
 
     /**
-     * Override the workspace `strictEnv` setting for this target. When
-     * truthy, the target fails if its command references an env var
-     * that resolves to neither the task's effective env nor
-     * `process.env`. When `false`, the target opts out of a workspace
-     * `strictEnv: true` (e.g. for a one-off command that legitimately
-     * tolerates an unset variable).
-     *
-     * @see VisConfig.strictEnv
-     */
-    strictEnv?: boolean;
-
-    /**
      * When true, the task is serialized with respect to parallel execution
      * and must be run on the main process (claims stdin). Used for commands
      * that read from the terminal.
@@ -185,7 +173,7 @@ export interface VisTargetOptions {
 
     /**
      * Marks this target as a long-lived service that can be started via
-     * `vis service start <id>` and auto-attached when other tasks declare
+     * `vis service start &lt;id>` and auto-attached when other tasks declare
      * it in `dependsOn`. Implies persistent + non-cacheable behaviour
      * (set `preset: "server"` to inherit the rest of the bundle).
      *
@@ -201,6 +189,17 @@ export interface VisTargetOptions {
      * shell instead of the platform default.
      */
     shell?: string;
+
+    /**
+     * Override the workspace `strictEnv` setting for this target. When
+     * truthy, the target fails if its command references an env var
+     * that resolves to neither the task's effective env nor
+     * `process.env`. When `false`, the target opts out of a workspace
+     * `strictEnv: true` (e.g. for a one-off command that legitimately
+     * tolerates an unset variable).
+     * @see VisConfig.strictEnv
+     */
+    strictEnv?: boolean;
 
     /**
      * Maximum wall-clock milliseconds a single task run is allowed to
@@ -248,6 +247,7 @@ export interface VisTargetConfiguration extends Omit<TargetConfiguration, "optio
      * READMEs or vis.config.ts comments.
      */
     description?: string;
+
     /**
      * True when the target was synthesized by a Project Crystal-style
      * detector (see {@link ../inference}) rather than declared by a

@@ -1,4 +1,5 @@
-import { createServer, type Server } from "node:net";
+import type { Server } from "node:net";
+import { createServer } from "node:net";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -12,6 +13,7 @@ const listen = (server: Server, port = 0): Promise<number> =>
 
             if (typeof address === "object" && address !== null) {
                 resolve(address.port);
+
                 return;
             }
 
@@ -21,7 +23,7 @@ const listen = (server: Server, port = 0): Promise<number> =>
 
 const close = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => resolve());
+        server.close(() => { resolve(); });
     });
 
 describe(waitForTcp, () => {
@@ -32,7 +34,7 @@ describe(waitForTcp, () => {
     });
 
     afterEach(async () => {
-        if (server && server.listening) {
+        if (server?.listening) {
             await close(server);
         }
     });
@@ -54,14 +56,18 @@ describe(waitForTcp, () => {
         // briefly to discover one, close, then probe.
         const probe = createServer();
         const freePort = await listen(probe);
+
         await close(probe);
 
-        try {
-            await waitForTcp({ port: freePort, timeoutMs: 500 });
-        } catch (error) {
-            expect(error).toBeInstanceOf(ServiceReadinessError);
-            expect((error as ServiceReadinessError).elapsedMs).toBeGreaterThanOrEqual(450);
-        }
+        const error = await waitForTcp({ port: freePort, timeoutMs: 500 }).then(
+            () => {
+                throw new Error("waitForTcp should have rejected");
+            },
+            (error_: unknown) => error_,
+        );
+
+        expect(error).toBeInstanceOf(ServiceReadinessError);
+        expect((error as ServiceReadinessError).elapsedMs).toBeGreaterThanOrEqual(450);
     });
 });
 
@@ -69,7 +75,7 @@ describe(runReadiness, () => {
     let server: Server | undefined;
 
     afterEach(async () => {
-        if (server && server.listening) {
+        if (server?.listening) {
             await close(server);
         }
     });

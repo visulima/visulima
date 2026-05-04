@@ -182,37 +182,37 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
                 }),
             socketOptions
                 ? fetchSocketReports(packagesToScan, socketOptions)
-                      .then((reports) => {
-                          let alerts = 0;
-                          let low = 0;
+                    .then((reports) => {
+                        let alerts = 0;
+                        let low = 0;
 
-                          for (const report of reports.values()) {
-                              alerts += report.alerts.length;
+                        for (const report of reports.values()) {
+                            alerts += report.alerts.length;
 
-                              if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
-                                  low += 1;
-                              }
-                          }
+                            if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                                low += 1;
+                            }
+                        }
 
-                          const total = alerts + low;
+                        const total = alerts + low;
 
-                          progress.finish(
-                              "socket",
-                              total > 0 ? "warn" : "ok",
-                              total > 0
-                                  ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}`
-                                  : `clean · ${fmtElapsed(socketStart)}`,
-                          );
+                        progress.finish(
+                            "socket",
+                            total > 0 ? "warn" : "ok",
+                            total > 0
+                                ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}`
+                                : `clean · ${fmtElapsed(socketStart)}`,
+                        );
 
-                          return reports;
-                      })
-                      .catch((error: unknown) => {
-                          const message = error instanceof Error ? error.message : String(error);
+                        return reports;
+                    })
+                    .catch((error: unknown) => {
+                        const message = error instanceof Error ? error.message : String(error);
 
-                          progress.finish("socket", "error", message);
+                        progress.finish("socket", "error", message);
 
-                          return new Map<string, PackageReportData>();
-                      })
+                        return new Map<string, PackageReportData>();
+                    })
                 : Promise.resolve(new Map<string, PackageReportData>()),
         ]);
     } finally {

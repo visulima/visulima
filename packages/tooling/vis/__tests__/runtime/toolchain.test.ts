@@ -619,7 +619,7 @@ describe(resolveManagerFor, () => {
 
         // Use a made-up source that no manager handles for a tool — we
         // use a manager capabilities scenario.
-        const manager = resolveManagerFor({ source: ".nvmrc", tool: "python" as never, version: "3.12" }, []);
+        const manager = resolveManagerFor({ source: ".nvmrc", tool: "python", version: "3.12" }, []);
 
         // .nvmrc preference is fnm/nvm/volta/proto/mise/asdf; python is
         // not in fnm/nvm/volta capabilities, but proto/mise/asdf accept

@@ -37,14 +37,12 @@ export const waitForTcp = async (input: WaitForTcpInput): Promise<void> => {
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
-        // eslint-disable-next-line no-await-in-loop
         const ok = await tryConnect(host, port);
 
         if (ok) {
             return;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await delay(POLL_INTERVAL_MS);
     }
 
@@ -61,11 +59,11 @@ const tryConnect = (host: string, port: number): Promise<boolean> =>
             resolve(ok);
         };
 
-        socket.once("connect", () => onDone(true));
-        socket.once("error", () => onDone(false));
+        socket.once("connect", () => { onDone(true); });
+        socket.once("error", () => { onDone(false); });
         // Timeout per-attempt — keeps us from hanging on a half-open
         // socket when the kernel is in the SYN-RECV grey zone.
-        socket.setTimeout(POLL_INTERVAL_MS, () => onDone(false));
+        socket.setTimeout(POLL_INTERVAL_MS, () => { onDone(false); });
 
         try {
             socket.connect(port, host);

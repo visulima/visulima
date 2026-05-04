@@ -34,6 +34,7 @@ export interface Detector {
     configFiles: string[];
     /** Build the inferred targets. Pure — no FS access beyond what was already located. */
     detect: (context: DetectContext) => DetectedTargets;
+
     /**
      * Optional fallback trigger: detector applies when this dependency
      * appears in `dependencies` / `devDependencies` / `peerDependencies`

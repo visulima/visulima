@@ -518,8 +518,8 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
     // `none` (no manager involved), do a plain PATH lookup so users
     // running `vis toolchain which pnpm` on a workspace that
     // self-activates still get a useful answer.
-    const manager =
-        resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none" ? detected.find((d) => d.name === resolved.name) : undefined;
+    const manager
+        = resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none" ? detected.find((d) => d.name === resolved.name) : undefined;
     // Use findOnPathByAlias so users running `which rust` or `which
     // python` on a self-activate / no-manager workspace still get a
     // useful answer (rustc, python3) — same alias list as
@@ -558,19 +558,19 @@ const execute = async ({ argument, options, visConfig, workspaceRoot: wsRoot }: 
         }
 
         case "install": {
-            executeInstall(wsRoot, toolchainConfig, options as Record<string, unknown>);
+            executeInstall(wsRoot, toolchainConfig, options);
 
             return;
         }
 
         case "status": {
-            executeStatus(wsRoot, toolchainConfig, options as Record<string, unknown>);
+            executeStatus(wsRoot, toolchainConfig, options);
 
             return;
         }
 
         case "use": {
-            executeUse(wsRoot, toolchainConfig, argument[1], options as Record<string, unknown>);
+            executeUse(wsRoot, toolchainConfig, argument[1], options);
 
             return;
         }

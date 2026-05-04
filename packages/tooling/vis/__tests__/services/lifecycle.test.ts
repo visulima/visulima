@@ -1,4 +1,4 @@
-import { createServer, type Server } from "node:net";
+import { createServer } from "node:net";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -22,7 +22,8 @@ const findFreePort = async (): Promise<number> =>
             if (typeof address === "object" && address !== null) {
                 const { port } = address;
 
-                server.close(() => resolve(port));
+                server.close(() => { resolve(port); });
+
                 return;
             }
 
@@ -81,7 +82,7 @@ describe("services/lifecycle", () => {
 
         expect(startResult.entry.id).toBe("fixture:db");
         expect(isAlive(startResult.entry.pid)).toBe(true);
-        expect(await readEntry(workspaceRoot, "fixture:db")).toBeDefined();
+        await expect(readEntry(workspaceRoot, "fixture:db")).resolves.toBeDefined();
 
         const stopResult = await stopService({
             graceMs: 1000,
@@ -93,7 +94,8 @@ describe("services/lifecycle", () => {
 
         // Give the kernel a moment to reap.
         await sleep(150);
-        expect(await readEntry(workspaceRoot, "fixture:db")).toBeUndefined();
+
+        await expect(readEntry(workspaceRoot, "fixture:db")).resolves.toBeUndefined();
     });
 
     it("refuses to start a service that is already running", async () => {
@@ -154,6 +156,6 @@ describe("services/lifecycle", () => {
         ).rejects.toThrow();
 
         // Entry must not be left behind.
-        expect(await readEntry(workspaceRoot, "broken:db")).toBeUndefined();
+        await expect(readEntry(workspaceRoot, "broken:db")).resolves.toBeUndefined();
     });
 });

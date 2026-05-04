@@ -7,14 +7,15 @@ import { aiDiscoverHelpExecute, aiRootExecute } from "../../../src/commands/ai/h
 const ANSI_RE = new RegExp(String.raw`${String.fromCodePoint(27)}\[[0-9;]*m`, "gu");
 const stripAnsi = (s: string): string => s.replaceAll(ANSI_RE, "");
 
-const makeCommand = (overrides: Partial<Command> = {}): Command =>
-    ({
+const makeCommand = (overrides: Partial<Command> = {}): Command => {
+    return {
         description: "Sample command",
         examples: [],
         execute: () => undefined,
         name: "sample",
         ...overrides,
-    }) as Command;
+    };
+};
 
 interface StreamSpy {
     readonly value: string;
@@ -27,7 +28,7 @@ const spyStream = (stream: NodeJS.WriteStream): StreamSpy => {
         captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
         return true;
-    }) as never);
+    }));
 
     return {
         get value() {

@@ -100,18 +100,18 @@ export const runInteractivePrompts = async (options: {
         // 1. Template selection
         const templateChoices = options.inMonorepo
             ? [
-                  { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                  { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                  { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                  { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-              ]
+                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+            ]
             : [
-                  { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
-                  { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                  { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                  { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                  { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-              ];
+                { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
+                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+            ];
 
         let template = await select(rl, "Select a template:", templateChoices);
 

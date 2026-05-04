@@ -234,81 +234,81 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
 
     const outdatedPromise = needsOutdated
         ? tracked(
-              progress,
-              "outdated",
-              () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks),
-              (result, ms) => {
-                  const count = result.outdated.length;
+            progress,
+            "outdated",
+            () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks),
+            (result, ms) => {
+                const count = result.outdated.length;
 
-                  return {
-                      status: count > 0 ? "warn" : "ok",
-                      summary: count > 0 ? `${String(count)} outdated · ${fmtDuration(ms)}` : `up to date · ${fmtDuration(ms)}`,
-                  };
-              },
-          )
+                return {
+                    status: count > 0 ? "warn" : "ok",
+                    summary: count > 0 ? `${String(count)} outdated · ${fmtDuration(ms)}` : `up to date · ${fmtDuration(ms)}`,
+                };
+            },
+        )
         : Promise.resolve({ failed: [], ignored: [], outdated: [] });
 
-    const vulnPromise =
-        wantsSec && installed.length > 0
+    const vulnPromise
+        = wantsSec && installed.length > 0
             ? tracked(
-                  progress,
-                  "vulnerabilities",
-                  () =>
-                      fetchVulnerabilities(
-                          installed.map((p) => {
-                              return { name: p.name, version: p.version };
-                          }),
-                      ),
-                  (vulnMap, ms) => {
-                      let count = 0;
+                progress,
+                "vulnerabilities",
+                () =>
+                    fetchVulnerabilities(
+                        installed.map((p) => {
+                            return { name: p.name, version: p.version };
+                        }),
+                    ),
+                (vulnMap, ms) => {
+                    let count = 0;
 
-                      for (const list of vulnMap.values()) {
-                          count += list.length;
-                      }
+                    for (const list of vulnMap.values()) {
+                        count += list.length;
+                    }
 
-                      return {
-                          status: count > 0 ? "error" : "ok",
-                          summary: count > 0 ? `${String(count)} found · ${fmtDuration(ms)}` : `none found · ${fmtDuration(ms)}`,
-                      };
-                  },
-              )
+                    return {
+                        status: count > 0 ? "error" : "ok",
+                        summary: count > 0 ? `${String(count)} found · ${fmtDuration(ms)}` : `none found · ${fmtDuration(ms)}`,
+                    };
+                },
+            )
             : Promise.resolve(new Map<string, never[]>());
 
-    const socketReportsPromise =
-        wantsSec && socketOptions && installed.length > 0
+    const socketReportsPromise
+        = wantsSec && socketOptions && installed.length > 0
             ? tracked(
-                  progress,
-                  "socket",
-                  () =>
-                      fetchSocketReports(
-                          installed.map((p) => {
-                              return { name: p.name, version: p.version };
-                          }),
-                          socketOptions,
-                      ),
-                  (reports, ms) => {
-                      let alerts = 0;
-                      let low = 0;
+                progress,
+                "socket",
+                () =>
+                    fetchSocketReports(
+                        installed.map((p) => {
+                            return { name: p.name, version: p.version };
+                        }),
+                        socketOptions,
+                    ),
+                (reports, ms) => {
+                    let alerts = 0;
+                    let low = 0;
 
-                      for (const report of reports.values()) {
-                          alerts += report.alerts.length;
+                    for (const report of reports.values()) {
+                        alerts += report.alerts.length;
 
-                          if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
-                              low += 1;
-                          }
-                      }
+                        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                            low += 1;
+                        }
+                    }
 
-                      const issues = alerts + low;
+                    const issues = alerts + low;
 
-                      return {
-                          status: issues > 0 ? "warn" : "ok",
-                          summary:
+                    return {
+                        status: issues > 0 ? "warn" : "ok",
+                        summary:
                               issues > 0
                                   ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtDuration(ms)}`
                                   : `clean · ${fmtDuration(ms)}`,
-                      };
-                  },
-              )
+                    };
+                },
+            )
             : Promise.resolve(new Map<string, PackageReportData>());
 
     // Catch on each so a single registry timeout doesn't sink the
@@ -352,52 +352,52 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
 
     // Stream dependencies as soon as outdated lands — duplicates is sync
     // and already in hand.
-    const depsStream =
-        store && wantsDeps
+    const depsStream
+        = store && wantsDeps
             ? outdatedSafe.then((res) => {
-                  if (outdatedError) {
-                      store.failSection("dependencies", outdatedError);
+                if (outdatedError) {
+                    store.failSection("dependencies", outdatedError);
 
-                      return;
-                  }
+                    return;
+                }
 
-                  store.completeSection(
-                      "dependencies",
-                      sectionFindings("dependencies", {
-                          duplicates,
-                          optimizations: [],
-                          outdated: res.outdated,
-                          runtime: [],
-                      }),
-                  );
-              })
+                store.completeSection(
+                    "dependencies",
+                    sectionFindings("dependencies", {
+                        duplicates,
+                        optimizations: [],
+                        outdated: res.outdated,
+                        runtime: [],
+                    }),
+                );
+            })
             : undefined;
 
     // Stream security only after every input scan settles — keeps the
     // tab spinner running until the section's count is final. Any of the
     // three failing flips the section to error so the user knows the
     // count is incomplete.
-    const secStream =
-        store && wantsSec
+    const secStream
+        = store && wantsSec
             ? Promise.all([outdatedSafe, vulnSafe, socketSafe]).then(([res]) => {
-                  const firstError = outdatedError ?? vulnError ?? socketError;
+                const firstError = outdatedError ?? vulnError ?? socketError;
 
-                  if (firstError) {
-                      store.failSection("security", firstError);
+                if (firstError) {
+                    store.failSection("security", firstError);
 
-                      return;
-                  }
+                    return;
+                }
 
-                  store.completeSection(
-                      "security",
-                      sectionFindings("security", {
-                          duplicates: [],
-                          optimizations: [],
-                          outdated: res.outdated,
-                          runtime: [],
-                      }),
-                  );
-              })
+                store.completeSection(
+                    "security",
+                    sectionFindings("security", {
+                        duplicates: [],
+                        optimizations: [],
+                        outdated: res.outdated,
+                        runtime: [],
+                    }),
+                );
+            })
             : undefined;
 
     const optStream = (async () => {
@@ -890,8 +890,8 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
     if (!isJson && !quiet && !wantsInteractive) {
-        const wsLine =
-            workspaceDirectories.length > 0
+        const wsLine
+            = workspaceDirectories.length > 0
                 ? dim(` · ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`)
                 : "";
 
@@ -900,13 +900,13 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
 
     const banner: DoctorBannerInput | undefined = visConfigError
         ? {
-              hint: visConfigError.file
-                  ? `Continuing with default settings — fix or regenerate ${visConfigError.file} (vis init --force).`
-                  : "Continuing with default settings.",
-              message: visConfigError.message,
-              severity: "error",
-              title: visConfigError.file ? `Failed to load ${visConfigError.file}` : "Failed to load vis.config",
-          }
+            hint: visConfigError.file
+                ? `Continuing with default settings — fix or regenerate ${visConfigError.file} (vis init --force).`
+                : "Continuing with default settings.",
+            message: visConfigError.message,
+            severity: "error",
+            title: visConfigError.file ? `Failed to load ${visConfigError.file}` : "Failed to load vis.config",
+        }
         : undefined;
 
     // Cache: skip when --fix (mutates workspace) or --no-cache. The
@@ -925,12 +925,12 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const cacheEnabled = !options.noCache && !options.fix;
     const cacheKey = cacheEnabled
         ? buildDoctorCacheKey({
-              configPath: configFilePath,
-              lockfilePath,
-              sections,
-              socketEnabled,
-              workspaceRoot: wsRoot,
-          })
+            configPath: configFilePath,
+            lockfilePath,
+            sections,
+            socketEnabled,
+            workspaceRoot: wsRoot,
+        })
         : undefined;
 
     const cachedResults = cacheKey ? readDoctorCache(cacheKey) : undefined;
@@ -956,17 +956,17 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
         });
 
         try {
-            scanResults =
-                cachedResults ??
-                (await streamScans({
-                    filterPatterns,
-                    installed,
-                    resolveCodemods: Boolean(options.fix),
-                    sections,
-                    store,
-                    visConfig,
-                    workspaceRoot: wsRoot,
-                }));
+            scanResults
+                = cachedResults
+                    ?? (await streamScans({
+                        filterPatterns,
+                        installed,
+                        resolveCodemods: Boolean(options.fix),
+                        sections,
+                        store,
+                        visConfig,
+                        workspaceRoot: wsRoot,
+                    }));
         } catch (error) {
             // Make sure the TUI can be dismissed even if a scan throws.
             instance.unmount();

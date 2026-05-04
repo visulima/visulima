@@ -39,6 +39,9 @@ export default defineConfig({
                     "@visulima/vis-binding-win32-x64-msvc",
                 ],
             },
+            hoisted: {
+                exclude: ["@antfu/install-pkg", "json5", "normalize-package-data", "@visulima/is-ansi-color-supported", "compromise"],
+            },
         },
     },
 }) as BuildConfig;

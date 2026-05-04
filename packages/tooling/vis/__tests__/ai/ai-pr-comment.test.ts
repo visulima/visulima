@@ -80,7 +80,7 @@ describe(postPrComment, () => {
         const result = await postPrComment({
             body: "hello",
             context: githubContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
             // /bin/false exits non-zero so the gh path "fails" and REST is tried.
             ghBin: "/bin/false",
         });
@@ -98,7 +98,7 @@ describe(postPrComment, () => {
         const result = await postPrComment({
             body: "hello",
             context: githubContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
             ghBin: "/bin/false",
         });
 
@@ -114,7 +114,7 @@ describe(postPrComment, () => {
         const result = await postPrComment({
             body: "hi",
             context: gitlabContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         expect(result.posted).toBe(true);
@@ -159,7 +159,7 @@ describe(postPrComment, () => {
             // /bin/true exits 0 — the CLI path "succeeds" so REST is never hit.
             buildkiteAgentBin: "/bin/true",
             context: buildkiteContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         expect(result.posted).toBe(true);
@@ -177,7 +177,7 @@ describe(postPrComment, () => {
             // /bin/false exits 1 → CLI fails → REST fallback.
             buildkiteAgentBin: "/bin/false",
             context: buildkiteContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         expect(result.posted).toBe(true);
@@ -211,7 +211,7 @@ describe(postPrComment, () => {
             body: "hello",
             buildkiteAgentBin: "/bin/false",
             context: buildkiteContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         const [, init] = fetchImpl.mock.calls[0]!;
@@ -229,7 +229,7 @@ describe(postPrComment, () => {
             body: "hello",
             buildkiteAgentBin: "/bin/false",
             context: buildkiteContext(),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         const [, init] = fetchImpl.mock.calls[0]!;
@@ -247,7 +247,7 @@ describe(postPrComment, () => {
             body: "hi",
             buildkiteAgentBin: "/bin/false",
             context: buildkiteContext({ apiBaseUrl: "https://buildkite.acme.internal/api" }),
-            fetchImpl: fetchImpl as unknown as typeof fetch,
+            fetchImpl,
         });
 
         const [url] = fetchImpl.mock.calls[0]!;

@@ -86,7 +86,7 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
     try {
         const data = readYamlSync(filePath) as { overrides?: Record<string, string | Record<string, string>> } | undefined;
 
-        return { overrides: data?.overrides ?? ({} as Record<string, string | Record<string, string>>), source: "pnpm-workspace.yaml" };
+        return { overrides: data?.overrides ?? ({}), source: "pnpm-workspace.yaml" };
     } catch {
         return { overrides: {}, source: "pnpm-workspace.yaml" };
     }
@@ -188,8 +188,8 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
         .join("\n");
     const overridesBlock = `overrides:\n${overrideLines}\n`;
 
-    content =
-        /^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)
+    content
+        = /^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)
             ? content.replace(/^overrides:\s*\n(?:(?:[ \t].*)?\n)*/m, overridesBlock)
             : `${content.trimEnd()}\n\n${overridesBlock}`;
 

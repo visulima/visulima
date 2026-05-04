@@ -239,7 +239,7 @@ export const migrateMoon = (
     let parsed: MoonTasksYaml;
 
     try {
-        parsed = readYamlSync(tasksFile) as MoonTasksYaml;
+        parsed = readYamlSync(tasksFile);
     } catch (error) {
         throw new Error(`Failed to parse ${tasksFile}: ${(error as Error).message}`);
     }
@@ -321,9 +321,9 @@ export const migrateMoon = (
         copyMoonTemplatesToVis(workspaceRoot, templates, Boolean(options.dryRun), logger, report);
     } else {
         report.manualSteps.push(
-            `Detected ${String(templates.length)} template${templates.length === 1 ? "" : "s"} under .moon/templates/ (${list}). ` +
-                "They are already usable via `vis generate <name>` — vis auto-discovers moon-format template directories at runtime. " +
-                "To decouple from moon entirely, re-run `vis migrate moon --copy-templates` to physically move them to .vis/templates/.",
+            `Detected ${String(templates.length)} template${templates.length === 1 ? "" : "s"} under .moon/templates/ (${list}). `
+            + "They are already usable via `vis generate <name>` — vis auto-discovers moon-format template directories at runtime. "
+            + "To decouple from moon entirely, re-run `vis migrate moon --copy-templates` to physically move them to .vis/templates/.",
         );
     }
 };

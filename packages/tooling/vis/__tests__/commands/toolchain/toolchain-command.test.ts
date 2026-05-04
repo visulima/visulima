@@ -80,7 +80,7 @@ describe("vis toolchain (command)", () => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
             return true;
-        }) as never;
+        });
 
         try {
             await toolchainExecute(makeToolbox(workspaceRoot, ["status"], { json: true }) as never);
@@ -110,7 +110,7 @@ describe("vis toolchain (command)", () => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
             return true;
-        }) as never;
+        });
 
         try {
             // Scope PATH to the empty workspace dir and clear NVM_DIR so

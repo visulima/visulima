@@ -21,7 +21,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         throw new Error("Package name is required. Usage: vis analyze <package> [version]");
     }
 
-    const targetVersionArgument = positionalArguments[1] as string | undefined;
+    const targetVersionArgument = positionalArguments[1];
     const { packageManager } = findPackageManagerSync(wsRoot);
 
     // Find current version from catalogs

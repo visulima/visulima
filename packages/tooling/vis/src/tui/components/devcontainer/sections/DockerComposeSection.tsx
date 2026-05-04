@@ -56,11 +56,13 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
                             <Box width={20}>
                                 <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
                                     {isSelected ? "\u276F " : "  "}
-                                    {FIELD_LABELS[field]}:
+                                    {FIELD_LABELS[field]}
+:
                                 </Text>
                             </Box>
                             <Box flexGrow={1}>
-                                {isSelected && fieldEditing ? (
+                                {isSelected && fieldEditing
+                                    ? (
                                     <TextInput
                                         defaultValue={displayValue}
                                         onChange={(newValue: string) => {
@@ -68,9 +70,10 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
                                         }}
                                         placeholder={FIELD_PLACEHOLDERS[field]}
                                     />
-                                ) : (
+                                    )
+                                    : (
                                     <Text color={displayValue ? "white" : "gray"}>{displayValue || FIELD_PLACEHOLDERS[field]}</Text>
-                                )}
+                                    )}
                             </Box>
                         </Box>
                         <Box paddingLeft={4}>
@@ -83,17 +86,20 @@ const DockerComposeSection = ({ config, fieldEditing, fieldIndex, onUpdate }: Do
                 <Text dimColor>
                     <Text bold color="white">
                         Enter
-                    </Text>{" "}
+                    </Text>
+{" "}
                     edit field
                     {"  "}
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>{" "}
+                    </Text>
+{" "}
                     navigate
                     {"  "}
                     <Text bold color="white">
                         Esc
-                    </Text>{" "}
+                    </Text>
+{" "}
                     stop editing
                 </Text>
             </Box>

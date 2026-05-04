@@ -10,18 +10,18 @@ import type { CommitFilesOptions, CommitFilesResult } from "../../ai/git-commit"
 import { commitFiles } from "../../ai/git-commit";
 import { postPrComment } from "../../ai/pr-comment";
 import { pail } from "../../io/logger";
-import type { AiHealAcceptOptions } from "./index";
 import { findHealCandidate, proposeAndApply, validateAppliedFix } from "./heal";
+import type { AiHealAcceptOptions } from "./index";
 
 const TRIGGER_PHRASE = "/vis heal accept";
 
 interface AcceptTrigger {
     actor: string;
     body: string;
-    /** Whether the source repo differs from the base repo (GitHub forks). */
-    isFork: boolean;
     /** Branch the commit will land on — head of the PR / source of the MR. */
     headRef: string | undefined;
+    /** Whether the source repo differs from the base repo (GitHub forks). */
+    isFork: boolean;
 }
 
 interface GithubIssueCommentEvent {
@@ -264,6 +264,8 @@ const summariseDetail = (commit: CommitFilesResult, files: string[], failingTask
 };
 
 export interface HealAcceptDeps {
+    /** Inject pre-built commit clients for tests. */
+    commitOverrides?: Pick<CommitFilesOptions, "githubClient" | "gitlabClient" | "loadSdk" | "readFile">;
     /** Inject a fake CI context for tests. */
     detectCi?: () => Promise<CiContext>;
     /** Inject a fake env for trigger parsing. Defaults to `process.env`. */
@@ -272,8 +274,6 @@ export interface HealAcceptDeps {
     fetchImpl?: typeof fetch;
     /** Inject a fake comment poster for the confirmation comment. */
     postComment?: (body: string, context: CiContext) => Promise<{ error?: string; method: string; posted: boolean }>;
-    /** Inject pre-built commit clients for tests. */
-    commitOverrides?: Pick<CommitFilesOptions, "githubClient" | "gitlabClient" | "loadSdk" | "readFile">;
     /** Inject a fake validator for the apply re-run. */
     validate?: (project: string, target: string) => Promise<{ exitCode: number; stderr: string; stdout: string }>;
 }
@@ -295,12 +295,12 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     const trigger = await loadTrigger(ciContext, env);
 
     if (!trigger) {
-        const message =
-            ciContext.provider === "github-actions"
+        const message
+            = ciContext.provider === "github-actions"
                 ? "No issue_comment payload found. Trigger this command from a workflow listening for `issue_comment.created`."
                 : ciContext.provider === "gitlab-ci"
-                  ? "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs."
-                  : "No Buildkite unblock signal found. Wire this command to run after a manually-unblocked block step so BUILDKITE_UNBLOCKER_EMAIL is set.";
+                    ? "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs."
+                    : "No Buildkite unblock signal found. Wire this command to run after a manually-unblocked block step so BUILDKITE_UNBLOCKER_EMAIL is set.";
 
         pail.error(message);
         process.exitCode = 1;
@@ -331,12 +331,12 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
         // expected entry shape so the user knows what to add. GitHub /
         // GitLab use platform usernames; Buildkite uses the unblocker
         // email (or Buildkite username when the email isn't exposed).
-        const hint =
-            ciContext.provider === "buildkite"
+        const hint
+            = ciContext.provider === "buildkite"
                 ? "Buildkite entries are emails (BUILDKITE_UNBLOCKER_EMAIL) or Buildkite usernames (BUILDKITE_UNBLOCKER), not the upstream GitHub/GitLab username."
                 : ciContext.provider === "gitlab-ci"
-                  ? "GitLab entries are platform usernames (without the leading `@`)."
-                  : "GitHub entries are platform usernames (without the leading `@`).";
+                    ? "GitLab entries are platform usernames (without the leading `@`)."
+                    : "GitHub entries are platform usernames (without the leading `@`).";
 
         pail.error(`Actor \`${trigger.actor || "(unknown)"}\` is not in \`ai.heal.allowedActors\`. Refusing to commit. ${hint}`);
         process.exitCode = 1;
@@ -535,12 +535,12 @@ export const aiHealAccept: CommandExecute<Toolbox<Console, AiHealAcceptOptions>>
 };
 
 export {
-    acceptHeal as runHealAcceptForTesting,
     deriveBuildkiteCommitContext as deriveBuildkiteCommitContextForTesting,
     fetchGithubHeadRef as fetchGithubHeadRefForTesting,
     loadBuildkiteTrigger as loadBuildkiteTriggerForTesting,
     loadGithubTrigger as loadGithubTriggerForTesting,
     loadGitlabTrigger as loadGitlabTriggerForTesting,
+    acceptHeal as runHealAcceptForTesting,
     summariseDetail as summariseDetailForTesting,
     TRIGGER_PHRASE,
 };

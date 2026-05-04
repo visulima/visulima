@@ -141,12 +141,14 @@ describe(commitFiles, () => {
                     }),
                     createCommit: vi.fn(async (parameters: { parents: string[]; tree: string }) => {
                         calls.push("commit");
+
                         expect(parameters).toMatchObject({ parents: ["parent-sha"], tree: "tree-sha" });
 
                         return { data: { html_url: "https://github.com/owner/repo/commit/new-sha", sha: "new-sha" } };
                     }),
-                    createTree: vi.fn(async (parameters: { base_tree?: string; tree: Array<{ mode: string; path: string; sha: string; type: string }> }) => {
+                    createTree: vi.fn(async (parameters: { base_tree?: string; tree: { mode: string; path: string; sha: string; type: string }[] }) => {
                         calls.push("tree");
+
                         expect(parameters.base_tree).toBe("base-tree-sha");
                         expect(parameters.tree).toEqual([{ mode: "100644", path: "src/a.ts", sha: "blob-sha", type: "blob" }]);
 
@@ -190,7 +192,7 @@ describe(commitFiles, () => {
         expect.assertions(4);
 
         const create = vi.fn(
-            async (projectId: number | string, branch: string, _message: string, actions: Array<{ action: string; content?: string; filePath: string }>) => {
+            async (projectId: number | string, branch: string, _message: string, actions: { action: string; content?: string; filePath: string }[]) => {
                 expect(projectId).toBe("group/proj");
                 expect(branch).toBe("topic/x");
                 expect(actions).toEqual([{ action: "update", content: "file body\n", filePath: "src/a.ts" }]);
@@ -247,7 +249,7 @@ describe(commitFiles, () => {
     it("should fall back to webUrl (camelCase) when GitLab returns it", async () => {
         expect.assertions(1);
 
-        const create = vi.fn(async () => ({ id: "abc", webUrl: "https://gitlab.example.com/x" }));
+        const create = vi.fn(async () => { return { id: "abc", webUrl: "https://gitlab.example.com/x" }; });
 
         const result = await commitFiles({
             branch: "topic/x",

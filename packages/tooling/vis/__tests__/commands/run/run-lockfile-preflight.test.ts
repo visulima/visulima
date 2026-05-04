@@ -3,14 +3,14 @@ import { mkdirSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import runExecute from "../../../src/commands/run/handler";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
+
 // Pin TTY mode so the helper takes the warn-and-continue path regardless of
 // the host CI env. `is-in-ci` resolves once at import — without this mock,
 // running the suite under GitHub Actions (where CI=true) would flip the
 // helper into throw-mode and the test would assert the wrong path.
-vi.mock("is-in-ci", () => ({ default: false }));
-
-import runExecute from "../../../src/commands/run/handler";
-import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
+vi.mock(import('is-in-ci'), () => { return { default: false }; });
 
 const makeLogger = (): {
     calls: { args: unknown[]; level: "debug" | "error" | "info" | "warn" }[];
@@ -104,7 +104,7 @@ describe("vis run lockfile preflight wiring", () => {
             workspaceRoot,
         } as never);
 
-        const warnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0] as string).startsWith("preflight:"));
+        const warnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0]).startsWith("preflight:"));
 
         expect(warnings.length).toBeGreaterThanOrEqual(1);
         expect(warnings[0]!.args[0]).toContain("pnpm install");
@@ -126,7 +126,7 @@ describe("vis run lockfile preflight wiring", () => {
             workspaceRoot,
         } as never);
 
-        const preflightWarnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0] as string).startsWith("preflight:"));
+        const preflightWarnings = calls.filter((c) => c.level === "warn" && typeof c.args[0] === "string" && (c.args[0]).startsWith("preflight:"));
 
         expect(preflightWarnings).toHaveLength(0);
     });

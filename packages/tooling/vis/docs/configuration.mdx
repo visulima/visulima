@@ -87,16 +87,16 @@ export default defineConfig({
 
 `inputs` accepts three interchangeable string forms — the URI form is sugar over the object form, so all three hash identically and produce the same cache keys:
 
-| Form              | Example                                                    | Equivalent object form                              |
-| ----------------- | ---------------------------------------------------------- | --------------------------------------------------- |
-| Bare glob         | `"src/**/*.ts"`, `"!{projectRoot}/dist/**"`                | `{ fileset: "src/**/*.ts" }`                        |
-| `file://`         | `"file://tsconfig.json"`                                   | `{ fileset: "tsconfig.json" }`                      |
-| `glob://`         | `"glob://{projectRoot}/src/**/*"`                          | `{ fileset: "{projectRoot}/src/**/*" }`             |
-| `env://`          | `"env://NODE_ENV"`                                         | `{ env: "NODE_ENV" }`                               |
-| `func://`         | `"func://node --version"`                                  | `{ runtime: "node --version" }`                     |
-| `dep://`          | `"dep://typescript,vitest"`                                | `{ externalDependencies: ["typescript", "vitest"] }`|
-| `@filegroup:`     | `"@filegroup:sources"`                                     | (expanded inline from `fileGroups.sources`)         |
-| Named-input ref   | `"production"`                                             | (expanded inline from `namedInputs.production`)     |
+| Form            | Example                                     | Equivalent object form                               |
+| --------------- | ------------------------------------------- | ---------------------------------------------------- |
+| Bare glob       | `"src/**/*.ts"`, `"!{projectRoot}/dist/**"` | `{ fileset: "src/**/*.ts" }`                         |
+| `file://`       | `"file://tsconfig.json"`                    | `{ fileset: "tsconfig.json" }`                       |
+| `glob://`       | `"glob://{projectRoot}/src/**/*"`           | `{ fileset: "{projectRoot}/src/**/*" }`              |
+| `env://`        | `"env://NODE_ENV"`                          | `{ env: "NODE_ENV" }`                                |
+| `func://`       | `"func://node --version"`                   | `{ runtime: "node --version" }`                      |
+| `dep://`        | `"dep://typescript,vitest"`                 | `{ externalDependencies: ["typescript", "vitest"] }` |
+| `@filegroup:`   | `"@filegroup:sources"`                      | (expanded inline from `fileGroups.sources`)          |
+| Named-input ref | `"production"`                              | (expanded inline from `namedInputs.production`)      |
 
 Negation (`!`) works for fileset forms only: `!file://...`, `!glob://...`, `!{projectRoot}/dist/**`. Negating env/func/dep throws at config load — there is no semantic for "not this env var".
 
@@ -105,11 +105,11 @@ export default defineConfig({
     targetDefaults: {
         build: {
             inputs: [
-                "glob://{projectRoot}/src/**/*",        // fileset
+                "glob://{projectRoot}/src/**/*", // fileset
                 "file://{workspaceRoot}/tsconfig.base.json",
-                "env://NODE_ENV",                       // env-var fingerprint
-                "func://node --version",                // runtime-command fingerprint
-                "dep://typescript,vitest",              // external-dep fingerprint
+                "env://NODE_ENV", // env-var fingerprint
+                "func://node --version", // runtime-command fingerprint
+                "dep://typescript,vitest", // external-dep fingerprint
             ],
         },
     },
@@ -267,17 +267,17 @@ To opt **in** to only specific detectors, set the rest to `false` — there is n
 
 #### Detector coverage
 
-| Category           | Detectors (target names)                                                                                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App frameworks     | `nuxt`, `next`, `remix`, `astro`, `gatsby`, `docusaurus` — emit `build`, `dev`, `start`/`preview`/`serve`, plus framework-specific (`generate`, `develop`, …)                                                                                     |
-| Bundlers           | `vite`, `rolldown`, `tsdown`, `tsup`, `packem`, `rollup`, `webpack` — emit `build` (and `dev`/`preview` where the tool supports it)                                                                                                               |
-| Server frameworks  | `nest` — emits `build`, `dev`, `start`                                                                                                                                                                                                            |
-| Test runners       | `vitest`, `jest`, `bun`, `deno`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                                                                                                                  |
-| Stories            | `storybook` — emits `storybook`, `build-storybook`                                                                                                                                                                                                |
-| Typecheck / docs   | `typescript` (→ `typecheck`), `typedoc` (→ `docs`), `vitepress` (→ `docs:dev`, `docs:build`, `docs:preview`)                                                                                                                                      |
-| Lint / format      | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                                                                                                                   |
-| DB tooling         | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                                                                                                    |
-| Release plumbing   | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)                                                                                                  |
+| Category          | Detectors (target names)                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App frameworks    | `nuxt`, `next`, `remix`, `astro`, `gatsby`, `docusaurus` — emit `build`, `dev`, `start`/`preview`/`serve`, plus framework-specific (`generate`, `develop`, …) |
+| Bundlers          | `vite`, `rolldown`, `tsdown`, `tsup`, `packem`, `rollup`, `webpack` — emit `build` (and `dev`/`preview` where the tool supports it)                           |
+| Server frameworks | `nest` — emits `build`, `dev`, `start`                                                                                                                        |
+| Test runners      | `vitest`, `jest`, `bun`, `deno`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                              |
+| Stories           | `storybook` — emits `storybook`, `build-storybook`                                                                                                            |
+| Typecheck / docs  | `typescript` (→ `typecheck`), `typedoc` (→ `docs`), `vitepress` (→ `docs:dev`, `docs:build`, `docs:preview`)                                                  |
+| Lint / format     | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                               |
+| DB tooling        | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                |
+| Release plumbing  | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)              |
 
 When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
 

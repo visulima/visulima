@@ -3,12 +3,18 @@ import { writeFileSync } from "node:fs";
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { basename, join, relative, resolve } from "@visulima/path";
+import { render } from "@visulima/tui";
+import isInCi from "is-in-ci";
+import React from "react";
 import zeptomatch from "zeptomatch";
 
 import { sortPackageJsonStringWithOptions } from "#native";
 
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../../config/workspace";
 import { pail } from "../../io/logger";
+import type { SortError, SortFileEntry, SortKeyDiff } from "../../tui/components/sort-package-json/SortPackageJsonStore";
+import { SortPackageJsonStore } from "../../tui/components/sort-package-json/SortPackageJsonStore";
+import VisSortPackageJsonApp from "../../tui/components/sort-package-json/VisSortPackageJsonApp";
 import { errorMessage } from "../../util/utils";
 import type { SortPackageJsonOptions } from "./index";
 
@@ -34,12 +40,9 @@ interface NormalizedConfig {
     unsorted: string[];
 }
 
-/**
- * Finds all package.json files in the monorepo workspace.
- *
- * Uses workspace patterns (from pnpm-workspace.yaml or package.json workspaces)
- * to discover project directories. Always includes the root package.json.
- */
+const PARSE_POSITION_REGEX = /at position (\d+)/;
+const PARSE_LINE_COLUMN_REGEX = /\(?line (\d+) column (\d+)\)?/;
+
 const findPackageJsonFiles = (root: string): string[] => {
     const seen = new Set<string>();
     const results: string[] = [];
@@ -85,25 +88,12 @@ const findPackageJsonFiles = (root: string): string[] => {
     return results;
 };
 
-/**
- * Detects the leading indent of a JSON document by sampling the
- * whitespace on the first child line. Falls back to two spaces.
- */
 const detectIndent = (contents: string): string => {
     const match = /\n([ \t]+)/.exec(contents);
 
     return match?.[1] ?? "  ";
 };
 
-/**
- * Resolves a user-supplied indent override into a literal whitespace
- * string. Accepts:
- *   - a digit string ("2", "4") — that many spaces
- *   - "tab" or "\t" — a single tab
- *   - any literal whitespace (already-resolved value from config)
- * Returns `undefined` for empty/missing input so the caller falls back
- * to per-file detection.
- */
 const resolveIndentOverride = (raw: string | undefined): string | undefined => {
     if (raw === undefined || raw === "") {
         return undefined;
@@ -120,11 +110,6 @@ const resolveIndentOverride = (raw: string | undefined): string | undefined => {
     return raw;
 };
 
-/**
- * Splits a CLI-supplied list value into a clean array. Accepts both a
- * single comma-joined string ("a,b") and a repeated multi-flag form
- * (["a", "b,c"]). Empty entries are dropped.
- */
 const splitList = (raw: string | string[] | undefined): string[] => {
     if (raw === undefined) {
         return [];
@@ -156,12 +141,6 @@ const validateLineEnding = (raw: string | undefined): LineEnding => {
     process.exit(2);
 };
 
-/**
- * Drops files whose path matches any of the user-supplied ignore
- * patterns. Patterns without `/` match against the basename (lint-staged
- * semantics); path-style patterns match against the workspace-relative
- * path.
- */
 const filterByIgnore = (files: string[], patterns: string[], cwd: string): string[] => {
     if (patterns.length === 0) {
         return files;
@@ -179,12 +158,6 @@ const filterByIgnore = (files: string[], patterns: string[], cwd: string): strin
     });
 };
 
-/**
- * Builds a new object that places the user-supplied keys first (in the
- * given order, when present), then keeps the remaining keys in their
- * existing order. Used to apply `sortOrder` after the native crate has
- * already produced its conventional ordering.
- */
 const applySortOrder = (object: Record<string, unknown>, sortOrder: string[]): Record<string, unknown> => {
     if (sortOrder.length === 0) {
         return object;
@@ -209,11 +182,6 @@ const applySortOrder = (object: Record<string, unknown>, sortOrder: string[]): R
     return result;
 };
 
-/**
- * Restores the original (unsorted) values for the named top-level
- * sections, preserving the input's insertion order for those sections
- * while keeping the rest of the file sorted.
- */
 const restoreUnsortedSections = (sorted: Record<string, unknown>, original: Record<string, unknown>, unsorted: string[]): Record<string, unknown> => {
     if (unsorted.length === 0) {
         return sorted;
@@ -230,15 +198,90 @@ const restoreUnsortedSections = (sorted: Record<string, unknown>, original: Reco
     return result;
 };
 
-/**
- * Sorts a package.json string using the native Rust binding for key
- * ordering, then re-serializes with `JSON.stringify` to apply the
- * caller's indent. Going through `pretty: false` + `JSON.parse` keeps
- * us decoupled from the Rust crate's hardcoded two-space pretty
- * output and lets us layer our own post-processing (custom prefix
- * order, unsorted-section preservation, line-ending and trailing-
- * newline policy).
- */
+const computeLineColumn = (source: string, position: number): { column: number; line: number } => {
+    let line = 1;
+    let column = 1;
+    const limit = Math.min(position, source.length);
+
+    for (let index = 0; index < limit; index++) {
+        if (source.codePointAt(index) === 10) {
+            line++;
+            column = 1;
+        } else {
+            column++;
+        }
+    }
+
+    return { column, line };
+};
+
+const buildSnippet = (source: string, errorLine: number, contextLines = 2): { content: string; isErrorLine: boolean; lineNumber: number }[] => {
+    const lines = source.split("\n");
+
+    if (errorLine < 1 || errorLine > lines.length) {
+        return [];
+    }
+
+    const start = Math.max(0, errorLine - 1 - contextLines);
+    const end = Math.min(lines.length, errorLine + contextLines);
+    const rows: { content: string; isErrorLine: boolean; lineNumber: number }[] = [];
+
+    for (let index = start; index < end; index++) {
+        rows.push({
+            content: lines[index] ?? "",
+            isErrorLine: index + 1 === errorLine,
+            lineNumber: index + 1,
+        });
+    }
+
+    return rows;
+};
+
+const extractParseErrorContext = (
+    error: unknown,
+    source: string,
+): { column: number; line: number; snippet: { content: string; isErrorLine: boolean; lineNumber: number }[] } | undefined => {
+    if (!(error instanceof Error)) {
+        return undefined;
+    }
+
+    const positionMatch = PARSE_POSITION_REGEX.exec(error.message);
+
+    if (positionMatch) {
+        const { column, line } = computeLineColumn(source, Number.parseInt(positionMatch[1] ?? "0", 10));
+
+        return { column, line, snippet: buildSnippet(source, line) };
+    }
+
+    const lineColumnMatch = PARSE_LINE_COLUMN_REGEX.exec(error.message);
+
+    if (lineColumnMatch) {
+        const line = Number.parseInt(lineColumnMatch[1] ?? "1", 10);
+        const column = Number.parseInt(lineColumnMatch[2] ?? "1", 10);
+
+        return { column, line, snippet: buildSnippet(source, line) };
+    }
+
+    return undefined;
+};
+
+const computeKeyDiff = (originalJson: string, sortedJson: string): SortKeyDiff[] => {
+    const before = Object.keys(JSON.parse(originalJson) as Record<string, unknown>);
+    const after = Object.keys(JSON.parse(sortedJson) as Record<string, unknown>);
+    const beforeIndex = new Map(before.map((key, index) => [key, index]));
+    const diff: SortKeyDiff[] = [];
+
+    for (const [toIndex, key] of after.entries()) {
+        const fromIndex = beforeIndex.get(key);
+
+        if (fromIndex !== undefined && fromIndex !== toIndex) {
+            diff.push({ fromIndex, key, toIndex });
+        }
+    }
+
+    return diff;
+};
+
 const sortContents = (contents: string, config: NormalizedConfig): string => {
     const indent = config.indent ?? detectIndent(contents);
     const lineEnding = config.lineEnding === "auto" ? detectLineEnding(contents) : config.lineEnding;
@@ -271,10 +314,126 @@ const sortContents = (contents: string, config: NormalizedConfig): string => {
     return output;
 };
 
+interface ProcessFileOptions {
+    checkMode: boolean;
+    cwd: string;
+    normalized: NormalizedConfig;
+}
+
+/**
+ * Runs the full pipeline against a single file and returns a typed
+ * outcome instead of throwing. Each error path (read / native sort /
+ * JSON parse / write) is tagged so the report can show *where* the
+ * pipeline broke, not just that it broke.
+ */
+const processFile = (filePath: string, { checkMode, cwd, normalized }: ProcessFileOptions): SortFileEntry => {
+    const relativePath = relative(cwd, filePath) || filePath;
+    let contents: string;
+
+    try {
+        contents = readFileSync(filePath);
+    } catch (error: unknown) {
+        return {
+            diff: [],
+            error: { message: errorMessage(error), step: "read" },
+            filePath,
+            relativePath,
+            status: "error",
+        };
+    }
+
+    let compact: string;
+
+    try {
+        compact = sortPackageJsonStringWithOptions(contents, {
+            pretty: false,
+            sortScripts: normalized.sortScripts,
+        });
+    } catch (error: unknown) {
+        const sortError: SortError = { message: errorMessage(error), step: "native-sort" };
+        const context = extractParseErrorContext(error, contents);
+
+        if (context) {
+            sortError.context = context;
+        }
+
+        return { diff: [], error: sortError, filePath, relativePath, status: "error" };
+    }
+
+    let sorted: string;
+
+    try {
+        sorted = sortContents(contents, normalized);
+    } catch (error: unknown) {
+        const sortError: SortError = { message: errorMessage(error), step: "json-parse" };
+        const context = extractParseErrorContext(error, contents);
+
+        if (context) {
+            sortError.context = context;
+        }
+
+        return { diff: [], error: sortError, filePath, relativePath, status: "error" };
+    }
+
+    if (contents === sorted) {
+        return { diff: [], filePath, relativePath, status: "unchanged" };
+    }
+
+    let diff: SortKeyDiff[];
+
+    try {
+        diff = computeKeyDiff(contents, compact);
+    } catch {
+        diff = [];
+    }
+
+    if (checkMode) {
+        return { diff, filePath, relativePath, status: "would-rewrite" };
+    }
+
+    try {
+        writeFileSync(filePath, sorted, "utf8");
+    } catch (error: unknown) {
+        return {
+            diff,
+            error: { message: errorMessage(error), step: "write" },
+            filePath,
+            relativePath,
+            status: "error",
+        };
+    }
+
+    return { diff, filePath, relativePath, status: "rewritten" };
+};
+
+/**
+ * Renders the static error block for non-TTY output. Layers step tag,
+ * source position, and a short snippet on top of the basic message so
+ * users who can't enter the TUI still see the *why*.
+ */
+const printStaticError = (entry: SortFileEntry): void => {
+    if (!entry.error) {
+        return;
+    }
+
+    pail.error(`${entry.filePath}: ${entry.error.message}`);
+    pail.info(`  step: ${entry.error.step}`);
+
+    if (entry.error.context) {
+        pail.info(`  at line ${String(entry.error.context.line)}, column ${String(entry.error.context.column)}`);
+
+        for (const row of entry.error.context.snippet) {
+            const marker = row.isErrorLine ? ">" : " ";
+
+            pail.info(`  ${marker} ${String(row.lineNumber).padStart(4)} | ${row.content}`);
+        }
+    }
+};
+
 const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SortPackageJsonOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
     const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as SortPackageJsonConfig | undefined;
-    const check = options.check || false;
+    const checkMode = options.check || false;
 
     const normalized: NormalizedConfig = {
         finalNewline: options.finalNewline ?? config?.finalNewline ?? true,
@@ -295,66 +454,89 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
         return;
     }
 
+    const entries: SortFileEntry[] = [];
+
+    for (const filePath of files) {
+        entries.push(processFile(filePath, { checkMode, cwd, normalized }));
+    }
+
     let unsortedCount = 0;
     let sortedCount = 0;
     let errorCount = 0;
 
-    for (const filePath of files) {
-        try {
-            const contents: string = readFileSync(filePath);
-
-            let sorted: string;
-
-            try {
-                sorted = sortContents(contents, normalized);
-            } catch (error: unknown) {
-                pail.error(`${filePath}: ${errorMessage(error)}`);
-                errorCount++;
-                continue;
-            }
-
-            if (contents === sorted) {
-                sortedCount++;
-                continue;
-            }
-
-            unsortedCount++;
-
-            if (check) {
-                pail.warn(`${filePath} is not sorted`);
-            } else {
-                writeFileSync(filePath, sorted, "utf8");
-                pail.success(`Sorted ${filePath}`);
-            }
-        } catch (error: unknown) {
-            pail.error(`${filePath}: ${errorMessage(error)}`);
+    for (const entry of entries) {
+        if (entry.status === "error") {
             errorCount++;
+        } else if (entry.status === "rewritten" || entry.status === "would-rewrite") {
+            unsortedCount++;
+        } else {
+            sortedCount++;
         }
     }
 
-    if (check) {
+    const hasFindings = unsortedCount > 0 || errorCount > 0;
+    const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
+
+    // Drop into the TUI only when there's something interesting to show.
+    // Skip it on a clean run, in CI, or in non-TTY shells — those keep
+    // the existing static text path.
+    if (isTTY && hasFindings) {
+        const store = new SortPackageJsonStore(entries);
+        const instance = render(React.createElement(VisSortPackageJsonApp, { checkMode, store }), {
+            alternateScreen: true,
+            exitOnCtrlC: false,
+            interactive: true,
+            patchConsole: true,
+        });
+
+        await instance.waitUntilExit();
+    } else {
+        for (const entry of entries) {
+            switch (entry.status) {
+                case "error": {
+                    printStaticError(entry);
+                    break;
+                }
+                case "rewritten": {
+                    pail.success(`Sorted ${entry.filePath}`);
+                    break;
+                }
+                case "would-rewrite": {
+                    pail.warn(`${entry.filePath} is not sorted`);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+
+    if (checkMode) {
         if (unsortedCount > 0) {
-            pail.info(`${unsortedCount} file${unsortedCount === 1 ? "" : "s"} not sorted, ${sortedCount} already sorted`);
+            pail.info(`${String(unsortedCount)} file${unsortedCount === 1 ? "" : "s"} not sorted, ${String(sortedCount)} already sorted`);
             process.exitCode = 1;
-        } else {
-            pail.info(`All ${sortedCount} package.json file${sortedCount === 1 ? " is" : "s are"} sorted`);
+        } else if (errorCount === 0) {
+            pail.info(`All ${String(sortedCount)} package.json file${sortedCount === 1 ? " is" : "s are"} sorted`);
         }
     } else {
         const parts: string[] = [];
 
         if (unsortedCount > 0) {
-            parts.push(`sorted ${unsortedCount} file${unsortedCount === 1 ? "" : "s"}`);
+            parts.push(`sorted ${String(unsortedCount)} file${unsortedCount === 1 ? "" : "s"}`);
         }
 
         if (sortedCount > 0) {
-            parts.push(`${sortedCount} already sorted`);
+            parts.push(`${String(sortedCount)} already sorted`);
         }
 
         if (errorCount > 0) {
-            parts.push(`${errorCount} error${errorCount === 1 ? "" : "s"}`);
+            parts.push(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`);
         }
 
-        pail.info(parts.join(", "));
+        if (parts.length > 0) {
+            pail.info(parts.join(", "));
+        }
     }
 
     if (errorCount > 0) {
@@ -363,3 +545,4 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
 };
 
 export default execute as CommandExecute<Toolbox>;
+export { buildSnippet, computeKeyDiff, computeLineColumn, extractParseErrorContext, processFile };

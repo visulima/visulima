@@ -96,7 +96,7 @@ const migrateDepsExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     migrateDeps(
         ctx.root,
         ctx.packageManager,
-        ctx.config as Record<string, unknown> & { overrides?: Record<string, string> },
+        ctx.config,
         { dryRun: ctx.dryRun },
         logger,
         ctx.report,

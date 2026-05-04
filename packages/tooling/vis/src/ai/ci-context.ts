@@ -52,6 +52,7 @@ export interface CiContext {
     repo: string | undefined;
     /** Commit SHA the run is anchored to (head SHA in PRs, push SHA otherwise). */
     sha: string | undefined;
+
     /**
      * Token used to post comments / annotations.
      * - GitHub: `GITHUB_TOKEN` (auto-injected on hosted runners).
@@ -108,8 +109,8 @@ const readPrNumberFromGithubEvent = async (eventPath: string | undefined): Promi
 
 const detectGithubActions = async (env: NodeJS.ProcessEnv): Promise<CiContext> => {
     const refPrNumber = parsePrNumberFromGithubRef(env.GITHUB_REF);
-    const { prNumber: payloadPrNumber, sha: payloadSha } =
-        refPrNumber === undefined ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH) : { prNumber: refPrNumber, sha: undefined };
+    const { prNumber: payloadPrNumber, sha: payloadSha }
+        = refPrNumber === undefined ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH) : { prNumber: refPrNumber, sha: undefined };
 
     return {
         apiBaseUrl: undefined,

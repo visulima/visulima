@@ -36,7 +36,10 @@ interface FieldRowProps {
 const FieldRow = ({ children, label, width = 14 }: FieldRowProps): React.JSX.Element => (
     <Box>
         <Box width={width}>
-            <Text dimColor>{label}:</Text>
+            <Text dimColor>
+{label}
+:
+            </Text>
         </Box>
         {typeof children === "string" ? <Text>{children}</Text> : children}
     </Box>
@@ -65,21 +68,26 @@ const OutdatedDetail = ({ finding }: OutdatedDetailProps): React.JSX.Element => 
                 <Text>{entry.newRange}</Text>
                 <Text bold color={typeColor}>
                     {" ("}
-                    {entry.updateType})
+                    {entry.updateType}
+)
                 </Text>
             </FieldRow>
             <FieldRow label="Catalog">{entry.catalogName}</FieldRow>
-            {entry.acceptedRisk ? (
+            {entry.acceptedRisk
+                ? (
                 <FieldRow label="Risk ack">
                     <Text dimColor>{entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
                 </FieldRow>
-            ) : null}
+                )
+                : null}
             <SectionTitle>Action</SectionTitle>
             <Text dimColor>
-                Run{" "}
+                Run
+{" "}
                 <Text bold color="white">
                     vis update
-                </Text>{" "}
+                </Text>
+{" "}
                 to apply this change.
             </Text>
         </Box>
@@ -104,10 +112,12 @@ const DuplicateDetail = ({ finding }: DuplicateDetailProps): React.JSX.Element =
         ))}
         <SectionTitle>Action</SectionTitle>
         <Text dimColor>
-            Run{" "}
+            Run
+{" "}
             <Text bold color="white">
                 vis dedupe
-            </Text>{" "}
+            </Text>
+{" "}
             to consolidate to a single resolution.
         </Text>
     </Box>
@@ -125,11 +135,13 @@ const VulnerabilityDetail = ({ finding }: VulnerabilityDetailProps): React.JSX.E
             <FieldRow label="Package">{finding.packageName}</FieldRow>
             <FieldRow label="Current">{finding.entry.currentRange}</FieldRow>
             <FieldRow label="Advisories">{String(vulns.length)}</FieldRow>
-            {finding.entry.acceptedRisk ? (
+            {finding.entry.acceptedRisk
+                ? (
                 <FieldRow label="Risk ack">
                     <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
                 </FieldRow>
-            ) : null}
+                )
+                : null}
             {vulns.map((v) => {
                 const sevColor = SEVERITY_COLORS[v.severity] ?? "gray";
 
@@ -141,26 +153,32 @@ const VulnerabilityDetail = ({ finding }: VulnerabilityDetailProps): React.JSX.E
                             </Text>
                             <Text> </Text>
                             <Text>{v.id}</Text>
-                            {typeof v.cvssScore === "number" ? (
+                            {typeof v.cvssScore === "number"
+                                ? (
                                 <Text dimColor>
                                     {" · CVSS "}
                                     {v.cvssScore.toFixed(1)}
                                 </Text>
-                            ) : null}
+                                )
+                                : null}
                         </Box>
                         <Text wrap="wrap">{v.summary}</Text>
-                        {v.fixedVersions.length > 0 ? (
+                        {v.fixedVersions.length > 0
+                            ? (
                             <Text dimColor>
                                 {"Fixed in: "}
                                 {v.fixedVersions.join(", ")}
                             </Text>
-                        ) : null}
-                        {v.aliases && v.aliases.length > 0 ? (
+                            )
+                            : null}
+                        {v.aliases && v.aliases.length > 0
+                            ? (
                             <Text dimColor>
                                 {"Aliases: "}
                                 {v.aliases.join(", ")}
                             </Text>
-                        ) : null}
+                            )
+                            : null}
                     </Box>
                 );
             })}
@@ -186,14 +204,19 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
         <Box flexDirection="column">
             <FieldRow label="Package">{finding.packageName}</FieldRow>
             <FieldRow label="Overall">
-                <Text color={overallColor}>{String(overall)}%</Text>
+                <Text color={overallColor}>
+{String(overall)}
+%
+                </Text>
             </FieldRow>
             <FieldRow label="Alerts">{String(report.alerts.length)}</FieldRow>
-            {finding.entry.acceptedRisk ? (
+            {finding.entry.acceptedRisk
+                ? (
                 <FieldRow label="Risk ack">
                     <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
                 </FieldRow>
-            ) : null}
+                )
+                : null}
             <SectionTitle>Score breakdown</SectionTitle>
             {Object.entries(report.score).map(([key, value]) => {
                 if (key === "overall") {
@@ -207,9 +230,15 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
                 return (
                     <Box key={key}>
                         <Box width={14}>
-                            <Text dimColor>{key}:</Text>
+                            <Text dimColor>
+{key}
+:
+                            </Text>
                         </Box>
-                        <Text color={color}>{String(pct)}%</Text>
+                        <Text color={color}>
+{String(pct)}
+%
+                        </Text>
                     </Box>
                 );
             })}
@@ -226,11 +255,13 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
                             <Text> </Text>
                             <Text>{alert.type}</Text>
                         </Box>
-                        {alert.props ? (
+                        {alert.props
+                            ? (
                             <Text dimColor wrap="wrap">
                                 {JSON.stringify(alert.props)}
                             </Text>
-                        ) : null}
+                            )
+                            : null}
                     </Box>
                 );
             })}
@@ -254,35 +285,47 @@ const OptimizationDetail = ({ finding }: OptimizationDetailProps): React.JSX.Ele
             <FieldRow label="Codemod">
                 <Text color={entry.hasCodemod ? "green" : "gray"}>{entry.hasCodemod ? "available" : "not available"}</Text>
             </FieldRow>
-            {entry.docUrl ? (
+            {entry.docUrl
+                ? (
                 <FieldRow label="Guide">
                     <Text color="cyan" underline>
                         {entry.docUrl}
                     </Text>
                 </FieldRow>
-            ) : null}
+                )
+                : null}
             <SectionTitle>Action</SectionTitle>
-            {entry.hasCodemod ? (
+            {entry.hasCodemod
+                ? (
                 <Text dimColor>
-                    Run{" "}
+                    Run
+{" "}
                     <Text bold color="white">
                         vis optimize
-                    </Text>{" "}
+                    </Text>
+{" "}
                     to apply the codemod interactively.
                 </Text>
-            ) : entry.overrideSpec ? (
+                )
+                : entry.overrideSpec
+                    ? (
                 <Text dimColor>
-                    Run{" "}
+                    Run
+{" "}
                     <Text bold color="white">
                         vis optimize
-                    </Text>{" "}
+                    </Text>
+{" "}
                     to install the package override.
                 </Text>
-            ) : entry.docUrl ? (
+                    )
+                    : entry.docUrl
+                        ? (
                 <Text dimColor>No automated codemod. Open the migration guide above for the recommended alternative and steps.</Text>
-            ) : (
+                        )
+                        : (
                 <Text dimColor>No automated codemod. Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.</Text>
-            )}
+                        )}
         </Box>
     );
 };
@@ -303,19 +346,24 @@ const RuntimeDetail = ({ finding }: RuntimeDetailProps): React.JSX.Element => {
             </FieldRow>
             <SectionTitle>Message</SectionTitle>
             <Text wrap="wrap">{diagnostic.message}</Text>
-            {diagnostic.detail && Object.keys(diagnostic.detail).length > 0 ? (
+            {diagnostic.detail && Object.keys(diagnostic.detail).length > 0
+                ? (
                 <>
                     <SectionTitle>Details</SectionTitle>
                     {Object.entries(diagnostic.detail).map(([key, value]) => (
                         <Box key={key}>
                             <Box width={20}>
-                                <Text dimColor>{key}:</Text>
+                                <Text dimColor>
+{key}
+:
+                                </Text>
                             </Box>
                             <Text>{String(value)}</Text>
                         </Box>
                     ))}
                 </>
-            ) : null}
+                )
+                : null}
         </Box>
     );
 };
