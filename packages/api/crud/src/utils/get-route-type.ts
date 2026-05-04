@@ -38,8 +38,6 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
         case "GET": {
             const pathMatch = entityMatcher(realPath);
 
-            console.log(pathMatch);
-
             // If we got a /something after the resource name, we are reading 1 entity
             if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
