@@ -31,12 +31,12 @@ import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache
 import type { VisProjectConfiguration } from "../../config/workspace";
 import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
 import { runLockfilePreflight } from "../../preflight/lockfile";
-import { runReadiness } from "../../services/readiness";
-import { readAllEntries } from "../../services/registry";
 import { FailureLogLifeCycle } from "../../report/failure-log";
 import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
 import { runToolchainPreflight } from "../../runtime/toolchain";
+import { runReadiness } from "../../services/readiness";
+import { readAllEntries } from "../../services/registry";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../task/target-discovery";
@@ -315,6 +315,7 @@ interface ExecutorDependencies {
     onOutputReplace?: (taskId: string, fullContent: string) => void;
     /** Optional global retry budget applied across all tasks in the run. */
     retryBudget?: RetryBudget;
+
     /**
      * Per-dependent task env contributed by externally-registered
      * services. Pre-computed by `applyServiceRegistry` before the
@@ -323,6 +324,7 @@ interface ExecutorDependencies {
      */
     serviceEnvByTaskId?: Map<string, Record<string, string>>;
     stdinRegistry?: Map<string, StdinEntry>;
+
     /**
      * When `true`, every task command is scanned for `${VAR}` / `$VAR`
      * references before spawn — unset references fail the task instead
@@ -432,7 +434,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         // workspace runs strict, and vice versa.
         const strictEnvActive = visOptions?.strictEnv ?? workspaceStrictEnv ?? false;
 
-        if (strictEnvActive === true) {
+        if (strictEnvActive) {
             const violation = checkStrictEnv({
                 command: commandWithAffected,
                 processEnv: process.env,
@@ -963,6 +965,68 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         workspace,
     });
 
+    // task-runner's createTaskGraph copies overrides only from the
+    // user-invoked `initialTasks`, so dep tasks added via `dependsOn`
+    // arrive without `visOptions`. That hides every vis-specific
+    // option on dep tasks — most importantly `options.service`, which
+    // applyServiceRegistry needs to detect a service dependency it
+    // should auto-attach to. Re-hydrate visOptions for every task in
+    // the graph from `projectOptions` so the registry pass below sees
+    // the same target metadata that user-invoked tasks already carry.
+    for (const [taskId, task] of Object.entries(taskGraph.tasks)) {
+        if (task.overrides["visOptions"] !== undefined) {
+            continue;
+        }
+
+        const projectName = task.target.project;
+        const targetName = task.target.target;
+        const visTarget = projectOptions.get(projectName)?.[targetName];
+
+        if (visTarget?.options) {
+            task.overrides = { ...task.overrides, visOptions: visTarget.options };
+            taskGraph.tasks[taskId] = task;
+        }
+    }
+
+    // Pre-flight: if a workspace tool pin doesn't match the running
+    // version and `toolchain.autoInstall` is on (default when a
+    // manager is detected), install via the right manager and let
+    // subsequent task subprocesses pick up the new version. We
+    // never block on failure — surface a warning, keep going,
+    // and let the existing runtime-check warnings do their job.
+    //
+    // Runs before service auto-attach so the right Node/PM is in
+    // place when the probe runs, and before the dry-run short-circuit
+    // so `--dry-run` still surfaces toolchain drift.
+    await runToolchainPreflight(
+        workspaceRoot,
+        config.toolchain,
+        {
+            error: (message) => { logger.error(message); },
+            info: (message) => { logger.info(message); },
+            warn: (message) => { logger.warn(message); },
+        },
+        Boolean(options.skipToolchain),
+    );
+
+    // Lockfile/install drift check. Fires after toolchain (so the
+    // suggested install command runs against the right Node) and
+    // before service auto-attach + task execution. CLI flag wins over
+    // config; both default to on. The helper logs the warn line itself
+    // in TTY; in CI it stays silent and we throw with `formattedMessage`
+    // so the user sees the detail exactly once.
+    const preflightEnabled = options.preflight !== false && config.preflight?.lockfile !== false;
+    const lockfilePreflight = runLockfilePreflight(
+        workspaceRoot,
+        isInCi,
+        { warn: (message) => { logger.warn(message); } },
+        { skip: !preflightEnabled },
+    );
+
+    if (!lockfilePreflight.shouldContinue) {
+        throw new Error(`${lockfilePreflight.formattedMessage ?? "preflight: lockfile drift detected"} (pass --no-preflight to bypass)`);
+    }
+
     // Auto-attach: if a service this run depends on is already
     // running in the background registry, drop it from the graph and
     // capture its env for the surviving dependents. Diagnostics here
@@ -973,20 +1037,24 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // timeout before accepting the entry. PID-alive isn't enough: a
     // shell-wrapped service whose underlying server has crashed leaves
     // the wrapper PID alive, and we don't want to attach a dependent
-    // task to a dead port. Probe failures fall through to the same
-    // "missing service" diagnostic, so the operator restarts cleanly.
+    // task to a dead port. The probe is skipped in `--dry-run` because
+    // a plan print never executes the dependent task, so probing risks
+    // a misleading "service down" diagnostic for what is really a
+    // planning-only invocation.
     const registeredEntries = await readAllEntries(workspaceRoot);
     const serviceResult = await applyServiceRegistry({
         initialTasks,
-        probe: async (entry) => {
-            try {
-                await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+        probe: options.dryRun
+            ? undefined
+            : async (entry) => {
+                try {
+                    await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
 
-                return true;
-            } catch {
-                return false;
-            }
-        },
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
         registeredEntries,
         taskGraph,
         visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
@@ -1003,7 +1071,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     initialTasks = serviceResult.initialTasks;
     taskGraph = serviceResult.taskGraph;
 
-    const serviceEnvByTaskId = serviceResult.serviceEnvByTaskId;
+    // Service env precedence: the executor merges these on top of
+    // process.env when running each dependent task. See
+    // apply-service-registry.ts → ApplyServiceRegistryResult.serviceEnvByTaskId
+    // for the keying contract (per *dependent*, not per service).
+    const { serviceEnvByTaskId } = serviceResult;
 
     if (serviceResult.satisfiedServices.length > 0) {
         const names = serviceResult.satisfiedServices.map((s) => s.id).join(", ");
@@ -1048,47 +1120,6 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         logger.info("");
 
         return;
-    }
-
-    // Pre-flight: if a workspace tool pin doesn't match the running
-    // version and `toolchain.autoInstall` is on (default when a
-    // manager is detected), install via the right manager and let
-    // subsequent task subprocesses pick up the new version. We
-    // never block on failure — surface a warning, keep going,
-    // and let the existing runtime-check warnings do their job.
-    //
-    // Runs only when we're committing to actually execute tasks:
-    // after target selection, after the `--last-details` and
-    // `--dry-run` short-circuits, and after the no-target listing
-    // path returns. Avoids surprising auto-installs from `vis run`
-    // with no args or `vis run --dry-run`.
-    await runToolchainPreflight(
-        workspaceRoot,
-        config.toolchain,
-        {
-            error: (message) => { logger.error(message); },
-            info: (message) => { logger.info(message); },
-            warn: (message) => { logger.warn(message); },
-        },
-        Boolean(options.skipToolchain),
-    );
-
-    // Lockfile/install drift check. Fires after toolchain (so the
-    // suggested install command runs against the right Node) and before
-    // task execution. CLI flag wins over config; both default to on.
-    // The helper logs the warn line itself in TTY; in CI it stays
-    // silent and we throw with `formattedMessage` so the user sees the
-    // detail exactly once.
-    const preflightEnabled = options.preflight !== false && config.preflight?.lockfile !== false;
-    const lockfilePreflight = runLockfilePreflight(
-        workspaceRoot,
-        isInCi,
-        { warn: (message) => { logger.warn(message); } },
-        { skip: !preflightEnabled },
-    );
-
-    if (!lockfilePreflight.shouldContinue) {
-        throw new Error(`${lockfilePreflight.formattedMessage ?? "preflight: lockfile drift detected"} (pass --no-preflight to bypass)`);
     }
 
     const startTime = Date.now();

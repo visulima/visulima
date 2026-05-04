@@ -3,13 +3,13 @@ import { open, stat, watch } from "node:fs/promises";
 import type { Toolbox } from "@visulima/cerebro";
 import { isAccessible } from "@visulima/fs";
 
-import { pail } from "../../io/logger";
-import { isAlive, pruneDead, readAllEntries, readEntry } from "../../services/registry";
-import { runReadiness, ServiceReadinessError } from "../../services/readiness";
-import { startService, stopService } from "../../services/lifecycle";
-import type { ServiceEntry } from "../../services/types";
 import type { VisConfig } from "../../config/types";
 import { discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import { startService, stopService } from "../../services/lifecycle";
+import { runReadiness, ServiceReadinessError } from "../../services/readiness";
+import { isAlive, pruneDead, readAllEntries, readEntry } from "../../services/registry";
+import type { ServiceEntry } from "../../services/types";
 import { loadEnvFile } from "../../task/target-options";
 import type { ServiceConfig, VisTargetConfiguration } from "../../task/types";
 import { formatAge } from "../cache/handler";
@@ -23,9 +23,9 @@ import type {
 } from "./index";
 
 interface ResolvedTarget {
-    cwd: string;
     /** Resolved shell command. Always defined — handlers reject targets without `command`. */
     command: string;
+    cwd: string;
     env: Record<string, string>;
     /** Service config block; required for service-mode lifecycle. */
     service: ServiceConfig;
@@ -140,7 +140,7 @@ export const serviceStartExecute = async ({ argument, options, visConfig, worksp
         return;
     }
 
-    const resolved = await resolveTarget(workspaceRoot, visConfig as VisConfig | undefined, targetId);
+    const resolved = await resolveTarget(workspaceRoot, visConfig, targetId);
 
     if (!resolved) {
         process.exitCode = 1;
@@ -191,7 +191,7 @@ const stopOne = async (workspaceRoot: string, id: string, graceMs: number | unde
 
 export const serviceStopExecute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Console, ServiceStopOptions>): Promise<void> => {
     const workspaceRoot = requireWorkspace(wsRoot);
-    const graceMs = options.graceMs;
+    const { graceMs } = options;
     const targetId = argument[0]?.trim();
 
     if (options.all === true) {
@@ -214,7 +214,6 @@ export const serviceStopExecute = async ({ argument, options, workspaceRoot: wsR
         }
 
         for (const entry of entries) {
-            // eslint-disable-next-line no-await-in-loop -- serial stop keeps log output ordered and avoids signal storms
             await stopOne(workspaceRoot, entry.id, graceMs);
         }
 
@@ -262,8 +261,7 @@ export const serviceListExecute = async ({ logger, options, workspaceRoot: wsRoo
         return;
     }
 
-    await pruneDead(workspaceRoot);
-    const entries = await readAllEntries(workspaceRoot);
+    const { surviving: entries } = await pruneDead(workspaceRoot);
 
     if (format === "json") {
         const now = Date.now();
@@ -382,7 +380,7 @@ export const serviceRestartExecute = async ({ argument, options, visConfig, work
 
     await stopService({ graceMs: options.graceMs, id: targetId, workspaceRoot });
 
-    const resolved = await resolveTarget(workspaceRoot, visConfig as VisConfig | undefined, targetId);
+    const resolved = await resolveTarget(workspaceRoot, visConfig, targetId);
 
     if (!resolved) {
         process.exitCode = 1;
@@ -412,6 +410,7 @@ export const serviceRestartExecute = async ({ argument, options, visConfig, work
 };
 
 const TAIL_POLL_MS = 200;
+
 /**
  * Cap on bytes copied per tick. A service that suddenly dumps gigabytes
  * (verbose log mode, panic stack dumps) shouldn't blow Node's heap with
@@ -515,10 +514,8 @@ const tailLog = async (logFile: string): Promise<void> => {
         })();
 
         while (!controller.signal.aborted) {
-            // eslint-disable-next-line no-await-in-loop -- intentional polling cadence
             await tickOnce();
 
-            // eslint-disable-next-line no-await-in-loop
             await new Promise<void>((resolve) => {
                 const timer = setTimeout(resolve, TAIL_POLL_MS);
 

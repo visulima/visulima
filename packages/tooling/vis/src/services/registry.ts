@@ -36,9 +36,12 @@ const hashWorkspace = (workspaceRoot: string): string =>
  * Lives outside the workspace tree because writing PID files into the
  * workspace would dirty `affected` detection.
  *
- * Throws a clear error when the path exists but is not a directory —
- * `ensureDir`'s native ENOTDIR is opaque enough that operators waste
- * time grepping the codebase.
+ * Translates the "path exists as a file" error (ENOTDIR) into a clear
+ * actionable message — `ensureDir`'s native error code is opaque enough
+ * that operators waste time grepping the codebase. EEXIST is *not*
+ * remapped: in modern Node it surfaces only on legitimate races (a
+ * concurrent `ensureDir` on the same path), and rebranding it as
+ * "exists but not a directory" would be misleading.
  */
 export const getRegistryDir = async (workspaceRoot: string): Promise<string> => {
     const directory = join(homedir(), REGISTRY_ROOT_DIRNAME, hashWorkspace(workspaceRoot));
@@ -46,9 +49,7 @@ export const getRegistryDir = async (workspaceRoot: string): Promise<string> => 
     try {
         await ensureDir(directory);
     } catch (error) {
-        const code = (error as NodeJS.ErrnoException).code;
-
-        if (code === "ENOTDIR" || code === "EEXIST") {
+        if ((error as NodeJS.ErrnoException).code === "ENOTDIR") {
             throw new Error(
                 `Service registry path ${directory} exists but is not a directory. Remove it or move the conflicting file before running \`vis service\`.`,
             );
@@ -66,11 +67,19 @@ export const getRegistryDir = async (workspaceRoot: string): Promise<string> => 
  * Windows. Replace with underscore-pairs so the slug stays reversible
  * by inspection.
  *
- * Note: case-insensitive filesystems (macOS HFS+ default, NTFS without
- * case-sensitivity) collapse `apps/api:Db` and `apps/api:db` into the
- * same file. We don't lower-case ids because vis ids are case-sensitive
- * everywhere else; collisions on these filesystems are an accepted
- * pre-existing limitation.
+ * Known collision modes — accepted as pre-existing limitations rather
+ * than worked around with hashing, because both are extreme edge cases
+ * and round-trippable filenames are useful for ad-hoc debugging:
+ *
+ * 1. **Case-insensitive filesystems** (macOS HFS+ default, NTFS without
+ *    case-sensitivity) collapse `apps/api:Db` and `apps/api:db` into
+ *    the same file. We don't lower-case ids because vis ids are
+ *    case-sensitive everywhere else.
+ * 2. **Same-encoding inputs**: `apps/api:db` slugifies to
+ *    `apps_api__db`, which is the same as the slug for the (highly
+ *    unusual) literal id `apps_api:db` or `apps/api__db`. Vis project
+ *    ids are package names and project paths in practice, so neither
+ *    `_` runs nor literal `:` characters in segments occur.
  */
 export const slugify = (id: string): string => id.replaceAll("/", "_").replaceAll(":", "__");
 
@@ -120,7 +129,6 @@ export const readAllEntries = async (workspaceRoot: string): Promise<ServiceEntr
         }
 
         try {
-            // eslint-disable-next-line no-await-in-loop -- serial reads keep the loop bounded; the registry rarely holds more than a handful of entries
             const entry = (await readJson(join(directory, name))) as unknown as ServiceEntry;
 
             entries.push(entry);
@@ -197,40 +205,58 @@ export const isAlive = (pid: number): boolean => {
 };
 
 /**
- * Drop entries whose PIDs are no longer alive. Returns the list of
- * pruned ids so callers (`vis service list`) can surface what went
- * away. Errors during deletion are swallowed — the next prune will
- * retry.
+ * Result of `pruneDead`: which entry ids were pruned, plus the surviving
+ * entries from the same registry read. Returning the surviving entries
+ * lets `vis service list` skip a redundant `readAllEntries` round-trip
+ * — the registry directory is on `$HOME` so the I/O cost matters on
+ * sluggish network homes.
+ *
+ * Entries that were dead on disk but had a fresh restart between read
+ * and delete (the concurrent-restart race) are returned in `surviving`,
+ * not `pruned` — the new PID is now live.
+ */
+export interface PruneDeadResult {
+    pruned: string[];
+    surviving: ServiceEntry[];
+}
+
+/**
+ * Drop entries whose PIDs are no longer alive. Returns the pruned ids
+ * (so `vis service list` can surface what went away) and the surviving
+ * entries from the same registry read. Errors during deletion are
+ * swallowed — the next prune will retry.
  *
  * Re-reads the entry just before deletion to defend against the race
  * where another shell restarted the same service between our liveness
  * check and our delete. If the on-disk PID has changed, the new entry
- * is left intact.
+ * is left intact and reported as surviving.
  */
-export const pruneDead = async (workspaceRoot: string): Promise<string[]> => {
+export const pruneDead = async (workspaceRoot: string): Promise<PruneDeadResult> => {
     const entries = await readAllEntries(workspaceRoot);
     const pruned: string[] = [];
+    const surviving: ServiceEntry[] = [];
 
     for (const entry of entries) {
         if (isAlive(entry.pid)) {
+            surviving.push(entry);
             continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         const current = await readEntry(workspaceRoot, entry.id);
 
         if (current && current.pid !== entry.pid) {
-            // A concurrent restart wrote a fresh entry — leave it alone.
+            // A concurrent restart wrote a fresh entry — leave it alone
+            // and report the *current* entry, not the dead one we read.
+            surviving.push(current);
             continue;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await deleteEntry(workspaceRoot, entry.id, entry).catch(() => {});
 
         pruned.push(entry.id);
     }
 
-    return pruned;
+    return { pruned, surviving };
 };
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
@@ -294,7 +320,7 @@ const isLockStale = async (path: string): Promise<boolean> => {
  * POSIX and Windows. Stale locks (dead writer PID, or older than
  * LOCK_STALE_MS) are reclaimed automatically.
  *
- * Without this, two concurrent `vis service start <id>` invocations
+ * Without this, two concurrent `vis service start &lt;id>` invocations
  * each spawn a child and the second `writeEntry` orphans the first
  * child (still running, but unregistered — the port is bound forever).
  */
@@ -308,14 +334,11 @@ export const withServiceLock = async <T>(
     const start = Date.now();
 
     while (true) {
-        // eslint-disable-next-line no-await-in-loop
         if (await tryClaimLock(path)) {
             break;
         }
 
-        // eslint-disable-next-line no-await-in-loop
         if (await isLockStale(path)) {
-            // eslint-disable-next-line no-await-in-loop
             await unlink(path).catch(() => {});
             continue;
         }
@@ -326,7 +349,6 @@ export const withServiceLock = async <T>(
             );
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await sleep(LOCK_POLL_MS);
     }
 

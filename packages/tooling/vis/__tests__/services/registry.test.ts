@@ -18,19 +18,21 @@ import {
 import type { ServiceEntry } from "../../src/services/types";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
-const buildEntry = (overrides: Partial<ServiceEntry> = {}): ServiceEntry => ({
-    command: "node -e 'setInterval(()=>{},1000)'",
-    config: {},
-    cwd: "/tmp",
-    env: {},
-    id: "pkg:db",
-    logFile: "/tmp/pkg__db.log",
-    pid: process.pid,
-    slug: slugify("pkg:db"),
-    startedAt: new Date().toISOString(),
-    visVersion: "0.0.0-test",
-    ...overrides,
-});
+const buildEntry = (overrides: Partial<ServiceEntry> = {}): ServiceEntry => {
+    return {
+        command: "node -e 'setInterval(()=>{},1000)'",
+        config: {},
+        cwd: "/tmp",
+        env: {},
+        id: "pkg:db",
+        logFile: "/tmp/pkg__db.log",
+        pid: process.pid,
+        slug: slugify("pkg:db"),
+        startedAt: new Date().toISOString(),
+        visVersion: "0.0.0-test",
+        ...overrides,
+    };
+};
 
 describe("services/registry", () => {
     let workspaceRoot: string;
@@ -81,7 +83,7 @@ describe("services/registry", () => {
             const directory = await getRegistryDir(workspaceRoot);
 
             expect(directory.startsWith(homeOverride)).toBe(true);
-            expect(directory.includes(".vis-services")).toBe(true);
+            expect(directory).toContain(".vis-services");
         });
 
         it("returns the same directory for the same workspace", async () => {
@@ -117,12 +119,12 @@ describe("services/registry", () => {
 
             await writeEntry(workspaceRoot, entry);
 
-            expect(await readEntry(workspaceRoot, "pkg:db")).toEqual(entry);
+            await expect(readEntry(workspaceRoot, "pkg:db")).resolves.toEqual(entry);
         });
 
         it("returns undefined for an unknown id", async () => {
             expect.assertions(1);
-            expect(await readEntry(workspaceRoot, "nope:nope")).toBeUndefined();
+            await expect(readEntry(workspaceRoot, "nope:nope")).resolves.toBeUndefined();
         });
 
         it("returns every entry from readAllEntries", async () => {
@@ -144,10 +146,12 @@ describe("services/registry", () => {
             expect.assertions(2);
 
             await writeEntry(workspaceRoot, buildEntry({ id: "pkg:db" }));
-            expect(await readEntry(workspaceRoot, "pkg:db")).toBeDefined();
+
+            await expect(readEntry(workspaceRoot, "pkg:db")).resolves.toBeDefined();
 
             await deleteEntry(workspaceRoot, "pkg:db");
-            expect(await readEntry(workspaceRoot, "pkg:db")).toBeUndefined();
+
+            await expect(readEntry(workspaceRoot, "pkg:db")).resolves.toBeUndefined();
         });
 
         it("is idempotent for unknown ids", async () => {
@@ -173,25 +177,30 @@ describe("services/registry", () => {
     });
 
     describe(pruneDead, () => {
-        it("removes entries with dead PIDs and returns their ids", async () => {
-            expect.assertions(3);
+        it("removes entries with dead PIDs and returns pruned ids plus survivors", async () => {
+            expect.assertions(5);
 
             await writeEntry(workspaceRoot, buildEntry({ id: "alive:svc", pid: process.pid }));
             await writeEntry(workspaceRoot, buildEntry({ id: "dead:svc", pid: 99_999_999, slug: slugify("dead:svc") }));
 
-            const pruned = await pruneDead(workspaceRoot);
+            const { pruned, surviving } = await pruneDead(workspaceRoot);
 
             expect(pruned).toEqual(["dead:svc"]);
-            expect(await readEntry(workspaceRoot, "dead:svc")).toBeUndefined();
-            expect(await readEntry(workspaceRoot, "alive:svc")).toBeDefined();
+            expect(surviving).toHaveLength(1);
+            expect(surviving[0]?.id).toBe("alive:svc");
+            await expect(readEntry(workspaceRoot, "dead:svc")).resolves.toBeUndefined();
+            await expect(readEntry(workspaceRoot, "alive:svc")).resolves.toBeDefined();
         });
 
-        it("returns an empty list when everything is alive", async () => {
-            expect.assertions(1);
+        it("returns empty pruned list and all entries when everything is alive", async () => {
+            expect.assertions(2);
 
             await writeEntry(workspaceRoot, buildEntry({ id: "alive:svc", pid: process.pid }));
 
-            expect(await pruneDead(workspaceRoot)).toEqual([]);
+            const result = await pruneDead(workspaceRoot);
+
+            expect(result.pruned).toEqual([]);
+            expect(result.surviving.map((e) => e.id)).toEqual(["alive:svc"]);
         });
     });
 
