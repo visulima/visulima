@@ -211,7 +211,8 @@ describe(TaskOrchestrator, () => {
 
         // Default cacheOnWarning is true, so the run still seeds the cache
         const orch2 = createOrchestrator([task], executor);
-        const result2 = (await orch2.run()).get("app:build");
+        const results2 = await orch2.run();
+        const result2 = results2.get("app:build");
 
         expect(result2?.status).toBe("local-cache");
     });
@@ -232,7 +233,8 @@ describe(TaskOrchestrator, () => {
             return { code: 0, terminalOutput: "Built cleanly" };
         };
 
-        const result = (await createOrchestrator([task], executor).run()).get("app:build");
+        const results = await createOrchestrator([task], executor).run();
+        const result = results.get("app:build");
 
         expect(result?.status).toBe("success");
         expect(result?.hadWarnings).toBeUndefined();
@@ -259,13 +261,15 @@ describe(TaskOrchestrator, () => {
         };
 
         const orch1 = createOrchestrator([task], executor);
-        const result1 = (await orch1.run()).get("app:build");
+        const results1 = await orch1.run();
+        const result1 = results1.get("app:build");
 
         expect(result1?.hadWarnings).toBe(true);
 
         // Second run must re-execute because the first didn't seed the cache.
         const orch2 = createOrchestrator([task], executor);
-        const result2 = (await orch2.run()).get("app:build");
+        const results2 = await orch2.run();
+        const result2 = results2.get("app:build");
 
         expect(result2?.status).toBe("success");
         expect(executionCount).toBe(2);
@@ -287,7 +291,8 @@ describe(TaskOrchestrator, () => {
             return { code: 0, terminalOutput: "Built (1 warning)" };
         };
 
-        const result = (await createOrchestrator([task], executor).run()).get("app:build");
+        const results = await createOrchestrator([task], executor).run();
+        const result = results.get("app:build");
 
         expect(result?.status).toBe("success");
         expect(result?.hadWarnings).toBe(true);

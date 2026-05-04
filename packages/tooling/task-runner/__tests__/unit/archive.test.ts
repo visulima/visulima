@@ -115,6 +115,7 @@ describe("archive round-trip fidelity", () => {
         // Pin umask to a known value so we can assert the *exact* mode
         // bits writeFile produces (not just "executable bits dropped").
         // 0o022 → newly created files land at 0o644.
+        // eslint-disable-next-line sonarjs/file-permissions -- 0o022 umask is required to make the mode assertion below deterministic
         const previousUmask = process.umask(0o022);
 
         try {
