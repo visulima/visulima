@@ -100,13 +100,13 @@ const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runF
 const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affectedFiles: string[] | undefined, initCwd: string): Promise<void> => {
     const commands = tasks
         .map((task) => {
-            const rawCommand = task.overrides["command"] as string | undefined;
+            // `overrides.command` is already token-expanded — see the
+            // build site in `execute()` for why expansion lives there.
+            const command = task.overrides["command"] as string | undefined;
 
-            if (!rawCommand) {
+            if (!command) {
                 return undefined;
             }
-
-            const command = expandTokensInString(rawCommand, { affectedFiles, projectRoot: task.projectRoot });
 
             const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
@@ -405,19 +405,17 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
 
         const resolvedCwd = resolveCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
 
-        const rawCommand = task.overrides["command"] as string | undefined;
+        // `overrides.command` is already token-expanded at the build
+        // site so the cache hasher sees the resolved form. Forwarded
+        // args and the `affectedFiles: "args"` trailing-append both
+        // keep their existing append-at-end semantics.
+        const expandedCommand = task.overrides["command"] as string | undefined;
 
-        if (!rawCommand) {
+        if (!expandedCommand) {
             return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
         }
 
-        // Token expansion happens before forwarded args and affectedFiles
-        // trailing-args mode so `${affected.files}` lands in the
-        // user-specified position, while later stages keep their
-        // append-at-end semantics. Tokens see the same projectRoot used
-        // for cwd resolution so paths get rewritten consistently.
-        const commandWithTokens = expandTokensInString(rawCommand, { affectedFiles, projectRoot: task.projectRoot });
-        const commandWithArgs = appendForwardedArgs(commandWithTokens, task);
+        const commandWithArgs = appendForwardedArgs(expandedCommand, task);
         const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
         const customShell = resolveTargetShell(visOptions, currentOs);
@@ -933,12 +931,25 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // still wins when the target explicitly opts out.
         const mergedOptions: VisTargetOptions | undefined = ptyFlag ? { ...visTarget.options, pty: visTarget.options?.pty ?? true } : visTarget.options;
 
+        // Expand `${affected.files}` / `${changed_files | flag '...'}`
+        // tokens here so the resolved paths land in `overrides.command`
+        // before task-runner's hasher reads it. Hashing the raw form
+        // would let two runs with different affected-file sets but the
+        // same workspace file hashes collide on the cache key — the
+        // executor would replay a stale result that "linted" a different
+        // subset. Persistent tasks and the watch-retry path also read
+        // `overrides.command` directly, so doing this once at build time
+        // keeps every consumer in sync.
+        const expandedCommand = visTarget.command
+            ? expandTokensInString(visTarget.command, { affectedFiles, projectRoot: project?.root })
+            : visTarget.command;
+
         return {
             cache: visTarget.cache,
             id: taskId,
             outputs: visTarget.outputs ?? [],
             overrides: {
-                command: visTarget.command,
+                command: expandedCommand,
                 ...(forwardedArgs.length > 0 ? { [FORWARDED_ARGS_KEY]: forwardedArgs } : {}),
                 ...(mergedOptions ? { visOptions: mergedOptions } : {}),
             },
