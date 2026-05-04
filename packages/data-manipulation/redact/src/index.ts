@@ -109,7 +109,7 @@ const recursiveFilter = (
             saveCopy(input, copy);
             recursivelyFilterAttributes(copy as unknown as Record<string, unknown>, examinedObjects, saveCopy, rules, options, identifier);
 
-            return copy as unknown;
+            return copy;
         }
 
         if (input instanceof Map) {
@@ -166,15 +166,15 @@ const recursiveFilter = (
 
             saveCopy(input, copy);
 
-            return copy as unknown;
+            return copy;
         }
 
         const copy = { ...input };
 
         saveCopy(input, copy);
-        recursivelyFilterAttributes(copy as Record<string, unknown>, examinedObjects, saveCopy, rules, options, identifier);
+        recursivelyFilterAttributes(copy, examinedObjects, saveCopy, rules, options, identifier);
 
-        return copy as unknown;
+        return copy;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- typeof null === "object", so null guard is needed
@@ -189,7 +189,7 @@ const recursiveFilter = (
 
                 const filtered = recursiveFilter(parsed, examinedObjects, saveCopy, rules, options, identifier);
 
-                return JSON.stringify(filtered) as unknown;
+                return JSON.stringify(filtered);
             } catch (error: unknown) {
                 options?.logger?.debug(error);
             }
@@ -202,7 +202,7 @@ const recursiveFilter = (
             const filtered: string[] = [];
 
             for (const parsedUrlParameter of parsedUrlParameters) {
-                const { key, value } = parsedUrlParameter as { key: string | undefined; value: string };
+                const { key, value } = parsedUrlParameter;
 
                 if (key === undefined) {
                     const foundModifier = rules.find((modifier) => modifier.key === value.toLowerCase());
@@ -226,7 +226,7 @@ const recursiveFilter = (
             return filtered.join("");
         }
 
-        return stringAnonymize(input, rules, { logger: options?.logger }) as unknown;
+        return stringAnonymize(input, rules, { logger: options?.logger });
     }
 
     if (Array.isArray(input)) {
@@ -249,7 +249,7 @@ const recursiveFilter = (
             }
         }
 
-        return copy as unknown;
+        return copy;
     }
 
     return input;
