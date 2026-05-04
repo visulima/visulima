@@ -31,6 +31,8 @@ describe("cas/digest", () => {
     });
 
     it("digestBuffer returns lowercase hex sha256 + size", () => {
+        expect.assertions(2);
+
         const result = digestBuffer(Buffer.from("hello"));
 
         expect(result.hash).toBe("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
@@ -38,6 +40,8 @@ describe("cas/digest", () => {
     });
 
     it("digestFile streams a file and returns its digest", async () => {
+        expect.assertions(2);
+
         const filePath = join(casRoot, "sample.txt");
 
         await writeFile(filePath, "hello");
@@ -49,6 +53,8 @@ describe("cas/digest", () => {
     });
 
     it("digestFile returns undefined for missing files", async () => {
+        expect.assertions(1);
+
         const result = await digestFile(join(casRoot, "missing"));
 
         expect(result).toBeUndefined();
@@ -67,6 +73,8 @@ describe("cas/store", () => {
     });
 
     it("putBlobFromBytes lands the blob at the sharded path and is idempotent", async () => {
+        expect.assertions(2);
+
         const bytes = Buffer.from("payload");
         const digest = digestBuffer(bytes);
 
@@ -83,6 +91,8 @@ describe("cas/store", () => {
     });
 
     it("putBlobFromFile streams a file into the CAS", async () => {
+        expect.assertions(1);
+
         const sourcePath = join(casRoot, "source.bin");
         const bytes = Buffer.from("binary blob");
 
@@ -96,6 +106,8 @@ describe("cas/store", () => {
     });
 
     it("fetchBlobToFile materializes a blob to a destination", async () => {
+        expect.assertions(2);
+
         const bytes = Buffer.from("recover-me");
         const digest = digestBuffer(bytes);
 
@@ -104,16 +116,20 @@ describe("cas/store", () => {
         const destination = join(casRoot, "out", "nested", "file.bin");
 
         await expect(fetchBlobToFile(casRoot, digest, destination)).resolves.toBe(true);
-        await expect(readFile(destination)).resolves.toEqual(bytes);
+        await expect(readFile(destination)).resolves.toStrictEqual(bytes);
     });
 
     it("fetchBlobToFile returns false on miss", async () => {
+        expect.assertions(1);
+
         const missing = digestBuffer(Buffer.from("not-stored"));
 
         await expect(fetchBlobToFile(casRoot, missing, join(casRoot, "out"))).resolves.toBe(false);
     });
 
     it("verifyBlob detects mismatched digests", async () => {
+        expect.assertions(2);
+
         const bytes = Buffer.from("expected");
         const digest = digestBuffer(bytes);
         const filePath = join(casRoot, "f.bin");
@@ -125,6 +141,8 @@ describe("cas/store", () => {
     });
 
     it("containsBlob returns false when size doesn't match expected", async () => {
+        expect.assertions(1);
+
         const bytes = Buffer.from("aaaa");
         const digest = digestBuffer(bytes);
 
@@ -148,6 +166,8 @@ describe("cas/action-cache", () => {
     });
 
     it("writeActionEntry round-trips ActionResult JSON", async () => {
+        expect.assertions(1);
+
         const actionHash = "a".repeat(64);
         const result = {
             exitCode: 0,
@@ -159,10 +179,12 @@ describe("cas/action-cache", () => {
 
         const file = await readFile(acEntryPath(casRoot, actionHash), "utf8");
 
-        expect(JSON.parse(file)).toEqual(result);
+        expect(JSON.parse(file)).toStrictEqual(result);
     });
 
     it("task-hash index path lives under v2/task-hash-index", () => {
+        expect.assertions(1);
+
         const path = taskHashIndexPath(casRoot, "deadbeef");
 
         expect(path).toContain("/v2/task-hash-index/de/deadbeef");
@@ -181,6 +203,8 @@ describe("cache v2 helpers", () => {
     });
 
     it("cache.putActionResult + getActionResult round-trip with a blob", async () => {
+        expect.assertions(5);
+
         const { Cache } = await import("../../../src/cache");
 
         const cache = new Cache({ workspaceRoot });
@@ -207,7 +231,7 @@ describe("cache v2 helpers", () => {
         // AC entry round-trips.
         const fetched = await cache.getActionResult(actionDigest);
 
-        expect(fetched).toEqual(actionResult);
+        expect(fetched).toStrictEqual(actionResult);
 
         // Blob landed in CAS.
         await expect(containsBlob(cache.casRoot, digest)).resolves.toBe(true);
@@ -216,6 +240,6 @@ describe("cache v2 helpers", () => {
         const ok = await cache.materializeOutputs(actionResult, workspaceRoot);
 
         expect(ok).toBe(true);
-        await expect(readFile(join(workspaceRoot, "out.txt"))).resolves.toEqual(bytes);
+        await expect(readFile(join(workspaceRoot, "out.txt"))).resolves.toStrictEqual(bytes);
     });
 });

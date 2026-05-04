@@ -339,10 +339,6 @@ describe(ReapiRemoteCache, () => {
         fixture = await startFixtureServer();
     });
 
-    afterAll(async () => {
-        await fixture.close();
-    });
-
     beforeEach(() => {
         fixture.server.actionCache.clear();
         fixture.server.cas.clear();
@@ -353,6 +349,10 @@ describe(ReapiRemoteCache, () => {
         fixture.server.capabilitiesErrorOverride = undefined;
         fixture.server.capabilitiesDigestFunctions = ["SHA256"];
         fixture.server.capabilitiesMaxBatch = 1024;
+    });
+
+    afterAll(async () => {
+        await fixture.close();
     });
 
     describe("storeAction + retrieveAction", () => {

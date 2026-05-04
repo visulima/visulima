@@ -5,7 +5,7 @@ import { detectScriptShell, resetShellCache } from "../../src/detect-shell";
 vi.mock(import("node:child_process"), async (importOriginal) => {
     const actual = await importOriginal<typeof import("node:child_process")>();
 
-    return { ...actual, execFileSync: vi.fn(actual.execFileSync) };
+    return { ...actual, execFileSync: vi.fn<typeof actual.execFileSync>(actual.execFileSync) };
 });
 
 const { execFileSync } = await import("node:child_process");
