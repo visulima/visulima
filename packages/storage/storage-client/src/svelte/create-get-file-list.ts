@@ -12,10 +12,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | undefined;
+        nextPageUrl?: string;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | undefined;
+        previousPageUrl?: string;
         total?: number;
     };
 }
@@ -70,7 +70,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                 return Array.isArray(data)
                     ? { data }
                     : {
-                        data: data.data || (data as unknown as FileMeta[]),
+                        data: data.data,
                         meta: data.meta,
                     };
             },
@@ -87,7 +87,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
             : readable(false);
 
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
+        data: derived(dataStore, ($data) => $data ?? undefined),
         error: errorStore,
         isLoading: isLoadingStore,
         refetch: () => {

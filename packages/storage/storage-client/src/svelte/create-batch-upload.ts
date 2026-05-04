@@ -33,10 +33,10 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
     const items = writable<UploadItem[]>([]);
     const progress = writable(0);
     const isUploading = writable(false);
-    const error = writable<Error | undefined>(undefined);
+    const error = writable<Error | undefined>();
     const completedCount = writable(0);
     const errorCount = writable(0);
-    const currentBatchId = writable<string | undefined>(undefined);
+    const currentBatchId = writable<string | undefined>();
 
     const uploaderInstance = createMultipartAdapter({ endpoint, metadata });
 
@@ -120,7 +120,7 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
                 const batch = itemOrBatch;
 
                 if (batch.id === get(currentBatchId)) {
-                    const uploadError = new Error(`Batch upload failed: ${batch.errorCount} file(s) failed`);
+                    const uploadError = new Error(`Batch upload failed: ${String(batch.errorCount)} file(s) failed`);
 
                     error.set(uploadError);
                     isUploading.set(false);

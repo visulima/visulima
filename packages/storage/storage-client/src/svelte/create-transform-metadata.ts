@@ -67,8 +67,8 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
             : readable(false);
 
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
+        data: derived(dataStore, ($data) => $data ?? undefined),
+        error: derived(errorStore, ($error) => $error ?? undefined),
         isLoading: isLoadingStore,
         refetch: () => {
             query.refetch().catch(() => {});

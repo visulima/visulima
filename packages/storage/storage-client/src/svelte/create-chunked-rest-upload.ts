@@ -66,8 +66,8 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
     const progress = writable(0);
     const isUploading = writable(false);
     const isPaused = writable(false);
-    const error = writable<Error | undefined>(undefined);
-    const result = writable<UploadResult | undefined>(undefined);
+    const error = writable<Error | undefined>();
+    const result = writable<UploadResult | undefined>();
     const offset = writable(0);
 
     // Create adapter instance (create once, reuse)
@@ -111,8 +111,11 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
         });
 
         // Sync state with adapter periodically
-        const checkInterval = setInterval(async () => {
-            offset.set(await adapterInstance.getOffset());
+        const checkInterval = setInterval(() => {
+            adapterInstance.getOffset().then((value) => {
+                offset.set(value);
+                return value;
+            }).catch(() => {});
             isPaused.set(adapterInstance.isPaused());
         }, 100);
 

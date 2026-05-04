@@ -43,7 +43,7 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
                 const uploadResult: UploadResult = {
                     id,
                     offset: result.uploadOffset,
-                    url: result.location || url,
+                    url: result.location ?? url,
                 };
 
                 if (result.etag) {
@@ -80,8 +80,8 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
             : readable(false);
 
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
+        data: derived(dataStore, ($data) => $data ?? undefined),
+        error: derived(errorStore, ($error) => $error ?? undefined),
         isLoading: isLoadingStore,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

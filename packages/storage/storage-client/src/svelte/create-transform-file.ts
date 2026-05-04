@@ -63,6 +63,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         const currentTransform = get(transformStore);
         const currentEnabled = get(enabledStore);
 
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps -- endpoint is captured from outer scope; queryKey already includes it via storageQueryKeys.transform.file
         return {
             enabled: currentEnabled && !!currentId && !!currentTransform,
             queryFn: async () => {
@@ -114,7 +115,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         data: derived(dataStore, ($data) => $data?.blob),
         error: derived(errorStore, ($error) => $error ?? undefined),
         isLoading: isLoadingStore,
-        meta: derived(dataStore, ($data) => $data?.meta || undefined),
+        meta: derived(dataStore, ($data) => $data?.meta),
         refetch: () => {
             query.refetch().catch(() => {});
         },

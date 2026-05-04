@@ -64,7 +64,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
             : readable(false);
 
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
+        data: derived(dataStore, ($data) => $data ?? undefined),
         error: errorStore,
         isLoading: isLoadingStore,
         refetch: () => {
