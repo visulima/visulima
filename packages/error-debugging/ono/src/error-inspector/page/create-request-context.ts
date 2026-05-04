@@ -547,10 +547,12 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 </div>`;
         }
 
-        // body is narrowed to number/boolean/bigint/symbol/function here; objects handled above
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- objects are returned earlier; only primitives reach String(body)
+        // body is narrowed to number/boolean/bigint/symbol/function/null/undefined here; objects handled above
         const stringifiedBody
-            = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function" ? (body as { toString: () => string }).toString() : String(body);
+            = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function"
+                ? (body as { toString: () => string }).toString()
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string -- objects handled above; only primitives reach this branch
+                : String(body);
 
         return `<div class="px-4 pb-4">
   <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--ono-border)] bg-[var(--ono-surface-muted)] text-[var(--ono-text)]">${escapeHtml(stringifiedBody)}</div>
