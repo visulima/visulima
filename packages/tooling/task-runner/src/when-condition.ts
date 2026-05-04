@@ -184,7 +184,7 @@ interface ResolvedWhenContext {
 }
 
 const resolveWhenContext = (context: WhenContext): ResolvedWhenContext => {
-    const env = context.env ?? (process.env);
+    const env = context.env ?? process.env;
 
     return {
         branch: context.branch ?? "",

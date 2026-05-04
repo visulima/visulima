@@ -3,31 +3,31 @@
     "version": "1.0.0-alpha.3",
     "description": "Native binding for @visulima/task-runner (Windows x64)",
     "homepage": "https://visulima.com",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
         "directory": "packages/tooling/task-runner"
     },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "task-runner-native.win32-x64-msvc.node",
     "files": [
         "task-runner-native.win32-x64-msvc.node"
     ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
     "os": [
         "win32"
     ],
     "cpu": [
         "x64"
     ],
-    "main": "task-runner-native.win32-x64-msvc.node",
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
     }
 }

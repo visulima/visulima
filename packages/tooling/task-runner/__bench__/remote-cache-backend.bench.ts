@@ -42,7 +42,9 @@ const collectBody = (request: IncomingMessage): Promise<Buffer> => {
 
     return new Promise((resolve) => {
         request.on("data", (chunk: Buffer) => chunks.push(chunk));
-        request.on("end", () => { resolve(Buffer.concat(chunks)); });
+        request.on("end", () => {
+            resolve(Buffer.concat(chunks));
+        });
     });
 };
 
@@ -125,7 +127,9 @@ const startMockServer = (): Promise<MockServerHandle> =>
 
 const closeMockServer = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => { resolve(); });
+        server.close(() => {
+            resolve();
+        });
     });
 
 const createTempDir = async (label: string): Promise<string> => {
