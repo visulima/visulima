@@ -17,6 +17,7 @@ const run: Command = {
         ["vis run test --affected", "Run test only on git-changed projects"],
         ["vis run build --fail-fast", "Stop on first failure"],
         ["vis run build --dry-run", "Show execution plan without running"],
+        ["vis run destroy --reverse", "Run leaves-first (teardown order, e.g. CDK/Pulumi destroy)"],
     ],
     group: "Run & Execute",
     loader: () => import("./handler"),
@@ -118,6 +119,13 @@ const run: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Run the dependency graph in reverse (leaves first, then their dependents). Useful for teardown targets like `destroy`/`undeploy` where dependents must run before the things they depend on.",
+            name: "reverse",
+            type: Boolean,
+        },
+        {
             description: "Output mode: interleaved (pass-through), labeled (prefix each line with [pkg#task]), or grouped (vite-task-style block)",
             name: "log",
             type: String,
@@ -188,6 +196,7 @@ export type RunOptions = CreateOptions<{
     pty: boolean | undefined;
     query: string | undefined;
     "retry-budget": number | undefined;
+    reverse: boolean | undefined;
     "skip-constraints": boolean | undefined;
     "skip-toolchain": boolean | undefined;
     "strict-env": boolean | undefined;
