@@ -282,4 +282,171 @@ describe("vis run — `${affected.files}` token expansion", () => {
         // appends the workspace-relative paths after `--done`.
         expect(readCapture(capturePath)).toEqual(["--check", "src/a.ts", "--done", "packages/lib/src/a.ts"]);
     });
+
+    it("coexists with `affectedFiles: \"env\"` — token expands at position, env var still set", async () => {
+        expect.assertions(2);
+
+        // env mode injects VIS_AFFECTED_FILES without appending args, so
+        // the token is the only place file paths reach the spawned argv.
+        // The capture script also dumps the env var so we can assert it
+        // was forwarded — the two channels are independent.
+        const captureScript
+            = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify({ argv: process.argv, env: process.env.VIS_AFFECTED_FILES || '' }) + String.fromCharCode(10))";
+
+        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- \${affected.files}`, { affectedFiles: "env" });
+
+        process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
+        process.env["CAPTURE"] = capturePath;
+
+        await runExecute({
+            argument: ["lint"],
+            logger: makeLogger().logger,
+            options: { cache: false, parallel: 1, skipToolchain: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const lines = readFileSync(capturePath, "utf8").trim().split("\n").filter(Boolean);
+        const last = JSON.parse(lines.at(-1)!) as { argv: string[]; env: string };
+
+        expect(last.argv.slice(1)).toEqual(["src/a.ts", "src/b.ts"]);
+        expect(last.env).toBe("packages/lib/src/a.ts\npackages/lib/src/b.ts");
+    });
+
+    it("forwarded args land after the expanded token, not in front of it", async () => {
+        expect.assertions(1);
+
+        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
+
+        // Pipeline order in the executor: tokens → forwarded args →
+        // affectedFiles trailing append. Forwarded args (`vis run lint
+        // -- --bail`) must come AFTER the token's expanded paths so the
+        // user-visible `command + ${token} + -- forwarded` shape is
+        // preserved.
+        writeCaptureProject(workspaceRoot, "lib", `node -e "${captureScript}" -- --check \${affected.files}`);
+
+        process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts"].join("\n");
+        process.env["CAPTURE"] = capturePath;
+
+        await runExecute({
+            argument: ["lint", "--bail", "--max-warnings=0"],
+            logger: makeLogger().logger,
+            options: { cache: false, parallel: 1, skipToolchain: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(readCapture(capturePath)).toEqual(["--check", "src/a.ts", "--bail", "--max-warnings=0"]);
+    });
+
+    it("expands multiple tokens in the same command independently", async () => {
+        expect.assertions(1);
+
+        const captureScript = "require('fs').appendFileSync(process.env.CAPTURE, JSON.stringify(process.argv) + String.fromCharCode(10))";
+
+        // `${affected.files}` and `${changed_files}` are aliases for the
+        // same source list, but the renderer treats each occurrence
+        // independently. A bare token + a flag-form token together
+        // exercise both substitution shapes in one pass.
+        writeCaptureProject(
+            workspaceRoot,
+            "lib",
+            `node -e "${captureScript}" -- \${affected.files} --separator \${changed_files | flag '--also'}`,
+        );
+
+        process.env["VIS_AFFECTED_FILES"] = ["packages/lib/src/a.ts", "packages/lib/src/b.ts"].join("\n");
+        process.env["CAPTURE"] = capturePath;
+
+        await runExecute({
+            argument: ["lint"],
+            logger: makeLogger().logger,
+            options: { cache: false, parallel: 1, skipToolchain: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        expect(readCapture(capturePath)).toEqual([
+            "src/a.ts",
+            "src/b.ts",
+            "--separator",
+            "--also",
+            "src/a.ts",
+            "--also",
+            "src/b.ts",
+        ]);
+    });
+
+    it("varies the cache key when `${affected.files}` resolves to a different set — regression for the raw-command hash bug", async () => {
+        expect.assertions(4);
+
+        // The previous wiring put `expandTokensInString` in the executor,
+        // AFTER task-runner had already hashed `task.overrides.command`.
+        // Two runs with identical workspace file hashes but different
+        // VIS_AFFECTED_FILES would collide on the cache key — the second
+        // run replayed a stale "linted only a.ts" result. This test
+        // pins the fix: expansion happens at the build site so
+        // overrides.command varies per affected set.
+        //
+        // We use `outputs: []` + a deterministic `echo` command + a real
+        // workspace so task-runner caches the result. Two cache=true
+        // runs against the SAME workspace tree but DIFFERENT affected
+        // sets must both come back as MISS.
+        const pkgDir = join(workspaceRoot, "packages", "lib");
+
+        mkdirSync(join(pkgDir, "src"), { recursive: true });
+        writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "@my/lib" }));
+        writeFileSync(join(pkgDir, "src", "a.ts"), "export const a = 1;\n");
+        writeFileSync(join(pkgDir, "src", "b.ts"), "export const b = 2;\n");
+
+        // Token-driven command; cacheable build target so a second
+        // identical run would HIT if the hash didn't include the
+        // expanded form.
+        writeFileSync(
+            join(pkgDir, "project.json"),
+            JSON.stringify({
+                targets: { lint: { command: "echo affected ${affected.files}", outputs: [] } },
+            }),
+        );
+
+        process.env["VIS_AFFECTED_FILES"] = "packages/lib/src/a.ts";
+
+        await runExecute({
+            argument: ["lint"],
+            logger: makeLogger().logger,
+            options: { cache: true, parallel: 1, skipToolchain: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const first = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as {
+            tasks: { cacheStatus: string; taskId: string }[];
+        };
+
+        expect(first.tasks).toHaveLength(1);
+        expect(first.tasks[0]!.cacheStatus).toBe("MISS");
+
+        // Different affected set, same workspace files. If the cache
+        // hash used the raw command (unfixed), this run would HIT.
+        process.env["VIS_AFFECTED_FILES"] = "packages/lib/src/b.ts";
+
+        await runExecute({
+            argument: ["lint"],
+            logger: makeLogger().logger,
+            options: { cache: true, parallel: 1, skipToolchain: true },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        const second = JSON.parse(readFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "utf8")) as {
+            tasks: { cacheStatus: string; taskId: string }[];
+        };
+
+        expect(second.tasks).toHaveLength(1);
+        expect(second.tasks[0]!.cacheStatus).toBe("MISS");
+    });
 });
