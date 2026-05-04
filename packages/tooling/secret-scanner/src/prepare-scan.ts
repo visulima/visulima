@@ -19,7 +19,7 @@ type DepCandidate = { rule_id?: unknown; ruleId?: unknown; variable?: unknown } 
 
 const asDepCandidate = (entry: unknown): DepCandidate => {
     if (typeof entry === "object" && entry !== null) {
-        return entry as DepCandidate;
+        return entry;
     }
 
     return undefined;
@@ -135,7 +135,7 @@ export const prepareScan = (options: ScanOptions | undefined): PreparedScan => {
         includeIds,
         nativeOptions: {
             concurrency: options?.concurrency,
-            config: config as unknown as Native.ScanOptions["config"],
+            config,
             extraIgnores: options?.walk?.excludePatterns,
             ignoreFiles: options?.walk?.excludeFromFiles,
             includeHidden: options?.walk?.includeHidden,

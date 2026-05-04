@@ -124,7 +124,7 @@ describe(loadBaselineSet, () => {
 
         // Content-hash uses empty string when secret is absent; legacy is untouched.
         expect(set.has(legacyFingerprint(rest as Finding))).toBe(true);
-        expect(set.has(fingerprint({ ...rest, secret: "" } as Finding))).toBe(true);
+        expect(set.has(fingerprint({ ...rest, secret: "" }))).toBe(true);
     });
 
     it("skips entries that don't match the Finding shape", async () => {
