@@ -72,7 +72,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
                             };
                         })) as { error: { code: string; message: string } };
 
-                        throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                        throw new Error(errorData.error.message || `Failed to get file: ${String(response.status)} ${response.statusText}`);
                     }
 
                     const blob = await response.blob();
@@ -116,11 +116,11 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     return {
         data: () => query.data?.blob,
-        error: () => (query.error as Error) || undefined,
+        error: () => query.error ?? undefined,
         isLoading: () => query.isLoading,
         meta,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

@@ -58,7 +58,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
                         };
                     })) as { error: { code: string; message: string } };
 
-                    throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
+                    throw new Error(errorData.error.message || `Failed to batch delete files: ${String(response.status)} ${response.statusText}`);
                 }
 
                 // Extract batch delete results from headers (if available)
@@ -80,7 +80,7 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
             },
             onSuccess: (_result, ids) => {
                 // Invalidate all file-related queries
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                 // Remove queries for deleted files
                 ids.forEach((id) => {
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, id) });
@@ -95,19 +95,19 @@ export const createBatchDeleteFiles = (options: CreateBatchDeleteFilesOptions): 
         batchDeleteFiles: mutation.mutateAsync,
         error: () => {
             try {
-                const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (mutation as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isPendingValue = (mutation as { isPending?: Accessor<boolean> | boolean }).isPending;
+                const isPendingValue = (mutation as { isPending: Accessor<boolean> | boolean }).isPending;
 
-                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+                return typeof isPendingValue === "function" ? isPendingValue() : isPendingValue;
             } catch {
                 return false;
             }

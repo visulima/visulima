@@ -38,7 +38,7 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
             },
             onSuccess: (_data, id) => {
                 // Invalidate file-related queries
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, id) });
@@ -50,19 +50,19 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         deleteFile: mutation.mutateAsync,
         error: () => {
             try {
-                const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (mutation as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isPendingValue = (mutation as { isPending?: Accessor<boolean> | boolean }).isPending;
+                const isPendingValue = (mutation as { isPending: Accessor<boolean> | boolean }).isPending;
 
-                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+                return typeof isPendingValue === "function" ? isPendingValue() : isPendingValue;
             } catch {
                 return false;
             }

@@ -78,7 +78,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
                         };
                     })) as { error: { code: string; message: string } };
 
-                    throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
+                    throw new Error(errorData.error.message || `Failed to get transformed file: ${String(response.status)} ${response.statusText}`);
                 }
 
                 const blob = await response.blob();
@@ -102,7 +102,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
             try {
                 const dataValue = (
                     query as {
-                        data?: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                        data: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
                     }
                 ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
@@ -114,19 +114,19 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         },
         error: () => {
             try {
-                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (query as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
+                const isLoadingValue = (query as { isLoading: Accessor<boolean> | boolean }).isLoading;
 
-                return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
+                return typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue;
             } catch {
                 return false;
             }
@@ -135,7 +135,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
             try {
                 const dataValue = (
                     query as {
-                        data?: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                        data: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
                     }
                 ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
@@ -146,7 +146,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
             }
         },
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

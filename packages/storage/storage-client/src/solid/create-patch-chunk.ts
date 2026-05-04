@@ -42,7 +42,7 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
                 const uploadResult: UploadResult = {
                     id,
                     offset: result.uploadOffset,
-                    url: result.location || url,
+                    url: result.location ?? url,
                 };
 
                 if (result.etag) {
@@ -58,13 +58,13 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
             onSuccess: (result, variables) => {
                 // If upload is complete, invalidate file queries
                 if (result.status === "completed") {
-                    queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                    queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, variables.id) });
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, variables.id) });
                     queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
                 } else {
                     // Otherwise, just invalidate the head query to update progress
-                    queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
+                    queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) }).catch(() => {});
                 }
             },
         };
@@ -73,29 +73,29 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
     return {
         data: () => {
             try {
-                const dataValue = (mutation as { data?: Accessor<UploadResult | undefined> | UploadResult | undefined }).data;
+                const dataValue = (mutation as { data: Accessor<UploadResult | undefined> | UploadResult | undefined }).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
-                return data || undefined;
+                return data ?? undefined;
             } catch {
                 return undefined;
             }
         },
         error: () => {
             try {
-                const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (mutation as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isPendingValue = (mutation as { isPending?: Accessor<boolean> | boolean }).isPending;
+                const isPendingValue = (mutation as { isPending: Accessor<boolean> | boolean }).isPending;
 
-                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+                return typeof isPendingValue === "function" ? isPendingValue() : isPendingValue;
             } catch {
                 return false;
             }
