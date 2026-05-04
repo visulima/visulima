@@ -132,10 +132,7 @@ const inferFrameworkEnvPatterns = async (workspaceRoot: string, projects: Record
  * @param env The current environment variables
  * @returns Map of env var name to value for matching framework env vars
  */
-const getFrameworkEnvVariables = async (
-    packageJsonPath: string,
-    env: Record<string, string | undefined> = process.env,
-): Promise<Record<string, string>> => {
+const getFrameworkEnvVariables = async (packageJsonPath: string, env: Record<string, string | undefined> = process.env): Promise<Record<string, string>> => {
     const frameworks = await detectFrameworks(packageJsonPath);
     const result: Record<string, string> = {};
 
