@@ -1,7 +1,7 @@
 const SITE_URL = "https://visulima.com";
 const SITE_NAME = "Visulima";
-const DEFAULT_DESCRIPTION
-    = "A collection of high-quality, modular TypeScript packages for Node.js, browsers, and edge runtimes. Build faster with Packem, Pail, Cerebro, and 40+ open-source tools.";
+const DEFAULT_DESCRIPTION =
+    "A collection of high-quality, modular TypeScript packages for Node.js, browsers, and edge runtimes. Build faster with Packem, Pail, Cerebro, and 40+ open-source tools.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.jpg`;
 
 interface SeoOptions {

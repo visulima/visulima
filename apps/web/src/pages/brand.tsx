@@ -67,9 +67,7 @@ const Typeface = () => (
         <div className="bg-ivory border-coal/10 col-span-3 border-y font-sans text-6xl">
             Aa Bb Cc Dd Ee Ff Gg
             <br />
-            Hh Ii Jj Kk Ll Mm Nn Oo
-{" "}
-<br />
+            Hh Ii Jj Kk Ll Mm Nn Oo <br />
             Pp Qq Rr Ss Tt Uu Vv
             <br />
             Ww Xx Yy Zz
@@ -80,9 +78,7 @@ const Typeface = () => (
         <div className="bg-ivory border-coal/10 col-span-3 border-y font-mono text-6xl">
             Aa Bb Cc Dd Ee Ff Gg
             <br />
-            Hh Ii Jj Kk Ll Mm Nn Oo
-{" "}
-<br />
+            Hh Ii Jj Kk Ll Mm Nn Oo <br />
             Pp Qq Rr Ss Tt Uu Vv
             <br />
             Ww Xx Yy Zz
@@ -101,7 +97,7 @@ const Brand = () => (
         <SectionTitle classes={{ root: "col-span-4" }} description="" title="Brand assets" />
         <SectionTitle
             classes={{ root: "col-span-2" }}
-            description={(
+            description={
                 <div className="flex flex-col gap-5">
                     <p>
                         The Visulima brand is a set of assets that represent the project. These assets include the logo, colors, and typography. The brand
@@ -113,7 +109,7 @@ const Brand = () => (
                         consent.
                     </p>
                 </div>
-              )}
+            }
             position="center"
             title="Brand Usage"
         />

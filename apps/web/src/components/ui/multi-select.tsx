@@ -165,8 +165,7 @@ export const MultiSelect = ({
                     onClick={handleTogglePopover}
                     type="button"
                 >
-                    {selectedValues.length > 0
-                        ? (
+                    {selectedValues.length > 0 ? (
                         <div className="flex justify-between items-center w-full">
                             <div className="flex flex-wrap items-center">
                                 {selectedValues.slice(0, maxCount).map((value) => {
@@ -228,13 +227,12 @@ export const MultiSelect = ({
                                 <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
                             </div>
                         </div>
-                        )
-                        : (
+                    ) : (
                         <div className="flex items-center justify-between w-full mx-auto">
                             <span className="text-sm text-muted-foreground mx-3">{placeholder}</span>
                             <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
                         </div>
-                        )}
+                    )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent

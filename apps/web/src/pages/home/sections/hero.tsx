@@ -21,14 +21,14 @@ interface PackageDemo {
 const packageDemos: PackageDemo[] = [
     {
         code: [
-            "import { createPail } from \"@visulima/pail\";",
+            'import { createPail } from "@visulima/pail";',
             "",
             "const logger = createPail({",
-            "  scope: \"api\",",
+            '  scope: "api",',
             "  throttle: 200,",
             "});",
             "",
-            "logger.info(\"Server started on :3000\");",
+            'logger.info("Server started on :3000");',
         ],
         label: "pail",
         output: [
@@ -42,11 +42,11 @@ const packageDemos: PackageDemo[] = [
     },
     {
         code: [
-            "import { readJsonSync } from \"@visulima/fs\";",
-            "import { join } from \"@visulima/path\";",
+            'import { readJsonSync } from "@visulima/fs";',
+            'import { join } from "@visulima/path";',
             "",
             "const config = readJsonSync(",
-            "  join(root, \"config.json\"),",
+            '  join(root, "config.json"),',
             ");",
             "",
             "console.log(config);",
@@ -55,8 +55,8 @@ const packageDemos: PackageDemo[] = [
         output: [
             { delay: 80, text: "" },
             { color: "text-white/45", delay: 200, text: "  {" },
-            { color: "text-white/45", delay: 100, text: "    name: \"my-app\"," },
-            { color: "text-white/45", delay: 100, text: "    version: \"1.0.0\"," },
+            { color: "text-white/45", delay: 100, text: '    name: "my-app",' },
+            { color: "text-white/45", delay: 100, text: '    version: "1.0.0",' },
             { color: "text-white/45", delay: 100, text: "    port: 3000," },
             { color: "text-white/45", delay: 100, text: "  }" },
         ],
@@ -64,12 +64,12 @@ const packageDemos: PackageDemo[] = [
     },
     {
         code: [
-            "import { redact } from \"@visulima/redact\";",
+            'import { redact } from "@visulima/redact";',
             "",
             "const safe = redact(userData, [",
-            "  \"password\",",
-            "  \"ssn\",",
-            "  \"token\",",
+            '  "password",',
+            '  "ssn",',
+            '  "token",',
             "]);",
             "console.log(safe);",
         ],
@@ -77,10 +77,10 @@ const packageDemos: PackageDemo[] = [
         output: [
             { delay: 80, text: "" },
             { color: "text-white/45", delay: 150, text: "  {" },
-            { color: "text-white/45", delay: 100, text: "    name: \"Alice\"," },
-            { color: "text-emerald-400/80", delay: 100, text: "    password: \"[REDACTED]\"," },
-            { color: "text-emerald-400/80", delay: 100, text: "    ssn: \"[REDACTED]\"," },
-            { color: "text-white/45", delay: 100, text: "    email: \"alice@example.com\"" },
+            { color: "text-white/45", delay: 100, text: '    name: "Alice",' },
+            { color: "text-emerald-400/80", delay: 100, text: '    password: "[REDACTED]",' },
+            { color: "text-emerald-400/80", delay: 100, text: '    ssn: "[REDACTED]",' },
+            { color: "text-white/45", delay: 100, text: '    email: "alice@example.com"' },
             { color: "text-white/45", delay: 100, text: "  }" },
         ],
         pkg: "@visulima/redact",
@@ -88,10 +88,10 @@ const packageDemos: PackageDemo[] = [
     {
         code: [
             "import { isDisposableEmail }",
-            "  from \"@visulima/disposable-email-domains\";",
+            '  from "@visulima/disposable-email-domains";',
             "",
-            "const a = isDisposableEmail(\"hi@mailinator.com\");",
-            "const b = isDisposableEmail(\"hi@gmail.com\");",
+            'const a = isDisposableEmail("hi@mailinator.com");',
+            'const b = isDisposableEmail("hi@gmail.com");',
             "",
             "console.log(a, b);",
         ],
@@ -129,14 +129,10 @@ const CodeLine: FC<{ content: string }> = ({ content }) => {
 
                 let colorClass = "text-white/55";
 
-                if (isKeyword)
-                    colorClass = "text-crimson-energy/70";
-                else if (isString)
-                    colorClass = "text-sky-sapphire/75";
-                else if (isPunctuation)
-                    colorClass = "text-white/20";
-                else if (isNumber || isBoolean)
-                    colorClass = "text-sky-sapphire/60";
+                if (isKeyword) colorClass = "text-crimson-energy/70";
+                else if (isString) colorClass = "text-sky-sapphire/75";
+                else if (isPunctuation) colorClass = "text-white/20";
+                else if (isNumber || isBoolean) colorClass = "text-sky-sapphire/60";
 
                 return (
                     <span className={colorClass} key={index}>

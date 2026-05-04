@@ -305,8 +305,7 @@ const RouteComponent = () => (
                     After you unsubscribe from the newsletter distribution list, your e-mail address may be stored by us or the newsletter service provider in a
                     blacklist, if such action is necessary to prevent future mailings. The data from the blacklist is used only for this purpose and not merged
                     with other data. This serves both your interest and our interest in complying with the legal requirements when sending newsletters
-                    (legitimate interest within the meaning of Art. 6(1)(f) GDPR). The storage in the blacklist is indefinite.
-{" "}
+                    (legitimate interest within the meaning of Art. 6(1)(f) GDPR). The storage in the blacklist is indefinite.{" "}
                     <strong>You may object to the storage if your interests outweigh our legitimate interest.</strong>
                 </p>
 
@@ -334,16 +333,14 @@ const RouteComponent = () => (
                     any time.
                 </p>
                 <p>
-                    The processing of data is based on Standard Contract Clauses, which you can find here:
-{" "}
+                    The processing of data is based on Standard Contract Clauses, which you can find here:{" "}
                     <a href="https://www.cloudflare.com/cloudflare-customer-scc/" rel="noopener noreferrer" target="_blank">
                         https://www.cloudflare.com/cloudflare-customer-scc/
                     </a>
                     .
                 </p>
                 <p>
-                    For more information on Cloudflare Turnstile, please visit the privacy policy at:
-{" "}
+                    For more information on Cloudflare Turnstile, please visit the privacy policy at:{" "}
                     <a href="https://www.cloudflare.com/cloudflare-customer-dpa/" rel="noopener noreferrer" target="_blank">
                         https://www.cloudflare.com/cloudflare-customer-dpa/
                     </a>
@@ -353,8 +350,7 @@ const RouteComponent = () => (
                     The company is certified in accordance with the &ldquo;EU-US Data Privacy Framework&rdquo; (DPF). The DPF is an agreement between the
                     European Union and the US, which is intended to ensure compliance with European data protection standards for data processing in the US.
                     Every company certified under the DPF is obliged to comply with these data protection standards. For more information, please contact the
-                    provider under the following link:
-{" "}
+                    provider under the following link:{" "}
                     <a href="https://www.dataprivacyframework.gov/participant/5666" rel="noopener noreferrer" target="_blank">
                         https://www.dataprivacyframework.gov/participant/5666
                     </a>

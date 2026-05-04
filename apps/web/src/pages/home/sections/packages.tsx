@@ -150,23 +150,21 @@ const PackemTerminal = () => {
                             transition={{ duration: 0.2, ease: "easeOut" }}
                         >
                             {step.type === "cmd" && <span className="text-sky-sapphire/60">$ </span>}
-                            {step.type === "cmd"
-                                ? step.text.slice(2)
-                                : step.text.startsWith("INFO")
-                                    ? (
+                            {step.type === "cmd" ? (
+                                step.text.slice(2)
+                            ) : step.text.startsWith("INFO") ? (
                                 <>
                                     <span className="text-sky-sapphire/60">INFO</span>
                                     <span>{step.text.slice(4)}</span>
                                 </>
-                                    )
-                                    : step.text.startsWith("SUCCESS")
-                                        ? (
+                            ) : step.text.startsWith("SUCCESS") ? (
                                 <>
                                     <span className="text-emerald-400">SUCCESS</span>
                                     <span className="text-white/50">{step.text.slice(7)}</span>
                                 </>
-                                        )
-                                        : step.text}
+                            ) : (
+                                step.text
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>
@@ -226,11 +224,8 @@ const PackemSection = () => (
                     unused — even across dynamic import() boundaries and CSS modules.
                 </FeatureCard>
                 <FeatureCard accentColor="bg-sky-sapphire/40" className="border-l border-white/6" title="Minification">
-                    Includes minifiers for JavaScript, CSS, HTML, and SVG out of the box. Run
-{" "}
-                    <code className="text-sky-sapphire/80">packem build --production</code>
-{" "}
-and your application is built and optimized automatically.
+                    Includes minifiers for JavaScript, CSS, HTML, and SVG out of the box. Run{" "}
+                    <code className="text-sky-sapphire/80">packem build --production</code> and your application is built and optimized automatically.
                 </FeatureCard>
             </div>
             <div className="grid grid-cols-2 border-x border-b border-white/6">
@@ -239,18 +234,9 @@ and your application is built and optimized automatically.
                     configure your package.json and Packem handles the rest.
                 </FeatureCard>
                 <FeatureCard accentColor="bg-sky-sapphire/40" className="border-t border-l border-white/6" title="Transformer">
-                    Supports different transformers for your source code:
-{" "}
-<code className="text-sky-sapphire/80">esbuild</code>
-,
-{" "}
-                    <code className="text-sky-sapphire/80">swc</code>
-,
-<code className="text-sky-sapphire/80">sucrase</code>
-,
-{" "}
-                    <code className="text-sky-sapphire/80">oxc</code>
-, and custom transformers.
+                    Supports different transformers for your source code: <code className="text-sky-sapphire/80">esbuild</code>,{" "}
+                    <code className="text-sky-sapphire/80">swc</code>,<code className="text-sky-sapphire/80">sucrase</code>,{" "}
+                    <code className="text-sky-sapphire/80">oxc</code>, and custom transformers.
                 </FeatureCard>
             </div>
         </div>
@@ -530,8 +516,8 @@ const CerebroTerminal = () => {
                 </div>
 
                 <AnimatePresence>
-                    {(phase === "output" || phase === "done")
-                        && seq.output.slice(0, outputIndex).map((line, i) => (
+                    {(phase === "output" || phase === "done") &&
+                        seq.output.slice(0, outputIndex).map((line, i) => (
                             <motion.div
                                 animate={{ opacity: 1, x: 0 }}
                                 className={line.color}
@@ -587,11 +573,7 @@ const CerebroSection = () => (
                     developer.
                 </FeatureCard>
                 <FeatureCard accentColor="bg-royal-amethyst/40" className="border-l border-white/6" title="Auto-documentation">
-                    Pass
-{" "}
-<code className="text-royal-amethyst/80">--help</code>
-{" "}
-to any CLI command for automatically generated help, flag options, and argument
+                    Pass <code className="text-royal-amethyst/80">--help</code> to any CLI command for automatically generated help, flag options, and argument
                     information.
                 </FeatureCard>
             </div>
@@ -601,11 +583,7 @@ to any CLI command for automatically generated help, flag options, and argument
                     TypeScript, but everything works in either language.
                 </FeatureCard>
                 <FeatureCard accentColor="bg-royal-amethyst/40" className="border-t border-l border-white/6" title="Autocomplete">
-                    Terminal autocompletion with the
-{" "}
-<code className="text-royal-amethyst/80">--autocomplete</code>
-{" "}
-flag. Users complete command and flag names
+                    Terminal autocompletion with the <code className="text-royal-amethyst/80">--autocomplete</code> flag. Users complete command and flag names
                     by pressing tab.
                 </FeatureCard>
             </div>

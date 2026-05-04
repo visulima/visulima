@@ -15,7 +15,7 @@ const OpenSource = () => (
     <Section classes={{ childrenWrapper: "items-end", root: "pb-[240px]" }} mode="light">
         <div className="col-span-2">
             <SectionTitle
-                description={(
+                description={
                     <span className="flex flex-col gap-6">
                         <span>
                             At Visulima, we believe every line of code tells a story. By combining elegant syntax with intuitive design, we empower developers
@@ -30,7 +30,7 @@ const OpenSource = () => (
                             <StatBadge icon={Heart} label="Community Driven" />
                         </div>
                     </span>
-                  )}
+                }
                 mode="light"
                 prefix="Open Source"
                 title="Proudly OpenSource."
