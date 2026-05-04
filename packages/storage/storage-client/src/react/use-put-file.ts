@@ -53,7 +53,7 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
             return {
                 id,
                 metadata: result.etag ? { etag: result.etag } : undefined,
-                url: result.location || url,
+                url: result.location ?? url,
             };
         },
         onError: (error: Error) => {
@@ -62,7 +62,7 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
         },
         onSuccess: (result, variables) => {
             // Invalidate file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
             queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, variables.id) });
             queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, variables.id) });
             queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
@@ -72,8 +72,8 @@ export const usePutFile = (options: UsePutFileOptions): UsePutFileReturn => {
     });
 
     return {
-        data: mutation.data || undefined,
-        error: (mutation.error as Error) || undefined,
+        data: mutation.data ?? undefined,
+        error: mutation.error ?? undefined,
         isLoading: mutation.isPending,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),

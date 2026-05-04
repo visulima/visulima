@@ -44,7 +44,7 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
             const uploadResult: UploadResult = {
                 id,
                 offset: result.uploadOffset,
-                url: result.location || url,
+                url: result.location ?? url,
             };
 
             if (result.etag) {
@@ -63,13 +63,13 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
         onSuccess: (result, variables) => {
             // If upload is complete, invalidate file queries
             if (result.status === "completed") {
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
             } else {
                 // Otherwise, just invalidate the head query to update progress
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) }).catch(() => {});
             }
 
             onSuccess?.(result);
@@ -77,8 +77,8 @@ export const usePatchChunk = (options: UsePatchChunkOptions): UsePatchChunkRetur
     });
 
     return {
-        data: mutation.data || undefined,
-        error: (mutation.error as Error) || undefined,
+        data: mutation.data ?? undefined,
+        error: mutation.error ?? undefined,
         isLoading: mutation.isPending,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

@@ -135,23 +135,23 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
 
     // Call callbacks in useEffect to avoid calling during render
     useEffect(() => {
-        if (query.data && onSuccessRef.current) {
-            onSuccessRef.current(query.data);
+        if (query.data) {
+            onSuccessRef.current?.(query.data);
         }
     }, [query.data]);
 
     useEffect(() => {
-        if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error);
+        if (query.error) {
+            onErrorRef.current?.(query.error);
         }
     }, [query.error]);
 
     return {
         data: query.data,
-        error: (query.error as Error) || undefined,
+        error: query.error ?? undefined,
         isLoading: query.isLoading,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };
