@@ -60,9 +60,7 @@ describe("iTerm2 Integration", () => {
             it("should return an empty string for a payload with no toString", () => {
                 expect.assertions(1);
 
-                expect(() => indexTerm2({} as unknown as IITerm2Payload)).toThrow(
-                    "Invalid payload: must implement IITerm2Payload with a custom toString method",
-                );
+                expect(() => indexTerm2({})).toThrow("Invalid payload: must implement IITerm2Payload with a custom toString method");
             });
 
             it("should return an empty string for a payload with Object.prototype.toString", () => {

@@ -30,6 +30,9 @@
             Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
         </sup>
     </p>
+    <a href="https://anolilab.com">
+        <img src="../../../.github/assets/anolilab.svg" alt="Sponsored by Anolilab" width="200" />
+    </a>
 </div>
 
 ---
