@@ -422,7 +422,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             if (typeof responseData === "string") {
                 bufferData = Buffer.from(responseData, "utf8");
             } else if (responseData && typeof responseData === "object" && "data" in responseData) {
-                const dataValue = (responseData as { data: unknown }).data;
+                const dataValue = responseData.data;
 
                 bufferData = Buffer.from(dataValue as ArrayLike<number>);
             } else {

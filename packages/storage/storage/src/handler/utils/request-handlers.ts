@@ -31,9 +31,9 @@ export const handleMetadataRequest = async <TFile extends UploadFile>(storage: B
                 mediaType: "application/json",
             }),
             ...buildFileMetadataHeaders(file),
-        } as Record<string, string>,
+        },
         statusCode: 200,
-    } as ResponseFile<TFile>;
+    };
 };
 
 /**
@@ -62,7 +62,7 @@ export const handleTransformationRequest = async <TFile extends UploadFile>(
                 ...transformedResult.originalFile?.expiredAt === undefined ? {} : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() },
                 ...transformedResult.originalFile?.modifiedAt === undefined ? {} : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
                 ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
-            } as Record<string, string>,
+            },
             statusCode: 200,
         } as ResponseFile<TFile>;
     } catch (transformError: unknown) {
@@ -107,13 +107,13 @@ export const handleStreamingRequest = async <TFile extends UploadFile>(
                 ...streamResult.headers,
                 "Accept-Ranges": "bytes",
                 "Content-Type": contentType,
-            } as Record<string, string>,
+            },
             size: streamResult.size,
             statusCode: 200,
             stream: streamResult.stream,
             ...fileMeta,
             contentType,
-        } as ResponseFile<TFile>;
+        };
     } catch {
         // Fall back to regular file serving if streaming fails
         return undefined;
@@ -150,7 +150,7 @@ export const handleRegularRequest = async <TFile extends UploadFile>(
             ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
             ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
             ...ETag === undefined ? {} : { ETag },
-        } as Record<string, string>,
+        },
         statusCode: 200,
         ...file,
         contentType,

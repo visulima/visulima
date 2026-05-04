@@ -1,5 +1,4 @@
 import { Readable } from "node:stream";
-import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
@@ -262,8 +261,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         Bucket: this.bucket,
                         ContentType: file.contentType,
                         Key: file.name,
-                        Metadata: mapValues({ originalName: file.originalName, ...file.metadata } as Record<string, unknown>, (value) =>
-                            encodeURI(String(value))),
+                        Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, (value) => encodeURI(String(value))),
                     }),
                 );
             } catch {
@@ -342,8 +340,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
-                            const readable
-                                = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body as unknown as NodeReadableStream<Uint8Array>);
+                            const readable = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body);
 
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
 
@@ -456,7 +453,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 }),
             );
 
-            return { ...sourceFile, id: Key, name: Key } as TFile;
+            return { ...sourceFile, id: Key, name: Key };
         });
     }
 

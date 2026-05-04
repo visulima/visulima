@@ -18,12 +18,13 @@ export const buildResponseFile = <TFile extends UploadFile>(
     file: TFile,
     headers: Record<string, string | number> = {},
     statusCode = 200,
-): ResponseFile<TFile> =>
-    ({
+): ResponseFile<TFile> => {
+    return {
         ...file,
         headers,
         statusCode,
-    }) as ResponseFile<TFile>;
+    };
+};
 
 /**
  * Builds standard file headers including Location, expiration, and ETag.
@@ -199,5 +200,5 @@ export const cleanFileData = <TFile extends UploadFile>(fileData: TFile & { cont
         delete cleaned.stream;
     }
 
-    return cleaned as Omit<TFile, "content" | "stream">;
+    return cleaned;
 };

@@ -202,7 +202,7 @@ class AzureStorage extends BaseStorage {
 
             file.requestId = response.requestId;
             // eslint-disable-next-line no-underscore-dangle
-            file.uri = response._response.headers.get("location") as string;
+            file.uri = response._response.headers.get("location");
             file.bytesWritten = 0;
 
             await this.saveMeta(file);
@@ -337,7 +337,7 @@ class AzureStorage extends BaseStorage {
 
                     if (file.status === "completed") {
                         // eslint-disable-next-line no-underscore-dangle
-                        file.uri = response._response.headers.get("location") as string;
+                        file.uri = response._response.headers.get("location");
 
                         await this.deleteMeta(file.id);
                     }
@@ -443,7 +443,7 @@ class AzureStorage extends BaseStorage {
             // Get source file metadata and return with destination name
             const sourceFile = await this.getMeta(name);
 
-            return { ...sourceFile, id: destination, name: destination } as AzureFile;
+            return { ...sourceFile, id: destination, name: destination };
         });
     }
 

@@ -74,7 +74,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
         // Metadata is base64 encoded to avoid errors for non-ASCII characters
         // so we need to decode it separately
         if (file.metadata && typeof file.metadata === "string") {
-            file.metadata = parseMetadata(file.metadata as string);
+            file.metadata = parseMetadata(file.metadata);
         }
 
         return file;

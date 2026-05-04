@@ -218,7 +218,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         for (const step of steps) {
             switch (step.type) {
                 case "bitrate": {
-                    const bitrateOptions = step.options as AudioTransformOptions;
+                    const bitrateOptions = step.options;
 
                     if (bitrateOptions.bitrate) {
                         options.bitrate = bitrateOptions.bitrate;
@@ -236,7 +236,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "codec": {
-                    const codecOptions = step.options as AudioTransformOptions;
+                    const codecOptions = step.options;
 
                     if (codecOptions.codec) {
                         options.codec = codecOptions.codec;
@@ -273,7 +273,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Check if any step specifies a format
         for (const step of steps) {
             if (step.type === "format" && step.options.format) {
-                return this.formatStringToOutputFormat(step.options.format as string);
+                return this.formatStringToOutputFormat(step.options.format);
             }
         }
 

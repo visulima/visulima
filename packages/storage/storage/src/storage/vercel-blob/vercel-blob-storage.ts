@@ -314,7 +314,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 name: destination,
                 pathname: result.pathname,
                 url: result.url,
-            } as VercelBlobFile;
+            };
         });
     }
 

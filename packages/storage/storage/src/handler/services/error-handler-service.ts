@@ -43,7 +43,7 @@ class ErrorHandlerService<TFile extends UploadFile> {
             message: error.message,
             name: error.name,
             statusCode: (error as HttpError).statusCode || 500,
-        } as HttpError;
+        };
     }
 
     /**

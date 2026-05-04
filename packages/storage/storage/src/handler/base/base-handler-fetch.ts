@@ -319,7 +319,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 message: error.message,
                 name: error.name,
                 statusCode: (error as HttpError).statusCode || 500,
-            } as HttpError;
+            };
         }
 
         // Call onError hook - user can modify the error object in place
