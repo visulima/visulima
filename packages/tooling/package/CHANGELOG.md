@@ -1,3 +1,16 @@
+## @visulima/package [5.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.11...@visulima/package@5.0.0-alpha.12) (2026-05-04)
+
+### Miscellaneous Chores
+
+* **package:** upgrade packem to 2.0.0-alpha.76 ([b2ef62b](https://github.com/visulima/visulima/commit/b2ef62b72a84545cb025a250cbe7e3e36b34330d))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.13
+
 ## @visulima/package [5.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.10...@visulima/package@5.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes
