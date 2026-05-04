@@ -15,4 +15,4 @@ const MODULES_THAT_DICTATE_TARGET: ReadonlySet<string> = new Set(["node16", "nod
  */
 // eslint-disable-next-line import/prefer-default-export
 export const moduleDictatesTarget = (module: TsConfigJson.CompilerOptions.Module | undefined): boolean =>
-    module !== undefined && MODULES_THAT_DICTATE_TARGET.has(module as string);
+    module !== undefined && MODULES_THAT_DICTATE_TARGET.has(module);

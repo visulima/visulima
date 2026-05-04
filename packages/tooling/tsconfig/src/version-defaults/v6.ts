@@ -27,7 +27,7 @@ export const applyV6Defaults = (compilerOptions: TsConfigJson.CompilerOptions, u
     if (!userSet.has("target")) {
         // type-fest does not yet model 'es2025'; cast through the union.
         // eslint-disable-next-line no-param-reassign
-        compilerOptions.target = "es2025" as TsConfigJson.CompilerOptions.Target;
+        compilerOptions.target = "es2025";
     }
 
     // module: with target=es2025 (≥es2022), v6 derives module=es2022.

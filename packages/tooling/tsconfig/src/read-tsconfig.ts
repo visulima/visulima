@@ -136,7 +136,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     try {
         const parsed = readJsonc(tsconfigPath);
 
-        config = (parsed ?? {}) as TsConfigJson;
+        config = parsed ?? {};
     } catch {
         throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
     }
@@ -301,7 +301,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         let module = config.compilerOptions.module.toLowerCase() as TsConfigJson.CompilerOptions.Module;
 
         if (module === "es2015") {
-            module = "es6" as TsConfigJson.CompilerOptions.Module;
+            module = "es6";
         }
 
         config.compilerOptions.module = module;
@@ -311,7 +311,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         let target = config.compilerOptions.target.toLowerCase() as TsConfigJson.CompilerOptions.Target;
 
         if (target === "es2015") {
-            target = "es6" as TsConfigJson.CompilerOptions.Target;
+            target = "es6";
         }
 
         config.compilerOptions.target = target;
@@ -321,7 +321,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         let moduleResolution = config.compilerOptions.moduleResolution.toLowerCase() as TsConfigJson.CompilerOptions.ModuleResolution;
 
         if (moduleResolution === ("node" as TsConfigJson.CompilerOptions.ModuleResolution)) {
-            moduleResolution = "node10" as TsConfigJson.CompilerOptions.ModuleResolution;
+            moduleResolution = "node10";
         }
 
         config.compilerOptions.moduleResolution = moduleResolution;
@@ -519,7 +519,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
                     break;
                 }
                 case "node20": {
-                    target = "es2023" as TsConfigJson.CompilerOptions.Target;
+                    target = "es2023";
 
                     break;
                 }
