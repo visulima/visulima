@@ -173,9 +173,17 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
+        "@gitbeaker/rest": ">=42.0.0",
+        "@octokit/rest": ">=21.0.0",
         "@opentelemetry/api": "catalog:peer"
     },
     "peerDependenciesMeta": {
+        "@gitbeaker/rest": {
+            "optional": true
+        },
+        "@octokit/rest": {
+            "optional": true
+        },
         "@opentelemetry/api": {
             "optional": true
         }
