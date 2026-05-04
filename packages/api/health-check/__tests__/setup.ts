@@ -28,4 +28,4 @@ globalThis.localStorage = {
     setItem: (key: string, value: string) => {
         storage.set(key, value);
     },
-} as Storage;
+};
