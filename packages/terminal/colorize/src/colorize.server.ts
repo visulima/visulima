@@ -27,10 +27,11 @@ const wrapText = (
         return "";
     }
 
-    let string
-        = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
-            ? // eslint-disable-next-line @typescript-eslint/no-base-to-string -- strings here is string | number | array of strings; String() coercion is intentional
-            String(strings)
+    // eslint-disable-next-line @stylistic/operator-linebreak -- prettier places `=` at end of line
+    let string =
+        (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- strings is string | number | array of strings here; objects only carry `raw`, handled in the other branch
+            ? String(strings)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
