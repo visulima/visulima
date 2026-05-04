@@ -10,7 +10,7 @@ describe("xml-error-handler with http-errors", () => {
 
         const { req, res } = createMocks({ method: "GET" });
 
-        await xmlErrorHandler()(new httpErrors.BadRequest() as unknown as Error, req, res);
+        await xmlErrorHandler()(new httpErrors.BadRequest(), req, res);
 
         expect(String(res.getHeader("content-type"))).toBe("application/xml; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle

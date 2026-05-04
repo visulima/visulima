@@ -13,7 +13,7 @@ describe("text-error-handler with http-errors", () => {
         const error = new httpErrors.BadRequest();
 
         error.expose = false;
-        await textErrorHandler()(error as unknown as Error, req, res);
+        await textErrorHandler()(error, req, res);
 
         expect(String(res.getHeader("content-type"))).toBe("text/plain; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle

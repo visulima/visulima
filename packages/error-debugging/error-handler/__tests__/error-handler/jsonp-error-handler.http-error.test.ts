@@ -10,7 +10,7 @@ describe("jsonp-error-handler with http-errors", () => {
 
         const { req, res } = createMocks({ method: "GET", url: "/?callback=myCb" });
 
-        await jsonpErrorHandler()(new httpErrors.BadRequest() as unknown as Error, req, res);
+        await jsonpErrorHandler()(new httpErrors.BadRequest(), req, res);
 
         expect(String(res.getHeader("content-type"))).toBe("application/javascript; charset=utf-8");
         // eslint-disable-next-line no-underscore-dangle
