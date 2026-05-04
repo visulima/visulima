@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vis-mcp",
-    "version": "0.0.0",
+    "version": "1.0.0-alpha.1",
     "description": "MCP (Model Context Protocol) server for @visulima/vis — exposes vis tooling to AI agents over stdio",
     "keywords": [
         "agent",
@@ -74,7 +74,7 @@
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
-        "@visulima/fs": "5.0.0-alpha.12",
+        "@visulima/fs": "5.0.0-alpha.13",
         "@visulima/path": "3.0.0-alpha.10",
         "zod": "catalog:utils"
     },
@@ -103,7 +103,7 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
-        "@visulima/vis": "workspace:*"
+        "@visulima/vis": "1.0.0-alpha.11"
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
