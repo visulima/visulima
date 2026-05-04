@@ -93,16 +93,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
                 return { blob, meta };
             },
-            queryKey: (() => {
-                const filteredTransform = currentTransform
-                    ? (Object.fromEntries(Object.entries(currentTransform).filter(([, value]) => value !== undefined)) as Record<
-                        string,
-                          string | number | boolean
-                    >)
-                    : undefined;
-
-                return storageQueryKeys.files.detail(endpoint, currentId, filteredTransform);
-            })(),
+            queryKey: storageQueryKeys.files.detail(endpoint, currentId, currentTransform),
         };
     });
 
@@ -117,7 +108,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
             : readable(false);
 
     // Extract metadata from response if available
-    const meta = derived(queryDataStore, ($data) => $data?.meta || undefined);
+    const meta = derived(queryDataStore, ($data) => $data?.meta);
 
     // Subscribe to data and error changes to call callbacks
     let unsubscribeData: (() => void) | undefined;

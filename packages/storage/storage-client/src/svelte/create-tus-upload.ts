@@ -66,8 +66,8 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
     const progress = writable(0);
     const isUploading = writable(false);
     const isPaused = writable(false);
-    const error = writable<Error | undefined>(undefined);
-    const result = writable<UploadResult | undefined>(undefined);
+    const error = writable<Error | undefined>();
+    const result = writable<UploadResult | undefined>();
     const offset = writable(0);
 
     // Create adapter instance (create once, reuse)

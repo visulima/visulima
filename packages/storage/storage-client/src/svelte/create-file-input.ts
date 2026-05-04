@@ -32,7 +32,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         const fileArray = [...fileList];
 
         files.set(fileArray);
-        options?.onFilesSelected?.(fileArray);
+        options.onFilesSelected?.(fileArray);
     };
 
     const handleFileChange = (event: Event): void => {

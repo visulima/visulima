@@ -46,10 +46,10 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
 
     const progress = writable(0);
     const isUploading = writable(false);
-    const error = writable<Error | undefined>(undefined);
-    const result = writable<UploadResult | undefined>(undefined);
-    const currentItemId = writable<string | undefined>(undefined);
-    const currentFile = writable<File | undefined>(undefined);
+    const error = writable<Error | undefined>();
+    const result = writable<UploadResult | undefined>();
+    const currentItemId = writable<string | undefined>();
+    const currentFile = writable<File | undefined>();
 
     // Create uploader instance (create once, reuse)
     const uploaderInstance = createMultipartAdapter({
@@ -133,7 +133,7 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
         const onUploadError = (itemOrBatch: UploadItem | BatchState): void => {
             if ("file" in itemOrBatch && itemOrBatch.id === get(currentItemId)) {
                 const item = itemOrBatch;
-                const uploadError = new Error(item.error || "Upload failed");
+                const uploadError = new Error(item.error ?? "Upload failed");
 
                 error.set(uploadError);
                 isUploading.set(false);

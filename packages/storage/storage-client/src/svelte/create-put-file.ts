@@ -51,7 +51,7 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
                 return {
                     id,
                     metadata: result.etag ? { etag: result.etag } : undefined,
-                    url: result.location || url,
+                    url: result.location ?? url,
                 };
             },
             onError: () => {
@@ -77,8 +77,8 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
             : readable(false);
 
     return {
-        data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
+        data: derived(dataStore, ($data) => $data ?? undefined),
+        error: derived(errorStore, ($error) => $error ?? undefined),
         isLoading: isLoadingStore,
         progress,
         putFile: (id: string, file: File | Blob) => mutation.mutateAsync({ file, id }),
