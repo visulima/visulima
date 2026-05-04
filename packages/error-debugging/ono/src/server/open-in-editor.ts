@@ -56,7 +56,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
 
         if (method === "POST") {
             if (request.body && typeof request.body === "object") {
-                return request.body as EditorPayload;
+                return request.body;
             }
 
             return new Promise((resolve) => {
@@ -71,17 +71,17 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                         try {
                             resolve((data ? JSON.parse(data) : {}) as EditorPayload);
                         } catch {
-                            resolve({} as EditorPayload);
+                            resolve({});
                         }
                     };
 
                     request.on("data", onData);
                     request.on("end", onEnd);
                     request.on("error", () => {
-                        resolve({} as EditorPayload);
+                        resolve({});
                     });
                 } catch {
-                    resolve({} as EditorPayload);
+                    resolve({});
                 }
             });
         }
@@ -102,26 +102,26 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
             return undefined;
         }
 
-        const absPath: string = isAbsolute(filePath) ? filePath : (resolvePath(projectRoot, filePath) as unknown as string);
+        const absPath: string = isAbsolute(filePath) ? filePath : resolvePath(projectRoot, filePath);
 
         if (!allowOutsideProject) {
             try {
                 // Resolve symlinks for both project root and target path
-                const projectRootResolved: string = realpathSync(projectRoot) as unknown as string;
-                const targetResolved: string = realpathSync(absPath) as unknown as string;
+                const projectRootResolved: string = realpathSync(projectRoot);
+                const targetResolved: string = realpathSync(absPath);
 
                 // Normalize both paths
 
-                const normalizedProjectRoot: string = normalize(projectRootResolved) as unknown as string;
+                const normalizedProjectRoot: string = normalize(projectRootResolved);
 
-                const normalizedTarget: string = normalize(targetResolved) as unknown as string;
+                const normalizedTarget: string = normalize(targetResolved);
 
                 // On case-insensitive platforms, compare lowercased versions
                 const isCaseInsensitive: boolean = getProcessPlatform() === "win32" || getProcessPlatform() === "darwin";
                 const projectRootCompare: string = isCaseInsensitive ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot;
                 const targetCompare: string = isCaseInsensitive ? normalizedTarget.toLowerCase() : normalizedTarget;
 
-                const relativePath: string = relative(normalizedProjectRoot, normalizedTarget) as unknown as string;
+                const relativePath: string = relative(normalizedProjectRoot, normalizedTarget);
 
                 // Check if target is outside project root:
                 // - If relative path starts with '..' it's outside
@@ -133,7 +133,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 }
             } catch {
                 // If realpathSync fails (e.g., file doesn't exist), fall back to basic check
-                const rootWithSeparator: string = projectRoot.endsWith(sep as unknown as string) ? projectRoot : projectRoot + (sep as unknown as string);
+                const rootWithSeparator: string = projectRoot.endsWith(sep) ? projectRoot : projectRoot + (sep as unknown as string);
 
                 if (!absPath.startsWith(rootWithSeparator)) {
                     return undefined;

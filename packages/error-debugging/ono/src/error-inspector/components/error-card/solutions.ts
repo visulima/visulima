@@ -25,7 +25,7 @@ const solutions = async (
 
     const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder, errorHintFinder];
 
-    const traces: Trace[] = parseStacktrace(error as Error, { frameLimit: 1 }) as unknown as Trace[];
+    const traces: Trace[] = parseStacktrace(error, { frameLimit: 1 });
     const firstTrace: Trace | undefined = traces[0];
 
     for (const handler of allFinders.toSorted((a, b) => b.priority - a.priority)) {
