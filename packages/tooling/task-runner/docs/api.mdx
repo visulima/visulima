@@ -259,21 +259,29 @@ import { loadNativeBindings, isNativeAvailable } from "@visulima/task-runner";
 
 if (isNativeAvailable()) {
     const native = loadNativeBindings();
-    const main = native?.getMainWorktreeRoot(workspaceRoot);
+    const hash = native?.hashFile("/abs/path");
 }
 ```
 
-### Worktree detection
+Pure-TypeScript fallbacks ship for everything the native addon exposes (parallel file hashing, cycle detection, concurrent process runner) so callers never need to branch on platform.
 
-When the addon is loaded, the bindings expose three worktree helpers used by affected detection and lockfile resolution to point at the right `.git` directory inside linked git worktrees:
+## Worktree detection
 
-| Function                            | Returns                  | Notes                                                                    |
-| ----------------------------------- | ------------------------ | ------------------------------------------------------------------------ |
-| `getMainWorktreeRoot(workspaceRoot)` | `string \| undefined`    | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
-| `isLinkedWorktree(workspaceRoot)`   | `boolean`                | `true` when `workspaceRoot` is a linked worktree (not the primary)        |
-| `resetWorktreeCache()`              | `void`                   | Clears the per-process resolution cache. Test-only escape hatch          |
+Three top-level helpers wrap the native worktree API with a pure-Node fallback (uses `git rev-parse --git-common-dir`). They share a per-process memoization cache and are safe to call from any code path — the cache directory resolver, affected detection, and lockfile resolution all use them to point at the right `.git` inside linked git worktrees.
 
-Pure-TypeScript fallbacks ship for everything else the native addon exposes (parallel file hashing, cycle detection, concurrent process runner) so callers never need to branch on platform.
+```typescript
+import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "@visulima/task-runner";
+
+const mainRoot = getMainWorktreeRoot(workspaceRoot);
+// mainRoot is the absolute path to the primary checkout for a linked
+// worktree, or undefined for primary checkouts / non-git directories.
+```
+
+| Function                              | Returns                | Notes                                                                                                            |
+| ------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `getMainWorktreeRoot(workspaceRoot)`  | `string \| undefined`  | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
+| `isLinkedWorktree(workspaceRoot)`     | `boolean`              | `true` when `workspaceRoot` is a linked worktree (not the primary)                                               |
+| `resetWorktreeCache()`                | `void`                 | Clears the per-process resolution cache. Test-only escape hatch                                                  |
 
 ## Types
 

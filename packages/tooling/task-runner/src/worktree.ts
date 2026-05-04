@@ -1,24 +1,25 @@
-import { execFileSync } from "node:child_process";
-import { realpathSync, statSync } from "node:fs";
-
-import { dirname, isAbsolute, resolve } from "@visulima/path";
-import { loadNativeBindings } from "@visulima/task-runner";
-
 /**
- * Git-worktree detection helpers used by the cache directory resolver.
+ * Git-worktree detection helpers used by cache-directory resolvers.
  *
  * `git worktree add` creates a sibling checkout that shares the main
  * repository's object database. The linked worktree's `.git` is a *file*
  * (a "gitlink" pointer like `gitdir: /path/to/main/.git/worktrees/feat-x`)
- * rather than a directory. By resolving every linked worktree back to its
- * main checkout we can let parallel agents share a single
- * `&lt;mainWorktreeRoot>/.task-runner-cache` instead of rebuilding N times.
+ * rather than a directory. Resolving every linked worktree back to its
+ * main checkout lets parallel agents share a single cache directory at
+ * the main worktree root instead of rebuilding N times.
  *
- * Detection is performed by a Rust napi binding (memoized in-process). When
+ * Detection prefers the Rust napi binding (memoized in-process) and
+ * falls back to a pure-Node implementation with the same semantics when
  * the native addon is unavailable (development without `pnpm build:native`,
- * unsupported platform), this module falls back to a pure-Node implementation
- * with the same semantics.
+ * unsupported platform, etc.).
  */
+
+import { execFileSync } from "node:child_process";
+import { realpathSync, statSync } from "node:fs";
+
+import { dirname, isAbsolute, resolve } from "@visulima/path";
+
+import { loadNativeBindings } from "./native-binding";
 
 interface WorktreeBindings {
     getMainWorktreeRoot: (workspaceRoot: string) => string | undefined | null;
@@ -117,12 +118,11 @@ const fallbackGetMainWorktreeRoot = (workspaceRoot: string): string | undefined 
  * does not change at runtime, so the second call is a hash lookup.
  *
  * Detection logic:
- * 1. If `&lt;workspaceRoot>/.git` is a *directory*, this is a primary checkout
- *    (or vanilla repo). Return `undefined`.
- * 2. If `&lt;workspaceRoot>/.git` is a *file* (gitlink), shell out to
- *    `git rev-parse --git-common-dir` and resolve to its parent — that is
- *    the main worktree root.
- * 3. On any error (missing git binary, shallow CI checkout, etc.), return
+ * 1. If `{workspaceRoot}/.git` is a *directory*, this is a primary checkout
+ *    (or vanilla repo). Returns `undefined`.
+ * 2. If `{workspaceRoot}/.git` is a *file* (gitlink), resolves to the parent
+ *    of `git rev-parse --git-common-dir` — that is the main worktree root.
+ * 3. On any error (missing git binary, shallow CI checkout, etc.), returns
  *    `undefined` so the caller falls back to the workspace-local cache.
  * @param workspaceRoot Absolute path to the candidate workspace root.
  * @returns The main worktree root, or `undefined` if not a linked worktree.
@@ -140,9 +140,9 @@ export const getMainWorktreeRoot = (workspaceRoot: string): string | undefined =
 };
 
 /**
- * Returns `true` when `&lt;workspaceRoot>/.git` is a regular file (the gitlink
- * pointer used by `git worktree add`), `false` otherwise. Used as a cheap
- * pre-flight before invoking `git rev-parse`.
+ * Returns `true` when `{workspaceRoot}/.git` is a regular file (the gitlink
+ * pointer used by `git worktree add`), `false` otherwise. Cheap pre-flight
+ * before invoking `git rev-parse`.
  * @param workspaceRoot Absolute path to the candidate workspace root.
  */
 export const isLinkedWorktree = (workspaceRoot: string): boolean => {
