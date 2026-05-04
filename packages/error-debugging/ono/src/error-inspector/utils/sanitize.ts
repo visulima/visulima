@@ -27,7 +27,21 @@ const toString = (value: unknown): string => {
         return "";
     }
 
-    return (typeof value === "string" ? value : String(value as bigint | boolean | number | symbol)).trim();
+    if (typeof value === "string") {
+        return value.trim();
+    }
+
+    if (typeof value === "object" || Array.isArray(value)) {
+        try {
+            return JSON.stringify(value).trim();
+        } catch {
+            return "";
+        }
+    }
+
+    // value is narrowed to number/boolean/bigint/symbol/function here; objects handled above
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    return String(value).trim();
 };
 
 // Escapes HTML entities for safe use in HTML attributes

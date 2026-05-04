@@ -109,7 +109,7 @@ const stack = async (error: ErrorType, solutionFinders: SolutionFinder[] = [], o
     const allCauses: ErrorType[] = getErrorCauses(error);
 
     // Extract and validate the main error
-    const mainError = extractMainError(allCauses as unknown[]);
+    const mainError = extractMainError(allCauses);
 
     // Optimize: only slice remaining causes if we actually have more than one cause
     const remainingCauses: unknown[] = allCauses.length > 1 ? allCauses.slice(1) : [];

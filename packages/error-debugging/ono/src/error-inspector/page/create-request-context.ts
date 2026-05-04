@@ -304,7 +304,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
         const headersRecord = requestHeaders as Record<string, string | string[]>;
 
         if (Array.isArray(headersRecord.cookie)) {
-            cookieHeader = headersRecord.cookie[0] as string;
+            [cookieHeader] = headersRecord.cookie;
         } else {
             const cookieValue = headersRecord.cookie;
 
@@ -485,7 +485,9 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             return renderObjectValue(value as Record<string, unknown>, depth);
         }
 
-        return `<span class="text-[var(--ono-text)]">${escapeHtml(typeof value === "symbol" ? value.toString() : String(value as bigint | ((...args: unknown[]) => unknown)))}</span>`;
+        const stringified = typeof value === "symbol" || typeof value === "bigint" || typeof value === "function" ? (value as { toString: () => string }).toString() : JSON.stringify(value);
+
+        return `<span class="text-[var(--ono-text)]">${escapeHtml(stringified)}</span>`;
     };
 
     const renderObjectTable = (object: Record<string, unknown> | undefined): string => {
@@ -542,8 +544,12 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 </div>`;
         }
 
+        // body is narrowed to number/boolean/bigint/symbol/function here; objects handled above
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const stringifiedBody = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function" ? (body as { toString: () => string }).toString() : String(body);
+
         return `<div class="px-4 pb-4">
-  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--ono-border)] bg-[var(--ono-surface-muted)] text-[var(--ono-text)]">${escapeHtml(typeof body === "symbol" ? body.toString() : String(body as bigint | boolean | number))}</div>
+  <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--ono-border)] bg-[var(--ono-surface-muted)] text-[var(--ono-text)]">${escapeHtml(stringifiedBody)}</div>
 </div>`;
     };
 
@@ -689,7 +695,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
       <a href="#context-session" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-session-${uniqueId}` }).html}
     </div>
-            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as RequestLike & { session?: Record<string, unknown> }).session as Record<string, unknown>)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as RequestLike & { session?: Record<string, unknown> }).session)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(cookiesRecord))}">
