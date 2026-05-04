@@ -1,3 +1,10 @@
+## @visulima/storage [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.17...@visulima/storage@1.0.0-alpha.18) (2026-05-04)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.13
+
 ## @visulima/storage [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.16...@visulima/storage@1.0.0-alpha.17) (2026-04-30)
 
 ## @visulima/storage [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.15...@visulima/storage@1.0.0-alpha.16) (2026-04-28)
