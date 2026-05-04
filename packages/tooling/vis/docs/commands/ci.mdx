@@ -33,7 +33,7 @@ vis ci test --query "language=typescript"  # Filter by project metadata
 
 1. **Install** — Runs `vis install --frozen-lockfile` (skip with `--no-install`)
 2. **Affected** — For each target, runs `vis affected <target>` with the detected base/head refs
-3. **Refs** — Auto-detects from GitHub Actions (`GITHUB_BASE_REF`), GitLab CI (`CI_MERGE_REQUEST_TARGET_BRANCH_NAME`), or CircleCI. Falls back to `origin/main`
+3. **Refs** — Auto-detects from GitHub Actions (`GITHUB_BASE_REF`), GitLab CI (`CI_MERGE_REQUEST_TARGET_BRANCH_NAME`), Buildkite (`BUILDKITE_PULL_REQUEST_BASE_BRANCH` / `BUILDKITE_COMMIT`), or CircleCI. Falls back to `origin/main`
 
 ## Options
 

@@ -68,6 +68,7 @@
         "dist/**",
         "schemas/**",
         "skills/**",
+        "templates/**",
         "index.js",
         "index.d.ts",
         "README.md",

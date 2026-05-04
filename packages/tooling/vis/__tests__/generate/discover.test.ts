@@ -17,8 +17,12 @@ afterEach(() => {
 });
 
 describe(discoverTemplates, () => {
+    // The following tests filter for the user-defined template by name.
+    // The bundled `buildkite-ci` builtin always shows up in results too,
+    // so length-1 assertions would be brittle.
+
     it("should discover native templates in .vis/templates/", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const directory = join(workspace, ".vis", "templates");
 
@@ -27,12 +31,11 @@ describe(discoverTemplates, () => {
 
         const results = discoverTemplates({ workspaceRoot: workspace });
 
-        expect(results).toHaveLength(1);
-        expect(results[0]).toMatchObject({ name: "package", source: "native" });
+        expect(results.find((r) => r.name === "package")).toMatchObject({ name: "package", source: "native" });
     });
 
     it("should discover moon templates in .moon/templates/", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const directory = join(workspace, ".moon", "templates", "thing");
 
@@ -41,12 +44,11 @@ describe(discoverTemplates, () => {
 
         const results = discoverTemplates({ workspaceRoot: workspace });
 
-        expect(results).toHaveLength(1);
-        expect(results[0]).toMatchObject({ name: "thing", source: "moon" });
+        expect(results.find((r) => r.name === "thing")).toMatchObject({ name: "thing", source: "moon" });
     });
 
     it("should discover moon-format directories nested in .vis/templates/", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         const directory = join(workspace, ".vis", "templates", "moonish");
 
@@ -55,8 +57,7 @@ describe(discoverTemplates, () => {
 
         const results = discoverTemplates({ workspaceRoot: workspace });
 
-        expect(results).toHaveLength(1);
-        expect(results[0]).toMatchObject({ name: "moonish", source: "moon" });
+        expect(results.find((r) => r.name === "moonish")).toMatchObject({ name: "moonish", source: "moon" });
     });
 
     it("should let native templates win over moon templates with the same name", () => {
@@ -73,7 +74,7 @@ describe(discoverTemplates, () => {
         const warnings: string[] = [];
         const results = discoverTemplates({ onWarning: (m) => warnings.push(m), workspaceRoot: workspace });
 
-        expect(results[0]).toMatchObject({ name: "shared", source: "native" });
+        expect(results.find((r) => r.name === "shared")).toMatchObject({ name: "shared", source: "native" });
         expect(warnings.some((w) => w.includes("multiple sources"))).toBe(true);
     });
 
@@ -90,12 +91,40 @@ describe(discoverTemplates, () => {
         expect(results.find((r) => r.name === "extra")?.source).toBe("config");
     });
 
-    it("should return [] when nothing is configured", () => {
-        expect.assertions(1);
+    it("should return only builtin templates when no workspace templates are configured", () => {
+        expect.assertions(2);
 
         const results = discoverTemplates({ workspaceRoot: workspace });
 
-        expect(results).toStrictEqual([]);
+        // The package ships builtin presets (e.g. `buildkite-ci`); any
+        // workspace with no `.vis/templates/` should still see them.
+        expect(results.length).toBeGreaterThan(0);
+        expect(results.every((r) => r.source === "builtin")).toBe(true);
+    });
+
+    it("should expose the bundled `buildkite-ci` builtin template", () => {
+        expect.assertions(2);
+
+        const results = discoverTemplates({ workspaceRoot: workspace });
+        const buildkite = results.find((r) => r.name === "buildkite-ci");
+
+        expect(buildkite).toBeDefined();
+        expect(buildkite?.source).toBe("builtin");
+    });
+
+    it("should let a user template override a builtin with the same name", () => {
+        expect.assertions(1);
+
+        const directory = join(workspace, ".vis", "templates", "buildkite-ci");
+
+        mkdirSync(directory, { recursive: true });
+        writeFileSync(join(directory, "template.yml"), "title: Custom Buildkite\ndescription: Vendored copy\n");
+
+        const results = discoverTemplates({ workspaceRoot: workspace });
+        const buildkite = results.find((r) => r.name === "buildkite-ci");
+
+        // User vendored copy wins over the bundled preset.
+        expect(buildkite?.source).toBe("moon");
     });
 
     it("should ignore .d.ts, .test.ts, .spec.ts, .config.ts, and *.map siblings", () => {
@@ -115,8 +144,9 @@ describe(discoverTemplates, () => {
         writeFileSync(join(directory, "package.js.map"), "{}\n");
 
         const results = discoverTemplates({ workspaceRoot: workspace });
+        const userResults = results.filter((r) => r.source === "native");
 
-        expect(results).toHaveLength(1);
-        expect(results[0]?.name).toBe("package");
+        expect(userResults).toHaveLength(1);
+        expect(userResults[0]?.name).toBe("package");
     });
 });

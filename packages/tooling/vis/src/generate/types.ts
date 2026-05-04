@@ -161,5 +161,5 @@ export interface DiscoveredTemplate {
     /** Absolute path on disk (file for native, directory for moon). */
     path: string;
     /** Source classification — affects load + listing. */
-    source: "config" | "moon" | "native" | "remote";
+    source: "builtin" | "config" | "moon" | "native" | "remote";
 }

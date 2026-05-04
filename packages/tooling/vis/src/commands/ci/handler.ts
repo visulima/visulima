@@ -24,6 +24,18 @@ const detectCiRefs = (): { base: string; head: string } => {
         };
     }
 
+    // Buildkite: BUILDKITE_PULL_REQUEST_BASE_BRANCH is the upstream PR's
+    // base when the build was triggered by a PR webhook. For non-PR
+    // builds, fall through to the generic default — Buildkite has no
+    // canonical "previous successful build SHA" env var that maps cleanly
+    // to an affected base.
+    if (process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"]) {
+        return {
+            base: `origin/${process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"]}`,
+            head: process.env["BUILDKITE_COMMIT"] ?? "HEAD",
+        };
+    }
+
     // CircleCI
     if (process.env["CIRCLE_BRANCH"] && process.env["CIRCLE_SHA1"]) {
         return {

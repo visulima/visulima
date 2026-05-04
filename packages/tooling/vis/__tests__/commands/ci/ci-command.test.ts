@@ -207,6 +207,61 @@ describe("vis ci", () => {
         }
     });
 
+    it("auto-detects refs from BUILDKITE_PULL_REQUEST_BASE_BRANCH / BUILDKITE_COMMIT", async () => {
+        expect.assertions(2);
+
+        const originalBase = process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"];
+        const originalCommit = process.env["BUILDKITE_COMMIT"];
+        const originalGhBase = process.env["GITHUB_BASE_REF"];
+        const originalGitlabBase = process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"];
+
+        // Higher-priority detectors (GH, GitLab) come first in the chain;
+        // make sure neither is set so the Buildkite branch actually runs.
+        delete process.env["GITHUB_BASE_REF"];
+        delete process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"];
+        process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"] = "trunk";
+        process.env["BUILDKITE_COMMIT"] = "deadbeef";
+
+        try {
+            const { logger } = makeLogger();
+            const { calls, runtime } = makeRuntime();
+
+            await ciExecute({
+                argument: ["build"],
+                logger,
+                options: { skipToolchain: true },
+                runtime,
+                visConfig: undefined,
+                workspaceRoot,
+            } as never);
+
+            const affectedCall = calls.find((c) => c.name === "affected")!;
+
+            expect(affectedCall.argv).toContain("--base=origin/trunk");
+            expect(affectedCall.argv).toContain("--head=deadbeef");
+        } finally {
+            if (originalBase === undefined) {
+                delete process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"];
+            } else {
+                process.env["BUILDKITE_PULL_REQUEST_BASE_BRANCH"] = originalBase;
+            }
+
+            if (originalCommit === undefined) {
+                delete process.env["BUILDKITE_COMMIT"];
+            } else {
+                process.env["BUILDKITE_COMMIT"] = originalCommit;
+            }
+
+            if (originalGhBase !== undefined) {
+                process.env["GITHUB_BASE_REF"] = originalGhBase;
+            }
+
+            if (originalGitlabBase !== undefined) {
+                process.env["CI_MERGE_REQUEST_TARGET_BRANCH_NAME"] = originalGitlabBase;
+            }
+        }
+    });
+
     it("forwards --upstream / --downstream / --parallel / --partition / --query when set", async () => {
         expect.assertions(4);
 

@@ -6,6 +6,8 @@ import { postPrComment } from "../../src/ai/pr-comment";
 const githubContext = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
         apiBaseUrl: undefined,
+        buildId: undefined,
+        buildNumber: undefined,
         prNumber: 42,
         provider: "github-actions",
         repo: "owner/repo",
@@ -18,11 +20,27 @@ const githubContext = (overrides: Partial<CiContext> = {}): CiContext => {
 const gitlabContext = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
         apiBaseUrl: "https://gitlab.example.com/api/v4",
+        buildId: undefined,
+        buildNumber: undefined,
         prNumber: 7,
         provider: "gitlab-ci",
         repo: "group/proj",
         sha: "abc",
         token: "glpat-test",
+        ...overrides,
+    };
+};
+
+const buildkiteContext = (overrides: Partial<CiContext> = {}): CiContext => {
+    return {
+        apiBaseUrl: "https://api.buildkite.com",
+        buildId: "01HXYZ-build-id",
+        buildNumber: 123,
+        prNumber: 42,
+        provider: "buildkite",
+        repo: "acme/web",
+        sha: "abc123",
+        token: "bkua_test",
         ...overrides,
     };
 };
@@ -134,6 +152,116 @@ describe(postPrComment, () => {
         expect(result.error).toContain("CI_API_V4_URL");
     });
 
+    it("should annotate via buildkite-agent CLI when it succeeds", async () => {
+        expect.assertions(3);
+
+        const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+
+        const result = await postPrComment({
+            body: "vis ai heal proposed a patch",
+            // /bin/true exits 0 — the CLI path "succeeds" so REST is never hit.
+            buildkiteAgentBin: "/bin/true",
+            context: buildkiteContext(),
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+        });
+
+        expect(result.posted).toBe(true);
+        expect(result.method).toBe("buildkite-cli");
+        expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
+    it("should fall back to Buildkite REST when buildkite-agent is missing", async () => {
+        expect.assertions(4);
+
+        const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+
+        const result = await postPrComment({
+            body: "hello",
+            // /bin/false exits 1 → CLI fails → REST fallback.
+            buildkiteAgentBin: "/bin/false",
+            context: buildkiteContext(),
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+        });
+
+        expect(result.posted).toBe(true);
+        expect(result.method).toBe("rest");
+
+        const [url, init] = fetchImpl.mock.calls[0]!;
+
+        expect(url).toBe(
+            "https://api.buildkite.com/v2/organizations/acme/pipelines/web/builds/123/annotations",
+        );
+        expect((init as RequestInit).headers).toMatchObject({ Authorization: "Bearer bkua_test" });
+    });
+
+    it("should refuse REST fallback when BUILDKITE_API_TOKEN is missing", async () => {
+        expect.assertions(2);
+
+        const result = await postPrComment({
+            body: "hi",
+            buildkiteAgentBin: "/bin/false",
+            context: buildkiteContext({ token: undefined }),
+        });
+
+        expect(result.posted).toBe(false);
+        expect(result.error).toContain("BUILDKITE_API_TOKEN");
+    });
+
+    it("should pass build-id-scoped context so reruns update the same annotation", async () => {
+        expect.assertions(1);
+
+        const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+
+        await postPrComment({
+            body: "hello",
+            buildkiteAgentBin: "/bin/false",
+            context: buildkiteContext(),
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+        });
+
+        const [, init] = fetchImpl.mock.calls[0]!;
+        const body = JSON.parse((init as RequestInit).body as string) as { context: string };
+
+        expect(body.context).toBe("vis-ai-heal-01HXYZ-build-id");
+    });
+
+    it("should always send Buildkite annotation style=info (heal posts only on success today)", async () => {
+        expect.assertions(1);
+
+        const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+
+        await postPrComment({
+            body: "hello",
+            buildkiteAgentBin: "/bin/false",
+            context: buildkiteContext(),
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+        });
+
+        const [, init] = fetchImpl.mock.calls[0]!;
+        const body = JSON.parse((init as RequestInit).body as string) as { style: string };
+
+        expect(body.style).toBe("info");
+    });
+
+    it("should rebase the Buildkite REST URL onto BUILDKITE_API_BASE_URL for self-hosted Enterprise", async () => {
+        expect.assertions(1);
+
+        const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
+
+        await postPrComment({
+            body: "hi",
+            buildkiteAgentBin: "/bin/false",
+            context: buildkiteContext({ apiBaseUrl: "https://buildkite.acme.internal/api" }),
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+        });
+
+        const [url] = fetchImpl.mock.calls[0]!;
+
+        expect(url).toBe(
+            "https://buildkite.acme.internal/api/v2/organizations/acme/pipelines/web/builds/123/annotations",
+        );
+    });
+
     it("should skip when provider is unknown", async () => {
         expect.assertions(2);
 
@@ -141,6 +269,8 @@ describe(postPrComment, () => {
             body: "hi",
             context: {
                 apiBaseUrl: undefined,
+                buildId: undefined,
+                buildNumber: undefined,
                 prNumber: undefined,
                 provider: "unknown",
                 repo: undefined,

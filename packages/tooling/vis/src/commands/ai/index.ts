@@ -102,7 +102,7 @@ const aiDiscoverHelp: Command = {
 
 const aiHeal: Command = {
     commandPath: ["ai"],
-    description: "Diagnose the most recent failed task and post a structured patch as a PR/MR comment",
+    description: "Diagnose the most recent failed task and post a structured patch as a PR/MR comment (or Buildkite annotation)",
     examples: [
         ["vis ai heal", "Heal the most recent failure"],
         ["vis ai heal --dry-run", "Propose a patch but skip apply / validate / post"],
@@ -141,7 +141,7 @@ const aiHealAccept: Command = {
     commandPath: ["ai", "heal"],
     description: "Re-run the proposed fix and commit it to the PR/MR branch when validation passes",
     examples: [
-        ["vis ai heal accept", "Triggered automatically by a `/vis heal accept` PR comment in CI"],
+        ["vis ai heal accept", "Triggered automatically by a `/vis heal accept` PR comment (GitHub/GitLab) or a Buildkite block-step unblock"],
     ],
     group: "System",
     loader: lazyNamed(() => import("./heal-accept"), "aiHealAccept"),
