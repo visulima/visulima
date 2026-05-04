@@ -10,6 +10,7 @@ import type {
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
 
+import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
@@ -364,6 +365,53 @@ const resolveFileGroupInputs = (
 };
 
 /**
+ * Tracks which unknown-detector warnings have already been emitted in
+ * this process so a misconfigured workspace doesn't spam the console
+ * once per project loop. Keyed by sorted unknown-key tuple.
+ */
+const warnedUnknownDetectorKeys = new Set<string>();
+
+/**
+ * Resolves the `inferTargets` config to a per-detector predicate, or
+ * `undefined` when inference is disabled entirely. Boolean `true` enables
+ * every detector; the object form lets users opt individual detectors in
+ * or out by name (`{ vite: false }` keeps vitest/packem on, drops vite).
+ * Detectors omitted from the object run at their default (enabled).
+ *
+ * Emits a once-per-process Node warning when the object form references
+ * a detector name that doesn't exist in `BUILT_IN_DETECTORS` (typo
+ * insurance — `{ vit: false }` would otherwise silently no-op).
+ */
+const resolveInferTargetOption = (
+    option: VisConfig["inferTargets"],
+): ((detectorName: string) => boolean) | undefined => {
+    if (option === true) {
+        return () => true;
+    }
+
+    if (option === undefined || option === false) {
+        return undefined;
+    }
+
+    const knownNames = new Set(BUILT_IN_DETECTORS.map((detector) => detector.name));
+    const unknownKeys = Object.keys(option).filter((key) => !knownNames.has(key));
+
+    if (unknownKeys.length > 0) {
+        const dedupKey = [...unknownKeys].sort().join(",");
+
+        if (!warnedUnknownDetectorKeys.has(dedupKey)) {
+            warnedUnknownDetectorKeys.add(dedupKey);
+            process.emitWarning(
+                `vis: inferTargets references unknown detector(s): ${unknownKeys.join(", ")}. Known detectors: ${[...knownNames].join(", ")}.`,
+                "VisConfigWarning",
+            );
+        }
+    }
+
+    return (detectorName) => option[detectorName] !== false;
+};
+
+/**
  * Merges a script-derived target with any declarative target definition
  * from project.json and applies scoped defaults. Also applies presets and
  * default-cache-for-type logic.
@@ -371,7 +419,7 @@ const resolveFileGroupInputs = (
 const mergeTarget = (
     _name: string,
     scriptCommand: string | undefined,
-    projectTarget: VisTargetConfiguration | undefined,
+    projectTarget: Partial<VisTargetConfiguration> | undefined,
     defaults: Partial<VisTargetConfiguration> | undefined,
     fileGroups: Record<string, string[]> | undefined,
 ): VisTargetConfiguration => {
@@ -513,12 +561,38 @@ const discoverWorkspace = (
         const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.targets);
         const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
 
+        // Project Crystal-style inference. Runs *after* the explicit
+        // pipeline so any target name already declared by a
+        // package.json script, project.json, or vis.task.ts wins. We
+        // funnel the inferred target through `mergeTarget` so the
+        // applied target defaults / preset / fileGroups path is
+        // identical to script-derived targets — no parallel merge code
+        // to drift.
+        const detectorEnabled = resolveInferTargetOption(config.inferTargets);
+
+        if (detectorEnabled !== undefined) {
+            const projectRoot = join(workspaceRoot, projectDirectory);
+            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
+            const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
+
+            for (const [name, inferredTarget] of Object.entries(inference.targets)) {
+                if (visTargets[name] !== undefined) {
+                    continue;
+                }
+
+                visTargets[name] = {
+                    ...mergeTarget(name, inferredTarget.command, inferredTarget, defaults[name], config.fileGroups),
+                    inferred: true,
+                };
+            }
+        }
+
         projectOptions.set(pkg.name, visTargets);
 
         const sanitizedTargets: Record<string, TargetConfiguration> = {};
 
         for (const [targetName, target] of Object.entries(visTargets)) {
-            const { options, preset: _preset, type: _type, ...rest } = target;
+            const { inferred: _inferred, options, preset: _preset, type: _type, ...rest } = target;
             const expandedDependsOn = target.dependsOn
                 ? expandTaskGroups(target.dependsOn as Parameters<typeof expandTaskGroups>[0], config.taskGroups)
                 : undefined;

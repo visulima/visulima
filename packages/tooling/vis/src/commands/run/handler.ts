@@ -30,6 +30,9 @@ import isInCi from "is-in-ci";
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import type { VisProjectConfiguration } from "../../config/workspace";
 import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
+import { runLockfilePreflight } from "../../preflight/lockfile";
+import { runReadiness } from "../../services/readiness";
+import { readAllEntries } from "../../services/registry";
 import { FailureLogLifeCycle } from "../../report/failure-log";
 import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
@@ -48,9 +51,19 @@ import { collectTrackedWatchTargets, createTrackedFileFilter, startWatcher } fro
 import { applyProjectFilter } from "../../watch/watch-filter";
 import type { KeybindHandle } from "../../watch/watch-keybinds";
 import { installKeybinds, writeHelp } from "../../watch/watch-keybinds";
+import { applyServiceRegistry } from "./apply-service-registry";
 import type { RunOptions } from "./index";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
+
+/**
+ * Per-service readiness re-check budget for the auto-attach probe.
+ * Short on purpose — we run this once per registered service on every
+ * `vis run`, so a slow probe would tax interactive workflows. If the
+ * service can't respond inside this budget, treat it as unhealthy and
+ * tell the operator to restart.
+ */
+const SERVICE_PROBE_TIMEOUT_MS = 2000;
 
 /**
  * Resolves a task's effective working directory. Returns the workspace
@@ -301,6 +314,13 @@ interface ExecutorDependencies {
     onOutputReplace?: (taskId: string, fullContent: string) => void;
     /** Optional global retry budget applied across all tasks in the run. */
     retryBudget?: RetryBudget;
+    /**
+     * Per-dependent task env contributed by externally-registered
+     * services. Pre-computed by `applyServiceRegistry` before the
+     * service edges are pruned, so the executor doesn't need to walk
+     * the post-prune graph to find what env to merge.
+     */
+    serviceEnvByTaskId?: Map<string, Record<string, string>>;
     stdinRegistry?: Map<string, StdinEntry>;
     workspaceRoot: string;
 }
@@ -346,7 +366,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
     const envFileCache: EnvFileCache = new Map();
 
     return async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
-        const { affectedFiles, currentOs, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, stdinRegistry, workspaceRoot } = deps;
+        const { affectedFiles, currentOs, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, serviceEnvByTaskId, stdinRegistry, workspaceRoot } = deps;
 
         const visOptions = getTaskOptions(task);
 
@@ -372,9 +392,16 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
         }
 
+        const serviceEnv = serviceEnvByTaskId?.get(task.id);
+
         const mergedEnv: Record<string, string> = {
             INIT_CWD: initCwd,
             ...envFileVars,
+            // Externally-registered service env merges below the
+            // task's explicit env so users can override service-
+            // provided defaults (e.g. point a test at a staging URL
+            // without restarting the registered service).
+            ...serviceEnv,
             ...execOptions.env,
             ...affectedFilesEnv,
         };
@@ -887,11 +914,59 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
-    const taskGraph = createTaskGraph(initialTasks, {
+    let taskGraph = createTaskGraph(initialTasks, {
         projectGraph,
         targetDefaults: config.targetDefaults as unknown as Record<string, Partial<TargetConfiguration>>,
         workspace,
     });
+
+    // Auto-attach: if a service this run depends on is already
+    // running in the background registry, drop it from the graph and
+    // capture its env for the surviving dependents. Diagnostics here
+    // mean the user invoked something whose dep is a service that
+    // isn't running — refuse to half-execute.
+    //
+    // The probe re-runs the service's readiness check with a short
+    // timeout before accepting the entry. PID-alive isn't enough: a
+    // shell-wrapped service whose underlying server has crashed leaves
+    // the wrapper PID alive, and we don't want to attach a dependent
+    // task to a dead port. Probe failures fall through to the same
+    // "missing service" diagnostic, so the operator restarts cleanly.
+    const registeredEntries = await readAllEntries(workspaceRoot);
+    const serviceResult = await applyServiceRegistry({
+        initialTasks,
+        probe: async (entry) => {
+            try {
+                await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+
+                return true;
+            } catch {
+                return false;
+            }
+        },
+        registeredEntries,
+        taskGraph,
+        visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
+    });
+
+    if (serviceResult.diagnostics.length > 0) {
+        for (const diagnostic of serviceResult.diagnostics) {
+            logger.error(diagnostic.message);
+        }
+
+        throw new Error(`${serviceResult.diagnostics.length} service dependency error(s) — start the missing services or invoke them directly.`);
+    }
+
+    initialTasks = serviceResult.initialTasks;
+    taskGraph = serviceResult.taskGraph;
+
+    const serviceEnvByTaskId = serviceResult.serviceEnvByTaskId;
+
+    if (serviceResult.satisfiedServices.length > 0) {
+        const names = serviceResult.satisfiedServices.map((s) => s.id).join(", ");
+
+        logger.debug?.(`Auto-attached to running services: ${names}`);
+    }
 
     if (options.dryRun) {
         const taskCount = Object.keys(taskGraph.tasks).length;
@@ -954,6 +1029,24 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         },
         Boolean(options.skipToolchain),
     );
+
+    // Lockfile/install drift check. Fires after toolchain (so the
+    // suggested install command runs against the right Node) and before
+    // task execution. CLI flag wins over config; both default to on.
+    // The helper logs the warn line itself in TTY; in CI it stays
+    // silent and we throw with `formattedMessage` so the user sees the
+    // detail exactly once.
+    const preflightEnabled = options.preflight !== false && config.preflight?.lockfile !== false;
+    const lockfilePreflight = runLockfilePreflight(
+        workspaceRoot,
+        isInCi,
+        { warn: (message) => { logger.warn(message); } },
+        { skip: !preflightEnabled },
+    );
+
+    if (!lockfilePreflight.shouldContinue) {
+        throw new Error(`${lockfilePreflight.formattedMessage ?? "preflight: lockfile drift detected"} (pass --no-preflight to bypass)`);
+    }
 
     const startTime = Date.now();
 
@@ -1100,6 +1193,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 store.setOutput(taskId, fullContent);
             },
             retryBudget: sharedRetryBudget,
+            serviceEnvByTaskId,
             stdinRegistry,
             workspaceRoot,
         });
@@ -1241,6 +1335,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             lifeCycle,
             mutexPool,
             retryBudget: sharedRetryBudget,
+            serviceEnvByTaskId,
             workspaceRoot,
         });
 

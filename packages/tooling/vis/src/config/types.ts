@@ -30,6 +30,7 @@ interface PackageJson {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     name?: string;
+    optionalDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
     scripts?: Record<string, string>;
     workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
@@ -339,6 +340,31 @@ interface VisConfig {
     };
 
     /**
+     * Auto-create targets from detected config files (Project Crystal-style).
+     * v1 detectors: `vite.config.*` (build/dev/preview), `packem.config.*`
+     * (build), `vitest.config.*` (test/test:watch). Inferred targets sit
+     * *below* explicit ones — anything in `package.json#scripts`,
+     * `project.json#targets`, or `vis.task.ts` wins per-key, so opting in
+     * never overrides existing setups.
+     *
+     * Trigger: presence of any matching config file in the project root.
+     * Some detectors (currently `vitest`, `packem`) additionally match
+     * when their framework appears in `dependencies` /
+     * `devDependencies` / `peerDependencies` / `optionalDependencies`
+     * — covering convention-only setups (e.g. vitest with default
+     * config). The `vite` detector intentionally requires a config
+     * file: pulling vite in transitively (plugin types, helpers)
+     * doesn't reliably mean the project bundles itself with `vite build`.
+     *
+     * Also accepts an object form (`{ vite: false, vitest: true }`) to
+     * opt individual detectors in or out by name. Detectors omitted from
+     * the object run at their default (enabled). Useful when one
+     * detector misfires for a given workspace without disabling the rest.
+     * @default false
+     */
+    inferTargets?: Record<string, boolean> | boolean;
+
+    /**
      * Named input patterns inherited by every project target. Equivalent
      * to task-runner's `namedInputs` but configurable from the vis config.
      */
@@ -354,6 +380,23 @@ interface VisConfig {
      * access to task metadata, results, or cache state.
      */
     plugins?: VisPlugin[];
+
+    /**
+     * Pre-flight checks fired before `vis run` starts the orchestrator.
+     * Each check is opt-out (`false`) — defaults are sensible for the
+     * common monorepo case.
+     */
+    preflight?: {
+        /**
+         * Detect "lockfile changed but `node_modules` is stale" before
+         * running tasks. Compares lockfile mtime against the
+         * package-manager-specific install marker
+         * (`node_modules/.modules.yaml` for pnpm, `.package-lock.json`
+         * for npm, etc.). Warns in TTY, hard-fails in CI.
+         * @default true
+         */
+        lockfile?: boolean;
+    };
 
     /**
      * Default options for `vis secrets`. CLI flags always take precedence;

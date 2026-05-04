@@ -1,5 +1,9 @@
 import type { TargetConfiguration } from "@visulima/task-runner";
 
+import type { ServiceConfig } from "../services/types";
+
+export type { ServiceConfig } from "../services/types";
+
 /**
  * Semantic classification for a target.
  * - `build`: Generates one or more artifacts; cached by default.
@@ -168,6 +172,19 @@ export interface VisTargetOptions {
     runInCI?: RunInCI;
 
     /**
+     * Marks this target as a long-lived service that can be started via
+     * `vis service start <id>` and auto-attached when other tasks declare
+     * it in `dependsOn`. Implies persistent + non-cacheable behaviour
+     * (set `preset: "server"` to inherit the rest of the bundle).
+     *
+     * The presence of this block — not `preset: "server"` alone — is
+     * what makes a target eligible for the cross-invocation registry.
+     * `preset: "server"` without `service` keeps today's in-run-only
+     * behaviour.
+     */
+    service?: ServiceConfig;
+
+    /**
      * Per-target shell override. When set, the command runs through this
      * shell instead of the platform default.
      */
@@ -219,6 +236,14 @@ export interface VisTargetConfiguration extends Omit<TargetConfiguration, "optio
      * READMEs or vis.config.ts comments.
      */
     description?: string;
+    /**
+     * True when the target was synthesized by a Project Crystal-style
+     * detector (see {@link ../inference}) rather than declared by a
+     * package.json script, project.json, or vis.task.ts file. Surfaced
+     * by `vis list --inferred` and used by tooling to distinguish
+     * implicit defaults from explicit user intent.
+     */
+    inferred?: boolean;
     /** Vis-specific target options. */
     options?: VisTargetOptions;
     /** Preset applied before user-specified options. */
