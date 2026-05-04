@@ -51,7 +51,7 @@ describe(NetlifyBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 pathname: "test-path",
-            } as never);
+            });
 
             // Mock store.get to return a blob-like object (exists)
             const mockBlob = {
@@ -85,7 +85,7 @@ describe(NetlifyBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 pathname: undefined,
-            } as never);
+            });
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -99,7 +99,7 @@ describe(NetlifyBlobStorage, () => {
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
                 pathname: "test-path",
-            } as never);
+            });
 
             // Mock store.get to return null (doesn't exist)
             const { getStore } = await import("@netlify/blobs");
@@ -124,10 +124,10 @@ describe(NetlifyBlobStorage, () => {
                     mimeType: "video/mp4",
                     name: "testfile.mp4",
                 },
-            } as never);
+            });
 
             // Mock saveMeta to return the updated file
-            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const updatedFile = await storage.update({ id: metafile.id }, { metadata: { name: "newname.mp4" } });
 
@@ -151,10 +151,10 @@ describe(NetlifyBlobStorage, () => {
             // Mock getMeta to return existing file metadata
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
-            } as never);
+            });
 
             // Mock saveMeta to return the updated file
-            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const updatedFile = await storage.update({ id: metafile.id }, { ttl: "2h" });
 
@@ -179,10 +179,10 @@ describe(NetlifyBlobStorage, () => {
             // Mock getMeta to return existing file metadata
             vi.spyOn(storage, "getMeta").mockResolvedValue({
                 ...metafile,
-            } as never);
+            });
 
             // Mock saveMeta to return the updated file
-            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             await storage.update({ id: metafile.id }, { metadata: { name: "newname.mp4" } });
 

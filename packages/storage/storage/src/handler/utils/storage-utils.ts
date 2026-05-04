@@ -13,7 +13,6 @@ export const waitForStorage = async (storage: { isReady: boolean }, timeoutMs = 
     const startTime = Date.now();
 
     while (!storage.isReady && Date.now() - startTime < timeoutMs) {
-        // eslint-disable-next-line no-await-in-loop
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();

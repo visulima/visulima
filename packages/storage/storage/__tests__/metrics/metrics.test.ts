@@ -101,9 +101,15 @@ describe("metrics Instrumentation", () => {
 
             const metrics = new NoOpMetrics();
 
-            expect(() => metrics.increment("test")).not.toThrow();
-            expect(() => metrics.timing("test", 100)).not.toThrow();
-            expect(() => metrics.gauge("test", 10)).not.toThrow();
+            expect(() => {
+                metrics.increment("test");
+            }).not.toThrow();
+            expect(() => {
+                metrics.timing("test", 100);
+            }).not.toThrow();
+            expect(() => {
+                metrics.gauge("test", 10);
+            }).not.toThrow();
         });
     });
 
@@ -136,7 +142,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.increment("test.counter")).not.toThrow();
+            expect(() => {
+                storageMetrics.increment("test.counter");
+            }).not.toThrow();
         });
 
         it("should increment counter metric with value and attributes", () => {
@@ -145,7 +153,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.increment("test.counter", 5, { storage: "disk" })).not.toThrow();
+            expect(() => {
+                storageMetrics.increment("test.counter", 5, { storage: "disk" });
+            }).not.toThrow();
         });
 
         it("should record timing metric", () => {
@@ -154,7 +164,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.timing("test.timing", 100)).not.toThrow();
+            expect(() => {
+                storageMetrics.timing("test.timing", 100);
+            }).not.toThrow();
         });
 
         it("should record timing metric with attributes", () => {
@@ -163,7 +175,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.timing("test.timing", 100, { operation: "get" })).not.toThrow();
+            expect(() => {
+                storageMetrics.timing("test.timing", 100, { operation: "get" });
+            }).not.toThrow();
         });
 
         it("should set gauge metric", () => {
@@ -172,7 +186,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.gauge("test.gauge", 10)).not.toThrow();
+            expect(() => {
+                storageMetrics.gauge("test.gauge", 10);
+            }).not.toThrow();
         });
 
         it("should set gauge metric with attributes", () => {
@@ -181,7 +197,9 @@ describe("metrics Instrumentation", () => {
             const meter = otelMetrics.getMeter("@visulima/storage-test", "1.0.0");
             const storageMetrics = new OpenTelemetryMetrics(meter);
 
-            expect(() => storageMetrics.gauge("test.gauge", 10, { storage: "disk" })).not.toThrow();
+            expect(() => {
+                storageMetrics.gauge("test.gauge", 10, { storage: "disk" });
+            }).not.toThrow();
         });
 
         it("should reuse existing counter for same name", () => {
@@ -192,7 +210,9 @@ describe("metrics Instrumentation", () => {
 
             storageMetrics.increment("test.counter");
 
-            expect(() => storageMetrics.increment("test.counter")).not.toThrow();
+            expect(() => {
+                storageMetrics.increment("test.counter");
+            }).not.toThrow();
         });
 
         it("should reuse existing histogram for same name", () => {
@@ -203,7 +223,9 @@ describe("metrics Instrumentation", () => {
 
             storageMetrics.timing("test.timing", 100);
 
-            expect(() => storageMetrics.timing("test.timing", 200)).not.toThrow();
+            expect(() => {
+                storageMetrics.timing("test.timing", 200);
+            }).not.toThrow();
         });
 
         it("should reuse existing gauge for same name", () => {
@@ -214,7 +236,9 @@ describe("metrics Instrumentation", () => {
 
             storageMetrics.gauge("test.gauge", 10);
 
-            expect(() => storageMetrics.gauge("test.gauge", 20)).not.toThrow();
+            expect(() => {
+                storageMetrics.gauge("test.gauge", 20);
+            }).not.toThrow();
         });
     });
 

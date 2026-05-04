@@ -109,7 +109,6 @@ export const handleCompletedUpload = async <TFile extends UploadFile, NodeRespon
     const { headers: fileHeaders, statusCode, ...basicFile } = file;
 
     if (typeof next === "function") {
-        // eslint-disable-next-line no-underscore-dangle
         (request as IncomingMessageWithBody)._body = true;
         (request as IncomingMessageWithBody).body = basicFile;
 
@@ -186,10 +185,10 @@ export const handlePartialUpload = <TFile extends UploadFile, NodeResponse exten
     // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
     const responseHeaders: Record<string, string> = {
         ...convertHeadersToString(headers),
-        ...fileHeaders ? convertHeadersToString(fileHeaders) : {},
-        ...(basicFile as TFile).hash === undefined
+        ...(fileHeaders ? convertHeadersToString(fileHeaders) : {}),
+        ...((basicFile as TFile).hash === undefined
             ? {}
-            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) },
+            : { [`X-Range-${(basicFile as TFile).hash?.algorithm.toUpperCase()}`]: String((basicFile as TFile).hash?.value) }),
     };
 
     if (isChunkedUploadInit) {

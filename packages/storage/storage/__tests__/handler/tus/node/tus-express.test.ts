@@ -132,7 +132,6 @@ describe("express Tus", () => {
     });
 
     describe("head", () => {
-        // eslint-disable-next-line radar/no-duplicate-string
         it("should return upload status for completed upload", async () => {
             expect.assertions(8);
 
@@ -299,7 +298,6 @@ describe("express Tus", () => {
         it("should parse multiple keys", () => {
             expect.assertions(6);
 
-            // eslint-disable-next-line no-secrets/no-secrets
             const sample = "name dGl0bGUubXA0,mimeType dmlkZW8vbXA0,size ODM4NjkyNTM=,lastModified MTQzNzM5MDEzODIzMQ==,is_ok";
 
             const result = parseMetadata(sample);

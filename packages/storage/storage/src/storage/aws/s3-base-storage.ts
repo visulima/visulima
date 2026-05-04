@@ -1,6 +1,5 @@
 import { Readable } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { parseBytes } from "@visulima/humanizer";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -375,7 +374,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             Key: file.name,
                             PartNumber: partNumber,
                             UploadId: uploadId,
-                            ...part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {},
+                            ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
                         }),
                     );
 
@@ -449,7 +448,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     Bucket,
                     CopySource,
                     Key,
-                    ...options?.storageClass && { StorageClass: options.storageClass },
+                    ...(options?.storageClass && { StorageClass: options.storageClass }),
                 }),
             );
 
@@ -478,7 +477,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public override async list(limit = 1000): Promise<TFile[]> {
         return this.instrumentOperation(
             "list",
-            // eslint-disable-next-line sonarjs/cognitive-complexity
+
             async () => {
                 const s3Api = this.getS3Api();
                 let parameters: { Bucket: string; ContinuationToken?: string; MaxKeys?: number } = {
@@ -491,21 +490,18 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                 while (truncated) {
                     try {
-                        // eslint-disable-next-line no-await-in-loop
                         const response = await this.retry(() => s3Api.listObjectsV2(parameters));
 
                         for (const { Key, LastModified } of response?.Contents || []) {
                             if (Key !== undefined) {
-                                // eslint-disable-next-line no-await-in-loop
                                 const { Expires } = await this.retry(() => s3Api.headObject({ Bucket: this.bucket, Key }));
 
                                 if (Expires && isExpired({ expiredAt: Expires } as TFile)) {
-                                    // eslint-disable-next-line no-await-in-loop
                                     await this.delete({ id: Key });
                                 } else {
                                     items.push({
                                         id: Key,
-                                        ...LastModified && { createdAt: LastModified },
+                                        ...(LastModified && { createdAt: LastModified }),
                                     } as TFile);
                                 }
                             }
@@ -520,7 +516,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                         // Sequential error handling is intentional
-                        // eslint-disable-next-line no-await-in-loop
+
                         await this.onError(httpError);
                         throw error;
                     }
@@ -598,7 +594,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     const reader = (Body as ReadableStream<Uint8Array>).getReader();
 
                     while (true) {
-                        // eslint-disable-next-line no-await-in-loop
                         const { done, value } = await reader.read();
 
                         if (done) {
@@ -679,7 +674,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         const expiresIn = Math.trunc(toSeconds(this.config.expiration?.maxAge || "6hrs"));
         const s3Api = this.getS3Api();
 
-        // eslint-disable-next-line no-plusplus
         for (let index = 0; index < partsNumber; index++) {
             promises.push(
                 s3Api.getPresignedUrl({
@@ -728,8 +722,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("UploadId is required");
         }
 
-        const parts
-            = file.Parts?.map(({ ETag, PartNumber }) => {
+        const parts =
+            file.Parts?.map(({ ETag, PartNumber }) => {
                 if (!ETag || !PartNumber) {
                     throw new Error("ETag and PartNumber are required");
                 }

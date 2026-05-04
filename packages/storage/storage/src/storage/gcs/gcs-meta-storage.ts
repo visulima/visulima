@@ -133,7 +133,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private async makeRequest<Data = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {
         if (typeof data.url === "string") {
-            // eslint-disable-next-line no-param-reassign
             data.url = data.url
                 // Some URIs have colon separators.
                 // Bad: https://.../projects/:list
@@ -141,7 +140,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 .replaceAll("/:", ":");
         }
 
-        // eslint-disable-next-line no-param-reassign
         data = {
             ...data,
             headers: {
@@ -149,7 +147,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
             },
             params: {
-                ...this.userProject === undefined ? {} : { userProject: this.userProject },
+                ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
             },
             retry: true,
             retryConfig: this.retryOptions,

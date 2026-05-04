@@ -62,7 +62,7 @@ const updateMetadata = <T extends File>(file: T, metadata: Partial<T>): void => 
     Object.assign(file, merged);
 
     // Update originalName based on potentially updated metadata
-    // eslint-disable-next-line no-param-reassign
+
     file.originalName = extractOriginalName(file.metadata) || file.originalName;
 };
 

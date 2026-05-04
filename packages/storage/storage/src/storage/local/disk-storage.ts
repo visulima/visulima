@@ -3,11 +3,8 @@ import { copyFile, stat, truncate } from "node:fs/promises";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { isAbsolute, join } from "@visulima/path";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import etag from "etag";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -69,7 +66,6 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         // Override filename validation with filesystem-specific validation
         // Local filesystems have stricter character restrictions than cloud storage platforms
         if (!config.fileNameValidation) {
-            // eslint-disable-next-line no-param-reassign
             config.fileNameValidation = defaultFilesystemFileNameValidation;
         }
 
@@ -184,7 +180,6 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Updates file status to "completed" when all bytes are written.
      */
     public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
-        // eslint-disable-next-line sonarjs/cognitive-complexity
         return this.instrumentOperation("write", async () => {
             let file: TFile;
 
@@ -237,9 +232,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     const isFirstChunk = part.start === 0 || part.start === undefined;
 
                     if (
-                        isFirstChunk
-                        && (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                        && (!file.contentType || file.contentType === "application/octet-stream")
+                        isFirstChunk &&
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                        (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -250,7 +245,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                             }
 
                             // Use the stream from file type detection
-                            // eslint-disable-next-line no-param-reassign
+
                             part.body = detectedStream;
                         } catch {
                             // If file type detection fails, continue with original stream
@@ -426,8 +421,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     headers: {
                         "Content-Length": String(size || bytesWritten),
                         "Content-Type": contentType,
-                        ...expiredAt && { "X-Upload-Expires": expiredAt.toString() },
-                        ...modifiedAt && { "Last-Modified": modifiedAt.toString() },
+                        ...(expiredAt && { "X-Upload-Expires": expiredAt.toString() }),
+                        ...(modifiedAt && { "Last-Modified": modifiedAt.toString() }),
                         // Note: ETag requires reading the file content, so we don't include it for streaming
                         // Clients can use HEAD requests to get ETag if needed
                     },

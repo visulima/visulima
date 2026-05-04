@@ -3,7 +3,6 @@ import { Readable } from "node:stream";
 
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
@@ -71,7 +70,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Create MultipartBase instance with access to this MultipartFetch instance
         const multipartInstance = this;
 
-        this.multipartBase = new class extends MultipartBase<TFile> {
+        this.multipartBase = new (class extends MultipartBase<TFile> {
             // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return multipartInstance.storage;
@@ -113,7 +112,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 // Return Node.js Readable stream, not Uint8Array
                 return Readable.from(new Uint8Array(0));
             }
-        }();
+        })();
     }
 
     /**

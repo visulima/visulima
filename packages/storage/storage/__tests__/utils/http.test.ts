@@ -171,11 +171,10 @@ describe("utils", () => {
         });
 
         it.each([
-            // eslint-disable-next-line radar/no-duplicate-string
             ["/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
 
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets,radar/no-duplicate-string
+
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
         ])("should extract ID from Express-style request URL: %p -> %p", (url, name) => {
             expect.assertions(1);
@@ -191,7 +190,7 @@ describe("utils", () => {
             ["/1/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
 
             ["/3/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
-            // eslint-disable-next-line no-secrets/no-secrets
+
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
         ])("should extract ID from Node.js-style request URL: %p -> %p", (url, id) => {
             expect.assertions(1);
@@ -208,19 +207,16 @@ describe("utils", () => {
         it("should return the real path from request URL or originalUrl", () => {
             expect.assertions(2);
 
-            // eslint-disable-next-line no-secrets/no-secrets
             const path = "/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png";
 
             let testRequest = createRequest({ url: path });
             let realPath = getRealPath(testRequest);
 
-            // eslint-disable-next-line no-secrets/no-secrets
             expect(realPath).toBe("/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png");
 
             testRequest = createRequest({ originalUrl: path });
             realPath = getRealPath(testRequest);
 
-            // eslint-disable-next-line no-secrets/no-secrets
             expect(realPath).toBe("/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png");
         });
 
@@ -244,7 +240,6 @@ describe("utils", () => {
             expect.assertions(1);
 
             const httpRequest = httpCreateRequest({
-                // eslint-disable-next-line radar/no-duplicate-string
                 body: "Hello world!",
             });
 

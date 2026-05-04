@@ -339,9 +339,9 @@ export abstract class TusBase<TFile extends UploadFile> {
 
         // The Upload-Expires response header indicates the time after which the unfinished upload expires.
         if (
-            this.storage.tusExtension.includes("expiration")
-            && typeof file.expiredAt === "number"
-            && file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
+            this.storage.tusExtension.includes("expiration") &&
+            typeof file.expiredAt === "number" &&
+            file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
         ) {
             headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
         }
@@ -487,13 +487,13 @@ export abstract class TusBase<TFile extends UploadFile> {
         await this.storage.checkIfExpired(file);
 
         const headers: Headers = {
-            ...typeof file.size === "number" && !Number.isNaN(file.size)
+            ...(typeof file.size === "number" && !Number.isNaN(file.size)
                 ? {
-                    "Upload-Length": file.size,
-                }
+                      "Upload-Length": file.size,
+                  }
                 : {
-                    "Upload-Defer-Length": "1",
-                },
+                      "Upload-Defer-Length": "1",
+                  }),
             ...this.buildHeaders(file, {
                 "Cache-Control": HeaderUtilities.createCacheControlPreset("no-store"),
                 "Upload-Metadata": serializeMetadata(file.metadata),
@@ -618,7 +618,6 @@ export abstract class TusBase<TFile extends UploadFile> {
         // Concatenate all streams sequentially
         let offset = 0;
 
-        // eslint-disable-next-line no-loops/no-loops
         for (const partialFile of partialFiles) {
             // Get stream for this partial file
             if (!this.storage.getStream) {

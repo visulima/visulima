@@ -99,13 +99,13 @@ export const isRetryableError = (error: unknown, retryableStatusCodes: number[] 
 
         // Network-related errors
         if (
-            errorCode === "ECONNRESET"
-            || errorCode === "ETIMEDOUT"
-            || errorCode === "ENOTFOUND"
-            || errorCode === "ECONNREFUSED"
-            || errorCode === "EAI_AGAIN"
-            || errorName === "NetworkError"
-            || errorName === "TimeoutError"
+            errorCode === "ECONNRESET" ||
+            errorCode === "ETIMEDOUT" ||
+            errorCode === "ENOTFOUND" ||
+            errorCode === "ECONNREFUSED" ||
+            errorCode === "EAI_AGAIN" ||
+            errorName === "NetworkError" ||
+            errorName === "TimeoutError"
         ) {
             return true;
         }
@@ -193,7 +193,7 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
 
             if (delay !== undefined && delay > 0) {
                 // Sequential delay is intentional for retry logic
-                // eslint-disable-next-line no-await-in-loop
+
                 await sleep(delay);
             }
         }
@@ -207,7 +207,7 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
  * @param config Retry configuration
  * @returns A function that wraps async operations with retry logic
  */
-export const createRetryWrapper
-    = (config: RetryConfig = {}) =>
-        <T>(function_: () => Promise<T>): Promise<T> =>
-            retry(function_, config);
+export const createRetryWrapper =
+    (config: RetryConfig = {}) =>
+    <T>(function_: () => Promise<T>): Promise<T> =>
+        retry(function_, config);

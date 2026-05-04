@@ -245,7 +245,7 @@ describe(DiskStorage, () => {
                         setTimeout(() => {
                             if (!signal.aborted) {
                                 this.push("chunk2");
-                                // eslint-disable-next-line unicorn/no-null
+
                                 this.push(null);
                             }
                         }, 50);

@@ -20,10 +20,10 @@ const sha1 = hash(fileAsBuffer, "sha1");
 
 export const testRoot = join(tmpdir(), "files");
 
-export const storageOptions: BaseStorageOptions<File> = {
+export const storageOptions: BaseStorageOptions = {
     allowMIME: ["video/*", "image/*", "application/octet-stream"],
     expiration: { maxAge: "1h" },
-    filename: (file) => `${"anonymous"}/${file.originalName}`,
+    filename: (file) => `anonymous/${file.originalName}`,
     maxUploadSize: "6GB",
     useRelativeLocation: true,
 };

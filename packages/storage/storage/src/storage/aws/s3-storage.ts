@@ -70,13 +70,11 @@ class S3Storage extends S3BaseStorage {
             throw new Error("S3 region is not defined");
         }
 
-        // eslint-disable-next-line no-param-reassign
         config.region = region;
 
         const keyFile = config.keyFile || process.env.S3_KEYFILE;
 
         if (keyFile) {
-            // eslint-disable-next-line no-param-reassign
             config.credentials = fromIni({ configFilepath: keyFile });
         }
 
@@ -180,7 +178,6 @@ class S3Storage extends S3BaseStorage {
                         this.push(chunk);
                     });
                     stream.on("end", () => {
-                        // eslint-disable-next-line unicorn/no-null
                         this.push(null);
                     });
                     stream.on("error", (error: Error) => {
@@ -193,9 +190,9 @@ class S3Storage extends S3BaseStorage {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...ETag && { ETag },
-                    ...Expires && { "X-Upload-Expires": Expires.toString() },
-                    ...LastModified && { "Last-Modified": LastModified.toString() },
+                    ...(ETag && { ETag }),
+                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
+                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
                 stream: readableStream,

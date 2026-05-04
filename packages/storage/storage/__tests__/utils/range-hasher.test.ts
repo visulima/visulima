@@ -53,7 +53,6 @@ describe("utils", async () => {
 
             await rangeHasher.updateFromFs(filepath, 0);
 
-            // eslint-disable-next-line no-secrets/no-secrets
             expect(rangeHasher.base64(filepath)).toBe("qUqP5cyxm6YcTAhz05Hph5gvu9M=");
         });
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ErrorMap } from "../../src/utils/errors";
-import type { HttpError, ValidatorConfig } from "../../src/utils/types";
+import type { ValidatorConfig } from "../../src/utils/types";
 import { Validator } from "../../src/utils/validator";
 
 describe("utils", () => {
@@ -12,7 +12,7 @@ describe("utils", () => {
             isValid(file) {
                 return file.size <= this.value;
             },
-            response: ErrorMap.RequestEntityTooLarge as HttpError,
+            response: ErrorMap.RequestEntityTooLarge,
             value: 100,
         };
 

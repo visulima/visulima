@@ -71,10 +71,8 @@ describe("utils", () => {
 
                 await createTestFile(directory, file);
 
-                // eslint-disable-next-line no-secrets/no-secrets
                 const transformer = streamChecksum("CY9rzUYh03PK3k6DJie09g==", "md5") as StreamChecksum;
 
-                // eslint-disable-next-line no-secrets/no-secrets
                 expect(transformer.checksum).toBe("CY9rzUYh03PK3k6DJie09g==");
                 expect(transformer.algorithm).toBe("md5");
 

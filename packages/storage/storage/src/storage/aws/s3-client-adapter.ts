@@ -192,7 +192,7 @@ class S3ClientAdapter implements S3ApiOperations {
                 body = sdkStream as unknown as ReadableStream;
             } else {
                 // Handle Blob or other types
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 body = Readable.from(sdkStream as any);
             }
         }

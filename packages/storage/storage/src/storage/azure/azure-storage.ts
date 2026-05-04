@@ -1,6 +1,5 @@
 import type { BlobItem, ContainerClient } from "@azure/storage-blob";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -45,7 +44,6 @@ class AzureStorage extends BaseStorage {
 
     private readonly retry: ReturnType<typeof createRetryWrapper>;
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public constructor(config: AzureStorageOptions) {
         super(config);
 
@@ -201,7 +199,7 @@ class AzureStorage extends BaseStorage {
             }
 
             file.requestId = response.requestId;
-            // eslint-disable-next-line no-underscore-dangle
+
             file.uri = response._response.headers.get("location");
             file.bytesWritten = 0;
 
@@ -288,8 +286,8 @@ class AzureStorage extends BaseStorage {
                     // Detect file type from stream if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten))
-                        && (!file.contentType || file.contentType === "application/octet-stream")
+                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                        (!file.contentType || file.contentType === "application/octet-stream")
                     ) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
@@ -300,7 +298,7 @@ class AzureStorage extends BaseStorage {
                             }
 
                             // Use the stream from file type detection
-                            // eslint-disable-next-line no-param-reassign
+
                             part.body = detectedStream;
                         } catch {
                             // If file type detection fails, continue with original stream
@@ -336,7 +334,6 @@ class AzureStorage extends BaseStorage {
                     file.status = getFileStatus(file);
 
                     if (file.status === "completed") {
-                        // eslint-disable-next-line no-underscore-dangle
                         file.uri = response._response.headers.get("location");
 
                         await this.deleteMeta(file.id);
@@ -466,7 +463,6 @@ class AzureStorage extends BaseStorage {
                             })
                             .byPage({ continuationToken: token, maxPageSize: limit });
 
-                        // eslint-disable-next-line no-await-in-loop
                         const next = await this.retry(() => iterator.next());
                         const response = next.value;
 
@@ -491,7 +487,7 @@ class AzureStorage extends BaseStorage {
                         const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
                         // Sequential error handling is intentional
-                        // eslint-disable-next-line no-await-in-loop
+
                         await this.onError(httpError);
                         throw error;
                     }

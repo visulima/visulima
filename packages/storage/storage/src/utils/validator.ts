@@ -52,7 +52,7 @@ export class Validator<T> {
             this.validators[code] = { ...this.validators[code], ...validator } as Required<ValidatorConfig<T>>;
 
             if (typeof this.validators[code].isValid !== "function") {
-                throw new TypeError("Validation config \"isValid\" is missing, or it is not a function!");
+                throw new TypeError('Validation config "isValid" is missing, or it is not a function!');
             }
         });
     }
@@ -67,7 +67,6 @@ export class Validator<T> {
         // Sequential execution is intentional - we want to stop on first validation failure
 
         for (const [code, validator] of Object.entries(this.validators)) {
-            // eslint-disable-next-line no-await-in-loop
             const isValid = await validator.isValid(t);
 
             if (!isValid) {
