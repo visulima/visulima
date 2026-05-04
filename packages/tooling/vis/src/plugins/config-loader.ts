@@ -1,10 +1,10 @@
 import { writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
 import { findMonorepoRootSync } from "@visulima/package";
+import { join, resolve } from "@visulima/path";
 import isInCi from "is-in-ci";
 import { satisfies, validRange } from "semver";
 
