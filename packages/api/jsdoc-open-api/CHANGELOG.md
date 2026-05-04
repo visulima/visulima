@@ -1,3 +1,15 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.11...@visulima/jsdoc-open-api@3.0.0-alpha.12) (2026-05-04)
+
+### Miscellaneous Chores
+
+* **jsdoc-open-api:** upgrade packem to 2.0.0-alpha.76 ([a3b3549](https://github.com/visulima/visulima/commit/a3b3549a68e22970a39904d2d654b65c6047d7cf))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.13
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.10...@visulima/jsdoc-open-api@3.0.0-alpha.11) (2026-04-22)
 
 ### Bug Fixes

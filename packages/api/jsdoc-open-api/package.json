@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "3.0.0-alpha.11",
+    "version": "3.0.0-alpha.12",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
         "api",
@@ -117,7 +117,7 @@
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "catalog:prod",
-        "@visulima/fs": "5.0.0-alpha.12",
+        "@visulima/fs": "5.0.0-alpha.13",
         "comment-parser": "catalog:prod",
         "lodash.mergewith": "catalog:prod",
         "yaml": "catalog:prod"
