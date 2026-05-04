@@ -15,7 +15,7 @@ const ANY_ERROR = /./;
 type ReadJson5Function = (path: URL | string) => Promise<unknown>;
 
 describe.each([
-    ["readJson5", readJson5 as ReadJson5Function],
+    ["readJson5", readJson5],
     ["readJson5Sync", readJson5Sync as ReadJson5Function],
 ])("%s", (name: string, function_: ReadJson5Function) => {
     it("should read a .json5 file", async () => {

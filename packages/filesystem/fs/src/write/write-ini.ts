@@ -40,7 +40,7 @@ const writeIni = async (path: URL | string, data: Record<string, unknown>, optio
     if (accessible) {
         try {
             existingText = await readFile(path, "utf8");
-            oldData = parse(existingText, { bracketedArray: bracketedArray ?? true }) as Record<string, unknown>;
+            oldData = parse(existingText, { bracketedArray: bracketedArray ?? true });
 
             const detected = detectIniStyle(existingText);
 

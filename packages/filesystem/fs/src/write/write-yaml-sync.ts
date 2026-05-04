@@ -69,14 +69,14 @@ function writeYamlSync(
         space = stringifyOptions.space;
     } else if (typeof options === "object") {
         stringifyOptions = options;
-        effectiveReplacer = replacer as JsonReplacer;
+        effectiveReplacer = replacer;
         space = stringifyOptions.space;
     } else {
-        effectiveReplacer = replacer as JsonReplacer;
+        effectiveReplacer = replacer;
         space = options;
     }
 
-    const content = stringify(data, effectiveReplacer, space ?? (stringifyOptions as WriteYamlOptions));
+    const content = stringify(data, effectiveReplacer, space ?? stringifyOptions);
 
     writeFileSync(path, content, stringifyOptions);
 }
