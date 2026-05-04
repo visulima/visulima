@@ -101,7 +101,7 @@ export const mapNegatableOptions = <TLogger extends Console = Console>(
         if (option.name.startsWith("no-")) {
             const camelCaseName = camelCase(option.name);
 
-            negatedOptionMap.set(camelCaseName, option as OptionDefinition<unknown>);
+            negatedOptionMap.set(camelCaseName, option);
         }
     }
 
@@ -170,7 +170,7 @@ export const mapImpliedOptions = <TLogger extends Console = Console>(
         // eslint-disable-next-line no-underscore-dangle
         if (option.__camelCaseName__ && option.__negated__ === undefined && option.implies !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
-            optionMapByCamelCase.set(option.__camelCaseName__, option as OptionDefinition<unknown>);
+            optionMapByCamelCase.set(option.__camelCaseName__, option);
         }
     }
 

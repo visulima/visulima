@@ -30,7 +30,7 @@ const getParameterOption = <OD extends OptionDefinition<unknown>>(
             : options.find((o) => o.name === nameOrAlias || o.alias === nameOrAlias);
 
     if (option !== undefined) {
-        return { argName: option.name, argValue: regExpResult[3] as string, option };
+        return { argName: option.name, argValue: regExpResult[3], option };
     }
 
     return {};

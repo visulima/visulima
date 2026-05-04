@@ -318,37 +318,37 @@ describe("nested commands", () => {
     it("should resolve a 3-level child when parent and intermediate are also registered", async () => {
         expect.assertions(3);
 
-        const dbRootExecute = vi.fn().mockResolvedValue(undefined);
-        const dbMigrateExecute = vi.fn().mockResolvedValue(undefined);
-        const dbMigrateUpExecute = vi.fn().mockResolvedValue(undefined);
+        const databaseRootExecute = vi.fn().mockResolvedValue(undefined);
+        const databaseMigrateExecute = vi.fn().mockResolvedValue(undefined);
+        const databaseMigrateUpExecute = vi.fn().mockResolvedValue(undefined);
 
         const cli = new Cli("MyCLI", { argv: ["db", "migrate", "up"] });
 
         cli.addCommand({
             description: "Database commands",
-            execute: dbRootExecute,
+            execute: databaseRootExecute,
             name: "db",
         });
 
         cli.addCommand({
             commandPath: ["db"],
             description: "Migration commands",
-            execute: dbMigrateExecute,
+            execute: databaseMigrateExecute,
             name: "migrate",
         });
 
         cli.addCommand({
             commandPath: ["db", "migrate"],
             description: "Run pending migrations",
-            execute: dbMigrateUpExecute,
+            execute: databaseMigrateUpExecute,
             name: "up",
         });
 
         await cli.run({ shouldExitProcess: false });
 
-        expect(dbMigrateUpExecute).toHaveBeenCalledTimes(1);
-        expect(dbMigrateExecute).not.toHaveBeenCalled();
-        expect(dbRootExecute).not.toHaveBeenCalled();
+        expect(databaseMigrateUpExecute).toHaveBeenCalledTimes(1);
+        expect(databaseMigrateExecute).not.toHaveBeenCalled();
+        expect(databaseRootExecute).not.toHaveBeenCalled();
     });
 
     it("should display the Subcommands section in help for a parent command with children", async () => {
@@ -392,5 +392,4 @@ describe("nested commands", () => {
         expect(helpOutput).toContain("ai providers");
         expect(helpOutput).toContain("ai test");
     });
-
 });

@@ -54,9 +54,7 @@ interface Command<O extends OptionDefinition = OptionDefinition, TContext extend
 Handler signature, used by both `execute` and the resolved default export of `loader`.
 
 ```typescript
-type CommandExecute<TContext> =
-    | ((toolbox: TContext) => Promise<void>)
-    | ((toolbox: TContext) => void);
+type CommandExecute<TContext> = ((toolbox: TContext) => Promise<void>) | ((toolbox: TContext) => void);
 ```
 
 ### LazyCommandModule

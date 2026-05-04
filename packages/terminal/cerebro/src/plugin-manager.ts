@@ -127,10 +127,10 @@ class PluginManager<T extends Logger = Logger> {
                 try {
                     // eslint-disable-next-line no-await-in-loop
                     await (hook === "afterCommand"
-                        ? (hookFunction as (toolbox: Toolbox<T>, result: unknown) => Promise<void> | void)(toolbox, result)
+                        ? hookFunction(toolbox, result)
                         : (hookFunction as (toolbox: Toolbox<T>) => Promise<void> | void)(toolbox));
                 } catch (error) {
-                    this.logger.error(`Error in ${hook} hook for plugin "${plugin.name}":`, error as Error);
+                    this.logger.error(`Error in ${hook} hook for plugin "${plugin.name}":`, error);
 
                     throw error;
                 }
@@ -163,7 +163,7 @@ class PluginManager<T extends Logger = Logger> {
                     await plugin.onError(error, toolbox);
                 } catch (handlerError) {
                     // Don't throw errors from error handlers
-                    this.logger.error(`Error in error handler for plugin "${plugin.name}":`, handlerError as Error);
+                    this.logger.error(`Error in error handler for plugin "${plugin.name}":`, handlerError);
                 }
             }
         }
