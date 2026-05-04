@@ -1,3 +1,5 @@
+/* eslint-disable no-secrets/no-secrets -- documentation example shows how to set the BAZEL_REMOTE_GRPC_URL env var */
+
 /**
  * Integration test against a real bazel-remote container.
  *
@@ -111,7 +113,10 @@ describe.skipIf(!shouldRun)("reapiRemoteCache against real bazel-remote", () => 
         const downloaded = await cache.fetchBlob(blob.digest, destination);
 
         expect(downloaded).toBe(true);
-        expect((await readFile(destination)).toString("utf8")).toBe("hello bazel-remote");
+
+        const contents = await readFile(destination);
+
+        expect(contents.toString("utf8")).toBe("hello bazel-remote");
     });
 
     it("uploads a blob larger than the batch threshold via ByteStream.Write", async () => {
