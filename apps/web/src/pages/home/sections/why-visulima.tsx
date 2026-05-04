@@ -86,12 +86,12 @@ const WhyVisulima = () => (
         >
             <div className="col-span-2 mb-16">
                 <SectionTitle
-                    description={
+                    description={(
                         <span className="flex flex-col gap-4">
                             <span className="text-white/55">Visulima provides robust, developer-focused tools and libraries to streamline your workflow.</span>
                             <span className="text-white/35">Let us handle the complexities so you can focus on building what truly matters.</span>
                         </span>
-                    }
+                      )}
                     mode="dark"
                     prefix="Why Visulima?"
                     title="Empower Your Development. Deliver Faster."

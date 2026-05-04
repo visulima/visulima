@@ -66,7 +66,7 @@ const SupportSection = () => (
         <Section classes={{ root: "pb-0" }} mode="light">
             <div className="col-span-2">
                 <SectionTitle
-                    description={
+                    description={(
                         <span className="flex flex-col gap-4">
                             <span>
                                 Community is the heart of open source. The success of our packages wouldn't be possible without the incredible contributions of
@@ -76,7 +76,7 @@ const SupportSection = () => (
                                 Want to get involved? Here are some tips on how you can make a meaningful impact on our open source projects.
                             </span>
                         </span>
-                    }
+                      )}
                     mode="light"
                     prefix="Support"
                     title="Contribute to our work and keep us going"

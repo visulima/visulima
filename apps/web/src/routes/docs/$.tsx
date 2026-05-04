@@ -28,7 +28,7 @@ export const Route = createFileRoute("/docs/$")({
     component: () => <Page />,
     loader: async ({ params }): Promise<LoaderData> => {
         const slugs = params._splat?.split("/") ?? [];
-        const data = (await serverLoader({ data: slugs })) as ServerLoaderResult;
+        const data = await serverLoader({ data: slugs });
 
         if (!data?.path) {
             throw notFound();
@@ -103,14 +103,17 @@ const clientLoader = browserCollections.docs.createClientLoader({
             >
                 <DocsTitle>{frontmatter.title}</DocsTitle>
                 <DocsDescription>{frontmatter.description}</DocsDescription>
-                {lastModified ? (
+                {lastModified
+                    ? (
                     <p className="text-muted-foreground -mt-2 mb-6 text-sm">
-                        Last updated:{" "}
+                        Last updated:
+{" "}
                         <time dateTime={lastModified}>
                             {new Date(lastModified).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                         </time>
                     </p>
-                ) : null}
+                    )
+                    : null}
                 <DocsBody>
                     <MDX
                         components={{
@@ -126,7 +129,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
 const Page = () => {
     const data = Route.useLoaderData();
     const Content = clientLoader.getComponent(data.path);
-    const tree = useMemo(() => transformPageTree(data.tree as unknown as PageTree.Root), [data.tree]);
+    const tree = useMemo(() => transformPageTree(data.tree), [data.tree]);
 
     const articleJsonLd = useMemo(() => {
         const jsonLd: Record<string, unknown> = {
