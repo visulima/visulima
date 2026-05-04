@@ -46,7 +46,6 @@ export const ScrollList = (props: ScrollListProps & { ref?: Ref<ScrollListRef> }
     const updateScroll = useCallback(
         (newOffset: number) => {
             if (newOffset !== scrollOffsetRef.current) {
-                // eslint-disable-next-line react-x/set-state-in-effect -- intentional: updateScroll is called from effects to sync scroll position
                 setScrollOffset(newOffset);
                 onScroll?.(newOffset);
             }

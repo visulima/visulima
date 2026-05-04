@@ -49,10 +49,10 @@ const DataComponent = ({ delay, id }) => {
     const data = fetchData(id, delay);
 
     return (
-        <Text color="green">
-            ✓
-            {data}
-        </Text>
+<Text color="green">
+✓
+{data}
+</Text>
     );
 };
 

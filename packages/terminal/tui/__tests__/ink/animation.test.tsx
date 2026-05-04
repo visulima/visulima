@@ -93,9 +93,9 @@ describe(AnimatePresence, () => {
             <AnimatePresence>
                 {visible
                     ? (
-                        <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
-                            <Text>panel-body</Text>
-                        </Transition>
+                    <Transition duration={30} key="panel" preset="fade" tickInterval={5}>
+                        <Text>panel-body</Text>
+                    </Transition>
                     )
                     : null}
             </AnimatePresence>

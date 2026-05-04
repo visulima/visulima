@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/no-use-before-define, sonarjs/no-dead-store, sonarjs/no-unused-vars, unicorn/prevent-abbreviations */
+/* eslint-disable @typescript-eslint/no-use-before-define, sonarjs/no-dead-store, sonarjs/no-unused-vars, unicorn/prevent-abbreviations */
 
 /**
  * examples/use-mouse.tsx
@@ -30,7 +30,7 @@ const App = () => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const [log, setLog] = useState<LogEntry[]>([{ color: "dim", id: nextId++, text: "Click anywhere · scroll wheel · type below · ⌘V to paste" }]);
-    const [submitted, setSubmitted] = useState<string[]>([]);
+    const [, setSubmitted] = useState<string[]>([]);
 
     const addLog = useCallback((text: string, color = "white") => {
         setLog((previous) => [...previous, { color, id: nextId++, text }]);
@@ -117,12 +117,12 @@ const App = () => {
                 <Box justifyContent="flex-end" paddingRight={1}>
                     <Text dim>
                         {scroll.offset + 1}
-                        –
-                        {Math.min(scroll.offset + logViewport, log.length)}
-                        /
-                        {log.length}
-                        {" "}
-                        ↑↓ scroll
+–
+{Math.min(scroll.offset + logViewport, log.length)}
+/
+{log.length}
+{" "}
+↑↓ scroll
                     </Text>
                 </Box>
             )}

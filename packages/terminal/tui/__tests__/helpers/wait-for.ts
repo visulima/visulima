@@ -24,7 +24,7 @@ const waitFor = async (condition: () => boolean, timeoutMs = 2000, intervalMs = 
                 }
             } catch (error) {
                 clearInterval(interval);
-                reject(error as Error);
+                reject(error instanceof Error ? error : new Error(String(error)));
             }
         }, intervalMs);
     });

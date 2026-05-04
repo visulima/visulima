@@ -69,8 +69,8 @@ const App = () => {
                             <Text key={i}>
                                 {"  "}
                                 {i + 1}
-                                .
-                                {formatElapsed(lap)}
+.
+{formatElapsed(lap)}
                             </Text>
                         ))}
                     </Box>

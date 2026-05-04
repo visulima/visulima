@@ -16,6 +16,11 @@
     "bugs": {
         "url": "https://github.com/visulima/visulima/issues"
     },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -31,17 +36,19 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
+    "files": [
+        "dist/**",
+        "index.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "type": "module",
     "sideEffects": [
         "./dist/ink/**",
         "./dist/react/**",
         "./index.js"
     ],
-    "type": "module",
     "exports": {
         ".": {
             "types": "./dist/ink/index.d.ts",
@@ -61,13 +68,10 @@
         },
         "./package.json": "./package.json"
     },
-    "files": [
-        "dist/**",
-        "index.js",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "build": "packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
@@ -185,13 +189,6 @@
         "@visulima/tui-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/tui-binding-win32-x64-msvc": "workspace:*"
     },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "napi": {
         "binaryName": "tui-native",
         "packageName": "@visulima/tui-binding",
@@ -205,5 +202,8 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
     }
 }

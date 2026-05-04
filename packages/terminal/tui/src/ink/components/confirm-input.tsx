@@ -92,7 +92,7 @@ export default function ConfirmInput({ defaultChoice = "confirm", isDisabled = f
     return (
         <Box>
             <Text dimColor={isDisabled}>
-                {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
+                {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line */}
                 {yesText}/{noText}
             </Text>
         </Box>

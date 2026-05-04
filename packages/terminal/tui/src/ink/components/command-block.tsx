@@ -66,6 +66,7 @@ const formatDuration = (ms: number): string => {
  * Resolve the header icon for a given status. `running` returns a live
  * Spinner; every other value maps to a static glyph.
  */
+// eslint-disable-next-line sonarjs/function-return-type -- legitimate union return: spinner element vs static glyph string
 const resolveStatusIcon = (status: CommandStatus): ReactNode => {
     if (status === "running") {
         return <Spinner type="dots" />;
@@ -121,8 +122,8 @@ export default function CommandBlock({ command, cwd, durationMs, exitCode, maxOu
             <Text color={exitCode === 0 ? "green" : "red"} key="exit">
                 {" "}
                 exit
-                {" "}
-                {exitCode}
+{" "}
+{exitCode}
             </Text>,
         );
     }
@@ -140,20 +141,20 @@ export default function CommandBlock({ command, cwd, durationMs, exitCode, maxOu
                 {cwd === undefined
                     ? undefined
                     : (
-                        <Text dimColor>
-                            {" "}
-                            @
-                            {cwd}
-                        </Text>
+<Text dimColor>
+{" "}
+@
+{cwd}
+</Text>
                     )}
                 {trailing.length === 0 ? undefined : <Box flexShrink={0}>{trailing}</Box>}
             </Box>
             {output === undefined
                 ? undefined
                 : (
-                    <Box flexDirection="column" marginTop={1}>
-                        {typeof output === "string" ? <Text>{truncateOutput(output, maxOutputRows)}</Text> : output}
-                    </Box>
+                <Box flexDirection="column" marginTop={1}>
+                    {typeof output === "string" ? <Text>{truncateOutput(output, maxOutputRows)}</Text> : output}
+                </Box>
                 )}
         </Box>
     );

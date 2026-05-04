@@ -205,9 +205,9 @@ const Header = ({ focus, time, tokens }: { focus: Focus; time: string; tokens: n
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">{hints[focus]}</Text>
                 <Text color="blackBright">
-                    {tokens.toLocaleString()}
-                    {" "}
-                    tok
+{tokens.toLocaleString()}
+{" "}
+tok
                 </Text>
                 <Text color="blackBright">{time}</Text>
             </Box>
@@ -232,24 +232,24 @@ const Sidebar = ({ focused, selectedIdx, width }: { focused: boolean; selectedId
                     <Box key={i} paddingLeft={1 + f.indent * 2}>
                         {f.dir
                             ? (
-                                <Text color="blueBright">
-                                    ▸
-                                    {f.name}
-                                </Text>
+                            <Text color="blueBright">
+▸
+{f.name}
+                            </Text>
                             )
                             : isSelected
                                 ? (
-                                    <Text bold color="cyan" inverse>
-                                        {" "}
-                                        {f.name}
-                                        {" "}
-                                    </Text>
+                            <Text bold color="cyan" inverse>
+                                {" "}
+                                {f.name}
+{" "}
+                            </Text>
                                 )
                                 : (
-                                    <Text color="blackBright">
-                                        {" "}
-                                        {f.name}
-                                    </Text>
+                            <Text color="blackBright">
+{" "}
+{f.name}
+                            </Text>
                                 )}
                     </Box>
                 );
@@ -288,7 +288,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
             <Box marginTop={1} paddingX={2}>
                 <Text bold color="yellow">
                     you
-                    {" "}
+{" "}
                 </Text>
                 <Text color="blackBright">{msg.text}</Text>
             </Box>
@@ -312,7 +312,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
         <Box marginTop={1} paddingX={2}>
             <Text bold color="cyan">
                 rat
-                {" "}
+{" "}
             </Text>
             <Box flexDirection="column" flexGrow={1}>
                 {msg.text.split("\n").map((line, i) => (
@@ -329,17 +329,17 @@ const InputBar = ({ disabled, focused, value }: { disabled: boolean; focused: bo
     const borderColor = focused ? "yellow" : "blackBright";
     const prompt = disabled
         ? (
-            <Text color="blackBright"> waiting for rattata…</Text>
+        <Text color="blackBright"> waiting for rattata…</Text>
         )
         : (
-            <>
-                <Text bold color="yellow">
-                    ▸
-                    {" "}
-                </Text>
-                <Text color={focused ? "white" : "blackBright"}>{value}</Text>
-                {focused && <Text color="yellow">█</Text>}
-            </>
+        <>
+            <Text bold color="yellow">
+                ▸
+{" "}
+            </Text>
+            <Text color={focused ? "white" : "blackBright"}>{value}</Text>
+            {focused && <Text color="yellow">█</Text>}
+        </>
         );
 
     return (
@@ -361,17 +361,17 @@ const StatusBar = ({ focus, scriptDone, spinner, thinking }: { focus: Focus; scr
             <Box flexDirection="row" gap={1}>
                 {thinking
                     ? (
-                        <>
-                            <Text color="cyan">{spinner}</Text>
-                            <Text color="cyan">thinking…</Text>
-                        </>
+                    <>
+                        <Text color="cyan">{spinner}</Text>
+                        <Text color="cyan">thinking…</Text>
+                    </>
                     )
                     : scriptDone
                         ? (
-                            <Text color="greenBright">✓ ready</Text>
+                    <Text color="greenBright">✓ ready</Text>
                         )
                         : (
-                            <Text color="blackBright">ready</Text>
+                    <Text color="blackBright">ready</Text>
                         )}
             </Box>
             <Box flexDirection="row" gap={2}>
@@ -421,7 +421,7 @@ const RattataApp = () => {
     const allMessages: Message[] = active
         ? [...settled, active]
         : thinking
-            ? [...settled, { done: false, id: -1, kind: "tool" as MessageKind, text: `${spinner} running…` }]
+            ? [...settled, { done: false, id: -1, kind: "tool", text: `${spinner} running…` }]
             : settled;
 
     const contentHeight = allMessages.reduce((sum, m) => sum + messageRows(m), 0);
@@ -710,10 +710,10 @@ const RattataApp = () => {
                         {!atTop && (
                             <Box justifyContent="center">
                                 <Text color="blackBright">
-                                    ↑
-                                    {displayOffset}
-                                    {" "}
-                                    rows above
+↑
+{displayOffset}
+{" "}
+rows above
                                 </Text>
                             </Box>
                         )}

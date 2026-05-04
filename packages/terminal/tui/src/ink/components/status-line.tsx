@@ -33,6 +33,7 @@ export type Props = {
     readonly right?: ReactNode;
 };
 
+// eslint-disable-next-line sonarjs/function-return-type -- legitimate union return based on content type
 const renderSlot = (content: ReactNode, color: LiteralUnion<AnsiColors, string> | undefined): ReactNode => {
     if (content === undefined) {
         return undefined;
@@ -58,9 +59,9 @@ export default function StatusLine({ backgroundColor, center, color, left, right
             {center === undefined
                 ? undefined
                 : (
-                    <Box flexGrow={0} flexShrink={0} justifyContent="center">
-                        {renderSlot(center, color)}
-                    </Box>
+                <Box flexGrow={0} flexShrink={0} justifyContent="center">
+                    {renderSlot(center, color)}
+                </Box>
                 )}
             <Box flexGrow={1} flexShrink={1} justifyContent="flex-end" minWidth={0}>
                 {renderSlot(right, color)}

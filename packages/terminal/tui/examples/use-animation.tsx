@@ -110,8 +110,8 @@ const UseAnimationDemo = () => {
             <Text color="cyan">
                 {"  "}
                 {spinner}
-                {" "}
-                Loading more unicorns...
+{" "}
+Loading more unicorns...
             </Text>
             <Text />
             <Text dimColor>
@@ -120,9 +120,9 @@ const UseAnimationDemo = () => {
                 {"<"}
                 space
                 {">"}
-                {" "}
-                to
-                {paused ? "resume" : "pause"}
+{" "}
+to
+{paused ? "resume" : "pause"}
             </Text>
         </Box>
     );

@@ -8,8 +8,8 @@ import Text from "./text";
 
 export type Props = {
     /**
-     * Dot character.
-     * @default "●"
+     * Glyph rendered as the blinking dot.
+     * @default "●" (filled bullet)
      */
     readonly character?: string;
 

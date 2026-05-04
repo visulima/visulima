@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+/* eslint-disable func-style, sonarjs/prefer-read-only-props, unicorn/no-process-exit, sonarjs/void-use -- demo file using legacy patterns */
+
 /**
  * Internationalization with react-i18next.
  *
@@ -108,10 +110,10 @@ function LocaleSwitcher({ current }: { current: string }) {
                     <Box key={language.code}>
                         <Text color={isActive ? "cyan" : undefined} dimColor={!isActive}>
                             [
-                            {language.hotkey}
-                            ]
-                            {" "}
-                            {language.name}
+{language.hotkey}
+]
+{" "}
+{language.name}
                         </Text>
                     </Box>
                 );

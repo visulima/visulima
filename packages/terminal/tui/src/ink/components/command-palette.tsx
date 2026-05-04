@@ -244,8 +244,8 @@ export default function CommandPalette({
             <Box>
                 <Text color={accentColor}>❯</Text>
                 <Text>
-                    {" "}
-                    {query.length === 0 ? <Text dimColor>{placeholder}</Text> : query}
+{" "}
+{query.length === 0 ? <Text dimColor>{placeholder}</Text> : query}
                 </Text>
                 <Text inverse> </Text>
             </Box>
@@ -259,7 +259,7 @@ export default function CommandPalette({
             <Box flexDirection="column" marginTop={1}>
                 {filtered.length === 0
                     ? (
-                        <Text dimColor>{emptyText}</Text>
+                    <Text dimColor>{emptyText}</Text>
                     )
                     : filtered.map((command, index) => {
                         const isRowFocused = index === focusedIndex;
@@ -272,10 +272,10 @@ export default function CommandPalette({
                                     {command.icon === undefined
                                         ? undefined
                                         : (
-                                            <Text color={color}>
-                                                {command.icon}
-                                                {" "}
-                                            </Text>
+<Text color={color}>
+{command.icon}
+{" "}
+</Text>
                                         )}
                                     <Box flexGrow={1} flexShrink={1} minWidth={0}>
                                         <Text bold={isRowFocused} color={color} wrap="truncate-end">
@@ -285,22 +285,22 @@ export default function CommandPalette({
                                     {command.hotkey === undefined
                                         ? undefined
                                         : (
-                                            <Box flexShrink={0}>
-                                                <Text dimColor>
-                                                    {" "}
-                                                    {command.hotkey}
-                                                </Text>
-                                            </Box>
+                                        <Box flexShrink={0}>
+                                            <Text dimColor>
+{" "}
+{command.hotkey}
+                                            </Text>
+                                        </Box>
                                         )}
                                 </Box>
                                 {command.description === undefined
                                     ? undefined
                                     : (
-                                        <Box marginLeft={2}>
-                                            <Text dimColor wrap="truncate-end">
-                                                {command.description}
-                                            </Text>
-                                        </Box>
+                                    <Box marginLeft={2}>
+                                        <Text dimColor wrap="truncate-end">
+                                            {command.description}
+                                        </Text>
+                                    </Box>
                                     )}
                             </Box>
                         );

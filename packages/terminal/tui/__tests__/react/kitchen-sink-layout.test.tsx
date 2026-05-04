@@ -25,9 +25,9 @@ const SectionHeading = ({ title }: { title: string }) => (
     <Box marginBottom={1}>
         <Text bold color="cyan">
             ━━
-            {" "}
-            {title}
-            {" "}
+{" "}
+{title}
+{" "}
         </Text>
         <Text dim>{"━".repeat(Math.max(0, 40 - title.length - 4))}</Text>
     </Box>

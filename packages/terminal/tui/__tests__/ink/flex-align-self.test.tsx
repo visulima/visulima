@@ -126,7 +126,7 @@ describe("flex-align-self", () => {
                 <Text>
                     A
                     <Newline />
-                    B
+B
                 </Text>
                 <Box alignSelf="baseline">
                     <Text>X</Text>

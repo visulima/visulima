@@ -115,6 +115,7 @@ export default function AreaChart({
     return (
         <Box flexDirection="column">
             <Canvas
+                // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                 draw={(context: CanvasContext) => {
                     context.clear();
 
@@ -192,21 +193,25 @@ export default function AreaChart({
                     }
                 }}
                 height={height}
+                // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                 version={[series, width, height, minY, maxY, fillDensity, axisColor, palette]}
                 width={width}
             />
-            {showLegend ? (
+            {showLegend
+                ? (
                 <Box gap={2} marginTop={1}>
                     {prepared.list.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
                         // series sharing a label don't collide.
+                        // eslint-disable-next-line react-x/no-array-index-key -- series index is stable for the render
                         <Box gap={1} key={`${index}:${input.label ?? ""}`}>
                             <Text color={color}>{glyph}</Text>
                             <Text>{input.label ?? `Series ${index + 1}`}</Text>
                         </Box>
                     ))}
                 </Box>
-            ) : undefined}
+                )
+                : undefined}
         </Box>
     );
 }

@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/pseudo-random -- demo data only, no security implications */
+
 /**
  * sparkline.tsx — inline mini-chart using Unicode blocks
  *

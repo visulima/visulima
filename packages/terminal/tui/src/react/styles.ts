@@ -403,7 +403,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.maxWidth === "string") {
             node.setMaxWidthPercent(Number.parseInt(style.maxWidth, 10));
         } else {
-            node.setMaxWidth(style.maxWidth as number);
+            node.setMaxWidth(style.maxWidth);
         }
     }
 
@@ -411,7 +411,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.maxHeight === "string") {
             node.setMaxHeightPercent(Number.parseInt(style.maxHeight, 10));
         } else {
-            node.setMaxHeight(style.maxHeight as number);
+            node.setMaxHeight(style.maxHeight);
         }
     }
 

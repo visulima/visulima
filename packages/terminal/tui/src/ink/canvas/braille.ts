@@ -64,7 +64,9 @@ export const createBrailleGrid = (cellWidth: number, cellHeight: number): Braill
         const bit = BRAILLE_BITS[subY * 2 + subX]!;
         const index = cellY * cellWidth + cellX;
 
+        // eslint-disable-next-line no-bitwise -- braille rendering combines bit flags
         if ((bits[index]! & bit) === 0) {
+            // eslint-disable-next-line no-bitwise -- braille rendering combines bit flags
             bits[index] = (bits[index] ?? 0) | bit;
             dirty[index] = 1;
         }
@@ -84,6 +86,7 @@ export const createBrailleGrid = (cellWidth: number, cellHeight: number): Braill
         const sy = y < endY ? 1 : -1;
         let error = dx + dy;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Bresenham loop break is conditional on coordinates
         while (true) {
             plotPoint(x, y);
 

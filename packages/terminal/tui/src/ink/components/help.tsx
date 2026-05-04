@@ -191,10 +191,10 @@ function renderFull(
                     <Text> </Text>
                     {options.descriptionColor
                         ? (
-                            <Text color={options.descriptionColor}>{binding.description}</Text>
+                        <Text color={options.descriptionColor}>{binding.description}</Text>
                         )
                         : (
-                            <Text dimColor>{binding.description}</Text>
+                        <Text dimColor>{binding.description}</Text>
                         )}
                 </Box>,
             );

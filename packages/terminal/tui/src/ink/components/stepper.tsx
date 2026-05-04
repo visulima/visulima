@@ -72,7 +72,6 @@ const resolveStatus = (step: StepperStep, index: number, activeIndex: number): S
 
 /**
  * Step indicator for multi-stage flows.
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the steps horizontally or vertically.
  */
 export default function Stepper({ accentColor = "blue", activeIndex = 0, errorColor = "red", orientation = "horizontal", steps }: Props): ReactElement {
@@ -82,6 +81,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                 {steps.map((step, index) => {
                     const status = resolveStatus(step, index, activeIndex);
                     const isLast = index === steps.length - 1;
+                    // eslint-disable-next-line sonarjs/no-nested-conditional -- minimal three-way status mapping
                     const color = status === "error" ? errorColor : status === "pending" ? undefined : accentColor;
 
                     return (
@@ -89,7 +89,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                             <Box>
                                 <Text color={color} dimColor={status === "pending"}>
                                     {STATUS_ICON[status]}
-                                    {" "}
+{" "}
                                 </Text>
                                 <Text bold={status === "active"} color={color} dimColor={status === "pending"}>
                                     {step.label}
@@ -98,16 +98,16 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                             {step.description === undefined
                                 ? undefined
                                 : (
-                                    <Box marginLeft={2}>
-                                        <Text dimColor>{step.description}</Text>
-                                    </Box>
+                                <Box marginLeft={2}>
+                                    <Text dimColor>{step.description}</Text>
+                                </Box>
                                 )}
                             {isLast
                                 ? undefined
                                 : (
-                                    <Box marginLeft={0}>
-                                        <Text dimColor>│</Text>
-                                    </Box>
+                                <Box marginLeft={0}>
+                                    <Text dimColor>│</Text>
+                                </Box>
                                 )}
                         </Box>
                     );
@@ -120,6 +120,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
         <Box>
             {steps.map((step, index) => {
                 const status = resolveStatus(step, index, activeIndex);
+                // eslint-disable-next-line sonarjs/no-nested-conditional -- minimal three-way status mapping
                 const color = status === "error" ? errorColor : status === "pending" ? undefined : accentColor;
                 const isLast = index === steps.length - 1;
 
@@ -128,7 +129,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                         <Box>
                             <Text color={color} dimColor={status === "pending"}>
                                 {STATUS_ICON[status]}
-                                {" "}
+{" "}
                             </Text>
                             <Text bold={status === "active"} color={color} dimColor={status === "pending"}>
                                 {step.label}

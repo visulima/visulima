@@ -118,7 +118,7 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
             // Restore original methods
             for (const level of ALL_LEVELS) {
                 if (originals[level]) {
-                    console[level] = originals[level] as (...args: unknown[]) => void;
+                    console[level] = originals[level];
                 }
             }
         };

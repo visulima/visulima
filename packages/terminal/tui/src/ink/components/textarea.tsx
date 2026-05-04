@@ -369,10 +369,10 @@ export default function Textarea({
                         <Box key={lineNumber}>
                             {showLineNumbers
                                 ? (
-                                    <Text dimColor>
-                                        {String(lineNumber + 1).padStart(lineNumberWidth)}
-                                        {" "}
-                                    </Text>
+<Text dimColor>
+{String(lineNumber + 1).padStart(lineNumberWidth)}
+{" "}
+</Text>
                                 )
                                 : undefined}
                             {}
@@ -394,23 +394,23 @@ export default function Textarea({
                     <Box key={index}>
                         {showLineNumbers
                             ? (
-                                <Text dimColor>
-                                    {String(index + 1).padStart(lineNumberWidth)}
-                                    {" "}
-                                </Text>
+<Text dimColor>
+{String(index + 1).padStart(lineNumberWidth)}
+{" "}
+</Text>
                             )
                             : undefined}
                         {index === 0
                             ? (
-                                <Text>
-                                    <Text dimColor inverse>
-                                        {pLine[0] ?? " "}
-                                    </Text>
-                                    <Text dimColor>{pLine.slice(1)}</Text>
+                            <Text>
+                                <Text dimColor inverse>
+                                    {pLine[0] ?? " "}
                                 </Text>
+                                <Text dimColor>{pLine.slice(1)}</Text>
+                            </Text>
                             )
                             : (
-                                <Text dimColor>{pLine}</Text>
+                            <Text dimColor>{pLine}</Text>
                             )}
                     </Box>
                 ))}
@@ -428,10 +428,10 @@ export default function Textarea({
                     <Box key={lineNumber}>
                         {showLineNumbers
                             ? (
-                                <Text dimColor={!isCursorLine}>
-                                    {String(lineNumber + 1).padStart(lineNumberWidth)}
-                                    {" "}
-                                </Text>
+<Text dimColor={!isCursorLine}>
+{String(lineNumber + 1).padStart(lineNumberWidth)}
+{" "}
+</Text>
                             )
                             : undefined}
                         <Text>{renderLine(line, lineNumber, buffer.cursor, sel)}</Text>

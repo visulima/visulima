@@ -29,7 +29,6 @@ export type Props = {
 
 /**
  * Render a keyboard key (e.g. `&lt;Kbd>Enter&lt;/Kbd>`).
- * @param props See {@link Props}.
  * @returns A `ReactElement` styled as a key cap (solid / outline / bare).
  */
 export default function Kbd({ children, color = "gray", variant = "solid" }: Props): ReactElement {
@@ -38,7 +37,7 @@ export default function Kbd({ children, color = "gray", variant = "solid" }: Pro
             <Text backgroundColor={color} color="black">
                 {" "}
                 {children}
-                {" "}
+{" "}
             </Text>
         );
     }

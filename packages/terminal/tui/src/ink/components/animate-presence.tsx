@@ -32,17 +32,22 @@ type Slot = {
 const getKey = (element: ReactElement): string | undefined => {
     const { key } = element;
 
-    return key == null ? undefined : String(key);
+    if (key === null) {
+        return undefined;
+    }
+
+    return key;
 };
 
 /**
  * Type-guard used to narrow a child to something AnimatePresence can drive.
- * Matches two cases:
+ * Matches two cases.
+ *
  * 1. The element's component type carries a static `isAnimatable = true`
- *    marker (this is how built-in `&lt;Transition />` is recognized — consumers
- *    can opt in their own wrappers the same way).
+ * marker (this is how built-in `&lt;Transition />` is recognized — consumers
+ * can opt in their own wrappers the same way).
  * 2. The element's props object already declares a `show` key, letting
- *    inline components participate without a marker.
+ * inline components participate without a marker.
  */
 const isAnimatable = (element: ReactElement): element is ReactElement<AnimatableProps> => {
     const type = element.type as { isAnimatable?: boolean } | undefined;
@@ -53,6 +58,8 @@ const isAnimatable = (element: ReactElement): element is ReactElement<Animatable
 
     return typeof element.props === "object" && element.props !== null && "show" in element.props;
 };
+
+/* eslint-disable react-x/no-children-for-each, react-x/no-clone-element -- AnimatePresence intentionally walks and clones React children to track keyed enter/exit */
 
 /**
  * Orchestrates enter / exit animations for keyed children. Wrap a dynamic
@@ -104,6 +111,7 @@ export default function AnimatePresence({ children }: Props): ReactElement {
             incoming.set(key, isAnimatable(child) ? child : (child as ReactElement<AnimatableProps>));
         });
 
+        // eslint-disable-next-line react-x/set-state-in-effect -- AnimatePresence reconciles slots from children in an effect by design
         setSlots((previous) => {
             const next: Slot[] = [];
             const seen = new Set<string>();

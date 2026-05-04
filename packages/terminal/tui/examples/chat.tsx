@@ -51,7 +51,7 @@ const ChatApp = () => {
                 <Text color="yellow">
                     Enter your message:
                     {input}
-                    █
+█
                 </Text>
             </Box>
         </Box>

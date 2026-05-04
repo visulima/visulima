@@ -13,8 +13,8 @@ export type Props = {
     readonly color?: LiteralUnion<AnsiColors, string>;
 
     /**
-     * Optional cursor character rendered while streaming.
-     * @default "▊"
+     * Glyph rendered at the streaming caret while characters are still being revealed.
+     * @default "▊" (left three quarters block)
      */
     readonly cursor?: string;
 
@@ -54,6 +54,7 @@ export default function StreamingText({ color, cursor = "▊", interval = 20, on
     onCompleteRef.current = onComplete;
 
     useEffect(() => {
+        // eslint-disable-next-line react-x/set-state-in-effect -- reset stream progress when source text changes
         setVisibleLength(0);
         hasCompletedRef.current = false;
     }, [text]);

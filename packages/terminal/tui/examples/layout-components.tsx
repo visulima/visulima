@@ -25,17 +25,17 @@ const App = () => {
                     <Tag icon="✨" variant="solid">
                         new
                     </Tag>
-                )}
+                  )}
                 subtitle="A bordered container with title and optional footer"
                 title="Card component"
                 width={60}
             >
                 <Paragraph>
                     Cards group related content. They accept a title, subtitle, right-aligned header content, and a footer. Press
-                    {" "}
-                    <Kbd>Esc</Kbd>
-                    {" "}
-                    to quit.
+{" "}
+<Kbd>Esc</Kbd>
+{" "}
+to quit.
                 </Paragraph>
                 <Box gap={1}>
                     <Tag color="green">stable</Tag>

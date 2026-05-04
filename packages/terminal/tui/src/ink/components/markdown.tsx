@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, jsdoc/match-description, jsx-a11y/anchor-is-valid, no-secrets/no-secrets, react-x/no-array-index-key, react/function-component-definition, sonarjs/slow-regex */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-unnecessary-condition, jsdoc/match-description, jsx-a11y/anchor-is-valid, no-secrets/no-secrets, react-x/no-array-index-key, react/function-component-definition, sonarjs/slow-regex */
 
 /**
  * Markdown rendering component for Ink.
@@ -81,7 +81,7 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
                     <Text inverse key={index}>
                         {" "}
                         {token.text}
-                        {" "}
+{" "}
                     </Text>
                 );
             }
@@ -112,9 +112,9 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
                 return (
                     <Text dimColor key={index}>
                         [image:
-                        {" "}
-                        {img.text || img.href}
-                        ]
+{" "}
+{img.text || img.href}
+]
                     </Text>
                 );
             }
@@ -165,9 +165,9 @@ function mapListItems(items: Token[]): (OrderedListEntry | UnorderedListEntry)[]
 
         // Check for nested lists within the item's tokens
         const nestedList = listItemTokens.find((t) => t.type === "list") as Tokens.List | undefined;
-        const children = nestedList ? mapListItems(nestedList.items as Token[]) : undefined;
+        const children = nestedList ? mapListItems(nestedList.items) : undefined;
 
-        return { children, label } as OrderedListEntry | UnorderedListEntry;
+        return { children, label };
     });
 }
 
@@ -247,18 +247,18 @@ function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number)
 
             case "list": {
                 const list = token as Tokens.List;
-                const items = mapListItems(list.items as Token[]);
+                const items = mapListItems(list.items);
 
                 if (list.ordered) {
                     elements.push(
                         <Box key={index} marginTop={marginTop}>
-                            <OrderedList items={items as OrderedListEntry[]} />
+                            <OrderedList items={items} />
                         </Box>,
                     );
                 } else {
                     elements.push(
                         <Box key={index} marginTop={marginTop}>
-                            <UnorderedList items={items as UnorderedListEntry[]} />
+                            <UnorderedList items={items} />
                         </Box>,
                     );
                 }
@@ -349,8 +349,8 @@ function lexWithStreamingFallback(source: string, streaming: boolean): Token[] {
 
         if (trailing.trim().length > 0) {
             // Append trailing text as a paragraph token so it renders
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            tokens.push({ raw: trailing, text: trailing, tokens: [{ raw: trailing, text: trailing, type: "text" }], type: "paragraph" } as any);
+
+            tokens.push({ raw: trailing, text: trailing, tokens: [{ raw: trailing, text: trailing, type: "text" }], type: "paragraph" });
         }
     }
 

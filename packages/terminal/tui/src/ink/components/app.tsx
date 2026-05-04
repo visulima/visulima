@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, react-x/no-unnecessary-use-callback, sonarjs/no-nested-functions */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, sonarjs/no-nested-functions */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
@@ -70,6 +70,7 @@ const App = ({
     writeToStderr,
     writeToStdout,
 }: Props): React.ReactNode => {
+    // eslint-disable-next-line react-x/no-unused-state -- isFocusEnabled is read inside useCallback closures, which the linter doesn't track
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
     // Focusables array is managed internally via setFocusables callback pattern

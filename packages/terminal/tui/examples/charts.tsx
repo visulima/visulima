@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/pseudo-random -- demo data only, no security implications */
+
 /**
  * charts.tsx — Sparkline, BarChart, LineChart, AreaChart, ScatterPlot,
  *              Histogram, Heatmap, Gauge

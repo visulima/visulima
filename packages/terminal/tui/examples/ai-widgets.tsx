@@ -43,6 +43,7 @@ const App = () => {
                 <Text bold>AI agent demo</Text>
                 <ModelBadge icon="◈" model="claude-opus-4" provider="anthropic" />
             </Box>
+            {/* eslint-disable-next-line jsx-a11y/aria-role -- MessageBubble role prop is component-specific (assistant|user), not ARIA */}
             <MessageBubble label="Claude" meta="12:34" role="assistant">
                 <StreamingText text="I'll refactor your auth handler now." />
             </MessageBubble>
@@ -75,19 +76,19 @@ const App = () => {
             <ShimmerText text="Generating response…" />
             {decision === undefined
                 ? (
-                    <ApprovalPrompt
-                        description="Claude wants to modify auth.ts"
-                        onDecision={setDecision}
-                        params={{ diff: "+ 12 / - 3", path: "src/auth.ts" }}
-                        risk="medium"
-                        tool="writeFile"
-                    />
+                <ApprovalPrompt
+                    description="Claude wants to modify auth.ts"
+                    onDecision={setDecision}
+                    params={{ diff: "+ 12 / - 3", path: "src/auth.ts" }}
+                    risk="medium"
+                    tool="writeFile"
+                />
                 )
                 : (
-                    <Text color="green">
-                        decision:
-                        {decision}
-                    </Text>
+                <Text color="green">
+                    decision:
+                    {decision}
+                </Text>
                 )}
             <StatusLine center={<Text dimColor>Esc to quit</Text>} left={<Text>tokens: 1.2k / 200k</Text>} right={<Text dimColor>cost: $0.003</Text>} />
         </Box>

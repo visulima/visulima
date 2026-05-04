@@ -127,32 +127,35 @@ export default function BarChart({
                     const color = colorFor(index, palette, datum);
 
                     return (
+                        // eslint-disable-next-line react-x/no-array-index-key -- chart bar index is stable for the render
                         <Box gap={1} key={index}>
                             {showLabels && datum.label !== undefined
                                 ? (
-                                    <Box flexShrink={0} minWidth={8}>
-                                        <Text dimColor wrap="truncate-end">
-                                            {datum.label}
-                                        </Text>
-                                    </Box>
+                                <Box flexShrink={0} minWidth={8}>
+                                    <Text dimColor wrap="truncate-end">
+                                        {datum.label}
+                                    </Text>
+                                </Box>
                                 )
                                 : undefined}
                             <Box flexGrow={1} flexShrink={1}>
                                 <Canvas
+                                    // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                                     draw={(context: CanvasContext) => {
                                         context.clear();
                                         context.drawHBar(0, 0, plotWidth, ratio, { color });
                                     }}
                                     height={1}
+                                    // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                                     version={[datum.value, computedMax, color, plotWidth]}
                                     width={plotWidth}
                                 />
                             </Box>
                             {showValues
                                 ? (
-                                    <Box flexShrink={0}>
-                                        <Text>{String(datum.value)}</Text>
-                                    </Box>
+                                <Box flexShrink={0}>
+                                    <Text>{String(datum.value)}</Text>
+                                </Box>
                                 )
                                 : undefined}
                         </Box>
@@ -169,6 +172,7 @@ export default function BarChart({
     return (
         <Box flexDirection="column">
             <Canvas
+                // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                 draw={(context: CanvasContext) => {
                     context.clear();
 
@@ -183,31 +187,34 @@ export default function BarChart({
                     });
                 }}
                 height={height}
+                // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                 version={[data, computedMax, palette, barWidth, gap, height]}
                 width={plotWidth}
             />
             {showValues
                 ? (
-                    <Box>
-                        {data.map((datum, index) => (
-                            <Box key={index} width={barWidth + gap}>
-                                <Text dimColor>{String(datum.value).padEnd(barWidth + gap, " ")}</Text>
-                            </Box>
-                        ))}
-                    </Box>
+                <Box>
+                    {data.map((datum, index) => (
+                        // eslint-disable-next-line react-x/no-array-index-key -- chart column index is stable for the render
+                        <Box key={index} width={barWidth + gap}>
+                            <Text dimColor>{String(datum.value).padEnd(barWidth + gap, " ")}</Text>
+                        </Box>
+                    ))}
+                </Box>
                 )
                 : undefined}
             {showLabels
                 ? (
-                    <Box>
-                        {data.map((datum, index) => (
-                            <Box key={index} width={barWidth + gap}>
-                                <Text dimColor wrap="truncate-end">
-                                    {(datum.label ?? "").padEnd(barWidth + gap, " ")}
-                                </Text>
-                            </Box>
-                        ))}
-                    </Box>
+                <Box>
+                    {data.map((datum, index) => (
+                        // eslint-disable-next-line react-x/no-array-index-key -- chart column index is stable for the render
+                        <Box key={index} width={barWidth + gap}>
+                            <Text dimColor wrap="truncate-end">
+                                {(datum.label ?? "").padEnd(barWidth + gap, " ")}
+                            </Text>
+                        </Box>
+                    ))}
+                </Box>
                 )
                 : undefined}
         </Box>

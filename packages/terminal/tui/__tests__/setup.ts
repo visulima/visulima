@@ -42,7 +42,7 @@ vi.mock(import("patch-console"), () => {
 
             return true;
         };
-        const internalConsole = new Console(stdout as unknown as NodeJS.WritableStream, stderr as unknown as NodeJS.WritableStream);
+        const internalConsole = new Console(stdout, stderr);
         const originalMethods: Record<string, unknown> = {};
 
         for (const method of consoleMethods) {

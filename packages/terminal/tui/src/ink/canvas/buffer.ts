@@ -10,6 +10,7 @@ export type CellStyle = {
 };
 
 const STYLE_BOLD = Math.trunc(1);
+// eslint-disable-next-line no-bitwise -- bit flag definition for cell style packing
 const STYLE_DIM = 1 << 1;
 
 const SPACE_CODEPOINT = 0x20;
@@ -36,7 +37,7 @@ const createColorCoders = (): { decode: ColorDecoder; encode: ColorEncoder } => 
     return {
         decode: (id) => decoded[id],
         encode: (color) => {
-            if (color === undefined || color === null) {
+            if (color === undefined) {
                 return EMPTY_COLOR;
             }
 
@@ -120,10 +121,12 @@ const flagsFromStyle = (style: CellStyle | undefined): number => {
     let flags = 0;
 
     if (style.bold) {
+        // eslint-disable-next-line no-bitwise -- bit flag combine for cell style packing
         flags |= STYLE_BOLD;
     }
 
     if (style.dim) {
+        // eslint-disable-next-line no-bitwise -- bit flag combine for cell style packing
         flags |= STYLE_DIM;
     }
 
@@ -322,18 +325,20 @@ export const serializeRow = (buffer: CanvasBuffer, row: number): string => {
 
         let rendered = text;
 
-        if (fgColor !== undefined && fgColor !== null) {
+        if (fgColor !== undefined) {
             rendered = colorize(rendered, typeof fgColor === "number" ? String(fgColor) : fgColor, "foreground");
         }
 
-        if (bgColor !== undefined && bgColor !== null) {
+        if (bgColor !== undefined) {
             rendered = colorize(rendered, typeof bgColor === "number" ? String(bgColor) : bgColor, "background");
         }
 
+        // eslint-disable-next-line no-bitwise -- bit flag check for cell style
         if ((spanStyles & STYLE_BOLD) !== 0) {
             rendered = `\u001B[1m${rendered}\u001B[22m`;
         }
 
+        // eslint-disable-next-line no-bitwise -- bit flag check for cell style
         if ((spanStyles & STYLE_DIM) !== 0) {
             rendered = `\u001B[2m${rendered}\u001B[22m`;
         }

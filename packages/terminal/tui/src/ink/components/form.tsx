@@ -49,6 +49,7 @@ export const FormField = ({ children, description, error, isDisabled = false, la
             {required ? <Text color="red"> *</Text> : undefined}
         </Box>
         <Box marginTop={0}>{children}</Box>
+        {/* eslint-disable-next-line sonarjs/no-nested-conditional -- minimal three-way render: error → description → nothing */}
         {error === undefined ? description === undefined ? undefined : <Text dimColor>{description}</Text> : <Text color="red">{error}</Text>}
     </Box>
 );
@@ -105,18 +106,18 @@ const Form: FormComponent = Object.assign(
                 {title === undefined
                     ? undefined
                     : (
-                        <Box marginBottom={1}>
-                            <Text bold color={accentColor}>
-                                {title}
-                            </Text>
-                        </Box>
+                    <Box marginBottom={1}>
+                        <Text bold color={accentColor}>
+                            {title}
+                        </Text>
+                    </Box>
                     )}
                 {description === undefined
                     ? undefined
                     : (
-                        <Box marginBottom={1}>
-                            <Text dimColor>{description}</Text>
-                        </Box>
+                    <Box marginBottom={1}>
+                        <Text dimColor>{description}</Text>
+                    </Box>
                     )}
                 <Box flexDirection="column">{children}</Box>
                 {footer === undefined ? undefined : <Box marginTop={1}>{footer}</Box>}

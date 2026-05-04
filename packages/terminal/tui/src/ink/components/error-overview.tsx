@@ -48,12 +48,12 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                 <Text backgroundColor="red" color="white">
                     {" "}
                     ERROR
-                    {" "}
+{" "}
                 </Text>
 
                 <Text>
-                    {" "}
-                    {error.message}
+{" "}
+{error.message}
                 </Text>
             </Box>
 
@@ -61,10 +61,10 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                 <Box marginTop={1}>
                     <Text dimColor>
                         {filePath}
-                        :
-                        {origin.line}
-                        :
-                        {origin.column}
+:
+{origin.line}
+:
+{origin.column}
                     </Text>
                 </Box>
             ) : null}
@@ -81,7 +81,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     dimColor={line !== origin.line}
                                 >
                                     {String(line).padStart(lineWidth, " ")}
-                                    :
+:
                                 </Text>
                             </Box>
 
@@ -106,7 +106,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     <Text bold dimColor>
                                         {line}
                                         \t
-                                        {" "}
+{" "}
                                     </Text>
                                 </Box>
                             );
@@ -125,12 +125,12 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                 >
                                     {" "}
                                     (
-                                    {cleanupPath(parsedLine.file) ?? ""}
-                                    :
-                                    {parsedLine.line}
-                                    :
-                                    {parsedLine.column}
-                                    )
+{cleanupPath(parsedLine.file) ?? ""}
+:
+{parsedLine.line}
+:
+{parsedLine.column}
+)
                                 </Text>
                             </Box>
                         );

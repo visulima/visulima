@@ -137,7 +137,6 @@ const firstEnabledIndex = (rows: ReadonlyArray<FlatRow>): number => {
 /**
  * Dropdown / context menu with optional sections and disabled items.
  * Keyboard: ↑/↓ (or j/k) to navigate, Enter to select, Esc to cancel.
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the menu, optionally wrapped in a
  * rounded border when `bordered` is true.
  */
@@ -160,6 +159,7 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
         if (!stillValid) {
             const next = firstEnabledIndex(rows);
 
+            // eslint-disable-next-line react-x/set-state-in-effect -- focus must re-clamp on row changes; effect-driven by design
             setFocusedIndex(next);
             focusedIndexRef.current = next;
         }
@@ -194,11 +194,11 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
             {title === undefined
                 ? undefined
                 : (
-                    <Box marginBottom={1}>
-                        <Text bold color={accentColor}>
-                            {title}
-                        </Text>
-                    </Box>
+                <Box marginBottom={1}>
+                    <Text bold color={accentColor}>
+                        {title}
+                    </Text>
+                </Box>
                 )}
             {rows.map((row, index) => {
                 if (row.kind === "section-header") {
@@ -221,10 +221,10 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
                         {item.icon === undefined
                             ? undefined
                             : (
-                                <Text color={color} dimColor={item.isDisabled}>
-                                    {item.icon}
-                                    {" "}
-                                </Text>
+                            <Text color={color} dimColor={item.isDisabled}>
+                                {item.icon}
+{" "}
+                            </Text>
                             )}
                         <Box flexGrow={1} flexShrink={1} minWidth={0}>
                             <Text bold={isRowFocused} color={color} dimColor={item.isDisabled} wrap="truncate-end">
@@ -234,12 +234,12 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
                         {item.hotkey === undefined
                             ? undefined
                             : (
-                                <Box flexShrink={0}>
-                                    <Text dimColor>
-                                        {" "}
-                                        {item.hotkey}
-                                    </Text>
-                                </Box>
+                            <Box flexShrink={0}>
+                                <Text dimColor>
+{" "}
+{item.hotkey}
+                                </Text>
+                            </Box>
                             )}
                     </Box>
                 );

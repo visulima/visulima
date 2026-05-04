@@ -58,7 +58,6 @@ export type Props = {
  * Segmented control that flips between mutually exclusive content. More
  * compact than `Tabs`: the selected segment is highlighted as a pill, and
  * only the active segment's content is rendered.
- * @param props See {@link Props}.
  * @returns A `ReactElement` with a segmented header row and the active
  * panel's content beneath it.
  */
@@ -143,13 +142,13 @@ export default function ContentSwitcher({
                             {option.icon === undefined
                                 ? undefined
                                 : (
-                                    <>
-                                        {option.icon}
-                                        {" "}
-                                    </>
+<>
+{option.icon}
+{" "}
+</>
                                 )}
                             {option.label}
-                            {" "}
+{" "}
                         </Text>
                     );
                 })}
@@ -157,9 +156,9 @@ export default function ContentSwitcher({
             {activeOption === undefined
                 ? undefined
                 : (
-                    <Box flexDirection="column" marginTop={1}>
-                        {activeOption.content}
-                    </Box>
+                <Box flexDirection="column" marginTop={1}>
+                    {activeOption.content}
+                </Box>
                 )}
         </Box>
     );

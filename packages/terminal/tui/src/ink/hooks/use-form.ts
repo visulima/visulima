@@ -54,6 +54,7 @@ export type UseFormResult<S extends Readonly<Record<string, FieldConfig>>> = {
     /**
      * Mark a field as touched. Useful on blur.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- K constrains `name` to a valid field key
     readonly setTouched: <K extends keyof S>(name: K, touched?: boolean) => void;
 
     /**
@@ -111,7 +112,7 @@ const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFo
         <K extends keyof S>(
             name: K,
             value: FormValues<S>[K],
-            allValues: Readonly<Record<string, unknown>> = valuesRef.current as Readonly<Record<string, unknown>>,
+            allValues: Readonly<Record<string, unknown>> = valuesRef.current,
         ): ValidationResult => {
             const config = fields[name as string] as FieldConfig<FormValues<S>[K]> | undefined;
 
@@ -137,6 +138,7 @@ const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFo
                 if (error === undefined) {
                     const next = { ...previous };
 
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- field key is statically constrained by K
                     delete next[name];
 
                     return next;
@@ -148,6 +150,7 @@ const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFo
         [validateField],
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- K constrains `name` to a valid field key
     const setTouched = useCallback(<K extends keyof S>(name: K, isTouched = true) => {
         setTouchedState((previous) => {
             return { ...previous, [name]: isTouched };

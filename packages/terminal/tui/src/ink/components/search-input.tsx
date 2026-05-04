@@ -20,8 +20,8 @@ export type Props = {
     readonly defaultValue?: string;
 
     /**
-     * Optional icon rendered before the input.
-     * @default "⌕"
+     * Node rendered before the input as a search affordance.
+     * @default "⌕" (telephone recorder)
      */
     readonly icon?: ReactNode;
 
@@ -54,7 +54,6 @@ export type Props = {
 
 /**
  * Search-styled text input with an icon and bordered container.
- * @param props See {@link Props}.
  * @returns A `ReactElement` wrapping `TextInput` with an icon column.
  */
 export default function SearchInput({

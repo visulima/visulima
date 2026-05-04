@@ -3,31 +3,31 @@
     "version": "0.0.1",
     "description": "Native binding for @visulima/tui (Windows ARM64 MSVC)",
     "homepage": "https://visulima.com",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/terminal/tui"
-    },
     "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "main": "tui-native.win32-arm64-msvc.node",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui"
+    },
     "files": [
         "tui-native.win32-arm64-msvc.node"
     ],
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
     "os": [
         "win32"
     ],
     "cpu": [
         "arm64"
     ],
+    "main": "tui-native.win32-arm64-msvc.node",
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
     }
 }

@@ -80,12 +80,12 @@ const ScrollDemo = () => {
                 {" "}
                 scrollTop=
                 {scrollTop}
-                {" "}
-                innerHeight=
-                {metrics.innerHeight}
-                {" "}
-                scrollHeight=
-                {metrics.scrollHeight}
+{" "}
+innerHeight=
+{metrics.innerHeight}
+{" "}
+scrollHeight=
+{metrics.scrollHeight}
             </Text>
         </Box>
     );

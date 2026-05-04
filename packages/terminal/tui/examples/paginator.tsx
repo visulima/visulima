@@ -36,8 +36,8 @@ const App = () => {
         <Box flexDirection="column" gap={1} padding={1}>
             <Text bold color="cyan">
                 Paginator demo (
-                {style}
-                )
+{style}
+)
             </Text>
             <Box borderColor="cyan" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Paginator indicatorColor="cyan" items={items} pageSize={8} style={style}>
@@ -45,14 +45,14 @@ const App = () => {
                         <Box flexDirection="column">
                             <Text bold dimColor>
                                 Showing
-                                {" "}
-                                {meta.startIndex + 1}
-                                -
-                                {meta.endIndex}
-                                {" "}
-                                of
-                                {" "}
-                                {items.length}
+{" "}
+{meta.startIndex + 1}
+-
+{meta.endIndex}
+{" "}
+of
+{" "}
+{items.length}
                             </Text>
                             {pageItems.map((item, i) => (
                                 <Text key={i}>{item}</Text>

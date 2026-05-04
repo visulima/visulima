@@ -88,15 +88,15 @@ const App = () => {
                     {focusedId && (
                         <Text>
                             Focused:
-                            {" "}
-                            <Text color="blue">{focusedId}</Text>
+{" "}
+<Text color="blue">{focusedId}</Text>
                         </Text>
                     )}
                     {selectedIds.size > 0 && (
                         <Box flexDirection="column" marginTop={1}>
                             <Text bold>
                                 Selected (
-                                {selectedIds.size}
+{selectedIds.size}
                                 ):
                             </Text>
                             {[...selectedIds].map((id) => (

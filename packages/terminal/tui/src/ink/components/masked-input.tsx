@@ -40,8 +40,8 @@ export type Props = {
     readonly placeholderChar?: string;
 
     /**
-     * Character used to mark editable positions.
-     * @default "#"
+     * Sentinel character in the mask string used to mark editable positions.
+     * @default "#" (hash)
      */
     readonly token?: string;
 };
@@ -58,6 +58,7 @@ const buildTokenIndex = (mask: string, token: string): ReadonlyArray<TokenIndex>
     const indices: TokenIndex[] = [];
     let rawPosition = 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- mask templates are ASCII-only token characters
     for (const [maskColumn, maskChar] of [...mask].entries()) {
         if (maskChar === token) {
             indices.push({ maskColumn, rawPosition });
@@ -178,7 +179,7 @@ export default function MaskedInput({
                     return;
                 }
 
-                if (input?.length !== 1 || raw.length >= maxLength) {
+                if (input.length !== 1 || raw.length >= maxLength) {
                     return;
                 }
 
