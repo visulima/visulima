@@ -166,7 +166,7 @@
         "cssnano": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "eslint-plugin-zod": "3.5.4",
+        "eslint-plugin-zod": "catalog:lint",
         "jsdom": "catalog:dev",
         "lucide-static": "catalog:icons",
         "prettier": "catalog:lint",
@@ -184,7 +184,7 @@
         "@modelcontextprotocol/sdk": "^1.0.0",
         "axe-core": "catalog:peer",
         "vite": "^6 || ^7 || ^8",
-        "zod": "^3.0.0"
+        "zod": "^3.25.0 || ^4.0.0"
     },
     "peerDependenciesMeta": {
         "@modelcontextprotocol/sdk": {
