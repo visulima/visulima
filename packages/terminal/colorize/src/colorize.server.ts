@@ -29,7 +29,8 @@ const wrapText = (
 
     let string
         = (strings as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw === undefined
-            ? String(strings as number | string)
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- strings here is string | number | array of strings; String() coercion is intentional
+            ? String(strings)
             : String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
 
     if (string.includes("\u001B")) {
