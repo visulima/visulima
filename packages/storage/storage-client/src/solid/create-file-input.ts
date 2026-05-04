@@ -33,7 +33,7 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
         const fileArray = [...fileList];
 
         setFiles(fileArray);
-        options?.onFilesSelected?.(fileArray);
+        options.onFilesSelected?.(fileArray);
     };
 
     const handleFileChange = (event: Event): void => {

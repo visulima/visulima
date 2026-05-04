@@ -42,6 +42,7 @@ export interface CreateGetFileReturn {
  * @param options Hook configuration options
  * @returns File fetching functions and state signals
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- factory wires queryFn, response parsing, and effect handlers; splitting hurts readability
 export const createGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => {
     const { enabled = true, endpoint, id, onError, onSuccess, queryClient, transform } = options;
 
@@ -90,7 +91,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     const meta = createMemo(() => {
         const { data } = query;
 
-        return data?.meta || undefined;
+        return data?.meta;
     });
 
     // Call callbacks when data or error changes

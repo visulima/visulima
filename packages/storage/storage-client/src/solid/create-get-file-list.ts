@@ -12,10 +12,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | undefined;
+        nextPageUrl?: string;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | undefined;
+        previousPageUrl?: string;
         total?: number;
     };
 }
@@ -85,7 +85,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
                     return Array.isArray(data)
                         ? { data }
                         : {
-                            data: data.data || (data as unknown as FileMeta[]),
+                            data: data.data,
                             meta: data.meta,
                         };
                 },
