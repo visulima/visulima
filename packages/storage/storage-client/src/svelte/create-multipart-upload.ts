@@ -97,7 +97,7 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
 
                 try {
                     if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
-                        fileMeta = item.uploadResponse.data as Partial<FileMeta>;
+                        fileMeta = item.uploadResponse.data;
                     } else if (item.uploadResponse?.response) {
                         fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
                     }

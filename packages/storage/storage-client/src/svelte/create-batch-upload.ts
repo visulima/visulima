@@ -85,7 +85,7 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
 
                             try {
                                 if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
-                                    fileMeta = item.uploadResponse.data as Partial<FileMeta>;
+                                    fileMeta = item.uploadResponse.data;
                                 } else if (item.uploadResponse?.response) {
                                     fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
                                 }
@@ -105,7 +105,7 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
                                 size: fileMeta.size ?? item.file.size,
                                 status: fileMeta.status ?? "completed",
                                 url: item.url,
-                            } as UploadResult;
+                            };
                         });
 
                     progress.set(100);

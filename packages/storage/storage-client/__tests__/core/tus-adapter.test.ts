@@ -10,7 +10,7 @@ describe(createTusAdapter, () => {
     beforeEach(() => {
         originalFetch = globalThis.fetch;
         // Cast is to satisfy TS; at runtime this is just a function replacement.
-        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
+        globalThis.fetch = mockFetch;
         vi.clearAllMocks();
     });
 

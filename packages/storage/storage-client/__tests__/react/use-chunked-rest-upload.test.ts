@@ -20,7 +20,7 @@ describe(useChunkedRestUpload, () => {
                 queries: { retry: false },
             },
         });
-        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
+        globalThis.fetch = mockFetch;
         mockFetch.mockReset();
     });
 
