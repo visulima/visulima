@@ -14,11 +14,21 @@ import { createSeoHead } from "@/lib/seo";
 import SupportSection from "../../pages/home/sections/support";
 import { NotFound } from "../../pages/not-found";
 
+type ServerLoaderResult = {
+    description: string;
+    lastModified: string | null;
+    path: string;
+    title: string;
+    tree: PageTree.Root;
+} | null;
+
+type LoaderData = NonNullable<ServerLoaderResult> & { slugs: string };
+
 export const Route = createFileRoute("/docs/$")({
     component: () => <Page />,
-    loader: async ({ params }) => {
+    loader: async ({ params }): Promise<LoaderData> => {
         const slugs = params._splat?.split("/") ?? [];
-        const data = await serverLoader({ data: slugs });
+        const data = (await serverLoader({ data: slugs })) as ServerLoaderResult;
 
         if (!data?.path) {
             throw notFound();
@@ -47,6 +57,9 @@ export const Route = createFileRoute("/docs/$")({
 
 const serverLoader = createServerFn({
     method: "GET",
+    // `tree: PageTree.Root` carries `ReactNode` icons that aren't JSON-serializable;
+    // skip the strict output check rather than reshape the framework's type.
+    strict: { output: false },
 })
     .inputValidator((slugs: string[]) => slugs)
     .handler(async ({ data: slugs }) => {
@@ -90,17 +103,14 @@ const clientLoader = browserCollections.docs.createClientLoader({
             >
                 <DocsTitle>{frontmatter.title}</DocsTitle>
                 <DocsDescription>{frontmatter.description}</DocsDescription>
-                {lastModified
-                    ? (
+                {lastModified ? (
                     <p className="text-muted-foreground -mt-2 mb-6 text-sm">
-                        Last updated:
-{" "}
+                        Last updated:{" "}
                         <time dateTime={lastModified}>
                             {new Date(lastModified).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                         </time>
                     </p>
-                    )
-                    : null}
+                ) : null}
                 <DocsBody>
                     <MDX
                         components={{
