@@ -29,7 +29,14 @@ import type { DoctorBannerInput } from "../../tui/components/doctor/VisDoctorApp
 import VisDoctorApp from "../../tui/components/doctor/VisDoctorApp";
 import type { CatalogCheckOptions } from "../../util/catalog";
 import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../../util/catalog";
-import { buildE18eEntries, buildSocketEntries, collectDepsFromPkgJson, discoverWorkspacePackages, markCodemodAvailability, runCodemod } from "../optimize/handler";
+import {
+    buildE18eEntries,
+    buildSocketEntries,
+    collectDepsFromPkgJson,
+    discoverWorkspacePackages,
+    markCodemodAvailability,
+    runCodemod,
+} from "../optimize/handler";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
 import type { DoctorResults, SectionId, SectionStatus } from "./sections";
@@ -103,10 +110,7 @@ const tracked = async <T>(
  * to a single section. Lets the streaming path emit per-section finding
  * lists without re-implementing the flatten logic.
  */
-const buildSectionFindings = (
-    section: SectionId,
-    payload: Pick<DoctorResults, "duplicates" | "optimizations" | "outdated" | "runtime">,
-): DoctorFinding[] => {
+const buildSectionFindings = (section: SectionId, payload: Pick<DoctorResults, "duplicates" | "optimizations" | "outdated" | "runtime">): DoctorFinding[] => {
     const partial: DoctorResults = {
         duplicates: payload.duplicates,
         elapsedMs: 0,
@@ -195,7 +199,10 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         }
 
         if (wantsSec) {
-            store.startSection("security", installed.length > 0 ? `scanning ${String(installed.length)} packages for advisories` : "no installed packages to scan");
+            store.startSection(
+                "security",
+                installed.length > 0 ? `scanning ${String(installed.length)} packages for advisories` : "no installed packages to scan",
+            );
         }
 
         if (wantsOpt) {
@@ -209,12 +216,15 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
 
     // Runtime is sync — flush immediately.
     if (store && wantsRuntime) {
-        store.completeSection("runtime", sectionFindings("runtime", {
-            duplicates: [],
-            optimizations: [],
-            outdated: [],
-            runtime,
-        }));
+        store.completeSection(
+            "runtime",
+            sectionFindings("runtime", {
+                duplicates: [],
+                optimizations: [],
+                outdated: [],
+                runtime,
+            }),
+        );
     }
 
     // Fan out async scans. Each runs only when its section is active.
@@ -223,52 +233,83 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     const needsOutdated = (wantsDeps || wantsSec) && catalogs.size > 0;
 
     const outdatedPromise = needsOutdated
-        ? tracked(progress, "outdated", () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks), (result, ms) => {
-            const count = result.outdated.length;
+        ? tracked(
+              progress,
+              "outdated",
+              () => checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks),
+              (result, ms) => {
+                  const count = result.outdated.length;
 
-            return {
-                status: count > 0 ? "warn" : "ok",
-                summary: count > 0 ? `${String(count)} outdated · ${fmtDuration(ms)}` : `up to date · ${fmtDuration(ms)}`,
-            };
-        })
+                  return {
+                      status: count > 0 ? "warn" : "ok",
+                      summary: count > 0 ? `${String(count)} outdated · ${fmtDuration(ms)}` : `up to date · ${fmtDuration(ms)}`,
+                  };
+              },
+          )
         : Promise.resolve({ failed: [], ignored: [], outdated: [] });
 
-    const vulnPromise = wantsSec && installed.length > 0
-        ? tracked(progress, "vulnerabilities", () => fetchVulnerabilities(installed.map((p) => { return { name: p.name, version: p.version }; })), (vulnMap, ms) => {
-            let count = 0;
+    const vulnPromise =
+        wantsSec && installed.length > 0
+            ? tracked(
+                  progress,
+                  "vulnerabilities",
+                  () =>
+                      fetchVulnerabilities(
+                          installed.map((p) => {
+                              return { name: p.name, version: p.version };
+                          }),
+                      ),
+                  (vulnMap, ms) => {
+                      let count = 0;
 
-            for (const list of vulnMap.values()) {
-                count += list.length;
-            }
+                      for (const list of vulnMap.values()) {
+                          count += list.length;
+                      }
 
-            return {
-                status: count > 0 ? "error" : "ok",
-                summary: count > 0 ? `${String(count)} found · ${fmtDuration(ms)}` : `none found · ${fmtDuration(ms)}`,
-            };
-        })
-        : Promise.resolve(new Map<string, never[]>());
+                      return {
+                          status: count > 0 ? "error" : "ok",
+                          summary: count > 0 ? `${String(count)} found · ${fmtDuration(ms)}` : `none found · ${fmtDuration(ms)}`,
+                      };
+                  },
+              )
+            : Promise.resolve(new Map<string, never[]>());
 
-    const socketReportsPromise = wantsSec && socketOptions && installed.length > 0
-        ? tracked(progress, "socket", () => fetchSocketReports(installed.map((p) => { return { name: p.name, version: p.version }; }), socketOptions), (reports, ms) => {
-            let alerts = 0;
-            let low = 0;
+    const socketReportsPromise =
+        wantsSec && socketOptions && installed.length > 0
+            ? tracked(
+                  progress,
+                  "socket",
+                  () =>
+                      fetchSocketReports(
+                          installed.map((p) => {
+                              return { name: p.name, version: p.version };
+                          }),
+                          socketOptions,
+                      ),
+                  (reports, ms) => {
+                      let alerts = 0;
+                      let low = 0;
 
-            for (const report of reports.values()) {
-                alerts += report.alerts.length;
+                      for (const report of reports.values()) {
+                          alerts += report.alerts.length;
 
-                if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
-                    low += 1;
-                }
-            }
+                          if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                              low += 1;
+                          }
+                      }
 
-            const issues = alerts + low;
+                      const issues = alerts + low;
 
-            return {
-                status: issues > 0 ? "warn" : "ok",
-                summary: issues > 0 ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtDuration(ms)}` : `clean · ${fmtDuration(ms)}`,
-            };
-        })
-        : Promise.resolve(new Map<string, PackageReportData>());
+                      return {
+                          status: issues > 0 ? "warn" : "ok",
+                          summary:
+                              issues > 0
+                                  ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtDuration(ms)}`
+                                  : `clean · ${fmtDuration(ms)}`,
+                      };
+                  },
+              )
+            : Promise.resolve(new Map<string, PackageReportData>());
 
     // Catch on each so a single registry timeout doesn't sink the
     // dashboard. The error string is captured separately so the streaming
@@ -311,60 +352,73 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
 
     // Stream dependencies as soon as outdated lands — duplicates is sync
     // and already in hand.
-    const depsStream = store && wantsDeps
-        ? outdatedSafe.then((res) => {
-            if (outdatedError) {
-                store.failSection("dependencies", outdatedError);
+    const depsStream =
+        store && wantsDeps
+            ? outdatedSafe.then((res) => {
+                  if (outdatedError) {
+                      store.failSection("dependencies", outdatedError);
 
-                return;
-            }
+                      return;
+                  }
 
-            store.completeSection("dependencies", sectionFindings("dependencies", {
-                duplicates,
-                optimizations: [],
-                outdated: res.outdated,
-                runtime: [],
-            }));
-        })
-        : undefined;
+                  store.completeSection(
+                      "dependencies",
+                      sectionFindings("dependencies", {
+                          duplicates,
+                          optimizations: [],
+                          outdated: res.outdated,
+                          runtime: [],
+                      }),
+                  );
+              })
+            : undefined;
 
     // Stream security only after every input scan settles — keeps the
     // tab spinner running until the section's count is final. Any of the
     // three failing flips the section to error so the user knows the
     // count is incomplete.
-    const secStream = store && wantsSec
-        ? Promise.all([outdatedSafe, vulnSafe, socketSafe]).then(([res]) => {
-            const firstError = outdatedError ?? vulnError ?? socketError;
+    const secStream =
+        store && wantsSec
+            ? Promise.all([outdatedSafe, vulnSafe, socketSafe]).then(([res]) => {
+                  const firstError = outdatedError ?? vulnError ?? socketError;
 
-            if (firstError) {
-                store.failSection("security", firstError);
+                  if (firstError) {
+                      store.failSection("security", firstError);
 
-                return;
-            }
+                      return;
+                  }
 
-            store.completeSection("security", sectionFindings("security", {
-                duplicates: [],
-                optimizations: [],
-                outdated: res.outdated,
-                runtime: [],
-            }));
-        })
-        : undefined;
+                  store.completeSection(
+                      "security",
+                      sectionFindings("security", {
+                          duplicates: [],
+                          optimizations: [],
+                          outdated: res.outdated,
+                          runtime: [],
+                      }),
+                  );
+              })
+            : undefined;
 
     const optStream = (async () => {
         if (resolveCodemods && wantsOpt && allOptimizations.length > 0) {
-            await tracked(progress, "codemods", async () => {
-                await markCodemodAvailability(allOptimizations);
+            await tracked(
+                progress,
+                "codemods",
+                async () => {
+                    await markCodemodAvailability(allOptimizations);
 
-                return allOptimizations;
-            }, (entries, ms) => {
-                const fixable = entries.filter((entry) => entry.hasCodemod || entry.category === "socket").length;
+                    return allOptimizations;
+                },
+                (entries, ms) => {
+                    const fixable = entries.filter((entry) => entry.hasCodemod || entry.category === "socket").length;
 
-                return {
-                    status: "ok",
-                    summary: `${String(fixable)} auto-fixable · ${fmtDuration(ms)}`,
-                };
-            }).catch((error: unknown) => {
+                    return {
+                        status: "ok",
+                        summary: `${String(fixable)} auto-fixable · ${fmtDuration(ms)}`,
+                    };
+                },
+            ).catch((error: unknown) => {
                 optError = error instanceof Error ? error.message : String(error);
             });
         }
@@ -376,12 +430,15 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                 return;
             }
 
-            store.completeSection("optimization", sectionFindings("optimization", {
-                duplicates: [],
-                optimizations: allOptimizations,
-                outdated: [],
-                runtime: [],
-            }));
+            store.completeSection(
+                "optimization",
+                sectionFindings("optimization", {
+                    duplicates: [],
+                    optimizations: allOptimizations,
+                    outdated: [],
+                    runtime: [],
+                }),
+            );
         }
     })();
 
@@ -598,11 +655,7 @@ const displaySupplyChain = (results: DoctorResults): void => {
     pail.log(heading("Supply Chain", results.supplyChain.status));
 
     for (const finding of results.supplyChain.findings) {
-        const line = finding.severity === "ok"
-            ? itemOk(finding.label)
-            : finding.severity === "error"
-                ? itemError(finding.label)
-                : itemWarn(finding.label);
+        const line = finding.severity === "ok" ? itemOk(finding.label) : finding.severity === "error" ? itemError(finding.label) : itemWarn(finding.label);
 
         pail.log(line);
 
@@ -672,7 +725,9 @@ const displaySummary = (results: DoctorResults, quiet: boolean): void => {
         }
 
         if (improvementCount > 0) {
-            pail.log(`  ${cyan(SYMBOLS.arrow)} ${bold(String(improvementCount))} ${dim(`improvement${improvementCount === 1 ? "" : "s"} available`)} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`);
+            pail.log(
+                `  ${cyan(SYMBOLS.arrow)} ${bold(String(improvementCount))} ${dim(`improvement${improvementCount === 1 ? "" : "s"} available`)} ${dim(`(${fmtDuration(results.elapsedMs)})`)}`,
+            );
         }
     }
 };
@@ -731,13 +786,7 @@ interface BannerInputs {
     workspaceCount: number | undefined;
 }
 
-const planScanTasks = (
-    sections: Set<SectionId>,
-    catalogsCount: number,
-    socketEnabled: boolean,
-    installedCount: number,
-    fix: boolean,
-): ScanTask[] => {
+const planScanTasks = (sections: Set<SectionId>, catalogsCount: number, socketEnabled: boolean, installedCount: number, fix: boolean): ScanTask[] => {
     const tasks: ScanTask[] = [];
     const wantsDeps = sections.has("dependencies");
     const wantsSec = sections.has("security");
@@ -780,7 +829,9 @@ const printBanner = (input: BannerInputs): void => {
             pail.log(itemError(`Runtime: ${colour(finding.message)}`));
         }
 
-        pail.log(`  ${dim(SYMBOLS.arrow)} Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`);
+        pail.log(
+            `  ${dim(SYMBOLS.arrow)} Run ${green("vis toolchain install")} to install pinned versions, or ${green("vis toolchain status")} for the per-tool breakdown.`,
+        );
     }
 
     pail.log("");
@@ -839,22 +890,23 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
     if (!isJson && !quiet && !wantsInteractive) {
-        const wsLine = workspaceDirectories.length > 0
-            ? dim(` · ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`)
-            : "";
+        const wsLine =
+            workspaceDirectories.length > 0
+                ? dim(` · ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`)
+                : "";
 
         pail.log(`${dim("·")} ${dim("Found")} ${bold(String(installedCount))} ${dim(`installed package${installedCount === 1 ? "" : "s"}`)}${wsLine}`);
     }
 
     const banner: DoctorBannerInput | undefined = visConfigError
         ? {
-            hint: visConfigError.file
-                ? `Continuing with default settings — fix or regenerate ${visConfigError.file} (vis init --force).`
-                : "Continuing with default settings.",
-            message: visConfigError.message,
-            severity: "error",
-            title: visConfigError.file ? `Failed to load ${visConfigError.file}` : "Failed to load vis.config",
-        }
+              hint: visConfigError.file
+                  ? `Continuing with default settings — fix or regenerate ${visConfigError.file} (vis init --force).`
+                  : "Continuing with default settings.",
+              message: visConfigError.message,
+              severity: "error",
+              title: visConfigError.file ? `Failed to load ${visConfigError.file}` : "Failed to load vis.config",
+          }
         : undefined;
 
     // Cache: skip when --fix (mutates workspace) or --no-cache. The
@@ -873,12 +925,12 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     const cacheEnabled = !options.noCache && !options.fix;
     const cacheKey = cacheEnabled
         ? buildDoctorCacheKey({
-            configPath: configFilePath,
-            lockfilePath,
-            sections,
-            socketEnabled,
-            workspaceRoot: wsRoot,
-        })
+              configPath: configFilePath,
+              lockfilePath,
+              sections,
+              socketEnabled,
+              workspaceRoot: wsRoot,
+          })
         : undefined;
 
     const cachedResults = cacheKey ? readDoctorCache(cacheKey) : undefined;
@@ -896,26 +948,25 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
             ? new DoctorStore({ activeSections: sections, findings: filterFindingsByPattern(flattenFindings(cachedResults), filterPatterns) })
             : new DoctorStore({ activeSections: sections });
 
-        const instance = render(
-            React.createElement(VisDoctorApp, { banner, fromCache: cacheHit, startedAt, store }),
-            {
-                alternateScreen: true,
-                exitOnCtrlC: false,
-                interactive: true,
-                patchConsole: true,
-            },
-        );
+        const instance = render(React.createElement(VisDoctorApp, { banner, fromCache: cacheHit, startedAt, store }), {
+            alternateScreen: true,
+            exitOnCtrlC: false,
+            interactive: true,
+            patchConsole: true,
+        });
 
         try {
-            scanResults = cachedResults ?? await streamScans({
-                filterPatterns,
-                installed,
-                resolveCodemods: Boolean(options.fix),
-                sections,
-                store,
-                visConfig,
-                workspaceRoot: wsRoot,
-            });
+            scanResults =
+                cachedResults ??
+                (await streamScans({
+                    filterPatterns,
+                    installed,
+                    resolveCodemods: Boolean(options.fix),
+                    sections,
+                    store,
+                    visConfig,
+                    workspaceRoot: wsRoot,
+                }));
         } catch (error) {
             // Make sure the TUI can be dismissed even if a scan throws.
             instance.unmount();
@@ -1045,7 +1096,9 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
 
     const socketEntries = results.optimizations
         .filter((o) => o.category === "socket" && o.overrideSpec)
-        .map((o) => { return { original: o.packageName, spec: o.overrideSpec! }; });
+        .map((o) => {
+            return { original: o.packageName, spec: o.overrideSpec! };
+        });
     const codemodEntries = results.optimizations.filter((o) => o.category !== "socket" && o.hasCodemod);
     const manualEntries = results.optimizations.filter((o) => o.category !== "socket" && !o.hasCodemod);
 
@@ -1068,14 +1121,18 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
         const recovery = killOrphanedRunners({ force });
 
         if (recovery.killed.length > 0) {
-            pail.success(`Cleaned up ${String(recovery.killed.length)} orphaned process${recovery.killed.length === 1 ? "" : "es"} (PIDs: ${recovery.killed.join(", ")}).`);
+            pail.success(
+                `Cleaned up ${String(recovery.killed.length)} orphaned process${recovery.killed.length === 1 ? "" : "es"} (PIDs: ${recovery.killed.join(", ")}).`,
+            );
             didSomething = true;
         }
 
         if (recovery.failed.length > 0) {
             const escalation = force ? "" : " Re-run with `--fix --fix-force` to escalate to SIGKILL.";
 
-            pail.warn(`Could not signal ${String(recovery.failed.length)} orphan${recovery.failed.length === 1 ? "" : "s"}: ${recovery.failed.map((f) => `${String(f.pid)} (${f.reason})`).join(", ")}.${escalation}`);
+            pail.warn(
+                `Could not signal ${String(recovery.failed.length)} orphan${recovery.failed.length === 1 ? "" : "s"}: ${recovery.failed.map((f) => `${String(f.pid)} (${f.reason})`).join(", ")}.${escalation}`,
+            );
         }
     }
 
@@ -1141,11 +1198,15 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
     }
 
     if (codemodFailures.length > 0) {
-        pail.warn(`${String(codemodFailures.length)} codemod${codemodFailures.length === 1 ? "" : "s"} failed (run ${green("vis optimize")} for the interactive picker).`);
+        pail.warn(
+            `${String(codemodFailures.length)} codemod${codemodFailures.length === 1 ? "" : "s"} failed (run ${green("vis optimize")} for the interactive picker).`,
+        );
     }
 
     if (manualEntries.length > 0) {
-        pail.notice(`${String(manualEntries.length)} optimization${manualEntries.length === 1 ? "" : "s"} need manual review (no codemod). Run ${green("vis optimize")} to inspect them.`);
+        pail.notice(
+            `${String(manualEntries.length)} optimization${manualEntries.length === 1 ? "" : "s"} need manual review (no codemod). Run ${green("vis optimize")} to inspect them.`,
+        );
     }
 };
 

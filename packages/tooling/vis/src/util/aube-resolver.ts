@@ -20,16 +20,7 @@
  * globals lead.
  */
 
-import type {
-    AddOptions,
-    DlxOptions,
-    ExecOptions,
-    InstallOptions,
-    OutdatedOptions,
-    RemoveOptions,
-    ResolvedCommand,
-    WhyOptions,
-} from "#native";
+import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
 
 interface InfoOptions {
     fields: string[];
@@ -160,9 +151,7 @@ const resolveAubeAdd = (options: AddOptions): ResolvedCommand => {
         // emit below for `workspaceRoot`. Aube auto-detects workspace
         // members during add, so the flag is a no-op rather than a
         // failure.
-        warnings.push(
-            "aube has no flag for the `workspace:` protocol; it auto-detects local workspace members during add. Ignoring --workspace.",
-        );
+        warnings.push("aube has no flag for the `workspace:` protocol; it auto-detects local workspace members during add. Ignoring --workspace.");
     }
 
     if (options.workspaceRoot) {

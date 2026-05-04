@@ -217,11 +217,7 @@ export default createConfig(
             "sonarjs/assertions-in-tests": "off",
             "sonarjs/no-nested-functions": "off",
             "vitest/expect-expect": "off",
-            "vitest/prefer-equality-matcher": "off",
-            "vitest/prefer-strict-equal": "off",
             "vitest/require-mock-type-parameters": "off",
-            "vitest/require-to-throw-message": "off",
-            "vitest/require-top-level-describe": "off",
         },
     },
     {

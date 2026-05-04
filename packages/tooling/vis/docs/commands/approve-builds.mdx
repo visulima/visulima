@@ -23,8 +23,8 @@ vis approve-builds --sync-native    # mirror allowBuilds into the native PM conf
 
 ## Options
 
-| Option            | Default | Description                                                                                              |
-| ----------------- | ------- | -------------------------------------------------------------------------------------------------------- |
-| `--all`           | `false` | Approve all pending builds without prompting (pnpm only)                                                 |
-| `--scan`          | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                        |
-| `--sync-native`   | `false` | Sync `allowBuilds` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`) |
+| Option          | Default | Description                                                                                                 |
+| --------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `--all`         | `false` | Approve all pending builds without prompting (pnpm only)                                                    |
+| `--scan`        | `false` | Force vis scanning even for pnpm (instead of delegating to `pnpm approve-builds`)                           |
+| `--sync-native` | `false` | Sync `allowBuilds` to the native PM config (bun: `trustedDependencies`, npm: `.npmrc`, yarn: `.yarnrc.yml`) |

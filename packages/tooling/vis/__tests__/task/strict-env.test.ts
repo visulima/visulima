@@ -28,9 +28,7 @@ describe(extractEnvReferences, () => {
         // The unconditional reference will silently expand to "" if
         // unset — the fact that it's also referenced WITH a default
         // somewhere doesn't save it.
-        expect(extractEnvReferences("echo $TOKEN && echo ${TOKEN:-x}")).toEqual([
-            { hasDefault: false, name: "TOKEN" },
-        ]);
+        expect(extractEnvReferences("echo $TOKEN && echo ${TOKEN:-x}")).toEqual([{ hasDefault: false, name: "TOKEN" }]);
     });
 
     it("dedupes repeated references", () => {
@@ -95,9 +93,7 @@ describe(checkStrictEnv, () => {
 
     it("does not flag a var that has a default", () => {
         expect.assertions(1);
-        expect(
-            checkStrictEnv({ ...baseOptions, command: 'echo "${LOG_LEVEL:-info}"' }),
-        ).toBeUndefined();
+        expect(checkStrictEnv({ ...baseOptions, command: 'echo "${LOG_LEVEL:-info}"' })).toBeUndefined();
     });
 });
 

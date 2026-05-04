@@ -12,10 +12,7 @@ export interface UseMeasuredHeightResult {
 // wraps or padding rounds differently than expected. Attach `ref` to the
 // box whose height matters and read `measuredHeight` for scrollbar/scroll
 // math; `onChange` lets a parent receive the same value for its own math.
-export const useMeasuredHeight = (
-    initialHeight: number,
-    onChange?: (height: number) => void,
-): UseMeasuredHeightResult => {
+export const useMeasuredHeight = (initialHeight: number, onChange?: (height: number) => void): UseMeasuredHeightResult => {
     const ref = useRef<DOMElement>(null);
     const [measuredHeight, setMeasuredHeight] = useState(initialHeight);
 

@@ -650,9 +650,9 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
 
     const { added, skipped: skippedDeps } = dryRun
         ? {
-            added: additionalDeps.map((d) => d.name),
-            skipped: [] as string[],
-        }
+              added: additionalDeps.map((d) => d.name),
+              skipped: [] as string[],
+          }
         : mergeAdditionalDependencies(root, additionalDeps);
 
     if (added.length > 0) {

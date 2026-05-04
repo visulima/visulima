@@ -80,9 +80,7 @@ describe(runReadiness, () => {
         server = createServer();
         const port = await listen(server);
 
-        await expect(
-            runReadiness({ readiness: { tcp: { port, timeoutMs: 2000 } } }),
-        ).resolves.toBeUndefined();
+        await expect(runReadiness({ readiness: { tcp: { port, timeoutMs: 2000 } } })).resolves.toBeUndefined();
     });
 
     it("falls back to config.port when no readiness block is set", async () => {
@@ -91,9 +89,7 @@ describe(runReadiness, () => {
         server = createServer();
         const port = await listen(server);
 
-        await expect(
-            runReadiness({ port }, { timeoutMs: 2000 }),
-        ).resolves.toBeUndefined();
+        await expect(runReadiness({ port }, { timeoutMs: 2000 })).resolves.toBeUndefined();
     });
 
     it("resolves immediately when neither readiness nor port is set", async () => {

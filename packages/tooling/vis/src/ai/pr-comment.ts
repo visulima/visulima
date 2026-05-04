@@ -222,12 +222,7 @@ const postViaBuildkiteRest = async (
     }
 };
 
-const postBuildkiteAnnotation = async (
-    body: string,
-    context: CiContext,
-    buildkiteAgentBin: string,
-    fetchImpl: typeof fetch,
-): Promise<PostPrCommentResult> => {
+const postBuildkiteAnnotation = async (body: string, context: CiContext, buildkiteAgentBin: string, fetchImpl: typeof fetch): Promise<PostPrCommentResult> => {
     // The annotation `--context` uniquely identifies an annotation
     // *within a build*. Reusing the same context on rerun causes
     // Buildkite to update the existing annotation in place instead of
@@ -265,16 +260,7 @@ const postBuildkiteAnnotation = async (
         };
     }
 
-    const restResult = await postViaBuildkiteRest(
-        fetchImpl,
-        context.apiBaseUrl,
-        context.repo,
-        context.buildNumber,
-        body,
-        style,
-        contextName,
-        context.token,
-    );
+    const restResult = await postViaBuildkiteRest(fetchImpl, context.apiBaseUrl, context.repo, context.buildNumber, body, style, contextName, context.token);
 
     if (restResult.ok) {
         return { method: "rest", posted: true };
@@ -287,12 +273,7 @@ const postBuildkiteAnnotation = async (
     };
 };
 
-const postGithubComment = async (
-    body: string,
-    context: CiContext,
-    ghBin: string,
-    fetchImpl: typeof fetch,
-): Promise<PostPrCommentResult> => {
+const postGithubComment = async (body: string, context: CiContext, ghBin: string, fetchImpl: typeof fetch): Promise<PostPrCommentResult> => {
     if (context.prNumber === undefined) {
         return { method: "skipped", posted: false };
     }
@@ -327,11 +308,7 @@ const postGithubComment = async (
     };
 };
 
-const postGitlabComment = async (
-    body: string,
-    context: CiContext,
-    fetchImpl: typeof fetch,
-): Promise<PostPrCommentResult> => {
+const postGitlabComment = async (body: string, context: CiContext, fetchImpl: typeof fetch): Promise<PostPrCommentResult> => {
     if (context.prNumber === undefined) {
         return { method: "skipped", posted: false };
     }

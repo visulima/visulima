@@ -623,13 +623,13 @@ const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
         const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
 
         return !!(
-            pkg.dependencies
-            || pkg.devDependencies
-            || pkg.peerDependencies
-            || pkg.optionalDependencies
-            || pkg.overrides
-            || pkg.resolutions
-            || getNestedField(pkg, "pnpm.overrides")
+            pkg.dependencies ||
+            pkg.devDependencies ||
+            pkg.peerDependencies ||
+            pkg.optionalDependencies ||
+            pkg.overrides ||
+            pkg.resolutions ||
+            getNestedField(pkg, "pnpm.overrides")
         );
     } catch {
         return false;
@@ -1167,8 +1167,8 @@ const findTargetVersion = (
     }
 
     // For minor/patch, find highest constrained version
-    const constraint
-        = target === "patch"
+    const constraint =
+        target === "patch"
             ? (p: ParsedVersion): boolean => p.major === current.major && p.minor === current.minor
             : (p: ParsedVersion): boolean => p.major === current.major;
 

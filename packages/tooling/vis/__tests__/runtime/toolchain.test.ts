@@ -153,10 +153,7 @@ describe(parseExpectedTools, () => {
     it("should parse packageManager and strip sha checksums", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(tmpDirectory, "package.json"),
-            JSON.stringify({ packageManager: "pnpm@10.32.1+sha512.deadbeef" }),
-        );
+        writeFileSync(join(tmpDirectory, "package.json"), JSON.stringify({ packageManager: "pnpm@10.32.1+sha512.deadbeef" }));
 
         const specs = parseExpectedTools(tmpDirectory);
         const pnpm = specs.find((s) => s.tool === "pnpm");
@@ -168,17 +165,7 @@ describe(parseExpectedTools, () => {
     it("should parse .prototools with quoted and unquoted values", () => {
         expect.assertions(3);
 
-        writeFileSync(
-            join(tmpDirectory, ".prototools"),
-            [
-                '# comment line',
-                'node = "22.13.0"',
-                'pnpm = 10.32.1',
-                '[plugins]',
-                'foo = "bar"',
-                '',
-            ].join("\n"),
-        );
+        writeFileSync(join(tmpDirectory, ".prototools"), ["# comment line", 'node = "22.13.0"', "pnpm = 10.32.1", "[plugins]", 'foo = "bar"', ""].join("\n"));
 
         const specs = parseExpectedTools(tmpDirectory);
 
@@ -191,17 +178,7 @@ describe(parseExpectedTools, () => {
     it("should parse .mise.toml [tools] section only", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(tmpDirectory, ".mise.toml"),
-            [
-                '[tools]',
-                'node = "22.13.0"',
-                'python = "3.12"',
-                '',
-                '[env]',
-                'FOO = "bar"',
-            ].join("\n"),
-        );
+        writeFileSync(join(tmpDirectory, ".mise.toml"), ["[tools]", 'node = "22.13.0"', 'python = "3.12"', "", "[env]", 'FOO = "bar"'].join("\n"));
 
         const specs = parseExpectedTools(tmpDirectory);
 
@@ -212,10 +189,7 @@ describe(parseExpectedTools, () => {
     it("should parse .tool-versions (asdf format)", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(tmpDirectory, ".tool-versions"),
-            ["node 22.13.0", "python 3.12.0 3.11.0", "# comment"].join("\n"),
-        );
+        writeFileSync(join(tmpDirectory, ".tool-versions"), ["node 22.13.0", "python 3.12.0 3.11.0", "# comment"].join("\n"));
 
         const specs = parseExpectedTools(tmpDirectory);
 
@@ -240,10 +214,7 @@ describe(parseExpectedTools, () => {
     it("should pick up volta pins from package.json", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(tmpDirectory, "package.json"),
-            JSON.stringify({ volta: { node: "22.13.0", pnpm: "10.0.0" } }),
-        );
+        writeFileSync(join(tmpDirectory, "package.json"), JSON.stringify({ volta: { node: "22.13.0", pnpm: "10.0.0" } }));
 
         const specs = parseExpectedTools(tmpDirectory);
 
@@ -589,10 +560,7 @@ describe(resolveManagerFor, () => {
     it("should pick fnm for a .nvmrc pin when fnm is installed", () => {
         expect.assertions(2);
 
-        const manager = resolveManagerFor(
-            { source: ".nvmrc", tool: "node", version: "22.13.0" },
-            [managerFixture({ name: "fnm" })],
-        );
+        const manager = resolveManagerFor({ source: ".nvmrc", tool: "node", version: "22.13.0" }, [managerFixture({ name: "fnm" })]);
 
         expect(manager.name).toBe("fnm");
         expect(manager.installed).toBe(true);
@@ -610,10 +578,7 @@ describe(resolveManagerFor, () => {
 
         try {
             // Keep real PATH so node is resolvable if isOnPath checks it.
-            const manager = resolveManagerFor(
-                { source: "packageManager", tool: "pnpm", version: "10.32.1" },
-                [managerFixture({ name: "corepack" })],
-            );
+            const manager = resolveManagerFor({ source: "packageManager", tool: "pnpm", version: "10.32.1" }, [managerFixture({ name: "corepack" })]);
 
             // We can't rely on pnpm being on PATH in the sandbox, so the
             // function must fall back to corepack (next in the preference).
@@ -632,10 +597,7 @@ describe(resolveManagerFor, () => {
     it("should fall back to corepack for npm when volta/proto/mise are absent", () => {
         expect.assertions(2);
 
-        const manager = resolveManagerFor(
-            { source: "packageManager", tool: "npm", version: "10.0.0" },
-            [managerFixture({ name: "corepack" })],
-        );
+        const manager = resolveManagerFor({ source: "packageManager", tool: "npm", version: "10.0.0" }, [managerFixture({ name: "corepack" })]);
 
         expect(manager.name).toBe("corepack");
         expect(manager.installed).toBe(true);
@@ -644,10 +606,7 @@ describe(resolveManagerFor, () => {
     it("should return a fallback suggestion when nothing is installed", () => {
         expect.assertions(3);
 
-        const manager = resolveManagerFor(
-            { source: "engines", tool: "node", version: ">=22" },
-            [],
-        );
+        const manager = resolveManagerFor({ source: "engines", tool: "node", version: ">=22" }, []);
 
         // Walks the preference and suggests the first capable manager.
         expect(manager.installed).toBe(false);
@@ -660,10 +619,7 @@ describe(resolveManagerFor, () => {
 
         // Use a made-up source that no manager handles for a tool — we
         // use a manager capabilities scenario.
-        const manager = resolveManagerFor(
-            { source: ".nvmrc", tool: "python" as never, version: "3.12" },
-            [],
-        );
+        const manager = resolveManagerFor({ source: ".nvmrc", tool: "python" as never, version: "3.12" }, []);
 
         // .nvmrc preference is fnm/nvm/volta/proto/mise/asdf; python is
         // not in fnm/nvm/volta capabilities, but proto/mise/asdf accept
@@ -1143,11 +1099,7 @@ describe("resolveManagerFor preferredManager fallback", () => {
 
         // fnm can only install node — when asked to pin python, the
         // override is ignored and we fall through to a capable manager.
-        const result = resolveManagerFor(
-            { source: "vis.config.ts", tool: "python", version: "3.12" },
-            [],
-            { preferredManager: "fnm" },
-        );
+        const result = resolveManagerFor({ source: "vis.config.ts", tool: "python", version: "3.12" }, [], { preferredManager: "fnm" });
 
         expect(result.name).not.toBe("fnm");
     });

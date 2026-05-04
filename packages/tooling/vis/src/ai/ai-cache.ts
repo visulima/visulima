@@ -185,4 +185,14 @@ const clearCache = (): number => {
 
 export type { CacheEntry, CacheStats };
 
-export { buildCacheKey, buildHashCacheKey, clearCache, getCachedAnalysis, getCachedJson, getCacheStats, getTtlForAnalysisType, setCachedAnalysis, setCachedJson };
+export {
+    buildCacheKey,
+    buildHashCacheKey,
+    clearCache,
+    getCachedAnalysis,
+    getCachedJson,
+    getCacheStats,
+    getTtlForAnalysisType,
+    setCachedAnalysis,
+    setCachedJson,
+};

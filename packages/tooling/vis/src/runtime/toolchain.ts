@@ -30,16 +30,7 @@ export type RuntimeTool = "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "pyt
  * Where an expected version came from, in priority order. Higher-indexed
  * sources win when the same tool is pinned in multiple places.
  */
-export type PinSource
-    = | ".mise.toml"
-        | ".node-version"
-        | ".nvmrc"
-        | ".prototools"
-        | ".tool-versions"
-        | "engines"
-        | "packageManager"
-        | "vis.config.ts"
-        | "volta";
+export type PinSource = ".mise.toml" | ".node-version" | ".nvmrc" | ".prototools" | ".tool-versions" | "engines" | "packageManager" | "vis.config.ts" | "volta";
 
 export interface ToolSpec {
     readonly source: PinSource;
@@ -401,25 +392,17 @@ export const findInstalledManagers = (workspaceRoot: string, options?: { refresh
  * For per-tool delegation use {@link resolveManagerFor}; this helper is
  * only useful when the CLI needs a single name to show.
  */
-export const pickPrimaryManager = (
-    workspaceRoot: string,
-    config?: ToolchainConfig,
-    detected?: ReadonlyArray<DetectedManager>,
-): DetectedManager => {
+export const pickPrimaryManager = (workspaceRoot: string, config?: ToolchainConfig, detected?: ReadonlyArray<DetectedManager>): DetectedManager => {
     const found = detected ?? findInstalledManagers(workspaceRoot);
 
     if (config?.preferredManager && config.preferredManager !== "none") {
-        return (
-            found.find((d) => d.name === config.preferredManager)
-            ?? { configFiles: [], installed: false, name: config.preferredManager }
-        );
+        return found.find((d) => d.name === config.preferredManager) ?? { configFiles: [], installed: false, name: config.preferredManager };
     }
 
     return (
-        found.find((d) => d.installed && d.configFiles.length > 0)
-        ?? found.find((d) => d.installed)
-        ?? found.find((d) => d.configFiles.length > 0)
-        ?? { configFiles: [], installed: false, name: "none" }
+        found.find((d) => d.installed && d.configFiles.length > 0) ??
+        found.find((d) => d.installed) ??
+        found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
     );
 };
 
@@ -961,11 +944,7 @@ const preferenceFor = (source: PinSource, tool: RuntimeTool): ReadonlyArray<Vers
  * manager (installed or not) so the status report can still name
  * something. Returns `{ name: "none" }` when truly nothing can help.
  */
-export const resolveManagerFor = (
-    spec: ToolSpec,
-    detected: ReadonlyArray<DetectedManager>,
-    config?: ToolchainConfig,
-): ResolvedManager => {
+export const resolveManagerFor = (spec: ToolSpec, detected: ReadonlyArray<DetectedManager>, config?: ToolchainConfig): ResolvedManager => {
     if (config?.preferredManager && config.preferredManager !== "none" && canHandle(config.preferredManager, spec.tool)) {
         const override = detected.find((d) => d.name === config.preferredManager);
 
@@ -977,10 +956,10 @@ export const resolveManagerFor = (
         return override
             ? { installed: override.installed, name: override.name }
             : {
-                installed: false,
-                name: config.preferredManager,
-                note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
-            };
+                  installed: false,
+                  name: config.preferredManager,
+                  note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
+              };
     }
 
     const preference = preferenceFor(spec.source, spec.tool);
@@ -1293,11 +1272,14 @@ export const findOnPathByAlias = (tool: RuntimeTool): string | undefined => {
 export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): string | undefined => {
     const aliases = TOOL_VERSION_QUERY[tool].binaries;
 
-    if (manager.installed && manager.binPath // proto/mise/asdf expose `which`; volta has `volta which`; fnm
+    if (
+        manager.installed &&
+        manager.binPath && // proto/mise/asdf expose `which`; volta has `volta which`; fnm
         // prints to stdout from `fnm which`. Try each alias in order so
         // `mise which rust` (which doesn't know "rust") falls back to
         // `mise which rustc`.
-        && (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")) {
+        (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
+    ) {
         for (const alias of aliases) {
             try {
                 const output = execFileSync(manager.binPath, ["which", alias], {
@@ -1442,9 +1424,7 @@ export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec):
         // JSON.parse throws SyntaxError with a useless "Unexpected
         // token X at position Y" — prepend the file path and hint so
         // the user can act on it instead of getting a bare stack.
-        throw new Error(
-            `${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`,
-        );
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`);
     }
 
     const value = `${spec.tool}@${spec.version}`;
@@ -1482,9 +1462,7 @@ export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): strin
     try {
         pkg = JSON.parse(raw) as typeof pkg;
     } catch (error: unknown) {
-        throw new Error(
-            `${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`,
-        );
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`);
     }
 
     if (pkg.engines?.[spec.tool] === undefined) {
@@ -1647,14 +1625,18 @@ export const ensureToolchain = async (
         // asdf install the exact pin instead of falling back to a
         // workspace config that may not exist.
         const pairs = tools
-            .map((tool) => { return { invocation: buildInstallInvocation(managerName, tool.expected), tool }; })
+            .map((tool) => {
+                return { invocation: buildInstallInvocation(managerName, tool.expected), tool };
+            })
             .filter((pair): pair is { invocation: InstallInvocation; tool: ToolStatus } => pair.invocation !== undefined);
 
         for (const { invocation, tool } of pairs) {
             const { expected } = tool;
 
             if (invocation.bin === "nvm" && invocation.args.length === 0) {
-                logger.warn(`toolchain: nvm requires a shell-side activation for ${expected.tool} ${expected.version}. Run \`nvm install\` / \`nvm use\` manually.`);
+                logger.warn(
+                    `toolchain: nvm requires a shell-side activation for ${expected.tool} ${expected.version}. Run \`nvm install\` / \`nvm use\` manually.`,
+                );
                 failed.push({ error: "nvm requires shell-side activation", spec: expected });
                 continue;
             }

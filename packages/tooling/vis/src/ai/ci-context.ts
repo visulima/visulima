@@ -84,9 +84,7 @@ const parsePrNumberFromGithubRef = (ref: string | undefined): number | undefined
     return match ? Number.parseInt(match[1]!, 10) : undefined;
 };
 
-const readPrNumberFromGithubEvent = async (
-    eventPath: string | undefined,
-): Promise<{ prNumber: number | undefined; sha: string | undefined }> => {
+const readPrNumberFromGithubEvent = async (eventPath: string | undefined): Promise<{ prNumber: number | undefined; sha: string | undefined }> => {
     if (!eventPath) {
         return { prNumber: undefined, sha: undefined };
     }
@@ -110,9 +108,8 @@ const readPrNumberFromGithubEvent = async (
 
 const detectGithubActions = async (env: NodeJS.ProcessEnv): Promise<CiContext> => {
     const refPrNumber = parsePrNumberFromGithubRef(env.GITHUB_REF);
-    const { prNumber: payloadPrNumber, sha: payloadSha } = refPrNumber === undefined
-        ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH)
-        : { prNumber: refPrNumber, sha: undefined };
+    const { prNumber: payloadPrNumber, sha: payloadSha } =
+        refPrNumber === undefined ? await readPrNumberFromGithubEvent(env.GITHUB_EVENT_PATH) : { prNumber: refPrNumber, sha: undefined };
 
     return {
         apiBaseUrl: undefined,
@@ -167,23 +164,17 @@ const detectBuildkite = (env: NodeJS.ProcessEnv): CiContext => {
     // builds (push events, scheduled builds, manual triggers). Anything
     // else parses as a numeric PR ID from the upstream VCS.
     const rawPr = env.BUILDKITE_PULL_REQUEST;
-    const prNumber = rawPr !== undefined && rawPr !== "" && rawPr !== "false"
-        ? Number.parseInt(rawPr, 10)
-        : undefined;
+    const prNumber = rawPr !== undefined && rawPr !== "" && rawPr !== "false" ? Number.parseInt(rawPr, 10) : undefined;
 
     const rawBuildNumber = env.BUILDKITE_BUILD_NUMBER;
-    const buildNumber = rawBuildNumber !== undefined && rawBuildNumber !== ""
-        ? Number.parseInt(rawBuildNumber, 10)
-        : undefined;
+    const buildNumber = rawBuildNumber !== undefined && rawBuildNumber !== "" ? Number.parseInt(rawBuildNumber, 10) : undefined;
 
     // The annotations REST endpoint takes {org-slug}/{pipeline-slug}/{build-number}.
     // Compose the org+pipeline pair into `repo` so the comment poster
     // can build the URL without a Buildkite-only field.
     const org = env.BUILDKITE_ORGANIZATION_SLUG;
     const pipeline = env.BUILDKITE_PIPELINE_SLUG;
-    const repo = org !== undefined && org !== "" && pipeline !== undefined && pipeline !== ""
-        ? `${org}/${pipeline}`
-        : undefined;
+    const repo = org !== undefined && org !== "" && pipeline !== undefined && pipeline !== "" ? `${org}/${pipeline}` : undefined;
 
     // Buildkite Enterprise self-hosted instances proxy api.buildkite.com
     // through a customer-controlled host. There's no canonical env var,

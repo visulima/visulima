@@ -26,10 +26,18 @@ const makeLogger = (): {
     return {
         calls,
         logger: {
-            debug: (...args) => { calls.push({ args, level: "debug" }); },
-            error: (...args) => { calls.push({ args, level: "error" }); },
-            info: (...args) => { calls.push({ args, level: "info" }); },
-            warn: (...args) => { calls.push({ args, level: "warn" }); },
+            debug: (...args) => {
+                calls.push({ args, level: "debug" });
+            },
+            error: (...args) => {
+                calls.push({ args, level: "error" });
+            },
+            info: (...args) => {
+                calls.push({ args, level: "info" });
+            },
+            warn: (...args) => {
+                calls.push({ args, level: "warn" });
+            },
         },
     };
 };
@@ -67,10 +75,7 @@ describe("vis run lockfile preflight wiring", () => {
 
         mkdirSync(pkgDir, { recursive: true });
         writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "@my/lib", scripts: { build: "echo hi" } }));
-        writeFileSync(
-            join(pkgDir, "project.json"),
-            JSON.stringify({ targets: { build: { command: "echo hi", outputs: [] } } }),
-        );
+        writeFileSync(join(pkgDir, "project.json"), JSON.stringify({ targets: { build: { command: "echo hi", outputs: [] } } }));
     });
 
     afterEach(() => {

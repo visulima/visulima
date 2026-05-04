@@ -9,13 +9,7 @@ const task = (project: string, target = "test"): { id: string; target: { project
     };
 };
 
-const baseTasks = [
-    task("vis"),
-    task("cerebro"),
-    task("packem"),
-    task("task-runner"),
-    task("Pail"),
-];
+const baseTasks = [task("vis"), task("cerebro"), task("packem"), task("task-runner"), task("Pail")];
 
 describe(applyProjectFilter, () => {
     it("returns a copy of the base tasks when filter is undefined", () => {

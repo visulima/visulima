@@ -200,9 +200,7 @@ describe(resolveAubeAdd, () => {
         // No `--workspace` flag emitted (would mean "redirect to root" in
         // aube — a different semantic from pnpm's `--workspace` protocol).
         expect(args).toStrictEqual(["add", "zod"]);
-        expect(warnings).toContain(
-            "aube has no flag for the `workspace:` protocol; it auto-detects local workspace members during add. Ignoring --workspace.",
-        );
+        expect(warnings).toContain("aube has no flag for the `workspace:` protocol; it auto-detects local workspace members during add. Ignoring --workspace.");
     });
 
     it("forwards filter as a global before `add`", () => {
@@ -220,16 +218,7 @@ describe(resolveAubeAdd, () => {
             workspaceRoot: false,
         });
 
-        expect(args).toStrictEqual([
-            "--filter",
-            "app",
-            "--filter",
-            "lib",
-            "add",
-            "--save-exact",
-            "--save-optional",
-            "zod",
-        ]);
+        expect(args).toStrictEqual(["--filter", "app", "--filter", "lib", "add", "--save-exact", "--save-optional", "zod"]);
     });
 });
 
@@ -421,17 +410,7 @@ describe(resolveAubeDlx, () => {
             silent: true,
         });
 
-        expect(args).toStrictEqual([
-            "--silent",
-            "dlx",
-            "--package",
-            "chalk",
-            "--package",
-            "prompts",
-            "--shell-mode",
-            "esbuild",
-            "script.js",
-        ]);
+        expect(args).toStrictEqual(["--silent", "dlx", "--package", "chalk", "--package", "prompts", "--shell-mode", "esbuild", "script.js"]);
     });
 });
 

@@ -35,13 +35,7 @@ const ConfigBanner = ({ children, hint, message, severity, title }: ConfigBanner
     const color = SEVERITY_COLORS[severity];
 
     return (
-        <Box
-            borderColor={color}
-            borderStyle="single"
-            flexDirection="column"
-            flexShrink={0}
-            paddingX={1}
-        >
+        <Box borderColor={color} borderStyle="single" flexDirection="column" flexShrink={0} paddingX={1}>
             <Box gap={1}>
                 <Text backgroundColor={color} bold color="black">
                     {SEVERITY_LABELS[severity]}
@@ -49,14 +43,16 @@ const ConfigBanner = ({ children, hint, message, severity, title }: ConfigBanner
                 <Text bold color={color}>
                     {SEVERITY_GLYPHS[severity]}
                 </Text>
-                <Text bold wrap="truncate-end">{title}</Text>
+                <Text bold wrap="truncate-end">
+                    {title}
+                </Text>
             </Box>
             <Text wrap="truncate-end">{message}</Text>
-            {hint
-                ? (
-                    <Text dimColor wrap="truncate-end">{hint}</Text>
-                )
-                : null}
+            {hint ? (
+                <Text dimColor wrap="truncate-end">
+                    {hint}
+                </Text>
+            ) : null}
             {children}
         </Box>
     );

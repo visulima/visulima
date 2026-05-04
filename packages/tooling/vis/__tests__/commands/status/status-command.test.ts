@@ -95,14 +95,8 @@ describe("vis status", () => {
 
         mkdirSync(runsDir, { recursive: true });
 
-        writeFileSync(
-            join(runsDir, "run-1.json"),
-            JSON.stringify({ stats: { cached: 3, total: 4 } }),
-        );
-        writeFileSync(
-            join(runsDir, "run-2.json"),
-            JSON.stringify({ stats: { cached: 5, total: 6 } }),
-        );
+        writeFileSync(join(runsDir, "run-1.json"), JSON.stringify({ stats: { cached: 3, total: 4 } }));
+        writeFileSync(join(runsDir, "run-2.json"), JSON.stringify({ stats: { cached: 5, total: 6 } }));
 
         const { calls, logger } = makeLogger();
 

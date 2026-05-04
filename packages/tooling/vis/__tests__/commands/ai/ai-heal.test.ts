@@ -132,9 +132,7 @@ describe(renderCommentBodyForTesting, () => {
 
         const body = renderCommentBodyForTesting(
             proposal({
-                patches: [
-                    { file: "src/big.ts", newString: huge, oldString: huge },
-                ],
+                patches: [{ file: "src/big.ts", newString: huge, oldString: huge }],
             }),
             failureContext(),
             "/ws",

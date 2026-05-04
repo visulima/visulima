@@ -13,14 +13,7 @@ import type { ServiceEntry } from "../../services/types";
 import { loadEnvFile } from "../../task/target-options";
 import type { ServiceConfig, VisTargetConfiguration } from "../../task/types";
 import { formatAge } from "../cache/handler";
-import type {
-    ServiceListOptions,
-    ServiceLogsOptions,
-    ServiceRestartOptions,
-    ServiceStartOptions,
-    ServiceStatusOptions,
-    ServiceStopOptions,
-} from "./index";
+import type { ServiceListOptions, ServiceLogsOptions, ServiceRestartOptions, ServiceStartOptions, ServiceStatusOptions, ServiceStopOptions } from "./index";
 
 interface ResolvedTarget {
     /** Resolved shell command. Always defined — handlers reject targets without `command`. */
@@ -67,11 +60,7 @@ const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runF
  * diagnostic on any failure (unparseable id, unknown project, missing
  * target, missing `service` block, missing command).
  */
-const resolveTarget = async (
-    workspaceRoot: string,
-    visConfig: VisConfig | undefined,
-    targetId: string,
-): Promise<ResolvedTarget | undefined> => {
+const resolveTarget = async (workspaceRoot: string, visConfig: VisConfig | undefined, targetId: string): Promise<ResolvedTarget | undefined> => {
     const split = splitTargetId(targetId);
 
     if (!split) {
@@ -95,9 +84,7 @@ const resolveTarget = async (
     const service = target.options?.service;
 
     if (!service) {
-        pail.error(
-            `Target "${targetId}" is not a service. Add an \`options.service\` block to make it eligible for \`vis service\`.`,
-        );
+        pail.error(`Target "${targetId}" is not a service. Add an \`options.service\` block to make it eligible for \`vis service\`.`);
 
         return undefined;
     }
@@ -317,12 +304,8 @@ export const serviceListExecute = async ({ logger, options, workspaceRoot: wsRoo
     const portWidth = Math.max(4, ...rows.map((r) => r.port.length));
     const ageWidth = Math.max(3, ...rows.map((r) => r.age.length));
 
-    logger.info(
-        `  ${"id".padEnd(idWidth)}  ${"pid".padEnd(pidWidth)}  ${"port".padEnd(portWidth)}  ${"age".padEnd(ageWidth)}  log`,
-    );
-    logger.info(
-        `  ${"-".repeat(idWidth)}  ${"-".repeat(pidWidth)}  ${"-".repeat(portWidth)}  ${"-".repeat(ageWidth)}  ---`,
-    );
+    logger.info(`  ${"id".padEnd(idWidth)}  ${"pid".padEnd(pidWidth)}  ${"port".padEnd(portWidth)}  ${"age".padEnd(ageWidth)}  log`);
+    logger.info(`  ${"-".repeat(idWidth)}  ${"-".repeat(pidWidth)}  ${"-".repeat(portWidth)}  ${"-".repeat(ageWidth)}  ---`);
 
     for (const row of rows) {
         logger.info(`  ${row.id.padEnd(idWidth)}  ${row.pid.padEnd(pidWidth)}  ${row.port.padEnd(portWidth)}  ${row.age.padEnd(ageWidth)}  ${row.log}`);
@@ -367,7 +350,12 @@ export const serviceStatusExecute = async ({ argument, options, workspaceRoot: w
     }
 };
 
-export const serviceRestartExecute = async ({ argument, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ServiceRestartOptions>): Promise<void> => {
+export const serviceRestartExecute = async ({
+    argument,
+    options,
+    visConfig,
+    workspaceRoot: wsRoot,
+}: Toolbox<Console, ServiceRestartOptions>): Promise<void> => {
     const workspaceRoot = requireWorkspace(wsRoot);
     const targetId = argument[0]?.trim();
 

@@ -192,9 +192,7 @@ export const checkOrphanedRunners = (): RuntimeDiagnostic => {
         };
     }
 
-    const killSnippet = process.platform === "win32"
-        ? pids.map((p) => `taskkill /F /PID ${String(p)}`).join(" & ")
-        : `kill ${pids.join(" ")}`;
+    const killSnippet = process.platform === "win32" ? pids.map((p) => `taskkill /F /PID ${String(p)}`).join(" & ") : `kill ${pids.join(" ")}`;
 
     return {
         detail: { count: pids.length, pids: pids.join(",") },
@@ -399,11 +397,7 @@ const listOrphansUnix = (selfPid: number): number[] => {
         // would falsely flag `unrelated-task-runner-helper` and similar — and
         // a misclassification matters more under `sudo vis doctor --fix`.
         // Anchor each pattern so it only matches the binaries we actually ship.
-        if (
-            /(?:^|[ /])vis-native(?:\s|$|[-.])/.test(command)
-            || /(?:^|[ /])vis\s+run\b/.test(command)
-            || /(?:^|[ /])task-runner(?:\s|$|[-.])/.test(command)
-        ) {
+        if (/(?:^|[ /])vis-native(?:\s|$|[-.])/.test(command) || /(?:^|[ /])vis\s+run\b/.test(command) || /(?:^|[ /])task-runner(?:\s|$|[-.])/.test(command)) {
             pids.push(pid);
         }
     }
@@ -446,8 +440,4 @@ const listOrphansWindows = (selfPid: number): number[] => {
  * (most likely to silently break watch), then TTY (informational),
  * then orphans (cleanup).
  */
-export const runRuntimeDiagnostics = (): RuntimeDiagnostic[] => [
-    checkInotifyCapacity(),
-    checkTtyAvailability(),
-    checkOrphanedRunners(),
-];
+export const runRuntimeDiagnostics = (): RuntimeDiagnostic[] => [checkInotifyCapacity(), checkTtyAvailability(), checkOrphanedRunners()];

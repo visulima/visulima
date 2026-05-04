@@ -6,9 +6,10 @@ import { startService, stopService } from "../../src/services/lifecycle";
 import { isAlive, readEntry } from "../../src/services/registry";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 const findFreePort = async (): Promise<number> =>
     new Promise((resolve, reject) => {
@@ -113,7 +114,7 @@ describe("services/lifecycle", () => {
 
         await expect(
             startService({
-                command: "node -e \"setInterval(()=>{},1000)\"",
+                command: 'node -e "setInterval(()=>{},1000)"',
                 config: {},
                 cwd: workspaceRoot,
                 env: {},
@@ -143,7 +144,7 @@ describe("services/lifecycle", () => {
         // SIGKILL the orphan and unregister.
         await expect(
             startService({
-                command: "node -e \"setInterval(()=>{},1000)\"",
+                command: 'node -e "setInterval(()=>{},1000)"',
                 config: { readiness: { tcp: { port, timeoutMs: 300 } } },
                 cwd: workspaceRoot,
                 env: {},

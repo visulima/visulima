@@ -32,7 +32,8 @@ const sortPackageJson: Command = {
             type: Boolean,
         },
         {
-            description: "Indent override: a number of spaces, the literal `tab`, or a literal whitespace string. When unset, the original file's indent is preserved.",
+            description:
+                "Indent override: a number of spaces, the literal `tab`, or a literal whitespace string. When unset, the original file's indent is preserved.",
             name: "indent",
             type: String,
         },

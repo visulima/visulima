@@ -26,10 +26,10 @@ Pass `--run <id>` where `<id>` is the file basename without `.json` (e.g. `2026-
 
 ## Filters
 
-| Flag             | Effect                                                          |
-| ---------------- | --------------------------------------------------------------- |
-| `--task <id>`    | Render detail for one task; errors if the task is not in the run |
-| `--failed`       | Show only tasks with a non-zero exit code                        |
+| Flag          | Effect                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| `--task <id>` | Render detail for one task; errors if the task is not in the run |
+| `--failed`    | Show only tasks with a non-zero exit code                        |
 
 `--task` and `--failed` compose. `vis replay --task @app/api:test --format=json` is a common CI shape — load yesterday's failed-test summary for one specific target.
 
@@ -45,15 +45,24 @@ When a load fails (no summary, missing run id, or `--task` filter not matched), 
 
 ```json
 {
-  "runId": "2026-04-28T12-34-56_ab12",
-  "startTime": "...",
-  "endTime": "...",
-  "duration": 1234,
-  "environment": { "platform": "linux", "arch": "x64", "nodeVersion": "v22.14.0" },
-  "stats": { "total": 3, "succeeded": 2, "cached": 0, "skipped": 0, "failed": 1 },
-  "tasks": [
-    { "taskId": "@app/api:test", "cacheStatus": "MISS", "duration": 234, "exitCode": 1, "hash": "abc…", "dependencies": ["@app/api:db"], "startTime": "…", "endTime": "…" }
-  ]
+    "runId": "2026-04-28T12-34-56_ab12",
+    "startTime": "...",
+    "endTime": "...",
+    "duration": 1234,
+    "environment": { "platform": "linux", "arch": "x64", "nodeVersion": "v22.14.0" },
+    "stats": { "total": 3, "succeeded": 2, "cached": 0, "skipped": 0, "failed": 1 },
+    "tasks": [
+        {
+            "taskId": "@app/api:test",
+            "cacheStatus": "MISS",
+            "duration": 234,
+            "exitCode": 1,
+            "hash": "abc…",
+            "dependencies": ["@app/api:db"],
+            "startTime": "…",
+            "endTime": "…"
+        }
+    ]
 }
 ```
 

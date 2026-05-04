@@ -193,11 +193,14 @@ describe(otelPlugin, () => {
     it("tracer.startSpan is only called once per task:before", async () => {
         expect.assertions(1);
 
-        const spy = vi.fn<Tracer["startSpan"]>(() => ({
-            end: () => {},
-            setAttribute: () => undefined as unknown as Span,
-            setStatus: () => undefined as unknown as Span,
-        } as unknown as Span));
+        const spy = vi.fn<Tracer["startSpan"]>(
+            () =>
+                ({
+                    end: () => {},
+                    setAttribute: () => undefined as unknown as Span,
+                    setStatus: () => undefined as unknown as Span,
+                }) as unknown as Span,
+        );
 
         const hooks = createVisHooks();
 

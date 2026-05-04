@@ -7,9 +7,10 @@ import { isAlive } from "../../src/services/registry";
 import { spawnDetached } from "../../src/services/spawn";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 describe(spawnDetached, () => {
     let temporaryDirectory: string;
@@ -28,7 +29,7 @@ describe(spawnDetached, () => {
         const logFile = join(temporaryDirectory, "test.log");
 
         const { pid } = await spawnDetached({
-            command: "node -e \"setInterval(()=>{}, 1000)\"",
+            command: 'node -e "setInterval(()=>{}, 1000)"',
             cwd: temporaryDirectory,
             env: {},
             logFile,

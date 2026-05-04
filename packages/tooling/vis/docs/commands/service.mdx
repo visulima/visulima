@@ -9,15 +9,15 @@ Manage shared sidecar services — Postgres, mock servers, devservers — that s
 
 ## Subcommands
 
-| Command                          | Description                                                            |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| `vis service start <id>`         | Spawn the target's command detached, probe readiness, register it      |
-| `vis service stop <id>`          | SIGTERM (then SIGKILL after grace) and unregister                      |
-| `vis service stop --all`         | Stop every service registered under the current workspace              |
-| `vis service list`               | Show registered services (table, or `--format=json`)                   |
-| `vis service status <id>`        | Re-run the readiness probe; exit 0 healthy, 1 unhealthy                |
-| `vis service restart <id>`       | Stop + start in one call                                               |
-| `vis service logs <id>`          | Print captured stdout/stderr; `-f`/`--follow` to tail                  |
+| Command                    | Description                                                       |
+| -------------------------- | ----------------------------------------------------------------- |
+| `vis service start <id>`   | Spawn the target's command detached, probe readiness, register it |
+| `vis service stop <id>`    | SIGTERM (then SIGKILL after grace) and unregister                 |
+| `vis service stop --all`   | Stop every service registered under the current workspace         |
+| `vis service list`         | Show registered services (table, or `--format=json`)              |
+| `vis service status <id>`  | Re-run the readiness probe; exit 0 healthy, 1 unhealthy           |
+| `vis service restart <id>` | Stop + start in one call                                          |
+| `vis service logs <id>`    | Print captured stdout/stderr; `-f`/`--follow` to tail             |
 
 ## Eligibility — declaring a service
 

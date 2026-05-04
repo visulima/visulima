@@ -41,7 +41,8 @@ const ci: Command = {
         },
         {
             defaultValue: false,
-            description: "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+            description:
+                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
             name: "skip-toolchain",
             type: Boolean,
         },

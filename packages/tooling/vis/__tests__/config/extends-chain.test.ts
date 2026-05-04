@@ -123,7 +123,10 @@ describe("vis.config.ts extends chain", () => {
         expect.assertions(2);
 
         writeConfig(join(scratch, "shared.config.ts"), `{ taskDefaults: [{ scope: { tags: ["base"] }, targets: { build: { cache: true } } }] }`);
-        writeConfig(join(scratch, "vis.config.ts"), `{ extends: ["./shared.config.ts"], taskDefaults: [{ scope: { tags: ["app"] }, targets: { build: { cache: false } } }] }`);
+        writeConfig(
+            join(scratch, "vis.config.ts"),
+            `{ extends: ["./shared.config.ts"], taskDefaults: [{ scope: { tags: ["app"] }, targets: { build: { cache: false } } }] }`,
+        );
 
         const config = await loadVisConfig(scratch);
 

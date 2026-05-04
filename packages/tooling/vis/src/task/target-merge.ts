@@ -37,7 +37,7 @@ export const mergeArrayWithInherit = <T>(parent: ReadonlyArray<T> | undefined, c
         return parent === undefined ? undefined : [...parent];
     }
 
-    if (!child.includes((INHERIT_SENTINEL as unknown as T))) {
+    if (!child.includes(INHERIT_SENTINEL as unknown as T)) {
         return [...child];
     }
 

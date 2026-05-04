@@ -40,7 +40,7 @@ const typeName = (type: unknown): string => {
         return String(type);
     }
 
-    const { name } = (type as { name?: string });
+    const { name } = type as { name?: string };
 
     if (name === "Boolean") {
         return "boolean";
@@ -75,9 +75,7 @@ const buildSubcommand = (command: Command): DiscoverySubcommand => {
     });
 
     return {
-        argument: command.argument
-            ? { description: command.argument.description, name: command.argument.name }
-            : undefined,
+        argument: command.argument ? { description: command.argument.description, name: command.argument.name } : undefined,
         description: command.description ?? "",
         examples,
         name: command.name,
@@ -116,9 +114,7 @@ export const renderDiscoveryText = (subcommands: Command[], meta: DiscoveryMeta 
         }
 
         if (subcommand.options.length > 0) {
-            const optionList = subcommand.options
-                .map((option) => `--${option.name}${option.type === "boolean" ? "" : `=<${option.type}>`}`)
-                .join(", ");
+            const optionList = subcommand.options.map((option) => `--${option.name}${option.type === "boolean" ? "" : `=<${option.type}>`}`).join(", ");
 
             lines.push(dim(`    options: ${optionList}`));
         }

@@ -6,7 +6,17 @@ import { join } from "node:path";
 import { Cache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { cacheHashExecute, cacheVerifyExecute, cacheWhyExecute, collectCacheEntries, formatAge, runClean, runHash, runPrune, runWhy } from "../../../src/commands/cache/handler";
+import {
+    cacheHashExecute,
+    cacheVerifyExecute,
+    cacheWhyExecute,
+    collectCacheEntries,
+    formatAge,
+    runClean,
+    runHash,
+    runPrune,
+    runWhy,
+} from "../../../src/commands/cache/handler";
 
 describe(formatAge, () => {
     it("returns seconds for sub-minute ages", () => {
@@ -517,7 +527,19 @@ const createMockLogger = (): { info: (message: string) => void; lines: string[] 
     };
 };
 
-const writeRunSummary = (workspaceRoot: string, summary: { duration?: number; endTime?: string; environment?: Record<string, unknown>; id: string; startTime?: string; stats?: Record<string, number>; taskGraph?: Record<string, unknown>; tasks: unknown[] }): void => {
+const writeRunSummary = (
+    workspaceRoot: string,
+    summary: {
+        duration?: number;
+        endTime?: string;
+        environment?: Record<string, unknown>;
+        id: string;
+        startTime?: string;
+        stats?: Record<string, number>;
+        taskGraph?: Record<string, unknown>;
+        tasks: unknown[];
+    },
+): void => {
     const runsDir = join(workspaceRoot, ".task-runner", "runs");
 
     mkdirSync(runsDir, { recursive: true });
@@ -553,7 +575,14 @@ const writeLastSummary = (workspaceRoot: string, summary: Parameters<typeof writ
     writeFileSync(join(dir, "last-summary.json"), JSON.stringify(filled));
 };
 
-const buildTaskSummary = (overrides: Partial<{ cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED"; hash: string; hashDetails: { command: string; implicitDeps?: Record<string, string>; nodes: Record<string, string>; runtime?: Record<string, string> }; taskId: string }> = {}): Record<string, unknown> => {
+const buildTaskSummary = (
+    overrides: Partial<{
+        cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED";
+        hash: string;
+        hashDetails: { command: string; implicitDeps?: Record<string, string>; nodes: Record<string, string>; runtime?: Record<string, string> };
+        taskId: string;
+    }> = {},
+): Record<string, unknown> => {
     return {
         cacheable: true,
         cacheStatus: "MISS",

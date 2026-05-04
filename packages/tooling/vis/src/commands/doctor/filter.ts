@@ -79,10 +79,7 @@ export const applyFilter = (results: DoctorResults, patterns: ReadonlyArray<RegE
  * Filter a finding list by package name. `runtime` diagnostics have no
  * package and always survive — they're workspace-wide.
  */
-export const filterFindingsByPattern = (
-    findings: ReadonlyArray<DoctorFinding>,
-    patterns: ReadonlyArray<RegExp>,
-): DoctorFinding[] => {
+export const filterFindingsByPattern = (findings: ReadonlyArray<DoctorFinding>, patterns: ReadonlyArray<RegExp>): DoctorFinding[] => {
     if (patterns.length === 0) {
         return [...findings];
     }
@@ -92,11 +89,12 @@ export const filterFindingsByPattern = (
             return true;
         }
 
-        const name = finding.kind === "duplicate"
-            ? finding.pkg.name
-            : finding.kind === "outdated" || finding.kind === "optimization"
-                ? finding.entry.packageName
-                : finding.packageName;
+        const name =
+            finding.kind === "duplicate"
+                ? finding.pkg.name
+                : finding.kind === "outdated" || finding.kind === "optimization"
+                  ? finding.entry.packageName
+                  : finding.packageName;
 
         return matchesAny(name, patterns);
     });

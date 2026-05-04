@@ -39,7 +39,14 @@ import { runReadiness } from "../../services/readiness";
 import { readAllEntries } from "../../services/registry";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
-import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../task/target-discovery";
+import {
+    buildAliasMap,
+    collectAvailableTargets,
+    formatTargetList,
+    promptTargetInteractively,
+    resolveTargetAlias,
+    suggestTargets,
+} from "../../task/target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../task/target-options";
 import { detectCurrentOs, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../../task/target-options";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
@@ -102,8 +109,8 @@ const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affected
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv
-                = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
+            const affectedEnv =
+                affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
 
@@ -522,9 +529,8 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
             const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
-            const killGracePeriodMs = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0
-                ? visOptions.killGracePeriodMs
-                : 5000;
+            const killGracePeriodMs =
+                typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
             let timedOut = false;
 
             const timeoutKill = scheduleTimeoutKill({
@@ -550,9 +556,9 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                             name: task.id,
                             ...(isPty
                                 ? {
-                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                    stdin: "pty" as const,
-                                }
+                                      ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                      stdin: "pty" as const,
+                                  }
                                 : {}),
                         },
                     ],
@@ -808,7 +814,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const forwardedArgs: string[] = argument.slice(1).map(String);
 
     if (options.projects) {
-        const requested = new Set((options.projects).split(",").map((p: string) => p.trim()));
+        const requested = new Set(options.projects.split(",").map((p: string) => p.trim()));
 
         projectNames = projectNames.filter((name) => requested.has(name));
 
@@ -1002,9 +1008,15 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         workspaceRoot,
         config.toolchain,
         {
-            error: (message) => { logger.error(message); },
-            info: (message) => { logger.info(message); },
-            warn: (message) => { logger.warn(message); },
+            error: (message) => {
+                logger.error(message);
+            },
+            info: (message) => {
+                logger.info(message);
+            },
+            warn: (message) => {
+                logger.warn(message);
+            },
         },
         Boolean(options.skipToolchain),
     );
@@ -1019,7 +1031,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const lockfilePreflight = runLockfilePreflight(
         workspaceRoot,
         isInCi,
-        { warn: (message) => { logger.warn(message); } },
+        {
+            warn: (message) => {
+                logger.warn(message);
+            },
+        },
         { skip: !preflightEnabled },
     );
 
@@ -1047,14 +1063,14 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         probe: options.dryRun
             ? undefined
             : async (entry) => {
-                try {
-                    await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
+                  try {
+                      await runReadiness(entry.config, { timeoutMs: SERVICE_PROBE_TIMEOUT_MS });
 
-                    return true;
-                } catch {
-                    return false;
-                }
-            },
+                      return true;
+                  } catch {
+                      return false;
+                  }
+              },
         registeredEntries,
         taskGraph,
         visVersion: process.env["VIS_VERSION"] ?? "0.0.0",
@@ -1168,12 +1184,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // workspace is a linked git worktree, so sibling agents share one cache
     // instead of rebuilding the same hash N times. Explicit paths
     // (--cache-dir, vis.config.ts, VIS_CACHE_DIRECTORY) win unchanged.
-    const baseCacheDirectory = resolveSharedCacheDirectory(
-        workspaceRoot,
-        options.cacheDir,
-        configTaskRunnerOptions.cacheDirectory,
-        config.sharedWorktreeCache,
-    );
+    const baseCacheDirectory = resolveSharedCacheDirectory(workspaceRoot, options.cacheDir, configTaskRunnerOptions.cacheDirectory, config.sharedWorktreeCache);
     // Branch-scope the cache dir when configured so main/feature
     // branches stop overwriting each other's entries.
     const resolvedCacheDirectory = applyBranchScope(baseCacheDirectory, workspaceRoot, config.branchScopedCache);
@@ -1225,9 +1236,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             };
         }
     } else if (options.cacheMode || options.cacheBackend) {
-        logger.warn(
-            "[vis run] --cache-mode and --cache-backend require a `remoteCache` block in vis.config.ts; ignoring.",
-        );
+        logger.warn("[vis run] --cache-mode and --cache-backend require a `remoteCache` block in vis.config.ts; ignoring.");
     }
 
     const isTTY = process.stdout.isTTY && !isInCi;
@@ -1398,14 +1407,18 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     } else {
         const mutexPool: MutexPool = new Map();
         const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
-        const logMode: LogMode | undefined
-            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
+        const logMode: LogMode | undefined =
+            logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption as LogMode) : undefined;
         const logReporter = logMode ? createLogReporter(logMode) : undefined;
         // Composite so plugin hooks see every task boundary event in
         // addition to the CI-style static renderer. Build the
         // lifecycle first so the executor can forward streaming
         // stdout/stderr chunks into it.
-        const lifeCycle = new CompositeLifeCycle([new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }), hookLifeCycle, failureLogLifeCycle]);
+        const lifeCycle = new CompositeLifeCycle([
+            new StaticOutputLifeCycle({ ...lifecycleOptions, logReporter, outputStyle }),
+            hookLifeCycle,
+            failureLogLifeCycle,
+        ]);
 
         const taskExecutor = createConcurrentExecutor({
             affectedFiles,
@@ -1558,8 +1571,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
             currentHandle = initial.handle;
 
-            const scope
-                = initial.mode === "tracked"
+            const scope =
+                initial.mode === "tracked"
                     ? `Watching ${String(collectTrackedWatchTargets(lastResults, workspaceRoot).files.size)} tracked file(s)`
                     : `Watching ${String(absoluteRoots.length)} project root(s)`;
 

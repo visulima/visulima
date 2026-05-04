@@ -18,7 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 let availableBinaries = new Set<string>();
 
-vi.mock(import('@visulima/vis/native'), async () => {
+vi.mock(import("@visulima/vis/native"), async () => {
     const actual = await vi.importActual<typeof import("@visulima/vis/native")>("@visulima/vis/native");
 
     return {

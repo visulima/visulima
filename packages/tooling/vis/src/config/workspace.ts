@@ -382,9 +382,7 @@ const warnedUnknownDetectorKeys = new Set<string>();
  * a detector name that doesn't exist in `BUILT_IN_DETECTORS` (typo
  * insurance — `{ vit: false }` would otherwise silently no-op).
  */
-const resolveInferTargetOption = (
-    option: VisConfig["inferTargets"],
-): ((detectorName: string) => boolean) | undefined => {
+const resolveInferTargetOption = (option: VisConfig["inferTargets"]): ((detectorName: string) => boolean) | undefined => {
     if (option === true) {
         return () => true;
     }

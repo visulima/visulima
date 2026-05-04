@@ -105,6 +105,8 @@ describe(startScanProgress, () => {
 
         progress.stop();
 
-        expect(() => { progress.stop(); }).not.toThrow();
+        expect(() => {
+            progress.stop();
+        }).not.toThrow();
     });
 });

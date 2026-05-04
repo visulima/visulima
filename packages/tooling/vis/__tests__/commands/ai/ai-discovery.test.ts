@@ -1,23 +1,20 @@
 import type { Command } from "@visulima/cerebro";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-    buildDiscoveryPayload,
-    renderDiscoveryJson,
-    renderDiscoveryText,
-} from "../../../src/commands/ai/discovery";
+import { buildDiscoveryPayload, renderDiscoveryJson, renderDiscoveryText } from "../../../src/commands/ai/discovery";
 import { aiDiscoverHelpExecute, aiRootExecute } from "../../../src/commands/ai/handler";
 
 const ANSI_RE = new RegExp(String.raw`${String.fromCodePoint(27)}\[[0-9;]*m`, "gu");
 const stripAnsi = (s: string): string => s.replaceAll(ANSI_RE, "");
 
-const makeCommand = (overrides: Partial<Command> = {}): Command => ({
-    description: "Sample command",
-    examples: [],
-    execute: () => undefined,
-    name: "sample",
-    ...overrides,
-} as Command);
+const makeCommand = (overrides: Partial<Command> = {}): Command =>
+    ({
+        description: "Sample command",
+        examples: [],
+        execute: () => undefined,
+        name: "sample",
+        ...overrides,
+    }) as Command;
 
 interface StreamSpy {
     readonly value: string;
@@ -43,9 +40,7 @@ describe(buildDiscoveryPayload, () => {
     it("should build payload with command, description, and subcommands", () => {
         expect.assertions(3);
 
-        const payload = buildDiscoveryPayload([
-            makeCommand({ commandPath: ["ai"], description: "List providers", name: "providers" }),
-        ]);
+        const payload = buildDiscoveryPayload([makeCommand({ commandPath: ["ai"], description: "List providers", name: "providers" })]);
 
         expect(payload.command).toBe("ai");
         expect(payload.description).toContain("AI-assisted commands");
@@ -133,9 +128,7 @@ describe(renderDiscoveryJson, () => {
     it("should produce valid parseable JSON ending with a newline", () => {
         expect.assertions(3);
 
-        const output = renderDiscoveryJson([
-            makeCommand({ commandPath: ["ai"], description: "List providers", name: "providers" }),
-        ]);
+        const output = renderDiscoveryJson([makeCommand({ commandPath: ["ai"], description: "List providers", name: "providers" })]);
 
         expect(output.endsWith("\n")).toBe(true);
 
@@ -148,9 +141,7 @@ describe(renderDiscoveryJson, () => {
     it("should be machine-readable with no ANSI escapes", () => {
         expect.assertions(1);
 
-        const output = renderDiscoveryJson([
-            makeCommand({ commandPath: ["ai"], description: "Test", name: "test" }),
-        ]);
+        const output = renderDiscoveryJson([makeCommand({ commandPath: ["ai"], description: "Test", name: "test" })]);
 
         expect(output).not.toMatch(ANSI_RE);
     });

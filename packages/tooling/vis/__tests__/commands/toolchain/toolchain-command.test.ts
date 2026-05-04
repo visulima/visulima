@@ -142,17 +142,13 @@ describe("vis toolchain (command)", () => {
     it("`use <bad-spec>` rejects malformed input", async () => {
         expect.assertions(1);
 
-        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["use", "not-a-spec"]) as never)).rejects.toThrow(
-            /Could not parse "not-a-spec"/,
-        );
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["use", "not-a-spec"]) as never)).rejects.toThrow(/Could not parse "not-a-spec"/);
     });
 
     it("`use` rejects an unknown subcommand", async () => {
         expect.assertions(1);
 
-        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["wat"]) as never)).rejects.toThrow(
-            /Unknown toolchain action/,
-        );
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["wat"]) as never)).rejects.toThrow(/Unknown toolchain action/);
     });
 
     it("`use pnpm@X --dry-run` doesn't touch package.json", async () => {
@@ -163,9 +159,7 @@ describe("vis toolchain (command)", () => {
 
         writeFileSync(pkgPath, original);
 
-        await toolchainExecute(
-            makeToolbox(workspaceRoot, ["use", "pnpm@10.32.1"], { dryRun: true }) as never,
-        );
+        await toolchainExecute(makeToolbox(workspaceRoot, ["use", "pnpm@10.32.1"], { dryRun: true }) as never);
 
         // Dry-run should have written nothing — pkg.json must be unchanged.
         // Note: we test against `process.exitCode` because executeUse
@@ -189,9 +183,7 @@ describe("vis toolchain (command)", () => {
         // installed in the sandbox), but the engines write is gated on
         // a successful `runInvocation`, so it won't fire here. Use
         // dryRun to avoid running the manager and only test the path.
-        await toolchainExecute(
-            makeToolbox(workspaceRoot, ["use", "node@22.13.0"], { dryRun: true }) as never,
-        );
+        await toolchainExecute(makeToolbox(workspaceRoot, ["use", "node@22.13.0"], { dryRun: true }) as never);
 
         // dryRun short-circuits before runInvocation — engines write
         // happens after a successful invocation, so it's still the
@@ -205,9 +197,7 @@ describe("vis toolchain (command)", () => {
     it("`which <unknown-tool>` throws a helpful error", async () => {
         expect.assertions(1);
 
-        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["which", "not-a-tool"]) as never)).rejects.toThrow(
-            /Unknown tool/,
-        );
+        await expect(toolchainExecute(makeToolbox(workspaceRoot, ["which", "not-a-tool"]) as never)).rejects.toThrow(/Unknown tool/);
     });
 
     it("requires a workspace root", async () => {

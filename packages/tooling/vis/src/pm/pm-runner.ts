@@ -7,7 +7,22 @@ import { dirname, join, parse as parsePath } from "@visulima/path";
 import { coerce, lt } from "semver";
 
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
-import { detectPackageManager, execPmCommandInteractive, resolveAdd, resolveDedupe, resolveDlx, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, whichBin } from "#native";
+import {
+    detectPackageManager,
+    execPmCommandInteractive,
+    resolveAdd,
+    resolveDedupe,
+    resolveDlx,
+    resolveExec,
+    resolveInstall,
+    resolveLink,
+    resolveOutdated,
+    resolvePmCommand,
+    resolveRemove,
+    resolveUnlink,
+    resolveWhy,
+    whichBin,
+} from "#native";
 
 import {
     resolveAubeAdd,
@@ -124,10 +139,10 @@ const detectLockfileDrift = (cwd: string, installer: InstallerInfo): string | un
     }
 
     return (
-        `Resolved installer is aube but the workspace has a ${detected} lockfile. `
-        + `Aube reads and writes ${detected}'s lockfile format in place, but its byte output may differ subtly — `
-        + "expect a one-time churn diff on the first install, and ongoing drift if your team mixes tools on the same lockfile. "
-        + "To pin the choice across the team, set `install.backend` in vis.config; to bypass aube for this run, pass --no-aube."
+        `Resolved installer is aube but the workspace has a ${detected} lockfile. ` +
+        `Aube reads and writes ${detected}'s lockfile format in place, but its byte output may differ subtly — ` +
+        "expect a one-time churn diff on the first install, and ongoing drift if your team mixes tools on the same lockfile. " +
+        "To pin the choice across the team, set `install.backend` in vis.config; to bypass aube for this run, pass --no-aube."
     );
 };
 
@@ -149,8 +164,8 @@ const resolveInstaller = (cwd: string, override: { backend?: InstallBackend; con
     if (explicit && explicit !== "auto") {
         if (explicit === "aube" && !hasBinaryOnPath("aube")) {
             throw new Error(
-                "install.backend is set to \"aube\" but the `aube` binary is not on PATH. "
-                + "Install it via `npm i -g @endevco/aube`, `mise use -g aube`, or `brew install endevco/tap/aube`.",
+                'install.backend is set to "aube" but the `aube` binary is not on PATH. ' +
+                    "Install it via `npm i -g @endevco/aube`, `mise use -g aube`, or `brew install endevco/tap/aube`.",
             );
         }
 

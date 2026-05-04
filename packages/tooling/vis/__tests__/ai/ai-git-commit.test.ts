@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { CiContext } from "../../src/ai/ci-context";
-import {
-    apiBaseToHostForTesting,
-    commitFiles,
-    splitGithubRepoForTesting,
-} from "../../src/ai/git-commit";
+import { apiBaseToHostForTesting, commitFiles, splitGithubRepoForTesting } from "../../src/ai/git-commit";
 
 const githubContext = (overrides: Partial<CiContext> = {}): CiContext => {
     return {
@@ -96,7 +92,16 @@ describe(commitFiles, () => {
         await expect(
             commitFiles({
                 branch: "main",
-                ciContext: { apiBaseUrl: undefined, buildId: undefined, buildNumber: undefined, prNumber: undefined, provider: "unknown", repo: undefined, sha: undefined, token: undefined },
+                ciContext: {
+                    apiBaseUrl: undefined,
+                    buildId: undefined,
+                    buildNumber: undefined,
+                    prNumber: undefined,
+                    provider: "unknown",
+                    repo: undefined,
+                    sha: undefined,
+                    token: undefined,
+                },
                 files: ["a.ts"],
                 message: "noop",
                 workspaceRoot: "/ws",
@@ -184,18 +189,15 @@ describe(commitFiles, () => {
     it("should commit to GitLab via Commits.create with update actions", async () => {
         expect.assertions(4);
 
-        const create = vi.fn(async (
-            projectId: number | string,
-            branch: string,
-            _message: string,
-            actions: Array<{ action: string; content?: string; filePath: string }>,
-        ) => {
-            expect(projectId).toBe("group/proj");
-            expect(branch).toBe("topic/x");
-            expect(actions).toEqual([{ action: "update", content: "file body\n", filePath: "src/a.ts" }]);
+        const create = vi.fn(
+            async (projectId: number | string, branch: string, _message: string, actions: Array<{ action: string; content?: string; filePath: string }>) => {
+                expect(projectId).toBe("group/proj");
+                expect(branch).toBe("topic/x");
+                expect(actions).toEqual([{ action: "update", content: "file body\n", filePath: "src/a.ts" }]);
 
-            return { id: "gitlab-sha", web_url: "https://gitlab.example.com/group/proj/-/commit/gitlab-sha" };
-        });
+                return { id: "gitlab-sha", web_url: "https://gitlab.example.com/group/proj/-/commit/gitlab-sha" };
+            },
+        );
 
         const result = await commitFiles({
             branch: "topic/x",

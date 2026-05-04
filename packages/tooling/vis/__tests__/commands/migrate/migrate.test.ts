@@ -4,7 +4,12 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, REPLACED_PACKAGES, STALE_LINT_STAGED_PATTERNS } from "../../../src/commands/migrate/constants";
+import {
+    LINT_STAGED_ALL_CONFIG_FILES,
+    LINT_STAGED_JSON_CONFIG_FILES,
+    REPLACED_PACKAGES,
+    STALE_LINT_STAGED_PATTERNS,
+} from "../../../src/commands/migrate/constants";
 import { migrateDeps, rewritePackageJson, rewriteScripts, updatePnpmWorkspaceCatalog } from "../../../src/commands/migrate/deps";
 import { editJsonFile, isJsonFile, readJsonFile } from "../../../src/commands/migrate/json";
 import {

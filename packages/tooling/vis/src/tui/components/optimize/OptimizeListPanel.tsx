@@ -26,19 +26,11 @@ const EntryRow = ({ checked, entry, isSelected }: EntryRowProps): React.JSX.Elem
     return (
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "white" : "gray"}>
-                {' '}
-                {checkbox}
-                {' '}
-            </Text>
+            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
             <Text bold color={catColor}>
                 {`[${catLabel}]`.padEnd(9)}
             </Text>
-            <Text>
-                {' '}
-                {codemodBadge}
-                {' '}
-            </Text>
+            <Text> {codemodBadge} </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
@@ -145,20 +137,10 @@ const OptimizeListPanel = ({
                     {" VIS OPTIMIZE "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
-                    {' '}
-                    optimizations
+                    {totalEntries} optimizations
                     {summaryText}
                 </Text>
-                {!isDryRun && checkedCount > 0 && (
-                    <Text dimColor>
-                        {' '}
-                        —
-                        {checkedCount}
-                        {' '}
-                        selected
-                    </Text>
-                )}
+                {!isDryRun && checkedCount > 0 && <Text dimColor> —{checkedCount} selected</Text>}
             </Box>
 
             <Box flexShrink={0} gap={1} paddingX={1} paddingY={1}>
@@ -172,10 +154,7 @@ const OptimizeListPanel = ({
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-                                {' '}
-                                {f.label}
-                            </Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
                         </Box>
                     );
                 })}

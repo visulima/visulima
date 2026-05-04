@@ -282,9 +282,7 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
         // asdf install the exact pin instead of falling back to a
         // workspace config that may not exist (engines.<tool> with no
         // .prototools / .mise.toml / .tool-versions).
-        const invocations = tools
-            .map((t) => buildInstallInvocation(managerName, t.expected))
-            .filter(Boolean);
+        const invocations = tools.map((t) => buildInstallInvocation(managerName, t.expected)).filter(Boolean);
 
         for (const invocation of invocations) {
             if (!invocation) {
@@ -512,11 +510,7 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
     }
 
     const detected = findInstalledManagers(workspaceRoot);
-    const resolved = resolveManagerFor(
-        { source: "vis.config.ts", tool: normalized, version: "*" },
-        detected,
-        toolchainConfig,
-    );
+    const resolved = resolveManagerFor({ source: "vis.config.ts", tool: normalized, version: "*" }, detected, toolchainConfig);
 
     // For real, installed managers (proto/mise/asdf/volta/fnm), ask
     // the manager itself: it knows about shims and can resolve the
@@ -524,9 +518,8 @@ const executeWhich = (workspaceRoot: string, toolchainConfig: ToolchainConfig | 
     // `none` (no manager involved), do a plain PATH lookup so users
     // running `vis toolchain which pnpm` on a workspace that
     // self-activates still get a useful answer.
-    const manager = resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none"
-        ? detected.find((d) => d.name === resolved.name)
-        : undefined;
+    const manager =
+        resolved.installed && resolved.name !== "self-activate" && resolved.name !== "none" ? detected.find((d) => d.name === resolved.name) : undefined;
     // Use findOnPathByAlias so users running `which rust` or `which
     // python` on a self-activate / no-manager workspace still get a
     // useful answer (rustc, python3) — same alias list as

@@ -52,10 +52,7 @@ describe("vis run end-to-end cache hit", () => {
         const pkgDir = join(workspaceRoot, "packages", "lib");
 
         mkdirSync(pkgDir, { recursive: true });
-        writeFileSync(
-            join(pkgDir, "package.json"),
-            JSON.stringify({ name: "@my/lib", scripts: { build: "echo hi" } }),
-        );
+        writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "@my/lib", scripts: { build: "echo hi" } }));
         // Project with a fast deterministic build target. `cache: true`
         // is the default for command targets, so a re-run with no input
         // change should be a cache hit.

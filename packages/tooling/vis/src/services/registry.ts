@@ -28,8 +28,7 @@ const LOCK_STALE_MS = 30_000;
  * Per-workspace scoping means a `db` service in repo A is invisible to
  * repo B, even when they live on the same machine.
  */
-const hashWorkspace = (workspaceRoot: string): string =>
-    createHash("sha256").update(workspaceRoot).digest("hex").slice(0, 12);
+const hashWorkspace = (workspaceRoot: string): string => createHash("sha256").update(workspaceRoot).digest("hex").slice(0, 12);
 
 /**
  * Returns the registry directory for a workspace. Creates it on demand.
@@ -169,11 +168,7 @@ export const writeEntry = async (workspaceRoot: string, entry: ServiceEntry): Pr
  * `pruneDead` already has it in hand. Idempotent: missing files are
  * silently ignored so concurrent stop attempts don't race.
  */
-export const deleteEntry = async (
-    workspaceRoot: string,
-    id: string,
-    entry?: ServiceEntry,
-): Promise<void> => {
+export const deleteEntry = async (workspaceRoot: string, id: string, entry?: ServiceEntry): Promise<void> => {
     const directory = await getRegistryDir(workspaceRoot);
     const resolved = entry ?? (await readEntry(workspaceRoot, id));
 
@@ -259,9 +254,10 @@ export const pruneDead = async (workspaceRoot: string): Promise<PruneDeadResult>
     return { pruned, surviving };
 };
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 const tryClaimLock = async (path: string): Promise<boolean> => {
     try {
@@ -324,11 +320,7 @@ const isLockStale = async (path: string): Promise<boolean> => {
  * each spawn a child and the second `writeEntry` orphans the first
  * child (still running, but unregistered — the port is bound forever).
  */
-export const withServiceLock = async <T>(
-    workspaceRoot: string,
-    id: string,
-    fn: () => Promise<T>,
-): Promise<T> => {
+export const withServiceLock = async <T>(workspaceRoot: string, id: string, fn: () => Promise<T>): Promise<T> => {
     const directory = await getRegistryDir(workspaceRoot);
     const path = lockPath(directory, id);
     const start = Date.now();

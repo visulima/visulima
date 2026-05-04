@@ -158,10 +158,7 @@ describe("cacheDoctorExecute", () => {
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 16 });
             globalThis.fetch = vi.fn() as unknown as typeof globalThis.fetch;
-            const toolbox = buildToolbox(
-                { backend: "reapi" },
-                { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } },
-            );
+            const toolbox = buildToolbox({ backend: "reapi" }, { taskRunnerOptions: { remoteCache: { url: "https://cache.example.com" } } });
 
             await cacheDoctorExecute(toolbox as never);
 
@@ -174,16 +171,19 @@ describe("cacheDoctorExecute", () => {
             expect.assertions(3);
 
             probeCapabilitiesMock.mockResolvedValue({ digestFunctions: ["SHA256"], maxBatchTotalSizeBytes: 16 });
-            const toolbox = buildToolbox({}, {
-                taskRunnerOptions: {
-                    remoteCache: {
-                        allowInsecureBearer: true,
-                        bearerToken: "token-xyz",
-                        instanceName: "team-alpha",
-                        url: "grpcs://cache.example.com:443",
+            const toolbox = buildToolbox(
+                {},
+                {
+                    taskRunnerOptions: {
+                        remoteCache: {
+                            allowInsecureBearer: true,
+                            bearerToken: "token-xyz",
+                            instanceName: "team-alpha",
+                            url: "grpcs://cache.example.com:443",
+                        },
                     },
                 },
-            });
+            );
 
             await cacheDoctorExecute(toolbox as never);
 

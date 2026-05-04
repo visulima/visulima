@@ -5,13 +5,9 @@ import type { RunSummary, TaskHashDetails, TaskSummary } from "@visulima/task-ru
 
 import type { HashBucketDiff, HashDetailsDiff } from "./types";
 
-export const findTaskInSummary = (summary: RunSummary, taskId: string): TaskSummary | undefined =>
-    summary.tasks.find((task) => task.taskId === taskId);
+export const findTaskInSummary = (summary: RunSummary, taskId: string): TaskSummary | undefined => summary.tasks.find((task) => task.taskId === taskId);
 
-export const diffHashBuckets = (
-    current: Record<string, string> | undefined,
-    previous: Record<string, string> | undefined,
-): HashBucketDiff => {
+export const diffHashBuckets = (current: Record<string, string> | undefined, previous: Record<string, string> | undefined): HashBucketDiff => {
     const currentMap = current ?? {};
     const previousMap = previous ?? {};
 
@@ -127,9 +123,7 @@ export const readPreviousRunSummary = async (workspaceRoot: string, currentId: s
  * newest-first by mtime. The id is the file basename without `.json`,
  * matching what {@link readRunSummaryById} expects.
  */
-export const listRunSummaries = async (
-    workspaceRoot: string,
-): Promise<{ id: string; mtimeMs: number; path: string }[]> => {
+export const listRunSummaries = async (workspaceRoot: string): Promise<{ id: string; mtimeMs: number; path: string }[]> => {
     const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
 
     let dirents: string[];

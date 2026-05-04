@@ -50,8 +50,8 @@ const renderRunHeader = (summary: RunSummary, logger: Console): void => {
     logger.info(`  end:      ${summary.endTime}`);
     logger.info(`  duration: ${formatDuration(summary.duration)}`);
     logger.info(
-        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · `
-        + `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
+        `  totals:   ${String(summary.stats.total)} total · ${String(summary.stats.succeeded)} ok · ` +
+            `${String(summary.stats.cached)} cached · ${String(summary.stats.skipped)} skipped · ${String(summary.stats.failed)} failed`,
     );
     logger.info(`  env:      node ${summary.environment.nodeVersion} · ${summary.environment.platform}/${summary.environment.arch}`);
     logger.info("");
@@ -81,9 +81,7 @@ const renderTaskTable = (tasks: TaskSummary[], logger: Console): void => {
     logger.info(
         `  ${padCell("task", widths.taskId)}  ${padCell("status", widths.status)}  ${padCell("duration", widths.duration)}  ${padCell("hash", widths.hash)}`,
     );
-    logger.info(
-        `  ${"-".repeat(widths.taskId)}  ${"-".repeat(widths.status)}  ${"-".repeat(widths.duration)}  ${"-".repeat(widths.hash)}`,
-    );
+    logger.info(`  ${"-".repeat(widths.taskId)}  ${"-".repeat(widths.status)}  ${"-".repeat(widths.duration)}  ${"-".repeat(widths.hash)}`);
 
     for (const row of rows) {
         logger.info(
@@ -195,9 +193,7 @@ export const runReplay = async (options: RunReplayOptions, logger: Console): Pro
 
     if (taskFilter !== undefined && filteredTasks.length === 0) {
         if (format === "json") {
-            process.stdout.write(
-                `${JSON.stringify({ error: "task-not-in-summary", runId: summary.id, taskId: taskFilter }, undefined, 2)}\n`,
-            );
+            process.stdout.write(`${JSON.stringify({ error: "task-not-in-summary", runId: summary.id, taskId: taskFilter }, undefined, 2)}\n`);
             process.exitCode = 1;
 
             return;
@@ -279,13 +275,16 @@ const replayExecute = async ({ logger, options, workspaceRoot: wsRoot }: Toolbox
         return;
     }
 
-    await runReplay({
-        failed: options.failed === true,
-        format: format as "json" | "table",
-        runId: options.run,
-        task: options.task,
-        workspaceRoot,
-    }, logger);
+    await runReplay(
+        {
+            failed: options.failed === true,
+            format: format as "json" | "table",
+            runId: options.run,
+            task: options.task,
+            workspaceRoot,
+        },
+        logger,
+    );
 };
 
 export { replayExecute };

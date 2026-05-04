@@ -45,10 +45,7 @@ describe("vis docker", () => {
         mkdirSync(appDir, { recursive: true });
         mkdirSync(libDir, { recursive: true });
 
-        writeFileSync(
-            join(appDir, "package.json"),
-            JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app" }),
-        );
+        writeFileSync(join(appDir, "package.json"), JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app" }));
         writeFileSync(join(libDir, "package.json"), JSON.stringify({ name: "@my/lib" }));
     });
 

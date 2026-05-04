@@ -209,7 +209,8 @@ describe("services/registry", () => {
             expect.assertions(1);
 
             const writers = Array.from({ length: 20 }, (_, index) =>
-                writeEntry(workspaceRoot, buildEntry({ command: `cmd-${String(index)}`, id: "race:svc" })));
+                writeEntry(workspaceRoot, buildEntry({ command: `cmd-${String(index)}`, id: "race:svc" })),
+            );
 
             await Promise.all(writers);
 
@@ -251,10 +252,7 @@ describe("services/registry", () => {
                 order.push(`${label}2`);
             };
 
-            await Promise.all([
-                withServiceLock(workspaceRoot, "lock:svc", () => slow("A")),
-                withServiceLock(workspaceRoot, "lock:svc", () => slow("B")),
-            ]);
+            await Promise.all([withServiceLock(workspaceRoot, "lock:svc", () => slow("A")), withServiceLock(workspaceRoot, "lock:svc", () => slow("B"))]);
 
             const aIndex = order.indexOf("A2");
             const bIndex = order.indexOf("B1");

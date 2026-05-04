@@ -94,27 +94,21 @@ const FLAT_COMMANDS: Command[] = [
 const ALL_COMMANDS: Command[] = [...FLAT_COMMANDS, ...aiCommands, ...cacheCommands, ...hookCommands, ...migrateCommands];
 
 describe("vis lazy command contract", () => {
-    it.each(ALL_COMMANDS.map((c) => [c.name, c]))(
-        "%s declares loader, not execute",
-        (_name, command) => {
-            expect.assertions(2);
+    it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s declares loader, not execute", (_name, command) => {
+        expect.assertions(2);
 
-            // eslint-disable-next-line vitest/prefer-expect-type-of
-            expect(typeof command.execute).toBe("undefined");
-            // eslint-disable-next-line vitest/prefer-expect-type-of
-            expect(typeof command.loader).toBe("function");
-        },
-    );
+        // eslint-disable-next-line vitest/prefer-expect-type-of
+        expect(typeof command.execute).toBe("undefined");
+        // eslint-disable-next-line vitest/prefer-expect-type-of
+        expect(typeof command.loader).toBe("function");
+    });
 
-    it.each(ALL_COMMANDS.map((c) => [c.name, c]))(
-        "%s loader resolves to a default-exported function",
-        async (_name, command) => {
-            expect.assertions(1);
+    it.each(ALL_COMMANDS.map((c) => [c.name, c]))("%s loader resolves to a default-exported function", async (_name, command) => {
+        expect.assertions(1);
 
-            const module_ = await command.loader!();
+        const module_ = await command.loader!();
 
-            // eslint-disable-next-line vitest/prefer-expect-type-of
-            expect(typeof module_.default).toBe("function");
-        },
-    );
+        // eslint-disable-next-line vitest/prefer-expect-type-of
+        expect(typeof module_.default).toBe("function");
+    });
 });

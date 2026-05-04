@@ -321,10 +321,7 @@ describe(applyServiceRegistry, () => {
 
         const result = await applyServiceRegistry({
             initialTasks: [consumer],
-            registeredEntries: [
-                buildEntry("api:a", { env: { DATABASE_URL: "from-a" } }),
-                buildEntry("api:b", { env: { DATABASE_URL: "from-b" } }),
-            ],
+            registeredEntries: [buildEntry("api:a", { env: { DATABASE_URL: "from-a" } }), buildEntry("api:b", { env: { DATABASE_URL: "from-b" } })],
             taskGraph,
             visVersion: VIS_VERSION,
         });

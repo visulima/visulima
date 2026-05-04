@@ -35,7 +35,12 @@ const doctor: Command = {
         { defaultValue: false, description: "Shorthand for --format json", name: "json", type: Boolean },
         { defaultValue: false, description: "Exit with code 1 if issues found", name: "exit-code", type: Boolean },
         { defaultValue: false, description: "Auto-apply safe fixes (security overrides + codemods, SIGTERM orphans)", name: "fix", type: Boolean },
-        { defaultValue: false, description: "With --fix: escalate orphan cleanup to SIGKILL / taskkill /F (use when SIGTERM is ignored)", name: "fix-force", type: Boolean },
+        {
+            defaultValue: false,
+            description: "With --fix: escalate orphan cleanup to SIGKILL / taskkill /F (use when SIGTERM is ignored)",
+            name: "fix-force",
+            type: Boolean,
+        },
         { defaultValue: false, description: "With --exit-code: also fail on outdated and duplicate deps", name: "strict", type: Boolean },
         { description: "Comma-separated sections to run: dependencies,security,optimization,runtime", name: "only", type: String },
         { description: "Comma-separated sections to skip", name: "skip", type: String },

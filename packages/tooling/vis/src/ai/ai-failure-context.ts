@@ -96,10 +96,7 @@ export const aggregateFailureContext = async (
 ): Promise<FailureContext | undefined> => {
     const limit = options.terminalOutputLimit ?? DEFAULT_TERMINAL_OUTPUT_LIMIT;
 
-    const [failureLog, summary] = await Promise.all([
-        loadFailureLog(workspaceRoot, taskId),
-        loadSummary(workspaceRoot, options.runId),
-    ]);
+    const [failureLog, summary] = await Promise.all([loadFailureLog(workspaceRoot, taskId), loadSummary(workspaceRoot, options.runId)]);
 
     const summaryTask = summary ? findTaskInSummary(summary, taskId) : undefined;
 

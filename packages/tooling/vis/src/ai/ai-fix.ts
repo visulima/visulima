@@ -185,7 +185,7 @@ const buildUserPrompt = (failureContext: FailureContext): string => {
     } else {
         lines.push(
             "Terminal output: <no failure log was captured for this task>",
-            "Set \"cannotFix\" and tell the user to re-run with `vis run` so logs can be captured.",
+            'Set "cannotFix" and tell the user to re-run with `vis run` so logs can be captured.',
         );
     }
 
@@ -276,11 +276,7 @@ export interface RunFixOptions {
  * is still returned (with `cannotFix` populated) so the CLI can
  * surface the reason.
  */
-export const runFixAnalysis = async (
-    failureContext: FailureContext,
-    logger: Console,
-    options: RunFixOptions = {},
-): Promise<FixProposal | undefined> => {
+export const runFixAnalysis = async (failureContext: FailureContext, logger: Console, options: RunFixOptions = {}): Promise<FixProposal | undefined> => {
     const provider = resolveProvider(options.config);
 
     if (!provider) {

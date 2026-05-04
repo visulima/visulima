@@ -196,12 +196,12 @@ The annotation context is keyed on `BUILDKITE_BUILD_ID`, so reruns update the ex
 
 ### Token requirements
 
-| Surface                      | Token                                                           | Why                                                                                                                                          |
-| ---------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Annotation via `buildkite-agent` | none — uses the agent's `BUILDKITE_AGENT_ACCESS_TOKEN`          | First fallback path; works on every standard Buildkite agent.                                                                                |
-| Annotation via REST          | `BUILDKITE_API_TOKEN` with `write_build_annotations`            | Second fallback when the CLI is missing (uncommon).                                                                                          |
-| `vis ai heal accept` commit  | `GITHUB_TOKEN` _or_ `GITLAB_TOKEN`                              | Buildkite has no commit API of its own — vis derives the upstream provider from `BUILDKITE_REPO` and commits through GitHub/GitLab directly. |
-| Self-hosted Buildkite        | `BUILDKITE_API_BASE_URL=https://buildkite.acme.internal/api`    | Honoured by the REST fallback; the agent CLI honours its own config.                                                                         |
+| Surface                          | Token                                                        | Why                                                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Annotation via `buildkite-agent` | none — uses the agent's `BUILDKITE_AGENT_ACCESS_TOKEN`       | First fallback path; works on every standard Buildkite agent.                                                                                |
+| Annotation via REST              | `BUILDKITE_API_TOKEN` with `write_build_annotations`         | Second fallback when the CLI is missing (uncommon).                                                                                          |
+| `vis ai heal accept` commit      | `GITHUB_TOKEN` _or_ `GITLAB_TOKEN`                           | Buildkite has no commit API of its own — vis derives the upstream provider from `BUILDKITE_REPO` and commits through GitHub/GitLab directly. |
+| Self-hosted Buildkite            | `BUILDKITE_API_BASE_URL=https://buildkite.acme.internal/api` | Honoured by the REST fallback; the agent CLI honours its own config.                                                                         |
 
 The block-step unblocker is the acceptance signal — `BUILDKITE_UNBLOCKER_EMAIL` (preferred) or `BUILDKITE_UNBLOCKER` is checked against the heal allow-list, so `/vis heal accept` is implicit on Buildkite (no comment-trigger phrase to match).
 
@@ -209,11 +209,11 @@ The block-step unblocker is the acceptance signal — `BUILDKITE_UNBLOCKER_EMAIL
 
 `ai.heal.allowedActors` is matched against the trigger actor verbatim. The actor identifier differs by provider:
 
-| Provider         | Source env / payload                              | Example entry              |
-| ---------------- | ------------------------------------------------- | -------------------------- |
-| GitHub Actions   | `comment.user.login` from the `issue_comment`     | `octocat`                  |
-| GitLab CI        | `VIS_HEAL_TRIGGER_ACTOR` (set by webhook bridge)  | `ada-lovelace`             |
-| Buildkite        | `BUILDKITE_UNBLOCKER_EMAIL` then `BUILDKITE_UNBLOCKER` | `maintainer@example.com` |
+| Provider       | Source env / payload                                   | Example entry            |
+| -------------- | ------------------------------------------------------ | ------------------------ |
+| GitHub Actions | `comment.user.login` from the `issue_comment`          | `octocat`                |
+| GitLab CI      | `VIS_HEAL_TRIGGER_ACTOR` (set by webhook bridge)       | `ada-lovelace`           |
+| Buildkite      | `BUILDKITE_UNBLOCKER_EMAIL` then `BUILDKITE_UNBLOCKER` | `maintainer@example.com` |
 
 If you operate the same allow-list across providers (vendoring `vis.config.ts` in a shared preset), include both shapes — Buildkite emails and platform usernames — for any maintainer authorised to accept heal patches. A mismatched allow-list yields an actionable refusal naming the missing entry shape.
 

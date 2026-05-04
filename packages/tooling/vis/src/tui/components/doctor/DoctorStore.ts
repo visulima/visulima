@@ -152,9 +152,7 @@ export class DoctorStore {
     #listeners = new Set<Listener>();
 
     public constructor(input: ReadonlyArray<DoctorFinding> | DoctorStoreOptions = []) {
-        const options: DoctorStoreOptions = Array.isArray(input)
-            ? { findings: input as ReadonlyArray<DoctorFinding> }
-            : (input as DoctorStoreOptions);
+        const options: DoctorStoreOptions = Array.isArray(input) ? { findings: input as ReadonlyArray<DoctorFinding> } : (input as DoctorStoreOptions);
         const findings = options.findings ?? [];
         const activeSections = options.activeSections ?? new Set<SectionId>(SECTION_ORDER);
         const initialFilter: FilterType = SECTION_ORDER.find((id) => activeSections.has(id)) ?? "dependencies";

@@ -25,33 +25,33 @@ vis list --targets --json             # per-target rows as JSON
 
 ## Options
 
-| Option       | Default | Description                                      |
-| ------------ | ------- | ------------------------------------------------ |
-| `--json`     | `false` | Emit JSON instead of a table                     |
-| `--query`    |         | Filter projects by query (see below)             |
-| `--targets`  | `false` | Show per-target rows (type, cache, description)  |
+| Option      | Default | Description                                     |
+| ----------- | ------- | ----------------------------------------------- |
+| `--json`    | `false` | Emit JSON instead of a table                    |
+| `--query`   |         | Filter projects by query (see below)            |
+| `--targets` | `false` | Show per-target rows (type, cache, description) |
 
 ## Default columns
 
-| Column     | Source                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------- |
-| `Project`  | `package.json#name`                                                                     |
-| `Type`     | `project.json#projectType` (defaults to `library`)                                      |
-| `Layer`    | `project.json#layer`                                                                    |
-| `Tags`     | `project.json#tags`                                                                     |
-| `Targets`  | Comma list of target names (truncated to 4 + total count)                               |
+| Column    | Source                                                    |
+| --------- | --------------------------------------------------------- |
+| `Project` | `package.json#name`                                       |
+| `Type`    | `project.json#projectType` (defaults to `library`)        |
+| `Layer`   | `project.json#layer`                                      |
+| `Tags`    | `project.json#tags`                                       |
+| `Targets` | Comma list of target names (truncated to 4 + total count) |
 
 ## `--targets` columns
 
 When `--targets` is set, the table shows one row per `(project, target)`:
 
-| Column        | Description                                                                                              |
-| ------------- | -------------------------------------------------------------------------------------------------------- |
-| `Project`     | `package.json#name`                                                                                      |
-| `Target`      | Target name from `project.json#targets` (alphabetical)                                                   |
-| `Type`        | Target's semantic `type` (`build` / `test` / `run`); `—` when unset                                      |
-| `Cache`       | `yes` when `cache: true`, `no` when `cache: false`, `default` when unset (the runtime picks per `type`)  |
-| `Description` | The target's `description` field surfaced from `project.json` / `vis.task.ts`; `—` when unset            |
+| Column        | Description                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `Project`     | `package.json#name`                                                                                     |
+| `Target`      | Target name from `project.json#targets` (alphabetical)                                                  |
+| `Type`        | Target's semantic `type` (`build` / `test` / `run`); `—` when unset                                     |
+| `Cache`       | `yes` when `cache: true`, `no` when `cache: false`, `default` when unset (the runtime picks per `type`) |
+| `Description` | The target's `description` field surfaced from `project.json` / `vis.task.ts`; `—` when unset           |
 
 The footer reports the row count and the number of distinct projects.
 

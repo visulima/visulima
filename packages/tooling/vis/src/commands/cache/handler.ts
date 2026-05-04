@@ -11,22 +11,9 @@ import { Cache, digestFile, getLastRunSummaryPath, parseCacheSize, readLastRunSu
 import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai/ai-cache";
 import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { pail } from "../../io/logger";
-import {
-    diffHashDetails,
-    findTaskInSummary,
-    readPreviousRunSummary,
-    readRunSummaryById,
-} from "../../report/run-summary-utils";
+import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../../report/run-summary-utils";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
-import type {
-    CacheCleanOptions,
-    CacheHashOptions,
-    CacheListOptions,
-    CachePruneOptions,
-    CacheSizeOptions,
-    CacheVerifyOptions,
-    CacheWhyOptions,
-} from "./index";
+import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
 
 /**
  * Shape returned by `collectCacheEntries`. Kept close to what `removeOldEntries`
@@ -257,8 +244,8 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         pail.info(
-            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} `
-            + `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
+            `Would remove ${String(entries.length)} cache entr${entries.length === 1 ? "y" : "ies"} ` +
+                `(${formatBytes(totalBytes, { decimals: 1, space: false })}) from ${cacheDirectory}`,
         );
 
         return;
@@ -479,10 +466,10 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
                     previousRunId: previousSummary?.id ?? null,
                     previousTask: previousTask
                         ? {
-                            cacheStatus: previousTask.cacheStatus,
-                            hash: previousTask.hash ?? null,
-                            hashDetails: previousTask.hashDetails ?? null,
-                        }
+                              cacheStatus: previousTask.cacheStatus,
+                              hash: previousTask.hash ?? null,
+                              hashDetails: previousTask.hashDetails ?? null,
+                          }
                         : null,
                     runId: summary.id,
                     task: {
@@ -519,9 +506,17 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
         return;
     }
 
-    const noChanges = !diff.commandChanged && diff.nodes.added.length === 0 && diff.nodes.changed.length === 0 && diff.nodes.removed.length === 0
-        && diff.runtime.added.length === 0 && diff.runtime.changed.length === 0 && diff.runtime.removed.length === 0
-        && diff.implicitDeps.added.length === 0 && diff.implicitDeps.changed.length === 0 && diff.implicitDeps.removed.length === 0;
+    const noChanges =
+        !diff.commandChanged &&
+        diff.nodes.added.length === 0 &&
+        diff.nodes.changed.length === 0 &&
+        diff.nodes.removed.length === 0 &&
+        diff.runtime.added.length === 0 &&
+        diff.runtime.changed.length === 0 &&
+        diff.runtime.removed.length === 0 &&
+        diff.implicitDeps.added.length === 0 &&
+        diff.implicitDeps.changed.length === 0 &&
+        diff.implicitDeps.removed.length === 0;
 
     if (noChanges) {
         pail.success("No hash inputs changed since the previous run.");
@@ -1034,20 +1029,10 @@ const resolveCacheDirectoryFromContext = (
     // Worktree-local: this checkout's `.task-runner-cache`. Disable
     // worktree-share by passing `sharedWorktreeCache: false` so the
     // resolver returns the literal workspace_root path.
-    const worktreeDirectory = resolveSharedCacheDirectory(
-        resolvedWorkspaceRoot,
-        optionsCacheDir,
-        taskRunnerOptions.cacheDirectory,
-        false,
-    );
+    const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunnerOptions.cacheDirectory, false);
 
     // Shared: the main worktree's cache (or workspace_root for primary checkouts).
-    const sharedDirectory = resolveSharedCacheDirectory(
-        resolvedWorkspaceRoot,
-        optionsCacheDir,
-        taskRunnerOptions.cacheDirectory,
-        cfg.sharedWorktreeCache,
-    );
+    const sharedDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunnerOptions.cacheDirectory, cfg.sharedWorktreeCache);
 
     let primary: string;
     let directories: string[];
@@ -1159,11 +1144,15 @@ export const cacheWhyExecute = async ({ argument, logger, options, workspaceRoot
         return;
     }
 
-    await runWhy(taskId, {
-        format: options.format ?? "table",
-        runId: options.run,
-        workspaceRoot: resolveWorkspaceRoot(wsRoot),
-    }, logger);
+    await runWhy(
+        taskId,
+        {
+            format: options.format ?? "table",
+            runId: options.run,
+            workspaceRoot: resolveWorkspaceRoot(wsRoot),
+        },
+        logger,
+    );
 };
 
 export const cacheHashExecute = async ({ argument, logger, options, workspaceRoot: wsRoot }: Toolbox<Console, CacheHashOptions>): Promise<void> => {
@@ -1176,11 +1165,15 @@ export const cacheHashExecute = async ({ argument, logger, options, workspaceRoo
         return;
     }
 
-    await runHash(taskId, {
-        format: options.format ?? "table",
-        runId: options.run,
-        workspaceRoot: resolveWorkspaceRoot(wsRoot),
-    }, logger);
+    await runHash(
+        taskId,
+        {
+            format: options.format ?? "table",
+            runId: options.run,
+            workspaceRoot: resolveWorkspaceRoot(wsRoot),
+        },
+        logger,
+    );
 };
 
 export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheSizeOptions>): Promise<void> => {
@@ -1193,20 +1186,22 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
         if (includesTarget(target, "task")) {
             const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
-            payload.task = await Promise.all(cacheDirectories.map(async (directory) => {
-                const exists = isAccessibleSync(directory);
-                const entries = exists ? await collectCacheEntries(directory) : [];
-                const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
+            payload.task = await Promise.all(
+                cacheDirectories.map(async (directory) => {
+                    const exists = isAccessibleSync(directory);
+                    const entries = exists ? await collectCacheEntries(directory) : [];
+                    const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
-                return {
-                    directory,
-                    entries: entries.length,
-                    exists,
-                    newestEntry: isoOrNull(entries[0]?.mtimeMs),
-                    oldestEntry: isoOrNull(entries.at(-1)?.mtimeMs),
-                    totalBytes,
-                };
-            }));
+                    return {
+                        directory,
+                        entries: entries.length,
+                        exists,
+                        newestEntry: isoOrNull(entries[0]?.mtimeMs),
+                        oldestEntry: isoOrNull(entries.at(-1)?.mtimeMs),
+                        totalBytes,
+                    };
+                }),
+            );
         }
 
         if (includesTarget(target, "ai")) {
@@ -1257,7 +1252,13 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
     }
 };
 
-export const cacheVerifyExecute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheVerifyOptions>): Promise<void> => {
+export const cacheVerifyExecute = async ({
+    argument,
+    logger,
+    options,
+    visConfig,
+    workspaceRoot: wsRoot,
+}: Toolbox<Console, CacheVerifyOptions>): Promise<void> => {
     const taskId = argument[0];
 
     if (!taskId) {
@@ -1273,9 +1274,13 @@ export const cacheVerifyExecute = async ({ argument, logger, options, visConfig,
     // scopes resolve to a single-element list.
     const { cacheDirectories, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
-    await runVerify(taskId, {
-        cacheDirectories,
-        format: options.format ?? "table",
-        workspaceRoot,
-    }, logger);
+    await runVerify(
+        taskId,
+        {
+            cacheDirectories,
+            format: options.format ?? "table",
+            workspaceRoot,
+        },
+        logger,
+    );
 };
