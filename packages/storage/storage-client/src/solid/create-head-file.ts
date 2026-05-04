@@ -127,7 +127,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
     return {
         data: () => {
             try {
-                const dataValue = (query as { data?: Accessor<FileHeadMetadata | undefined> | FileHeadMetadata | undefined }).data;
+                const dataValue = (query as { data: Accessor<FileHeadMetadata | undefined> | FileHeadMetadata | undefined }).data;
 
                 if (typeof dataValue === "function") {
                     return dataValue();
@@ -140,25 +140,25 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
         },
         error: () => {
             try {
-                const errorValue = (query as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (query as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isLoadingValue = (query as { isLoading?: Accessor<boolean> | boolean }).isLoading;
+                const isLoadingValue = (query as { isLoading: Accessor<boolean> | boolean }).isLoading;
 
-                return (typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue) as boolean;
+                return typeof isLoadingValue === "function" ? isLoadingValue() : isLoadingValue;
             } catch {
                 return false;
             }
         },
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

@@ -51,7 +51,7 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
                 return {
                     id,
                     metadata: result.etag ? { etag: result.etag } : undefined,
-                    url: result.location || url,
+                    url: result.location ?? url,
                 };
             },
             onError: () => {
@@ -59,7 +59,7 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
             },
             onSuccess: (_data, variables) => {
                 // Invalidate file-related queries
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
@@ -71,29 +71,29 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
     return {
         data: () => {
             try {
-                const dataValue = (mutation as { data?: Accessor<UploadResult | undefined> | UploadResult | undefined }).data;
+                const dataValue = (mutation as { data: Accessor<UploadResult | undefined> | UploadResult | undefined }).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
-                return data || undefined;
+                return data ?? undefined;
             } catch {
                 return undefined;
             }
         },
         error: () => {
             try {
-                const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
+                const errorValue = (mutation as { error: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return error || undefined;
+                return error ?? undefined;
             } catch {
                 return undefined;
             }
         },
         isLoading: () => {
             try {
-                const isPendingValue = (mutation as { isPending?: Accessor<boolean> | boolean }).isPending;
+                const isPendingValue = (mutation as { isPending: Accessor<boolean> | boolean }).isPending;
 
-                return (typeof isPendingValue === "function" ? isPendingValue() : isPendingValue) as boolean;
+                return typeof isPendingValue === "function" ? isPendingValue() : isPendingValue;
             } catch {
                 return false;
             }
