@@ -54,9 +54,10 @@ class FakeOutput {
     }
 }
 
-const flush = (): Promise<void> => new Promise((resolve) => {
-    setImmediate(resolve);
-});
+const flush = (): Promise<void> =>
+    new Promise((resolve) => {
+        setImmediate(resolve);
+    });
 
 const makeHandlers = (): KeybindHandlers & {
     calls: { clear: number; filters: string[]; help: number; quit: number; rerun: number };
@@ -216,9 +217,10 @@ describe(installKeybinds, () => {
         const handlers = makeHandlers();
 
         let resolvePrompt: (value: string | undefined) => void = () => {};
-        const promptFilter = async (): Promise<string | undefined> => await new Promise<string | undefined>((resolve) => {
-            resolvePrompt = resolve;
-        });
+        const promptFilter = async (): Promise<string | undefined> =>
+            await new Promise<string | undefined>((resolve) => {
+                resolvePrompt = resolve;
+            });
 
         const handle = installKeybinds({ handlers, input, output: output as unknown as NodeJS.WritableStream, promptFilter });
 
@@ -248,10 +250,11 @@ describe(installKeybinds, () => {
         const output = new FakeOutput();
         const handlers = makeHandlers();
 
-        const promptFilter = async (): Promise<string | undefined> => await new Promise<string | undefined>(() => {
-            // Never resolves — we want to simulate a user stuck at
-            // the prompt who hits Ctrl+C to bail out.
-        });
+        const promptFilter = async (): Promise<string | undefined> =>
+            await new Promise<string | undefined>(() => {
+                // Never resolves — we want to simulate a user stuck at
+                // the prompt who hits Ctrl+C to bail out.
+            });
 
         const handle = installKeybinds({ handlers, input, output: output as unknown as NodeJS.WritableStream, promptFilter });
 

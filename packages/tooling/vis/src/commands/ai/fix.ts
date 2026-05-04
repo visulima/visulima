@@ -79,7 +79,7 @@ const formatPatchResultsText = (results: PatchResult[], workspaceRoot: string, c
 
     for (const result of results) {
         const displayPath = result.absolutePath
-            ? (relative(workspaceRoot, result.absolutePath) || result.absolutePath)
+            ? relative(workspaceRoot, result.absolutePath) || result.absolutePath
             : formatDisplayPath(workspaceRoot, cwd, result.patch.file);
         const label = PATCH_STATUS_LABEL[result.status];
 

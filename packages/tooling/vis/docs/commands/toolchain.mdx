@@ -17,13 +17,13 @@ vis toolchain <subcommand> [options]
 
 ## Subcommands
 
-| Subcommand                        | Purpose                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `vis toolchain status`            | Show every detected manager plus expected-vs-actual versions. Each tool lists the manager vis would use to install it. |
-| `vis toolchain detect`            | Print the primary manager's name (useful for shell scripts).                                     |
-| `vis toolchain install`           | Install pinned versions. Groups tools by manager and invokes each one appropriately.            |
-| `vis toolchain use <tool>@<ver>`  | Pin a tool version through the best manager for that specific tool.                             |
-| `vis toolchain which <tool>`      | Resolve the binary path the manager would launch. Falls back to `PATH`.                          |
+| Subcommand                       | Purpose                                                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `vis toolchain status`           | Show every detected manager plus expected-vs-actual versions. Each tool lists the manager vis would use to install it. |
+| `vis toolchain detect`           | Print the primary manager's name (useful for shell scripts).                                                           |
+| `vis toolchain install`          | Install pinned versions. Groups tools by manager and invokes each one appropriately.                                   |
+| `vis toolchain use <tool>@<ver>` | Pin a tool version through the best manager for that specific tool.                                                    |
+| `vis toolchain which <tool>`     | Resolve the binary path the manager would launch. Falls back to `PATH`.                                                |
 
 ## Examples
 
@@ -49,11 +49,11 @@ vis toolchain detect       # prints "proto" / "mise" / "fnm" / ... / "none"
 
 ## Options
 
-| Option        | Subcommand(s) | Description                                                                        |
-| ------------- | ------------- | ---------------------------------------------------------------------------------- |
-| `--json`      | `status`      | Emit a machine-readable JSON payload instead of the formatted status report.       |
-| `--exit-code` | `status`      | Exit with code 1 when any tool mismatches. Useful in CI preflight jobs.            |
-| `--dry-run`   | `install`, `use` | Print the command that would run but don't execute it.                          |
+| Option        | Subcommand(s)    | Description                                                                  |
+| ------------- | ---------------- | ---------------------------------------------------------------------------- |
+| `--json`      | `status`         | Emit a machine-readable JSON payload instead of the formatted status report. |
+| `--exit-code` | `status`         | Exit with code 1 when any tool mismatches. Useful in CI preflight jobs.      |
+| `--dry-run`   | `install`, `use` | Print the command that would run but don't execute it.                       |
 
 ## How detection works
 
@@ -66,20 +66,20 @@ vis toolchain detect       # prints "proto" / "mise" / "fnm" / ... / "none"
 
 vis picks a manager **per tool**, not per workspace. Preference depends on where the pin came from:
 
-| Pin source                 | Preference order                                                              |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| `.prototools`              | proto                                                                         |
-| `.mise.toml`               | mise                                                                          |
-| `.tool-versions`           | asdf, mise (mise reads asdf format)                                           |
-| `.nvmrc` / `.node-version` | fnm, nvm, volta, proto, mise, asdf (node only)                                |
-| `volta` field              | volta                                                                         |
-| `packageManager` — pnpm    | self-activate, volta, proto, mise, corepack                                   |
-| `packageManager` — yarn    | self-activate, volta, proto, mise, corepack                                   |
-| `packageManager` — npm     | volta, proto, mise, asdf, corepack                                            |
-| `packageManager` — bun     | proto, mise, asdf                                                             |
-| `engines.*` / `vis.config` | proto, mise, fnm, volta, asdf, nvm, corepack                                  |
+| Pin source                 | Preference order                               |
+| -------------------------- | ---------------------------------------------- |
+| `.prototools`              | proto                                          |
+| `.mise.toml`               | mise                                           |
+| `.tool-versions`           | asdf, mise (mise reads asdf format)            |
+| `.nvmrc` / `.node-version` | fnm, nvm, volta, proto, mise, asdf (node only) |
+| `volta` field              | volta                                          |
+| `packageManager` — pnpm    | self-activate, volta, proto, mise, corepack    |
+| `packageManager` — yarn    | self-activate, volta, proto, mise, corepack    |
+| `packageManager` — npm     | volta, proto, mise, asdf, corepack             |
+| `packageManager` — bun     | proto, mise, asdf                              |
+| `engines.*` / `vis.config` | proto, mise, fnm, volta, asdf, nvm, corepack   |
 
-The first installed + capable manager wins. If nothing is installed, vis names the first capable manager as a "suggested install." `self-activate` is a pseudo-manager that means *the pnpm/yarn binary itself will switch versions from the `packageManager` field on next invocation* — no external manager required.
+The first installed + capable manager wins. If nothing is installed, vis names the first capable manager as a "suggested install." `self-activate` is a pseudo-manager that means _the pnpm/yarn binary itself will switch versions from the `packageManager` field on next invocation_ — no external manager required.
 
 ## Tool pin priority (when the same tool is pinned in multiple places)
 
@@ -119,16 +119,16 @@ export default defineConfig({
 
 ## Manager compatibility
 
-| Manager       | Handles                                       | `install` command                                 | `use` command                                | Config file touched                    |
-| ------------- | --------------------------------------------- | ------------------------------------------------- | -------------------------------------------- | -------------------------------------- |
-| proto         | node, bun, deno, go, python, ruby, rust, all PMs | `proto install`                                 | `proto pin <tool> <ver>`                     | `.prototools`                          |
-| mise          | everything                                    | `mise install`                                   | `mise use -- <tool>@<ver>`                   | `.mise.toml`                           |
-| fnm           | node only                                     | `fnm install [<ver>]`                            | `fnm use <ver>` (Node only)                  | `.nvmrc` / `.node-version`             |
-| volta         | node, npm, pnpm, yarn                         | `volta install <tool>@<ver>`                     | `volta pin <tool>@<ver>`                     | `package.json` (`volta.<tool>` field)  |
-| asdf          | node, bun, deno, go, python, ruby, rust       | `asdf install`                                   | `asdf local <tool> <ver>`                    | `.tool-versions`                       |
-| nvm           | node only                                     | (manual — shell function, run `nvm install`)      | writes `.nvmrc`, then prompts to run `nvm use`| `.nvmrc`                               |
-| corepack      | npm, pnpm, yarn                               | `corepack prepare <tool>@<ver> --activate`       | `corepack use <tool>@<ver>`                  | `package.json` (`packageManager`)      |
-| self-activate | pnpm 10+, yarn berry                          | (no-op — runs on next `pnpm`/`yarn` invocation)  | edit `packageManager` field                  | `package.json` (`packageManager`)      |
+| Manager       | Handles                                          | `install` command                               | `use` command                                  | Config file touched                   |
+| ------------- | ------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| proto         | node, bun, deno, go, python, ruby, rust, all PMs | `proto install`                                 | `proto pin <tool> <ver>`                       | `.prototools`                         |
+| mise          | everything                                       | `mise install`                                  | `mise use -- <tool>@<ver>`                     | `.mise.toml`                          |
+| fnm           | node only                                        | `fnm install [<ver>]`                           | `fnm use <ver>` (Node only)                    | `.nvmrc` / `.node-version`            |
+| volta         | node, npm, pnpm, yarn                            | `volta install <tool>@<ver>`                    | `volta pin <tool>@<ver>`                       | `package.json` (`volta.<tool>` field) |
+| asdf          | node, bun, deno, go, python, ruby, rust          | `asdf install`                                  | `asdf local <tool> <ver>`                      | `.tool-versions`                      |
+| nvm           | node only                                        | (manual — shell function, run `nvm install`)    | writes `.nvmrc`, then prompts to run `nvm use` | `.nvmrc`                              |
+| corepack      | npm, pnpm, yarn                                  | `corepack prepare <tool>@<ver> --activate`      | `corepack use <tool>@<ver>`                    | `package.json` (`packageManager`)     |
+| self-activate | pnpm 10+, yarn berry                             | (no-op — runs on next `pnpm`/`yarn` invocation) | edit `packageManager` field                    | `package.json` (`packageManager`)     |
 
 For most managers vis shells out to the manager itself (`proto pin`, `volta pin`, `mise use`, etc.) so the change integrates with shell hooks and caches the way each manager expects. The exceptions are **nvm** (a shell function — vis writes `.nvmrc` directly and prompts you to run `nvm use`) and **self-activate** (vis writes the `packageManager` field directly so pnpm/yarn pick it up on next invocation).
 
@@ -257,14 +257,14 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Bootstrap vis (installs proto + Node from .prototools / engines.node)
-        run: curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
-      - name: Lint, test, build (affected)
-        run: vis ci lint,test,build
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Bootstrap vis (installs proto + Node from .prototools / engines.node)
+              run: curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+            - name: Lint, test, build (affected)
+              run: vis ci lint,test,build
 ```
 
 ### GitLab CI
@@ -272,12 +272,12 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 ci:
-  image: ubuntu:22.04
-  before_script:
-    - apt-get update && apt-get install -y curl bash
-    - curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
-  script:
-    - vis ci lint,test,build
+    image: ubuntu:22.04
+    before_script:
+        - apt-get update && apt-get install -y curl bash
+        - curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+    script:
+        - vis ci lint,test,build
 ```
 
 ### Skipping the toolchain pre-flight
@@ -292,15 +292,15 @@ Or set `toolchain.autoInstall: false` in `vis.config.ts` for a workspace-wide op
 
 ## Migrating from another version manager
 
-| Coming from | What changes                                                                                                                                               |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Volta**   | Nothing immediate — vis reads your existing `volta` field in package.json and routes pnpm/yarn/npm/node pins to `volta install`. New pins from `vis toolchain use` write to the same field. |
-| **nvm**     | Keep your `.nvmrc`. `vis toolchain status` reads it; `vis toolchain use node@22.13.0` rewrites it. nvm-the-shell-function still owns activation (run `nvm use` to switch the shell).                |
-| **fnm**     | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis runs `fnm use <ver>` to switch the current shell but does **not** persist the change to `.nvmrc`. If you also want vis to write `.nvmrc` on `vis toolchain use node@<ver>`, set `toolchain.preferredManager: "nvm"` in `vis.config.ts` (and ensure nvm is installed) — vis will then write `.nvmrc` and prompt you to run `nvm use`. |
-| **proto**   | Native fit. `.prototools` is the source of truth, `vis toolchain install` runs `proto install`, `vis toolchain use <tool>@<ver>` runs `proto pin`.          |
-| **mise**    | Same as proto — `.mise.toml` is the config, vis maps `install` and `use` to `mise install` / `mise use`.                                                   |
-| **asdf**    | `.tool-versions` is the config. vis maps to `asdf install` / `asdf local <tool> <ver>`.                                                                    |
-| **corepack**| If you only used corepack to pin pnpm/yarn via the `packageManager` field, you can drop corepack on most projects: pnpm 10+ and yarn berry **self-activate** from that field on next invocation. vis surfaces this as the `self-activate` pseudo-manager. corepack is still needed when you want to pin **npm** itself (which doesn't self-switch). |
+| Coming from  | What changes                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Volta**    | Nothing immediate — vis reads your existing `volta` field in package.json and routes pnpm/yarn/npm/node pins to `volta install`. New pins from `vis toolchain use` write to the same field.                                                                                                                                                                                                                  |
+| **nvm**      | Keep your `.nvmrc`. `vis toolchain status` reads it; `vis toolchain use node@22.13.0` rewrites it. nvm-the-shell-function still owns activation (run `nvm use` to switch the shell).                                                                                                                                                                                                                         |
+| **fnm**      | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis runs `fnm use <ver>` to switch the current shell but does **not** persist the change to `.nvmrc`. If you also want vis to write `.nvmrc` on `vis toolchain use node@<ver>`, set `toolchain.preferredManager: "nvm"` in `vis.config.ts` (and ensure nvm is installed) — vis will then write `.nvmrc` and prompt you to run `nvm use`. |
+| **proto**    | Native fit. `.prototools` is the source of truth, `vis toolchain install` runs `proto install`, `vis toolchain use <tool>@<ver>` runs `proto pin`.                                                                                                                                                                                                                                                           |
+| **mise**     | Same as proto — `.mise.toml` is the config, vis maps `install` and `use` to `mise install` / `mise use`.                                                                                                                                                                                                                                                                                                     |
+| **asdf**     | `.tool-versions` is the config. vis maps to `asdf install` / `asdf local <tool> <ver>`.                                                                                                                                                                                                                                                                                                                      |
+| **corepack** | If you only used corepack to pin pnpm/yarn via the `packageManager` field, you can drop corepack on most projects: pnpm 10+ and yarn berry **self-activate** from that field on next invocation. vis surfaces this as the `self-activate` pseudo-manager. corepack is still needed when you want to pin **npm** itself (which doesn't self-switch).                                                          |
 
 You don't have to migrate anything: vis runs alongside whatever manager you have. The benefits of explicit migration are smaller config drift and the ability to use `vis toolchain use` to update pins from the CLI.
 
@@ -308,7 +308,7 @@ You don't have to migrate anything: vis runs alongside whatever manager you have
 
 Most developers already have `fnm`, `volta`, `mise`, or `proto` installed. Shipping another ~20 MB binary would violate the principle of least surprise and duplicate behaviour the OS-level manager already handles (PATH shims, global caches, shell activation). Delegation keeps vis small and portable.
 
-When no manager is installed, `vis toolchain status` still reports the pinned versions and their sources — the same information `vis doctor` surfaces — plus names a manager that *could* install each tool, so the user can install it and re-run.
+When no manager is installed, `vis toolchain status` still reports the pinned versions and their sources — the same information `vis doctor` surfaces — plus names a manager that _could_ install each tool, so the user can install it and re-run.
 
 ## Related
 

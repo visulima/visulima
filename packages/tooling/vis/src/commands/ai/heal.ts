@@ -159,12 +159,7 @@ const renderProposalDiff = (proposal: FixProposal, workspaceRoot: string, cwd: s
     return blocks.join("\n\n");
 };
 
-const renderCommentBody = (
-    proposal: FixProposal,
-    failureContext: FailureContext,
-    workspaceRoot: string,
-    sha: string | undefined,
-): string => {
+const renderCommentBody = (proposal: FixProposal, failureContext: FailureContext, workspaceRoot: string, sha: string | undefined): string => {
     const header: string[] = [];
 
     header.push("## vis ai heal — proposed fix");
@@ -324,13 +319,7 @@ const findHealCandidate = async (workspaceRoot: string, runId: string | undefine
 // derive from the same prompt + same patcher.
 // ----------------------------------------------------------------------
 
-export type ProposeAndApplyOutcome =
-    | "applied"
-    | "cannot-fix"
-    | "dry-run"
-    | "empty-patches"
-    | "no-patches-applied"
-    | "no-proposal";
+export type ProposeAndApplyOutcome = "applied" | "cannot-fix" | "dry-run" | "empty-patches" | "no-patches-applied" | "no-proposal";
 
 export interface ProposeAndApplyResult {
     applyResults?: PatchResult[];
@@ -404,14 +393,9 @@ export interface ValidateAppliedFixDeps {
     validate?: (project: string, target: string) => Promise<ValidationResult>;
 }
 
-const validateAppliedFix = async (
-    toolbox: ProposeAndApplyToolbox,
-    candidate: HealCandidate,
-    deps: ValidateAppliedFixDeps = {},
-): Promise<ValidationResult> => {
+const validateAppliedFix = async (toolbox: ProposeAndApplyToolbox, candidate: HealCandidate, deps: ValidateAppliedFixDeps = {}): Promise<ValidationResult> => {
     const workspaceRoot = toolbox.workspaceRoot ?? process.cwd();
-    const validationTimeoutMs
-        = toolbox.options.validationTimeout === undefined ? DEFAULT_VALIDATION_TIMEOUT_MS : toolbox.options.validationTimeout * 1000;
+    const validationTimeoutMs = toolbox.options.validationTimeout === undefined ? DEFAULT_VALIDATION_TIMEOUT_MS : toolbox.options.validationTimeout * 1000;
 
     const validate = deps.validate ?? ((project: string, target: string) => validateFixByRerun(workspaceRoot, project, target, validationTimeoutMs));
 
@@ -455,12 +439,7 @@ const postHealComment = async (
 ): Promise<PostHealCommentResult> => {
     const detectCi = deps.detectCi ?? detectCiContext;
     const ciContext = await detectCi();
-    const surface: "annotation" | "MR" | "PR"
-        = ciContext.provider === "gitlab-ci"
-            ? "MR"
-            : ciContext.provider === "buildkite"
-                ? "annotation"
-                : "PR";
+    const surface: "annotation" | "MR" | "PR" = ciContext.provider === "gitlab-ci" ? "MR" : ciContext.provider === "buildkite" ? "annotation" : "PR";
 
     if (ciContext.provider === "unknown") {
         return { ciContext, outcome: "no-ci", surface };
@@ -500,9 +479,7 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
     }
 
     if (candidateResult.outcome === "missing-metadata") {
-        pail.error(
-            `Failed task ${candidateResult.failedTask.taskId} is missing project/target metadata in the run summary; cannot validate a fix.`,
-        );
+        pail.error(`Failed task ${candidateResult.failedTask.taskId} is missing project/target metadata in the run summary; cannot validate a fix.`);
         process.exitCode = 1;
 
         return;
@@ -602,9 +579,10 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
         // are scoped to a build, not a PR); GH/GitLab key off the PR/MR
         // number. `prNumber` may be undefined on Buildkite push builds,
         // which is fine — the build number always exists.
-        const identifier = postResult.surface === "annotation"
-            ? `build #${String(postResult.ciContext.buildNumber ?? "?")}`
-            : `${postResult.surface} #${String(postResult.ciContext.prNumber)}`;
+        const identifier =
+            postResult.surface === "annotation"
+                ? `build #${String(postResult.ciContext.buildNumber ?? "?")}`
+                : `${postResult.surface} #${String(postResult.ciContext.prNumber)}`;
 
         pail.success(`Posted fix proposal to ${identifier} via ${postResult.method ?? "unknown"}.`);
 

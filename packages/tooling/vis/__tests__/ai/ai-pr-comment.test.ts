@@ -87,10 +87,7 @@ describe(postPrComment, () => {
 
         expect(result.posted).toBe(true);
         expect(result.method).toBe("rest");
-        expect(fetchImpl).toHaveBeenCalledWith(
-            "https://api.github.com/repos/owner/repo/issues/42/comments",
-            expect.objectContaining({ method: "POST" }),
-        );
+        expect(fetchImpl).toHaveBeenCalledWith("https://api.github.com/repos/owner/repo/issues/42/comments", expect.objectContaining({ method: "POST" }));
     });
 
     it("should report an error when GitHub REST returns non-2xx", async () => {
@@ -188,9 +185,7 @@ describe(postPrComment, () => {
 
         const [url, init] = fetchImpl.mock.calls[0]!;
 
-        expect(url).toBe(
-            "https://api.buildkite.com/v2/organizations/acme/pipelines/web/builds/123/annotations",
-        );
+        expect(url).toBe("https://api.buildkite.com/v2/organizations/acme/pipelines/web/builds/123/annotations");
         expect((init as RequestInit).headers).toMatchObject({ Authorization: "Bearer bkua_test" });
     });
 
@@ -257,9 +252,7 @@ describe(postPrComment, () => {
 
         const [url] = fetchImpl.mock.calls[0]!;
 
-        expect(url).toBe(
-            "https://buildkite.acme.internal/api/v2/organizations/acme/pipelines/web/builds/123/annotations",
-        );
+        expect(url).toBe("https://buildkite.acme.internal/api/v2/organizations/acme/pipelines/web/builds/123/annotations");
     });
 
     it("should skip when provider is unknown", async () => {

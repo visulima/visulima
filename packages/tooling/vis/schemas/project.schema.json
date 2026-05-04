@@ -358,10 +358,7 @@
             ]
         },
         "envMatcherList": {
-            "oneOf": [
-                { "$ref": "#/$defs/envMatcher" },
-                { "type": "array", "items": { "$ref": "#/$defs/envMatcher" } }
-            ]
+            "oneOf": [{ "$ref": "#/$defs/envMatcher" }, { "type": "array", "items": { "$ref": "#/$defs/envMatcher" } }]
         },
         "platformList": {
             "oneOf": [
@@ -379,10 +376,7 @@
             ]
         },
         "branchList": {
-            "oneOf": [
-                { "type": "string" },
-                { "type": "array", "items": { "type": "string" } }
-            ]
+            "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
         },
         "whenCondition": {
             "type": "object",

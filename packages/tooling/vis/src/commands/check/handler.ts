@@ -95,18 +95,18 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-            if (progressInstance) {
-                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-            } else {
-                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                    interactive: true,
-                    patchConsole: false,
-                });
-            }
-        }
+              if (progressInstance) {
+                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+              } else {
+                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                      interactive: true,
+                      patchConsole: false,
+                  });
+              }
+          }
         : (current: number, total: number): void => {
-            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-        };
+              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+          };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);

@@ -44,36 +44,23 @@ const ProjectDetailPanel = ({ focused, node, scrollRef }: ProjectDetailPanelProp
                         <Text bold color="white">
                             DEPENDS ON
                         </Text>
-                        <Text dimColor>
-                            {' '}
-                            (
-                            {node.deps.length}
-                            )
-                        </Text>
+                        <Text dimColor> ({node.deps.length})</Text>
                     </Box>
-                    {node.deps.length === 0
-                        ? (
-                            <Box marginTop={1} paddingLeft={2}>
-                                <Text dimColor>No dependencies</Text>
-                            </Box>
-                        )
-                        : (
-                            <Box flexDirection="column" marginTop={1}>
-                                {node.deps.map((dep) => (
-                                    <Box gap={1} key={dep.target} paddingLeft={2}>
-                                        <Text color="cyan">{"\u2192"}</Text>
-                                        <Text>{dep.target}</Text>
-                                        {dep.type !== "static" && (
-                                            <Text dimColor>
-                                                (
-                                                {dep.type}
-                                                )
-                                            </Text>
-                                        )}
-                                    </Box>
-                                ))}
-                            </Box>
-                        )}
+                    {node.deps.length === 0 ? (
+                        <Box marginTop={1} paddingLeft={2}>
+                            <Text dimColor>No dependencies</Text>
+                        </Box>
+                    ) : (
+                        <Box flexDirection="column" marginTop={1}>
+                            {node.deps.map((dep) => (
+                                <Box gap={1} key={dep.target} paddingLeft={2}>
+                                    <Text color="cyan">{"\u2192"}</Text>
+                                    <Text>{dep.target}</Text>
+                                    {dep.type !== "static" && <Text dimColor>({dep.type})</Text>}
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Reverse dependencies section */}
@@ -83,29 +70,22 @@ const ProjectDetailPanel = ({ focused, node, scrollRef }: ProjectDetailPanelProp
                         <Text bold color="white">
                             REQUIRED BY
                         </Text>
-                        <Text dimColor>
-                            {' '}
-                            (
-                            {node.reverseDeps.length}
-                            )
-                        </Text>
+                        <Text dimColor> ({node.reverseDeps.length})</Text>
                     </Box>
-                    {node.reverseDeps.length === 0
-                        ? (
-                            <Box marginTop={1} paddingLeft={2}>
-                                <Text dimColor>No reverse dependencies</Text>
-                            </Box>
-                        )
-                        : (
-                            <Box flexDirection="column" marginTop={1}>
-                                {node.reverseDeps.map((rdep) => (
-                                    <Box gap={1} key={rdep} paddingLeft={2}>
-                                        <Text color="magenta">{"\u2190"}</Text>
-                                        <Text>{rdep}</Text>
-                                    </Box>
-                                ))}
-                            </Box>
-                        )}
+                    {node.reverseDeps.length === 0 ? (
+                        <Box marginTop={1} paddingLeft={2}>
+                            <Text dimColor>No reverse dependencies</Text>
+                        </Box>
+                    ) : (
+                        <Box flexDirection="column" marginTop={1}>
+                            {node.reverseDeps.map((rdep) => (
+                                <Box gap={1} key={rdep} paddingLeft={2}>
+                                    <Text color="magenta">{"\u2190"}</Text>
+                                    <Text>{rdep}</Text>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Stats section */}

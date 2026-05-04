@@ -26,9 +26,9 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const focusRaw = options.focus;
     const focus = focusRaw
         ? focusRaw
-            .split(",")
-            .map((name) => name.trim())
-            .filter(Boolean)
+              .split(",")
+              .map((name) => name.trim())
+              .filter(Boolean)
         : undefined;
 
     const format = (options.format ?? "json").toLowerCase();

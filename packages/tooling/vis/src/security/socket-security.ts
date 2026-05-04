@@ -106,15 +106,15 @@ interface CacheEntry {
 // ── Type guards ─────────────────────────────────────────────────────
 
 const isPackageReportData = (o: unknown): o is PackageReportData =>
-    typeof o === "object"
-    && o != undefined
-    && "id" in o
-    && "type" in o
-    && "name" in o
-    && "version" in o
-    && "alerts" in o
-    && "score" in o
-    && (o as Record<string, unknown>).type === "npm";
+    typeof o === "object" &&
+    o != undefined &&
+    "id" in o &&
+    "type" in o &&
+    "name" in o &&
+    "version" in o &&
+    "alerts" in o &&
+    "score" in o &&
+    (o as Record<string, unknown>).type === "npm";
 
 // ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 

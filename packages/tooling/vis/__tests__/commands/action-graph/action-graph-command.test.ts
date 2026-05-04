@@ -45,10 +45,7 @@ describe("vis action-graph", () => {
         mkdirSync(appDir, { recursive: true });
         mkdirSync(libDir, { recursive: true });
 
-        writeFileSync(
-            join(appDir, "package.json"),
-            JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app", scripts: { build: "echo app" } }),
-        );
+        writeFileSync(join(appDir, "package.json"), JSON.stringify({ dependencies: { "@my/lib": "*" }, name: "@my/app", scripts: { build: "echo app" } }));
         writeFileSync(
             join(appDir, "project.json"),
             JSON.stringify({

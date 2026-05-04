@@ -181,7 +181,9 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     if (options.list) {
         const discovered = discoverTemplates({
             extraDirectories: generatorConfig?.templates ?? [],
-            onWarning: (message: string) => { pail.warn(message); },
+            onWarning: (message: string) => {
+                pail.warn(message);
+            },
             workspaceRoot,
         });
 
@@ -208,7 +210,9 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
 
         const discovered = discoverTemplates({
             extraDirectories: generatorConfig?.templates ?? [],
-            onWarning: (message: string) => { pail.warn(message); },
+            onWarning: (message: string) => {
+                pail.warn(message);
+            },
             workspaceRoot,
         });
         const match = discovered.find((t) => t.name === wanted);
@@ -317,7 +321,9 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     } else {
         const discovered = discoverTemplates({
             extraDirectories: generatorConfig?.templates ?? [],
-            onWarning: (message: string) => { pail.warn(message); },
+            onWarning: (message: string) => {
+                pail.warn(message);
+            },
             workspaceRoot,
         });
 

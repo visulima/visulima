@@ -37,7 +37,9 @@ const outdated = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {
     };
 };
 
-const dup = (name: string, versions: string[]): DuplicatePackage => { return { name, versions }; };
+const dup = (name: string, versions: string[]): DuplicatePackage => {
+    return { name, versions };
+};
 
 const opt = (overrides: Partial<OptimizeEntry> = {}): OptimizeEntry => {
     return {
@@ -119,9 +121,7 @@ describe(flattenFindings, () => {
                 license: "MIT",
                 score: { license: 1, maintenance: 0.5, overall: 0.4, quality: 0.5, supplyChain: 0.4, vulnerability: 0.5 },
             } as never,
-            vulnerabilities: [
-                { fixedVersions: ["2.0.0"], id: "GHSA-bbbb", severity: "CRITICAL", summary: "" },
-            ],
+            vulnerabilities: [{ fixedVersions: ["2.0.0"], id: "GHSA-bbbb", severity: "CRITICAL", summary: "" }],
         });
 
         const findings = flattenFindings(buildResults({ outdated: [acked] }));

@@ -39,7 +39,12 @@ const toolchain: Command = {
         { defaultValue: false, description: "With `status`: exit 1 if any tool mismatches", name: "exit-code", type: Boolean },
         { defaultValue: false, description: "Print the command that would run, but don't execute", name: "dry-run", type: Boolean },
         { defaultValue: false, description: "Emit JSON (status subcommand only)", name: "json", type: Boolean },
-        { defaultValue: true, description: "With `use`: also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.", name: "engines", type: Boolean },
+        {
+            defaultValue: true,
+            description: "With `use`: also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.",
+            name: "engines",
+            type: Boolean,
+        },
     ],
 };
 

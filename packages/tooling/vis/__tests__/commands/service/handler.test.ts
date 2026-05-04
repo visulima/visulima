@@ -19,9 +19,7 @@ interface ToolboxShape {
     workspaceRoot: string | undefined;
 }
 
-const buildToolbox = (
-    overrides: Partial<ToolboxShape> = {},
-): ToolboxShape => {
+const buildToolbox = (overrides: Partial<ToolboxShape> = {}): ToolboxShape => {
     return {
         argument: [],
         logger: { error: vi.fn(), info: vi.fn(), log: vi.fn(), warn: vi.fn() },
@@ -71,27 +69,19 @@ describe("commands/service/handler — argument validation", () => {
         it("rejects --all combined with a positional id", async () => {
             expect.assertions(2);
 
-            await serviceStopExecute(
-                buildToolbox({ argument: ["pkg:db"], options: { all: true }, workspaceRoot }) as never,
-            );
+            await serviceStopExecute(buildToolbox({ argument: ["pkg:db"], options: { all: true }, workspaceRoot }) as never);
 
             expect(process.exitCode).toBe(1);
-            expect(pailErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Cannot combine --all with a target id"),
-            );
+            expect(pailErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Cannot combine --all with a target id"));
         });
 
         it("reports nothing-to-stop when --all runs against an empty workspace", async () => {
             expect.assertions(2);
 
-            await serviceStopExecute(
-                buildToolbox({ options: { all: true }, workspaceRoot }) as never,
-            );
+            await serviceStopExecute(buildToolbox({ options: { all: true }, workspaceRoot }) as never);
 
             expect(process.exitCode).toBe(0);
-            expect(pailInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining("No running services registered"),
-            );
+            expect(pailInfoSpy).toHaveBeenCalledWith(expect.stringContaining("No running services registered"));
         });
 
         it("errors when neither --all nor a target id is provided", async () => {
@@ -120,9 +110,7 @@ describe("commands/service/handler — argument validation", () => {
         it("rejects an invalid --format value", async () => {
             expect.assertions(2);
 
-            await serviceListExecute(
-                buildToolbox({ options: { format: "yaml" }, workspaceRoot }) as never,
-            );
+            await serviceListExecute(buildToolbox({ options: { format: "yaml" }, workspaceRoot }) as never);
 
             expect(process.exitCode).toBe(1);
             expect(pailErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid --format"));
@@ -134,9 +122,7 @@ describe("commands/service/handler — argument validation", () => {
             // No services → empty JSON array on stdout, no pail.error.
             const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
 
-            await serviceListExecute(
-                buildToolbox({ options: { format: "json" }, workspaceRoot }) as never,
-            );
+            await serviceListExecute(buildToolbox({ options: { format: "json" }, workspaceRoot }) as never);
 
             stdoutSpy.mockRestore();
             expect(pailErrorSpy).not.toHaveBeenCalled();
@@ -185,11 +171,7 @@ describe("commands/service/handler — argument validation", () => {
         it("throws when invoked outside any workspace", async () => {
             expect.assertions(1);
 
-            await expect(
-                serviceStartExecute(
-                    buildToolbox({ argument: ["pkg:db"], workspaceRoot: undefined }) as never,
-                ),
-            ).rejects.toThrow(/workspace root/i);
+            await expect(serviceStartExecute(buildToolbox({ argument: ["pkg:db"], workspaceRoot: undefined }) as never)).rejects.toThrow(/workspace root/i);
         });
     });
 });

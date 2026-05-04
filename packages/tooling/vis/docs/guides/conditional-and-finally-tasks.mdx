@@ -49,15 +49,15 @@ $ vis run deploy
 
 Positive clauses are **AND**-ed. Within a clause, an array is **OR**-ed. The optional `not` block negates each clause individually.
 
-| Clause           | Form                                                  | Example                                                |
-| ---------------- | ----------------------------------------------------- | ------------------------------------------------------ |
-| `os`             | `string` \| `string[]`                                | `"linux"` · `["linux", "darwin"]`                      |
-| `env` (string)   | env var must be set and non-empty                     | `"GITHUB_TOKEN"`                                       |
-| `env` (object)   | `{ name, equals }` for exact value                    | `{ name: "NODE_ENV", equals: "production" }`           |
-| `env` (object)   | `{ name, exists: false }` for unset/empty             | `{ name: "SKIP_BUILD", exists: false }`                |
-| `branch`         | `string` \| `string[]`                                | `["main", "alpha", "beta"]`                            |
-| `ci`             | `boolean`                                             | `true` (only in CI) · `false` (only locally)           |
-| `not.*`          | mirrors of every clause above                         | `not: { ci: true }` (locally only)                     |
+| Clause         | Form                                      | Example                                      |
+| -------------- | ----------------------------------------- | -------------------------------------------- |
+| `os`           | `string` \| `string[]`                    | `"linux"` · `["linux", "darwin"]`            |
+| `env` (string) | env var must be set and non-empty         | `"GITHUB_TOKEN"`                             |
+| `env` (object) | `{ name, equals }` for exact value        | `{ name: "NODE_ENV", equals: "production" }` |
+| `env` (object) | `{ name, exists: false }` for unset/empty | `{ name: "SKIP_BUILD", exists: false }`      |
+| `branch`       | `string` \| `string[]`                    | `["main", "alpha", "beta"]`                  |
+| `ci`           | `boolean`                                 | `true` (only in CI) · `false` (only locally) |
+| `not.*`        | mirrors of every clause above             | `not: { ci: true }` (locally only)           |
 
 The `os` clause accepts every Node.js platform value (`aix`, `darwin`, `freebsd`, `linux`, `openbsd`, `sunos`, `win32`) plus the friendly alias `windows` (treated as `win32`).
 

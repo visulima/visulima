@@ -72,9 +72,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     let pm;
 
     try {
-        pm = noAube
-            ? detectPm(cwd)
-            : resolveInstaller(cwd, { backend: flagBackend, configBackend: visConfig?.install?.backend });
+        pm = noAube ? detectPm(cwd) : resolveInstaller(cwd, { backend: flagBackend, configBackend: visConfig?.install?.backend });
     } catch (error: unknown) {
         pail.error(error instanceof Error ? error.message : String(error));
         process.exitCode = 1;

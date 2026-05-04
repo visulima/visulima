@@ -30,13 +30,13 @@ vis sort-package-json --line-ending crlf                       # force CRLF
 
 ## Options
 
-| Option                | Alias | Default | Description                                                                                                  |
-| --------------------- | ----- | ------- | ------------------------------------------------------------------------------------------------------------ |
-| `--check`             | `-c`  | `false` | Check if `package.json` files are sorted without writing (exits 1 if unsorted)                               |
-| `--sort-scripts`      |       | `false` | Also sort the `scripts` field alphabetically                                                                 |
-| `--indent`            |       |         | Indent override: a number of spaces, `tab`, or a literal whitespace string. When unset, the file's indent is preserved. |
-| `--ignore`            |       |         | Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.  |
-| `--sort-order`        |       |         | Comma-separated list of top-level keys to place first. Repeatable.                                           |
-| `--unsorted`          |       |         | Comma-separated list of top-level sections whose key order should be preserved. Repeatable.                  |
-| `--no-final-newline`  |       | `false` | Do not append a trailing newline (default: append one).                                                      |
-| `--line-ending`       |       | `auto`  | Line ending to write: `auto` (per-file detection), `lf`, or `crlf`.                                          |
+| Option               | Alias | Default | Description                                                                                                             |
+| -------------------- | ----- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--check`            | `-c`  | `false` | Check if `package.json` files are sorted without writing (exits 1 if unsorted)                                          |
+| `--sort-scripts`     |       | `false` | Also sort the `scripts` field alphabetically                                                                            |
+| `--indent`           |       |         | Indent override: a number of spaces, `tab`, or a literal whitespace string. When unset, the file's indent is preserved. |
+| `--ignore`           |       |         | Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.             |
+| `--sort-order`       |       |         | Comma-separated list of top-level keys to place first. Repeatable.                                                      |
+| `--unsorted`         |       |         | Comma-separated list of top-level sections whose key order should be preserved. Repeatable.                             |
+| `--no-final-newline` |       | `false` | Do not append a trailing newline (default: append one).                                                                 |
+| `--line-ending`      |       | `auto`  | Line ending to write: `auto` (per-file detection), `lf`, or `crlf`.                                                     |

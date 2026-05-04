@@ -11,37 +11,44 @@ The MCP server deliberately does NOT execute targets or scaffold templates — N
 
 ## Tools available
 
-| Tool | Purpose |
-| --- | --- |
-| `list_projects` | All projects in the workspace, optionally filtered by a vis query (`tag=frontend`, `type=application`, …) |
-| `describe_project` | Full metadata for one project: language, layer, tags, root path, all targets |
-| `list_targets` | Per-target rows across the workspace, optionally narrowed to a single project |
-| `list_templates` | Scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates` |
+| Tool                | Purpose                                                                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `list_projects`     | All projects in the workspace, optionally filtered by a vis query (`tag=frontend`, `type=application`, …)                         |
+| `describe_project`  | Full metadata for one project: language, layer, tags, root path, all targets                                                      |
+| `list_targets`      | Per-target rows across the workspace, optionally narrowed to a single project                                                     |
+| `list_templates`    | Scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates`              |
 | `describe_template` | Variable schema, default destination, and description for a single template — required before suggesting a `vis generate` command |
-| `get_run_logs` | Most recent run summary from `.task-runner/`, or a specific `runId`, optionally filtered to one task |
-| `cache_why` | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps) |
-| `cache_hash` | Recorded hash and per-input hash details for a task |
+| `get_run_logs`      | Most recent run summary from `.task-runner/`, or a specific `runId`, optionally filtered to one task                              |
+| `cache_why`         | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps)               |
+| `cache_hash`        | Recorded hash and per-input hash details for a task                                                                               |
 
 ## Workflow patterns
 
 ### Discovery — "what's in this repo?"
+
 Default opening move when the user asks about the workspace:
+
 1. `list_projects` (no filter). Shows everything with categories and target counts.
 2. If they ask about a specific package, `describe_project` for the full picture rather than re-running list with a filter.
 
 ### Plan a build
+
 1. `list_targets` (optionally with `project: "@scope/name"`) to see what `build`/`test`/`lint`/etc. targets exist.
 2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it.
 3. Use `get_run_logs` afterwards to inspect status, cache hits, and stderr tails.
 
 ### Investigate a cache miss
+
 When a build that should have been cached re-ran:
+
 1. `get_run_logs` (no args → latest summary) — surfaces all task statuses for the last run.
 2. For any task with status `success` but `cacheStatus: "miss"`, call `cache_why` with that `taskId`. It diffs hashDetails against the previous run and tells you which input rotated (command string, file content, `implicitDependency`, runtime version, …).
 3. If `cache_why` shows the change but the user wants to see the raw hash inputs, `cache_hash` returns the full per-input breakdown.
 
 ### Scaffold a new package or component
+
 When the user asks for "a new X" / "scaffold Y":
+
 1. `list_templates` — pick the template whose `name` or `description` matches the user's request.
 2. `describe_template` with that name — read the `variables[]` schema. Identify which variables are `required` and which have sensible `default` values.
 3. Construct the command: `vis generate <name> -- --var1=value1 --var2=value2`. For interactive prompts, drop the `--` overrides and let the user step through. For `--defaults`-friendly templates, add `--defaults` to skip prompts.
@@ -49,26 +56,26 @@ When the user asks for "a new X" / "scaffold Y":
 
 #### Worked example
 
-User: *"Scaffold a new React button component called PrimaryButton."*
+User: _"Scaffold a new React button component called PrimaryButton."_
 
 1. Call `list_templates` → response contains an entry `{ "name": "component", "source": "native", "description": "Scaffold a React component" }`. That's the closest match.
 2. Call `describe_template` with `{ "name": "component" }` → response shows `variables`:
-   ```json
-   [
-     { "name": "name",     "type": "string", "required": true,  "prompt": "Component name?" },
-     { "name": "withTest", "type": "boolean", "required": false, "default": true },
-     { "name": "style",    "type": "enum",   "required": false, "default": "primary",
-       "values": ["primary", "secondary"] }
-   ]
-   ```
+    ```json
+    [
+        { "name": "name", "type": "string", "required": true, "prompt": "Component name?" },
+        { "name": "withTest", "type": "boolean", "required": false, "default": true },
+        { "name": "style", "type": "enum", "required": false, "default": "primary", "values": ["primary", "secondary"] }
+    ]
+    ```
 3. The user supplied `name` (`PrimaryButton`) and implied `style=primary` (default already matches). `withTest` is unspecified — the default is fine, no need to override.
 4. Suggested command for the user to run:
-   ```sh
-   vis generate component -- --name=PrimaryButton --style=primary
-   ```
-   Do **not** invent values for required variables the user never mentioned — ask first.
+    ```sh
+    vis generate component -- --name=PrimaryButton --style=primary
+    ```
+    Do **not** invent values for required variables the user never mentioned — ask first.
 
 ### Diagnose a failed run
+
 1. `get_run_logs` to see which task(s) failed.
 2. `get_run_logs` with `taskId` set to the failing task — returns just that entry, including the captured stderr tail.
 3. Decide: is it a code bug (read the project's source), a cache poisoning issue (`cache_why`), or environmental (look at the run summary's `runtime` block)?

@@ -2,86 +2,84 @@
 
 ### Features
 
-* **vis:** [@inherit](https://github.com/inherit) array merge sentinel ([c1334ab](https://github.com/visulima/visulima/commit/c1334ab75a84e12aa972aa1aba57ee74edbcc17d))
-* **vis:** add manual typosquat list and scoped brand-jacks ([1eaef11](https://github.com/visulima/visulima/commit/1eaef1154bb3ca18f09cebee290a9857c5171339))
-* **vis:** auto-recover orphaned runners via doctor --fix ([7c68a6e](https://github.com/visulima/visulima/commit/7c68a6e1fd163fdcfb2f4f663f78b5b81cf4df09))
-* **vis:** cache diagnostics, retention, and quiet output style ([9ec307b](https://github.com/visulima/visulima/commit/9ec307b06cec5c3114a6e70abbf1f2346ce61910))
-* **vis:** doctor checks for watch/signal runtime ([d7d53a7](https://github.com/visulima/visulima/commit/d7d53a7f520b64e72aa193e0beacf2722a82a6f4))
-* **vis:** finish vis-side when:/always:/tokens migration ([3c3c759](https://github.com/visulima/visulima/commit/3c3c75946d716efa5971f6cf1fa9ae8d139d9652))
-* **vis:** per-package vis.task.ts overlay ([14f6adf](https://github.com/visulima/visulima/commit/14f6adfc37b7ff552629309bd555d1fd3dd317f9)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
-* **vis:** rewrite doctor with TUI store and live scan progress ([84f4923](https://github.com/visulima/visulima/commit/84f492376ef9129781464b26a50b1954b7e3b206))
-* **vis:** secure-by-default install/add and lint cleanup ([28df4c4](https://github.com/visulima/visulima/commit/28df4c40504b7414460c57ef563593cfe14c5eeb))
-* **vis:** split ai into nested subcommands, add discovery, unify cache type filter ([51d2b5e](https://github.com/visulima/visulima/commit/51d2b5ee9fdfcee0cbd4d5e5b9f2f1d08f9ef2ea))
-* **vis:** support extends in vis.config.ts ([70d7b36](https://github.com/visulima/visulima/commit/70d7b36b362b0a7340e4717bdae12db355bf05e9))
-* **vis:** typed errors for vis config loader ([0dce143](https://github.com/visulima/visulima/commit/0dce143247ba695eb7fa46f3b59c709c473bdc57))
-* **vis:** watch keybinds and timeout escalation ([3181bb5](https://github.com/visulima/visulima/commit/3181bb50986b4d7e924a2d5b053a9883228ab08f))
-* **vis:** worktree-aware shared task cache with --scope flag ([4328542](https://github.com/visulima/visulima/commit/4328542a9abfa16a40fa62cfe9e8d688eb0d9d81))
+- **vis:** [@inherit](https://github.com/inherit) array merge sentinel ([c1334ab](https://github.com/visulima/visulima/commit/c1334ab75a84e12aa972aa1aba57ee74edbcc17d))
+- **vis:** add manual typosquat list and scoped brand-jacks ([1eaef11](https://github.com/visulima/visulima/commit/1eaef1154bb3ca18f09cebee290a9857c5171339))
+- **vis:** auto-recover orphaned runners via doctor --fix ([7c68a6e](https://github.com/visulima/visulima/commit/7c68a6e1fd163fdcfb2f4f663f78b5b81cf4df09))
+- **vis:** cache diagnostics, retention, and quiet output style ([9ec307b](https://github.com/visulima/visulima/commit/9ec307b06cec5c3114a6e70abbf1f2346ce61910))
+- **vis:** doctor checks for watch/signal runtime ([d7d53a7](https://github.com/visulima/visulima/commit/d7d53a7f520b64e72aa193e0beacf2722a82a6f4))
+- **vis:** finish vis-side when:/always:/tokens migration ([3c3c759](https://github.com/visulima/visulima/commit/3c3c75946d716efa5971f6cf1fa9ae8d139d9652))
+- **vis:** per-package vis.task.ts overlay ([14f6adf](https://github.com/visulima/visulima/commit/14f6adfc37b7ff552629309bd555d1fd3dd317f9)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
+- **vis:** rewrite doctor with TUI store and live scan progress ([84f4923](https://github.com/visulima/visulima/commit/84f492376ef9129781464b26a50b1954b7e3b206))
+- **vis:** secure-by-default install/add and lint cleanup ([28df4c4](https://github.com/visulima/visulima/commit/28df4c40504b7414460c57ef563593cfe14c5eeb))
+- **vis:** split ai into nested subcommands, add discovery, unify cache type filter ([51d2b5e](https://github.com/visulima/visulima/commit/51d2b5ee9fdfcee0cbd4d5e5b9f2f1d08f9ef2ea))
+- **vis:** support extends in vis.config.ts ([70d7b36](https://github.com/visulima/visulima/commit/70d7b36b362b0a7340e4717bdae12db355bf05e9))
+- **vis:** typed errors for vis config loader ([0dce143](https://github.com/visulima/visulima/commit/0dce143247ba695eb7fa46f3b59c709c473bdc57))
+- **vis:** watch keybinds and timeout escalation ([3181bb5](https://github.com/visulima/visulima/commit/3181bb50986b4d7e924a2d5b053a9883228ab08f))
+- **vis:** worktree-aware shared task cache with --scope flag ([4328542](https://github.com/visulima/visulima/commit/4328542a9abfa16a40fa62cfe9e8d688eb0d9d81))
 
 ### Bug Fixes
 
-* **vis:** address review findings on watch UX bundle ([edee703](https://github.com/visulima/visulima/commit/edee7038fe23a488791682dd8ce5c469b40a3e8c))
-* **vis:** measure update list viewport for scrollbar ([4451cd3](https://github.com/visulima/visulima/commit/4451cd3726598ad1848c61800410f6d3146ec817))
+- **vis:** address review findings on watch UX bundle ([edee703](https://github.com/visulima/visulima/commit/edee7038fe23a488791682dd8ce5c469b40a3e8c))
+- **vis:** measure update list viewport for scrollbar ([4451cd3](https://github.com/visulima/visulima/commit/4451cd3726598ad1848c61800410f6d3146ec817))
 
 ### Documentation
 
-* **vis:** document doctor command and Phase 2 watch/signal flow ([4e66350](https://github.com/visulima/visulima/commit/4e663505be135666757d9e90bbfd033f66466220)), closes [doctor#runtime](https://github.com/visulima/doctor/issues/runtime)
-* **vis:** document layered configuration ([9a0f303](https://github.com/visulima/visulima/commit/9a0f3037f94992887e3551fbcd72f2dc73260305))
-* **vis:** spec for layered configuration ([bcd830d](https://github.com/visulima/visulima/commit/bcd830dc9f1ed7e9dfc39f91649f839afe29bd87))
+- **vis:** document doctor command and Phase 2 watch/signal flow ([4e66350](https://github.com/visulima/visulima/commit/4e663505be135666757d9e90bbfd033f66466220)), closes [doctor#runtime](https://github.com/visulima/doctor/issues/runtime)
+- **vis:** document layered configuration ([9a0f303](https://github.com/visulima/visulima/commit/9a0f3037f94992887e3551fbcd72f2dc73260305))
+- **vis:** spec for layered configuration ([bcd830d](https://github.com/visulima/visulima/commit/bcd830dc9f1ed7e9dfc39f91649f839afe29bd87))
 
 ### Miscellaneous Chores
 
-* **vis:** alphabetize VisConfig members in workspace.ts ([b7869a6](https://github.com/visulima/visulima/commit/b7869a650641a55d895dbf135bfec1a94f9f50e7))
+- **vis:** alphabetize VisConfig members in workspace.ts ([b7869a6](https://github.com/visulima/visulima/commit/b7869a650641a55d895dbf135bfec1a94f9f50e7))
 
 ### Code Refactoring
 
-* **vis:** expose VisConfig types and move RFC under rfc/ ([3baa115](https://github.com/visulima/visulima/commit/3baa1151b6ec5d611135cc77e1b39911a4592470))
-* **vis:** regroup src into folders and reuse visulima primitives ([18250d7](https://github.com/visulima/visulima/commit/18250d7bd39bccfdccc9737e13a8b0e7c28ffca2))
+- **vis:** expose VisConfig types and move RFC under rfc/ ([3baa115](https://github.com/visulima/visulima/commit/3baa1151b6ec5d611135cc77e1b39911a4592470))
+- **vis:** regroup src into folders and reuse visulima primitives ([18250d7](https://github.com/visulima/visulima/commit/18250d7bd39bccfdccc9737e13a8b0e7c28ffca2))
 
 ### Tests
 
-* added more tests ([33f3f19](https://github.com/visulima/visulima/commit/33f3f191332ff9590d94ae543f3b7ef0b82de291))
-* **vis:** scrub leaked GIT_* env vars in worktree fixture tests ([f066775](https://github.com/visulima/visulima/commit/f0667756c16cd3ad4e25541113e481966606fe62))
-
+- added more tests ([33f3f19](https://github.com/visulima/visulima/commit/33f3f191332ff9590d94ae543f3b7ef0b82de291))
+- **vis:** scrub leaked GIT\_\* env vars in worktree fixture tests ([f066775](https://github.com/visulima/visulima/commit/f0667756c16cd3ad4e25541113e481966606fe62))
 
 ### Dependencies
 
-* **@visulima/cerebro:** upgraded to 3.0.0-alpha.13
-* **@visulima/task-runner:** upgraded to 1.0.0-alpha.8
+- **@visulima/cerebro:** upgraded to 3.0.0-alpha.13
+- **@visulima/task-runner:** upgraded to 1.0.0-alpha.8
 
 ## @visulima/vis [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.8...@visulima/vis@1.0.0-alpha.9) (2026-04-28)
 
 ### Features
 
-* Add toolchain management with version manager detection and delegation ([#617](https://github.com/visulima/visulima/issues/617)) ([548b0e8](https://github.com/visulima/visulima/commit/548b0e8f9d59743be25abb97b5de3fdbeb681bd6))
-* **vis:** add aube as default installer with PM fallback ([79a9933](https://github.com/visulima/visulima/commit/79a99333c0e73e69f375b36c56e40b2693dc4c90))
-* **vis:** add ignore/sortOrder/unsorted/finalNewline/lineEnding to sort-package-json ([50f68df](https://github.com/visulima/visulima/commit/50f68dfc2bc31c082ef98b3ddcf73d3dee0cc080))
-* **vis:** interactive TUI for bare `vis migrate` ([2171441](https://github.com/visulima/visulima/commit/217144190520447ba9fbe66a9a8f0c452469151e))
+- Add toolchain management with version manager detection and delegation ([#617](https://github.com/visulima/visulima/issues/617)) ([548b0e8](https://github.com/visulima/visulima/commit/548b0e8f9d59743be25abb97b5de3fdbeb681bd6))
+- **vis:** add aube as default installer with PM fallback ([79a9933](https://github.com/visulima/visulima/commit/79a99333c0e73e69f375b36c56e40b2693dc4c90))
+- **vis:** add ignore/sortOrder/unsorted/finalNewline/lineEnding to sort-package-json ([50f68df](https://github.com/visulima/visulima/commit/50f68dfc2bc31c082ef98b3ddcf73d3dee0cc080))
+- **vis:** interactive TUI for bare `vis migrate` ([2171441](https://github.com/visulima/visulima/commit/217144190520447ba9fbe66a9a8f0c452469151e))
 
 ### Bug Fixes
 
-* fixed spacing ([1544af2](https://github.com/visulima/visulima/commit/1544af21294edaaf5799846e6c6063c86def3d29))
-* **vis:** use default colorize import ([2b95ad2](https://github.com/visulima/visulima/commit/2b95ad28207e699161ed201a43f175a630a06c61))
+- fixed spacing ([1544af2](https://github.com/visulima/visulima/commit/1544af21294edaaf5799846e6c6063c86def3d29))
+- **vis:** use default colorize import ([2b95ad2](https://github.com/visulima/visulima/commit/2b95ad28207e699161ed201a43f175a630a06c61))
 
 ### Miscellaneous Chores
 
-* added missing version key ([036d86e](https://github.com/visulima/visulima/commit/036d86e6cfa078e4f651327f630cec721f1bbc47))
-* **vis:** upgrade packem to 2.0.0-alpha.76 ([9753759](https://github.com/visulima/visulima/commit/97537598a23a4f680e332ca2ea73ad64f301252a))
+- added missing version key ([036d86e](https://github.com/visulima/visulima/commit/036d86e6cfa078e4f651327f630cec721f1bbc47))
+- **vis:** upgrade packem to 2.0.0-alpha.76 ([9753759](https://github.com/visulima/visulima/commit/97537598a23a4f680e332ca2ea73ad64f301252a))
 
 ### Code Refactoring
 
-* **vis:** adopt cerebro lazy commands; split each command into folder ([e1efc0f](https://github.com/visulima/visulima/commit/e1efc0fe57e39433c33c50b1ad2c9e971ea596ba))
-* **vis:** drop native-binding wrapper; preserve indent in sort-package-json ([efcccb8](https://github.com/visulima/visulima/commit/efcccb8bedac2f7e7e0819b8eb12277e5bf71312))
+- **vis:** adopt cerebro lazy commands; split each command into folder ([e1efc0f](https://github.com/visulima/visulima/commit/e1efc0fe57e39433c33c50b1ad2c9e971ea596ba))
+- **vis:** drop native-binding wrapper; preserve indent in sort-package-json ([efcccb8](https://github.com/visulima/visulima/commit/efcccb8bedac2f7e7e0819b8eb12277e5bf71312))
 
 ### Tests
 
-* **vis:** isolate host env in toolchain tests, fix assertion count ([d472635](https://github.com/visulima/visulima/commit/d4726350c3a68d574b08aff88369751f07216137))
-* **vis:** scope PATH in ensureToolchain engines-pnpm test ([ced1571](https://github.com/visulima/visulima/commit/ced157139ba8c6140b85a11d6c3655b2412620ac))
-
+- **vis:** isolate host env in toolchain tests, fix assertion count ([d472635](https://github.com/visulima/visulima/commit/d4726350c3a68d574b08aff88369751f07216137))
+- **vis:** scope PATH in ensureToolchain engines-pnpm test ([ced1571](https://github.com/visulima/visulima/commit/ced157139ba8c6140b85a11d6c3655b2412620ac))
 
 ### Dependencies
 
-* **@visulima/cerebro:** upgraded to 3.0.0-alpha.12
-* **@visulima/tui:** upgraded to 1.0.0-alpha.5
+- **@visulima/cerebro:** upgraded to 3.0.0-alpha.12
+- **@visulima/tui:** upgraded to 1.0.0-alpha.5
 
 ## @visulima/vis [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.7...@visulima/vis@1.0.0-alpha.8) (2026-04-22)
 

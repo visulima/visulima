@@ -36,10 +36,7 @@ interface FieldRowProps {
 const FieldRow = ({ children, label, width = 14 }: FieldRowProps): React.JSX.Element => (
     <Box>
         <Box width={width}>
-            <Text dimColor>
-                {label}
-                :
-            </Text>
+            <Text dimColor>{label}:</Text>
         </Box>
         {typeof children === "string" ? <Text>{children}</Text> : children}
     </Box>
@@ -68,24 +65,21 @@ const OutdatedDetail = ({ finding }: OutdatedDetailProps): React.JSX.Element => 
                 <Text>{entry.newRange}</Text>
                 <Text bold color={typeColor}>
                     {" ("}
-                    {entry.updateType}
-                    )
+                    {entry.updateType})
                 </Text>
             </FieldRow>
             <FieldRow label="Catalog">{entry.catalogName}</FieldRow>
-            {entry.acceptedRisk
-                ? (
-                    <FieldRow label="Risk ack">
-                        <Text dimColor>{entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
-                    </FieldRow>
-                )
-                : null}
+            {entry.acceptedRisk ? (
+                <FieldRow label="Risk ack">
+                    <Text dimColor>{entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
+                </FieldRow>
+            ) : null}
             <SectionTitle>Action</SectionTitle>
             <Text dimColor>
-                Run
-                {" "}
-                <Text bold color="white">vis update</Text>
-                {" "}
+                Run{" "}
+                <Text bold color="white">
+                    vis update
+                </Text>{" "}
                 to apply this change.
             </Text>
         </Box>
@@ -110,10 +104,10 @@ const DuplicateDetail = ({ finding }: DuplicateDetailProps): React.JSX.Element =
         ))}
         <SectionTitle>Action</SectionTitle>
         <Text dimColor>
-            Run
-            {" "}
-            <Text bold color="white">vis dedupe</Text>
-            {" "}
+            Run{" "}
+            <Text bold color="white">
+                vis dedupe
+            </Text>{" "}
             to consolidate to a single resolution.
         </Text>
     </Box>
@@ -131,48 +125,42 @@ const VulnerabilityDetail = ({ finding }: VulnerabilityDetailProps): React.JSX.E
             <FieldRow label="Package">{finding.packageName}</FieldRow>
             <FieldRow label="Current">{finding.entry.currentRange}</FieldRow>
             <FieldRow label="Advisories">{String(vulns.length)}</FieldRow>
-            {finding.entry.acceptedRisk
-                ? (
-                    <FieldRow label="Risk ack">
-                        <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
-                    </FieldRow>
-                )
-                : null}
+            {finding.entry.acceptedRisk ? (
+                <FieldRow label="Risk ack">
+                    <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
+                </FieldRow>
+            ) : null}
             {vulns.map((v) => {
                 const sevColor = SEVERITY_COLORS[v.severity] ?? "gray";
 
                 return (
                     <Box flexDirection="column" key={v.id} marginTop={1}>
                         <Box>
-                            <Text bold color={sevColor}>{v.severity}</Text>
-                            <Text>{" "}</Text>
+                            <Text bold color={sevColor}>
+                                {v.severity}
+                            </Text>
+                            <Text> </Text>
                             <Text>{v.id}</Text>
-                            {typeof v.cvssScore === "number"
-                                ? (
-                                    <Text dimColor>
-                                        {" · CVSS "}
-                                        {v.cvssScore.toFixed(1)}
-                                    </Text>
-                                )
-                                : null}
+                            {typeof v.cvssScore === "number" ? (
+                                <Text dimColor>
+                                    {" · CVSS "}
+                                    {v.cvssScore.toFixed(1)}
+                                </Text>
+                            ) : null}
                         </Box>
                         <Text wrap="wrap">{v.summary}</Text>
-                        {v.fixedVersions.length > 0
-                            ? (
-                                <Text dimColor>
-                                    {"Fixed in: "}
-                                    {v.fixedVersions.join(", ")}
-                                </Text>
-                            )
-                            : null}
-                        {v.aliases && v.aliases.length > 0
-                            ? (
-                                <Text dimColor>
-                                    {"Aliases: "}
-                                    {v.aliases.join(", ")}
-                                </Text>
-                            )
-                            : null}
+                        {v.fixedVersions.length > 0 ? (
+                            <Text dimColor>
+                                {"Fixed in: "}
+                                {v.fixedVersions.join(", ")}
+                            </Text>
+                        ) : null}
+                        {v.aliases && v.aliases.length > 0 ? (
+                            <Text dimColor>
+                                {"Aliases: "}
+                                {v.aliases.join(", ")}
+                            </Text>
+                        ) : null}
                     </Box>
                 );
             })}
@@ -198,19 +186,14 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
         <Box flexDirection="column">
             <FieldRow label="Package">{finding.packageName}</FieldRow>
             <FieldRow label="Overall">
-                <Text color={overallColor}>
-                    {String(overall)}
-                    %
-                </Text>
+                <Text color={overallColor}>{String(overall)}%</Text>
             </FieldRow>
             <FieldRow label="Alerts">{String(report.alerts.length)}</FieldRow>
-            {finding.entry.acceptedRisk
-                ? (
-                    <FieldRow label="Risk ack">
-                        <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
-                    </FieldRow>
-                )
-                : null}
+            {finding.entry.acceptedRisk ? (
+                <FieldRow label="Risk ack">
+                    <Text dimColor>{finding.entry.acceptedRisk.reason ?? "(no reason recorded)"}</Text>
+                </FieldRow>
+            ) : null}
             <SectionTitle>Score breakdown</SectionTitle>
             {Object.entries(report.score).map(([key, value]) => {
                 if (key === "overall") {
@@ -224,15 +207,9 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
                 return (
                     <Box key={key}>
                         <Box width={14}>
-                            <Text dimColor>
-                                {key}
-                                :
-                            </Text>
+                            <Text dimColor>{key}:</Text>
                         </Box>
-                        <Text color={color}>
-                            {String(pct)}
-                            %
-                        </Text>
+                        <Text color={color}>{String(pct)}%</Text>
                     </Box>
                 );
             })}
@@ -243,15 +220,17 @@ const SocketDetail = ({ finding }: SocketDetailProps): React.JSX.Element => {
                 return (
                     <Box flexDirection="column" key={`${alert.type}-${String(index)}`} marginBottom={1}>
                         <Box>
-                            <Text bold color={sevColor}>{alert.severity}</Text>
-                            <Text>{" "}</Text>
+                            <Text bold color={sevColor}>
+                                {alert.severity}
+                            </Text>
+                            <Text> </Text>
                             <Text>{alert.type}</Text>
                         </Box>
-                        {alert.props
-                            ? (
-                                <Text dimColor wrap="wrap">{JSON.stringify(alert.props)}</Text>
-                            )
-                            : null}
+                        {alert.props ? (
+                            <Text dimColor wrap="wrap">
+                                {JSON.stringify(alert.props)}
+                            </Text>
+                        ) : null}
                     </Box>
                 );
             })}
@@ -273,49 +252,37 @@ const OptimizationDetail = ({ finding }: OptimizationDetailProps): React.JSX.Ele
             <FieldRow label="Replacement">{entry.replacement}</FieldRow>
             {entry.overrideSpec ? <FieldRow label="Override">{entry.overrideSpec}</FieldRow> : null}
             <FieldRow label="Codemod">
-                <Text color={entry.hasCodemod ? "green" : "gray"}>
-                    {entry.hasCodemod ? "available" : "not available"}
-                </Text>
+                <Text color={entry.hasCodemod ? "green" : "gray"}>{entry.hasCodemod ? "available" : "not available"}</Text>
             </FieldRow>
-            {entry.docUrl
-                ? (
-                    <FieldRow label="Guide">
-                        <Text color="cyan" underline>{entry.docUrl}</Text>
-                    </FieldRow>
-                )
-                : null}
-            <SectionTitle>Action</SectionTitle>
-            {entry.hasCodemod
-                ? (
-                    <Text dimColor>
-                        Run
-                        {" "}
-                        <Text bold color="white">vis optimize</Text>
-                        {" "}
-                        to apply the codemod interactively.
+            {entry.docUrl ? (
+                <FieldRow label="Guide">
+                    <Text color="cyan" underline>
+                        {entry.docUrl}
                     </Text>
-                )
-                : entry.overrideSpec
-                    ? (
-                        <Text dimColor>
-                            Run
-                            {" "}
-                            <Text bold color="white">vis optimize</Text>
-                            {" "}
-                            to install the package override.
-                        </Text>
-                    )
-                    : entry.docUrl
-                        ? (
-                            <Text dimColor>
-                                No automated codemod. Open the migration guide above for the recommended alternative and steps.
-                            </Text>
-                        )
-                        : (
-                            <Text dimColor>
-                                No automated codemod. Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.
-                            </Text>
-                        )}
+                </FieldRow>
+            ) : null}
+            <SectionTitle>Action</SectionTitle>
+            {entry.hasCodemod ? (
+                <Text dimColor>
+                    Run{" "}
+                    <Text bold color="white">
+                        vis optimize
+                    </Text>{" "}
+                    to apply the codemod interactively.
+                </Text>
+            ) : entry.overrideSpec ? (
+                <Text dimColor>
+                    Run{" "}
+                    <Text bold color="white">
+                        vis optimize
+                    </Text>{" "}
+                    to install the package override.
+                </Text>
+            ) : entry.docUrl ? (
+                <Text dimColor>No automated codemod. Open the migration guide above for the recommended alternative and steps.</Text>
+            ) : (
+                <Text dimColor>No automated codemod. Consult the package&apos;s docs or the e18e module-replacements guide for an alternative.</Text>
+            )}
         </Box>
     );
 };
@@ -336,24 +303,19 @@ const RuntimeDetail = ({ finding }: RuntimeDetailProps): React.JSX.Element => {
             </FieldRow>
             <SectionTitle>Message</SectionTitle>
             <Text wrap="wrap">{diagnostic.message}</Text>
-            {diagnostic.detail && Object.keys(diagnostic.detail).length > 0
-                ? (
-                    <>
-                        <SectionTitle>Details</SectionTitle>
-                        {Object.entries(diagnostic.detail).map(([key, value]) => (
-                            <Box key={key}>
-                                <Box width={20}>
-                                    <Text dimColor>
-                                        {key}
-                                        :
-                                    </Text>
-                                </Box>
-                                <Text>{String(value)}</Text>
+            {diagnostic.detail && Object.keys(diagnostic.detail).length > 0 ? (
+                <>
+                    <SectionTitle>Details</SectionTitle>
+                    {Object.entries(diagnostic.detail).map(([key, value]) => (
+                        <Box key={key}>
+                            <Box width={20}>
+                                <Text dimColor>{key}:</Text>
                             </Box>
-                        ))}
-                    </>
-                )
-                : null}
+                            <Text>{String(value)}</Text>
+                        </Box>
+                    ))}
+                </>
+            ) : null}
         </Box>
     );
 };
@@ -369,14 +331,7 @@ const DoctorDetailPanel = ({ finding, focused, scrollRef }: DoctorDetailPanelPro
 
     if (!finding) {
         return (
-            <Box
-                alignItems="center"
-                borderColor="gray"
-                borderStyle="single"
-                flexDirection="column"
-                flexGrow={1}
-                justifyContent="center"
-            >
+            <Box alignItems="center" borderColor="gray" borderStyle="single" flexDirection="column" flexGrow={1} justifyContent="center">
                 <Text dimColor>No finding selected</Text>
             </Box>
         );
@@ -418,22 +373,16 @@ const DoctorDetailPanel = ({ finding, focused, scrollRef }: DoctorDetailPanelPro
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             <Box flexShrink={0} paddingTop={1} paddingX={2}>
-                <Text bold color="white">{finding.title}</Text>
+                <Text bold color="white">
+                    {finding.title}
+                </Text>
                 <Text dimColor>
                     {"  "}
                     {SECTION_LABELS[finding.section]}
                 </Text>
             </Box>
 
-            <ScrollView
-                flexGrow={1}
-                flexShrink={1}
-                paddingX={2}
-                ref={scrollRef}
-                scrollbar
-                scrollbarColor="gray"
-                scrollbarStyle="block"
-            >
+            <ScrollView flexGrow={1} flexShrink={1} paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 <Text />
                 {body}
             </ScrollView>

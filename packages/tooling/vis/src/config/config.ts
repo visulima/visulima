@@ -221,9 +221,11 @@ const normalizeExtends = (value: VisConfig["extends"]): string[] => {
  */
 const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: ReadonlyArray<string>): string => {
     if (isAbsolute(specifier)) {
-        throw new VisConfigNotFoundError(specifier, [...chain, parentFile], [
-            "Absolute paths in `extends` are not supported. Use a relative path or an npm package name.",
-        ]);
+        throw new VisConfigNotFoundError(
+            specifier,
+            [...chain, parentFile],
+            ["Absolute paths in `extends` are not supported. Use a relative path or an npm package name."],
+        );
     }
 
     const attempted: string[] = [];
@@ -505,11 +507,7 @@ const writeVisTaskCache = (cachePath: string, hash: string, config: VisTaskConfi
  * @param projectDirectory Absolute path of the project to probe.
  * @param projectName Project identifier — used to scope the cache file.
  */
-const loadVisTaskConfig = async (
-    workspaceRoot: string,
-    projectDirectory: string,
-    projectName: string,
-): Promise<VisTaskConfig | undefined> => {
+const loadVisTaskConfig = async (workspaceRoot: string, projectDirectory: string, projectName: string): Promise<VisTaskConfig | undefined> => {
     const taskConfigPath = findVisTaskConfigFile(projectDirectory);
 
     if (!taskConfigPath) {

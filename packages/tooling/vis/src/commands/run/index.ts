@@ -30,7 +30,8 @@ const run: Command = {
         },
         {
             defaultValue: false,
-            description: "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+            description:
+                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
             name: "skip-toolchain",
             type: Boolean,
         },
@@ -122,7 +123,8 @@ const run: Command = {
             type: String,
         },
         {
-            description: "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Per-target options.outputStyle overrides this.",
+            description:
+                "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Per-target options.outputStyle overrides this.",
             name: "output-style",
             type: String,
         },
@@ -156,7 +158,8 @@ const run: Command = {
         },
         {
             // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
-            description: "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
+            description:
+                "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
             name: "strict-env",
             type: Boolean,
         },

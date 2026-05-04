@@ -24,22 +24,22 @@ vis staged --diff HEAD~1     # run against a different diff base
 
 ## Options
 
-| Option                       | Default  | Description                                                                                |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------------------ |
-| `--allow-empty`              | `false`  | Allow empty commits when tasks revert all staged changes                                   |
-| `--auto-stage`               | `false`  | Automatically stage new files that tasks create during the run                             |
-| `--concurrent`               |          | Number of concurrent tasks (or `false` for serial)                                         |
-| `--continue-on-error`        | `false`  | Run all tasks to completion even if one fails                                              |
-| `--cwd`                      |          | Working directory to run all tasks in                                                      |
-| `--debug`                    | `false`  | Enable debug output                                                                        |
-| `--diff`                     |          | Override the default `--staged` flag of `git diff`                                         |
-| `--diff-filter`              |          | Override the default diff-filter                                                           |
-| `--fail-on-changes`          | `false`  | Fail with exit code 1 when tasks modify tracked files                                      |
-| `--force-kill`               | `false`  | Kill in-flight tasks with SIGKILL on fast-fail (default is SIGTERM)                        |
-| `--hide-partially-staged`    | `false`  | Hide unstaged changes from partially staged files                                          |
-| `--hide-unstaged`            | `false`  | Hide all unstaged changes before running tasks                                             |
-| `--quiet`                    | `false`  | Suppress console output                                                                    |
-| `--relative`                 | `false`  | Pass filepaths relative to cwd to tasks                                                    |
-| `--revert`                   | `false`  | Revert to original state in case of errors                                                 |
-| `--stash`                    | `true`   | Enable backup stash (`--no-stash` to disable)                                              |
-| `--verbose`                  | `false`  | Show task output even when tasks succeed                                                   |
+| Option                    | Default | Description                                                         |
+| ------------------------- | ------- | ------------------------------------------------------------------- |
+| `--allow-empty`           | `false` | Allow empty commits when tasks revert all staged changes            |
+| `--auto-stage`            | `false` | Automatically stage new files that tasks create during the run      |
+| `--concurrent`            |         | Number of concurrent tasks (or `false` for serial)                  |
+| `--continue-on-error`     | `false` | Run all tasks to completion even if one fails                       |
+| `--cwd`                   |         | Working directory to run all tasks in                               |
+| `--debug`                 | `false` | Enable debug output                                                 |
+| `--diff`                  |         | Override the default `--staged` flag of `git diff`                  |
+| `--diff-filter`           |         | Override the default diff-filter                                    |
+| `--fail-on-changes`       | `false` | Fail with exit code 1 when tasks modify tracked files               |
+| `--force-kill`            | `false` | Kill in-flight tasks with SIGKILL on fast-fail (default is SIGTERM) |
+| `--hide-partially-staged` | `false` | Hide unstaged changes from partially staged files                   |
+| `--hide-unstaged`         | `false` | Hide all unstaged changes before running tasks                      |
+| `--quiet`                 | `false` | Suppress console output                                             |
+| `--relative`              | `false` | Pass filepaths relative to cwd to tasks                             |
+| `--revert`                | `false` | Revert to original state in case of errors                          |
+| `--stash`                 | `true`  | Enable backup stash (`--no-stash` to disable)                       |
+| `--verbose`               | `false` | Show task output even when tasks succeed                            |

@@ -6,13 +6,7 @@ import React from "react";
 import type { AiConfig } from "../../ai/ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../../ai/ai-analysis";
 import { renderDiscoveryJson, renderDiscoveryText } from "./discovery";
-import type {
-    AiDiscoverHelpOptions,
-    AiFixOptions,
-    AiProvidersOptions,
-    AiRootOptions,
-    AiTestOptions,
-} from "./index";
+import type { AiDiscoverHelpOptions, AiFixOptions, AiProvidersOptions, AiRootOptions, AiTestOptions } from "./index";
 
 const loadDiscoverableSubcommands = async () => {
     const { default: aiCommands } = await import("./index");

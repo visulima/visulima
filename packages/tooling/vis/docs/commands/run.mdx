@@ -296,13 +296,13 @@ Changes are debounced (150ms). Cache-aware reruns are fast — only tasks whose 
 
 While `--watch` is active, vis listens for Vitest-style single-key commands on stdin (TTY only — piped input falls back to file-change reruns):
 
-| Key            | Action                                                            |
-| -------------- | ----------------------------------------------------------------- |
-| `r` / `Enter`  | Rerun the active task set immediately                             |
-| `a`            | Clear any active project filter and rerun the full set            |
+| Key            | Action                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| `r` / `Enter`  | Rerun the active task set immediately                                                           |
+| `a`            | Clear any active project filter and rerun the full set                                          |
 | `p`            | Prompt for a project-name substring filter; subsequent reruns operate on matching projects only |
-| `q` / `Ctrl+C` | Exit watch mode cleanly                                           |
-| `h` / `?`      | Print the keybind reference                                       |
+| `q` / `Ctrl+C` | Exit watch mode cleanly                                                                         |
+| `h` / `?`      | Print the keybind reference                                                                     |
 
 The filter prompt accepts a case-insensitive substring match against `task.target.project`. Submitting an empty line cancels the prompt without changing the active filter.
 
@@ -325,10 +325,10 @@ Set `timeout` on a target to enforce a wall-clock budget. When the budget elapse
             "command": "vitest run",
             "options": {
                 "timeout": 600000,
-                "killGracePeriodMs": 10000
-            }
-        }
-    }
+                "killGracePeriodMs": 10000,
+            },
+        },
+    },
 }
 ```
 

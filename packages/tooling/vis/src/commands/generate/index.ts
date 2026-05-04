@@ -31,7 +31,12 @@ const generate: Command = {
     name: "generate",
     options: [
         { defaultValue: false, description: "List discovered templates", name: "list", type: Boolean },
-        { defaultValue: false, description: "Print template metadata (about, destination, variables) without running produce", name: "describe", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Print template metadata (about, destination, variables) without running produce",
+            name: "describe",
+            type: Boolean,
+        },
         { defaultValue: false, description: "Emit JSON output (with --list or --describe)", name: "json", type: Boolean },
         { description: "Destination directory", name: "to", type: String },
         { defaultValue: false, description: "Print planned writes without touching disk", name: "dry-run", type: Boolean },

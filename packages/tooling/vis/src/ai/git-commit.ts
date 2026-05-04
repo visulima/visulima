@@ -61,12 +61,7 @@ export interface CommitFilesResult {
 interface GithubRestClient {
     rest: {
         git: {
-            createBlob: (parameters: {
-                content: string;
-                encoding: string;
-                owner: string;
-                repo: string;
-            }) => Promise<{ data: { sha: string } }>;
+            createBlob: (parameters: { content: string; encoding: string; owner: string; repo: string }) => Promise<{ data: { sha: string } }>;
             createCommit: (parameters: {
                 message: string;
                 owner: string;
@@ -270,7 +265,4 @@ export const commitFiles = async (options: CommitFilesOptions): Promise<CommitFi
     throw new Error(`Cannot commit: unsupported CI provider \`${options.ciContext.provider}\`. Run \`vis ai heal accept\` from a recognised CI environment.`);
 };
 
-export {
-    apiBaseToHost as apiBaseToHostForTesting,
-    splitGithubRepo as splitGithubRepoForTesting,
-};
+export { apiBaseToHost as apiBaseToHostForTesting, splitGithubRepo as splitGithubRepoForTesting };

@@ -18,11 +18,13 @@ import {
 } from "../../../src/commands/ai/heal-accept";
 import type { AiHealAcceptOptions } from "../../../src/commands/ai/index";
 
-const fakeToolbox = (overrides: Partial<{
-    options: Partial<{ run: string | undefined; validationTimeout: number | undefined }>;
-    visConfig: { ai?: { heal?: { allowedActors?: string[] } } } | undefined;
-    workspaceRoot: string;
-}> = {}): Toolbox<Console, AiHealAcceptOptions> => {
+const fakeToolbox = (
+    overrides: Partial<{
+        options: Partial<{ run: string | undefined; validationTimeout: number | undefined }>;
+        visConfig: { ai?: { heal?: { allowedActors?: string[] } } } | undefined;
+        workspaceRoot: string;
+    }> = {},
+): Toolbox<Console, AiHealAcceptOptions> => {
     const baseOptions = {
         run: undefined as string | undefined,
         validationTimeout: undefined as number | undefined,
@@ -282,9 +284,7 @@ describe(fetchGithubHeadRefForTesting, () => {
     it("should hit the pulls endpoint and pick out head.ref", async () => {
         expect.assertions(2);
 
-        const fetchImpl = vi.fn(async () =>
-            Response.json({ head: { ref: "feat/cool" } }, { status: 200 }),
-        );
+        const fetchImpl = vi.fn(async () => Response.json({ head: { ref: "feat/cool" } }, { status: 200 }));
 
         const ref = await fetchGithubHeadRefForTesting({
             fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -416,21 +416,15 @@ describe(runHealAcceptForTesting, () => {
         try {
             const eventPath = join(directory, "event.json");
 
-            writeFileSync(
-                eventPath,
-                JSON.stringify({ comment: { body: TRIGGER_PHRASE, user: { login: "alice" } } }),
-            );
+            writeFileSync(eventPath, JSON.stringify({ comment: { body: TRIGGER_PHRASE, user: { login: "alice" } } }));
 
             const exitBefore = process.exitCode;
 
             try {
-                await runHealAcceptForTesting(
-                    fakeToolbox({ visConfig: { ai: { heal: { allowedActors: [] } } } }),
-                    {
-                        detectCi: async () => githubCi(),
-                        env: { GITHUB_EVENT_PATH: eventPath },
-                    },
-                );
+                await runHealAcceptForTesting(fakeToolbox({ visConfig: { ai: { heal: { allowedActors: [] } } } }), {
+                    detectCi: async () => githubCi(),
+                    env: { GITHUB_EVENT_PATH: eventPath },
+                });
 
                 expect(process.exitCode).toBe(1);
             } finally {
@@ -449,21 +443,15 @@ describe(runHealAcceptForTesting, () => {
         try {
             const eventPath = join(directory, "event.json");
 
-            writeFileSync(
-                eventPath,
-                JSON.stringify({ comment: { body: TRIGGER_PHRASE, user: { login: "mallory" } } }),
-            );
+            writeFileSync(eventPath, JSON.stringify({ comment: { body: TRIGGER_PHRASE, user: { login: "mallory" } } }));
 
             const exitBefore = process.exitCode;
 
             try {
-                await runHealAcceptForTesting(
-                    fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice"] } } } }),
-                    {
-                        detectCi: async () => githubCi(),
-                        env: { GITHUB_EVENT_PATH: eventPath },
-                    },
-                );
+                await runHealAcceptForTesting(fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice"] } } } }), {
+                    detectCi: async () => githubCi(),
+                    env: { GITHUB_EVENT_PATH: eventPath },
+                });
 
                 expect(process.exitCode).toBe(1);
             } finally {
@@ -500,17 +488,14 @@ describe(runHealAcceptForTesting, () => {
             // The Buildkite trigger is satisfied (unblocker email set, allow-listed actor),
             // but BUILDKITE_REPO points at GitHub with no GITHUB_TOKEN — derive returns
             // undefined and the handler refuses to attempt a commit.
-            await runHealAcceptForTesting(
-                fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice@example.com"] } } } }),
-                {
-                    detectCi: async () => buildkiteCi(),
-                    env: {
-                        BUILDKITE_BRANCH: "feat/x",
-                        BUILDKITE_REPO: "git@github.com:owner/repo.git",
-                        BUILDKITE_UNBLOCKER_EMAIL: "alice@example.com",
-                    },
+            await runHealAcceptForTesting(fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice@example.com"] } } } }), {
+                detectCi: async () => buildkiteCi(),
+                env: {
+                    BUILDKITE_BRANCH: "feat/x",
+                    BUILDKITE_REPO: "git@github.com:owner/repo.git",
+                    BUILDKITE_UNBLOCKER_EMAIL: "alice@example.com",
                 },
-            );
+            });
 
             // Note: this hits the "no failed task / no candidate" path *before* the derive
             // check, since findHealCandidate runs first. Both paths exit 1, which is what
@@ -544,13 +529,10 @@ describe(runHealAcceptForTesting, () => {
             const exitBefore = process.exitCode;
 
             try {
-                await runHealAcceptForTesting(
-                    fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice"] } } } }),
-                    {
-                        detectCi: async () => githubCi(),
-                        env: { GITHUB_EVENT_PATH: eventPath },
-                    },
-                );
+                await runHealAcceptForTesting(fakeToolbox({ visConfig: { ai: { heal: { allowedActors: ["alice"] } } } }), {
+                    detectCi: async () => githubCi(),
+                    env: { GITHUB_EVENT_PATH: eventPath },
+                });
 
                 expect(process.exitCode).toBe(1);
             } finally {

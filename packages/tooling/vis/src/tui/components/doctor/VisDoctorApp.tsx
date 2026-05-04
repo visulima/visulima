@@ -167,9 +167,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
     // height is `floor(rows * 0.55)` and the banner / footer don't subtract
     // from it (they live above/below in the column flex).
     const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
-    const listPanelHeight = isHorizontal
-        ? Math.max(1, rows - bannerHeight - 2)
-        : Math.floor(rows * 0.55);
+    const listPanelHeight = isHorizontal ? Math.max(1, rows - bannerHeight - 2) : Math.floor(rows * 0.55);
     const estimatedViewportHeight = useMemo(
         () => Math.max(1, listPanelHeight - 6 - activityLineHeight - (state.filterActive ? 1 : 0)),
         [listPanelHeight, activityLineHeight, state.filterActive],
@@ -324,9 +322,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
             // Section tabs (left/right arrows when list focused)
             if (state.focusedPanel === "list" && (key.leftArrow || key.rightArrow)) {
                 const currentIndex = FILTER_TABS.findIndex((tab) => tab.id === state.filterType);
-                const nextIndex = key.rightArrow
-                    ? (currentIndex + 1) % FILTER_TABS.length
-                    : (currentIndex - 1 + FILTER_TABS.length) % FILTER_TABS.length;
+                const nextIndex = key.rightArrow ? (currentIndex + 1) % FILTER_TABS.length : (currentIndex - 1 + FILTER_TABS.length) % FILTER_TABS.length;
 
                 setListScrollOffset(0);
                 detailScrollRef.current?.scrollToTop();
@@ -498,11 +494,7 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-                    {columns}
-                    x
-                    {rows}
-                    )
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -512,44 +504,60 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
 
     const footerItems: React.JSX.Element[] = [
         <Box gap={1} key="q">
-            <Text bold color="white">q</Text>
+            <Text bold color="white">
+                q
+            </Text>
             <Text dimColor>QUIT</Text>
         </Box>,
         <Box gap={1} key="?">
-            <Text bold color="white">?</Text>
+            <Text bold color="white">
+                ?
+            </Text>
             <Text dimColor>HELP</Text>
         </Box>,
         <Box gap={1} key="nav">
-            <Text bold color="white">↑↓</Text>
+            <Text bold color="white">
+                ↑↓
+            </Text>
             <Text dimColor>{detailFocused ? "SCROLL" : "NAV"}</Text>
         </Box>,
-        detailFocused
-            ? (
-                <Box gap={1} key="lr">
-                    <Text bold color="white">←/Esc</Text>
-                    <Text dimColor>LIST</Text>
-                </Box>
-            )
-            : (
-                <Box gap={1} key="lr">
-                    <Text bold color="white">←→</Text>
-                    <Text dimColor>SECTION</Text>
-                </Box>
-            ),
+        detailFocused ? (
+            <Box gap={1} key="lr">
+                <Text bold color="white">
+                    ←/Esc
+                </Text>
+                <Text dimColor>LIST</Text>
+            </Box>
+        ) : (
+            <Box gap={1} key="lr">
+                <Text bold color="white">
+                    ←→
+                </Text>
+                <Text dimColor>SECTION</Text>
+            </Box>
+        ),
         <Box gap={1} key="search">
-            <Text bold color="white">/</Text>
+            <Text bold color="white">
+                /
+            </Text>
             <Text dimColor>SEARCH</Text>
         </Box>,
         <Box gap={1} key="sev">
-            <Text bold color="white">e/w</Text>
+            <Text bold color="white">
+                e/w
+            </Text>
             <Text dimColor>SEVERITY</Text>
         </Box>,
         <Box gap={1} key="actions">
-            <Text bold color="white">u/o/a</Text>
+            <Text bold color="white">
+                u/o/a
+            </Text>
             <Text dimColor>ACTION</Text>
         </Box>,
         <Box gap={1} key="tab">
-            <Text bold color="white">Tab</Text>
+            <Text bold color="white">
+                Tab
+            </Text>
             <Text dimColor>PANEL</Text>
         </Box>,
     ];
@@ -564,16 +572,22 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
-                    <Text bold color="white">↑↓</Text>
+                    <Text bold color="white">
+                        ↑↓
+                    </Text>
                     {" scroll  "}
-                    <Text bold color="white">?</Text>
+                    <Text bold color="white">
+                        ?
+                    </Text>
                     /
-                    <Text bold color="white">Esc</Text>
+                    <Text bold color="white">
+                        Esc
+                    </Text>
                     {" close"}
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="DOCTOR — KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -582,105 +596,147 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
             <Box flexDirection="column" marginBottom={1}>
                 <Box marginBottom={1}>
                     <Text dimColor>{"── "}</Text>
-                    <Text bold color="white">NAVIGATION</Text>
+                    <Text bold color="white">
+                        NAVIGATION
+                    </Text>
                 </Box>
                 <Box>
                     <Box width={26}>
                         <Text>
-                            <Text bold color="white">{" ↑/k  "}</Text>
+                            <Text bold color="white">
+                                {" ↑/k  "}
+                            </Text>
                             <Text dimColor>Move up</Text>
                         </Text>
                     </Box>
                     <Text>
-                        <Text bold color="white">{" ↓/j  "}</Text>
+                        <Text bold color="white">
+                            {" ↓/j  "}
+                        </Text>
                         <Text dimColor>Move down</Text>
                     </Text>
                 </Box>
                 <Box>
                     <Box width={26}>
                         <Text>
-                            <Text bold color="white">{" PgUp"}</Text>
-                            <Text dimColor>  Jump up 10</Text>
+                            <Text bold color="white">
+                                {" PgUp"}
+                            </Text>
+                            <Text dimColor> Jump up 10</Text>
                         </Text>
                     </Box>
                     <Text>
-                        <Text bold color="white">{" PgDn"}</Text>
-                        <Text dimColor>  Jump down 10</Text>
+                        <Text bold color="white">
+                            {" PgDn"}
+                        </Text>
+                        <Text dimColor> Jump down 10</Text>
                     </Text>
                 </Box>
                 <Box>
                     <Box width={26}>
                         <Text>
-                            <Text bold color="white">{" Home"}</Text>
-                            <Text dimColor>  Jump to top</Text>
+                            <Text bold color="white">
+                                {" Home"}
+                            </Text>
+                            <Text dimColor> Jump to top</Text>
                         </Text>
                     </Box>
                     <Text>
-                        <Text bold color="white">{" End"}</Text>
-                        <Text dimColor>   Jump to bottom</Text>
+                        <Text bold color="white">
+                            {" End"}
+                        </Text>
+                        <Text dimColor> Jump to bottom</Text>
                     </Text>
                 </Box>
                 <Text>
-                    <Text bold color="white">{" Tab"}</Text>
-                    <Text dimColor>     Switch panel</Text>
+                    <Text bold color="white">
+                        {" Tab"}
+                    </Text>
+                    <Text dimColor> Switch panel</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" →/←"}</Text>
-                    <Text dimColor>     Section tabs (list) / Focus list (detail)</Text>
-                </Text>
-            </Box>
-            <Box flexDirection="column" marginBottom={1}>
-                <Box marginBottom={1}>
-                    <Text dimColor>{"── "}</Text>
-                    <Text bold color="white">FILTER</Text>
-                </Box>
-                <Text>
-                    <Text bold color="white">{" /"}</Text>
-                    <Text dimColor>       Open text filter (Esc/Enter to close)</Text>
-                </Text>
-                <Text>
-                    <Text bold color="white">{" e"}</Text>
-                    <Text dimColor>       Toggle errors-only filter</Text>
-                </Text>
-                <Text>
-                    <Text bold color="white">{" w"}</Text>
-                    <Text dimColor>       Toggle warns-only filter</Text>
+                    <Text bold color="white">
+                        {" →/←"}
+                    </Text>
+                    <Text dimColor> Section tabs (list) / Focus list (detail)</Text>
                 </Text>
             </Box>
             <Box flexDirection="column" marginBottom={1}>
                 <Box marginBottom={1}>
                     <Text dimColor>{"── "}</Text>
-                    <Text bold color="white">ACTIONS</Text>
+                    <Text bold color="white">
+                        FILTER
+                    </Text>
                 </Box>
                 <Text>
-                    <Text bold color="white">{" u"}</Text>
-                    <Text dimColor>       Exit + suggest update / dedupe command</Text>
+                    <Text bold color="white">
+                        {" /"}
+                    </Text>
+                    <Text dimColor> Open text filter (Esc/Enter to close)</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" o"}</Text>
-                    <Text dimColor>       Exit + suggest optimize command</Text>
+                    <Text bold color="white">
+                        {" e"}
+                    </Text>
+                    <Text dimColor> Toggle errors-only filter</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" a"}</Text>
-                    <Text dimColor>       Exit + print risk-ack snippet</Text>
+                    <Text bold color="white">
+                        {" w"}
+                    </Text>
+                    <Text dimColor> Toggle warns-only filter</Text>
+                </Text>
+            </Box>
+            <Box flexDirection="column" marginBottom={1}>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"── "}</Text>
+                    <Text bold color="white">
+                        ACTIONS
+                    </Text>
+                </Box>
+                <Text>
+                    <Text bold color="white">
+                        {" u"}
+                    </Text>
+                    <Text dimColor> Exit + suggest update / dedupe command</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" d"}</Text>
-                    <Text dimColor>       Focus detail panel</Text>
+                    <Text bold color="white">
+                        {" o"}
+                    </Text>
+                    <Text dimColor> Exit + suggest optimize command</Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" a"}
+                    </Text>
+                    <Text dimColor> Exit + print risk-ack snippet</Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" d"}
+                    </Text>
+                    <Text dimColor> Focus detail panel</Text>
                 </Text>
             </Box>
             <Box flexDirection="column">
                 <Box marginBottom={1}>
                     <Text dimColor>{"── "}</Text>
-                    <Text bold color="white">EXIT</Text>
+                    <Text bold color="white">
+                        EXIT
+                    </Text>
                 </Box>
                 <Text>
-                    <Text bold color="white">{" q"}</Text>
-                    <Text dimColor>       Quit (with countdown)</Text>
+                    <Text bold color="white">
+                        {" q"}
+                    </Text>
+                    <Text dimColor> Quit (with countdown)</Text>
                 </Text>
                 <Text>
-                    <Text bold color="white">{" Ctrl+C"}</Text>
-                    <Text dimColor>  Quit immediately</Text>
+                    <Text bold color="white">
+                        {" Ctrl+C"}
+                    </Text>
+                    <Text dimColor> Quit immediately</Text>
                 </Text>
             </Box>
         </Dialog>
@@ -708,24 +764,9 @@ const VisDoctorApp = ({ autoExitSeconds = 0, banner, fromCache = false, startedA
         />
     );
 
-    const bannerNode = banner
-        ? (
-            <ConfigBanner
-                hint={banner.hint}
-                message={banner.message}
-                severity={banner.severity}
-                title={banner.title}
-            />
-        )
-        : null;
+    const bannerNode = banner ? <ConfigBanner hint={banner.hint} message={banner.message} severity={banner.severity} title={banner.title} /> : null;
 
-    const detailPanel = (
-        <DoctorDetailPanel
-            finding={selectedFinding}
-            focused={state.focusedPanel === "detail"}
-            scrollRef={detailScrollRef}
-        />
-    );
+    const detailPanel = <DoctorDetailPanel finding={selectedFinding} focused={state.focusedPanel === "detail"} scrollRef={detailScrollRef} />;
 
     if (isHorizontal) {
         const detailWidth = Math.floor(columns * 0.4);

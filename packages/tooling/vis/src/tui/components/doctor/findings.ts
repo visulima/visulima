@@ -25,13 +25,13 @@ interface BaseFinding {
     readonly title: string;
 }
 
-export type DoctorFinding
-    = | (BaseFinding & { entry: OutdatedEntry; kind: "outdated" })
-        | (BaseFinding & { kind: "duplicate"; pkg: DuplicatePackage })
-        | (BaseFinding & { entry: OutdatedEntry; kind: "vulnerability"; packageName: string })
-        | (BaseFinding & { entry: OutdatedEntry; kind: "socket"; packageName: string })
-        | (BaseFinding & { entry: OptimizeEntry; kind: "optimization" })
-        | (BaseFinding & { diagnostic: RuntimeDiagnostic; kind: "runtime" });
+export type DoctorFinding =
+    | (BaseFinding & { entry: OutdatedEntry; kind: "outdated" })
+    | (BaseFinding & { kind: "duplicate"; pkg: DuplicatePackage })
+    | (BaseFinding & { entry: OutdatedEntry; kind: "vulnerability"; packageName: string })
+    | (BaseFinding & { entry: OutdatedEntry; kind: "socket"; packageName: string })
+    | (BaseFinding & { entry: OptimizeEntry; kind: "optimization" })
+    | (BaseFinding & { diagnostic: RuntimeDiagnostic; kind: "runtime" });
 
 const SEVERITY_RANK: Record<FindingSeverity, number> = { error: 0, warn: 1 };
 
@@ -90,9 +90,7 @@ export const flattenFindings = (results: DoctorResults): DoctorFinding[] => {
                     packageName: entry.packageName,
                     section: "security",
                     severity: sev,
-                    subtitle: count === 1
-                        ? `${top.severity} · ${top.id}`
-                        : `${String(count)} advisories · top: ${top.severity} ${top.id}`,
+                    subtitle: count === 1 ? `${top.severity} · ${top.id}` : `${String(count)} advisories · top: ${top.severity} ${top.id}`,
                     title: entry.packageName,
                 });
             }
@@ -107,9 +105,7 @@ export const flattenFindings = (results: DoctorResults): DoctorFinding[] => {
                     packageName: entry.packageName,
                     section: "security",
                     severity: "warn",
-                    subtitle: `${String(entry.socketReport.alerts.length)} alert${
-                        entry.socketReport.alerts.length === 1 ? "" : "s"
-                    } · score ${String(score)}%`,
+                    subtitle: `${String(entry.socketReport.alerts.length)} alert${entry.socketReport.alerts.length === 1 ? "" : "s"} · score ${String(score)}%`,
                     title: entry.packageName,
                 });
             }

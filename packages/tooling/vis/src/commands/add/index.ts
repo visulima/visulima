@@ -33,7 +33,8 @@ const add: Command = {
         { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
         {
             defaultValue: false,
-            description: "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.allowBuilds)",
+            description:
+                "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.allowBuilds)",
             name: "run-scripts",
             type: Boolean,
         },

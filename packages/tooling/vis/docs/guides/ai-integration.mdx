@@ -8,7 +8,7 @@ description: "Drive vis from Claude, Cursor, Zed, ChatGPT, and other AI clients 
 vis ships an embedded **Model Context Protocol** server (`vis-mcp`) and a companion **Claude Skill**. Together they let an AI assistant inspect your workspace, plan target runs and scaffolds, and diagnose cache rotations — all through the same task graph the CLI uses.
 
 - **MCP server** is the wire format. It works with any MCP-aware client: Claude Code, Claude Desktop, Cursor, Zed, ChatGPT (Pro+), Continue, and more.
-- **Claude Skill** is workflow guidance layered on top. It teaches Claude *when* to call which tool, and reinforces the "agent prepares, human executes" pattern: every tool is read-only, so the assistant builds the right `vis run` / `vis generate` command and a person actually runs it.
+- **Claude Skill** is workflow guidance layered on top. It teaches Claude _when_ to call which tool, and reinforces the "agent prepares, human executes" pattern: every tool is read-only, so the assistant builds the right `vis run` / `vis generate` command and a person actually runs it.
 
 The MCP SDK and `zod` are declared as **optional peer dependencies**. They are only required when you actually launch `vis-mcp` — running plain `vis` does not pull them in.
 
@@ -140,24 +140,24 @@ The MCP server exposes eight read-only tools.
 
 List all workspace projects with their language, type, layer, tags, and target metadata.
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `query` | `string?` | vis query string (e.g. `tag=frontend`, `type=application`) |
+| Argument | Type      | Description                                                |
+| -------- | --------- | ---------------------------------------------------------- |
+| `query`  | `string?` | vis query string (e.g. `tag=frontend`, `type=application`) |
 
 ### `describe_project`
 
 Return full metadata for a single project.
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `name` | `string` | Project name (e.g. `@visulima/cerebro`) |
+| Argument | Type     | Description                             |
+| -------- | -------- | --------------------------------------- |
+| `name`   | `string` | Project name (e.g. `@visulima/cerebro`) |
 
 ### `list_targets`
 
 List per-target rows across the workspace. Optionally narrow to one project.
 
-| Argument | Type | Description |
-| --- | --- | --- |
+| Argument  | Type      | Description          |
+| --------- | --------- | -------------------- |
 | `project` | `string?` | Limit to one project |
 
 ### `list_templates`
@@ -170,9 +170,9 @@ Takes no arguments. Returns each template's `name`, `source` (`native` | `moon` 
 
 Return the full schema for a single template — useful before suggesting a `vis generate` invocation.
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `name` | `string` | Template name (e.g. `package`, `component`) |
+| Argument | Type     | Description                                 |
+| -------- | -------- | ------------------------------------------- |
+| `name`   | `string` | Template name (e.g. `package`, `component`) |
 
 Returns: `description`, `destination` (default target dir), and `variables[]` with `name`, `type`, `required`, `default`, `prompt`, and (for enums) `values`. The agent uses this to build a fully-qualified `vis generate <name> -- --foo=bar` command for the user to run.
 
@@ -180,28 +180,28 @@ Returns: `description`, `destination` (default target dir), and `variables[]` wi
 
 Read the run summary from `.task-runner/`. Defaults to `last-summary.json`.
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `runId` | `string?` | Specific run ID (defaults to latest) |
-| `taskId` | `string?` | Filter to one task |
+| Argument | Type      | Description                          |
+| -------- | --------- | ------------------------------------ |
+| `runId`  | `string?` | Specific run ID (defaults to latest) |
+| `taskId` | `string?` | Filter to one task                   |
 
 ### `cache_why`
 
 Diff a task's cache hash against the previous run to pinpoint what changed.
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `taskId` | `string` | Task ID like `@my/app:build` |
-| `runId` | `string?` | Specific run (defaults to latest) |
+| Argument | Type      | Description                       |
+| -------- | --------- | --------------------------------- |
+| `taskId` | `string`  | Task ID like `@my/app:build`      |
+| `runId`  | `string?` | Specific run (defaults to latest) |
 
 ### `cache_hash`
 
 Print the recorded hash and per-input hash details (command, nodes, runtime, implicitDeps).
 
-| Argument | Type | Description |
-| --- | --- | --- |
-| `taskId` | `string` | Task ID like `@my/app:build` |
-| `runId` | `string?` | Specific run (defaults to latest) |
+| Argument | Type      | Description                       |
+| -------- | --------- | --------------------------------- |
+| `taskId` | `string`  | Task ID like `@my/app:build`      |
+| `runId`  | `string?` | Specific run (defaults to latest) |
 
 ## Safety: agent prepares, human executes
 

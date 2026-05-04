@@ -6,7 +6,10 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 const POLL_INTERVAL_MS = 100;
 
 export class ServiceReadinessError extends Error {
-    public constructor(message: string, public readonly elapsedMs: number) {
+    public constructor(
+        message: string,
+        public readonly elapsedMs: number,
+    ) {
         super(message);
         this.name = "ServiceReadinessError";
     }
@@ -45,10 +48,7 @@ export const waitForTcp = async (input: WaitForTcpInput): Promise<void> => {
         await delay(POLL_INTERVAL_MS);
     }
 
-    throw new ServiceReadinessError(
-        `Timed out waiting for ${host}:${String(port)} to accept TCP connections (${String(timeoutMs)}ms)`,
-        Date.now() - start,
-    );
+    throw new ServiceReadinessError(`Timed out waiting for ${host}:${String(port)} to accept TCP connections (${String(timeoutMs)}ms)`, Date.now() - start);
 };
 
 const tryConnect = (host: string, port: number): Promise<boolean> =>
@@ -74,9 +74,10 @@ const tryConnect = (host: string, port: number): Promise<boolean> =>
         }
     });
 
-const delay = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const delay = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Run the readiness probe configured on a service. Falls back to

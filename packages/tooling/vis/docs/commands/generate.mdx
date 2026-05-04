@@ -48,18 +48,18 @@ vis generate --list
 
 ## Options
 
-| Option              | Default | Description                                                                                    |
-| ------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| `--list`            | `false` | List discovered templates                                                                      |
-| `--describe`        | `false` | Print template metadata (about, destination, variables) without running produce                |
-| `--json`            | `false` | Emit JSON output (with `--list` or `--describe`)                                               |
-| `--to <dir>`        | cwd     | Destination directory                                                                          |
-| `--dry-run`         | `false` | Print planned writes without touching disk                                                     |
-| `--force`           | `false` | Overwrite existing files without prompting                                                     |
-| `--defaults`        | `false` | Skip prompts; use template defaults                                                            |
-| `--skip-scripts`    | `false` | Skip running post-generation scripts                                                           |
-| `--no-interactive`  | `false` | Skip interactive prompts (errors on missing required values)                                   |
-| `--prefer-offline`  | `false` | Prefer locally cached remote templates over re-downloading                                     |
+| Option             | Default | Description                                                                     |
+| ------------------ | ------- | ------------------------------------------------------------------------------- |
+| `--list`           | `false` | List discovered templates                                                       |
+| `--describe`       | `false` | Print template metadata (about, destination, variables) without running produce |
+| `--json`           | `false` | Emit JSON output (with `--list` or `--describe`)                                |
+| `--to <dir>`       | cwd     | Destination directory                                                           |
+| `--dry-run`        | `false` | Print planned writes without touching disk                                      |
+| `--force`          | `false` | Overwrite existing files without prompting                                      |
+| `--defaults`       | `false` | Skip prompts; use template defaults                                             |
+| `--skip-scripts`   | `false` | Skip running post-generation scripts                                            |
+| `--no-interactive` | `false` | Skip interactive prompts (errors on missing required values)                    |
+| `--prefer-offline` | `false` | Prefer locally cached remote templates over re-downloading                      |
 
 Anything after `--` is forwarded as variable overrides (`--name=Button` → `options.name = "Button"`, `--no-flag` → `options.flag = false`).
 
@@ -81,9 +81,9 @@ When a name resolves in multiple sources, **the higher-priority source wins** an
 
 `@visulima/vis` ships a small set of opinionated presets so you don't have to copy reference YAML out of the docs. They are bundled in the package's `templates/` directory and resolved relative to the installed module — they work the same in dev, production, and CI containers, with no extra setup.
 
-| Template      | Generates                                                                | Purpose                                                                                                                         |
-| ------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `buildkite-ci` | `.buildkite/pipeline.yml`                                                | Buildkite pipeline that runs `vis ci` against affected packages, with an optional `vis ai heal` propose + block-step accept flow. |
+| Template       | Generates                 | Purpose                                                                                                                           |
+| -------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `buildkite-ci` | `.buildkite/pipeline.yml` | Buildkite pipeline that runs `vis ci` against affected packages, with an optional `vis ai heal` propose + block-step accept flow. |
 
 Run `vis generate buildkite-ci` to invoke it; the prompts cover `targets`, `packageManager` (pnpm/npm/yarn), `withHeal`, and `agentQueue`. To customise, vendor a copy at `.vis/templates/buildkite-ci/` — the user copy wins over the bundled preset.
 

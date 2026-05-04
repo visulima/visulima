@@ -8,7 +8,14 @@ import { detectPm } from "../../pm/pm-runner";
 import { startScanProgress } from "../../scan/scan-progress";
 import { findDuplicateDependencies, lockedPackages } from "../../security/dependency-scan";
 import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../security/socket-security";
+import {
+    buildSocketOptions,
+    DEFAULT_LOW_SCORE_THRESHOLD,
+    fetchSocketReports,
+    findAcceptedRisk,
+    getFullPackageName,
+    scoreLabel,
+} from "../../security/socket-security";
 import type { SecurityVulnerability } from "../../util/catalog";
 import { fetchVulnerabilities } from "../../util/catalog";
 import type { AuditOptions } from "./index";
@@ -150,48 +157,62 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
 
         [vulnMap, socketReports] = await Promise.all([
-            fetchVulnerabilities(packagesToScan).then((map) => {
-                let count = 0;
+            fetchVulnerabilities(packagesToScan)
+                .then((map) => {
+                    let count = 0;
 
-                for (const list of map.values()) {
-                    count += list.length;
-                }
-
-                progress.finish("vulnerabilities", count > 0 ? "warn" : "ok", count > 0 ? `${String(count)} found · ${fmtElapsed(vulnStart)}` : `none found · ${fmtElapsed(vulnStart)}`);
-
-                return map;
-            }).catch((error: unknown) => {
-                const message = error instanceof Error ? error.message : String(error);
-
-                progress.finish("vulnerabilities", "error", message);
-
-                return new Map();
-            }),
-            socketOptions
-                ? fetchSocketReports(packagesToScan, socketOptions).then((reports) => {
-                    let alerts = 0;
-                    let low = 0;
-
-                    for (const report of reports.values()) {
-                        alerts += report.alerts.length;
-
-                        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
-                            low += 1;
-                        }
+                    for (const list of map.values()) {
+                        count += list.length;
                     }
 
-                    const total = alerts + low;
+                    progress.finish(
+                        "vulnerabilities",
+                        count > 0 ? "warn" : "ok",
+                        count > 0 ? `${String(count)} found · ${fmtElapsed(vulnStart)}` : `none found · ${fmtElapsed(vulnStart)}`,
+                    );
 
-                    progress.finish("socket", total > 0 ? "warn" : "ok", total > 0 ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}` : `clean · ${fmtElapsed(socketStart)}`);
-
-                    return reports;
-                }).catch((error: unknown) => {
+                    return map;
+                })
+                .catch((error: unknown) => {
                     const message = error instanceof Error ? error.message : String(error);
 
-                    progress.finish("socket", "error", message);
+                    progress.finish("vulnerabilities", "error", message);
 
-                    return new Map<string, PackageReportData>();
-                })
+                    return new Map();
+                }),
+            socketOptions
+                ? fetchSocketReports(packagesToScan, socketOptions)
+                      .then((reports) => {
+                          let alerts = 0;
+                          let low = 0;
+
+                          for (const report of reports.values()) {
+                              alerts += report.alerts.length;
+
+                              if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+                                  low += 1;
+                              }
+                          }
+
+                          const total = alerts + low;
+
+                          progress.finish(
+                              "socket",
+                              total > 0 ? "warn" : "ok",
+                              total > 0
+                                  ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(socketStart)}`
+                                  : `clean · ${fmtElapsed(socketStart)}`,
+                          );
+
+                          return reports;
+                      })
+                      .catch((error: unknown) => {
+                          const message = error instanceof Error ? error.message : String(error);
+
+                          progress.finish("socket", "error", message);
+
+                          return new Map<string, PackageReportData>();
+                      })
                 : Promise.resolve(new Map<string, PackageReportData>()),
         ]);
     } finally {

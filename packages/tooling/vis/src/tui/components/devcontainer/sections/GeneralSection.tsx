@@ -57,24 +57,21 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
                     <Box width={20}>
                         <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
                             {isSelected ? "\u276F " : "  "}
-                            {FIELD_LABELS[field]}
-                            :
+                            {FIELD_LABELS[field]}:
                         </Text>
                     </Box>
                     <Box flexGrow={1}>
-                        {isSelected && fieldEditing
-                            ? (
-                                <TextInput
-                                    defaultValue={value}
-                                    onChange={(newValue: string) => {
-                                        onUpdate({ [field]: newValue });
-                                    }}
-                                    placeholder={FIELD_PLACEHOLDERS[field]}
-                                />
-                            )
-                            : (
-                                <Text color={value ? "white" : "gray"}>{value || FIELD_PLACEHOLDERS[field]}</Text>
-                            )}
+                        {isSelected && fieldEditing ? (
+                            <TextInput
+                                defaultValue={value}
+                                onChange={(newValue: string) => {
+                                    onUpdate({ [field]: newValue });
+                                }}
+                                placeholder={FIELD_PLACEHOLDERS[field]}
+                            />
+                        ) : (
+                            <Text color={value ? "white" : "gray"}>{value || FIELD_PLACEHOLDERS[field]}</Text>
+                        )}
                     </Box>
                 </Box>
             );
@@ -89,8 +86,7 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
                     <Box width={20}>
                         <Text bold={isSelected} color={isSelected ? "cyan" : "white"}>
                             {isSelected ? "\u276F " : "  "}
-                            {BOOLEAN_LABELS[field]}
-                            :
+                            {BOOLEAN_LABELS[field]}:
                         </Text>
                     </Box>
                     <Box flexGrow={1}>
@@ -106,26 +102,22 @@ const GeneralSection = ({ config, fieldEditing, fieldIndex, onUpdate }: GeneralS
             <Text dimColor>
                 <Text bold color="white">
                     Enter
-                </Text>
-                {" "}
+                </Text>{" "}
                 edit field
                 {"  "}
                 <Text bold color="white">
                     Space
-                </Text>
-                {" "}
+                </Text>{" "}
                 toggle
                 {"  "}
                 <Text bold color="white">
                     {"\u2191\u2193"}
-                </Text>
-                {" "}
+                </Text>{" "}
                 navigate
                 {"  "}
                 <Text bold color="white">
                     Esc
-                </Text>
-                {" "}
+                </Text>{" "}
                 stop editing
             </Text>
         </Box>

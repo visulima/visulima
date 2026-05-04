@@ -65,17 +65,13 @@ const ScanProgressApp = ({ rows }: ScanProgressProps): React.JSX.Element => (
                     <Box flexGrow={1}>
                         <Text>{row.label}</Text>
                     </Box>
-                    {row.summary
-                        ? (
-                            <Box>
-                                <Text dimColor>
-                                    {DASH}
-                                    {" "}
-                                    {row.summary}
-                                </Text>
-                            </Box>
-                        )
-                        : null}
+                    {row.summary ? (
+                        <Box>
+                            <Text dimColor>
+                                {DASH} {row.summary}
+                            </Text>
+                        </Box>
+                    ) : null}
                 </Box>
             );
         })}

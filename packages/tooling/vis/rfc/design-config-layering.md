@@ -9,19 +9,19 @@ Two distinct user pains, one design:
 1. **Sharing config across repos / monorepos.** Today a root `vis.config.ts` is a single file. Teams running multiple monorepos want to extract a shared baseline (`@acme/vis-preset`) and consume it from `extends`, the way `tsconfig.json`, `eslint.config.js`, and `nx.json` already let them.
 2. **Per-package overrides without project.json bloat.** Today, package-local target overrides live in `project.json` as JSON. That works for static fields but is awkward for anything dynamic (tokens, conditional `when`, `inputs` derived from the framework). A `.ts` file per package — with full type-safety from `defineTaskConfig({...})` — is the natural surface.
 
-We're not removing project.json. project.json stays the canonical *static* metadata file (tags, layer, stack, owners — used by query/scope predicates). `vis.task.ts` is the canonical *target-config* overlay, opt-in.
+We're not removing project.json. project.json stays the canonical _static_ metadata file (tags, layer, stack, owners — used by query/scope predicates). `vis.task.ts` is the canonical _target-config_ overlay, opt-in.
 
 ## Current state
 
-| Layer | File | Type | Today |
-|---|---|---|---|
-| Workspace defaults (flat) | `vis.config.ts` → `targetDefaults: Record<string, Partial<VisTargetConfiguration>>` | TS | exists |
-| Workspace defaults (scoped) | `vis.config.ts` → `taskDefaults: TaskDefaultsBlock[]` | TS | exists |
-| Workspace `extends` | — | — | **missing** |
-| Project metadata | `project.json` → `tags`, `layer`, `stack`, `language`, `owners`, `projectType`, `sourceRoot`, `implicitDependencies` | JSON | exists |
-| Project targets (declarative) | `project.json` → `targets: Record<string, VisTargetConfiguration>` | JSON | exists |
-| Project targets (overlay TS) | `vis.task.ts` | TS | **missing** |
-| Auto-derived targets | `package.json` scripts | JSON | exists |
+| Layer                         | File                                                                                                                 | Type | Today       |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---- | ----------- |
+| Workspace defaults (flat)     | `vis.config.ts` → `targetDefaults: Record<string, Partial<VisTargetConfiguration>>`                                  | TS   | exists      |
+| Workspace defaults (scoped)   | `vis.config.ts` → `taskDefaults: TaskDefaultsBlock[]`                                                                | TS   | exists      |
+| Workspace `extends`           | —                                                                                                                    | —    | **missing** |
+| Project metadata              | `project.json` → `tags`, `layer`, `stack`, `language`, `owners`, `projectType`, `sourceRoot`, `implicitDependencies` | JSON | exists      |
+| Project targets (declarative) | `project.json` → `targets: Record<string, VisTargetConfiguration>`                                                   | JSON | exists      |
+| Project targets (overlay TS)  | `vis.task.ts`                                                                                                        | TS   | **missing** |
+| Auto-derived targets          | `package.json` scripts                                                                                               | JSON | exists      |
 
 The current merge happens in `workspace.ts` `mergeTarget()` (lines 1057–1088):
 
@@ -41,14 +41,15 @@ import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
     extends: [
-        "@acme/vis-preset",                     // npm package — resolved via Node.js require.resolve
-        "./shared/vis-security.config.ts",      // path relative to this file
+        "@acme/vis-preset", // npm package — resolved via Node.js require.resolve
+        "./shared/vis-security.config.ts", // path relative to this file
     ],
     security: { allowBuilds: { esbuild: true } },
 });
 ```
 
 **Resolution:**
+
 - Strings starting with `./` or `../` → file path relative to the file declaring `extends`.
 - Strings without a leading `.` → `require.resolve(name, { paths: [<containing-dir>] })`. Package may export `vis.config.ts` directly or a JS module that default-exports a `VisConfig`.
 - Each entry is loaded the same way as the root config (jiti for TS), recursively (extends-of-extends).
@@ -69,7 +70,7 @@ export default defineTaskConfig({
             options: { persistent: false },
         },
         test: {
-            when: { not: { ci: true } },          // skip locally on CI
+            when: { not: { ci: true } }, // skip locally on CI
             dependsOn: [{ dependencies: true, target: "build" }],
         },
     },
@@ -103,7 +104,7 @@ Final order, lowest to highest priority (later overrides earlier):
 7. **Preset** — applied last to the merged target.
 8. **`defaultCacheForType`** — fills `cache` if still undefined.
 
-Note step 6 is unchanged: scripts are a *fallback* command source, never an override. A user explicitly setting `command: "tsc -b"` in vis.task.ts wins over `"build": "tsc -b"` in package.json.
+Note step 6 is unchanged: scripts are a _fallback_ command source, never an override. A user explicitly setting `command: "tsc -b"` in vis.task.ts wins over `"build": "tsc -b"` in package.json.
 
 ## Array fields — concat vs replace
 
@@ -132,6 +133,7 @@ export default defineTaskConfig({
 The `"@inherit"` sentinel is the explicit opt-in marker. `mergeTarget` scans the array for it; if present, the position is replaced inline by the inherited array's values (preserving order around it). If absent, the array replaces wholesale.
 
 Why a sentinel and not a function/`extend()` helper:
+
 - Works identically in JSON (project.json) and TS files.
 - One marker, one rule — no special-casing per field.
 - Survives JSON-stringify round-trips (matters for cache, schema, debug output).
@@ -147,7 +149,7 @@ Cycles can appear in two places:
 1. **`extends` chain** — `A extends B extends A`.
 2. **`taskGroups`** — already handled; cycles raise during discovery.
 
-For (1): track visited absolute paths during `loadVisConfig`. If a path is re-entered during its own descent, throw `VisConfigCycleError(path, chain)` with the full cycle. Re-entering a path that has already *finished* loading is fine — that's a diamond, not a cycle.
+For (1): track visited absolute paths during `loadVisConfig`. If a path is re-entered during its own descent, throw `VisConfigCycleError(path, chain)` with the full cycle. Re-entering a path that has already _finished_ loading is fine — that's a diamond, not a cycle.
 
 Implementation hint: pass a `Set<string>` (visited-on-current-stack) plus a `Map<string, VisConfig>` (already-loaded cache) into the recursive loader. Same pattern as the existing `taskGroups` cycle check.
 
@@ -155,11 +157,11 @@ Implementation hint: pass a `Set<string>` (visited-on-current-stack) plus a `Map
 
 Three distinct error classes worth distinguishing:
 
-| Class | Trigger | Message |
-|---|---|---|
-| `VisConfigNotFoundError` | `extends: ["./missing.ts"]` | `Cannot resolve "./missing.ts" extended from <root>/vis.config.ts. Tried: <abs>` |
-| `VisConfigCycleError` | A→B→A | `Config cycle: <root>/vis.config.ts → ./shared.ts → ./shared.ts (re-enters)` |
-| `VisConfigLoadError` | jiti throws | wraps with the source file path so a syntax error in `vis.task.ts` doesn't surface as "TypeError in workspace.ts:1208" |
+| Class                    | Trigger                     | Message                                                                                                                |
+| ------------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `VisConfigNotFoundError` | `extends: ["./missing.ts"]` | `Cannot resolve "./missing.ts" extended from <root>/vis.config.ts. Tried: <abs>`                                       |
+| `VisConfigCycleError`    | A→B→A                       | `Config cycle: <root>/vis.config.ts → ./shared.ts → ./shared.ts (re-enters)`                                           |
+| `VisConfigLoadError`     | jiti throws                 | wraps with the source file path so a syntax error in `vis.task.ts` doesn't surface as "TypeError in workspace.ts:1208" |
 
 All three should print the **chain of files** that led there, not just the failing file. Users with deep extends chains will hit this and "your shared preset broke" with no path is the worst possible failure mode.
 
@@ -178,7 +180,7 @@ Per-package `vis.task.ts` files: a separate, per-project cache entry under the s
 - `vis.task.ts` is **purely additive**. A package without one behaves identically to today.
 - `extends` is **purely additive**. A config without it behaves identically.
 
-The migrators (turborepo, nx, moon) already write `vis.config.ts` + `project.json`. No changes needed for inbound. For the outbound migrator (item #10), we'll need to *consume* `extends` chains by inlining (turbo doesn't have extends) or by emitting their own analogue (nx has extends in nx.json, moon has `.moon/workspace.yml` extends).
+The migrators (turborepo, nx, moon) already write `vis.config.ts` + `project.json`. No changes needed for inbound. For the outbound migrator (item #10), we'll need to _consume_ `extends` chains by inlining (turbo doesn't have extends) or by emitting their own analogue (nx has extends in nx.json, moon has `.moon/workspace.yml` extends).
 
 ## Implementation outline
 
@@ -199,4 +201,4 @@ In rough order; each chunk should land as its own commit.
 2. **`extends` paths:** relative (`./` or `../`) or npm-resolvable name. Absolute paths are rejected — they break across machines/CI and there's no legitimate use case in a checked-in config.
 3. **`vis.task.ts` scope:** `targets:` only for the MVP. No `tags`/`layer`/`stack`/`language` — those stay in project.json so static query/scope predicates don't need to execute TS. Revisit if dynamic-tag use cases emerge.
 4. **Per-package cache:** separate cache entry per project under `node_modules/.cache/vis/`, keyed by `<project-name>:<sha256>`. Editing one package's `vis.task.ts` does not invalidate the root config cache.
-5. **`@inherit` in `taskDefaults` blocks:** refers to the *previous-merged-state* — the cumulative result of all prior layers (extends → root.targetDefaults → preceding taskDefaults blocks). One rule, applies uniformly at every merge site.
+5. **`@inherit` in `taskDefaults` blocks:** refers to the _previous-merged-state_ — the cumulative result of all prior layers (extends → root.targetDefaults → preceding taskDefaults blocks). One rule, applies uniformly at every merge site.

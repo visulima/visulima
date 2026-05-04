@@ -3,11 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DoctorStore } from "../../../../src/tui/components/doctor/DoctorStore";
 import type { DoctorFinding } from "../../../../src/tui/components/doctor/findings";
 
-const make = (
-    section: DoctorFinding["section"],
-    title: string,
-    severity: DoctorFinding["severity"] = "warn",
-): DoctorFinding => {
+const make = (section: DoctorFinding["section"], title: string, severity: DoctorFinding["severity"] = "warn"): DoctorFinding => {
     return {
         diagnostic: { id: title, message: title, status: "warn" },
         id: `runtime:${title}`,
@@ -184,10 +180,7 @@ describe(DoctorStore, () => {
         const store = new DoctorStore({});
 
         store.startSection("dependencies", "loading");
-        store.completeSection("dependencies", [
-            make("dependencies", "alpha", "warn"),
-            make("dependencies", "bravo"),
-        ]);
+        store.completeSection("dependencies", [make("dependencies", "alpha", "warn"), make("dependencies", "bravo")]);
 
         const state = store.getSnapshot();
 

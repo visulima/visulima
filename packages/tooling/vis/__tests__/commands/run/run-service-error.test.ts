@@ -10,7 +10,9 @@ import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-
 // auto-attach) doesn't take a different code path under CI hosts. The
 // service diagnostic path is what we're exercising — leave preflight in
 // its harmless warn-and-continue mode.
-vi.mock(import('is-in-ci'), () => { return { default: false }; });
+vi.mock(import("is-in-ci"), () => {
+    return { default: false };
+});
 
 const makeLogger = (): {
     calls: { args: unknown[]; level: "debug" | "error" | "info" | "warn" }[];
@@ -26,10 +28,18 @@ const makeLogger = (): {
     return {
         calls,
         logger: {
-            debug: (...args) => { calls.push({ args, level: "debug" }); },
-            error: (...args) => { calls.push({ args, level: "error" }); },
-            info: (...args) => { calls.push({ args, level: "info" }); },
-            warn: (...args) => { calls.push({ args, level: "warn" }); },
+            debug: (...args) => {
+                calls.push({ args, level: "debug" });
+            },
+            error: (...args) => {
+                calls.push({ args, level: "error" });
+            },
+            info: (...args) => {
+                calls.push({ args, level: "info" });
+            },
+            warn: (...args) => {
+                calls.push({ args, level: "warn" });
+            },
         },
     };
 };
@@ -56,10 +66,7 @@ describe("vis run service-dependency error wiring", () => {
         const pkgDir = join(workspaceRoot, "packages", "api");
 
         mkdirSync(pkgDir, { recursive: true });
-        writeFileSync(
-            join(pkgDir, "package.json"),
-            JSON.stringify({ name: "@my/api", scripts: { test: "echo testing" } }),
-        );
+        writeFileSync(join(pkgDir, "package.json"), JSON.stringify({ name: "@my/api", scripts: { test: "echo testing" } }));
         writeFileSync(
             join(pkgDir, "project.json"),
             JSON.stringify({
@@ -110,7 +117,7 @@ describe("vis run service-dependency error wiring", () => {
         // The handler should have logged the per-target diagnostic
         // before throwing the aggregate error — the message tells the
         // operator how to recover.
-        const errorCall = calls.find((c) => c.level === "error" && typeof c.args[0] === "string" && (c.args[0]).includes("vis service start"));
+        const errorCall = calls.find((c) => c.level === "error" && typeof c.args[0] === "string" && c.args[0].includes("vis service start"));
 
         expect(errorCall).toBeDefined();
     });

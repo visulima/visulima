@@ -1,4 +1,20 @@
-import { detectPackageManager, execPmCommand, NATIVE_BINDING_VERSION, resolveAdd, resolveDedupe, resolveDlx, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, whichBin } from "@visulima/vis/native";
+import {
+    detectPackageManager,
+    execPmCommand,
+    NATIVE_BINDING_VERSION,
+    resolveAdd,
+    resolveDedupe,
+    resolveDlx,
+    resolveExec,
+    resolveInstall,
+    resolveLink,
+    resolveOutdated,
+    resolvePmCommand,
+    resolveRemove,
+    resolveUnlink,
+    resolveWhy,
+    whichBin,
+} from "@visulima/vis/native";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 describe("native addon integration", () => {

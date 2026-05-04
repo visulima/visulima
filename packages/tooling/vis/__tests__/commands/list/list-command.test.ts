@@ -185,10 +185,7 @@ describe("vis list", () => {
 
         mkdirSync(cDir, { recursive: true });
 
-        writeFileSync(
-            join(cDir, "package.json"),
-            JSON.stringify({ name: "@my/c", scripts: { lint: "eslint ." } }),
-        );
+        writeFileSync(join(cDir, "package.json"), JSON.stringify({ name: "@my/c", scripts: { lint: "eslint ." } }));
         writeFileSync(join(cDir, "vite.config.ts"), "export default {}");
 
         const { calls, logger } = makeLogger();
@@ -213,9 +210,7 @@ describe("vis list", () => {
 
         // Pin the Inferred column body: every rendered row must say "yes"
         // (no row should be "no", because we filtered to inferred-only).
-        const dataRows = calls
-            .filter((c) => c[0] === "info" && typeof c[1] === "string" && (c[1] as string).startsWith("@my/c"))
-            .map((c) => c[1] as string);
+        const dataRows = calls.filter((c) => c[0] === "info" && typeof c[1] === "string" && (c[1] as string).startsWith("@my/c")).map((c) => c[1] as string);
 
         expect(dataRows.length).toBeGreaterThanOrEqual(1);
         // Inferred is the 5th column (Project, Target, Type, Cache, Inferred, Description)

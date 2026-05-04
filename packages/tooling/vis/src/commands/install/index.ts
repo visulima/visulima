@@ -10,7 +10,10 @@ const install: Command = {
         ["vis install --prefer-offline", "Use cached packages when available, fall back to network"],
         ["vis install --prod", "Install production dependencies only"],
         ["vis install --filter app", "Install for specific workspace package"],
-        ["vis install --run-scripts", "Run lifecycle scripts (opts out of vis's default block-by-default policy; allowlisted packages run via security.allowBuilds)"],
+        [
+            "vis install --run-scripts",
+            "Run lifecycle scripts (opts out of vis's default block-by-default policy; allowlisted packages run via security.allowBuilds)",
+        ],
         ["vis install --no-typosquat-check", "Skip typosquat name check"],
         ["vis install --installer aube", "Force aube as the installer (errors if not on PATH)"],
         ["vis install --no-aube", "Bypass aube; use the lockfile-detected PM"],

@@ -295,11 +295,12 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     const trigger = await loadTrigger(ciContext, env);
 
     if (!trigger) {
-        const message = ciContext.provider === "github-actions"
-            ? "No issue_comment payload found. Trigger this command from a workflow listening for `issue_comment.created`."
-            : ciContext.provider === "gitlab-ci"
-                ? "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs."
-                : "No Buildkite unblock signal found. Wire this command to run after a manually-unblocked block step so BUILDKITE_UNBLOCKER_EMAIL is set.";
+        const message =
+            ciContext.provider === "github-actions"
+                ? "No issue_comment payload found. Trigger this command from a workflow listening for `issue_comment.created`."
+                : ciContext.provider === "gitlab-ci"
+                  ? "No GitLab trigger payload found. Set VIS_HEAL_TRIGGER_BODY, VIS_HEAL_TRIGGER_ACTOR, and VIS_HEAL_HEAD_REF in the bridge that re-emits note hooks as pipeline runs."
+                  : "No Buildkite unblock signal found. Wire this command to run after a manually-unblocked block step so BUILDKITE_UNBLOCKER_EMAIL is set.";
 
         pail.error(message);
         process.exitCode = 1;
@@ -330,15 +331,14 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
         // expected entry shape so the user knows what to add. GitHub /
         // GitLab use platform usernames; Buildkite uses the unblocker
         // email (or Buildkite username when the email isn't exposed).
-        const hint = ciContext.provider === "buildkite"
-            ? "Buildkite entries are emails (BUILDKITE_UNBLOCKER_EMAIL) or Buildkite usernames (BUILDKITE_UNBLOCKER), not the upstream GitHub/GitLab username."
-            : ciContext.provider === "gitlab-ci"
-                ? "GitLab entries are platform usernames (without the leading `@`)."
-                : "GitHub entries are platform usernames (without the leading `@`).";
+        const hint =
+            ciContext.provider === "buildkite"
+                ? "Buildkite entries are emails (BUILDKITE_UNBLOCKER_EMAIL) or Buildkite usernames (BUILDKITE_UNBLOCKER), not the upstream GitHub/GitLab username."
+                : ciContext.provider === "gitlab-ci"
+                  ? "GitLab entries are platform usernames (without the leading `@`)."
+                  : "GitHub entries are platform usernames (without the leading `@`).";
 
-        pail.error(
-            `Actor \`${trigger.actor || "(unknown)"}\` is not in \`ai.heal.allowedActors\`. Refusing to commit. ${hint}`,
-        );
+        pail.error(`Actor \`${trigger.actor || "(unknown)"}\` is not in \`ai.heal.allowedActors\`. Refusing to commit. ${hint}`);
         process.exitCode = 1;
 
         return;

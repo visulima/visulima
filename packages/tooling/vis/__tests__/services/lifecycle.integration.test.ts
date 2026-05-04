@@ -10,9 +10,10 @@ import { isAlive, readAllEntries, readEntry } from "../../src/services/registry"
 import type { VisTargetOptions } from "../../src/task/target-options";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 const findFreePort = async (): Promise<number> =>
     new Promise((resolve, reject) => {
@@ -25,7 +26,9 @@ const findFreePort = async (): Promise<number> =>
             if (typeof address === "object" && address !== null) {
                 const { port } = address;
 
-                server.close(() => { resolve(port); });
+                server.close(() => {
+                    resolve(port);
+                });
 
                 return;
             }

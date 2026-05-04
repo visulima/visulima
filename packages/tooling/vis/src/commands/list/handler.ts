@@ -43,7 +43,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
                         // Only emit the field when it's true — keeps the JSON
                         // shape additive instead of breaking downstream
                         // consumers that didn't know about `inferred` yet.
-                        ...isInferred ? { inferred: true } : {},
+                        ...(isInferred ? { inferred: true } : {}),
                         name: targetName,
                         type: visTarget?.type,
                     };
@@ -102,14 +102,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
                 const targetConfig = project.targets?.[targetName];
                 const cache = targetConfig?.cache === false ? "no" : targetConfig?.cache === true ? "yes" : "default";
 
-                targetRows.push([
-                    name,
-                    targetName,
-                    visTarget?.type ?? "—",
-                    cache,
-                    isInferred ? "yes" : "no",
-                    visTarget?.description ?? "—",
-                ]);
+                targetRows.push([name, targetName, visTarget?.type ?? "—", cache, isInferred ? "yes" : "no", visTarget?.description ?? "—"]);
             }
         }
 

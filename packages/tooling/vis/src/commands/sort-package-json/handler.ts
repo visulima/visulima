@@ -132,7 +132,10 @@ const splitList = (raw: string | string[] | undefined): string[] => {
 
     const items = Array.isArray(raw) ? raw : [raw];
 
-    return items.flatMap((item) => item.split(",")).map((item) => item.trim()).filter((item) => item.length > 0);
+    return items
+        .flatMap((item) => item.split(","))
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
 };
 
 const detectLineEnding = (contents: string): "crlf" | "lf" => (contents.includes("\r\n") ? "crlf" : "lf");
@@ -262,7 +265,7 @@ const sortContents = (contents: string, config: NormalizedConfig): string => {
     }
 
     if (lineEnding === "crlf") {
-        output = output.replaceAll('\n', "\r\n");
+        output = output.replaceAll("\n", "\r\n");
     }
 
     return output;

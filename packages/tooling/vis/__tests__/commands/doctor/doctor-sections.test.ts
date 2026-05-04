@@ -12,15 +12,16 @@ import {
 } from "../../../src/commands/doctor/sections";
 import type { OptimizeEntry } from "../../../src/tui/components/optimize/OptimizeStore";
 
-const opt = (category: OptimizeEntry["category"], name: string): OptimizeEntry => ({
-    category,
-    description: "test",
-    hasCodemod: false,
-    overrideSpec: undefined,
-    packageName: name,
-    severity: "info",
-    title: "test",
-} as unknown as OptimizeEntry);
+const opt = (category: OptimizeEntry["category"], name: string): OptimizeEntry =>
+    ({
+        category,
+        description: "test",
+        hasCodemod: false,
+        overrideSpec: undefined,
+        packageName: name,
+        severity: "info",
+        title: "test",
+    }) as unknown as OptimizeEntry;
 
 const baseResults = (overrides: Partial<DoctorResults> = {}): DoctorResults => {
     return {
@@ -213,7 +214,7 @@ describe(buildJsonPayload, () => {
 
         expect((payload.dependencies as { status: string }).status).toBe("warn");
         expect((payload.security as { status: string }).status).toBe("error");
-        expect((payload.optimization as never)).toBeUndefined();
+        expect(payload.optimization as never).toBeUndefined();
         // The optimization payload uses key `optimizations` (plural).
         expect((payload.optimizations as { status: string }).status).toBe("ok");
     });
@@ -252,11 +253,6 @@ describe(shouldFail, () => {
 
         expect(shouldFail(baseResults({ outdated: [{} as never] }), true)).toBe(true);
         expect(shouldFail(baseResults({ duplicates: [{} as never] }), true)).toBe(true);
-        expect(
-            shouldFail(
-                baseResults({ runtime: [{ id: "inotify", message: "low", status: "warn" }] }),
-                true,
-            ),
-        ).toBe(true);
+        expect(shouldFail(baseResults({ runtime: [{ id: "inotify", message: "low", status: "warn" }] }), true)).toBe(true);
     });
 });
