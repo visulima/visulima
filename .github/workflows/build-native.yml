@@ -259,7 +259,7 @@ jobs:
             # --- Test native bindings inline (only on targets that can run natively) ---
             - name: "Test task-runner native binding"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true')"
-              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              run: "pnpm vitest run __tests__/unit/native-binding.test.ts"
               working-directory: "packages/tooling/task-runner"
 
             - name: "Test tui native binding"
@@ -269,7 +269,7 @@ jobs:
 
             - name: "Test vis native binding"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true')"
-              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              run: "pnpm vitest run __tests__/native/native-binding.test.ts"
               working-directory: "packages/tooling/vis"
 
             - name: "Build secret-scanner JS dependencies (fs, path)"
