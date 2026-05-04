@@ -335,7 +335,7 @@ describe("resolve with catastrophic process.cwd() failure", () => {
     it("still works", () => {
         expect.assertions(2);
 
-        const originalCwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method
+        const originalCwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method, vitest/unbound-method
 
         process.cwd = () => "";
 

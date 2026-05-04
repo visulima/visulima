@@ -61,7 +61,7 @@ export const runTest = (
             it(`${name}(${arguments_.map((index) => _s(index)).join(",")}) should be ${_s(expected as boolean | string)} on Windows`, () => {
                 expect.assertions(1);
 
-                cwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method
+                cwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method, vitest/unbound-method
 
                 vi.spyOn(process, "cwd").mockImplementation(() => String.raw`C:\Windows\path\only`);
 
