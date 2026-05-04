@@ -18,7 +18,14 @@
         },
         "layer": {
             "type": "string",
-            "enum": ["application", "automation", "configuration", "library", "scaffolding", "tool"],
+            "enum": [
+                "application",
+                "automation",
+                "configuration",
+                "library",
+                "scaffolding",
+                "tool"
+            ],
             "description": "Project layer, used for constraint inheritance and query filtering."
         },
         "owners": {
@@ -55,7 +62,10 @@
         },
         "projectType": {
             "type": "string",
-            "enum": ["application", "library"],
+            "enum": [
+                "application",
+                "library"
+            ],
             "description": "Project type — library or application."
         },
         "sourceRoot": {
@@ -64,7 +74,13 @@
         },
         "stack": {
             "type": "string",
-            "enum": ["backend", "data", "frontend", "infrastructure", "systems"],
+            "enum": [
+                "backend",
+                "data",
+                "frontend",
+                "infrastructure",
+                "systems"
+            ],
             "description": "Tech stack."
         },
         "tags": {
@@ -107,7 +123,10 @@
                     "description": "File/glob pattern relative to the project root."
                 }
             },
-            "required": ["owners", "path"],
+            "required": [
+                "owners",
+                "path"
+            ],
             "additionalProperties": false,
             "description": "Declared code-owner assignment for a path glob within a project. Mirrors moon's `owners` shape so migrations can round-trip cleanly."
         },
@@ -169,7 +188,10 @@
                                     },
                                     "params": {
                                         "type": "string",
-                                        "enum": ["forward", "ignore"],
+                                        "enum": [
+                                            "forward",
+                                            "ignore"
+                                        ],
                                         "description": "Params to pass through"
                                     },
                                     "projects": {
@@ -191,7 +213,9 @@
                                         "description": "The target name"
                                     }
                                 },
-                                "required": ["target"],
+                                "required": [
+                                    "target"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Defines a dependency on another target."
                             }
@@ -222,7 +246,10 @@
                                                         "properties": {
                                                             "base": {
                                                                 "type": "string",
-                                                                "enum": ["package", "workspace"],
+                                                                "enum": [
+                                                                    "package",
+                                                                    "workspace"
+                                                                ],
                                                                 "description": "Anchor for the pattern."
                                                             },
                                                             "pattern": {
@@ -230,7 +257,10 @@
                                                                 "description": "Glob pattern (may start with `!` for negation)."
                                                             }
                                                         },
-                                                        "required": ["base", "pattern"],
+                                                        "required": [
+                                                            "base",
+                                                            "pattern"
+                                                        ],
                                                         "additionalProperties": false,
                                                         "description": "Object form of a fileset pattern, for anchoring to the workspace root."
                                                     },
@@ -240,7 +270,9 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["fileset"],
+                                        "required": [
+                                            "fileset"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
                                     },
@@ -251,7 +283,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["runtime"],
+                                        "required": [
+                                            "runtime"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "An input based on a runtime command."
                                     },
@@ -262,7 +296,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["env"],
+                                        "required": [
+                                            "env"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "An input based on environment variables."
                                     },
@@ -276,7 +312,9 @@
                                                 }
                                             }
                                         },
-                                        "required": ["externalDependencies"],
+                                        "required": [
+                                            "externalDependencies"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "An input based on external dependency versions."
                                     }
@@ -356,7 +394,9 @@
                                                     "description": "Variable name."
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ],
@@ -385,7 +425,9 @@
                                                         "description": "Variable name."
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ],
@@ -437,7 +479,9 @@
                                                             "description": "Variable name."
                                                         }
                                                     },
-                                                    "required": ["name"],
+                                                    "required": [
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ],
@@ -466,7 +510,9 @@
                                                                 "description": "Variable name."
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 ],
@@ -479,14 +525,32 @@
                                     "anyOf": [
                                         {
                                             "type": "string",
-                                            "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                            "enum": [
+                                                "aix",
+                                                "darwin",
+                                                "freebsd",
+                                                "linux",
+                                                "openbsd",
+                                                "sunos",
+                                                "windows",
+                                                "win32"
+                                            ],
                                             "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                         },
                                         {
                                             "type": "array",
                                             "items": {
                                                 "type": "string",
-                                                "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
                                                 "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                             }
                                         }
@@ -500,14 +564,32 @@
                             "anyOf": [
                                 {
                                     "type": "string",
-                                    "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                    "enum": [
+                                        "aix",
+                                        "darwin",
+                                        "freebsd",
+                                        "linux",
+                                        "openbsd",
+                                        "sunos",
+                                        "windows",
+                                        "win32"
+                                    ],
                                     "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                 },
                                 {
                                     "type": "array",
                                     "items": {
                                         "type": "string",
-                                        "enum": ["aix", "darwin", "freebsd", "linux", "openbsd", "sunos", "windows", "win32"],
+                                        "enum": [
+                                            "aix",
+                                            "darwin",
+                                            "freebsd",
+                                            "linux",
+                                            "openbsd",
+                                            "sunos",
+                                            "windows",
+                                            "win32"
+                                        ],
                                         "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
                                     }
                                 }
@@ -596,7 +678,10 @@
                 },
                 "outputStyle": {
                     "type": "string",
-                    "enum": ["normal", "quiet"],
+                    "enum": [
+                        "normal",
+                        "quiet"
+                    ],
                     "description": "Per-target output verbosity. Overrides the global `--output-style` flag for this specific target.\n\n- `\"normal\"` (default): print every task's terminal output\n- `\"quiet\"`: only print output when the task fails. Successful   and cached tasks contribute their status line and timing, but   their captured stdout/stderr is suppressed.\n\nUseful when a routinely-noisy task (a linter or test runner with verbose progress output) should stay quiet during green builds but reveal everything when it fails."
                 },
                 "persistent": {
@@ -670,13 +755,24 @@
             "description": "Vis-specific target options that extend the task-runner's base `TargetConfiguration`. These live under `target.options` and are interpreted by vis before handing the task off to task-runner.\n\nConditional execution (`when:`) and finally tasks (`always:`) live at the target top level, not under `options` — they're handled by the task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`."
         },
         "AffectedFilesMode": {
-            "type": ["string", "boolean"],
-            "enum": ["args", "both", "env", false],
+            "type": [
+                "string",
+                "boolean"
+            ],
+            "enum": [
+                "args",
+                "both",
+                "env",
+                false
+            ],
             "description": "Controls how affected files are forwarded to a task.\n- `false` (default): Do not forward.\n- `\"args\"`: Append affected paths as additional command arguments.\n- `\"env\"`: Expose them via `VIS_AFFECTED_FILES` environment variable.\n- `\"both\"`: Both of the above."
         },
         "TargetPreset": {
             "type": "string",
-            "enum": ["server", "utility"],
+            "enum": [
+                "server",
+                "utility"
+            ],
             "description": "Preset bundles of target options.\n- `server`: Long-running local dev server — caching off, not in CI,   interactive, persistent.\n- `utility`: Short-lived helper — caching off, not in CI."
         },
         "RunInCI": {
@@ -730,11 +826,15 @@
                                     "type": "number"
                                 }
                             },
-                            "required": ["port"],
+                            "required": [
+                                "port"
+                            ],
                             "additionalProperties": false
                         }
                     },
-                    "required": ["tcp"],
+                    "required": [
+                        "tcp"
+                    ],
                     "additionalProperties": false,
                     "description": "Readiness probe configuration. v1 supports TCP only."
                 }
@@ -744,7 +844,11 @@
         },
         "TargetType": {
             "type": "string",
-            "enum": ["build", "run", "test"],
+            "enum": [
+                "build",
+                "run",
+                "test"
+            ],
             "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
         }
     }
