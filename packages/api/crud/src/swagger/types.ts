@@ -12,7 +12,7 @@ export interface SwaggerType {
 export interface SwaggerOperation {
     body?: SwaggerType;
     response: SwaggerType;
-    responses?: Record<number, any>;
+    responses?: Record<number, OpenAPIV3.ResponseObject | OpenAPIV3.ReferenceObject>;
     summary?: string;
 }
 
@@ -20,9 +20,7 @@ export interface SwaggerParameter {
     description?: string;
     name: string;
 
-    schema: any & {
-        type: string;
-    };
+    schema: OpenAPIV3.SchemaObject;
 }
 
 export interface ModelsConfig {

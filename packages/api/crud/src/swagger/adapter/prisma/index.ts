@@ -5,26 +5,30 @@ import type { FakePrismaClient, ModelsOptions } from "../../../types";
 import PrismaJsonSchemaParser from "../../json-schema-parser";
 import type { SwaggerModelsConfig } from "../../types";
 import getModelsAccessibleRoutes from "../../utils/get-models-accessible-routes";
-import type { GetSwaggerPathsParameters } from "../../utils/get-swagger-paths";
 import getSwaggerPaths from "../../utils/get-swagger-paths";
 import getSwaggerTags from "../../utils/get-swagger-tags";
 
+const applyExampleToContent = (contentSpec: OpenAPIV3.MediaTypeObject, examples: Record<string, OpenAPIV3.ExampleObject>) => {
+    if (typeof contentSpec.example === "string") {
+        const example = contentSpec.example.replace("#/components/examples/", "");
+
+        if (examples[example]?.value !== undefined) {
+            // eslint-disable-next-line no-param-reassign
+            contentSpec.example = (examples[example] as typeof examples).value;
+        }
+    }
+};
+
 const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, examples: Record<string, OpenAPIV3.ExampleObject>): OpenAPIV3.PathsObject => {
     Object.values(swaggerPaths).forEach((pathSpec) => {
-        Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
+        Object.values(pathSpec as OpenAPIV3.PathsObject).forEach((methodSpec) => {
             if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
                 Object.values((methodSpec as OpenAPIV3.OperationObject).responses).forEach((responseSpec) => {
                     if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {
                         Object.values((responseSpec as OpenAPIV3.ResponseObject).content as Record<string, OpenAPIV3.MediaTypeObject>).forEach(
+                            // eslint-disable-next-line sonarjs/no-nested-functions -- OpenAPI's paths -> methods -> responses -> content shape requires 4 levels of forEach traversal
                             (contentSpec) => {
-                                if (typeof contentSpec.example === "string") {
-                                    const example = contentSpec.example.replace("#/components/examples/", "");
-
-                                    if (examples[example]?.value !== undefined) {
-                                        // eslint-disable-next-line no-param-reassign
-                                        contentSpec.example = (examples[example] as typeof examples).value;
-                                    }
-                                }
+                                applyExampleToContent(contentSpec, examples);
                             },
                         );
                     }
@@ -49,22 +53,23 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     schemas: Record<string, OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject>;
     tags: OpenAPIV3.TagObject[];
 }> => {
-    let dmmf: any;
-    let prismaDmmfModels: any;
+    type Dmmf = { mappingsMap: Record<string, object> };
+    let dmmf: Dmmf | undefined;
+    let prismaDmmfModels: Record<string, object> | undefined;
 
     // eslint-disable-next-line no-underscore-dangle
     if (prismaClient._dmmf !== undefined) {
         // eslint-disable-next-line no-underscore-dangle
-        dmmf = prismaClient._dmmf;
-        prismaDmmfModels = dmmf?.mappingsMap;
+        dmmf = prismaClient._dmmf as Dmmf;
+        prismaDmmfModels = dmmf.mappingsMap;
         // eslint-disable-next-line no-underscore-dangle
     } else if (prismaClient._getDmmf !== undefined) {
         // eslint-disable-next-line no-underscore-dangle
-        dmmf = await prismaClient._getDmmf();
+        dmmf = (await prismaClient._getDmmf()) as Dmmf;
         prismaDmmfModels = dmmf.mappingsMap;
     }
 
-    if (dmmf === undefined) {
+    if (dmmf === undefined || prismaDmmfModels === undefined) {
         throw new TypeError("Couldn't get prisma client models");
     }
 
@@ -97,8 +102,11 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
         modelsConfig: swagger.models,
         routes: swaggerRoutes,
         routesMap: modelsToRouteNames(prismaDmmfModels, models),
-    } as GetSwaggerPathsParameters<M>);
-    const schemas = JSON.parse(schema.replaceAll("#/definitions", "#/components/schemas"));
+    });
+    const schemas = JSON.parse(schema.replaceAll("#/definitions", "#/components/schemas")) as Record<
+        string,
+        OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject
+    >;
     const examples = parser.getExampleModelsSchemas(dModels, schemas);
 
     return {

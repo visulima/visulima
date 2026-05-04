@@ -6,7 +6,7 @@ const readHandler: GetHandler = async ({ adapter, query, resourceId, resourceNam
     const resource = await adapter.getOne(resourceName, resourceId, query);
 
     if (typeof resource !== "object") {
-        throw createHttpError(404, `${resourceName} ${resourceId} not found`);
+        throw createHttpError(404, `${resourceName} ${String(resourceId)} not found`);
     }
 
     return {

@@ -18,19 +18,27 @@ import { getResourceNameFromUrl } from "./utils/get-resource-name-from-url";
 import getRouteType from "./utils/get-route-type";
 import validateAdapterMethods from "./utils/validate-adapter-methods";
 
+const TRAILING_SLASH_REGEX = /\/$/u;
+
 interface ResponseConfig {
-    data: any;
+    data: unknown;
     status: number;
 }
 
-async function baseHandler<R extends Request, Context, T, Q extends ParsedQueryParameters = any, M extends string = string>(
+async function baseHandler<R extends Request, Context, T, Q extends ParsedQueryParameters = ParsedQueryParameters, M extends string = string>(
     responseExecutor: (responseOrContext: Context, responseConfig: ResponseConfig) => Promise<Response>,
     finalExecutor: (responseOrContext: Context) => Promise<void>,
     adapter: Adapter<T, Q>,
     options?: HandlerOptions<M>,
 ): Promise<ExecuteHandler<R, Context>>;
 
-async function baseHandler<R extends IncomingMessage, RResponse extends ServerResponse, T, Q extends ParsedQueryParameters = any, M extends string = string>(
+async function baseHandler<
+    R extends IncomingMessage,
+    RResponse extends ServerResponse,
+    T,
+    Q extends ParsedQueryParameters = ParsedQueryParameters,
+    M extends string = string,
+>(
     responseExecutor: (responseOrContext: RResponse, responseConfig: ResponseConfig) => Promise<void>,
     finalExecutor: (responseOrContext: RResponse) => Promise<void>,
     adapter: Adapter<T, Q>,
@@ -41,7 +49,7 @@ async function baseHandler<
     R extends { headers: { host?: string }; method: string; url: string },
     RResponse,
     T,
-    Q extends ParsedQueryParameters = any,
+    Q extends ParsedQueryParameters = ParsedQueryParameters,
     M extends string = string,
 >(
     responseExecutor: (responseOrContext: RResponse, responseConfig: ResponseConfig) => Promise<RResponse>,
@@ -51,7 +59,7 @@ async function baseHandler<
 ): Promise<ExecuteHandler<R, RResponse>> {
     try {
         validateAdapterMethods(adapter);
-    } catch (error_: any) {
+    } catch (error_) {
         const error = error_ as HttpError;
 
         throw new ApiError(error.statusCode, error.message);
@@ -108,10 +116,10 @@ async function baseHandler<
 
             await adapter.connect?.();
 
-            const parsedQuery = parseQuery(`https://${request.headers.host?.replace(/\/$/u, "")}/${request.url}`);
+            const parsedQuery = parseQuery(`https://${request.headers.host?.replace(TRAILING_SLASH_REGEX, "") ?? ""}/${request.url}`);
             const parameters: HandlerParameters<T, Q> = {
                 adapter,
-                query: adapter.parseQuery(modelName as M, parsedQuery),
+                query: adapter.parseQuery(modelName, parsedQuery),
                 resourceName: modelName,
             };
 
@@ -122,7 +130,7 @@ async function baseHandler<
                     case RouteType.CREATE: {
                         responseConfig = await (config.handlers?.create ?? createHandler)<T, Q, R>({
                             ...parameters,
-                            request: request as R & { body: Record<string, any> },
+                            request: request as R & { body: Record<string, unknown> },
                         });
                         break;
                     }
@@ -169,9 +177,9 @@ async function baseHandler<
                 }
 
                 await responseExecutor(responseOrContext, responseConfig);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 if (adapter.handleError && !(error instanceof ApiError)) {
-                    adapter.handleError(error);
+                    adapter.handleError(error as Error);
                 } else {
                     throw error;
                 }

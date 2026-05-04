@@ -41,7 +41,7 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
             console.log(pathMatch);
 
             // If we got a /something after the resource name, we are reading 1 entity
-            if (typeof pathMatch === "object" && pathMatch.params?.id) {
+            if (typeof pathMatch === "object" && pathMatch.params.id) {
                 return {
                     resourceId: pathMatch.params.id as string,
                     routeType: RouteType.READ_ONE,

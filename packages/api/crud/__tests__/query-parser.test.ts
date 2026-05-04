@@ -9,6 +9,7 @@ describe("parse select", () => {
 
         const url = "http://localhost/?select=user,post";
 
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -23,6 +24,7 @@ describe("parse select", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?select=user,post.user,post.title";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -41,6 +43,7 @@ describe("parse select", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?select=user,post.user,post.user.post";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -61,6 +64,7 @@ describe("parse include", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?include=user,post";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -75,6 +79,7 @@ describe("parse include", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?include=user,post.user,post.title";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -92,6 +97,7 @@ describe("parse include", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?include=user,post.user,post.user.post";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -112,6 +118,7 @@ describe("parse where", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?where={\"username\": \"foo\"}";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -125,6 +132,7 @@ describe("parse where", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?where={\"age\": {\"$gt\": 18}}";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -138,6 +146,7 @@ describe("parse where", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?where={\"user.age\": {\"$gt\": 18}}";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -157,6 +166,7 @@ describe("parse orderBy", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?orderBy={\"username\": \"$asc\"}";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -188,6 +198,7 @@ describe("parse limit", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?limit=2";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -199,6 +210,7 @@ describe("parse limit", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?limit=foobar";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -212,6 +224,7 @@ describe("parse skip", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?skip=2";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -223,6 +236,7 @@ describe("parse skip", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?skip=foobar";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({
@@ -236,6 +250,7 @@ describe("parse distinct", () => {
         expect.assertions(1);
 
         const url = "http://localhost/?distinct=id";
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructure-omit pattern; rename to _ would violate naming-convention
         const { originalQuery, ...result } = parseQuery(url);
 
         expect(result).toStrictEqual<ParsedQueryParameters>({

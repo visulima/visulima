@@ -22,7 +22,7 @@ describe("parse prisma cursor", () => {
             id: 1,
         };
 
-        // @ts-expect-error
+        // @ts-expect-error -- query intentionally has extra non-cursor field
         expect(parsePrismaCursor(query)).toStrictEqual<PrismaCursor>({
             id: 1,
         });
@@ -36,7 +36,7 @@ describe("parse prisma cursor", () => {
             id: 1,
         };
 
-        // @ts-expect-error
+        // @ts-expect-error -- query intentionally has extra non-cursor field
         expect(parsePrismaCursor(query)).toStrictEqual<PrismaCursor>({
             id: 1,
         });

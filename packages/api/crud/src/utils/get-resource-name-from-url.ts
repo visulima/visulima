@@ -1,5 +1,6 @@
 export const ensureCamelCase = (string_: string): string => `${string_.charAt(0).toLowerCase()}${string_.slice(1)}`;
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- M provides call-site narrowing for model keys
 export const getResourceNameFromUrl = <M extends string = string>(
     url: string,
     models: { [key in M]: string },
@@ -22,7 +23,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
     });
 
     if (modelName === undefined) {
-        throw new Error(`Couldn't find model ${modelName} name for url ${url}`);
+        throw new Error(`Couldn't find model name for url ${url}`);
     }
 
     return {

@@ -14,7 +14,7 @@ const deleteHandler: DeleteHandler = async ({ adapter, query, resourceId, resour
         };
     }
 
-    throw createHttpError(404, `${resourceName} ${resourceId} not found`);
+    throw createHttpError(404, `${resourceName} ${String(resourceId)} not found`);
 };
 
 export default deleteHandler;

@@ -4,8 +4,7 @@ const modelsToRouteNames = <M extends string = string>(mappingsMap: Record<strin
     const routesMap: RouteMap<M> = {};
 
     models.forEach((model) => {
-        // @ts-expect-error
-        routesMap[model] = mappingsMap[model].plural;
+        routesMap[model] = (mappingsMap[model] as { plural: string }).plural;
     });
 
     return routesMap;
