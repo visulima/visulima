@@ -12,8 +12,8 @@ import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-direct
 type DecompressionMethod = (buffer: Buffer) => Buffer;
 
 const decompressionMethods: Record<string, DecompressionMethod> = {
-    brotli: brotliDecompressSync as DecompressionMethod,
-    gzip: unzipSync as DecompressionMethod,
+    brotli: brotliDecompressSync,
+    gzip: unzipSync,
     none: (buffer: Buffer) => buffer,
 };
 
@@ -72,7 +72,7 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     const content = nodeReadFileSync(path, flag ? { encoding, flag } : { encoding });
 
     const decompress = decompressionMethods[compression ?? "none"] as DecompressionMethod;
-    const decompressed = decompress(content as Buffer);
+    const decompressed = decompress(content);
 
     return (buffer ? decompressed : decompressed.toString()) as ContentType<O>;
 };

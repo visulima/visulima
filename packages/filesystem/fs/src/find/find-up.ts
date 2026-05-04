@@ -109,7 +109,7 @@ const findUp = async (
             if (Buffer.isBuffer(fileName)) {
                 fileName = fileName.toString();
             } else if (fileName instanceof URL) {
-                fileName = fileURLToPath(fileName as URL | string);
+                fileName = fileURLToPath(fileName);
             }
 
             const filePath = isAbsolute(fileName as string) ? (fileName as string) : resolve(directory, fileName as string);

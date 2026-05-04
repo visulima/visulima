@@ -149,7 +149,7 @@ export default function* walkSync(
                     match: mappedMatch,
                     maxDepth: maxDepth - 1,
                     skip: mappedSkip,
-                } as WalkOptions);
+                });
             } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield {
                     isDirectory: () => entry.isDirectory(),

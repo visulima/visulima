@@ -15,7 +15,7 @@ const fixturePath = join(__dirname, "..", "..", "..", "__fixtures__", "read-json
 type ReadJsoncFunction = (path: URL | string, options?: Record<string, unknown>) => Promise<unknown>;
 
 describe.each([
-    ["readJsonc", readJsonc as ReadJsoncFunction],
+    ["readJsonc", readJsonc],
     ["readJsoncSync", readJsoncSync as ReadJsoncFunction],
 ])("%s", (name: string, function_: ReadJsoncFunction) => {
     it("should read a .jsonc file stripping comments and trailing commas", async () => {

@@ -37,7 +37,7 @@ const writeIniSync = (path: URL | string, data: Record<string, unknown>, options
     if (preserveStyle && isAccessibleSync(path, R_OK)) {
         try {
             existingText = readFileSync(path, "utf8");
-            oldData = parse(existingText, { bracketedArray: bracketedArray ?? true }) as Record<string, unknown>;
+            oldData = parse(existingText, { bracketedArray: bracketedArray ?? true });
 
             const detected = detectIniStyle(existingText);
 
