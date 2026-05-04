@@ -7,10 +7,12 @@ import { createSeoHead } from "@/lib/seo";
 
 import SupportSection from "../pages/home/sections/support";
 
+const SECTION_CLASSES = { childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1", root: "" };
+
 const RouteComponent = () => (
     <>
         <DocsBody className="bg-coal">
-            <Section classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }} gridLength={1} mode="dark">
+            <Section classes={SECTION_CLASSES} gridLength={1} mode="dark">
                 <h1>Impressum</h1>
 
                 <h2>Angaben gemäß § 5 TMG</h2>
@@ -34,7 +36,7 @@ const RouteComponent = () => (
                 <h2>Streitschlichtung</h2>
                 <p>
                     Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:
-                    {" "}
+{" "}
                     <a href="https://ec.europa.eu/consumers/odr" rel="noopener noreferrer" target="_blank">
                         https://ec.europa.eu/consumers/odr
                     </a>
@@ -88,6 +90,7 @@ const RouteComponent = () => (
     </>
 );
 
+// eslint-disable-next-line import/prefer-default-export -- TanStack Start file-based routing requires `export const Route`
 export const Route = createFileRoute("/imprint")({
     component: RouteComponent,
     head: () => {

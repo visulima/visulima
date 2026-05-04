@@ -62,8 +62,8 @@ const Changelog: FC<{ data: { key: string; MdxContent: FC; title: string }[] }> 
                         <div className="px-24">
                             <h1 className="mt-14 font-sans text-5xl font-semibold tracking-tighter">
                                 All of the changes made will be
-                                {" "}
-                                <span className="">available here.</span>
+{" "}
+<span className="">available here.</span>
                             </h1>
                             <p className="mt-4 text-sm">
                                 Visulima is a comprehensive developer platform for TypeScript that offers a wide range of tools and libraries to streamline your

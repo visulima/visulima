@@ -91,7 +91,7 @@ const WhyVisulima = () => (
                             <span className="text-white/55">Visulima provides robust, developer-focused tools and libraries to streamline your workflow.</span>
                             <span className="text-white/35">Let us handle the complexities so you can focus on building what truly matters.</span>
                         </span>
-                    )}
+                      )}
                     mode="dark"
                     prefix="Why Visulima?"
                     title="Empower Your Development. Deliver Faster."

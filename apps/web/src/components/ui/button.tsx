@@ -1,7 +1,8 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { Slot } from "radix-ui";
-import * as React from "react";
+import type { ButtonHTMLAttributes, ElementType, JSX, RefObject } from "react";
+import { createElement } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -44,19 +45,19 @@ const buttonVariants = cva(
 );
 
 interface IconProperties {
-    Icon: React.ElementType;
+    Icon: ElementType;
     iconPlacement: "left" | "right";
 }
 interface IconReferenceProperties {
     Icon?: never;
-    iconPlacement?: undefined;
+    iconPlacement?: never;
 }
 
-export interface ButtonProperties extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+interface ButtonProperties extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     asChild?: boolean;
 }
 
-export type ButtonIconProps = IconProperties | IconReferenceProperties;
+type ButtonIconProps = IconProperties | IconReferenceProperties;
 
 const Button = ({
     asChild = false,
@@ -67,28 +68,21 @@ const Button = ({
     size,
     variant,
     ...properties
-}: ButtonIconProps & ButtonProperties & { ref?: React.RefObject<HTMLButtonElement | null> }) => {
+}: ButtonIconProps & ButtonProperties & { ref?: RefObject<HTMLButtonElement | null> }): JSX.Element => {
     const Comp = asChild ? Slot.Slot : "button";
 
     return (
+        // eslint-disable-next-line react/jsx-props-no-spreading -- forwarding native button attributes
         <Comp className={cn(buttonVariants({ className, size, variant }), Icon && "group")} ref={ref} {...properties}>
             {Icon && iconPlacement === "left" && (
                 <div className="w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-full group-hover:pr-2 group-hover:opacity-100">
-                    {(() => {
-                        const Element_ = Icon as unknown as React.ElementType;
-
-                        return React.createElement(Element_);
-                    })()}
+                    {createElement(Icon)}
                 </div>
             )}
             <Slot.Slottable>{properties.children}</Slot.Slottable>
             {Icon && iconPlacement === "right" && (
                 <div className="w-0 translate-x-[100%] pl-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-0 group-hover:pl-2 group-hover:opacity-100">
-                    {(() => {
-                        const Element_ = Icon as unknown as React.ElementType;
-
-                        return React.createElement(Element_);
-                    })()}
+                    {createElement(Icon)}
                 </div>
             )}
         </Comp>
@@ -98,3 +92,4 @@ const Button = ({
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
+export type { ButtonIconProps, ButtonProperties };

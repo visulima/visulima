@@ -120,13 +120,13 @@ export const CodePreview: FC<
                     <TabsList>
                         <TabsTrigger value="preview">
                             <Eye className="mr-2.5 size-4" />
-                            {" "}
-                            Preview
+{" "}
+Preview
                         </TabsTrigger>
                         <TabsTrigger value="code">
                             <Code2 className="mr-2.5 size-4" />
-                            {" "}
-                            Code
+{" "}
+Code
                         </TabsTrigger>
                     </TabsList>
 

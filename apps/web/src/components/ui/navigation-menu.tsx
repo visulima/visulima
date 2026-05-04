@@ -43,8 +43,8 @@ const NavigationMenuTrigger = ({
 }: ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger> & { ref?: React.RefObject<ElementRef<typeof NavigationMenuPrimitive.Trigger> | null> }) => (
     <NavigationMenuPrimitive.Trigger className={cn(navigationMenuTriggerStyle(), "group", className)} ref={ref} {...properties}>
         {children}
-        {" "}
-        <ChevronDown aria-hidden="true" className="relative top-[1px] ml-1 h-3 w-3 group-data-[state=open]:rotate-180" />
+{" "}
+<ChevronDown aria-hidden="true" className="relative top-[1px] ml-1 h-3 w-3 group-data-[state=open]:rotate-180" />
     </NavigationMenuPrimitive.Trigger>
 );
 

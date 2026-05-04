@@ -45,9 +45,9 @@ const Overview = () => {
     const allBlogsRaw = routeApi.useLoaderData();
     // Explicitly type allBlogs to ensure downstream types are correct.
     // It's better if useLoaderData() is generically typed or the loader itself provides a typed response.
-    const allBlogs: BlogEntry[] = (allBlogsRaw ?? []) as unknown as BlogEntry[];
+    const allBlogs: BlogEntry[] = allBlogsRaw ?? [];
 
-    const { includeCategories, pageIndex = 1 } = routeApi.useSearch() as { includeCategories?: string[]; pageIndex?: number };
+    const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
     const sortedBlogs = allBlogs.toSorted((a, b) => {
@@ -273,9 +273,9 @@ const Overview = () => {
                             <PaginationContent>
                                 {pageIndex > 1
                                     ? (
-                                        <PaginationItem>
-                                            <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 } as never} to={"/blog/" as unknown as "."} />
-                                        </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationPrevious search={{ includeCategories, pageIndex: pageIndex - 1 } as never} to="/blog/" />
+                                    </PaginationItem>
                                     )
                                     : null}
 
@@ -284,7 +284,7 @@ const Overview = () => {
                                         <PaginationLink
                                             isActive={pageIndex === pageNumber}
                                             search={{ includeCategories, pageIndex: pageNumber } as never}
-                                            to={"/blog/" as unknown as "."}
+                                            to="/blog/"
                                         >
                                             {pageNumber}
                                         </PaginationLink>
@@ -293,17 +293,17 @@ const Overview = () => {
 
                                 {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages
                                     ? (
-                                        <PaginationItem>
-                                            <PaginationEllipsis />
-                                        </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
                                     )
                                     : null}
 
                                 {pageIndex < totalPages
                                     ? (
-                                        <PaginationItem>
-                                            <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 } as never} to={"/blog/" as unknown as "."} />
-                                        </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext search={{ includeCategories, pageIndex: pageIndex + 1 } as never} to="/blog/" />
+                                    </PaginationItem>
                                     )
                                     : null}
                             </PaginationContent>

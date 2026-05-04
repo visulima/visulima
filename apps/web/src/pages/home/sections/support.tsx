@@ -76,7 +76,7 @@ const SupportSection = () => (
                                 Want to get involved? Here are some tips on how you can make a meaningful impact on our open source projects.
                             </span>
                         </span>
-                    )}
+                      )}
                     mode="light"
                     prefix="Support"
                     title="Contribute to our work and keep us going"

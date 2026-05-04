@@ -7,10 +7,12 @@ import { createSeoHead } from "@/lib/seo";
 
 import SupportSection from "../pages/home/sections/support";
 
+const SECTION_CLASSES = { childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1", root: "" };
+
 const RouteComponent = () => (
     <>
         <DocsBody className="bg-coal">
-            <Section classes={{ root: "", childrenWrapper: "sm:grid-cols-1 lg:grid-cols-1" }} gridLength={1} mode="dark">
+            <Section classes={SECTION_CLASSES} gridLength={1} mode="dark">
                 <h1>Privacy Policy</h1>
 
                 <h2>1. An overview of data protection</h2>
@@ -304,7 +306,7 @@ const RouteComponent = () => (
                     blacklist, if such action is necessary to prevent future mailings. The data from the blacklist is used only for this purpose and not merged
                     with other data. This serves both your interest and our interest in complying with the legal requirements when sending newsletters
                     (legitimate interest within the meaning of Art. 6(1)(f) GDPR). The storage in the blacklist is indefinite.
-                    {" "}
+{" "}
                     <strong>You may object to the storage if your interests outweigh our legitimate interest.</strong>
                 </p>
 
@@ -333,7 +335,7 @@ const RouteComponent = () => (
                 </p>
                 <p>
                     The processing of data is based on Standard Contract Clauses, which you can find here:
-                    {" "}
+{" "}
                     <a href="https://www.cloudflare.com/cloudflare-customer-scc/" rel="noopener noreferrer" target="_blank">
                         https://www.cloudflare.com/cloudflare-customer-scc/
                     </a>
@@ -341,7 +343,7 @@ const RouteComponent = () => (
                 </p>
                 <p>
                     For more information on Cloudflare Turnstile, please visit the privacy policy at:
-                    {" "}
+{" "}
                     <a href="https://www.cloudflare.com/cloudflare-customer-dpa/" rel="noopener noreferrer" target="_blank">
                         https://www.cloudflare.com/cloudflare-customer-dpa/
                     </a>
@@ -352,7 +354,7 @@ const RouteComponent = () => (
                     European Union and the US, which is intended to ensure compliance with European data protection standards for data processing in the US.
                     Every company certified under the DPF is obliged to comply with these data protection standards. For more information, please contact the
                     provider under the following link:
-                    {" "}
+{" "}
                     <a href="https://www.dataprivacyframework.gov/participant/5666" rel="noopener noreferrer" target="_blank">
                         https://www.dataprivacyframework.gov/participant/5666
                     </a>
@@ -367,6 +369,7 @@ const RouteComponent = () => (
     </>
 );
 
+// eslint-disable-next-line import/prefer-default-export -- TanStack Start file-based routing requires `export const Route`
 export const Route = createFileRoute("/privacy")({
     component: RouteComponent,
     head: () => {
