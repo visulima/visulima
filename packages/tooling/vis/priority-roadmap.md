@@ -165,7 +165,7 @@ These have real demand but lower leverage given current vis scope:
 
 | # | Item | Source | Why defer |
 |---|---|---|---|
-| 11 | Inferred tasks / Project Crystal | Theme 4 Tier-1 #5 | `framework-inference.ts` is the seed; unblock after #2 lands |
+| 11 | Inferred tasks / Project Crystal ✅ | Theme 4 Tier-1 #5 | v1 ships vite/packem/vitest detectors behind `inferTargets: true`; explicit scripts/project.json/vis.task.ts win per-key. More detectors land opportunistically. |
 | 12 | Test atomization | Theme 4 Tier-1 #6 | Pairs with distributed agents — pointless without #14 |
 | 13 | Public plugin API | todo.md, Theme E | Required for community ecosystem; ship after surface stabilizes |
 | 14 | Distributed agents (Cobuilds-style) | Theme 4 Tier-1 #2 | Lighter pattern via shared cache + Redis lock |
@@ -175,7 +175,7 @@ These have real demand but lower leverage given current vis scope:
 | 18 | Boundaries as `eslint-plugin-vis` | Section 4 Tier-2 | Surface existing layer constraints to ESLint |
 | 19 | GitLab CI / Buildkite presets | Section 7.2 G | Easy parity once the GH Actions story is solid |
 | 20 | Run replay / time-travel (`vis replay`) | Section 4 Tier-2 | Build on existing `run-summary.ts` |
-| 21 | Lockfile / install-awareness preflight | Theme W, moon#2055, rushstack#5624 | Detect "lockfile changed, you didn't `pnpm install`" before tasks run |
+| 21 | Lockfile / install-awareness preflight ✅ | Theme W, moon#2055, rushstack#5624 | Lives at `src/preflight/lockfile.ts`. Compares lockfile mtime to PM-specific install marker (`node_modules/.modules.yaml` etc.); warns in TTY, hard-fails in CI. Default-on, opt-out via `--no-preflight` or `preflight.lockfile: false`. |
 | 22 | Skip-on-warning incrementality ✅ | Theme P, rushstack#1402 | Per-target `warningPattern` + `cacheOnWarning`; result carries `hadWarnings` |
 | 23 | Task descriptions in `--help` / TUI ✅ | Theme Y, wireit#1015, moon#1914 | Surfaced via `vis list --targets` (existing per-target `description` field) |
 

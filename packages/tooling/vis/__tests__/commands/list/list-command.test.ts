@@ -178,6 +178,51 @@ describe("vis list", () => {
         expect(text).toContain("2 target(s) across 2 project(s)");
     });
 
+    it("filters target rows to inferred only when --inferred is passed", async () => {
+        expect.assertions(7);
+
+        const cDir = join(workspaceRoot, "packages", "c");
+
+        mkdirSync(cDir, { recursive: true });
+
+        writeFileSync(
+            join(cDir, "package.json"),
+            JSON.stringify({ name: "@my/c", scripts: { lint: "eslint ." } }),
+        );
+        writeFileSync(join(cDir, "vite.config.ts"), "export default {}");
+
+        const { calls, logger } = makeLogger();
+
+        await listExecute({
+            argument: [],
+            logger,
+            options: { inferred: true },
+            runtime: {} as never,
+            visConfig: { inferTargets: true },
+            workspaceRoot,
+        } as never);
+
+        const text = calls.map((c) => c.slice(1).join(" ")).join("\n");
+
+        expect(text).toContain("Inferred");
+        expect(text).toContain("@my/c");
+        expect(text).toContain("vite production build (inferred)");
+        // explicit script-derived target must not slip into the inferred-only filter
+        expect(text).not.toContain("@my/a");
+        expect(text).toContain("3 target(s) across 3 project(s)");
+
+        // Pin the Inferred column body: every rendered row must say "yes"
+        // (no row should be "no", because we filtered to inferred-only).
+        const dataRows = calls
+            .filter((c) => c[0] === "info" && typeof c[1] === "string" && (c[1] as string).startsWith("@my/c"))
+            .map((c) => c[1] as string);
+
+        expect(dataRows.length).toBeGreaterThanOrEqual(1);
+        // Inferred is the 5th column (Project, Target, Type, Cache, Inferred, Description)
+        // — every data row should contain "yes" before the description text.
+        expect(dataRows.every((row) => /\byes\b/.test(row))).toBe(true);
+    });
+
     it("logs 'No projects found' when the query matches nothing", async () => {
         expect.assertions(1);
 

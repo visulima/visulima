@@ -5,7 +5,7 @@ import { join } from "@visulima/path";
 
 import type { TargetOsType, TargetPreset, TargetType, VisTargetConfiguration, VisTargetOptions } from "./types";
 
-export type { AffectedFilesMode, RunInCI, TargetOsType, TargetPreset, TargetType, VisTargetConfiguration, VisTargetOptions } from "./types";
+export type { AffectedFilesMode, RunInCI, ServiceConfig, TargetOsType, TargetPreset, TargetType, VisTargetConfiguration, VisTargetOptions } from "./types";
 
 /**
  * Option defaults applied by each preset. User options override these.

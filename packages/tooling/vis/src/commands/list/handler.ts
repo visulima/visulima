@@ -24,21 +24,31 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         return;
     }
 
+    const inferredOnly = options.inferred === true;
+    const showTargets = options.targets === true || inferredOnly;
+
     if (options.json) {
         const data = projectNames.map((name) => {
             const project = workspace.projects[name] as VisProjectConfiguration;
             const visTargets = projectOptions.get(name) ?? {};
-            const targets = Object.entries(project.targets ?? {}).map(([targetName]) => {
-                const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+            const targets = Object.entries(project.targets ?? {})
+                .map(([targetName]) => {
+                    const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+                    const isInferred = visTarget?.inferred === true;
 
-                return {
-                    aliases: visTarget?.aliases ?? [],
-                    command: visTarget?.command,
-                    description: visTarget?.description,
-                    name: targetName,
-                    type: visTarget?.type,
-                };
-            });
+                    return {
+                        aliases: visTarget?.aliases ?? [],
+                        command: visTarget?.command,
+                        description: visTarget?.description,
+                        // Only emit the field when it's true — keeps the JSON
+                        // shape additive instead of breaking downstream
+                        // consumers that didn't know about `inferred` yet.
+                        ...isInferred ? { inferred: true } : {},
+                        name: targetName,
+                        type: visTarget?.type,
+                    };
+                })
+                .filter((target) => !inferredOnly || target.inferred === true);
 
             return {
                 language: project.language,
@@ -74,7 +84,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         }
     };
 
-    if (options.targets) {
+    if (showTargets) {
         const targetRows: string[][] = [];
 
         for (const name of projectNames) {
@@ -83,6 +93,12 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
             for (const targetName of Object.keys(project.targets ?? {}).sort()) {
                 const visTarget = visTargets[targetName] as VisTargetConfiguration | undefined;
+                const isInferred = visTarget?.inferred === true;
+
+                if (inferredOnly && !isInferred) {
+                    continue;
+                }
+
                 const targetConfig = project.targets?.[targetName];
                 const cache = targetConfig?.cache === false ? "no" : targetConfig?.cache === true ? "yes" : "default";
 
@@ -91,18 +107,19 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
                     targetName,
                     visTarget?.type ?? "—",
                     cache,
+                    isInferred ? "yes" : "no",
                     visTarget?.description ?? "—",
                 ]);
             }
         }
 
         if (targetRows.length === 0) {
-            logger.info("No targets found.");
+            logger.info(inferredOnly ? "No inferred targets found." : "No targets found.");
 
             return;
         }
 
-        renderTable(["Project", "Target", "Type", "Cache", "Description"], targetRows);
+        renderTable(["Project", "Target", "Type", "Cache", "Inferred", "Description"], targetRows);
 
         logger.info("");
         logger.info(`${String(targetRows.length)} target(s) across ${String(projectNames.length)} project(s)`);

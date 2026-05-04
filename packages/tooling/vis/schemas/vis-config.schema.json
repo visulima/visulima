@@ -105,6 +105,17 @@
                 }
             }
         },
+        "inferTargets": {
+            "oneOf": [
+                { "type": "boolean", "default": false },
+                {
+                    "type": "object",
+                    "description": "Per-detector opt-out. Keys are detector names (`vite`, `vitest`, `packem`); set to `false` to disable. Detectors omitted from the object stay enabled.",
+                    "additionalProperties": { "type": "boolean" }
+                }
+            ],
+            "description": "Project Crystal-style inference: synthesize default targets (build/test/dev/...) from config files and dependencies (vite, packem, vitest). Inferred targets are the lowest-priority layer — package.json scripts, project.json, and vis.task.ts always win. Boolean `true` enables every detector; the object form opts individual detectors in or out."
+        },
         "create": {
             "type": "object",
             "description": "Configuration for vis create scaffolding command.",
@@ -131,6 +142,18 @@
             "type": "object",
             "description": "Package override mappings applied during migration.",
             "additionalProperties": { "type": "string" }
+        },
+        "preflight": {
+            "type": "object",
+            "description": "Preflight checks gating `vis run` / `vis ci`. Each check can be opted out individually; the CLI flag `--no-preflight` disables them all.",
+            "additionalProperties": false,
+            "properties": {
+                "lockfile": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect lockfile drift by comparing the lockfile mtime against the package manager's install marker (e.g. `node_modules/.modules.yaml` for pnpm). When the lockfile is newer than the marker, the run fails with the right reinstall command for CI vs TTY."
+                }
+            }
         },
         "security": {
             "type": "object",

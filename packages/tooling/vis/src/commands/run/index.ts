@@ -35,6 +35,15 @@ const run: Command = {
             type: Boolean,
         },
         {
+            // No `defaultValue` — handler treats `undefined` as "fall
+            // back to config (default: enabled)" so `vis.config.ts`
+            // `preflight.lockfile` can opt out workspace-wide and
+            // `--no-preflight` opts out per-run without conflicting layers.
+            description: "Detect lockfile/node_modules drift before running (warns in TTY, fails in CI). Use --no-preflight to disable.",
+            name: "preflight",
+            type: Boolean,
+        },
+        {
             defaultValue: 3,
             description: "Maximum number of parallel tasks (falls back to VIS_RUN_CONCURRENCY_LIMIT env var, then 3)",
             name: "parallel",
@@ -164,6 +173,7 @@ export type RunOptions = CreateOptions<{
     "output-style": string | undefined;
     parallel: number | undefined;
     partition: string | undefined;
+    preflight: boolean | undefined;
     profile: string | undefined;
     projects: string | undefined;
     pty: boolean | undefined;

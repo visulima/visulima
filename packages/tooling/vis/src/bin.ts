@@ -46,6 +46,7 @@ import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import sbomCommand from "./commands/sbom";
 import secretsCommand from "./commands/secrets";
+import serviceCommands from "./commands/service";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
@@ -190,6 +191,10 @@ for (const command of cacheCommands) {
 }
 
 for (const command of aiCommands) {
+    cli.addCommand(command);
+}
+
+for (const command of serviceCommands) {
     cli.addCommand(command);
 }
 
