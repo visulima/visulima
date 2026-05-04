@@ -3,13 +3,13 @@
     "version": "0.0.0",
     "private": true,
     "license": "MIT",
-    "sideEffects": false,
-    "type": "module",
     "workspaces": [
         "packages/*/*",
         "apps/*",
         "shared/*"
     ],
+    "type": "module",
+    "sideEffects": false,
     "scripts": {
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",
         "bench:colorize": "pnpm --filter \"colorize-bench\" run test:bench",
@@ -300,9 +300,6 @@
         "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
         "test:web": "pnpm --filter \"www\" run test"
     },
-    "browserslist": [
-        "extends browserslist-config-anolilab"
-    ],
     "dependencies": {
         "@anolilab/commitlint-config": "catalog:prod",
         "@anolilab/lint-staged-config": "catalog:lint",
@@ -334,8 +331,11 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "packageManager": "pnpm@10.33.2",
+    "browserslist": [
+        "extends browserslist-config-anolilab"
+    ],
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    }
+    },
+    "packageManager": "pnpm@10.33.2"
 }
