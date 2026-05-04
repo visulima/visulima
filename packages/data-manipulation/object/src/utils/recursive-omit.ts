@@ -5,10 +5,9 @@
  *
  * Copyright (c) 2018 Luca Ban - Mesqueeb
  */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import isPlainObject from "is-plain-obj";
 import type { Paths } from "type-fest";
 
+import isPlainObject from "./is-plain-object";
 import pathsAreEqual from "./paths-are-equal";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
@@ -27,7 +26,7 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
 
         path += key;
 
-        if (omittedKeys.some((guardPath) => pathsAreEqual(path, guardPath as string))) {
+        if (omittedKeys.some((guardPath) => pathsAreEqual(path, guardPath))) {
             return carry;
         }
 
