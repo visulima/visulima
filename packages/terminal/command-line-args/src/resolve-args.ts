@@ -213,7 +213,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             }
 
             if (token.value === undefined) {
-                const nextToken = tokens[i + 1] as ArgumentToken | undefined;
+                const nextToken = tokens[i + 1];
                 // Check if next token is a value-only option token (from short option groups like -ab=value)
                 const isValueOnlyOptionToken = nextToken?.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
                 const shouldConsumeValue
