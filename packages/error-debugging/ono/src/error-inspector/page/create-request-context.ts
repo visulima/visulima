@@ -485,7 +485,10 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             return renderObjectValue(value as Record<string, unknown>, depth);
         }
 
-        const stringified = typeof value === "symbol" || typeof value === "bigint" || typeof value === "function" ? (value as { toString: () => string }).toString() : JSON.stringify(value);
+        const stringified
+            = typeof value === "symbol" || typeof value === "bigint" || typeof value === "function"
+                ? (value as { toString: () => string }).toString()
+                : JSON.stringify(value);
 
         return `<span class="text-[var(--ono-text)]">${escapeHtml(stringified)}</span>`;
     };
@@ -545,8 +548,9 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
         }
 
         // body is narrowed to number/boolean/bigint/symbol/function here; objects handled above
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        const stringifiedBody = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function" ? (body as { toString: () => string }).toString() : String(body);
+
+        const stringifiedBody
+            = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function" ? (body as { toString: () => string }).toString() : String(body);
 
         return `<div class="px-4 pb-4">
   <div class="text-sm break-words whitespace-pre-wrap font-mono p-3 rounded border border-[var(--ono-border)] bg-[var(--ono-surface-muted)] text-[var(--ono-text)]">${escapeHtml(stringifiedBody)}</div>
