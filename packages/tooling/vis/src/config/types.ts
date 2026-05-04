@@ -128,7 +128,7 @@ export interface TaskDefaultsBlock {
     targets: Record<string, Partial<VisTargetConfiguration>>;
 }
 
-interface VisConfig {
+export interface VisConfig {
     /** AI analysis configuration */
     ai?: {
         /** Cache TTL in milliseconds. Overrides default (1h / 30min for security). */
@@ -138,20 +138,6 @@ interface VisConfig {
         /** Use a specific provider instead of auto-detecting (e.g., `"claude"`, `"gemini"`). */
         provider?: string;
     };
-
-    /**
-     * When `true`, every task command is scanned for `${VAR}` / `$VAR`
-     * references before spawn. If a referenced var is unset in the
-     * task's effective env (envFile + service env + per-task `env` +
-     * `process.env`), the task fails with an actionable error
-     * naming the missing variable, instead of letting the shell
-     * silently substitute an empty string.
-     *
-     * Override per run with `--strict-env` / `--no-strict-env`.
-     * Override per target with `options.strictEnv`.
-     * @default false
-     */
-    strictEnv?: boolean;
 
     /**
      * Scope the task-runner cache directory by the current git branch.
@@ -322,38 +308,6 @@ interface VisConfig {
     };
 
     /**
-     * Installer backend selection for `vis install` / `vis add` /
-     * `vis remove` / `vis update` / `vis ci`.
-     *
-     * Lets users opt into [aube](https://github.com/endevco/aube) — a
-     * Rust-native package manager that reads/writes pnpm/npm/yarn/bun
-     * lockfiles in place — as the default installer, while keeping a
-     * single switch to fall back to the conventional PM detected from
-     * the lockfile.
-     *
-     * Resolution precedence (highest first):
-     * 1. CLI flag (`--installer &lt;name>` / `--no-aube`)
-     * 2. Env var `VIS_INSTALLER`
-     * 3. This config field
-     * 4. Auto-detect (the default)
-     *
-     * Aube must be installed separately — `vis` does not bundle it.
-     * Install via `npm i -g @endevco/aube`, `mise use -g aube`, or
-     * `brew install endevco/tap/aube`.
-     */
-    install?: {
-        /**
-         * Which package manager performs install/add/remove/etc.
-         * - `auto` (default): use `aube` when it is on PATH; otherwise
-         *   fall back to the lockfile-detected PM.
-         * - explicit name: always use that PM. Errors when the named
-         *   binary is missing rather than silently falling back.
-         * @default "auto"
-         */
-        backend?: "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
-    };
-
-    /**
      * Auto-create targets from detected config files (Project Crystal-style).
      * Inferred targets sit *below* explicit ones — anything in
      * `package.json#scripts`, `project.json#targets`, or `vis.task.ts`
@@ -414,6 +368,38 @@ interface VisConfig {
      * @default false
      */
     inferTargets?: Record<string, boolean> | boolean;
+
+    /**
+     * Installer backend selection for `vis install` / `vis add` /
+     * `vis remove` / `vis update` / `vis ci`.
+     *
+     * Lets users opt into [aube](https://github.com/endevco/aube) — a
+     * Rust-native package manager that reads/writes pnpm/npm/yarn/bun
+     * lockfiles in place — as the default installer, while keeping a
+     * single switch to fall back to the conventional PM detected from
+     * the lockfile.
+     *
+     * Resolution precedence (highest first):
+     * 1. CLI flag (`--installer &lt;name>` / `--no-aube`)
+     * 2. Env var `VIS_INSTALLER`
+     * 3. This config field
+     * 4. Auto-detect (the default)
+     *
+     * Aube must be installed separately — `vis` does not bundle it.
+     * Install via npm (`@endevco/aube`), `mise use -g aube`, or
+     * `brew install endevco/tap/aube`.
+     */
+    install?: {
+        /**
+         * Which package manager performs install/add/remove/etc.
+         * - `auto` (default): use `aube` when it is on PATH; otherwise
+         *   fall back to the lockfile-detected PM.
+         * - explicit name: always use that PM. Errors when the named
+         *   binary is missing rather than silently falling back.
+         * @default "auto"
+         */
+        backend?: "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
+    };
 
     /**
      * Named input patterns inherited by every project target. Equivalent
@@ -707,6 +693,20 @@ interface VisConfig {
      */
     staged?: StagedConfig;
 
+    /**
+     * When `true`, every task command is scanned for `${VAR}` / `$VAR`
+     * references before spawn. If a referenced var is unset in the
+     * task's effective env (envFile + service env + per-task `env` +
+     * `process.env`), the task fails with an actionable error
+     * naming the missing variable, instead of letting the shell
+     * silently substitute an empty string.
+     *
+     * Override per run with `--strict-env` / `--no-strict-env`.
+     * Override per target with `options.strictEnv`.
+     * @default false
+     */
+    strictEnv?: boolean;
+
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<VisTargetConfiguration>>;
 
@@ -885,4 +885,4 @@ export type PackageJsonIndex = Map<string, PackageJson>;
  */
 export type VisTaskConfigIndex = Map<string, VisTaskConfig>;
 
-export type { NativeAuditExclusions, PackageJson, VisConfig };
+export type { NativeAuditExclusions, PackageJson };
