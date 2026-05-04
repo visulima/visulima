@@ -1,11 +1,11 @@
 import type {
-    // @ts-expect-error
+    // @ts-expect-error -- PrismaAction may not be exported by the consumer's generated client
     PrismaAction,
 } from "@prisma/client";
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters } from "../../types";
+import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters, WhereField } from "../../types";
 import type { PrismaParsedQueryParameters } from "./types";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
@@ -29,7 +29,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
 
     private readonly ctorModels?: M[];
 
-    private dmmf: any;
+    private dmmf: { mappingsMap: Record<string, object> } | undefined;
 
     private readonly manyRelations: {
         [key in M]?: string[];
@@ -46,12 +46,13 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         this.ctorModels = models as M[];
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- $connect is typed as () => void by FakePrismaClient; preserve original fire-and-forget behavior
     public async connect(): Promise<void> {
         this.prismaClient.$connect();
     }
 
     public async create(resourceName: M, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         return await this.getPrismaDelegate(resourceName).create({
             data,
             include: query.include,
@@ -60,7 +61,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     public async delete(resourceName: M, resourceId: number | string, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         return await this.getPrismaDelegate(resourceName).delete({
             include: query.include,
             select: query.select,
@@ -75,7 +76,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     public async getAll(resourceName: M, query: PrismaParsedQueryParameters): Promise<T[]> {
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         return (await this.getPrismaDelegate(resourceName).findMany({
             cursor: query.cursor,
             distinct: query.distinct,
@@ -101,7 +102,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
          */
         const findFunction = delegate.findUnique ?? delegate.findOne;
 
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         return await findFunction({
             include: query.include,
             select: query.select,
@@ -112,7 +113,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     public async getPaginationData(resourceName: M, query: PrismaParsedQueryParameters): Promise<PaginationData> {
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         const total: number = await this.getPrismaDelegate(resourceName).count({
             distinct: query.distinct,
             where: query.where,
@@ -171,7 +172,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         }
 
         if (query.originalQuery?.where) {
-            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery.where), this.manyRelations[resourceName] ?? []);
+            parsed.where = parsePrismaWhere(JSON.parse(query.originalQuery.where) as WhereField, this.manyRelations[resourceName] ?? []);
         }
 
         if (query.orderBy) {
@@ -187,7 +188,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         }
 
         if (query.originalQuery?.cursor) {
-            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery.cursor));
+            parsed.cursor = parsePrismaCursor(JSON.parse(query.originalQuery.cursor) as Record<string, boolean | number | string>);
         }
 
         if (query.distinct) {
@@ -198,7 +199,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     public async update(resourceName: M, resourceId: number | string, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
-        // @ts-expect-error
+        // @ts-expect-error -- delegate type is dynamic per Prisma model, not statically resolvable
         return await this.getPrismaDelegate(resourceName).update({
             data,
             include: query.include,
@@ -217,17 +218,17 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         // eslint-disable-next-line no-underscore-dangle
         if (this.prismaClient._dmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
-            this.dmmf = this.prismaClient._dmmf;
+            this.dmmf = this.prismaClient._dmmf as { mappingsMap: Record<string, object> };
 
-            return this.dmmf?.mappingsMap as Record<string, object>;
+            return this.dmmf.mappingsMap;
         }
 
         // eslint-disable-next-line no-underscore-dangle
         if (this.prismaClient._getDmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
-            this.dmmf = await this.prismaClient._getDmmf();
+            this.dmmf = (await this.prismaClient._getDmmf()) as { mappingsMap: Record<string, object> };
 
-            return this.dmmf.mappingsMap as Record<string, object>;
+            return this.dmmf.mappingsMap;
         }
 
         throw new Error("Couldn't get prisma client models");

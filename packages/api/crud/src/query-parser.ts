@@ -1,6 +1,6 @@
 import { URL } from "node:url";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies, e18e/ban-dependencies -- dlv (recommended replacement) lacks setProperty equivalent; dset not in catalog
 import { setProperty } from "dot-prop";
 
 import type { OrderByField, ParsedQueryParameters, RecursiveField, WhereField } from "./types";
@@ -18,7 +18,7 @@ const parseRecursive = (select: string): RecursiveField => {
 };
 
 const parseWhere = (where: string): WhereField => {
-    const whereObject = JSON.parse(where);
+    const whereObject = JSON.parse(where) as Record<string, unknown>;
     const parsed: WhereField = {};
 
     Object.keys(whereObject).forEach((key) => {
@@ -30,13 +30,13 @@ const parseWhere = (where: string): WhereField => {
 
 const parseOrderBy = (orderBy: string): OrderByField => {
     const parsed: OrderByField = {};
-    const orderByObject = JSON.parse(orderBy);
+    const orderByObject = JSON.parse(orderBy) as Record<string, "$asc" | "$desc">;
 
     if (Object.keys(orderByObject).length > 0) {
         const key = Object.keys(orderByObject)[0] as string;
 
-        if (orderByObject[key as keyof typeof orderByObject] === "$asc" || orderByObject[key as keyof typeof orderByObject] === "$desc") {
-            parsed[key] = orderByObject[key as keyof typeof orderByObject];
+        if (orderByObject[key] === "$asc" || orderByObject[key] === "$desc") {
+            parsed[key] = orderByObject[key];
         }
     }
 

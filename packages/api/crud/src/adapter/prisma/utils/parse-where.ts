@@ -2,7 +2,7 @@ import type { Condition, SearchCondition, WhereCondition, WhereField, WhereOpera
 import isPrimitive from "../../../utils/is-primitive";
 import type { PrismaFieldFilter, PrismaRelationFilter, PrismaWhereField, PrismaWhereOperator } from "../types";
 
-const isObject = (a: any) => a instanceof Object;
+const isObject = (a: unknown) => a instanceof Object;
 
 const operatorsAssociation: {
     [key in WhereOperator]?: PrismaWhereOperator;
@@ -20,12 +20,13 @@ const operatorsAssociation: {
     $starts: "startsWith",
 };
 
-// eslint-disable-next-line regexp/no-useless-flag
+// eslint-disable-next-line regexp/no-useless-flag, sonarjs/regex-complexity -- ISO 8601 date validator inherently complex
 const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
 
-const getSearchValue = (originalValue: any): SearchCondition => {
-    if (isDateString(originalValue)) {
-        return new Date(originalValue);
+// eslint-disable-next-line sonarjs/function-return-type -- intentionally returns Date | null | original primitive depending on input
+const getSearchValue = (originalValue: unknown): SearchCondition => {
+    if (isDateString(originalValue as string)) {
+        return new Date(originalValue as string);
     }
 
     if (typeof originalValue === "string" && originalValue === "$isnull") {
@@ -67,7 +68,7 @@ const parseRelation = (
     // Reverse the keys so that we can format our object by nesting
     const fields = key.split(".").toReversed();
 
-    let formatFields: Record<string, any> = {};
+    let formatFields: Record<string, unknown> = {};
 
     fields.forEach((field, index) => {
         // If we iterate over the property name, which is index 0, we parse it like a normal field
@@ -87,14 +88,14 @@ const parseRelation = (
     // Retrieve the main relation field
     const initialFieldKey = fields.toReversed()[0] as string;
     // Retrieve the old parsed version
-    const oldParsed = parsed[initialFieldKey] as PrismaRelationFilter;
+    const oldParsed = parsed[initialFieldKey] as PrismaRelationFilter | undefined;
 
     // Format correctly in the prisma way
     // eslint-disable-next-line no-param-reassign
     parsed[initialFieldKey] = {
         some: {
             ...(oldParsed?.some as object),
-            ...formatFields[initialFieldKey]?.some,
+            ...(formatFields[initialFieldKey] as { some?: object } | undefined)?.some,
         },
     };
 };
@@ -108,7 +109,7 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
         if (isRelation(key, manyRelations)) {
             parseRelation(value as WhereCondition, key, parsed, manyRelations);
         } else if (isPrimitive(value)) {
-            parsed[key] = value as SearchCondition;
+            parsed[key] = value;
         } else if (isObject(value)) {
             const fieldResult = parseSimpleField(value as Condition);
 
@@ -175,6 +176,7 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          *
          * to output
          *
+         * ```
          * {
          *  posts: {
          *    some: {
@@ -186,6 +188,7 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          *    }
          *  }
          * }
+         * ```
          */
         if (isRelation(key, manyRelations)) {
             parseRelation(value as WhereCondition, key, parsed, manyRelations);

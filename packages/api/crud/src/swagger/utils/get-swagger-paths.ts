@@ -30,7 +30,7 @@ const generateContentForSchema = (schemaName: string, isArray?: boolean) => {
     };
 };
 
-const generateSwaggerResponse = (routeType: RouteType, modelName: string): { content: any; statusCode: number } | undefined => {
+const generateSwaggerResponse = (routeType: RouteType, modelName: string): { content: Record<string, unknown>; statusCode: number } => {
     if (routeType === RouteType.CREATE) {
         return {
             content: {
@@ -100,22 +100,18 @@ const generateSwaggerResponse = (routeType: RouteType, modelName: string): { con
         };
     }
 
-    if (routeType === RouteType.UPDATE) {
-        return {
+    return {
+        content: {
             content: {
-                content: {
-                    "application/json": {
-                        example: formatExampleReference(modelName),
-                        schema: generateContentForSchema(modelName),
-                    },
+                "application/json": {
+                    example: formatExampleReference(modelName),
+                    schema: generateContentForSchema(modelName),
                 },
-                description: `${modelName} item updated`,
             },
-            statusCode: 200,
-        };
-    }
-
-    return undefined;
+            description: `${modelName} item updated`,
+        },
+        statusCode: 200,
+    };
 };
 
 const generateRequestBody = (schemaStartName: string, modelName: string) => {
@@ -151,70 +147,82 @@ const getRouteTypeMethod = (routeType: RouteType): HttpMethod => {
     }
 };
 
+type SwaggerMethod = {
+    parameters: Record<string, unknown>[];
+    requestBody?: Record<string, unknown>;
+    responses: Record<string | number, unknown>;
+    summary?: string;
+    tags: string[];
+};
+
 const generateSwaggerPathObject = <M extends string>({
     hasId,
     modelName,
     modelsConfig,
     routeTypes,
     tag,
-}: GenerateSwaggerPathObjectParameters<M>): Record<string, any> => {
-    const methods: Record<string, any> = {};
+}: GenerateSwaggerPathObjectParameters<M>): Record<string, SwaggerMethod> => {
+    const methods: Record<string, SwaggerMethod> = {};
 
     routeTypes.forEach((routeType) => {
-        if (routeTypes.includes(routeType)) {
-            const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
-            const method: HttpMethod = getRouteTypeMethod(routeType);
-            const response = generateSwaggerResponse(routeType, returnType);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS narrows enum-keyed lookups but runtime values may still be undefined for optional configs
+        const returnType = modelsConfig?.[modelName]?.routeTypes?.[routeType]?.response.name ?? modelsConfig?.[modelName]?.type?.name ?? modelName;
+        const method: HttpMethod = getRouteTypeMethod(routeType);
+        const response = generateSwaggerResponse(routeType, returnType);
 
-            if (response === undefined) {
-                throw new TypeError(`Route type ${routeType}; response config was not found.`);
-            }
+        methods[method] = {
+            parameters: getQueryParameters(routeType).map((queryParameter) => {
+                return { ...queryParameter, in: "query" };
+            }),
 
-            methods[method] = {
-                parameters: getQueryParameters(routeType).map((queryParameter) => {
-                    return { ...queryParameter, in: "query" };
-                }),
+            responses: {
+                [response.statusCode]: response.content,
 
-                responses: {
-                    [response.statusCode]: response.content,
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS narrows enum-keyed lookups but runtime values may still be undefined for optional configs
+                ...modelsConfig?.[modelName]?.routeTypes?.[routeType]?.responses,
+            },
 
-                    ...modelsConfig?.[modelName]?.routeTypes?.[routeType]?.responses,
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS narrows enum-keyed lookups but runtime values may still be undefined for optional configs
+            summary: modelsConfig?.[modelName]?.routeTypes?.[routeType]?.summary,
+            tags: [tag],
+        };
+
+        if (hasId) {
+            methods[method].parameters.push({
+                description: `ID of the ${modelName}`,
+                in: "path",
+                name: "id",
+                required: true,
+                schema: {
+                    type: "string",
                 },
+            });
+        }
 
-                summary: modelsConfig?.[modelName]?.routeTypes?.[routeType]?.summary,
-                tags: [tag],
-            };
-
-            if (hasId) {
-                methods[method].parameters.push({
-                    description: `ID of the ${modelName}`,
-                    in: "path",
-                    name: "id",
-                    required: true,
-                    schema: {
-                        type: "string",
-                    },
-                });
-            }
-
-            if (routeType === RouteType.UPDATE) {
-                methods[method].requestBody = generateRequestBody("Update", returnType);
-            } else if (routeType === RouteType.CREATE) {
-                methods[method].requestBody = generateRequestBody("Create", returnType);
-            }
+        if (routeType === RouteType.UPDATE) {
+            methods[method].requestBody = generateRequestBody("Update", returnType);
+        } else if (routeType === RouteType.CREATE) {
+            methods[method].requestBody = generateRequestBody("Create", returnType);
         }
     });
 
     return methods;
 };
 
-const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, routesMap }: GetSwaggerPathsParameters<M>): Record<string, any> =>
+const getSwaggerPaths = <M extends string>({
+    models,
+    modelsConfig,
+    routes,
+    routesMap,
+}: GetSwaggerPathsParameters<M>): Record<string, Record<string, SwaggerMethod>> =>
     // eslint-disable-next-line unicorn/no-array-reduce
-    Object.keys(routes).reduce((accumulator: Record<string, any>, value: M | string) => {
+    Object.keys(routes).reduce((accumulator: Record<string, Record<string, SwaggerMethod>>, value: M | string) => {
         const routeTypes = routes[value] as RouteType[];
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS treats indexed access of mapped types as non-undefined but may be missing at runtime
         const resourceName = models?.[value]?.name ?? routesMap?.[value as M] ?? value;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS treats indexed access of mapped types as non-undefined but may be missing at runtime
         const tag = modelsConfig?.[value]?.tag.name ?? value;
 
         if (routeTypes.includes(RouteType.CREATE) || routeTypes.includes(RouteType.READ_ALL)) {
@@ -226,7 +234,7 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
                 modelsConfig,
                 routeTypes: routeTypesToUse,
                 tag,
-            } as GenerateSwaggerPathObjectParameters<M>);
+            });
         }
 
         if (routeTypes.includes(RouteType.READ_ONE) || routeTypes.includes(RouteType.UPDATE) || routeTypes.includes(RouteType.DELETE)) {
@@ -239,7 +247,7 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
                 modelsConfig,
                 routeTypes: routeTypesToUse,
                 tag,
-            } as GenerateSwaggerPathObjectParameters<M>);
+            });
         }
 
         return accumulator;

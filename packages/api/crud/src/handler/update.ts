@@ -14,7 +14,7 @@ const updateHandler: UpdateHandler = async ({ adapter, query, request, resourceI
         };
     }
 
-    throw createHttpError(404, `${resourceName} ${resourceId} not found`);
+    throw createHttpError(404, `${resourceName} ${String(resourceId)} not found`);
 };
 
 export default updateHandler;

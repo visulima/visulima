@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-misused-spread, sonarjs/no-nested-functions -- Prisma DMMF is dynamic; statically typing every traversal would require rewriting the parser */
 import { createPaginationMetaSchemaObject } from "@visulima/pagination";
 import { getJSONSchemaProperty, transformDMMF } from "@visulima/prisma-dmmf-transformer";
 import type { JSONSchema7 } from "json-schema";
@@ -318,7 +319,7 @@ class PrismaJsonSchemaParser {
 
         Object.keys(modelsDefinitions).forEach((definition: number | string) => {
             // @TODO: added the correct type
-            // @ts-expect-error
+            // @ts-expect-error -- properties type is JSONSchema7 union; runtime guarantees object form here
             const { properties } = modelsDefinitions[definition];
 
             Object.keys(properties).forEach((property: string) => {
@@ -372,6 +373,7 @@ class PrismaJsonSchemaParser {
                             fieldData.anyOf = anyOf;
                         }
 
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- nullable is mutated inside the .map callback above
                         if (nullable) {
                             fieldData.nullable = true;
                         }

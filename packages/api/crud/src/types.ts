@@ -17,38 +17,40 @@ export type ModelsOptions<M extends string = string> = {
     [key in M]?: ModelOption;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Request param flows into call sites in base-crud-handler
 export type CreateHandler = <T, Q, Request>(
-    parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, any> } },
+    parameters: HandlerParameters<T, Q> & { request: Request & { body: Record<string, unknown> } },
 ) => Promise<{
-    data: any;
+    data: unknown;
     status: number;
 }>;
 
 export type DeleteHandler = <T, Q>(
     parameters: UniqueResourceHandlerParameters<T, Q>,
 ) => Promise<{
-    data: any;
+    data: unknown;
     status: number;
 }>;
 
 export type GetHandler = <T, Q>(
     parameters: UniqueResourceHandlerParameters<T, Q>,
 ) => Promise<{
-    data: any;
+    data: unknown;
     status: number;
 }>;
 
 export type ListHandler = <T, Q extends ParsedQueryParameters>(
     parameters: HandlerParameters<T, Q> & { pagination: PaginationConfig },
 ) => Promise<{
-    data: any;
+    data: unknown;
     status: number;
 }>;
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Request param flows into call sites in base-crud-handler
 export type UpdateHandler = <T, Q, Request>(
     parameters: UniqueResourceHandlerParameters<T, Q> & { request: Request & { body: Partial<T> } },
 ) => Promise<{
-    data: any;
+    data: unknown;
     status: number;
 }>;
 
@@ -85,7 +87,7 @@ export interface UniqueResourceHandlerParameters<T, Q> {
 
 export interface Adapter<T, Q, M extends string = string> {
     connect?: () => Promise<void>;
-    create: (resourceName: M, data: any, query: Q) => Promise<T>;
+    create: (resourceName: M, data: unknown, query: Q) => Promise<T>;
     delete: (resourceName: M, resourceId: number | string, query: Q) => Promise<T>;
     disconnect?: () => Promise<void>;
     getAll: (resourceName: M, query: Q) => Promise<T[]>;
@@ -97,7 +99,7 @@ export interface Adapter<T, Q, M extends string = string> {
     mapModelsToRouteNames?: () => Promise<{ [key in M]?: string }>;
     models?: M[];
     parseQuery: (resourceName: M, query: ParsedQueryParameters) => Q;
-    update: (resourceName: M, resourceId: number | string, data: any, query: Q) => Promise<T>;
+    update: (resourceName: M, resourceId: number | string, data: unknown, query: Q) => Promise<T>;
 }
 
 export interface PaginationData {
@@ -131,12 +133,12 @@ export type OrderByField = Record<string, OrderByOperator>;
 export interface ParsedQueryParameters {
     distinct?: string;
     include?: RecursiveField;
-    limit?: number | undefined;
+    limit?: number;
     orderBy?: OrderByField;
-    originalQuery?: Record<string, any>;
-    page?: number | undefined;
+    originalQuery?: Record<string, string>;
+    page?: number;
     select?: RecursiveField;
-    skip?: number | undefined;
+    skip?: number;
     where?: WhereField;
 }
 
@@ -145,8 +147,8 @@ export type ExecuteHandler<Request, Response> = (request: Request, response: Res
 export interface FakePrismaClient {
     $connect: () => void;
     $disconnect: () => Promise<void>;
-    [key: string]: any;
-    _dmmf?: any;
+    [key: string]: unknown;
+    _dmmf?: unknown;
 
-    _getDmmf?: () => any;
+    _getDmmf?: () => unknown;
 }

@@ -1,4 +1,4 @@
-// @ts-expect-error PrismaClient is not generated
+// @ts-expect-error -- PrismaClient types are not generated in tests
 // eslint-disable-next-line max-classes-per-file
 import { PrismaClient } from "@prisma/client";
 import { describe, expect, it, vi } from "vitest";
@@ -16,11 +16,9 @@ vi.mock(import("@prisma/client"), () => {
             public constructor() {
                 // eslint-disable-next-line no-constructor-return
                 return {
-                    // eslint-disable-next-line compat/compat
                     $connect: async () => {
                         await Promise.resolve();
                     },
-                    // eslint-disable-next-line compat/compat
                     $disconnect: async () => {
                         await Promise.resolve();
                     },
@@ -37,6 +35,7 @@ describe(validateAdapterMethods, () => {
         expect(() => {
             validateAdapterMethods(
                 new PrismaAdapter({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- PrismaClient is `any` due to missing generated types in tests
                     prismaClient: PrismaClient,
                 }),
             );
@@ -46,7 +45,7 @@ describe(validateAdapterMethods, () => {
     // @TODO: Add test for every method
     it("should throw a error for a invalid adapter", () => {
         expect.assertions(1);
-        // @ts-expect-error
+        // @ts-expect-error -- InvalidAdapter intentionally lacks required methods to test validation
         expect(() => {
             validateAdapterMethods(new InvalidAdapter());
         }).toThrow("Adapter must implement the \"create\" method.");
