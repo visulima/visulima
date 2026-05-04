@@ -2,7 +2,6 @@ import { lstat, mkdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, normalize } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { WalkOptions } from "@visulima/fs";
 import { collect } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
@@ -74,7 +73,7 @@ const generateCommand = async (
             followSymlinks: openapiConfig.followSymlinks ?? false,
             match: openapiConfig.include,
             skip: [...skip],
-        } as WalkOptions);
+        });
 
         if (options.verbose ?? options.veryVerbose) {
             // eslint-disable-next-line no-console
