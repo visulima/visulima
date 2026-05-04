@@ -12,10 +12,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | undefined;
+        nextPageUrl?: string;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | undefined;
+        previousPageUrl?: string;
         total?: number;
     };
 }
@@ -61,7 +61,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
             return Array.isArray(data)
                 ? { data }
                 : {
-                    data: data.data || (data as unknown as FileMeta[]),
+                    data: data.data,
                     meta: data.meta,
                 };
         },
@@ -70,10 +70,10 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     return {
         data: computed(() => query.data.value),
-        error: computed(() => (query.error.value as Error) || undefined),
+        error: computed(() => query.error.value ?? undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

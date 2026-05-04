@@ -62,7 +62,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
                     };
                 })) as { error: { code: string; message: string } };
 
-                throw new Error(errorData.error?.message || `Failed to get file: ${response.status} ${response.statusText}`);
+                throw new Error(errorData.error.message || `Failed to get file: ${String(response.status)} ${response.statusText}`);
             }
 
             const blob = await response.blob();
@@ -74,7 +74,7 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
     });
 
     // Extract metadata from response if available
-    const meta = computed(() => query.data.value?.meta || undefined);
+    const meta = computed(() => query.data.value?.meta);
 
     // Call callbacks when data or error changes
     watch(
@@ -97,11 +97,11 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
     return {
         data: computed(() => query.data.value?.blob),
-        error: computed(() => (query.error.value as Error) || undefined),
+        error: computed(() => query.error.value ?? undefined),
         isLoading: computed(() => query.isLoading.value),
         meta,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };
