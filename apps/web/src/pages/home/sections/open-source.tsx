@@ -30,7 +30,7 @@ const OpenSource = () => (
                             <StatBadge icon={Heart} label="Community Driven" />
                         </div>
                     </span>
-                )}
+                  )}
                 mode="light"
                 prefix="Open Source"
                 title="Proudly OpenSource."

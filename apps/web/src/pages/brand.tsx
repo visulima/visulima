@@ -68,8 +68,8 @@ const Typeface = () => (
             Aa Bb Cc Dd Ee Ff Gg
             <br />
             Hh Ii Jj Kk Ll Mm Nn Oo
-            {" "}
-            <br />
+{" "}
+<br />
             Pp Qq Rr Ss Tt Uu Vv
             <br />
             Ww Xx Yy Zz
@@ -81,8 +81,8 @@ const Typeface = () => (
             Aa Bb Cc Dd Ee Ff Gg
             <br />
             Hh Ii Jj Kk Ll Mm Nn Oo
-            {" "}
-            <br />
+{" "}
+<br />
             Pp Qq Rr Ss Tt Uu Vv
             <br />
             Ww Xx Yy Zz
@@ -113,7 +113,7 @@ const Brand = () => (
                         consent.
                     </p>
                 </div>
-            )}
+              )}
             position="center"
             title="Brand Usage"
         />

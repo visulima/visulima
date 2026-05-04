@@ -63,7 +63,7 @@ const serverLoader = createServerFn({
             lastModified: pageData.lastModified ? pageData.lastModified.toISOString() : null,
             path: page.path,
             title: pageData.title ?? "",
-            tree: source.pageTree as object,
+            tree: source.pageTree,
         };
     });
 
@@ -92,13 +92,13 @@ const clientLoader = browserCollections.docs.createClientLoader({
                 <DocsDescription>{frontmatter.description}</DocsDescription>
                 {lastModified
                     ? (
-                        <p className="text-muted-foreground -mt-2 mb-6 text-sm">
-                            Last updated:
-                            {" "}
-                            <time dateTime={lastModified}>
-                                {new Date(lastModified).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                            </time>
-                        </p>
+                    <p className="text-muted-foreground -mt-2 mb-6 text-sm">
+                        Last updated:
+{" "}
+                        <time dateTime={lastModified}>
+                            {new Date(lastModified).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                        </time>
+                    </p>
                     )
                     : null}
                 <DocsBody>

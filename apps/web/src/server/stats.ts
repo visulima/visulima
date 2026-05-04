@@ -20,9 +20,9 @@ export const getStats = createServerFn({
 }).handler(async (): Promise<DownloadStats> => {
     return {
         contributors: prebuiltStats.contributors,
-        monthlyChart: prebuiltStats.monthlyChart as Record<string, MonthlyDataPoint[]>,
+        monthlyChart: prebuiltStats.monthlyChart,
         stars: prebuiltStats.stars,
-        totalDownloads: prebuiltStats.totalDownloads as Record<string, number>,
-        weeklyDownloads: prebuiltStats.weeklyDownloads as Record<string, number>,
+        totalDownloads: prebuiltStats.totalDownloads,
+        weeklyDownloads: prebuiltStats.weeklyDownloads,
     };
 });

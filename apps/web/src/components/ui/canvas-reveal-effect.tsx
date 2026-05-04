@@ -212,7 +212,7 @@ const ShaderMaterial = ({ maxFps = 60, source, uniforms }: { hovered?: boolean; 
     }, [size.width, size.height, source]);
 
     return (
-        <mesh ref={reference as any}>
+        <mesh ref={reference}>
             <planeGeometry args={[2, 2]} />
             <primitive attach="material" object={material} />
         </mesh>

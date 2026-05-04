@@ -83,7 +83,7 @@ const Footer: FC = () => (
                     <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-white/30">{menu.title}</h2>
                     <div className="flex flex-col space-y-2 text-sm">
                         {menu.links.map((link: TanstackLink | ExternalLinkType) =>
-                            ((link as ExternalLinkType).href ? (
+                            (link as ExternalLinkType).href ? (
                                 <a
                                     className="text-white/50 transition-colors hover:text-white"
                                     href={(link as ExternalLinkType).href}
@@ -96,7 +96,7 @@ const Footer: FC = () => (
                                 <Link className="text-white/50 transition-colors hover:text-white" key={link.title} to={(link as TanstackLink).to}>
                                     {link.title}
                                 </Link>
-                            )),
+                            ),
                         )}
                     </div>
                 </div>
