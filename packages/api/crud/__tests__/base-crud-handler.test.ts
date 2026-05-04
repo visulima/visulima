@@ -4,20 +4,20 @@ import type { Adapter } from "../src";
 import baseHandler from "../src/base-crud-handler";
 
 const baseMockAdapter: Adapter<any, any> = {
-    connect: vi.fn(),
-    create: vi.fn(),
-    delete: vi.fn(),
-    disconnect: vi.fn(),
-    getAll: vi.fn().mockResolvedValue([]),
+    connect: vi.fn<() => Promise<void>>(),
+    create: vi.fn<Adapter<any, any>["create"]>(),
+    delete: vi.fn<Adapter<any, any>["delete"]>(),
+    disconnect: vi.fn<() => Promise<void>>(),
+    getAll: vi.fn<Adapter<any, any>["getAll"]>().mockResolvedValue([]),
     getModels: () => ["routeName"],
-    getOne: vi.fn(),
-    getPaginationData: vi.fn(),
-    handleError: vi.fn(),
-    init: vi.fn(),
-    mapModelsToRouteNames: vi.fn(),
+    getOne: vi.fn<Adapter<any, any>["getOne"]>(),
+    getPaginationData: vi.fn<Adapter<any, any>["getPaginationData"]>(),
+    handleError: vi.fn<(error: Error) => void>(),
+    init: vi.fn<() => Promise<void>>(),
+    mapModelsToRouteNames: vi.fn<() => Promise<Record<string, string>>>(),
     models: ["routeName"],
-    parseQuery: vi.fn(),
-    update: vi.fn(),
+    parseQuery: vi.fn<Adapter<any, any>["parseQuery"]>(),
+    update: vi.fn<Adapter<any, any>["update"]>(),
 };
 
 describe(baseHandler, () => {
@@ -25,8 +25,8 @@ describe(baseHandler, () => {
         expect.assertions(7);
 
         // Mock the necessary dependencies and create a test instance of the baseHandler function
-        const responseExecutor = vi.fn();
-        const finalExecutor = vi.fn();
+        const responseExecutor = vi.fn<(responseOrContext: any, responseConfig: any) => Promise<any>>();
+        const finalExecutor = vi.fn<(responseOrContext: any) => Promise<void>>();
         const adapter = {
             ...baseMockAdapter,
         };
@@ -72,11 +72,11 @@ describe(baseHandler, () => {
         expect.assertions(7);
 
         // Mock the necessary dependencies and create a test instance of the baseHandler function
-        const responseExecutor = vi.fn();
-        const finalExecutor = vi.fn();
+        const responseExecutor = vi.fn<(responseOrContext: any, responseConfig: any) => Promise<any>>();
+        const finalExecutor = vi.fn<(responseOrContext: any) => Promise<void>>();
         const adapter = {
             ...baseMockAdapter,
-            getOne: vi.fn().mockResolvedValue({}),
+            getOne: vi.fn<Adapter<any, any>["getOne"]>().mockResolvedValue({}),
         };
         const options = {
             models: {
@@ -117,11 +117,11 @@ describe(baseHandler, () => {
         expect.assertions(7);
 
         // Mock the necessary dependencies and create a test instance of the baseHandler function
-        const responseExecutor = vi.fn();
-        const finalExecutor = vi.fn();
+        const responseExecutor = vi.fn<(responseOrContext: any, responseConfig: any) => Promise<any>>();
+        const finalExecutor = vi.fn<(responseOrContext: any) => Promise<void>>();
         const adapter = {
             ...baseMockAdapter,
-            create: vi.fn().mockResolvedValue({}),
+            create: vi.fn<Adapter<any, any>["create"]>().mockResolvedValue({}),
         };
         const options = {
             models: {
@@ -163,11 +163,11 @@ describe(baseHandler, () => {
         expect.assertions(7);
 
         // Mock the necessary dependencies and create a test instance of the baseHandler function
-        const responseExecutor = vi.fn();
-        const finalExecutor = vi.fn();
+        const responseExecutor = vi.fn<(responseOrContext: any, responseConfig: any) => Promise<any>>();
+        const finalExecutor = vi.fn<(responseOrContext: any) => Promise<void>>();
         const adapter = {
             ...baseMockAdapter,
-            update: vi.fn().mockResolvedValue({ data: {}, status: 200 }),
+            update: vi.fn<Adapter<any, any>["update"]>().mockResolvedValue({ data: {}, status: 200 }),
         };
         const options = {
             models: {
@@ -209,11 +209,11 @@ describe(baseHandler, () => {
         expect.assertions(7);
 
         // Mock the necessary dependencies and create a test instance of the baseHandler function
-        const responseExecutor = vi.fn();
-        const finalExecutor = vi.fn();
+        const responseExecutor = vi.fn<(responseOrContext: any, responseConfig: any) => Promise<any>>();
+        const finalExecutor = vi.fn<(responseOrContext: any) => Promise<void>>();
         const adapter = {
             ...baseMockAdapter,
-            delete: vi.fn().mockResolvedValue({ data: {}, status: 200 }),
+            delete: vi.fn<Adapter<any, any>["delete"]>().mockResolvedValue({ data: {}, status: 200 }),
         };
         const options = {
             models: {
