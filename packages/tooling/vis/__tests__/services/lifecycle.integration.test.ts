@@ -1,0 +1,275 @@
+import { createServer } from "node:net";
+
+import type { Task, TaskGraph } from "@visulima/task-runner";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+import { applyServiceRegistry } from "../../src/commands/run/apply-service-registry";
+import { startService, stopService } from "../../src/services/lifecycle";
+import { runReadiness } from "../../src/services/readiness";
+import { isAlive, readAllEntries, readEntry } from "../../src/services/registry";
+import type { VisTargetOptions } from "../../src/task/target-options";
+import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
+
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
+
+const findFreePort = async (): Promise<number> =>
+    new Promise((resolve, reject) => {
+        const server = createServer();
+
+        server.once("error", reject);
+        server.listen(0, "127.0.0.1", () => {
+            const address = server.address();
+
+            if (typeof address === "object" && address !== null) {
+                const { port } = address;
+
+                server.close(() => resolve(port));
+
+                return;
+            }
+
+            reject(new Error("Could not bind"));
+        });
+    });
+
+const VIS_VERSION = "0.0.0-integration";
+
+const buildTask = (id: string, options?: VisTargetOptions): Task => ({
+    cache: false,
+    id,
+    outputs: [],
+    overrides: {
+        command: `echo ${id}`,
+        ...(options ? { visOptions: options } : {}),
+    },
+    target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
+});
+
+/**
+ * Integration test: drive the full service-registry chain that `vis service`
+ * + `vis run` exercise in production, without forking the CLI binary.
+ *
+ *     start  → registry write + readiness probe
+ *     list   → readAllEntries
+ *     attach → applyServiceRegistry with the same probe wiring run/handler
+ *              uses, end-to-end against a live TCP server
+ *     stop   → SIGTERM, registry delete
+ *     re-attach with no entry → diagnostic
+ *
+ * This catches packaging/wiring regressions that the per-module unit
+ * tests can miss — e.g. a probe failure path that's correct in isolation
+ * but never invoked from the run handler, or a readiness-config schema
+ * change that flows through types but not through the registry round-trip.
+ */
+describe("services/lifecycle — end-to-end", () => {
+    let workspaceRoot: string;
+    let homeOverride: string;
+    let originalHome: string | undefined;
+    let toCleanup: number[] = [];
+
+    beforeEach(() => {
+        workspaceRoot = createTemporaryDirectory("vis-int-lc-ws-");
+        homeOverride = createTemporaryDirectory("vis-int-lc-home-");
+        originalHome = process.env["HOME"];
+        process.env["HOME"] = homeOverride;
+        toCleanup = [];
+    });
+
+    afterEach(async () => {
+        for (const pid of toCleanup) {
+            try {
+                process.kill(-pid, "SIGKILL");
+            } catch {
+                // already gone
+            }
+        }
+
+        if (originalHome === undefined) {
+            delete process.env["HOME"];
+        } else {
+            process.env["HOME"] = originalHome;
+        }
+
+        // Give the kernel a tick so reaped PIDs don't bleed into the
+        // next test's `isAlive` check.
+        await sleep(50);
+        cleanupTemporaryDirectory(workspaceRoot);
+        cleanupTemporaryDirectory(homeOverride);
+    });
+
+    it("walks the full lifecycle: start → list → attach → stop → re-attach diagnostics", async () => {
+        expect.assertions(14);
+
+        const port = await findFreePort();
+        const dbId = "@app/api:db";
+        const testId = "@app/api:test";
+
+        // 1) start — boot a real TCP listener as the "service" and
+        //    register it. Also stamps env that should reach dependents.
+        const startResult = await startService({
+            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+            config: {
+                env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
+                readiness: { tcp: { port, timeoutMs: 5000 } },
+            },
+            cwd: workspaceRoot,
+            env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
+            id: dbId,
+            workspaceRoot,
+        });
+
+        toCleanup.push(startResult.entry.pid);
+
+        expect(startResult.entry.id).toBe(dbId);
+        expect(isAlive(startResult.entry.pid)).toBe(true);
+
+        // 2) list — the freshly-started entry shows up in the registry
+        //    listing that `vis service list` consumes.
+        const allEntries = await readAllEntries(workspaceRoot);
+
+        expect(allEntries).toHaveLength(1);
+        expect(allEntries[0]?.id).toBe(dbId);
+
+        // 3) attach — simulate `vis run @app/api:test` against a graph
+        //    where the test task depends on the db service. The probe
+        //    is the *exact* one wired in src/commands/run/handler.ts.
+        const dbTask = buildTask(dbId, {
+            service: { port, readiness: { tcp: { port, timeoutMs: 5000 } } },
+        });
+        const testTask = buildTask(testId);
+        const taskGraph: TaskGraph = {
+            dependencies: { [dbId]: [], [testId]: [dbId] },
+            roots: [testId],
+            tasks: { [dbId]: dbTask, [testId]: testTask },
+        };
+
+        const attachResult = await applyServiceRegistry({
+            initialTasks: [testTask],
+            probe: async (entry) => {
+                try {
+                    await runReadiness(entry.config, { timeoutMs: 2000 });
+
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            registeredEntries: allEntries,
+            taskGraph,
+            visVersion: startResult.entry.visVersion,
+        });
+
+        // The db service is pruned out of the graph; the test target
+        // remains and inherits db's env via the precomputed map. This
+        // is the contract `runConcurrentTasks` relies on.
+        expect(attachResult.diagnostics).toEqual([]);
+        expect(attachResult.taskGraph.tasks[dbId]).toBeUndefined();
+        expect(attachResult.taskGraph.tasks[testId]).toBeDefined();
+        expect(attachResult.serviceEnvByTaskId.get(testId)).toEqual({
+            DB_URL: `postgres://127.0.0.1:${String(port)}/app`,
+        });
+
+        // 4) stop — SIGTERM the service; entry must be unregistered.
+        const stopResult = await stopService({ graceMs: 1000, id: dbId, workspaceRoot });
+
+        expect(stopResult.stopped).toBe(true);
+        await sleep(150);
+        expect(await readEntry(workspaceRoot, dbId)).toBeUndefined();
+        expect(await readAllEntries(workspaceRoot)).toEqual([]);
+
+        // 5) re-attach with the service gone — the same graph now
+        //    surfaces an actionable diagnostic instead of attaching.
+        //    This is the path that turns a silent half-run into an
+        //    explicit "start the service first" message.
+        const reAttach = await applyServiceRegistry({
+            initialTasks: [testTask],
+            registeredEntries: [],
+            taskGraph,
+            visVersion: startResult.entry.visVersion,
+        });
+
+        expect(reAttach.diagnostics).toHaveLength(1);
+        expect(reAttach.diagnostics[0]?.targetId).toBe(dbId);
+        expect(reAttach.diagnostics[0]?.message).toMatch(/vis service start/);
+    });
+
+    it("demotes a registered service whose port is unreachable to the missing-service path", async () => {
+        expect.assertions(3);
+
+        // Start the service successfully, then immediately kill the
+        // child while *leaving the registry entry in place*. This is
+        // the "wrapper PID alive but server crashed" scenario that the
+        // probe-on-attach guard exists to catch.
+        const port = await findFreePort();
+        const dbId = "@app/api:db";
+
+        const startResult = await startService({
+            command: `node -e "require('net').createServer(()=>{}).listen(${String(port)}, '127.0.0.1')"`,
+            config: {
+                env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
+                readiness: { tcp: { port, timeoutMs: 5000 } },
+            },
+            cwd: workspaceRoot,
+            env: { DB_URL: `postgres://127.0.0.1:${String(port)}/app` },
+            id: dbId,
+            workspaceRoot,
+        });
+
+        toCleanup.push(startResult.entry.pid);
+
+        // Kill the listener but DON'T call stopService — we want the
+        // registry entry to outlive the actual server, simulating a
+        // crash mid-session. Group-kill so the shell wrapper goes
+        // along with the node child.
+        try {
+            process.kill(-startResult.entry.pid, "SIGKILL");
+        } catch {
+            // already gone, fine
+        }
+
+        await sleep(200);
+
+        // Force-recreate the registry entry as if the wrapper were
+        // still alive — point it at *this* test process so isAlive()
+        // reports true. Without this, the dead-PID branch would prune
+        // the entry before the probe ever runs.
+        const allEntries = await readAllEntries(workspaceRoot);
+        const stillRegistered = allEntries.find((e) => e.id === dbId);
+
+        expect(stillRegistered).toBeDefined();
+
+        const fakedAlive = stillRegistered ? { ...stillRegistered, pid: process.pid } : undefined;
+
+        const testTask = buildTask("@app/api:test");
+        const dbTask = buildTask(dbId, {
+            service: { port, readiness: { tcp: { port, timeoutMs: 500 } } },
+        });
+        const taskGraph: TaskGraph = {
+            dependencies: { [dbId]: [], "@app/api:test": [dbId] },
+            roots: ["@app/api:test"],
+            tasks: { [dbId]: dbTask, "@app/api:test": testTask },
+        };
+
+        const attachResult = await applyServiceRegistry({
+            initialTasks: [testTask],
+            probe: async (entry) => {
+                try {
+                    await runReadiness(entry.config, { timeoutMs: 500 });
+
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            registeredEntries: fakedAlive ? [fakedAlive] : [],
+            taskGraph,
+            visVersion: startResult.entry.visVersion,
+        });
+
+        // PID looks alive, port doesn't — probe rejects → diagnostic.
+        expect(attachResult.diagnostics).toHaveLength(1);
+        expect(attachResult.satisfiedServices).toEqual([]);
+    });
+});

@@ -302,6 +302,16 @@ Notable options:
 - `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output.
 - `remoteCache.compression` — `"gzip"` (default) keeps Turborepo protocol compatibility; `"brotli"` reduces upload size at the cost of lock-in to vis clients on both ends.
 
+### Strict env
+
+```ts
+export default defineConfig({
+    strictEnv: true, // default: false
+});
+```
+
+When `true`, every task's command is scanned for `${VAR}` / `$VAR` references before spawn. If any reference resolves to neither the task's effective env (envFile + service env + per-task `env` + `process.env`) nor an inline default (`${VAR:-fallback}`), the task fails with an actionable error naming the missing variable — no silent empty-string substitution. Override per-run with `--strict-env` / `--no-strict-env`. Override per target with `options.strictEnv`. Pairs naturally with `autoEnvVars` (fingerprint the references) — strict env catches references with no value at all, autoEnvVars catches stale cache hits when the value changed.
+
 ### Task Groups
 
 Named bundles of target dependencies, referenceable from any task's `dependsOn`. Groups expand recursively; cycles throw with a clear error.

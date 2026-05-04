@@ -70,6 +70,18 @@ export interface VisTargetOptions {
     envFile?: boolean | string | string[];
 
     /**
+     * Override the workspace `strictEnv` setting for this target. When
+     * truthy, the target fails if its command references an env var
+     * that resolves to neither the task's effective env nor
+     * `process.env`. When `false`, the target opts out of a workspace
+     * `strictEnv: true` (e.g. for a one-off command that legitimately
+     * tolerates an unset variable).
+     *
+     * @see VisConfig.strictEnv
+     */
+    strictEnv?: boolean;
+
+    /**
      * When true, the task is serialized with respect to parallel execution
      * and must be run on the main process (claims stdin). Used for commands
      * that read from the terminal.

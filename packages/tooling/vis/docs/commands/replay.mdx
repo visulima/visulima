@@ -1,0 +1,68 @@
+---
+title: "vis replay"
+description: "Replay a previous task run from .task-runner/runs/ — show task results without re-executing"
+---
+
+# vis replay
+
+Inspect a previous run summary without re-running anything. Pairs with `vis cache why` to debug "what happened yesterday?" — `replay` shows the per-task outcome (status, duration, hash, exit code), `vis cache why <task> --run <id>` then drills into the hash inputs that flipped.
+
+```bash
+vis replay                                  # last run summary
+vis replay --run 2026-04-28T12-34-56_ab12   # specific historical run
+vis replay --list                           # every recorded run, newest first
+vis replay --task @myorg/app:build          # focus on one task in the loaded run
+vis replay --failed                         # only failed tasks
+vis replay --format=json                    # machine-readable
+```
+
+## Where summaries come from
+
+Each `vis run --summarize` writes a JSON summary into `.task-runner/runs/<id>.json` and overwrites `.task-runner/last-summary.json`. `vis replay` reads from those files only — it never re-executes tasks. To make a run replayable later, pass `--summarize` (or set it as a default in CI). The most recent run is always available without `--summarize` because `last-summary.json` is written for every run.
+
+## Loading a specific run
+
+Pass `--run <id>` where `<id>` is the file basename without `.json` (e.g. `2026-04-28T12-34-56_ab12`). `vis replay --list` enumerates every available id, sorted newest-first by mtime.
+
+## Filters
+
+| Flag             | Effect                                                          |
+| ---------------- | --------------------------------------------------------------- |
+| `--task <id>`    | Render detail for one task; errors if the task is not in the run |
+| `--failed`       | Show only tasks with a non-zero exit code                        |
+
+`--task` and `--failed` compose. `vis replay --task @app/api:test --format=json` is a common CI shape — load yesterday's failed-test summary for one specific target.
+
+## Exit code
+
+`vis replay` exits 1 when the loaded run had any failed tasks (`stats.failed > 0`), and 0 otherwise. This makes `vis replay --failed` usable as a CI status check, not just a viewer.
+
+When a load fails (no summary, missing run id, or `--task` filter not matched), `vis replay` exits 1 with a one-line `pail.error` describing what went wrong.
+
+## JSON shape
+
+`--format=json` is a stable contract. `--list` emits an array of `{ id, mtime, path }`. Otherwise the payload is:
+
+```json
+{
+  "runId": "2026-04-28T12-34-56_ab12",
+  "startTime": "...",
+  "endTime": "...",
+  "duration": 1234,
+  "environment": { "platform": "linux", "arch": "x64", "nodeVersion": "v22.14.0" },
+  "stats": { "total": 3, "succeeded": 2, "cached": 0, "skipped": 0, "failed": 1 },
+  "tasks": [
+    { "taskId": "@app/api:test", "cacheStatus": "MISS", "duration": 234, "exitCode": 1, "hash": "abc…", "dependencies": ["@app/api:db"], "startTime": "…", "endTime": "…" }
+  ]
+}
+```
+
+## Pairs with `vis cache why`
+
+When `vis replay --failed` shows a task that re-ran when you expected a cache hit, copy the run id and the task id into `vis cache why`:
+
+```bash
+vis cache why @app/api:test --run 2026-04-28T12-34-56_ab12
+```
+
+That walks the task's `hashDetails` against the previous run's hash and tells you which bucket changed (command, nodes, runtime, implicitDeps).

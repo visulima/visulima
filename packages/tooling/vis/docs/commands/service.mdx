@@ -1,0 +1,104 @@
+---
+title: "vis service"
+description: "Run long-lived sidecars (DB, mock servers, devservers) that survive across vis run invocations"
+---
+
+# vis service
+
+Manage shared sidecar services — Postgres, mock servers, devservers — that should outlive a single `vis run` invocation. A registered service stays alive in the background; subsequent `vis run` calls auto-attach to it instead of cold-starting.
+
+## Subcommands
+
+| Command                          | Description                                                            |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `vis service start <id>`         | Spawn the target's command detached, probe readiness, register it      |
+| `vis service stop <id>`          | SIGTERM (then SIGKILL after grace) and unregister                      |
+| `vis service stop --all`         | Stop every service registered under the current workspace              |
+| `vis service list`               | Show registered services (table, or `--format=json`)                   |
+| `vis service status <id>`        | Re-run the readiness probe; exit 0 healthy, 1 unhealthy                |
+| `vis service restart <id>`       | Stop + start in one call                                               |
+| `vis service logs <id>`          | Print captured stdout/stderr; `-f`/`--follow` to tail                  |
+
+## Eligibility — declaring a service
+
+A target becomes registry-eligible when it carries a `service` block in `vis.task.ts`. Bare `preset: "server"` keeps today's behaviour (in-run-only persistent task).
+
+```ts
+// vis.task.ts
+export default defineVisTaskConfig({
+    targets: {
+        "@app/api:db": {
+            command: "docker compose up postgres",
+            preset: "server",
+            visOptions: {
+                service: {
+                    port: 5432,
+                    env: { DB_URL: "postgres://127.0.0.1:5432/app" },
+                    readiness: { tcp: { port: 5432, timeoutMs: 30_000 } },
+                    killGracePeriodMs: 5_000,
+                },
+            },
+        },
+        "@app/api:test": {
+            command: "vitest",
+            dependsOn: ["@app/api:db"],
+        },
+    },
+});
+```
+
+`service.env` is merged into every transitive dependent of `@app/api:db` when the service is satisfied externally — the test target sees `DB_URL` without ever booting Postgres itself.
+
+## Lifecycle
+
+```bash
+vis service start @app/api:db   # boots Postgres, waits for :5432, registers it
+vis service list                # @app/api:db | pid 12345 | uptime 3s | log /…/db.log
+vis run @app/api:test           # detects the registered service, prunes db from the graph
+vis service logs @app/api:db -f # tail captured output
+vis service stop @app/api:db    # SIGTERM → grace → SIGKILL → deregister
+```
+
+`vis service start` refuses to register a service that fails its readiness probe — the spawned process is killed and no entry is written. Use `--no-readiness` to skip the probe (e.g. when the command never opens a port).
+
+`vis service stop` is idempotent — a missing entry returns success without touching anything else.
+
+## Auto-attach in `vis run`
+
+When `vis run` builds the task graph, it walks every task whose target carries `service` and:
+
+- **service registered + readiness probe passes** → prune the service task from the graph and merge its `service.env` into every transitive dependent. The dependent runs with the registered service's env injected.
+- **service registered + readiness probe fails** → demote to the missing-service path: emit a diagnostic with `vis service start <id>` and skip auto-attach.
+- **service not registered, only present as a dep** → diagnostic; the run still proceeds for tasks that don't depend on it.
+- **service not registered, user invoked it directly** → falls through to today's persistent-task path, booting in-process for the lifetime of the run.
+
+Multiple services contributing env to the same dependent are merged in deterministic alphabetical order — last writer wins, so `@app/cache` overrides `@app/api`.
+
+## Registry layout
+
+Per-workspace registry directory: `~/.vis-services/<sha256(workspaceRoot)[:12]>/`. Each entry is a 0o600 JSON file named after the slugified target id (`@app/api:db` → `@app_api__db.json`). Atomic writes (temp-then-rename) guard against half-written files; an exclusive-create file lock serializes concurrent `start`/`stop` for the same id.
+
+The registry lives outside the workspace by design: detached PID files in the working tree would dirty `git status` and mislead `affected` detection.
+
+## Cross-shell semantics
+
+Services from one workspace are invisible to another — the directory hash is workspace-rooted. There is **no auto-cleanup on shell exit** in v1: a `vis service start` you forget about will keep running until you run `vis service stop`, the wrapper is killed, or the host is rebooted. `vis service list` shows orphans across all shells under the same workspace, and `vis service stop --all` is the catch-all.
+
+## Liveness and crash recovery
+
+Liveness uses the POSIX `process.kill(pid, 0)` probe. If the registered PID is gone, `list` and `run` prune the entry. The harder case — wrapper alive, server crashed — is handled at attach time by re-running the readiness probe; the entry is demoted (not pruned) so the user sees a "not running" diagnostic rather than a silent half-run.
+
+## `--format=json`
+
+```bash
+vis service list --format=json
+```
+
+Emits an array of registry entries with stable keys (`id`, `pid`, `slug`, `command`, `cwd`, `startedAt`, `logFile`, `visVersion`, `config`, `env`). Stable for CI and tooling.
+
+## Deferred (not in v1)
+
+- HTTP / log-line readiness probes (TCP only).
+- Auto-restart on crash (no supervisor loop).
+- Cross-shell garbage collection (manual `stop --all` for now).
+- `vis service exec <id>` — run a one-shot command in the service's env.

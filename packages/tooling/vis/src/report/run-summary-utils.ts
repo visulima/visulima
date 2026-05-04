@@ -122,4 +122,47 @@ export const readPreviousRunSummary = async (workspaceRoot: string, currentId: s
     }
 };
 
+/**
+ * Lists every run summary recorded under `.task-runner/runs/`, sorted
+ * newest-first by mtime. The id is the file basename without `.json`,
+ * matching what {@link readRunSummaryById} expects.
+ */
+export const listRunSummaries = async (
+    workspaceRoot: string,
+): Promise<{ id: string; mtimeMs: number; path: string }[]> => {
+    const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+
+    let dirents: string[];
+
+    try {
+        dirents = (await readdir(runsDirectory)) as unknown as string[];
+    } catch {
+        return [];
+    }
+
+    const candidates: { id: string; mtimeMs: number; path: string }[] = [];
+
+    for (const name of dirents) {
+        if (!name.endsWith(".json")) {
+            continue;
+        }
+
+        const fullPath = join(runsDirectory, name);
+
+        try {
+            const s = await stat(fullPath);
+
+            if (s.isFile()) {
+                candidates.push({ id: name.slice(0, -".json".length), mtimeMs: s.mtimeMs, path: fullPath });
+            }
+        } catch {
+            // Skip — file may have been removed concurrently.
+        }
+    }
+
+    candidates.sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+    return candidates;
+};
+
 export type { HashBucketDiff, HashDetailsDiff } from "./types";

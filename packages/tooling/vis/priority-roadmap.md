@@ -135,10 +135,16 @@ Shipped: root `vis-config.ts` + per-package `vis.task.ts` overlay with explicit 
 
 ---
 
-### 10. Shared services / sidecar registry across invocations
+### 10. Shared services / sidecar registry across invocations ✅ shipped
 **Leverage:** Cross-invocation devloop. **Effort:** M. **Demand:** ★★★
 
-Long-lived DB/mock/devserver lifecycle that survives across multiple `vis run` calls within a shell session. Today, vis (like Turbo's `with:` and Nx continuous tasks) scopes service lifetime to a single run — every `vis run :test` cold-starts Postgres. Concrete shape: a `services` registry — `vis service start db; vis run :test` and the test task auto-attaches via the existing `server`/`utility` task types; `vis service stop db` (or shell exit) tears it down. Pairs with Theme B watch UX, since long-running services are the user-facing pain there too.
+Shipped: long-lived DB/mock/devserver lifecycle that survives across multiple `vis run` calls within a shell session. Per-workspace registry under `~/.vis-services/<sha256(workspaceRoot)[:12]>/` with atomic JSON entries and an exclusive-create file lock for concurrency.
+
+- **`vis service start|stop|list|status|restart|logs <id>`** (`src/commands/service/`): detached spawn (`spawn`, `unref`, log fd → 0o600 file), POSIX liveness via `process.kill(pid, 0)`, SIGTERM-then-SIGKILL with configurable grace, table/json list output, `logs --follow` with abort-aware tail loop and SIGINT exit code 130. `service stop --all` and `service restart` round-trip the same lifecycle.
+- **TCP readiness probe** (`src/services/readiness.ts`): `runReadiness({ tcp: { port, host, timeoutMs } })` polls until success or timeout. Used both at start (refuse to register a non-listening service) and at attach (demote a registered-but-dead listener so the user gets a "service not running" diagnostic instead of a silent half-run).
+- **`vis run` auto-attach** (`src/commands/run/apply-service-registry.ts`): for every task in the graph whose target carries `service: ServiceConfig`, look up the alive registry entry, probe in parallel, prune satisfied services from the graph and merge their `env` into transitive dependents (BFS over the original deps, deterministic alphabetical merge for last-write-wins). Orphan services with no dependent and unregistered services that *only* exist as a dep emit an actionable diagnostic instead of cold-starting.
+- **`VisTargetOptions.service`** (`src/task/types.ts`): the presence of this block — not `preset: "server"` alone — is what makes a target eligible for the registry, so existing in-run-only persistent tasks are unaffected.
+- **Tests**: 20 registry, 11 lifecycle, 11 service-handler, 14 apply-service-registry, plus a 2-case integration test (`__tests__/services/lifecycle.integration.test.ts`) that drives `start → list → attach (with the same probe wired in run/handler) → stop → re-attach diagnostic` against a real TCP listener, and the wrapper-alive/server-dead demotion path.
 
 **Sources:** Section 8.1 Theme R. wireit#580 (8 thumbs), moon#1365, moon#2003, rushstack#1151.
 
@@ -170,11 +176,11 @@ These have real demand but lower leverage given current vis scope:
 | 13 | Public plugin API | todo.md, Theme E | Required for community ecosystem; ship after surface stabilizes |
 | 14 | Distributed agents (Cobuilds-style) | Theme 4 Tier-1 #2 | Lighter pattern via shared cache + Redis lock |
 | 15 | Webhooks / pipeline events | todo.md, Theme H | ~100 LOC over `LifeCycleInterface`; cheap when needed |
-| 16 | Strict env mode | Section 7.3 #14 | One config flag; opportunistic |
+| 16 | Strict env mode ✅ | Section 7.3 #14 | `strictEnv` config flag + `--strict-env` / `--no-strict-env` CLI override + per-target `options.strictEnv`. Pre-spawn scan extracts `${VAR}` / `$VAR` references from each task's command (skipping POSIX specials and inline-default `${VAR:-fallback}` forms) and fails the task with a single-line error naming every missing variable. Layered precedence: per-target opt-in/out > CLI flag > workspace config > off. 17 unit tests in `__tests__/task/strict-env.test.ts`. |
 | 17 | Jujutsu (jj) VCS support | Section 7.3 #1 | Abstract VCS layer first; trivial backend afterward |
 | 18 | Boundaries as `eslint-plugin-vis` | Section 4 Tier-2 | Surface existing layer constraints to ESLint |
 | 19 | GitLab CI / Buildkite presets | Section 7.2 G | Easy parity once the GH Actions story is solid |
-| 20 | Run replay / time-travel (`vis replay`) | Section 4 Tier-2 | Build on existing `run-summary.ts` |
+| 20 | Run replay (`vis replay`) ✅ | Section 4 Tier-2 | Reads `.task-runner/last-summary.json` and `.task-runner/runs/<id>.json` (no re-execution). Surfaces: run header (totals, env, duration), per-task table (status, duration, hash, exit code), `--task` detail mode with a `vis cache why` hint, `--failed` filter, `--list` of recorded runs newest-first, `--format=json` stable contract. Exit code mirrors `stats.failed > 0` so it's CI-usable. 12 handler tests. |
 | 21 | Lockfile / install-awareness preflight ✅ | Theme W, moon#2055, rushstack#5624 | Lives at `src/preflight/lockfile.ts`. Compares lockfile mtime to PM-specific install marker (`node_modules/.modules.yaml` etc.); warns in TTY, hard-fails in CI. Default-on, opt-out via `--no-preflight` or `preflight.lockfile: false`. |
 | 22 | Skip-on-warning incrementality ✅ | Theme P, rushstack#1402 | Per-target `warningPattern` + `cacheOnWarning`; result carries `hadWarnings` |
 | 23 | Task descriptions in `--help` / TUI ✅ | Theme Y, wireit#1015, moon#1914 | Surfaced via `vis list --targets` (existing per-target `description` field) |
