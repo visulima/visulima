@@ -135,7 +135,7 @@ export const renderDiscoveryText = (subcommands: Command[], meta: DiscoveryMeta 
     }
 
     lines.push("");
-    lines.push(dim("Pass --format=json for machine-readable output (designed for AI agents)."));
+    lines.push(dim(`Run \`vis ${payload.command} discover-help\` for the machine-readable JSON catalogue (designed for AI agents).`));
     lines.push(dim(`Run \`vis ${payload.command} <subcommand> --help\` for full usage of a specific subcommand.`));
 
     return `${lines.join("\n")}\n`;

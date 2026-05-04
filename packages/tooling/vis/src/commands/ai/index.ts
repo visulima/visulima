@@ -79,21 +79,34 @@ const aiRoot: Command = {
     description: "AI-assisted commands: provider detection and failure-fix proposals (cache management lives under `vis cache`)",
     examples: [
         ["vis ai", "List all AI subcommands"],
-        ["vis ai --format json", "Machine-readable subcommand catalogue (for AI agents)"],
+        ["vis ai discover-help", "Machine-readable subcommand catalogue (for AI agents)"],
     ],
     group: "System",
     loader: lazyNamed(() => import("./handler"), "aiRootExecute"),
     name: "ai",
-    options: [formatOption],
+    options: [],
 };
 
-const aiCommands: Command[] = [aiRoot, aiProviders, aiTest, aiFix];
+const aiDiscoverHelp: Command = {
+    commandPath: ["ai"],
+    description: "Print the machine-readable AI subcommand catalogue (JSON to stdout, designed for AI agents)",
+    examples: [
+        ["vis ai discover-help", "Emit the discovery payload as JSON"],
+        ["vis ai discover-help | jq '.subcommands[].path'", "List all available paths"],
+    ],
+    group: "System",
+    loader: lazyNamed(() => import("./handler"), "aiDiscoverHelpExecute"),
+    name: "discover-help",
+    options: [],
+};
+
+const aiCommands: Command[] = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix];
 
 export default aiCommands;
 
-export type AiRootOptions = CreateOptions<{
-    format: string | undefined;
-}>;
+export type AiRootOptions = CreateOptions<Record<string, never>>;
+
+export type AiDiscoverHelpOptions = CreateOptions<Record<string, never>>;
 
 export type AiProvidersOptions = CreateOptions<{
     format: string | undefined;

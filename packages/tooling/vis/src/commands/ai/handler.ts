@@ -7,24 +7,29 @@ import type { AiConfig } from "../../ai/ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../../ai/ai-analysis";
 import { renderDiscoveryJson, renderDiscoveryText } from "./discovery";
 import type {
+    AiDiscoverHelpOptions,
     AiFixOptions,
     AiProvidersOptions,
     AiRootOptions,
     AiTestOptions,
 } from "./index";
 
-export const aiRootExecute: CommandExecute<Toolbox<Console, AiRootOptions>> = async ({ options }) => {
+const loadDiscoverableSubcommands = async () => {
     const { default: aiCommands } = await import("./index");
-    const subcommands = aiCommands.filter((cmd) => cmd.name !== "ai");
-    const format = options.format ?? "text";
 
-    if (format === "json") {
-        process.stdout.write(renderDiscoveryJson(subcommands));
+    return aiCommands.filter((cmd) => cmd.name !== "ai");
+};
 
-        return;
-    }
+export const aiRootExecute: CommandExecute<Toolbox<Console, AiRootOptions>> = async () => {
+    const subcommands = await loadDiscoverableSubcommands();
 
     process.stderr.write(renderDiscoveryText(subcommands));
+};
+
+export const aiDiscoverHelpExecute: CommandExecute<Toolbox<Console, AiDiscoverHelpOptions>> = async () => {
+    const subcommands = await loadDiscoverableSubcommands();
+
+    process.stdout.write(renderDiscoveryJson(subcommands));
 };
 
 export const aiTestExecute: CommandExecute<Toolbox<Console, AiTestOptions>> = async ({ logger, visConfig }) => {
