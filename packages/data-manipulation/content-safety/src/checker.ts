@@ -75,6 +75,12 @@ const WORD_TOKEN_RE = /[\p{L}\p{N}]+/gu;
  */
 const HAS_CJK_CHAR_RE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
 
+/**
+ * Pre-compiled whitespace regex for splitting normalized words into tokens.
+ * @internal
+ */
+const WHITESPACE_RE = /\s+/;
+
 interface Token {
     end: number;
     start: number;
@@ -88,12 +94,38 @@ interface Token {
  * avoiding V8's steep JIT compilation cost for massive patterns.
  * @internal
  */
-const buildLookupTables = (): {
+interface LookupTables {
     cjkEntries: { language: string; word: string }[];
     maxPhraseTokens: number;
     nonCjkPhrases: Map<string, string>;
     nonCjkSingleWords: Map<string, string>;
-} => {
+}
+
+const addNonCjkEntry = (
+    normalized: string,
+    lang: string,
+    tables: Pick<LookupTables, "nonCjkPhrases" | "nonCjkSingleWords"> & { maxPhraseTokens: number },
+): number => {
+    const tokens = normalized.split(WHITESPACE_RE);
+
+    if (tokens.length === 1) {
+        if (!tables.nonCjkSingleWords.has(normalized)) {
+            tables.nonCjkSingleWords.set(normalized, lang);
+        }
+
+        return tables.maxPhraseTokens;
+    }
+
+    if (!tables.nonCjkPhrases.has(normalized)) {
+        tables.nonCjkPhrases.set(normalized, lang);
+
+        return Math.max(tables.maxPhraseTokens, tokens.length);
+    }
+
+    return tables.maxPhraseTokens;
+};
+
+const buildLookupTables = (): LookupTables => {
     const nonCjkSingleWords = new Map<string, string>();
     const nonCjkPhrases = new Map<string, string>();
     const cjkEntries: { language: string; word: string }[] = [];
@@ -106,20 +138,9 @@ const buildLookupTables = (): {
             const normalized = word.normalize("NFC").toLowerCase();
 
             if (isCjk && HAS_CJK_CHAR_RE.test(normalized)) {
-                // Native-script CJK: substring matching (no word boundaries)
                 cjkEntries.push({ language: lang, word: normalized });
             } else {
-                // Latin-script (including transliterated CJK): word-boundary matching
-                const tokens = normalized.split(/\s+/);
-
-                if (tokens.length === 1) {
-                    if (!nonCjkSingleWords.has(normalized)) {
-                        nonCjkSingleWords.set(normalized, lang);
-                    }
-                } else if (!nonCjkPhrases.has(normalized)) {
-                    nonCjkPhrases.set(normalized, lang);
-                    maxPhraseTokens = Math.max(maxPhraseTokens, tokens.length);
-                }
+                maxPhraseTokens = addNonCjkEntry(normalized, lang, { maxPhraseTokens, nonCjkPhrases, nonCjkSingleWords });
             }
         }
     }
@@ -128,6 +149,94 @@ const buildLookupTables = (): {
 };
 
 const { cjkEntries, maxPhraseTokens, nonCjkPhrases, nonCjkSingleWords } = buildLookupTables();
+
+const tokenize = (lowerNormalized: string): Token[] => {
+    WORD_TOKEN_RE.lastIndex = 0;
+
+    const tokens: Token[] = [];
+    let tokenMatch: RegExpExecArray | null;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((tokenMatch = WORD_TOKEN_RE.exec(lowerNormalized)) !== null) {
+        tokens.push({ end: tokenMatch.index + tokenMatch[0].length, start: tokenMatch.index, text: tokenMatch[0] });
+    }
+
+    return tokens;
+};
+
+const findSingleWordMatches = (tokens: Token[], normalized: string): BannedWordMatch[] => {
+    const matches: BannedWordMatch[] = [];
+
+    for (const token of tokens) {
+        const lang = nonCjkSingleWords.get(token.text);
+
+        if (lang) {
+            matches.push({
+                endIndex: token.end,
+                language: lang,
+                startIndex: token.start,
+                word: normalized.slice(token.start, token.end),
+            });
+        }
+    }
+
+    return matches;
+};
+
+const findPhraseMatches = (tokens: Token[], normalized: string): BannedWordMatch[] => {
+    const matches: BannedWordMatch[] = [];
+
+    for (let index = 0; index < tokens.length; index += 1) {
+        const startToken = tokens[index];
+
+        if (startToken === undefined) {
+            continue;
+        }
+
+        const maxLength = Math.min(maxPhraseTokens, tokens.length - index);
+
+        for (let phraseLength = 2; phraseLength <= maxLength; phraseLength += 1) {
+            const phrase = tokens
+                .slice(index, index + phraseLength)
+                .map((t) => t.text)
+                .join(" ");
+            const lang = nonCjkPhrases.get(phrase);
+            const endToken = tokens[index + phraseLength - 1];
+
+            if (lang && endToken !== undefined) {
+                matches.push({
+                    endIndex: endToken.end,
+                    language: lang,
+                    startIndex: startToken.start,
+                    word: normalized.slice(startToken.start, endToken.end),
+                });
+            }
+        }
+    }
+
+    return matches;
+};
+
+const findCjkMatches = (lowerNormalized: string, normalized: string): BannedWordMatch[] => {
+    const matches: BannedWordMatch[] = [];
+
+    for (const { language, word } of cjkEntries) {
+        let pos = 0;
+
+        // eslint-disable-next-line no-cond-assign
+        while ((pos = lowerNormalized.indexOf(word, pos)) !== -1) {
+            matches.push({
+                endIndex: pos + word.length,
+                language,
+                startIndex: pos,
+                word: normalized.slice(pos, pos + word.length),
+            });
+            pos += 1;
+        }
+    }
+
+    return matches;
+};
 
 /**
  * Checks text for banned words across all configured languages.
@@ -190,71 +299,13 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
 
     const normalized = text.normalize("NFC");
     const lowerNormalized = normalized.toLowerCase();
-    const matches: BannedWordMatch[] = [];
+    const tokens = tokenize(lowerNormalized);
 
-    // --- Non-CJK: tokenized word-boundary matching ---
-    WORD_TOKEN_RE.lastIndex = 0;
-
-    const tokens: Token[] = [];
-    let tokenMatch: RegExpExecArray | null;
-
-    // eslint-disable-next-line no-cond-assign
-    while ((tokenMatch = WORD_TOKEN_RE.exec(lowerNormalized)) !== null) {
-        tokens.push({ end: tokenMatch.index + tokenMatch[0].length, start: tokenMatch.index, text: tokenMatch[0] });
-    }
-
-    // Single-word matches
-    for (const token of tokens) {
-        const lang = nonCjkSingleWords.get(token.text);
-
-        if (lang) {
-            matches.push({
-                endIndex: token.end,
-                language: lang,
-                startIndex: token.start,
-                word: normalized.slice(token.start, token.end),
-            });
-        }
-    }
-
-    // Multi-word phrase matches (sliding window)
-    for (let i = 0; i < tokens.length; i++) {
-        for (let length_ = 2; length_ <= maxPhraseTokens && i + length_ <= tokens.length; length_++) {
-            const phrase = tokens
-                .slice(i, i + length_)
-                .map((t) => t.text)
-                .join(" ");
-            const lang = nonCjkPhrases.get(phrase);
-
-            if (lang) {
-                const { start } = tokens[i]!;
-                const { end } = tokens[i + length_ - 1]!;
-
-                matches.push({
-                    endIndex: end,
-                    language: lang,
-                    startIndex: start,
-                    word: normalized.slice(start, end),
-                });
-            }
-        }
-    }
-
-    // --- CJK: substring matching (no word boundaries) ---
-    for (const { language, word } of cjkEntries) {
-        let pos = 0;
-
-        // eslint-disable-next-line no-cond-assign
-        while ((pos = lowerNormalized.indexOf(word, pos)) !== -1) {
-            matches.push({
-                endIndex: pos + word.length,
-                language,
-                startIndex: pos,
-                word: normalized.slice(pos, pos + word.length),
-            });
-            pos += 1;
-        }
-    }
+    const matches: BannedWordMatch[] = [
+        ...findSingleWordMatches(tokens, normalized),
+        ...findPhraseMatches(tokens, normalized),
+        ...findCjkMatches(lowerNormalized, normalized),
+    ];
 
     return {
         hasBannedWords: matches.length > 0,
