@@ -61,10 +61,12 @@ const convertValue = (value: unknown, type: TypeConstructor | BooleanConstructor
     }
 
     if (isStringType(type)) {
-        return typeof value === "string" ? value : String(value as string | number | boolean);
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- CLI values are primitives (string/number/boolean), never plain objects
+        return typeof value === "string" ? value : String(value);
     }
 
-    return type(typeof value === "string" ? value : String(value as string | number | boolean));
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- CLI values are primitives (string/number/boolean), never plain objects
+    return type(typeof value === "string" ? value : String(value));
 };
 
 export default convertValue;
