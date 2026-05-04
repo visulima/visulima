@@ -7,7 +7,7 @@
  * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
 
-import type { ColorizeType, ColorValueHex } from "../types";
+import type { ColorizeType } from "../types";
 import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { unescape } from "../util/unescape";
 
@@ -67,11 +67,11 @@ const parseStyle: (style: string) => (number | string | undefined)[][] = (style:
             results.push([name, ...parseArguments(name as string, matches[2])]);
         } else if (matches[3] || matches[4]) {
             if (matches[3]) {
-                results.push(["rgb", ...convertHexToRgb(matches[3] as ColorValueHex)]);
+                results.push(["rgb", ...convertHexToRgb(matches[3])]);
             }
 
             if (matches[4]) {
-                results.push(["bgRgb", ...convertHexToRgb(matches[4] as ColorValueHex)]);
+                results.push(["bgRgb", ...convertHexToRgb(matches[4])]);
             }
         } else {
             results.push([name]);

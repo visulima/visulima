@@ -80,7 +80,7 @@ export class GradientBuilder {
                 };
             } else if (typeof stop_ === "string") {
                 stop = {
-                    color: stop_.includes("#") ? convertHexToRgb(stop_ as ColorValueHex) : colorNames[stop_ as CssColorName],
+                    color: stop_.includes("#") ? convertHexToRgb(stop_) : colorNames[stop_ as CssColorName],
                     position: index / (l - 1),
                 };
             } else if (
@@ -126,7 +126,7 @@ export class GradientBuilder {
         for (const stop of this.stops) {
             const reversedStop = { ...stop, position: 1 - stop.position };
 
-            stops.push(reversedStop as StopInput);
+            stops.push(reversedStop);
         }
 
         return new GradientBuilder(this.#colorize, stops.toReversed());
@@ -140,14 +140,14 @@ export class GradientBuilder {
             stops1.push({
                 color: stop.color,
                 position: (stop.position || 0) / 2,
-            } as StopInput);
+            });
         }
 
         for (const stop of this.stops.slice(0, -1)) {
             stops2.push({
                 color: stop.color,
                 position: 1 - (stop.position || 0) / 2,
-            } as StopInput);
+            });
         }
 
         return new GradientBuilder(this.#colorize, [...stops1, ...stops2.toReversed()]);
