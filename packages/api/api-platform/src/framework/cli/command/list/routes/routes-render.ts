@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- chalk is the established colored-output dep for this CLI; util.styleText migration is tracked separately
 import chalk from "chalk";
 
 import type { Route } from "./types";

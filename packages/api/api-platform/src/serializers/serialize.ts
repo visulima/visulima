@@ -9,7 +9,9 @@ import yamlTransformer from "./transformer/yaml";
 import type { Serializers } from "./types";
 
 const contentTypeKey = "Content-Type";
+const yamlTypeRegex = /yaml|yml/u;
 
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type -- Request/Response generics flow into call sites in connect/middleware/serializers-middleware; intentional Buffer | Uint8Array | string union for downstream content-type negotiation */
 const serialize = <Request extends IncomingMessage, Response extends ServerResponse>(
     serializers: Serializers,
     request: Request,
@@ -43,15 +45,17 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
         });
 
         if (!breakTypes) {
-            if (/yaml|yml/.test(type)) {
+            if (yamlTypeRegex.test(type)) {
                 response.setHeader(contentTypeKey, type);
 
                 serializedData = yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data);
             } else if (type.includes("xml")) {
                 response.setHeader(contentTypeKey, type);
 
+                const xmlRootKey = toHeaderCase(String(request.url?.replace("/api/", "")).trim());
+
                 serializedData = xmlTransformer({
-                    [toHeaderCase(`${request.url?.replace("/api/", "")}`.trim())]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
+                    [xmlRootKey]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
                 });
             }
         }
@@ -59,5 +63,6 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
 
     return serializedData as Buffer | Uint8Array | string;
 };
+/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type */
 
 export default serialize;

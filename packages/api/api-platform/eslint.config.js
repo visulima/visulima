@@ -10,6 +10,7 @@ export default createConfig(
             "__fixtures__",
             "__docs__",
             "examples",
+            "recipes",
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",

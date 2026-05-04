@@ -5,6 +5,9 @@ import { describe, expect, it } from "vitest";
 
 import { onError, onNoMatch } from "../../src/connect/handler";
 
+const TEST_PATTERN = /test/u;
+const APPLICATION_YAML_REGEX = /application\/yaml/u;
+
 describe("connect/handler", () => {
     it("should call onNoMatch", async () => {
         expect.assertions(4);
@@ -13,6 +16,7 @@ describe("connect/handler", () => {
             method: "POST",
         });
 
+        /* eslint-disable vitest/no-conditional-expect -- assertions inspect both the thrown error and the response side-effects, which only exist after the rejection path */
         try {
             await onNoMatch(req, res, [
                 {
@@ -20,10 +24,10 @@ describe("connect/handler", () => {
                     isMiddleware: false,
                     keys: false,
                     method: "GET",
-                    pattern: /test/u,
+                    pattern: TEST_PATTERN,
                 },
             ]);
-        } catch (error: any) {
+        } catch (error) {
             expect((error as HttpError).message).toBe("No route with [POST] method found.");
             expect((error as HttpError).statusCode).toBe(405);
 
@@ -32,6 +36,7 @@ describe("connect/handler", () => {
             // eslint-disable-next-line no-underscore-dangle
             expect(res._getHeaders()).toStrictEqual({ allow: "GET" });
         }
+        /* eslint-enable vitest/no-conditional-expect */
     });
 
     it("should call onError", async () => {
@@ -80,11 +85,12 @@ describe("connect/handler", () => {
         await onError(
             [
                 {
-                    handler: (error: any, _, response) => {
+                    // eslint-disable-next-line @typescript-eslint/require-await -- the handler signature must satisfy the async ErrorHandler contract even though this stub is synchronous
+                    handler: async (error: unknown, _, response) => {
                         response.statusCode = (error as HttpError).statusCode;
                         response.end((error as HttpError).message);
                     },
-                    regex: /application\/yaml/u,
+                    regex: APPLICATION_YAML_REGEX,
                 },
             ],
             false,

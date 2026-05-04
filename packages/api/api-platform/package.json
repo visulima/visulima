@@ -31,6 +31,11 @@
         "visulima"
     ],
     "homepage": "https://visulima.com/packages/api-platform/",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
@@ -46,12 +51,48 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "bin": {
+        "api-platform": "./bin/index.js"
     },
+    "files": [
+        "bin/**",
+        "dist/**",
+        "recipes/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
     "sideEffects": false,
+    "main": "dist/index-server.cjs",
+    "module": "dist/index-server.mjs",
+    "browser": "dist/index-browser.mjs",
+    "types": "dist/index-server.d.cts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index-browser.d.ts",
+                "./dist/index-server.d.ts"
+            ],
+            "next": [
+                "./dist/framework/next/index-browser.d.ts",
+                "./dist/framework/next/index-server.d.ts"
+            ],
+            "next/pages/swagger": [
+                "./dist/framework/next/routes/pages/swagger/index.d.ts"
+            ],
+            "next/pages/redoc": [
+                "./dist/framework/next/routes/pages/redoc/index.d.ts"
+            ],
+            "cli": [
+                "./dist/framework/cli/index.d.ts"
+            ]
+        }
+    },
     "exports": {
         ".": {
             "browser": "./dist/index-browser.mjs",
@@ -109,42 +150,10 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index-server.cjs",
-    "module": "dist/index-server.mjs",
-    "browser": "dist/index-browser.mjs",
-    "types": "dist/index-server.d.cts",
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index-browser.d.ts",
-                "./dist/index-server.d.ts"
-            ],
-            "next": [
-                "./dist/framework/next/index-browser.d.ts",
-                "./dist/framework/next/index-server.d.ts"
-            ],
-            "next/pages/swagger": [
-                "./dist/framework/next/routes/pages/swagger/index.d.ts"
-            ],
-            "next/pages/redoc": [
-                "./dist/framework/next/routes/pages/redoc/index.d.ts"
-            ],
-            "cli": [
-                "./dist/framework/cli/index.d.ts"
-            ]
-        }
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
-    "bin": {
-        "api-platform": "./bin/index.js"
-    },
-    "files": [
-        "bin/**",
-        "dist/**",
-        "recipes/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
     "scripts": {
         "build": "packem build --development",
         "build:prod": "node ./scripts/wait.js && packem build --production",
@@ -328,14 +337,5 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
     }
 }

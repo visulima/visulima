@@ -15,15 +15,16 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
     const { message, stack } = error;
 
     if (error instanceof HttpError) {
-        const { expose, statusCode, title, type } = error;
+        const { expose, statusCode } = error;
+        const { title, type } = error as HttpError & { title?: string; type?: string };
 
         response.statusCode = statusCode;
 
         setErrorHeaders(response, error);
 
         sendJson(response, {
-            type: type || defaultType,
-            // eslint-disable-next-line perfectionist/sort-objects
+            type: type ?? defaultType,
+            // eslint-disable-next-line perfectionist/sort-objects, @typescript-eslint/prefer-nullish-coalescing -- intentional: getReasonPhrase returns "" for unknown codes; falsy fallback chain is required to skip empty strings
             title: title || getReasonPhrase(statusCode) || defaultTitle,
             // eslint-disable-next-line perfectionist/sort-objects
             details: message,

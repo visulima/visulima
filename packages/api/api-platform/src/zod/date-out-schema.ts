@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-namespace -- zod v3's CJS-style export shape requires namespace import to access the runtime z.* values used below
 import * as z from "zod";
 
 const zodDateOutKind = "ZodDateOut";
@@ -8,7 +9,7 @@ export interface ZodDateOutDef extends z.ZodTypeDef {
 }
 
 export class ZodDateOut extends z.ZodType<string, ZodDateOutDef, Date> {
-    public static create = (): ZodDateOut =>
+    public static readonly create = (): ZodDateOut =>
         new ZodDateOut({
             typeName: zodDateOutKind,
         });
@@ -28,7 +29,7 @@ export class ZodDateOut extends z.ZodType<string, ZodDateOutDef, Date> {
             return z.INVALID;
         }
 
-        if (Number.isNaN(ctx.data.getTime())) {
+        if (Number.isNaN((ctx.data as Date).getTime())) {
             z.addIssueToContext(ctx, {
                 code: z.ZodIssueCode.invalid_date,
             });

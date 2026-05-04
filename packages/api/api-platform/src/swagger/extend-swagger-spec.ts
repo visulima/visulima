@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- OpenAPIV3.ExampleObject.value and ReferenceObject.$ref are dynamically narrowed via runtime checks; static narrowing isn't tractable for the deep nested spec mutation */
 import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 import type { OpenAPIV3 } from "openapi-types";
@@ -5,63 +6,61 @@ import { stringify } from "yaml";
 
 import { toHeaderCase } from "../utils";
 
-type Transformers = { regex: RegExp; transformer: (data: any) => string }[];
+type Transformers = { regex: RegExp; transformer: (data: unknown) => string }[];
 
 const jsonMediaType = "application/json";
+const xmlMediaTypeRegex = /xml/u;
+const yamlMediaTypeRegex = /yaml|yml/u;
 
 const prepareStatusContent = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string) => {
-    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content === undefined) {
+    if ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content === undefined) {
         // eslint-disable-next-line no-param-reassign
-        ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content = {};
+        (methodSpec.responses[status] as OpenAPIV3.ResponseObject).content = {};
     }
 
-    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType] === undefined) {
+    if ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content?.[mediaType] === undefined) {
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
-        (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+        ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
             string,
             OpenAPIV3.MediaTypeObject
         >)[
             mediaType
-        ] = {} as OpenAPIV3.MediaTypeObject;
+        ] = {};
     }
 };
 
 const extendComponentSchemas = (spec: Partial<OpenAPIV3.Document>, schemaName: string, schema: OpenAPIV3.SchemaObject) => {
-    if (typeof spec.components !== "object") {
-        // eslint-disable-next-line no-param-reassign
-        spec.components = {};
-    }
+    // eslint-disable-next-line no-param-reassign
+    spec.components ??= {};
 
     if (typeof spec.components.schemas !== "object") {
         // eslint-disable-next-line no-param-reassign
         spec.components.schemas = {};
     }
 
-    if (spec.components.schemas[schemaName] === undefined) {
-        // eslint-disable-next-line no-param-reassign
-        spec.components.schemas[schemaName] = schema;
-    }
+    // eslint-disable-next-line no-param-reassign
+    spec.components.schemas[schemaName] ??= schema;
 };
 
 const extendResponseSchema = (methodSpec: OpenAPIV3.OperationObject, status: string, mediaType: string, schemaName: string, schemaIsArray: boolean) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
-    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.schema === undefined) {
+    if ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.schema === undefined) {
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
-        ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+        (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
             string,
             OpenAPIV3.MediaTypeObject
         >)[
             mediaType
         ] as OpenAPIV3.MediaTypeObject).schema
-            = {} as OpenAPIV3.SchemaObject;
+            = {};
     }
 
     // prettier-ignore
     // eslint-disable-next-line no-param-reassign
-    ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+    (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
         string,
         OpenAPIV3.MediaTypeObject
     >)[
@@ -87,10 +86,10 @@ const extendSwaggerWithMediaTypeSchema = (
     spec: Partial<OpenAPIV3.Document>,
     status: string,
 ): {
-    example?: any;
+    example?: unknown;
     examples?: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>;
 } => {
-    let example: any | undefined;
+    let example: unknown;
     let examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject> | undefined;
 
     Object.entries(responseSpec.content as object).forEach(([mediaName, contentSpec]) => {
@@ -115,7 +114,7 @@ const extendSwaggerWithMediaTypeSchema = (
                 if (schema?.$ref === undefined) {
                     schemaName = `${toHeaderCase(pathKey.trim().replace("/", ""))}${mediaType === "application/ld+json" ? ".jsonld" : ""}`;
 
-                    extendComponentSchemas(spec as OpenAPIV3.Document, schemaName, schema as OpenAPIV3.SchemaObject);
+                    extendComponentSchemas(spec, schemaName, schema as OpenAPIV3.SchemaObject);
                 } else {
                     schemaName = (schema as OpenAPIV3.ReferenceObject).$ref.replace("#/components/schemas/", "");
                 }
@@ -134,7 +133,7 @@ const extendSwaggerWithMediaTypeExample = (
     status: string,
     allowedMediaTypes: Record<string, boolean> | undefined,
     transformers: Transformers,
-    example: any,
+    example: unknown,
 ) => {
     Object.keys(responseSpec.content as object).forEach((mediaName) => {
         if (mediaName === jsonMediaType) {
@@ -148,12 +147,10 @@ const extendSwaggerWithMediaTypeExample = (
 
             prepareStatusContent(methodSpec, status, mediaType);
 
-            if (
-                ((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.example === undefined
-            ) {
+            if ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.example === undefined) {
                 // prettier-ignore
                 // eslint-disable-next-line no-param-reassign
-                ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+                (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
                     string,
                     OpenAPIV3.MediaTypeObject
                 >)[
@@ -168,7 +165,7 @@ const extendSwaggerWithMediaTypeExample = (
                 if (!transformed && regex.test(mediaType)) {
                     // prettier-ignore
                     // eslint-disable-next-line no-param-reassign
-                    ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+                    (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
                         string,
                         OpenAPIV3.MediaTypeObject
                     >)[
@@ -180,10 +177,11 @@ const extendSwaggerWithMediaTypeExample = (
                 }
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS flow analysis cannot track mutation of `transformed` inside forEach above
             if (!transformed) {
                 // prettier-ignore
                 // eslint-disable-next-line no-param-reassign
-                ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+                (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
                     string,
                     OpenAPIV3.MediaTypeObject
                 >)[
@@ -200,10 +198,8 @@ const extendComponentExamples = (
     exampleName: string,
     examples: Record<string, OpenAPIV3.ExampleObject | OpenAPIV3.ReferenceObject>,
 ) => {
-    if (typeof spec.components !== "object") {
-        // eslint-disable-next-line no-param-reassign
-        spec.components = {};
-    }
+    // eslint-disable-next-line no-param-reassign
+    spec.components ??= {};
 
     if (typeof spec.components.examples !== "object") {
         // eslint-disable-next-line no-param-reassign
@@ -212,7 +208,7 @@ const extendComponentExamples = (
 
     if (spec.components.examples[exampleName] === undefined && examples[exampleName] !== undefined) {
         // eslint-disable-next-line no-param-reassign
-        spec.components.examples[exampleName] = examples[exampleName] as OpenAPIV3.ExampleObject;
+        spec.components.examples[exampleName] = examples[exampleName];
     }
 };
 
@@ -226,10 +222,10 @@ const prepareResponseExamples = (
 ) => {
     prepareStatusContent(methodSpec, status, mediaType);
 
-    if (((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.examples === undefined) {
+    if ((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content?.[mediaType]?.examples === undefined) {
         // prettier-ignore
         // eslint-disable-next-line no-param-reassign
-        ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+        (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
             string,
             OpenAPIV3.MediaTypeObject
         >)[
@@ -245,7 +241,7 @@ const prepareResponseExamples = (
 
         transformers.forEach(({ regex, transformer }) => {
             if (!transformed && regex.test(mediaType)) {
-                let data: any = "";
+                let data: unknown = "";
 
                 if (spec.components?.examples?.[exampleName]) {
                     data = (spec.components.examples[exampleName] as OpenAPIV3.ExampleObject).value;
@@ -267,6 +263,7 @@ const prepareResponseExamples = (
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS flow analysis cannot track mutation of `transformed` inside forEach above
         if (!transformed) {
             transformedExamples[exampleName]
                 = spec.components?.examples?.[exampleName] === undefined
@@ -279,7 +276,7 @@ const prepareResponseExamples = (
 
     // prettier-ignore
     // eslint-disable-next-line no-param-reassign
-    ((((methodSpec.responses as unknown as OpenAPIV3.ResponsesObject)[status] as OpenAPIV3.ResponseObject).content as Record<
+    (((methodSpec.responses[status] as OpenAPIV3.ResponseObject).content as Record<
         string,
         OpenAPIV3.MediaTypeObject
     >)[
@@ -322,22 +319,22 @@ export default function extendSwaggerSpec(
     allowedMediaTypes?: Record<string, boolean>,
     transformers: Transformers = [
         {
-            regex: /xml/u,
-            transformer: (value: XmlElement | XmlElement[] | undefined) =>
-                toXML(value, {
+            regex: xmlMediaTypeRegex,
+            transformer: (value: unknown) =>
+                toXML(value as XmlElement | XmlElement[] | undefined, {
                     header: true,
                     indent: "  ",
                 }),
         },
         {
-            regex: /yaml|yml/,
+            regex: yamlMediaTypeRegex,
             transformer: (value) => stringify(value, { indent: 2 }),
         },
     ],
 ): Partial<OpenAPIV3.Document> {
     if (typeof spec === "object" && typeof spec.paths === "object") {
         Object.entries(spec.paths).forEach(([pathKey, pathSpec]) => {
-            Object.values(pathSpec as OpenAPIV3.OperationObject & OpenAPIV3.PathsObject).forEach((methodSpec) => {
+            Object.values(pathSpec as OpenAPIV3.PathItemObject).forEach((methodSpec) => {
                 if (typeof (methodSpec as OpenAPIV3.OperationObject).responses === "object") {
                     Object.entries((methodSpec as OpenAPIV3.OperationObject).responses).forEach(([status, responseSpec]) => {
                         if (typeof (responseSpec as OpenAPIV3.ResponseObject).content === "object") {

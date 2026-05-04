@@ -7,7 +7,10 @@ import { toNamespacedPath } from "@visulima/path";
 
 import type { Route } from "../types";
 
-const extensionRegex = /\.(js|ts|mjs|cjs)$/u;
+const extensionRegex = /\.(?:js|ts|mjs|cjs)$/u;
+const newlineRegex = /\r?\n/u;
+// eslint-disable-next-line sonarjs/slow-regex -- pattern is intentionally permissive; only run on user-provided source files at CLI invocation time
+const httpMethodLineRegex = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/u;
 
 const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false): Route[] => {
     // eslint-disable-next-line no-param-reassign
@@ -30,8 +33,8 @@ const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false):
     if (specs.length === 0) {
         const apiRouteFileContent = readFileSync(apiRouteFile, "utf8");
 
-        apiRouteFileContent.split(/\r?\n/u).forEach((line) => {
-            const match = /[=aces|]+\s["'|](GET|POST|PUT|PATCH|HEAD|DELETE|OPTIONS)["'|]/u.exec(line);
+        apiRouteFileContent.split(newlineRegex).forEach((line) => {
+            const match = httpMethodLineRegex.exec(line);
 
             if (match) {
                 let [, method] = match;
@@ -62,10 +65,10 @@ const apiRouteFileParser = (apiRouteFile: string, cwd: string, verbose = false):
     }
 
     specs.forEach((spec) => {
-        const paths = Object.entries(spec?.paths ?? {});
+        const paths = Object.entries(spec.paths ?? {});
 
         paths.forEach(([path, pathSpec]) => {
-            const methods = Object.entries(pathSpec);
+            const methods = Object.entries(pathSpec as Record<string, { tags: string[] }>);
 
             methods.forEach(([method, methodSpec]) => {
                 routes.push({

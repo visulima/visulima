@@ -44,13 +44,10 @@ const normalizeHeaderKey = (key: string, canonical: boolean) => {
         return exceptions[lowerCaseKey as keyof typeof exceptions];
     }
 
-    return (
-        lowerCaseKey
-            .split("-")
-            // eslint-disable-next-line no-unsafe-optional-chaining
-            .map((text: string) => text[0]?.toUpperCase() + text.slice(1))
-            .join("-")
-    );
+    return lowerCaseKey
+        .split("-")
+        .map((text: string) => `${text[0]?.toUpperCase() ?? ""}${text.slice(1)}`)
+        .join("-");
 };
 
 const defaults = {
@@ -69,7 +66,8 @@ const httpHeaderNormalizerMiddleware = (options_?: {
 }): (request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void> => {
     const options = { ...defaults, ...options_ };
 
-    return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler): Promise<void> => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Request generic flows into mutated request.headers/request.rawHeaders assignment
+    return async <Request extends IncomingMessage>(request: Request, _: unknown, next: NextHandler): Promise<void> => {
         const rawHeaders: IncomingHttpHeaders = {};
         const headers: IncomingHttpHeaders = {};
 

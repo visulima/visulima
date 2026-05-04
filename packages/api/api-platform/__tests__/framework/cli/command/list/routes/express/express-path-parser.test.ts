@@ -1,4 +1,6 @@
+// eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
 import type { Express, NextFunction, Request, RequestHandler, Response } from "express";
+// eslint-disable-next-line e18e/ban-dependencies -- express is required to test the express adapter; replacement migration is out of scope for the test
 import express, { Router } from "express";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -6,13 +8,16 @@ import { operationObject } from "../../../../../../../__fixtures__/express/const
 import expressPathParser from "../../../../../../../src/framework/cli/command/list/routes/express/express-path-parser";
 import type { RouteMetaData } from "../../../../../../../src/framework/cli/command/list/routes/express/types";
 
+const ABC_OR_XYZ_REGEX = /\/abc|\/xyz/u;
+const LMN_OR_PQR_REGEX = /\/lmn|\/pqr/u;
+
 // Wrapper function to allow us to attach meta-data to a route in a re-usable way
-const middleware = (metadata: any): RequestHandler => {
+const middleware = (metadata: unknown): RequestHandler => {
     const m = (_request: Request, _response: Response, next: NextFunction) => {
         next();
     };
 
-    m.metadata = metadata;
+    (m as unknown as { metadata: unknown }).metadata = metadata;
 
     return m;
 };
@@ -145,7 +150,7 @@ describe("express-path-parser", () => {
     it("regex path parameters", () => {
         expect.assertions(3);
 
-        app.post(/\/abc|\/xyz/u, successResponse);
+        app.post(ABC_OR_XYZ_REGEX, successResponse);
 
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;
@@ -158,7 +163,7 @@ describe("express-path-parser", () => {
     it("array of path parameters", () => {
         expect.assertions(3);
 
-        app.get(["/abcd", "/xyza", /\/lmn|\/pqr/u], successResponse);
+        app.get(["/abcd", "/xyza", LMN_OR_PQR_REGEX], successResponse);
 
         const parsed = expressPathParser(app);
         const { method, path, pathParams } = parsed[0] as RouteMetaData;

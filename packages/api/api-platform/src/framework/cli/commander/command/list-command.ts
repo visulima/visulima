@@ -34,7 +34,7 @@ const listCommand = (
                         includePaths: options.includePath ?? [],
                         verbose: options.verbose,
                     });
-                } catch (error: any) {
+                } catch (error) {
                     // eslint-disable-next-line no-console
                     console.log();
                     // eslint-disable-next-line no-console

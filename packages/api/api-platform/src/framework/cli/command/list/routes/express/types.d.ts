@@ -1,4 +1,5 @@
 import type { IRoute, PathParams } from "@types/express-serve-static-core";
+// eslint-disable-next-line e18e/ban-dependencies -- type-only import; express is a supported integration target for the route-listing CLI
 import type { Router } from "express";
 
 export interface ExpressRegex extends RegExp {
@@ -8,14 +9,14 @@ export interface ExpressRegex extends RegExp {
 }
 
 export interface Parameter {
-    [key: string]: any;
+    [key: string]: unknown;
     in: string;
     name: string;
     required: boolean;
 }
 
 export interface RouteMetaData {
-    metadata?: any;
+    metadata?: unknown;
     method: string;
     path: string;
     pathParams: Parameter[];
@@ -40,7 +41,7 @@ export interface Layer {
 }
 
 export interface Route extends IRoute {
-    metadata?: any;
+    metadata?: unknown;
     name: string;
     stack: Layer[];
 }

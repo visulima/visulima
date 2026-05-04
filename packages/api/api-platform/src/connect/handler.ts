@@ -7,11 +7,14 @@ import JsonapiErrorHandler from "../error-handler/jsonapi-error-handler";
 import ProblemErrorHandler from "../error-handler/problem-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "../error-handler/types";
 
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters -- Request generic flows into the returned function's call signature for connect compatibility */
 export const onError
     = <Request extends IncomingMessage, Response extends ServerResponse>(
         errorHandlers: ErrorHandlers,
         showTrace: boolean,
     ): (error: unknown, request: Request, response: Response, routes: Route<Nextable<FunctionLike>>[]) => Promise<Response | undefined> =>
+    /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
+    // eslint-disable-next-line @typescript-eslint/require-await -- the returned handler must match the connect async signature even though no awaits occur
         async (error: unknown, request: Request, response: Response): Promise<Response | undefined> => {
             const apiFormat: string = request.headers.accept as string;
 
@@ -21,7 +24,6 @@ export const onError
                 errorHandler = JsonapiErrorHandler;
             }
 
-            // eslint-disable-next-line no-loops/no-loops
             for (const { handler, regex } of errorHandlers) {
                 if (regex.test(apiFormat)) {
                     errorHandler = handler;
@@ -32,20 +34,24 @@ export const onError
             // eslint-disable-next-line no-param-reassign
             (error as Error & { expose: boolean }).expose = showTrace;
 
-            errorHandler(error, request, response);
+            // eslint-disable-next-line no-void -- preserve fire-and-forget semantics; awaiting would change error propagation timing
+            void errorHandler(error, request, response);
 
             return undefined;
         };
 
+/* eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- Request/Response generics are required for compatibility with connect ValueOrPromise contract at call sites */
 export const onNoMatch: <Request extends IncomingMessage, Response extends ServerResponse>(
     request: Request,
     response: Response,
     routes: Route<Nextable<FunctionLike>>[],
-) => ValueOrPromise<Response | undefined> = async (request, response, routes) => {
-    const uniqueMethods = [...new Set(routes.map((route) => route.method))].join(", ");
+) => ValueOrPromise<Response | undefined>
+    // eslint-disable-next-line @typescript-eslint/require-await -- onNoMatch must satisfy the async connect signature even though it only throws synchronously
+    = async (request, response, routes) => {
+        const uniqueMethods = [...new Set(routes.map((route) => route.method))].join(", ");
 
-    response.setHeader("Allow", uniqueMethods);
-    response.statusCode = 405;
+        response.setHeader("Allow", uniqueMethods);
+        response.statusCode = 405;
 
-    throw createHttpError(405, `No route with [${request.method}] method found.`);
-};
+        throw createHttpError(405, `No route with [${String(request.method)}] method found.`);
+    };

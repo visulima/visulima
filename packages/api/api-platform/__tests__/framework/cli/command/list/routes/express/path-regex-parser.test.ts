@@ -4,6 +4,8 @@ import { oneDynamicPath, staticPath, twoDynamicPaths } from "../../../../../../.
 import pathRegexParser from "../../../../../../../src/framework/cli/command/list/routes/express/path-regex-parser";
 import type { ExpressRegex } from "../../../../../../../src/framework/cli/command/list/routes/express/types";
 
+const TEST_REGEX = /test/;
+
 describe("path-regex-parser", () => {
     it("handles static regex route", () => {
         expect.assertions(1);
@@ -32,7 +34,7 @@ describe("path-regex-parser", () => {
     it("handles fast slash", () => {
         expect.assertions(1);
 
-        const fastSlash = /test/ as ExpressRegex;
+        const fastSlash = TEST_REGEX as unknown as ExpressRegex;
 
         fastSlash.fast_slash = true;
         fastSlash.fast_star = false;
@@ -43,7 +45,7 @@ describe("path-regex-parser", () => {
     it("handles fast star", () => {
         expect.assertions(1);
 
-        const fastStar = /test/ as ExpressRegex;
+        const fastStar = TEST_REGEX as unknown as ExpressRegex;
 
         fastStar.fast_slash = false;
         fastStar.fast_star = true;
@@ -54,6 +56,6 @@ describe("path-regex-parser", () => {
     it("handles custom regex path", () => {
         expect.assertions(1);
 
-        expect(pathRegexParser(/test/ as ExpressRegex, [])).toBe("/test/");
+        expect(pathRegexParser(TEST_REGEX as unknown as ExpressRegex, [])).toBe("/test/");
     });
 });

@@ -76,7 +76,7 @@ describe("utils", () => {
     });
 
     describe(getApp, () => {
-        it("returns null when appExport is empty", async () => {
+        it("returns null when appExport is empty", () => {
             expect.assertions(1);
 
             const appExport = {};
@@ -87,7 +87,7 @@ describe("utils", () => {
             expect(actual).toStrictEqual(expected);
         });
 
-        it("returns app when frameworkName is hapi and app property exists", async () => {
+        it("returns app when frameworkName is hapi and app property exists", () => {
             expect.assertions(1);
 
             const appExport = { app: { app: "app" } };
@@ -98,7 +98,7 @@ describe("utils", () => {
             expect(actual).toStrictEqual(expected);
         });
 
-        it("returns app when frameworkName is not hapi and app property exists", async () => {
+        it("returns app when frameworkName is not hapi and app property exists", () => {
             expect.assertions(1);
 
             const appExport = { app: "app" };
@@ -109,7 +109,7 @@ describe("utils", () => {
             expect(actual).toStrictEqual(expected);
         });
 
-        it("returns appExport when frameworkName is hapi and app property does not exist", async () => {
+        it("returns appExport when frameworkName is hapi and app property does not exist", () => {
             expect.assertions(1);
 
             const appExport = { app: {} };
@@ -120,7 +120,7 @@ describe("utils", () => {
             expect(actual).toStrictEqual(expected);
         });
 
-        it("returns appExport when frameworkName is not hapi and app property does not exist", async () => {
+        it("returns appExport when frameworkName is not hapi and app property does not exist", () => {
             expect.assertions(1);
 
             const appExport = { app: {} };

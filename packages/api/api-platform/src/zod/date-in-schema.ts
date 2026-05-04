@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-namespace -- zod v3's CJS-style export shape requires namespace import to access the runtime z.* values used below
 import * as z from "zod";
 
 const zodDateInKind = "ZodDateIn";
@@ -7,7 +8,6 @@ const zodDateInKind = "ZodDateIn";
 // 2021-01-01T00:00:00Z
 // 2021-01-01T00:00:00
 // 2021-01-01
-// eslint-disable-next-line security/detect-unsafe-regex
 export const isoDateRegex: RegExp = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?)?Z?$/;
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -16,7 +16,7 @@ export interface ZodDateInDef extends z.ZodTypeDef {
 }
 
 export class ZodDateIn extends z.ZodType<Date, ZodDateInDef, string> {
-    public static create = (): ZodDateIn =>
+    public static readonly create = (): ZodDateIn =>
         new ZodDateIn({
             typeName: zodDateInKind,
         });

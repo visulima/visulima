@@ -38,7 +38,7 @@ describe("utils", () => {
     });
 
     describe(jsonResponse, () => {
-        it("sets statusCode of response to specified status value", async () => {
+        it("sets statusCode of response to specified status value", () => {
             expect.assertions(1);
 
             const response = createResponse();
@@ -50,7 +50,7 @@ describe("utils", () => {
             expect(response.statusCode).toStrictEqual(status);
         });
 
-        it("sets Content-Type header of response to application/json", async () => {
+        it("sets Content-Type header of response to application/json", () => {
             expect.assertions(1);
 
             const response = createResponse();
@@ -62,7 +62,7 @@ describe("utils", () => {
             expect(response.getHeaders()).toStrictEqual({ "content-type": "application/json" });
         });
 
-        it("calls end method of response with stringified data when data is provided", async () => {
+        it("calls end method of response with stringified data when data is provided", () => {
             expect.assertions(1);
 
             const response = createResponse();
@@ -75,7 +75,7 @@ describe("utils", () => {
             expect(response._getData()).toStrictEqual(JSON.stringify(data));
         });
 
-        it("calls end method of response with empty string when data is not provided", async () => {
+        it("calls end method of response with empty string when data is not provided", () => {
             expect.assertions(1);
 
             const response = createResponse();
@@ -162,7 +162,7 @@ describe("utils", () => {
     });
 
     describe(parseQuery, () => {
-        it("returns request.query when it is provided", async () => {
+        it("returns request.query when it is provided", () => {
             expect.assertions(1);
 
             const request = { headers: { host: "example.com" }, query: { message: "Hello" } };
@@ -172,7 +172,7 @@ describe("utils", () => {
             expect(actual).toStrictEqual(expected);
         });
 
-        it("returns query string object parsed from request.url when request.query is not provided", async () => {
+        it("returns query string object parsed from request.url when request.query is not provided", () => {
             expect.assertions(1);
 
             const request = { headers: { host: "example.com/" }, query: null, url: "/?message=Hello" };
@@ -183,7 +183,7 @@ describe("utils", () => {
             expect(actual).toEqual(expected);
         });
 
-        it("returns empty object when request.url is not provided and request.query is not provided", async () => {
+        it("returns empty object when request.url is not provided and request.query is not provided", () => {
             expect.assertions(1);
 
             const request = { headers: { host: "example.com" }, query: null, url: null };

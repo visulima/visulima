@@ -13,6 +13,7 @@ const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined 
 
 type HeaderValue = ReadonlyArray<string> | number | string;
 
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters -- Request/Response generics flow into the returned function so callers retain their concrete types */
 const rateLimiterMiddleware
     = (
         rateLimiter: RateLimiterAbstract,
@@ -40,6 +41,7 @@ const rateLimiterMiddleware
                     "Retry-After": Math.round(limiter.msBeforeNext / 1000) || 1,
                     "X-RateLimit-Remaining": limiter.remainingPoints,
                     "X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext).toISOString(),
+                    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- preserved existing behavior; spreading the function reference yields the function's enumerable own properties
                     ...headers,
                 };
 
@@ -52,5 +54,6 @@ const rateLimiterMiddleware
                 throw createHttpError(429, "Too Many Requests");
             }
         };
+/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
 
 export default rateLimiterMiddleware;

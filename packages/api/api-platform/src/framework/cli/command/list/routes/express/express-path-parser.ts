@@ -1,3 +1,4 @@
+// eslint-disable-next-line e18e/ban-dependencies -- type-only import; express is a supported integration target for the route-listing CLI
 import type { Express, Router } from "express";
 
 import pathRegexParser from "./path-regex-parser";
@@ -42,7 +43,6 @@ const parseRouteLayer = (layer: Required<Layer>, keys: Key[], basePath: string):
  * @param path The current path segment that we have traversed so far
  * @param layer The current 'layer' of the router tree
  * @param keys The keys for the parameter's in the current path branch of the traversal
- * @returns void - base case saves result to internal object
  */
 const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key[]): void => {
     // eslint-disable-next-line no-param-reassign
@@ -79,8 +79,8 @@ const traverse = (routes: RouteMetaData[], path: string, layer: Layer, keys: Key
  * @returns List of routes for this express app with meta-data that has been picked up
  */
 const expressPathParser = (app: Express): RouteMetaData[] => {
-    // eslint-disable-next-line no-underscore-dangle
-    const router: Router = app._router || app.router;
+    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-unsafe-assignment -- express's internal _router is the legacy private accessor used as fallback for older versions; both sides are typed as `any` by upstream express types
+    const router: Router = (app as Express & { _router?: Router })._router ?? (app.router as Router);
     const routes: RouteMetaData[] = [];
 
     for (const layer of router.stack) {
