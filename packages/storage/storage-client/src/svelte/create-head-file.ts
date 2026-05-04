@@ -139,7 +139,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
         error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
         isLoading: isLoadingStore,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

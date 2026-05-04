@@ -81,7 +81,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
                         };
                     })) as { error: { code: string; message: string } };
 
-                    throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
+                    throw new Error(errorData.error.message || `Failed to get transformed file: ${String(response.status)} ${response.statusText}`);
                 }
 
                 const blob = await response.blob();
@@ -116,7 +116,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         isLoading: isLoadingStore,
         meta: derived(dataStore, ($data) => $data?.meta || undefined),
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };
