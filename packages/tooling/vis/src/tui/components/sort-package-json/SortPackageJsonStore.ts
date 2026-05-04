@@ -66,8 +66,7 @@ const STATUS_RANK: Record<SortFileStatus, number> = {
 };
 /* eslint-enable perfectionist/sort-objects */
 
-const sortByStatusRank = (entries: SortFileEntry[]): SortFileEntry[] =>
-    [...entries].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
+const sortByStatusRank = (entries: SortFileEntry[]): SortFileEntry[] => [...entries].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
 
 const filterEntries = (entries: SortFileEntry[], filterType: FilterType): SortFileEntry[] => {
     if (filterType === "all") {

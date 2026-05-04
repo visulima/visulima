@@ -76,7 +76,9 @@ const EntryRow = ({ entry, isSelected }: EntryRowProps): React.JSX.Element => {
                     {entry.relativePath}
                 </Text>
             </Box>
-            {entry.status !== "error" && entry.diff.length > 0 && <Text dimColor>{` ${String(entry.diff.length)} key${entry.diff.length === 1 ? "" : "s"}`}</Text>}
+            {entry.status !== "error" && entry.diff.length > 0 && (
+                <Text dimColor>{` ${String(entry.diff.length)} key${entry.diff.length === 1 ? "" : "s"}`}</Text>
+            )}
         </Box>
     );
 };
@@ -110,15 +112,7 @@ type RenderRow =
     | { entry: SortFileEntry; entryIndex: number; kind: "entry" }
     | { kind: "spacer" };
 
-const SortListPanel = ({
-    counts,
-    entries,
-    filterType,
-    focused,
-    selectedIndex,
-    totalEntries,
-    viewportHeight,
-}: SortListPanelProps): React.JSX.Element => {
+const SortListPanel = ({ counts, entries, filterType, focused, selectedIndex, totalEntries, viewportHeight }: SortListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
 
     // Group counts on the **visible** entries — used for section headers in
@@ -168,7 +162,6 @@ const SortListPanel = ({
 
     const showScrollbar = contentHeight > viewportHeight && viewportHeight > 0;
 
-
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             <Box flexShrink={0} gap={1} paddingX={1}>
@@ -176,9 +169,7 @@ const SortListPanel = ({
                     {" VIS SORT "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
-                    {" "}
-                    file
+                    {totalEntries} file
                     {totalEntries === 1 ? "" : "s"}
                 </Text>
             </Box>
@@ -195,16 +186,8 @@ const SortListPanel = ({
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-                                {" "}
-                                {f.label}
-                            </Text>
-                            <Text dimColor>
-                                {" "}
-                                (
-                                {tabCount}
-                                )
-                            </Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
+                            <Text dimColor> ({tabCount})</Text>
                         </Box>
                     );
                 })}
@@ -222,13 +205,7 @@ const SortListPanel = ({
                                 return <SectionHeader color={row.color} count={row.count} key={`h-${row.label}`} label={row.label} />;
                             }
 
-                            return (
-                                <EntryRow
-                                    entry={row.entry}
-                                    isSelected={row.entryIndex === selectedIndex}
-                                    key={row.entry.filePath}
-                                />
-                            );
+                            return <EntryRow entry={row.entry} isSelected={row.entryIndex === selectedIndex} key={row.entry.filePath} />;
                         })}
                     </Box>
                 </Box>

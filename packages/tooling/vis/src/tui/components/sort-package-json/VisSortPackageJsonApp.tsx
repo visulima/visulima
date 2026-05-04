@@ -52,6 +52,46 @@ const VisSortPackageJsonApp = ({ checkMode, store }: VisSortPackageJsonAppProps)
         exit();
     }, [exit]);
 
+    // Mouse wheels translated to arrow keys arrive as a burst of N events
+    // inside a single stdin chunk (xterm-style alternate-scroll = 3 events
+    // per notch). Coalesce them via a microtask: bursts collapse to one
+    // step, but keyboard auto-repeat (each repeat is its own stdin read)
+    // still steps once per repeat.
+    const pendingDeltaRef = useRef(0);
+    const pendingTargetRef = useRef<"detail" | "list" | undefined>(undefined);
+    const flushScheduledRef = useRef(false);
+    const queueStep = useCallback(
+        (target: "detail" | "list", delta: number) => {
+            pendingDeltaRef.current += delta;
+            pendingTargetRef.current = target;
+
+            if (flushScheduledRef.current) {
+                return;
+            }
+
+            flushScheduledRef.current = true;
+            queueMicrotask(() => {
+                flushScheduledRef.current = false;
+                const pending = pendingDeltaRef.current;
+                const pendingTarget = pendingTargetRef.current;
+
+                pendingDeltaRef.current = 0;
+                pendingTargetRef.current = undefined;
+
+                if (pending === 0 || pendingTarget === undefined) {
+                    return;
+                }
+
+                if (pendingTarget === "list") {
+                    store.selectStep(Math.sign(pending));
+                } else {
+                    detailScrollRef.current?.scrollBy(Math.sign(pending));
+                }
+            });
+        },
+        [store],
+    );
+
     useInput((input, key) => {
         if (input === "q" || key.escape) {
             handleExit();
@@ -73,15 +113,15 @@ const VisSortPackageJsonApp = ({ checkMode, store }: VisSortPackageJsonAppProps)
 
         if (state.focusedPanel === "list") {
             if (key.upArrow || input === "k") {
-                store.selectStep(-1);
+                queueStep("list", -1);
             } else if (key.downArrow || input === "j") {
-                store.selectStep(1);
+                queueStep("list", 1);
             }
         } else if (state.focusedPanel === "detail") {
             if (key.upArrow || input === "k") {
-                detailScrollRef.current?.scrollBy(-1);
+                queueStep("detail", -1);
             } else if (key.downArrow || input === "j") {
-                detailScrollRef.current?.scrollBy(1);
+                queueStep("detail", 1);
             }
         }
     });
@@ -91,9 +131,7 @@ const VisSortPackageJsonApp = ({ checkMode, store }: VisSortPackageJsonAppProps)
             <Box alignItems="center" justifyContent="center">
                 <Text color="yellow">
                     Terminal too small. Resize to at least
-                    {MIN_VIEWPORT_HEIGHT}
-{' '}
-rows.
+                    {MIN_VIEWPORT_HEIGHT} rows.
                 </Text>
             </Box>
         );
@@ -102,7 +140,7 @@ rows.
     return (
         <Box flexDirection="column" height={rows} width={columns}>
             <Box flexDirection={isHorizontal ? "row" : "column"} flexGrow={1}>
-                <Box flexBasis={isHorizontal ? "50%" : undefined} flexGrow={1}>
+                <Box flexBasis="50%" flexGrow={1} flexShrink={1}>
                     <SortListPanel
                         counts={tabCounts}
                         entries={filteredEntries}
@@ -113,7 +151,7 @@ rows.
                         viewportHeight={viewportHeight}
                     />
                 </Box>
-                <Box flexBasis={isHorizontal ? "50%" : undefined} flexGrow={1}>
+                <Box flexBasis="50%" flexGrow={1} flexShrink={1}>
                     <SortDetailPanel checkMode={checkMode} entry={selectedEntry} focused={state.focusedPanel === "detail"} scrollRef={detailScrollRef} />
                 </Box>
             </Box>
