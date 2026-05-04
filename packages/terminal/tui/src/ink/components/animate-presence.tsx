@@ -111,7 +111,7 @@ export default function AnimatePresence({ children }: Props): ReactElement {
             incoming.set(key, isAnimatable(child) ? child : (child as ReactElement<AnimatableProps>));
         });
 
-        // eslint-disable-next-line react-x/set-state-in-effect -- AnimatePresence reconciles slots from children in an effect by design
+        // eslint-disable-next-line react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state -- AnimatePresence reconciles slots from children in an effect; "removed" slots persist with show=false until exit animation completes, so this is not pure derivation
         setSlots((previous) => {
             const next: Slot[] = [];
             const seen = new Set<string>();

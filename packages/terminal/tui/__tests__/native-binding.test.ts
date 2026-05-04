@@ -37,6 +37,7 @@ describe("native-binding", () => {
         expectTypeOf(terminalSize).toBeFunction();
     });
 
+    // eslint-disable-next-line vitest/prefer-expect-assertions -- catch path skips gracefully when TTY unavailable; assertions only run in success path
     it("should return valid terminal size", () => {
         let size;
 

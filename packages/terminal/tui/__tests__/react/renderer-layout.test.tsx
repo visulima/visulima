@@ -34,9 +34,9 @@ describe("ratatat renderer layout", () => {
     });
 
     it("should render tab bar without truncation at sufficient width", () => {
-        const SECTIONS = ["Layout", "Focus", "Graph", "Live", "Incremental", "UI", "Static", "Mouse"];
+        expect.assertions(8);
 
-        expect.assertions(SECTIONS.length);
+        const SECTIONS = ["Layout", "Focus", "Graph", "Live", "Incremental", "UI", "Static", "Mouse"];
 
         const TabBar = () => (
             <Box borderStyle="single" flexShrink={0}>

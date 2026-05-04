@@ -41,6 +41,8 @@ describe(Button, () => {
     });
 
     it("should call onPress when Enter is pressed", async () => {
+        expect.assertions(1);
+
         const onPress = vi.fn();
         const { stdin } = await setup(
             <Button autoFocus onPress={onPress}>
@@ -53,6 +55,8 @@ describe(Button, () => {
     });
 
     it("should call onPress when Space is pressed", async () => {
+        expect.assertions(1);
+
         const onPress = vi.fn();
         const { stdin } = await setup(
             <Button autoFocus onPress={onPress}>
@@ -93,6 +97,8 @@ describe(Checkbox, () => {
     });
 
     it("should toggle on Space", async () => {
+        expect.assertions(1);
+
         const onChange = vi.fn();
         const { stdin } = await setup(
             <Checkbox autoFocus onChange={onChange}>
@@ -129,6 +135,8 @@ describe(Switch, () => {
     });
 
     it("should toggle the value on Space", async () => {
+        expect.assertions(1);
+
         const onChange = vi.fn();
         const { stdin } = await setup(<Switch autoFocus onChange={onChange} />);
 
@@ -174,6 +182,8 @@ describe(RadioGroup, () => {
     });
 
     it("should emit onChange when navigating down by default (commit-on-navigate)", async () => {
+        expect.assertions(1);
+
         const onChange = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onChange={onChange} options={options} />);
 
@@ -194,6 +204,8 @@ describe(RadioGroup, () => {
     });
 
     it("should commit on Space when commitOnNavigate is false", async () => {
+        expect.assertions(1);
+
         const onChange = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
@@ -204,6 +216,8 @@ describe(RadioGroup, () => {
     });
 
     it("should emit onSubmit when Enter is pressed", async () => {
+        expect.assertions(1);
+
         const onSubmit = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onSubmit={onSubmit} options={options} />);
 
@@ -240,6 +254,8 @@ describe(Collapsible, () => {
     });
 
     it("should call onToggle when Space is pressed", async () => {
+        expect.assertions(1);
+
         const onToggle = vi.fn();
         const { stdin } = await setup(
             <Collapsible autoFocus onToggle={onToggle} title="Section">
@@ -277,6 +293,8 @@ describe(Accordion, () => {
     });
 
     it("should allow multiple panels open when allowMultiple is true", async () => {
+        expect.assertions(2);
+
         const { getOutput, stdin } = await setup(<Accordion allowMultiple autoFocus defaultExpanded={["1"]} items={items} />);
 
         emitReadable(stdin, "j");
