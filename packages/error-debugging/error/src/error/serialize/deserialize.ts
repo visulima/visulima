@@ -1,8 +1,15 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import isPlainObject from "is-plain-obj";
-
 import { getErrorConstructor, isErrorLike } from "./error-constructors";
 import NonError from "./non-error";
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const proto: unknown = Object.getPrototypeOf(value);
+
+    return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null;
+};
 
 interface DeserializeOptions {
     maxDepth?: number;
@@ -244,12 +251,12 @@ const deserialize = (value: unknown, options: DeserializeOptionsType = {}): Erro
 
     // Check if it looks like a serialized error (this handles objects with prototypes like serialized errors)
     if (isErrorLike(value)) {
-        return reconstructError(value as Record<string, unknown>, config, 0);
+        return reconstructError(value, config, 0);
     }
 
     // Handle plain objects
     if (isPlainObject(value)) {
-        return handlePlainObject(value as Record<string, unknown>, config);
+        return handlePlainObject(value, config);
     }
 
     // Handle other types

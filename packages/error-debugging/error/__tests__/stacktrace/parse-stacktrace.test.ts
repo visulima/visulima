@@ -51,7 +51,7 @@ describe("parse-stacktrace", () => {
         it("should parse errors with custom schemes", () => {
             expect.assertions(2);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROMIUM_EMBEDDED_FRAMEWORK_CUSTOM_SCHEME as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROMIUM_EMBEDDED_FRAMEWORK_CUSTOM_SCHEME);
 
             expect(stackFrames).toHaveLength(1);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "examplescheme://examplehost/cd351f7250857e22ceaa.worker.js", 70_179, 15]);
@@ -72,7 +72,7 @@ describe("parse-stacktrace", () => {
         it("should parse V8 Error.stack entries with port numbers", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_36 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_36);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["dumpExceptionError", "http://localhost:8080/file.js", 41, 27]);
@@ -83,7 +83,7 @@ describe("parse-stacktrace", () => {
         it("should parse eval() from V8", () => {
             expect.assertions(9);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_58_EVAL);
 
             expect(stackFrames).toHaveLength(6);
             expect(stackFrames[0]).toMatchStackFrame([
@@ -134,7 +134,7 @@ describe("parse-stacktrace", () => {
         it("should parse nested eval() from V8", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_NESTED_EVAL);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame([
@@ -180,7 +180,7 @@ describe("parse-stacktrace", () => {
         it("should parse error stacks with constructors", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_46 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_46);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["new CustomError", "http://localhost:8080/file.js", 41, 27]);
@@ -190,7 +190,7 @@ describe("parse-stacktrace", () => {
         it("should parses Chrome 76 error with async support", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_76 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_76);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["bar", "<anonymous>", 8, 9]);
@@ -200,7 +200,7 @@ describe("parse-stacktrace", () => {
         it("should parses Chrome error with webpack URLs", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_XX_WEBPACK);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.eval", "webpack:///./src/components/test/test.jsx?", 295, 108]);
@@ -213,7 +213,7 @@ describe("parse-stacktrace", () => {
         it("should parses Chrome error with blob URLs", () => {
             expect.assertions(8);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_48_BLOB);
 
             expect(stackFrames).toHaveLength(7);
             expect(stackFrames[0]).toMatchStackFrame(["Error", "native", undefined, undefined, "native"]);
@@ -229,7 +229,7 @@ describe("parse-stacktrace", () => {
         it("should parse Chrome 73 with native code frames", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME73_NATIVE_CODE_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME73_NATIVE_CODE_EXCEPTION);
 
             expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame(["fooIterator", "http://localhost:5000/test", 20, 17]);
@@ -241,7 +241,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions with eval frames in Chrome 73", () => {
             expect.assertions(11);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_73_EVAL_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_73_EVAL_EXCEPTION);
 
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame(["Object.aha", "http://localhost:5000/", 19, 13]);
@@ -272,7 +272,7 @@ describe("parse-stacktrace", () => {
         it("should parse frames with async urls", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_109_ASYNC_URL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_109_ASYNC_URL);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["callAnotherThing", "http://localhost:5000/", 20, 16]);
@@ -284,7 +284,7 @@ describe("parse-stacktrace", () => {
         it("should parse nested eval() from Edge", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.EDGE_20_NESTED_EVAL);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame(["baz", "eval code", 1, 18, "eval"]);
@@ -297,7 +297,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions with native code frames in Edge 44", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.EDGE_44_NATIVE_CODE_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.EDGE_44_NATIVE_CODE_EXCEPTION);
 
             expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame(["fooIterator", "http://localhost:5000/test", 20, 11]);
@@ -309,7 +309,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions with eval frames in Edge 44", () => {
             expect.assertions(11);
 
-            const stackFrames = parseStacktrace(capturedErrors.EDGE_44_EVAL_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.EDGE_44_EVAL_EXCEPTION);
 
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame(["aha", "http://localhost:5000/", 19, 7]);
@@ -327,7 +327,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions called within an iframe in Electron Renderer", () => {
             expect.assertions(2);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_ELECTRON_RENDERER as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_ELECTRON_RENDERER);
 
             expect(stackFrames).toHaveLength(1);
             expect(stackFrames[0]).toMatchStackFrame(["TESTTESTTEST.someMethod", String.raw`C:\Users\user\path\to\file.js`, 295, 108]);
@@ -348,7 +348,7 @@ describe("parse-stacktrace", () => {
       at commitLayoutEffects (react-dom.development.js?f8c1:23426:1)`,
             };
 
-            const stackFrames = parseStacktrace(EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(EXCEPTION);
 
             expect(stackFrames).toHaveLength(6);
             expect(stackFrames[0]).toMatchStackFrame(["Client.requestPromise", "api.tsx", 554, 1]);
@@ -373,7 +373,7 @@ describe("parse-stacktrace", () => {
         at Array.reduce(<anonymous>)`,
             };
 
-            const stackFrames = parseStacktrace(EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(EXCEPTION);
 
             expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame([
@@ -390,7 +390,7 @@ describe("parse-stacktrace", () => {
         it("handles braces in urls", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.CHROME_BRACES_URL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.CHROME_BRACES_URL);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["something", "http://localhost:5000/(some)/(thing)/index.html", 20, 16]);
@@ -411,7 +411,7 @@ describe("parse-stacktrace", () => {
           at http://localhost:5000/:50:19`,
             };
 
-            const stackFrames = parseStacktrace(LONG_FRAME as unknown as Error);
+            const stackFrames = parseStacktrace(LONG_FRAME);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["aha", "http://localhost:5000/", 39, 5]);
@@ -423,7 +423,7 @@ describe("parse-stacktrace", () => {
         it("should parse Firefox 3 error", () => {
             expect.assertions(8);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_3 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_3);
 
             expect(stackFrames).toHaveLength(7);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://127.0.0.1:8000/js/stacktrace.js", 44, undefined]);
@@ -464,7 +464,7 @@ describe("parse-stacktrace", () => {
         it("should parse Firefox 31 Error.stack", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_31 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_31);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["foo", "http://path/to/file.js", 41, 13]);
@@ -526,7 +526,7 @@ describe("parse-stacktrace", () => {
         it("should parse function names containing @ in Firefox 43 Error.stack", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_43_FUNCTION_NAME_WITH_AT_SIGN);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["obj[\"@fn\"]", "Scratchpad/1", 10, 29]);
@@ -536,7 +536,7 @@ describe("parse-stacktrace", () => {
         it("should parse Firefox 44 ns exceptions", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_44_NS_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_44_NS_EXCEPTION);
 
             expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame(["[2]</Bar.prototype._baz/</<", "http://path/to/file.js", 703, 28]);
@@ -548,7 +548,7 @@ describe("parse-stacktrace", () => {
         it("should parses Firefox errors with resource: URLs", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_50_RESOURCE_URL);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["render", "resource://path/data/content/bundle.js", 5529, 16, undefined]);
@@ -560,7 +560,7 @@ describe("parse-stacktrace", () => {
         it("should parse stack traces with @ in the URL", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_WITH_AT_SIGN);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame(["who", "http://localhost:5000/misc/@stuff/foo.js", 3, 9, undefined]);
@@ -574,7 +574,7 @@ describe("parse-stacktrace", () => {
         it("should parse stack traces with @ in the URL and the method", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_60_URL_AND_FUNCTION_NAME_WITH_AT_SIGN);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame(["obj[\"@who\"]", "http://localhost:5000/misc/@stuff/foo.js", 4, 9, undefined]);
@@ -584,7 +584,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions with native code frames in Firefox 66", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_NATIVE_CODE_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_NATIVE_CODE_EXCEPTION);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["fooIterator", "http://localhost:5000/test", 20, 17]);
@@ -595,7 +595,7 @@ describe("parse-stacktrace", () => {
         it("should parse exceptions with eval frames in Firefox 66", () => {
             expect.assertions(10);
 
-            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_EVAL_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.FIREFOX_66_EVAL_EXCEPTION);
 
             expect(stackFrames).toHaveLength(9);
             expect(stackFrames[0]).toMatchStackFrame(["aha", "http://localhost:5000/", 19, 13]);
@@ -687,7 +687,7 @@ describe("parse-stacktrace", () => {
         it("should parse IE 11 Error stacks", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.IE_11 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.IE_11);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["<anonymous>", "http://path/to/file.js", 47, 21]);
@@ -698,7 +698,7 @@ describe("parse-stacktrace", () => {
         it("should parses IE 11 eval error", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.IE_11_EVAL);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["eval code", "eval code", 1, 1, "eval"]);
@@ -951,7 +951,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parse exceptions for react-native-v8", () => {
             expect.assertions(8);
 
-            const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_V8_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_V8_EXCEPTION);
 
             expect(stackFrames).toHaveLength(7);
             expect(stackFrames[0]).toMatchStackFrame(["Object.onPress", "index.android.bundle", 2342, 3773]);
@@ -966,7 +966,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parse exceptions for react-native Expo bundles", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_EXPO_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.REACT_NATIVE_EXPO_EXCEPTION);
 
             expect(stackFrames).toHaveLength(5);
             expect(stackFrames[0]).toMatchStackFrame([
@@ -1031,7 +1031,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parses React Native errors on Android", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE);
 
             expect(stackFrames).toHaveLength(8);
             expect(stackFrames[0]).toMatchStackFrame([
@@ -1051,7 +1051,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parses React Native errors on Android Production", () => {
             expect.assertions(6);
 
-            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD as unknown as Error, {
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_PROD, {
                 frameLimit: 55,
             });
 
@@ -1066,7 +1066,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parse React Native errors on Android Hermes", () => {
             expect.assertions(27);
 
-            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_HERMES as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.ANDROID_REACT_NATIVE_HERMES);
 
             expect(stackFrames).toHaveLength(26);
             expect(stackFrames[0]).toMatchStackFrame(["onPress", "index.android.bundle", 1, 452_701]);
@@ -1141,7 +1141,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should handle spaces in Node.js stacks", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_SPACES as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_SPACES);
 
             expect(stackFrames).toHaveLength(8);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "/var/app/scratch/my project/index.js", 2, 9]);
@@ -1153,7 +1153,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should handle Node.js stacks with parentheses", () => {
             expect.assertions(8);
 
-            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_PARENTHESES as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.NODE_WITH_PARENTHESES);
 
             expect(stackFrames).toHaveLength(7);
             expect(stackFrames[0]).toMatchStackFrame(["Object.<anonymous>", "/var/app/scratch/my project (top secret)/index.js", 2, 9]);
@@ -1168,7 +1168,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parses node error with space in path", () => {
             expect.assertions(11);
 
-            const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.NODE_SPACE);
 
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame(["Spect.get", String.raw`C:\project files\spect\src\index.js`, 161, 26]);
@@ -1186,7 +1186,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parses node.js async errors available with version 12", () => {
             expect.assertions(3);
 
-            const stackFrames = parseStacktrace(capturedErrors.NODE_12 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.NODE_12);
 
             expect(stackFrames).toHaveLength(2);
             expect(stackFrames[0]).toMatchStackFrame(["promiseMe", "/home/xyz/hack/asyncnode.js", 11, 9]);
@@ -1196,7 +1196,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
         it("should parses node.js errors with <anonymous> calls as well", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.NODE_ANONYM);
 
             expect(stackFrames).toHaveLength(10);
             expect(stackFrames[0]).toMatchStackFrame(["Spect.get", String.raw`C:\projects\spect\src\index.js`, 161, 26]);
@@ -1433,7 +1433,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                     + "   at sentryWrapped(../node_modules/@sentry/browser/esm/helpers.js:90:17)",
             };
 
-            const stackFrames = parseStacktrace(SECURITY_ERROR as unknown as Error);
+            const stackFrames = parseStacktrace(SECURITY_ERROR);
 
             expect(stackFrames).toHaveLength(12);
             expect(stackFrames[0]).toMatchStackFrame(["castFn", "../node_modules/@sentry-internal/rrweb/es/rrweb/packages/rrweb/src/replay/index.js", 368, 76]);
@@ -1477,7 +1477,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse Opera 25 Error stacks", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.OPERA_25 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.OPERA_25);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 47, 22]);
@@ -1554,7 +1554,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse Safari 7 Error.stack", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_7 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_7);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 48, 22]);
@@ -1565,7 +1565,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse Safari 8 Error.stack", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8 as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "http://path/to/file.js", 47, 22]);
@@ -1576,7 +1576,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parses Safari 8 eval error", () => {
             expect.assertions(4);
 
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_8_EVAL);
 
             expect(stackFrames).toHaveLength(3);
             expect(stackFrames[0]).toMatchStackFrame(["eval", "[native code]", 1, 18, "native"]);
@@ -1598,7 +1598,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse exceptions with native code frames in Safari 12", () => {
             expect.assertions(5);
 
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_NATIVE_CODE_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_NATIVE_CODE_EXCEPTION);
 
             expect(stackFrames).toHaveLength(4);
             expect(stackFrames[0]).toMatchStackFrame(["fooIterator", "http://localhost:5000/test", 20, 26]);
@@ -1610,7 +1610,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
         it("should parse exceptions with eval frames in Safari 12", () => {
             expect.assertions(12);
 
-            const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_EVAL_EXCEPTION as unknown as Error);
+            const stackFrames = parseStacktrace(capturedErrors.SAFARI_12_EVAL_EXCEPTION);
 
             expect(stackFrames).toHaveLength(11);
             expect(stackFrames[0]).toMatchStackFrame(["aha", "http://localhost:5000/", 19, 22]);
@@ -1630,7 +1630,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             it("should parse exceptions for safari-extension", () => {
                 expect.assertions(3);
 
-                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION as unknown as Error);
+                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION);
 
                 expect(stackFrames).toHaveLength(2);
                 expect(stackFrames[0]).toMatchStackFrame([
@@ -1651,7 +1651,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             it("should parse exceptions for safari-extension with frames-only stack", () => {
                 expect.assertions(4);
 
-                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_2 as unknown as Error);
+                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_2);
 
                 expect(stackFrames).toHaveLength(3);
                 expect(stackFrames[0]).toMatchStackFrame([
@@ -1674,7 +1674,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             it("should parse exceptions for safari-web-extension", () => {
                 expect.assertions(3);
 
-                const stackFrames = parseStacktrace(capturedErrors.SAFARI_WEB_EXTENSION_EXCEPTION as unknown as Error);
+                const stackFrames = parseStacktrace(capturedErrors.SAFARI_WEB_EXTENSION_EXCEPTION);
 
                 expect(stackFrames).toHaveLength(2);
                 expect(stackFrames[0]).toMatchStackFrame([
@@ -1696,7 +1696,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
             it("should parse exceptions for safari-web-extension with frames-only stack", () => {
                 expect.assertions(3);
 
-                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_3 as unknown as Error);
+                const stackFrames = parseStacktrace(capturedErrors.SAFARI_EXTENSION_EXCEPTION_3);
 
                 expect(stackFrames).toHaveLength(3);
                 expect(stackFrames[0]).toMatchStackFrame([
