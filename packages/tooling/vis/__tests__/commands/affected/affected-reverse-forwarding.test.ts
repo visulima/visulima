@@ -41,10 +41,7 @@ const seedGitWorkspace = (workspaceRoot: string): void => {
 
     mkdirSync(libDir, { recursive: true });
     writeFileSync(join(libDir, "package.json"), JSON.stringify({ name: "@my/lib" }));
-    writeFileSync(
-        join(libDir, "project.json"),
-        JSON.stringify({ targets: { destroy: { command: "echo destroy lib" } } }),
-    );
+    writeFileSync(join(libDir, "project.json"), JSON.stringify({ targets: { destroy: { command: "echo destroy lib" } } }));
 
     git(workspaceRoot, ["init", "-q"]);
     git(workspaceRoot, ["config", "user.email", "test@example.com"]);

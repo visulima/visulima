@@ -76,11 +76,11 @@ describe("vis toolchain (command)", () => {
         const originalWrite = process.stdout.write.bind(process.stdout);
         let captured = "";
 
-        process.stdout.write = ((chunk: string | Uint8Array): boolean => {
+        process.stdout.write = (chunk: string | Uint8Array): boolean => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
             return true;
-        });
+        };
 
         try {
             await toolchainExecute(makeToolbox(workspaceRoot, ["status"], { json: true }) as never);
@@ -106,11 +106,11 @@ describe("vis toolchain (command)", () => {
         const originalNvmDir = process.env["NVM_DIR"];
         let captured = "";
 
-        process.stdout.write = ((chunk: string | Uint8Array): boolean => {
+        process.stdout.write = (chunk: string | Uint8Array): boolean => {
             captured += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
             return true;
-        });
+        };
 
         try {
             // Scope PATH to the empty workspace dir and clear NVM_DIR so

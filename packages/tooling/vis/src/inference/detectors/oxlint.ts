@@ -5,10 +5,10 @@ export const oxlintDetector: Detector = {
     detect: ({ matchedConfigs }) => {
         return {
             targets: {
-            // Registers under `lint`. With eslint and biome ahead of it
-            // in the registry, an eslint/biome project keeps its existing
-            // command — oxlint only fills in for projects that use it as
-            // their primary linter.
+                // Registers under `lint`. With eslint and biome ahead of it
+                // in the registry, an eslint/biome project keeps its existing
+                // command — oxlint only fills in for projects that use it as
+                // their primary linter.
                 lint: {
                     command: "oxlint",
                     description: "oxlint (inferred)",

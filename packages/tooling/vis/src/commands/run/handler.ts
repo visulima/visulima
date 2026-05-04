@@ -16,6 +16,7 @@ import {
     createTaskGraph,
     defaultTaskRunner,
     enforceProjectConstraints,
+    expandTokensInString,
     generateRunSummary,
     parsePartition,
     readLastRunSummary,
@@ -99,11 +100,13 @@ const resolveCwd = (workspaceRoot: string, projectRoot: string | undefined, runF
 const runPersistentTasks = async (tasks: Task[], workspaceRoot: string, affectedFiles: string[] | undefined, initCwd: string): Promise<void> => {
     const commands = tasks
         .map((task) => {
-            const command = task.overrides["command"] as string | undefined;
+            const rawCommand = task.overrides["command"] as string | undefined;
 
-            if (!command) {
+            if (!rawCommand) {
                 return undefined;
             }
+
+            const command = expandTokensInString(rawCommand, { affectedFiles, projectRoot: task.projectRoot });
 
             const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
             const cwd = resolveCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
@@ -408,7 +411,13 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
         }
 
-        const commandWithArgs = appendForwardedArgs(rawCommand, task);
+        // Token expansion happens before forwarded args and affectedFiles
+        // trailing-args mode so `${affected.files}` lands in the
+        // user-specified position, while later stages keep their
+        // append-at-end semantics. Tokens see the same projectRoot used
+        // for cwd resolution so paths get rewritten consistently.
+        const commandWithTokens = expandTokensInString(rawCommand, { affectedFiles, projectRoot: task.projectRoot });
+        const commandWithArgs = appendForwardedArgs(commandWithTokens, task);
         const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
         const customShell = resolveTargetShell(visOptions, currentOs);
@@ -1435,7 +1444,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         const mutexPool: MutexPool = new Map();
         const logModeOption = typeof options.log === "string" ? options.log.toLowerCase() : "";
         const logMode: LogMode | undefined
-            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? (logModeOption) : undefined;
+            = logModeOption === "labeled" || logModeOption === "grouped" || logModeOption === "interleaved" ? logModeOption : undefined;
         const logReporter = logMode ? createLogReporter(logMode) : undefined;
         // Composite so plugin hooks see every task boundary event in
         // addition to the CI-style static renderer. Build the

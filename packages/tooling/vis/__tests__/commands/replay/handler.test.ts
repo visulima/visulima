@@ -163,7 +163,7 @@ describe("commands/replay/handler", () => {
 
             await replayExecute(toolbox as never);
 
-            const lines = (toolbox.logger.info).mock.calls.map((call) => call[0] as string);
+            const lines = toolbox.logger.info.mock.calls.map((call) => call[0] as string);
             const newerIndex = lines.findIndex((line) => line.includes("newer-run-id"));
             const olderIndex = lines.findIndex((line) => line.includes("older-run-id"));
 

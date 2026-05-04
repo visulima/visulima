@@ -352,7 +352,7 @@ vis affected destroy --reverse      # same, scoped to git-affected projects
 
 ### Why this matters
 
-If `app` depends on `lib` (so `app` builds *after* `lib`), then a CDK/Pulumi/CloudFormation `destroy` must run on `app` **before** `lib`, because `lib`'s outputs (an `Fn::ImportValue`, a shared VPC, a network stack) are still being consumed by `app`. Tearing down `lib` first leaves dangling exports and blocks the destroy.
+If `app` depends on `lib` (so `app` builds _after_ `lib`), then a CDK/Pulumi/CloudFormation `destroy` must run on `app` **before** `lib`, because `lib`'s outputs (an `Fn::ImportValue`, a shared VPC, a network stack) are still being consumed by `app`. Tearing down `lib` first leaves dangling exports and blocks the destroy.
 
 `--reverse` reuses the same `dependsOn` declarations you already have — no duplicate "destroy graph" to maintain. The reversal happens after service auto-attach and project resolution, so `--affected`, `--query`, `--projects`, and persistent services all keep working unchanged.
 

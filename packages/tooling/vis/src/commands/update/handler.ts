@@ -647,14 +647,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     const useCatalogMode = !options.noCatalog && hasCatalogs(workspaceRoot, packageManager);
 
     if (useCatalogMode) {
-        await executeCatalogUpdate(
-            workspaceRoot,
-            packageManager,
-            visConfig ?? {},
-            options,
-            argument,
-            logger,
-        );
+        await executeCatalogUpdate(workspaceRoot, packageManager, visConfig ?? {}, options, argument, logger);
     } else {
         // Non-catalog updates honor `install.backend` so users who opted
         // into aube get `aube update` instead of the lockfile-detected PM.

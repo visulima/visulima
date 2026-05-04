@@ -26,17 +26,17 @@ vis affected destroy --reverse
 
 ## Options
 
-| Option         | Default  | Description                                               |
-| -------------- | -------- | --------------------------------------------------------- |
-| `--base`       | `HEAD~1` | Git base ref for comparison                               |
-| `--head`       | `HEAD`   | Git head ref for comparison                               |
-| `--downstream` | `deep`   | How far to include dependents: `none`, `direct`, `deep`   |
-| `--upstream`   | `none`   | How far to include dependencies: `none`, `direct`, `deep` |
-| `--parallel`   | `3`      | Maximum number of parallel tasks                          |
-| `--cache`      | `true`   | Enable caching (`--no-cache` to disable)                  |
-| `--dry-run`    | `false`  | Show what would run without executing                     |
-| `--partition`  |          | Partition for distributed CI (e.g. `1/4`)                 |
-| `--query`      |          | Filter affected projects by query                         |
+| Option         | Default  | Description                                                                                                   |
+| -------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `--base`       | `HEAD~1` | Git base ref for comparison                                                                                   |
+| `--head`       | `HEAD`   | Git head ref for comparison                                                                                   |
+| `--downstream` | `deep`   | How far to include dependents: `none`, `direct`, `deep`                                                       |
+| `--upstream`   | `none`   | How far to include dependencies: `none`, `direct`, `deep`                                                     |
+| `--parallel`   | `3`      | Maximum number of parallel tasks                                                                              |
+| `--cache`      | `true`   | Enable caching (`--no-cache` to disable)                                                                      |
+| `--dry-run`    | `false`  | Show what would run without executing                                                                         |
+| `--partition`  |          | Partition for distributed CI (e.g. `1/4`)                                                                     |
+| `--query`      |          | Filter affected projects by query                                                                             |
 | `--reverse`    | `false`  | Run leaves-first (teardown order). Forwarded to `vis run`. See [Reverse order](./run#reverse-order-teardown). |
 
 ## Affected Files Forwarding

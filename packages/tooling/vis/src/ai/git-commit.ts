@@ -154,9 +154,7 @@ const apiBaseToHost = (apiBaseUrl: string): string =>
     // Gitbeaker wants the bare host (`https://gitlab.example.com`), not
     // the API path (`https://gitlab.example.com/api/v4`). Strip the
     // `/api/vN` suffix if present.
-    apiBaseUrl.replace(/\/api\/v\d+\/?$/, "")
-;
-
+    apiBaseUrl.replace(/\/api\/v\d+\/?$/, "");
 const commitToGithub = async (options: CommitFilesOptions): Promise<CommitFilesResult> => {
     const { branch, ciContext, files, message, workspaceRoot } = options;
     const readFile = options.readFile ?? ((absolute: string) => fsReadFile(absolute, "utf8"));

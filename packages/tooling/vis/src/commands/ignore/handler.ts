@@ -21,7 +21,7 @@ import type { IgnoreOptions } from "./index";
 const VALID_SCOPES = new Set<AffectedScope>(["deep", "direct", "none"]);
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: Toolbox<Console, IgnoreOptions>): Promise<void> => {
-    const project = (argument[0]) ?? "";
+    const project = argument[0] ?? "";
     const isJson = Boolean(options.json);
     const isVerbose = Boolean(options.verbose);
     const exitZeroOnBuild = Boolean((options as Record<string, unknown>)["exit-zero-on-build"] ?? options.exitZeroOnBuild);

@@ -57,7 +57,9 @@ describe(loadOptionalSdk, () => {
             return stub;
         });
         const prompt = vi.fn(async () => true);
-        const runInstall = vi.fn(async () => { return { exitCode: 0 }; });
+        const runInstall = vi.fn(async () => {
+            return { exitCode: 0 };
+        });
 
         const loaded = await loadOptionalSdk("@gitbeaker/rest", {
             importImpl,
@@ -80,7 +82,9 @@ describe(loadOptionalSdk, () => {
             throw moduleNotFound(specifier);
         });
         const prompt = vi.fn(async () => false);
-        const runInstall = vi.fn(async () => { return { exitCode: 0 }; });
+        const runInstall = vi.fn(async () => {
+            return { exitCode: 0 };
+        });
 
         await expect(
             loadOptionalSdk("@octokit/rest", {
@@ -106,7 +110,9 @@ describe(loadOptionalSdk, () => {
                 importImpl,
                 interactive: true,
                 prompt: async () => true,
-                runInstall: async () => { return { exitCode: 1 }; },
+                runInstall: async () => {
+                    return { exitCode: 1 };
+                },
             }),
         ).rejects.toThrow(/Install of @octokit\/rest failed/);
     });

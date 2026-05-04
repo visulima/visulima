@@ -132,7 +132,7 @@ export const loadOptionalSdk = async <T = unknown>(sdk: OptionalSdk, options: Lo
     try {
         return (await importImpl(sdk)) as LoadedModule<T>;
     } catch (error: unknown) {
-        const { code } = (error as NodeJS.ErrnoException);
+        const { code } = error as NodeJS.ErrnoException;
 
         // Anything other than "module not found" — bubble. A failed-to-
         // parse SDK is the user's broken install, not something we can

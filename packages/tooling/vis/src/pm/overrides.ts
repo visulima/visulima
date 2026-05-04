@@ -86,7 +86,7 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
     try {
         const data = readYamlSync(filePath) as { overrides?: Record<string, string | Record<string, string>> } | undefined;
 
-        return { overrides: data?.overrides ?? ({}), source: "pnpm-workspace.yaml" };
+        return { overrides: data?.overrides ?? {}, source: "pnpm-workspace.yaml" };
     } catch {
         return { overrides: {}, source: "pnpm-workspace.yaml" };
     }

@@ -67,8 +67,12 @@ export const spawnDetached = async (input: SpawnDetachedInput): Promise<SpawnDet
         // `spawn` only resolves PID after the OS confirms the fork. If
         // the binary doesn't exist, we get an `error` event instead.
         await new Promise<void>((resolve, reject) => {
-            child.once("spawn", () => { resolve(); });
-            child.once("error", (error) => { reject(error); });
+            child.once("spawn", () => {
+                resolve();
+            });
+            child.once("error", (error) => {
+                reject(error);
+            });
         });
     }
 

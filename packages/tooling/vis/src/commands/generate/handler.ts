@@ -174,7 +174,7 @@ const pickInteractive = async (templates: DiscoveredTemplate[]): Promise<string>
 const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, GenerateOptions>): Promise<void> => {
     const cwd = ((options as Record<string, unknown>).cwd as string | undefined) || wsRoot || process.cwd();
     const workspaceRoot = wsRoot ?? cwd;
-    const generatorConfig = (visConfig)?.generator;
+    const generatorConfig = visConfig?.generator;
     const args: string[] = Array.isArray(argument) ? argument : argument ? [argument] : [];
 
     // --list short-circuits before remote fetch.
