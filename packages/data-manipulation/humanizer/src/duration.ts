@@ -328,7 +328,7 @@ const duration = (milliseconds: number, options?: DurationOptions): string => {
         },
         units: ["w", "d", "h", "m", "s"],
         ...options,
-    } as InternalOptions;
+    };
 
     validateDurationLanguage(config.language);
 
