@@ -103,8 +103,13 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
 /**
  * Emits a single-line security summary warning before PM commands.
  * Skipped in CI unless VIS_SECURITY_WARNINGS=1.
+ *
+ * When `enforcementWillFire` is true (install/add/update), the allowBuilds
+ * warning is excluded from the summary because `enforceScriptSecurity` is
+ * about to emit a more specific, actionable warning for it. Without this,
+ * users see two stacked warnings saying the same thing.
  */
-const emitSecurityWarnings = (config: VisConfig, packageManager: string): void => {
+const emitSecurityWarnings = (config: VisConfig, packageManager: string, enforcementWillFire = false): void => {
     if (isInCi && !process.env.VIS_SECURITY_WARNINGS) {
         return;
     }
@@ -115,9 +120,11 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
         pail.error(error);
     }
 
-    if (result.warnings.length > 0) {
+    const summarized = enforcementWillFire ? result.warnings.filter((w) => !w.startsWith("security.allowBuilds is not configured")) : result.warnings;
+
+    if (summarized.length > 0) {
         pail.warn(
-            `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. ` +
+            `${summarized.length} security recommendation${summarized.length === 1 ? "" : "s"} found. ` +
                 "Run 'vis check --security-config' for details.",
         );
     }

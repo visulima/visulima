@@ -249,6 +249,9 @@ const executeCatalogUpdate = async (
               if (progressInstance) {
                   progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
               } else {
+                  // Leading newline keeps the spinner from colliding with any
+                  // prior pail.warn / security messages emitted in beforeCommand.
+                  process.stdout.write("\n");
                   progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
                       interactive: true,
                       patchConsole: false,
