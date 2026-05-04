@@ -177,7 +177,7 @@ function Transition({ children, distance = 4, duration = 240, onExit, preset = "
         startRef.current = Date.now();
         startProgressRef.current = progress;
         completedRef.current = false;
-        // eslint-disable-next-line react-x/set-state-in-effect -- animation restart key must bump in effect when `show` flips
+        // eslint-disable-next-line react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change -- animation restart key must bump in effect when `show` flips; doing it in render would re-trigger every tick
         setAnimationKey((previous) => previous + 1);
         // `progress` is intentionally excluded — it would retrigger the
         // animation on every tick. We snapshot it once when `show` flips.

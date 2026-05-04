@@ -156,10 +156,11 @@ export default function Menu({ accentColor = "blue", autoFocus = false, bordered
         const row = rows[current];
         const stillValid = row?.kind === "item" && !row.item.isDisabled;
 
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler -- re-clamp on row prop changes; not an event response
         if (!stillValid) {
             const next = firstEnabledIndex(rows);
 
-            // eslint-disable-next-line react-x/set-state-in-effect -- focus must re-clamp on row changes; effect-driven by design
+            // eslint-disable-next-line react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state -- focusedIndex is also driven by keystrokes via ref; cannot be derived during render
             setFocusedIndex(next);
             focusedIndexRef.current = next;
         }

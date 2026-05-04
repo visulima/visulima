@@ -54,7 +54,7 @@ export default function StreamingText({ color, cursor = "▊", interval = 20, on
     onCompleteRef.current = onComplete;
 
     useEffect(() => {
-        // eslint-disable-next-line react-x/set-state-in-effect -- reset stream progress when source text changes
+        // eslint-disable-next-line react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change -- reset stream progress when source text changes; resetting during render would create an infinite loop
         setVisibleLength(0);
         hasCompletedRef.current = false;
     }, [text]);
