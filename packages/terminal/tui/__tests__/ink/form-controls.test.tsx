@@ -41,8 +41,6 @@ describe(Button, () => {
     });
 
     it("should call onPress when Enter is pressed", async () => {
-        expect.assertions(1);
-
         const onPress = vi.fn();
         const { stdin } = await setup(
             <Button autoFocus onPress={onPress}>
@@ -51,14 +49,10 @@ describe(Button, () => {
         );
 
         emitReadable(stdin, "\r");
-        await delay(50);
-
-        expect(onPress).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => expect(onPress).toHaveBeenCalledTimes(1));
     });
 
     it("should call onPress when Space is pressed", async () => {
-        expect.assertions(1);
-
         const onPress = vi.fn();
         const { stdin } = await setup(
             <Button autoFocus onPress={onPress}>
@@ -67,9 +61,7 @@ describe(Button, () => {
         );
 
         emitReadable(stdin, " ");
-        await delay(50);
-
-        expect(onPress).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => expect(onPress).toHaveBeenCalledTimes(1));
     });
 
     it("should not call onPress when disabled", async () => {
@@ -83,7 +75,7 @@ describe(Button, () => {
         );
 
         emitReadable(stdin, "\r");
-        await delay(50);
+        await delay(150);
 
         expect(onPress).not.toHaveBeenCalled();
     });
@@ -101,8 +93,6 @@ describe(Checkbox, () => {
     });
 
     it("should toggle on Space", async () => {
-        expect.assertions(1);
-
         const onChange = vi.fn();
         const { stdin } = await setup(
             <Checkbox autoFocus onChange={onChange}>
@@ -111,9 +101,7 @@ describe(Checkbox, () => {
         );
 
         emitReadable(stdin, " ");
-        await delay(50);
-
-        expect(onChange).toHaveBeenCalledWith(true);
+        await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith(true));
     });
 
     it("should respect controlled isChecked prop", async () => {
@@ -141,15 +129,11 @@ describe(Switch, () => {
     });
 
     it("should toggle the value on Space", async () => {
-        expect.assertions(1);
-
         const onChange = vi.fn();
         const { stdin } = await setup(<Switch autoFocus onChange={onChange} />);
 
         emitReadable(stdin, " ");
-        await delay(50);
-
-        expect(onChange).toHaveBeenCalledWith(true);
+        await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith(true));
     });
 
     it("should use custom labels", async () => {
@@ -190,15 +174,11 @@ describe(RadioGroup, () => {
     });
 
     it("should emit onChange when navigating down by default (commit-on-navigate)", async () => {
-        expect.assertions(1);
-
         const onChange = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
-        await delay(50);
-
-        expect(onChange).toHaveBeenCalledWith("b");
+        await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith("b"));
     });
 
     it("should NOT emit onChange when navigating with commitOnNavigate={false}", async () => {
@@ -208,35 +188,27 @@ describe(RadioGroup, () => {
         const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
-        await delay(50);
+        await delay(150);
 
         expect(onChange).not.toHaveBeenCalled();
     });
 
     it("should commit on Space when commitOnNavigate is false", async () => {
-        expect.assertions(1);
-
         const onChange = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus commitOnNavigate={false} defaultValue="a" onChange={onChange} options={options} />);
 
         emitReadable(stdin, "j");
-        await delay(50);
+        await delay(100);
         emitReadable(stdin, " ");
-        await delay(50);
-
-        expect(onChange).toHaveBeenCalledWith("b");
+        await vi.waitFor(() => expect(onChange).toHaveBeenCalledWith("b"));
     });
 
     it("should emit onSubmit when Enter is pressed", async () => {
-        expect.assertions(1);
-
         const onSubmit = vi.fn();
         const { stdin } = await setup(<RadioGroup autoFocus defaultValue="a" onSubmit={onSubmit} options={options} />);
 
         emitReadable(stdin, "\r");
-        await delay(50);
-
-        expect(onSubmit).toHaveBeenCalledWith("a");
+        await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledWith("a"));
     });
 });
 
@@ -268,8 +240,6 @@ describe(Collapsible, () => {
     });
 
     it("should call onToggle when Space is pressed", async () => {
-        expect.assertions(1);
-
         const onToggle = vi.fn();
         const { stdin } = await setup(
             <Collapsible autoFocus onToggle={onToggle} title="Section">
@@ -278,9 +248,7 @@ describe(Collapsible, () => {
         );
 
         emitReadable(stdin, " ");
-        await delay(50);
-
-        expect(onToggle).toHaveBeenCalledWith(true);
+        await vi.waitFor(() => expect(onToggle).toHaveBeenCalledWith(true));
     });
 });
 
@@ -309,18 +277,16 @@ describe(Accordion, () => {
     });
 
     it("should allow multiple panels open when allowMultiple is true", async () => {
-        expect.assertions(2);
-
         const { getOutput, stdin } = await setup(<Accordion allowMultiple autoFocus defaultExpanded={["1"]} items={items} />);
 
         emitReadable(stdin, "j");
-        await delay(50);
+        await delay(100);
         emitReadable(stdin, " ");
-        await delay(50);
+        await vi.waitFor(() => {
+            const output = getOutput();
 
-        const output = getOutput();
-
-        expect(output).toContain("Body one");
-        expect(output).toContain("Body two");
+            expect(output).toContain("Body one");
+            expect(output).toContain("Body two");
+        });
     });
 });
