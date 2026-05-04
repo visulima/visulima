@@ -1,3 +1,34 @@
+## @visulima/task-runner [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.8...@visulima/task-runner@1.0.0-alpha.9) (2026-05-04)
+
+### Features
+
+* **task-runner,vis:** cache restoration fidelity ([a15cb22](https://github.com/visulima/visulima/commit/a15cb22bde832cfe76ee017722b8b9f9102dac8f))
+* **task-runner:** add REAPI gRPC backend, cacheMode, and cache doctor ([03e6da9](https://github.com/visulima/visulima/commit/03e6da97beb84f6adc4a07a1c7ca4acf28be3b33))
+* **task-runner:** add URI-based input format ([050b583](https://github.com/visulima/visulima/commit/050b5838c15590a3ccba0ca99ad585cbabc36d99))
+* **task-runner:** skip-on-warning incrementality ([2c79ab3](https://github.com/visulima/visulima/commit/2c79ab35d0513bf4e60f87d1ac3bc4e99296cb62)), closes [#22](https://github.com/visulima/visulima/issues/22) [rushstack#1402](https://github.com/visulima/rushstack/issues/1402)
+
+### Bug Fixes
+
+* **vis:** preserve probe error on close failure and clamp formatAge ([f1d71d6](https://github.com/visulima/visulima/commit/f1d71d63a5432fc2ed8c09c9a0a87e4e59b83b0b))
+
+### Documentation
+
+* **task-runner:** cover when/always, tokens, REAPI, hooks ([1515cd3](https://github.com/visulima/visulima/commit/1515cd349db41fcfe83ae86ed4d52df8dccbf985))
+
+### Miscellaneous Chores
+
+* catalog refresh + task-runner binding bump to 1.0.0-alpha.8 ([ff4548a](https://github.com/visulima/visulima/commit/ff4548a5678c992048a57e73c310757733c04756))
+* **deps:** bump rust crates to current majors ([3a1d9bb](https://github.com/visulima/visulima/commit/3a1d9bb7f6e2c6b2d3862e212ae62707d60815cc))
+
+### Code Refactoring
+
+* **task-runner,vis:** consolidate helpers and tighten branches ([d1290d1](https://github.com/visulima/visulima/commit/d1290d1f614036902c6803d8ff51df100fdd07ab))
+* **task-runner,vis:** expose worktree helpers from task-runner ([12468d7](https://github.com/visulima/visulima/commit/12468d76bb03278ec56691ba0c6d9821c9482f94))
+
+### Tests
+
+* **task-runner:** split tests into unit/integration mirroring src layout ([ae78f99](https://github.com/visulima/visulima/commit/ae78f992d24626f3b23de56fa735aced47b1220e))
+
 ## @visulima/task-runner [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.7...@visulima/task-runner@1.0.0-alpha.8) (2026-04-30)
 
 ### Features
