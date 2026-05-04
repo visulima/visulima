@@ -1,9 +1,7 @@
 import { execFileSync } from "node:child_process";
 
 import { isAbsolute, relative, resolve } from "@visulima/path";
-import { DEFAULT_CACHE_DIRECTORY_NAME } from "@visulima/task-runner";
-
-import { getMainWorktreeRoot } from "../git/git-worktree";
+import { DEFAULT_CACHE_DIRECTORY_NAME, getMainWorktreeRoot } from "@visulima/task-runner";
 
 /**
  * Shared helpers for resolving the task runner's cache directory.

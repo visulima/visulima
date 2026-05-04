@@ -164,3 +164,5 @@ export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDe
 // Conditional task evaluation (`when:` clause)
 export type { EnvMatcher, NodePlatform, WhenCondition, WhenContext } from "./when-condition";
 export { evaluateWhen, explainWhen, getCurrentBranch, resetBranchCache } from "./when-condition";
+// Git-worktree detection (linked worktrees -> main checkout, for shared cache)
+export { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "./worktree";

@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "../src/git/git-worktree";
+import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "../src/worktree";
 
 // When this test file runs inside a git pre-commit hook, git exports
 // GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE pointing at the hook-running
@@ -45,7 +45,7 @@ describe(getMainWorktreeRoot, () => {
     let scratch: string;
 
     beforeEach(() => {
-        scratch = mkdtempSync(join(realpathSync(tmpdir()), "vis-worktree-"));
+        scratch = mkdtempSync(join(realpathSync(tmpdir()), "tr-worktree-"));
         resetWorktreeCache();
     });
 
@@ -206,7 +206,7 @@ describe(isLinkedWorktree, () => {
     let scratch: string;
 
     beforeEach(() => {
-        scratch = mkdtempSync(join(realpathSync(tmpdir()), "vis-linked-"));
+        scratch = mkdtempSync(join(realpathSync(tmpdir()), "tr-linked-"));
         resetWorktreeCache();
     });
 
