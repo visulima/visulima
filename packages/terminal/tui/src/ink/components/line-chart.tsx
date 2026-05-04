@@ -206,8 +206,7 @@ export default function LineChart({
                 version={[series, width, height, minY, maxY, axisColor, palette]}
                 width={width}
             />
-            {showLegend
-                ? (
+            {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
@@ -219,8 +218,7 @@ export default function LineChart({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }

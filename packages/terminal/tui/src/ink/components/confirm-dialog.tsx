@@ -126,8 +126,7 @@ export default function ConfirmDialog({
         useCallback(
             (input, key) => {
                 if (key.leftArrow || key.rightArrow || input === "h" || input === "l") {
-                    // eslint-disable-next-line no-confusing-arrow -- ternary in arrow body is the clearest expression here
-                    setFocus((previous) => previous === "confirm" ? "cancel" : "confirm");
+                    setFocus((previous) => (previous === "confirm" ? "cancel" : "confirm"));
 
                     return;
                 }

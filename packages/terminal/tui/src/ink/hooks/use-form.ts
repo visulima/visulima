@@ -109,11 +109,7 @@ const useForm = <S extends Readonly<Record<string, FieldConfig>>>(options: UseFo
     valuesRef.current = values;
 
     const validateField = useCallback(
-        <K extends keyof S>(
-            name: K,
-            value: FormValues<S>[K],
-            allValues: Readonly<Record<string, unknown>> = valuesRef.current,
-        ): ValidationResult => {
+        <K extends keyof S>(name: K, value: FormValues<S>[K], allValues: Readonly<Record<string, unknown>> = valuesRef.current): ValidationResult => {
             const config = fields[name as string] as FieldConfig<FormValues<S>[K]> | undefined;
 
             return config?.validate?.(value, allValues);

@@ -212,7 +212,7 @@ export default function Gauge({
                         } else if (sortedThresholds) {
                             const segment = thresholdAtRatio(sortedThresholds, min, max, stepRatio);
 
-                            color = (segment?.color ?? "cyan");
+                            color = segment?.color ?? "cyan";
                         } else {
                             color = "cyan";
                         }
@@ -263,8 +263,7 @@ export default function Gauge({
                 </Box>
                 )
                 : undefined}
-            {showLegend && thresholds && thresholds.length > 0
-                ? (
+            {showLegend && thresholds && thresholds.length > 0 ? (
                 <Box gap={2} justifyContent="center" marginTop={1}>
                     {thresholds.map((threshold, index) => (
                         // eslint-disable-next-line react-x/no-array-index-key -- threshold index is stable for the render
@@ -274,8 +273,7 @@ export default function Gauge({
                         </Box>
                     ))}
                 </Box>
-                )
-                : undefined}
+            ) : undefined}
         </Box>
     );
 }
