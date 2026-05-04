@@ -7,7 +7,7 @@ import { loadMoonTemplate } from "../../src/generate/moon-adapter";
 import type { Creation, CreationDirectory, CreationFile } from "../../src/generate/types";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const FIXTURE = join(here, "../__fixtures__/generate/moon-component");
+const FIXTURE = join(here, "../../__fixtures__/generate/moon-component");
 
 const baseBuiltins = {
     dest_dir: "/tmp/dest",
