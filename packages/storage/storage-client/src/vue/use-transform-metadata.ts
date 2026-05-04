@@ -54,10 +54,10 @@ export const useTransformMetadata = (options: UseTransformMetadataOptions): UseT
 
     return {
         data: computed(() => query.data.value),
-        error: computed(() => (query.error.value as Error) || undefined),
+        error: computed(() => query.error.value ?? undefined),
         isLoading: computed(() => query.isLoading.value),
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

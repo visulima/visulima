@@ -73,7 +73,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
                     };
                 })) as { error: { code: string; message: string } };
 
-                throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
+                throw new Error(errorData.error.message || `Failed to get transformed file: ${String(response.status)} ${response.statusText}`);
             }
 
             const blob = await response.blob();
@@ -95,11 +95,11 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
     return {
         data: computed(() => query.data.value?.blob),
-        error: computed(() => (query.error.value as Error) || undefined),
+        error: computed(() => query.error.value ?? undefined),
         isLoading: computed(() => query.isLoading.value),
-        meta: computed(() => query.data.value?.meta || undefined),
+        meta: computed(() => query.data.value?.meta),
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };
