@@ -172,6 +172,21 @@ export interface VisTargetOptions {
     runInCI?: RunInCI;
 
     /**
+     * Capability tags that gate this task to runners advertising the
+     * same tag. The CLI's `--runner-tags=gpu,slow` flag (or
+     * `VIS_RUNNER_TAGS` env var) tells vis what the current runner
+     * supports; tasks whose `runnerTags` share at least one tag with
+     * the runner set are eligible. Untagged tasks (no `runnerTags` or
+     * an empty array) are general-purpose and always run.
+     *
+     * Use this for special-purpose CI lanes — e.g. a GPU runner that
+     * should only pick up visual-regression suites, or a nightly job
+     * that runs `slow` integration tests. When neither flag nor env
+     * is set, the filter is inactive and every task runs.
+     */
+    runnerTags?: string[];
+
+    /**
      * Marks this target as a long-lived service that can be started via
      * `vis service start &lt;id>` and auto-attached when other tasks declare
      * it in `dependsOn`. Implies persistent + non-cacheable behaviour

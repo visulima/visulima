@@ -49,7 +49,7 @@ import {
     suggestTargets,
 } from "../../task/target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../task/target-options";
-import { detectCurrentOs, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../../task/target-options";
+import { detectCurrentOs, loadEnvFile, matchesRunnerTags, resolveTargetShell, shouldRunInCI } from "../../task/target-options";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
 import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
@@ -850,6 +850,20 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
     const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
 
+    // Runner-tag filter: CLI flag wins over env so a script can override
+    // a CI-injected default. Empty string after splitting is dropped so
+    // `--runner-tags=` (no value) doesn't accidentally enable a filter
+    // with one empty tag. `undefined` keeps the filter inactive.
+    const runnerTagsRaw = (typeof options.runnerTags === "string" ? options.runnerTags : process.env["VIS_RUNNER_TAGS"]) ?? undefined;
+    const runnerTags = runnerTagsRaw
+        ? new Set(
+            runnerTagsRaw
+                .split(",")
+                .map((tag: string) => tag.trim())
+                .filter(Boolean),
+        )
+        : undefined;
+
     const projectsWithTarget: string[] = [];
     const projectTargetIndex = new Map<string, VisTargetConfiguration>();
 
@@ -869,6 +883,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         if (!shouldRunInCI(visOptions, Boolean(isInCi))) {
             logger.debug?.(`Skipping ${name}:${target} — runInCI filter`);
+            continue;
+        }
+
+        if (!matchesRunnerTags(visOptions, runnerTags)) {
+            logger.debug?.(`Skipping ${name}:${target} — runner-tags filter`);
             continue;
         }
 
