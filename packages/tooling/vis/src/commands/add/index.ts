@@ -11,6 +11,7 @@ const add: Command = {
         ["vis add react react-dom", "Add packages"],
         ["vis add -D typescript @types/react", "Add as dev dependencies"],
         ["vis add react --filter app", "Add to specific workspace package"],
+        ["vis add react --to web", "Add to one package, auto-conforming the version to existing catalogs / sibling deps"],
         ["vis add -g typescript", "Add globally (uses npm)"],
         ["vis add lodash -w", "Add to workspace root"],
         ["vis add lodash --no-socket-check", "Add without Socket.dev check"],
@@ -29,6 +30,11 @@ const add: Command = {
         { alias: "w", defaultValue: false, description: "Add to workspace root", name: "workspace-root", type: Boolean },
         { defaultValue: false, description: "Use workspace protocol (pnpm)", name: "workspace", type: Boolean },
         { alias: "F", description: "Filter by workspace package name", multiple: true, name: "filter", type: String },
+        {
+            description: "Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)",
+            name: "to",
+            type: String,
+        },
         { defaultValue: false, description: "Skip typosquat name check before adding", name: "no-typosquat-check", type: Boolean },
         { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
         {
@@ -53,6 +59,7 @@ export type AddOptions = CreateOptions<{
     "save-dev": boolean | undefined;
     "save-optional": boolean | undefined;
     "save-peer": boolean | undefined;
+    to: string | undefined;
     workspace: boolean | undefined;
     "workspace-root": boolean | undefined;
 }>;
