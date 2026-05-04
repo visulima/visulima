@@ -76,7 +76,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     } else if (forceColorValueIsString && (forceColorValue as string).length > 0) {
         forceColor = Math.min(Number.parseInt(forceColorValue as string, 10), 3) as ColorSupportLevel;
     } else if (forceColorValueIsNumber) {
-        forceColor = Math.min(forceColorValue as unknown as number, 3) as ColorSupportLevel;
+        forceColor = Math.min(forceColorValue, 3) as ColorSupportLevel;
     }
 
     if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
