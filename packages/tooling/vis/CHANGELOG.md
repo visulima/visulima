@@ -1,3 +1,58 @@
+## @visulima/vis [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.10...@visulima/vis@1.0.0-alpha.11) (2026-05-04)
+
+### Features
+
+* **task-runner,vis:** cache restoration fidelity ([a15cb22](https://github.com/visulima/visulima/commit/a15cb22bde832cfe76ee017722b8b9f9102dac8f))
+* **task-runner:** add REAPI gRPC backend, cacheMode, and cache doctor ([03e6da9](https://github.com/visulima/visulima/commit/03e6da97beb84f6adc4a07a1c7ca4acf28be3b33))
+* **task-runner:** add URI-based input format ([050b583](https://github.com/visulima/visulima/commit/050b5838c15590a3ccba0ca99ad585cbabc36d99))
+* **vis:** add --json and --describe to vis generate ([396c89b](https://github.com/visulima/visulima/commit/396c89b29ddca99b01394508fda4b3d6b1804a3a))
+* **vis:** add `vis add --to <pkg>` auto-conforming to catalogs (syncpack[#285](https://github.com/visulima/visulima/issues/285)) ([03a5641](https://github.com/visulima/visulima/commit/03a56411fe88165395ec081f1d9caee2474fbf2a))
+* **vis:** add 33 inferTargets detectors ([b4b4684](https://github.com/visulima/visulima/commit/b4b468436ed2c48484ecbf69539b0121870fd124))
+* **vis:** add ai heal + heal accept commands ([3c6fa32](https://github.com/visulima/visulima/commit/3c6fa323c8133d95a17fe9bc19ffd3d8aeb37c4e))
+* **vis:** add Buildkite CI provider and `vis generate buildkite-ci` builtin ([845ac99](https://github.com/visulima/visulima/commit/845ac99a37dc9f280d5bba11aad4cf196cdaaebc)), closes [#19](https://github.com/visulima/visulima/issues/19)
+* **vis:** add Claude skill for vis-mcp consumption ([434ceb2](https://github.com/visulima/visulima/commit/434ceb2e8d6c49f31a3b7f84d45c35de247a4806))
+* **vis:** add discover-help subcommand, drop --format from ai root ([36d3990](https://github.com/visulima/visulima/commit/36d3990f7ee6368687af8151454a86181f188511))
+* **vis:** add replay + strict env, finish service registry ([c6db6d5](https://github.com/visulima/visulima/commit/c6db6d54688c43960b5aef9650b3bbc0292c0a58)), closes [#10](https://github.com/visulima/visulima/issues/10) [#16](https://github.com/visulima/visulima/issues/16) [#20](https://github.com/visulima/visulima/issues/20)
+* **vis:** inferred targets, preflight, services ([9697571](https://github.com/visulima/visulima/commit/96975719f12ccaf051452ecc60f07f1df0b5bc69)), closes [#11](https://github.com/visulima/visulima/issues/11) [#21](https://github.com/visulima/visulima/issues/21)
+* **vis:** list --targets table with type, cache, description ([a480e27](https://github.com/visulima/visulima/commit/a480e27a8d9a938a5225b9ebfda918de6c569f21)), closes [#22](https://github.com/visulima/visulima/issues/22) [#23](https://github.com/visulima/visulima/issues/23)
+
+### Bug Fixes
+
+* declare libc on linux binding subpackages ([078b31f](https://github.com/visulima/visulima/commit/078b31f1a9029487c86651e75ecdad70f02b37e8)), closes [npm/cli#4828](https://github.com/npm/cli/issues/4828)
+* **vis:** address review findings on services + inference ([c191cbc](https://github.com/visulima/visulima/commit/c191cbc3661a2885488daa44554b642e64785e52))
+* **vis:** preserve probe error on close failure and clamp formatAge ([f1d71d6](https://github.com/visulima/visulima/commit/f1d71d63a5432fc2ed8c09c9a0a87e4e59b83b0b))
+* **vis:** tighten update command view and reduce duplicated security warnings ([4002b43](https://github.com/visulima/visulima/commit/4002b4379aadd00bac5c5e3d9c4eb5796b9d7b3d))
+
+### Documentation
+
+* **vis:** add AI integration guide ([a6dbbe0](https://github.com/visulima/visulima/commit/a6dbbe0bf8c03519764ff41da9efdd4cb4439b77))
+* **vis:** add ai/list pages, stub 18 commands, refresh flags ([71b81ca](https://github.com/visulima/visulima/commit/71b81ca8704548bca0ec33437854476eb425c411))
+* **vis:** cover template introspection in AI guide and skill ([7763283](https://github.com/visulima/visulima/commit/7763283dfd0f94dc8ef25800fa9f48e6d7888c8e))
+
+### Miscellaneous Chores
+
+* catalog refresh + task-runner binding bump to 1.0.0-alpha.8 ([ff4548a](https://github.com/visulima/visulima/commit/ff4548a5678c992048a57e73c310757733c04756))
+* **deps:** bump rust crates to current majors ([3a1d9bb](https://github.com/visulima/visulima/commit/3a1d9bb7f6e2c6b2d3862e212ae62707d60815cc))
+* prettier sweep + catalog refresh ([5c7a610](https://github.com/visulima/visulima/commit/5c7a610d9b33d6df3eb3d3ba77b79759241ee1a4))
+
+### Code Refactoring
+
+* **task-runner,vis:** consolidate helpers and tighten branches ([d1290d1](https://github.com/visulima/visulima/commit/d1290d1f614036902c6803d8ff51df100fdd07ab))
+* **task-runner,vis:** expose worktree helpers from task-runner ([12468d7](https://github.com/visulima/visulima/commit/12468d76bb03278ec56691ba0c6d9821c9482f94))
+* **vis:** expose /config via folder barrel ([0cd155a](https://github.com/visulima/visulima/commit/0cd155a872dda22d201fd86f16f056dced9886be))
+* **vis:** migrate otel plugin to @opentelemetry/api types ([6440f20](https://github.com/visulima/visulima/commit/6440f201e5c15013a941f014fc4a979c80314bcf))
+* **vis:** mirror src/ layout in __tests__/ and lift __fixtures__ ([ddedc1b](https://github.com/visulima/visulima/commit/ddedc1bbf87d8e572e40cb6ad65452a947dac148))
+* **vis:** unify path imports on @visulima/path ([06632ab](https://github.com/visulima/visulima/commit/06632aba64e0985bb24d476cbba7bebeebe08724))
+
+
+### Dependencies
+
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.14
+* **@visulima/fs:** upgraded to 5.0.0-alpha.13
+* **@visulima/package:** upgraded to 5.0.0-alpha.12
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.9
+* **@visulima/tui:** upgraded to 1.0.0-alpha.6
+
 ## @visulima/vis [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.9...@visulima/vis@1.0.0-alpha.10) (2026-04-30)
 
 ### Features
