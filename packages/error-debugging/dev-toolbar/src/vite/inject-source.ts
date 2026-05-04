@@ -288,7 +288,7 @@ export const addSourceToJsx = (code: string, id: string, ignore: InjectSourceIgn
             retainLines: true,
             sourceFileName: filePath,
 
-            sourceMaps: true as any,
+            sourceMaps: true,
         });
     } catch {
         return undefined;

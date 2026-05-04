@@ -71,7 +71,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/page",
                 x: 50,
                 y: 100,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             expectTypeOf(result.id).toBeString();
 
@@ -115,7 +115,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/",
                 x: 0,
                 y: 0,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             const all = await getAnnotations(server);
 
@@ -135,7 +135,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/",
                 x: 0,
                 y: 0,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             annotationId = a.id;
         });
@@ -229,7 +229,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/",
                 x: 0,
                 y: 0,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             const result = await deleteAnnotation(server, a.id);
 
@@ -253,7 +253,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/",
                 x: 0,
                 y: 0,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             // Minimal 1x1 red PNG as base64
             const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
@@ -317,7 +317,7 @@ describe("rpc/functions/annotations", () => {
                 url: "/",
                 x: 0,
                 y: 0,
-            } as Parameters<typeof createAnnotation>[1]);
+            });
 
             const result = await getScreenshot(server, a.id);
 

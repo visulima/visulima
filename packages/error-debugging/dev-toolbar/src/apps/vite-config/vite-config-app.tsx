@@ -657,11 +657,11 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                     {config.esbuild && (
                         <Section title="esbuild Transform">
-                            <KVRow label="jsx" value={config.esbuild.jsx as string | undefined} />
-                            <KVRow label="jsxFactory" value={config.esbuild.jsxFactory as string | undefined} />
-                            <KVRow label="jsxFragment" value={config.esbuild.jsxFragment as string | undefined} />
-                            <KVRow label="jsxImportSource" value={config.esbuild.jsxImportSource as string | undefined} />
-                            <KVRow label="target" value={config.esbuild.target as string | string[] | undefined} />
+                            <KVRow label="jsx" value={config.esbuild.jsx} />
+                            <KVRow label="jsxFactory" value={config.esbuild.jsxFactory} />
+                            <KVRow label="jsxFragment" value={config.esbuild.jsxFragment} />
+                            <KVRow label="jsxImportSource" value={config.esbuild.jsxImportSource} />
+                            <KVRow label="target" value={config.esbuild.target} />
                         </Section>
                     )}
 

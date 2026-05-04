@@ -1,4 +1,4 @@
-import type { DevToolbarApp, DevToolbarAppState, ToolbarAppEventTarget } from "../types/app";
+import type { DevToolbarApp, DevToolbarAppState } from "../types/app";
 import { createServerHelpers } from "./helpers";
 
 /**
@@ -31,7 +31,7 @@ class AppManager {
             }
         }
 
-        const eventTarget = new EventTarget() as ToolbarAppEventTarget;
+        const eventTarget = new EventTarget();
 
         const appState: DevToolbarAppState = {
             ...app,
