@@ -331,14 +331,11 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     );
 
     // Create derived stores for functions (they return functions based on current method)
-    const pause: Readable<(() => void) | undefined> = derived(
-        [currentMethod],
-        ([current]) => (current === "tus" ? tusUpload?.pause : current === "chunked-rest" ? chunkedRestUpload?.pause : undefined) as (() => void) | undefined,
+    const pause: Readable<(() => void) | undefined> = derived([currentMethod], ([current]) =>
+        (current === "tus" ? tusUpload?.pause : current === "chunked-rest" ? chunkedRestUpload?.pause : undefined),
     );
-    const resume: Readable<(() => Promise<void>) | undefined> = derived(
-        [currentMethod],
-        ([current]) =>
-            (current === "tus" ? tusUpload?.resume : current === "chunked-rest" ? chunkedRestUpload?.resume : undefined) as (() => Promise<void>) | undefined,
+    const resume: Readable<(() => Promise<void>) | undefined> = derived([currentMethod], ([current]) =>
+        (current === "tus" ? tusUpload?.resume : current === "chunked-rest" ? chunkedRestUpload?.resume : undefined),
     );
 
     return {

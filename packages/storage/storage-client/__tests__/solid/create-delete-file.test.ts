@@ -19,7 +19,7 @@ describe(createDeleteFile, () => {
             },
         });
         originalFetch = globalThis.fetch;
-        globalThis.fetch = mockFetch as unknown as typeof globalThis.fetch;
+        globalThis.fetch = mockFetch;
         vi.clearAllMocks();
     });
 

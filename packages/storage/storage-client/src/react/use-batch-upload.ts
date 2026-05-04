@@ -122,7 +122,7 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
 
                             try {
                                 if (item.uploadResponse?.data && typeof item.uploadResponse.data === "object") {
-                                    fileMeta = item.uploadResponse.data as Partial<FileMeta>;
+                                    fileMeta = item.uploadResponse.data;
                                 } else if (item.uploadResponse?.response) {
                                     fileMeta = JSON.parse(item.uploadResponse.response) as Partial<FileMeta>;
                                 }
@@ -142,7 +142,7 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
                                 size: fileMeta.size ?? item.file.size,
                                 status: fileMeta.status ?? "completed",
                                 url: item.url,
-                            } as UploadResult;
+                            };
                         });
 
                     setProgress(100);

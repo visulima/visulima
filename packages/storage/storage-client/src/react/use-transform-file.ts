@@ -68,7 +68,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
     const query = useQuery({
         enabled: enabled && !!id && !!transform,
         queryFn: async () => {
-            const url = buildUrl(endpoint, id, transform as Record<string, string | number | boolean | undefined>);
+            const url = buildUrl(endpoint, id, transform);
             const response = await fetch(url, {
                 method: "GET",
             });

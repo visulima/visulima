@@ -86,7 +86,7 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
                 const errorValue = (mutation as { error?: Accessor<Error | undefined> | Error | undefined }).error;
                 const error = typeof errorValue === "function" ? errorValue() : errorValue;
 
-                return (error as Error) || undefined;
+                return error || undefined;
             } catch {
                 return undefined;
             }
