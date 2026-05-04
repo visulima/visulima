@@ -7,7 +7,7 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
-import type { ResponseBody, UploadResponse } from "../../utils/types";
+import type { UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TusBase } from "./tus-base";
@@ -103,7 +103,7 @@ export class Tus<
         const metadataHeader = getHeader(request, "upload-metadata", true);
         const contentType = getHeader(request, "content-type") || "";
         const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
         const bodyStream = getRequestStream(request);
 
         return this.tusBase.handlePost(uploadLength, uploadDeferLength, uploadConcat, metadataHeader, requestUrl, bodyStream, contentLength, contentType);
@@ -139,7 +139,7 @@ export class Tus<
             const contentLength = Number(getHeader(request, "content-length"));
             const checksumHeader = getHeader(request, "upload-checksum");
             const { checksum, checksumAlgorithm } = this.tusBase.extractChecksum(checksumHeader);
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
             const bodyStream = getRequestStream(request);
 
             return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);
@@ -238,7 +238,7 @@ export class Tus<
      */
     public override send(response: NodeResponse, { body = "", headers = {}, statusCode = 200 }: UploadResponse): void {
         const uploadResponse: UploadResponse = {
-            body: body as ResponseBody | undefined,
+            body,
             headers: {
                 ...headers,
                 "Access-Control-Expose-Headers":

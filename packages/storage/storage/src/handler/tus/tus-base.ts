@@ -110,7 +110,7 @@ export abstract class TusBase<TFile extends UploadFile> {
             "Tus-Version": TUS_VERSION_VERSION,
         };
 
-        return { headers: headers as Record<string, string | number>, statusCode: 204 } as ResponseFile<TFile>;
+        return { headers, statusCode: 204 } as ResponseFile<TFile>;
     }
 
     /**
@@ -463,7 +463,7 @@ export abstract class TusBase<TFile extends UploadFile> {
 
             // Check if upload is now completed
             if (file.bytesWritten === file.size) {
-                file = { ...file, status: "completed" } as TFile;
+                file = { ...file, status: "completed" };
             }
         }
 
@@ -556,7 +556,7 @@ export abstract class TusBase<TFile extends UploadFile> {
             ...file,
             headers: this.buildHeaders(file) as Record<string, string>,
             statusCode: 204,
-        } as ResponseFile<TFile>;
+        };
     }
 
     /**

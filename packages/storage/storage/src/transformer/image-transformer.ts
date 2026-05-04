@@ -543,7 +543,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "blur": {
-                    sharpInstance = this.applyBlur(sharpInstance, step.options as BlurOptions);
+                    sharpInstance = this.applyBlur(sharpInstance, step.options);
                     break;
                 }
                 case "boolean": {
@@ -551,7 +551,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "clahe": {
-                    sharpInstance = this.applyCLAHE(sharpInstance, step.options as CLAHEOptions);
+                    sharpInstance = this.applyCLAHE(sharpInstance, step.options);
                     break;
                 }
                 case "colourspace": {
@@ -567,15 +567,15 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "dilate": {
-                    sharpInstance = this.applyDilate(sharpInstance, step.options as DilateOptions);
+                    sharpInstance = this.applyDilate(sharpInstance, step.options);
                     break;
                 }
                 case "ensureAlpha": {
-                    sharpInstance = this.applyEnsureAlpha(sharpInstance, step.options as EnsureAlphaOptions);
+                    sharpInstance = this.applyEnsureAlpha(sharpInstance, step.options);
                     break;
                 }
                 case "erode": {
-                    sharpInstance = this.applyErode(sharpInstance, step.options as ErodeOptions);
+                    sharpInstance = this.applyErode(sharpInstance, step.options);
                     break;
                 }
                 case "extractChannel": {
@@ -604,7 +604,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "greyscale": {
-                    sharpInstance = this.applyGreyscale(sharpInstance, step.options as GreyscaleOptions);
+                    sharpInstance = this.applyGreyscale(sharpInstance, step.options);
                     break;
                 }
                 case "joinChannel": {
@@ -612,15 +612,15 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "linear": {
-                    sharpInstance = this.applyLinear(sharpInstance, step.options as LinearOptions);
+                    sharpInstance = this.applyLinear(sharpInstance, step.options);
                     break;
                 }
                 case "median": {
-                    sharpInstance = this.applyMedian(sharpInstance, step.options as MedianOptions);
+                    sharpInstance = this.applyMedian(sharpInstance, step.options);
                     break;
                 }
                 case "modulate": {
-                    sharpInstance = this.applyModulate(sharpInstance, step.options as ModulateOptions);
+                    sharpInstance = this.applyModulate(sharpInstance, step.options);
                     break;
                 }
                 case "negate": {
@@ -641,7 +641,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "removeAlpha": {
-                    sharpInstance = this.applyRemoveAlpha(sharpInstance, step.options as RemoveAlphaOptions);
+                    sharpInstance = this.applyRemoveAlpha(sharpInstance, step.options);
                     break;
                 }
                 case "resize": {
@@ -653,11 +653,11 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "sharpen": {
-                    sharpInstance = this.applySharpen(sharpInstance, step.options as SharpenOptions);
+                    sharpInstance = this.applySharpen(sharpInstance, step.options);
                     break;
                 }
                 case "threshold": {
-                    sharpInstance = this.applyThreshold(sharpInstance, step.options as ThresholdOptions);
+                    sharpInstance = this.applyThreshold(sharpInstance, step.options);
                     break;
                 }
                 case "tint": {
@@ -1002,7 +1002,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyTint(sharpInstance: Sharp, options: TintOptions): Sharp {
         const { rgb, ...formatOptions } = options;
 
-        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? rgb : (rgb as any));
+        let tintInstance = sharpInstance.tint(Array.isArray(rgb) ? rgb : rgb);
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {

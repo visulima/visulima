@@ -233,7 +233,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     return this.restBase.deleteBatch(parsed as string[]);
                 }
 
-                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray((parsed as { ids: unknown }).ids)) {
+                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray(parsed.ids)) {
                     // Object with ids array: { ids: ["id1", "id2"] }
                     const idsArray = (parsed as { ids: string[] }).ids;
 

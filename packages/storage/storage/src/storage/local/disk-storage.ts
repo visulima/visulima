@@ -268,7 +268,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                         lazyWritePart.signal = signalFromPart;
                     }
 
-                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart as FilePart & TFile);
+                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
 
                     if (errorCode) {
                         await truncate(path, file.bytesWritten);
@@ -340,7 +340,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             let content: Buffer;
 
             try {
-                content = (await readFile(this.getFilePath(name), { buffer: true })) as Buffer;
+                content = await readFile(this.getFilePath(name), { buffer: true });
             } catch (error: unknown) {
                 const errorWithCode = error as { code?: string; message?: string };
 
@@ -480,7 +480,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             await copyFile(this.getFilePath(sourceFile.name), this.getFilePath(destination));
 
             // Return source file metadata with destination name
-            return { ...sourceFile, name: destination } as TFile;
+            return { ...sourceFile, name: destination };
         });
     }
 
@@ -515,7 +515,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             // Return moved file with destination name and correct ID
-            return { ...sourceFile, id: sourceFile.id, name: destination } as TFile;
+            return { ...sourceFile, id: sourceFile.id, name: destination };
         });
     }
 

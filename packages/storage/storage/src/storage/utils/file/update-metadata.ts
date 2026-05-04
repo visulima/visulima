@@ -56,7 +56,7 @@ const deepMerge = (target: Record<string, unknown>, source: Record<string, unkno
  */
 const updateMetadata = <T extends File>(file: T, metadata: Partial<T>): void => {
     // Deep merge metadata into file object
-    const merged = deepMerge(file as Record<string, unknown>, metadata as Record<string, unknown>);
+    const merged = deepMerge(file as Record<string, unknown>, metadata);
 
     // Update the original file object with merged values
     Object.assign(file, merged);

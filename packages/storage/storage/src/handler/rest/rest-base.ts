@@ -26,7 +26,7 @@ abstract class RestBase<TFile extends UploadFile> {
             throw createHttpError(404, "File not found");
         }
 
-        return { ...file, headers: {}, statusCode: 204 } as ResponseFile<TFile>;
+        return { ...file, headers: {}, statusCode: 204 };
     }
 
     /**
@@ -257,7 +257,7 @@ abstract class RestBase<TFile extends UploadFile> {
             if (updatedFile.status === "completed" && !isComplete) {
                 await this.storage.update({ id }, { status: "part" });
                 // Update local object for response
-                updatedFile = { ...updatedFile, status: "part" } as TFile;
+                updatedFile = { ...updatedFile, status: "part" };
             }
         }
 
@@ -326,7 +326,7 @@ abstract class RestBase<TFile extends UploadFile> {
         };
 
         return {
-            headers: headers as Record<string, string | number>,
+            headers,
             statusCode: 204,
         } as ResponseFile<TFile>;
     }

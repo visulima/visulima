@@ -224,7 +224,7 @@ abstract class BaseHandlerNode<
                 message: error.message,
                 name: error.name,
                 statusCode: (error as HttpError).statusCode || 500,
-            } as HttpError;
+            };
         }
 
         // Call onError hook - user can modify the error object in place
@@ -404,7 +404,7 @@ abstract class BaseHandlerNode<
         return {
             headers: {
                 "Access-Control-Allow-Methods": (child.methods || BaseHandlerNode.methods).map((method) => method.toUpperCase()).join(", "),
-            } as Record<string, string>,
+            },
             statusCode: 204,
         } as ResponseFile<TFile>;
     }
@@ -440,9 +440,9 @@ abstract class BaseHandlerNode<
                             }),
                             ...file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() },
                             ...file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() },
-                        } as Record<string, string>,
+                        },
                         statusCode: 200,
-                    } as ResponseFile<TFile>;
+                    };
                 } catch (error: unknown) {
                     const errorWithCode = error as { UploadErrorCode?: string };
 
@@ -487,7 +487,7 @@ abstract class BaseHandlerNode<
                                     ? {}
                                     : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() },
                                 ...transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag },
-                            } as Record<string, string>,
+                            },
                             statusCode: 200,
                         } as ResponseFile<TFile>;
                     } catch (transformError: unknown) {
@@ -522,13 +522,13 @@ abstract class BaseHandlerNode<
                                 ...streamResult.headers,
                                 "Accept-Ranges": "bytes", // Indicate we support range requests
                                 "Content-Type": contentType,
-                            } as Record<string, string>,
+                            },
                             size: streamResult.size,
                             statusCode: 200,
                             stream: streamResult.stream,
                             ...fileMeta,
                             contentType,
-                        } as ResponseFile<TFile>;
+                        };
                     } catch (streamError) {
                         // Fall back to regular file serving if streaming fails
                         this.logger?.warn(`Streaming failed, falling back to buffer: ${streamError}`);
@@ -554,7 +554,7 @@ abstract class BaseHandlerNode<
                         ...expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() },
                         ...modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() },
                         ...ETag === undefined ? {} : { ETag },
-                    } as Record<string, string>,
+                    },
                     statusCode: 200,
                     ...file,
                     contentType,

@@ -77,10 +77,7 @@ class S3ClientAdapter implements S3ApiOperations {
         UploadId: string;
     }): Promise<{ ETag: string }> {
         // Convert ReadableStream to Readable if needed
-        const body: Readable | Uint8Array
-            = params.Body instanceof NodeReadableStream
-                ? Readable.fromWeb(params.Body as unknown as NodeReadableStream<Uint8Array>)
-                : (params.Body as Readable | Uint8Array);
+        const body: Readable | Uint8Array = params.Body instanceof NodeReadableStream ? Readable.fromWeb(params.Body) : (params.Body as Readable | Uint8Array);
 
         const command = new UploadPartCommand({
             Body: body,

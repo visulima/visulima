@@ -239,7 +239,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         for (const step of steps) {
             switch (step.type) {
                 case "bitrate": {
-                    const bitrateOptions = step.options as VideoTransformOptions;
+                    const bitrateOptions = step.options;
 
                     if (bitrateOptions.bitrate) {
                         options.bitrate = bitrateOptions.bitrate;
@@ -248,7 +248,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "codec": {
-                    const codecOptions = step.options as VideoTransformOptions;
+                    const codecOptions = step.options;
 
                     if (codecOptions.codec) {
                         options.codec = codecOptions.codec;
@@ -272,7 +272,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
                     break;
                 }
                 case "frameRate": {
-                    const frameRateOptions = step.options as VideoTransformOptions;
+                    const frameRateOptions = step.options;
 
                     if (frameRateOptions.frameRate) {
                         options.frameRate = frameRateOptions.frameRate;
@@ -320,7 +320,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Check if any step specifies a format
         for (const step of steps) {
             if (step.type === "format" && step.options.format) {
-                return this.formatStringToOutputFormat(step.options.format as string);
+                return this.formatStringToOutputFormat(step.options.format);
             }
         }
 

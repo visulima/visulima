@@ -120,7 +120,7 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
         const config = extractFileInit(request, contentLength, contentType);
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
@@ -184,7 +184,7 @@ class Rest<
             size: contentLength,
         };
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
@@ -232,7 +232,7 @@ class Rest<
                     return this.restBase.deleteBatch(parsed as string[]);
                 }
 
-                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray((parsed as { ids: unknown }).ids)) {
+                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray(parsed.ids)) {
                     // Object with ids array: { ids: ["id1", "id2"] }
                     const idsArray = (parsed as { ids: string[] }).ids;
 
@@ -304,7 +304,7 @@ class Rest<
         }
 
         const chunkChecksum = getHeader(request, "x-chunk-checksum", true);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);

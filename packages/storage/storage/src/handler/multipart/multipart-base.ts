@@ -111,7 +111,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
             throw createHttpError(404, "File not found");
         }
 
-        return { ...file, headers: {}, statusCode: 204 } as ResponseFile<TFile>;
+        return { ...file, headers: {}, statusCode: 204 };
     }
 
     /**

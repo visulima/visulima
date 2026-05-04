@@ -130,7 +130,7 @@ class Multipart<
                 throw createHttpError(400, "No file found in multipart request");
             }
 
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || (request.url as string);
+            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url;
 
             return this.multipartBase.handlePost(filePart, parts, requestUrl);
         } catch (error) {
