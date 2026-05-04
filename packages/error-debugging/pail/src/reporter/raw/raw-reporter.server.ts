@@ -23,7 +23,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
     public constructor(inspectOptions: Partial<InspectorOptions> = {}) {
         this.#stdout = stdout;
         this.#stderr = stderr;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- type resolution issue with @visulima/inspector Options type
+
         this.#inspectOptions = inspectOptions;
     }
 
@@ -66,7 +66,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
             );
         }
 
-        const streamType = ["error", "trace", "warn"].includes(type.level as string) ? "stderr" : "stdout";
+        const streamType = ["error", "trace", "warn"].includes(type.level) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
         const groupSpaces: string = groups.map(() => "    ").join("");
 

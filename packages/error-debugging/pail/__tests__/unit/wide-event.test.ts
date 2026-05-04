@@ -101,8 +101,8 @@ describe("wideEvent", () => {
             const pail = createMockPail();
             const wideEvent = createWideEvent<{ tags: string[] }>({ name: "test", pail });
 
-            wideEvent.set({ tags: ["a", "b"] } as any);
-            wideEvent.set({ tags: ["c"] } as any);
+            wideEvent.set({ tags: ["a", "b"] });
+            wideEvent.set({ tags: ["c"] });
 
             expect(wideEvent.getData()).toStrictEqual({ tags: ["c"] });
         });

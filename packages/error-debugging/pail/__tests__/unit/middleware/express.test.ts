@@ -60,7 +60,7 @@ describe("express middleware", () => {
         const request = createMockRequest();
         const response = createMockResponse();
 
-        middleware(request as any, response, () => {});
+        middleware(request, response, () => {});
 
         expect(request.log).toBeDefined();
     });
@@ -74,7 +74,7 @@ describe("express middleware", () => {
         const request = createMockRequest();
         const response = createMockResponse();
 
-        middleware(request as any, response, () => {});
+        middleware(request, response, () => {});
         response.trigger("finish");
 
         expect(consoleSpy).toHaveBeenCalledTimes(1);
@@ -94,7 +94,7 @@ describe("express middleware", () => {
         const response = createMockResponse();
         let nextCalled = false;
 
-        middleware(request as any, response, () => {
+        middleware(request, response, () => {
             nextCalled = true;
         });
 
@@ -113,7 +113,7 @@ describe("express middleware", () => {
         const response = createMockResponse();
 
         await new Promise<void>((resolve) => {
-            middleware(request as any, response, () => {
+            middleware(request, response, () => {
                 const log = useLogger();
 
                 expect(log).toBe(request.log);
@@ -133,7 +133,7 @@ describe("express middleware", () => {
         });
         const response = createMockResponse();
 
-        middleware(request as any, response, () => {});
+        middleware(request, response, () => {});
 
         const data = (request.log as { getData: () => unknown }).getData() as Record<string, unknown>;
 
@@ -149,7 +149,7 @@ describe("express middleware", () => {
         const response = createMockResponse();
         let nextCalled = false;
 
-        middleware(request as any, response, () => {
+        middleware(request, response, () => {
             nextCalled = true;
         });
 

@@ -69,7 +69,7 @@ class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> im
      */
     // eslint-disable-next-line no-underscore-dangle
     protected override _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const stream = ["error", "warn"].includes(logLevel as string) ? this.#stderr : this.#stdout;
+        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr : this.#stdout;
 
         writeStream(`${message}\n`, stream);
     }

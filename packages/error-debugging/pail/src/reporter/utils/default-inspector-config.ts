@@ -1,8 +1,10 @@
 import type { ColorizeType } from "@visulima/colorize";
 import colorize from "@visulima/colorize";
-
-const { bold, cyan, green, grey, magenta, red, yellow } = colorize;
 import type { Options } from "@visulima/inspector";
+
+// `colorize` default export exposes named ANSI helpers as properties; the rule's check is a false positive here
+// eslint-disable-next-line import/no-named-as-default-member
+const { bold, cyan, green, grey, magenta, red, yellow } = colorize;
 
 const defaultInspectorConfig: Partial<Options> = {
     indent: 2,

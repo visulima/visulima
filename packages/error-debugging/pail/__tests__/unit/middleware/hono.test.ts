@@ -48,7 +48,7 @@ describe("hono middleware", () => {
         const middleware = pailMiddleware({ pail });
         const c = createMockContext();
 
-        await middleware(c as any, async () => {});
+        await middleware(c, async () => {});
 
         expect(c.get("log")).toBeDefined();
     });
@@ -61,7 +61,7 @@ describe("hono middleware", () => {
         const middleware = pailMiddleware({ pail });
         const c = createMockContext();
 
-        await middleware(c as any, async () => {});
+        await middleware(c, async () => {});
 
         expect(consoleSpy).toHaveBeenCalledTimes(1);
 
@@ -95,7 +95,7 @@ describe("hono middleware", () => {
         const middleware = pailMiddleware({ exclude: ["/health"], pail });
         const c = createMockContext({ path: "/health" });
 
-        await middleware(c as any, async () => {});
+        await middleware(c, async () => {});
 
         expect(consoleSpy).not.toHaveBeenCalled();
     });
@@ -107,8 +107,8 @@ describe("hono middleware", () => {
         const middleware = pailMiddleware({ pail });
         const c = createMockContext();
 
-        await middleware(c as any, async () => {
-            const log = useLogger(c as any);
+        await middleware(c, async () => {
+            const log = useLogger(c);
 
             expect(log).toBeDefined();
         });

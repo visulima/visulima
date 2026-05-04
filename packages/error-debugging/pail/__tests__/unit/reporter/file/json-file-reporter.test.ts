@@ -62,7 +62,7 @@ describe("jsonFileReporter", () => {
         reporter.setStringify(JSON.stringify);
 
         expect(() => {
-            reporter.log(meta as Meta<never>);
+            reporter.log(meta);
         }).not.toThrow();
     });
 });

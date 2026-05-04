@@ -120,7 +120,7 @@ export const createMiddlewareLogger = <T extends string = string>(
         path,
         requestId,
         ...headers ? { headers } : {},
-    } as Record<string, unknown>);
+    });
 
     const finish = (finishOptions?: WideEventFinishOptions): void => {
         logger.finish(finishOptions);

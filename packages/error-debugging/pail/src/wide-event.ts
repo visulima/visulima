@@ -280,7 +280,7 @@ export class WideEvent<TData extends Record<string, unknown> = Record<string, un
         this.emitted = false;
         this.autoEmit = options.autoEmit ?? true;
         // eslint-disable-next-line no-underscore-dangle -- underscore marks "reserved, not yet consumed"
-        this._type = options.type ?? ("info" as DefaultLogTypes);
+        this._type = options.type ?? "info";
         this.level = "info";
         this.requestLogs = [];
         this.service = options.service;

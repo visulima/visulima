@@ -1,4 +1,4 @@
-import type { format, FormatterFunction, Options } from "@visulima/fmt";
+import type { format, FormatterFunction } from "@visulima/fmt";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { build } from "@visulima/fmt";
 
@@ -70,7 +70,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
 
                 return this.#stringify(value);
             },
-        } as Options);
+        });
 
         if (meta.message !== undefined) {
             // eslint-disable-next-line no-param-reassign
