@@ -2450,6 +2450,13 @@
                     "description": "Controls whether the task runs in CI environments.",
                     "default": true
                 },
+                "runnerTags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Capability tags that gate this task to runners advertising the same tag. The CLI's `--runner-tags=gpu,slow` flag (or `VIS_RUNNER_TAGS` env var) tells vis what the current runner supports; tasks whose `runnerTags` share at least one tag with the runner set are eligible. Untagged tasks (no `runnerTags` or an empty array) are general-purpose and always run.\n\nUse this for special-purpose CI lanes — e.g. a GPU runner that should only pick up visual-regression suites, or a nightly job that runs `slow` integration tests. When neither flag nor env is set, the filter is inactive and every task runs."
+                },
                 "service": {
                     "$ref": "#/$defs/ServiceConfig",
                     "description": "Marks this target as a long-lived service that can be started via `vis service start &lt;id>` and auto-attached when other tasks declare it in `dependsOn`. Implies persistent + non-cacheable behaviour (set `preset: \"server\"` to inherit the rest of the bundle).\n\nThe presence of this block — not `preset: \"server\"` alone — is what makes a target eligible for the cross-invocation registry. `preset: \"server\"` without `service` keeps today's in-run-only behaviour."

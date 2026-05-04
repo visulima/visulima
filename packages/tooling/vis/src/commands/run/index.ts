@@ -171,6 +171,12 @@ const run: Command = {
             name: "strict-env",
             type: Boolean,
         },
+        {
+            description:
+                "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Tasks declaring `options.runnerTags` only run when at least one tag overlaps. Untagged tasks always run. Falls back to VIS_RUNNER_TAGS env var.",
+            name: "runner-tags",
+            type: String,
+        },
     ],
 };
 
@@ -197,6 +203,7 @@ export type RunOptions = CreateOptions<{
     query: string | undefined;
     "retry-budget": number | undefined;
     reverse: boolean | undefined;
+    "runner-tags": string | undefined;
     "skip-constraints": boolean | undefined;
     "skip-toolchain": boolean | undefined;
     "strict-env": boolean | undefined;

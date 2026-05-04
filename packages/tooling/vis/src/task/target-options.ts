@@ -68,6 +68,35 @@ export const detectCurrentOs = (): TargetOsType => {
 };
 
 /**
+ * Returns `true` if the task is eligible to run on a runner whose
+ * advertised tag set is `runnerTags`.
+ *
+ * - `runnerTags === undefined` → filter is inactive, every task runs
+ *   (back-compat — no `--runner-tags` flag, no `VIS_RUNNER_TAGS` env).
+ * - Task has no `runnerTags` (undefined or empty) → general-purpose,
+ *   eligible on any runner.
+ * - Task has `runnerTags` → eligible iff at least one tag overlaps
+ *   with the runner's advertised set.
+ *
+ * The asymmetry is intentional: untagged tasks are the default lane,
+ * while tagged tasks declare a hard capability requirement that the
+ * runner must satisfy.
+ */
+export const matchesRunnerTags = (options: VisTargetOptions | undefined, runnerTags: ReadonlySet<string> | undefined): boolean => {
+    if (!runnerTags || runnerTags.size === 0) {
+        return true;
+    }
+
+    const taskTags = options?.runnerTags;
+
+    if (!taskTags || taskTags.length === 0) {
+        return true;
+    }
+
+    return taskTags.some((tag) => runnerTags.has(tag));
+};
+
+/**
  * Returns `true` if the task should run in the current environment based
  * on its `runInCI` option. `affectedInCi` should indicate whether the
  * project is in the current affected set (only relevant for `"affected"`).

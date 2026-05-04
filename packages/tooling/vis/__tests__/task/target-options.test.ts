@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { applyPreset, defaultCacheForType, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../../src/task/target-options";
+import { applyPreset, defaultCacheForType, loadEnvFile, matchesRunnerTags, resolveTargetShell, shouldRunInCI } from "../../src/task/target-options";
 
 describe(applyPreset, () => {
     it("should return the target unchanged when no preset is set", () => {
@@ -117,6 +117,38 @@ describe(shouldRunInCI, () => {
         expect.assertions(1);
 
         expect(shouldRunInCI({ runInCI: "affected" }, false)).toBe(true);
+    });
+});
+
+describe(matchesRunnerTags, () => {
+    it("should accept every task when the runner advertises no tags (filter inactive)", () => {
+        expect.assertions(3);
+
+        expect(matchesRunnerTags(undefined, undefined)).toBe(true);
+        expect(matchesRunnerTags({ runnerTags: ["gpu"] }, undefined)).toBe(true);
+        expect(matchesRunnerTags({ runnerTags: ["gpu"] }, new Set())).toBe(true);
+    });
+
+    it("should accept untagged tasks when the runner advertises tags (default lane)", () => {
+        expect.assertions(3);
+
+        expect(matchesRunnerTags(undefined, new Set(["gpu"]))).toBe(true);
+        expect(matchesRunnerTags({}, new Set(["gpu"]))).toBe(true);
+        expect(matchesRunnerTags({ runnerTags: [] }, new Set(["gpu"]))).toBe(true);
+    });
+
+    it("should accept tagged tasks that share at least one tag with the runner", () => {
+        expect.assertions(2);
+
+        expect(matchesRunnerTags({ runnerTags: ["gpu"] }, new Set(["gpu"]))).toBe(true);
+        expect(matchesRunnerTags({ runnerTags: ["slow", "gpu"] }, new Set(["cpu", "gpu"]))).toBe(true);
+    });
+
+    it("should reject tagged tasks whose tags don't overlap with the runner", () => {
+        expect.assertions(2);
+
+        expect(matchesRunnerTags({ runnerTags: ["gpu"] }, new Set(["cpu"]))).toBe(false);
+        expect(matchesRunnerTags({ runnerTags: ["slow", "nightly"] }, new Set(["fast"]))).toBe(false);
     });
 });
 
