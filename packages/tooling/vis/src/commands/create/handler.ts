@@ -337,7 +337,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
 
         [templateInput, projectName] = ownArgs;
 
-        if (!projectName) {
+        if (!projectName && templateInput) {
             // Extract a sensible name: "user/repo" → "repo", URL → last path segment
             projectName = extractRepoName(templateInput);
         }
@@ -360,7 +360,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // For non-interactive mode, resolve target directory with parent inference
     if (!targetDir) {
         const parentDir = inMonorepo ? inferParentDir(config.type) : ".";
-        const resolved = resolveTargetDir(projectName, resolve(cwd, parentDir));
+        const resolved = resolveTargetDir(projectName ?? "", resolve(cwd, parentDir));
 
         targetDir = resolved.targetDir;
         projectName = resolved.packageName;
