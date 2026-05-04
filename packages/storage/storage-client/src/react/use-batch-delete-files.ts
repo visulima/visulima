@@ -58,7 +58,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
                     };
                 })) as { error: { code: string; message: string } };
 
-                throw new Error(errorData.error?.message || `Failed to batch delete files: ${response.status} ${response.statusText}`);
+                throw new Error(errorData.error.message || `Failed to batch delete files: ${String(response.status)} ${response.statusText}`);
             }
 
             // Extract batch delete results from headers (if available)
@@ -83,7 +83,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
         },
         onSuccess: (result, ids) => {
             // Invalidate all file-related queries
-            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+            queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
             // Remove queries for deleted files
             ids.forEach((id) => {
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, id) });
@@ -96,7 +96,7 @@ export const useBatchDeleteFiles = (options: UseBatchDeleteFilesOptions): UseBat
 
     return {
         batchDeleteFiles: mutation.mutateAsync,
-        error: (mutation.error as Error) || undefined,
+        error: mutation.error ?? undefined,
         isLoading: mutation.isPending,
         reset: mutation.reset,
     };
