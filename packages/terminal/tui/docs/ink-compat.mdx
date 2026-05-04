@@ -139,12 +139,12 @@ Ported from [jacob314/ink](https://github.com/jacob314/ink) (Google's Gemini CLI
 
 A handful of in-flight upstream Ink PRs are vendored in `@visulima/tui` ahead of merge. Behavior is intended to match upstream; any drift is a bug.
 
-| Upstream PR                                                                                                | Behavior in `@visulima/tui`                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [#115 — Math.round on Yoga computed values](https://github.com/vadimdemedes/ink/pull/115)                  | All Yoga `getComputedLeft/Top/Width/Height` reads are wrapped in `Math.round` (`render-node-to-output.ts`, `render-text-node.ts`) so subpixel layouts snap to integer cells. |
+| Upstream PR                                                                                                | Behavior in `@visulima/tui`                                                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#115 — Math.round on Yoga computed values](https://github.com/vadimdemedes/ink/pull/115)                  | All Yoga `getComputedLeft/Top/Width/Height` reads are wrapped in `Math.round` (`render-node-to-output.ts`, `render-text-node.ts`) so subpixel layouts snap to integer cells.                       |
 | [#119 — `StaticRender` `deps` prop](https://github.com/vadimdemedes/ink/pull/119)                          | `<StaticRender>` accepts a `deps: DependencyList` prop. The cached subtree is invalidated when any dep changes (shallow `Object.is` compare). See [components.mdx](./components.mdx#staticrender). |
-| [#123 — neighbor-merge & ASCII fast paths in text rendering](https://github.com/vadimdemedes/ink/pull/123) | Text rendering reuses neighbor cells where possible and takes a fast path for ASCII spans, reducing per-cell allocation in the most common case.                  |
-| [#125 — conditional accessibility objects in Box](https://github.com/vadimdemedes/ink/pull/125)            | `<Box>` only emits an `internal_accessibility` object when `role` or `aria-state` is set, avoiding wasted allocations on the layout-only path.                    |
+| [#123 — neighbor-merge & ASCII fast paths in text rendering](https://github.com/vadimdemedes/ink/pull/123) | Text rendering reuses neighbor cells where possible and takes a fast path for ASCII spans, reducing per-cell allocation in the most common case.                                                   |
+| [#125 — conditional accessibility objects in Box](https://github.com/vadimdemedes/ink/pull/125)            | `<Box>` only emits an `internal_accessibility` object when `role` or `aria-state` is set, avoiding wasted allocations on the layout-only path.                                                     |
 
 ## `compat-test/` Status
 

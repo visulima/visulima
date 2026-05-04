@@ -45,14 +45,14 @@ describe("ratatat renderer layout", () => {
                     <Box key={s} marginRight={1}>
                         {i === 0
                             ? (
-                                <Box paddingX={1}>
-                                    <Text bold>{s}</Text>
-                                </Box>
+                            <Box paddingX={1}>
+                                <Text bold>{s}</Text>
+                            </Box>
                             )
                             : (
-                                <Box paddingX={1}>
-                                    <Text>{s}</Text>
-                                </Box>
+                            <Box paddingX={1}>
+                                <Text>{s}</Text>
+                            </Box>
                             )}
                     </Box>
                 ))}

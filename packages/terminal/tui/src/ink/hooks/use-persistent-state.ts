@@ -104,6 +104,7 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
                 // rename — prevents readers from ever seeing a half-written
                 // file, and guarantees we either keep the old contents or
                 // see the new ones.
+                // eslint-disable-next-line unicorn/no-null -- JSON.stringify replacer requires `null`, not `undefined`
                 writeFileSync(temporaryPath, JSON.stringify(current, null, 2), {
                     encoding: "utf8",
                     flag: "w",

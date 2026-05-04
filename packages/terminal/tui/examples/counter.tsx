@@ -35,11 +35,11 @@ const Counter = () => {
     }, []);
 
     return (
-        <Text color="green">
-            {counter}
-            {" "}
-            tests passed
-        </Text>
+<Text color="green">
+{counter}
+{" "}
+tests passed
+</Text>
     );
 };
 

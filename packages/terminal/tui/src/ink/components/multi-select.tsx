@@ -245,14 +245,14 @@ export default function MultiSelect({
                         )}
                         <Text color={labelColor} dimColor={isDisabled}>
                             {isSelected ? "◼" : "◻"}
-                            {" "}
-                            {option.label}
+{" "}
+{option.label}
                         </Text>
                         {isSelected
                             ? (
-                                <Text color="green" dimColor={!isFocused}>
-                                    ✓
-                                </Text>
+                            <Text color="green" dimColor={!isFocused}>
+                                ✓
+                            </Text>
                             )
                             : undefined}
                     </Box>

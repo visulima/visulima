@@ -60,7 +60,7 @@ const App = () => {
                 <Text dimColor>
                     Duration:
                     {duration / 1000}
-                    s
+s
                 </Text>
             </Box>
             <Box flexDirection="column">

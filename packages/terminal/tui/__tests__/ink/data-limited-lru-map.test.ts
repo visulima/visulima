@@ -105,7 +105,7 @@ describe(DataLimitedLruMap, () => {
         const map = new DataLimitedLruMap<number | null>(10, 1000);
 
         map.set("zero", 0);
-        map.set("null", null as unknown as number);
+        map.set("null", null);
 
         expect(map.get("zero")).toBe(0);
         expect(map.get("null")).toBeNull();

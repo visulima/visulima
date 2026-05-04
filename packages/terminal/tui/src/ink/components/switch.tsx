@@ -53,9 +53,10 @@ export type Props = {
     readonly value?: boolean;
 };
 
+const DEFAULT_LABELS: readonly [string, string] = ["off", "on"];
+
 /**
  * Focusable on/off switch. Toggles with Space or Enter.
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering two labeled segments plus an optional
  * trailing label.
  */
@@ -65,7 +66,7 @@ export default function Switch({
     children,
     defaultValue = false,
     isDisabled = false,
-    labels = ["off", "on"],
+    labels = DEFAULT_LABELS,
     onChange,
     value,
 }: Props): ReactElement {
@@ -105,20 +106,20 @@ export default function Switch({
                 <Text backgroundColor={current ? undefined : "gray"} color={current ? undefined : "black"} dimColor={isDisabled}>
                     {" "}
                     {off}
-                    {" "}
+{" "}
                 </Text>
                 <Text backgroundColor={current ? accentColor : undefined} color={current ? "black" : undefined} dimColor={isDisabled}>
                     {" "}
                     {on}
-                    {" "}
+{" "}
                 </Text>
             </Box>
             {children === undefined
                 ? undefined
                 : (
-                    <Text color={focusColor} dimColor={isDisabled}>
-                        {children}
-                    </Text>
+                <Text color={focusColor} dimColor={isDisabled}>
+                    {children}
+                </Text>
                 )}
         </Box>
     );

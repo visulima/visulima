@@ -64,10 +64,10 @@ export const tokenLinesToElements = (lines: ThemedToken[][], options: TokenRende
                     <Box key={lineIndex}>
                         {showLineNumbers
                             ? (
-                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                    {String(lineNumber).padStart(gutterWidth)}
-                                    {" "}
-                                </Text>
+                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                {String(lineNumber).padStart(gutterWidth)}
+{" "}
+                            </Text>
                             )
                             : undefined}
                         <Text backgroundColor={isHighlighted ? "#3a3a00" : undefined}>

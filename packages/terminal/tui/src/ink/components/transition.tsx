@@ -88,16 +88,16 @@ const renderSlide
 
             if (axis === "x") {
                 return (
-                    <Box paddingLeft={sign === 1 ? offset : 0} paddingRight={sign === -1 ? offset : 0}>
-                        {children}
-                    </Box>
+                <Box paddingLeft={sign === 1 ? offset : 0} paddingRight={sign === -1 ? offset : 0}>
+                    {children}
+                </Box>
                 );
             }
 
             return (
-                <Box flexDirection="column" paddingBottom={sign === -1 ? offset : 0} paddingTop={sign === 1 ? offset : 0}>
-                    {children}
-                </Box>
+            <Box flexDirection="column" paddingBottom={sign === -1 ? offset : 0} paddingTop={sign === 1 ? offset : 0}>
+                {children}
+            </Box>
             );
         };
 
@@ -148,7 +148,6 @@ type TransitionComponent = ((props: Props) => ReactElement | null) & { isAnimata
  * string. Non-string children (Box trees, other components) pass through
  * untouched during the transition — wrap them in `&lt;Text>` if you need the
  * fade effect.
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the transitioning child, or `null`
  * once a hidden transition has fully completed.
  */
@@ -164,6 +163,7 @@ function Transition({ children, distance = 4, duration = 240, onExit, preset = "
 
     // Restart animation whenever `show` flips. The `animationKey` state forces
     // the interval-owning effect to re-fire without depending on `progress`.
+    // eslint-disable-next-line react-x/no-unused-state -- animationKey is read inside the interval-owning effect via closure
     const [animationKey, setAnimationKey] = useState(0);
 
     useEffect(() => {
@@ -177,6 +177,7 @@ function Transition({ children, distance = 4, duration = 240, onExit, preset = "
         startRef.current = Date.now();
         startProgressRef.current = progress;
         completedRef.current = false;
+        // eslint-disable-next-line react-x/set-state-in-effect -- animation restart key must bump in effect when `show` flips
         setAnimationKey((previous) => previous + 1);
         // `progress` is intentionally excluded — it would retrigger the
         // animation on every tick. We snapshot it once when `show` flips.

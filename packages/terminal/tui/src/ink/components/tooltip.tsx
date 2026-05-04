@@ -56,16 +56,16 @@ export default function Tooltip({ children, color = "gray", content, isVisible =
 
     const tooltip = isVisible
         ? (
-            <Box
-                borderColor={color}
-                borderStyle="round"
-                flexShrink={0}
-                marginLeft={placement === "right" ? 1 : 0}
-                marginRight={placement === "left" ? 1 : 0}
-                paddingX={1}
-            >
-                {typeof content === "string" ? <Text color={color}>{content}</Text> : content}
-            </Box>
+        <Box
+            borderColor={color}
+            borderStyle="round"
+            flexShrink={0}
+            marginLeft={placement === "right" ? 1 : 0}
+            marginRight={placement === "left" ? 1 : 0}
+            paddingX={1}
+        >
+            {typeof content === "string" ? <Text color={color}>{content}</Text> : content}
+        </Box>
         )
         : undefined;
 

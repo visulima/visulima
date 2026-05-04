@@ -207,7 +207,6 @@ export default function Tabs({
         : internalTab;
 
     // no-op in controlled mode; parent drives state via onChange.
-    // eslint-disable-next-line react-x/no-unnecessary-use-callback -- stable identity needed by downstream useCallback hooks
     const noopSetTab = useCallback(() => {}, []);
     const setActiveTab = isControlled ? noopSetTab : setInternalTab;
 
@@ -336,7 +335,7 @@ export default function Tabs({
                 if (showIndex) {
                     indexLabel = (
                         <Text color="grey">
-                            {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
+                            {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line */}
                             {index + 1}.{" "}
                         </Text>
                     );

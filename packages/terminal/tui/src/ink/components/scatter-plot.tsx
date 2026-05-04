@@ -30,7 +30,6 @@ const DEFAULT_PALETTE = DEFAULT_CHART_PALETTE;
 /**
  * Scatter plot rendered on a braille pixel grid. Each sample lights one
  * sub-cell pixel; overlapping points merge into denser braille glyphs.
- * @param props See {@link Props}.
  * @returns A `ReactElement` containing the plot and an optional legend.
  */
 export default function ScatterPlot({
@@ -70,25 +69,30 @@ export default function ScatterPlot({
     return (
         <Box flexDirection="column">
             <Canvas
+                // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                 draw={(context: CanvasContext) => {
                     drawSeriesOnCanvas(context, "scatter", config);
                 }}
                 height={height}
+                // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                 version={[series, width, height, minX, maxX, minY, maxY, axisColor, palette]}
                 width={width}
             />
-            {showLegend ? (
+            {showLegend
+                ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
                         // series sharing a label don't collide.
+                        // eslint-disable-next-line react-x/no-array-index-key -- series index is stable for the render
                         <Box gap={1} key={`${index}:${input.label ?? ""}`}>
                             <Text color={color}>●</Text>
                             <Text>{input.label ?? `Series ${index + 1}`}</Text>
                         </Box>
                     ))}
                 </Box>
-            ) : undefined}
+                )
+                : undefined}
         </Box>
     );
 }

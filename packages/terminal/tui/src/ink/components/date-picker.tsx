@@ -140,17 +140,17 @@ export default function DatePicker({
                 {current === undefined ? <Text dimColor>{placeholder}</Text> : <Text bold>{formatValue(current)}</Text>}
                 {isFocused && !isOpen
                     ? (
-                        <Box marginLeft={1}>
-                            <Text dimColor>(Enter to open)</Text>
-                        </Box>
+                    <Box marginLeft={1}>
+                        <Text dimColor>(Enter to open)</Text>
+                    </Box>
                     )
                     : undefined}
             </Box>
             {isOpen
                 ? (
-                    <Box marginTop={1}>
-                        <Calendar accentColor={accentColor} autoFocus defaultValue={current} maxDate={maxDate} minDate={minDate} onSubmit={handleCalendarSubmit} />
-                    </Box>
+                <Box marginTop={1}>
+                    <Calendar accentColor={accentColor} autoFocus defaultValue={current} maxDate={maxDate} minDate={minDate} onSubmit={handleCalendarSubmit} />
+                </Box>
                 )
                 : undefined}
         </Box>

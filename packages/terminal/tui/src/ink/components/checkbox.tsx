@@ -98,9 +98,9 @@ export default function Checkbox({
             {children === undefined
                 ? undefined
                 : (
-                    <Text color={isFocused ? accentColor : undefined} dimColor={isDisabled}>
-                        {children}
-                    </Text>
+                <Text color={isFocused ? accentColor : undefined} dimColor={isDisabled}>
+                    {children}
+                </Text>
                 )}
         </Box>
     );

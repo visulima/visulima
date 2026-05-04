@@ -71,6 +71,7 @@ const App = () => {
                 <Text dimColor>Press `t` to emit one; each auto-dismisses after 3s.</Text>
                 <Box flexDirection="column" gap={1}>
                     {toasts.map((toast) => (
+                        // eslint-disable-next-line sonarjs/no-nested-functions -- inline event handler in a demo file
                         <Toast duration={3000} key={toast.id} onDismiss={() => setToasts((current) => current.filter((t) => t.id !== toast.id))} variant="info">
                             {toast.message}
                         </Toast>

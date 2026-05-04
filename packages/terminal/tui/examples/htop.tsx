@@ -181,26 +181,26 @@ const App = () => {
                 </Text>
                 <Text dim>
                     up
-                    {" "}
-                    <Text color="white">{formatUptime(uptime)}</Text>
+{" "}
+<Text color="white">{formatUptime(uptime)}</Text>
                 </Text>
                 <Text dim>
                     load
-                    {" "}
-                    <Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>
-                    {" "}
+{" "}
+<Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>
+{" "}
                     <Text dim>
                         {loadAvg[1].toFixed(2)}
-                        {" "}
-                        {loadAvg[2].toFixed(2)}
+{" "}
+{loadAvg[2].toFixed(2)}
                     </Text>
                 </Text>
                 <Spacer />
                 <Text dim>
-                    {cpuCount}
-                    {" "}
-                    cores ·
-                    {" "}
+{cpuCount}
+{" "}
+cores ·
+{" "}
                 </Text>
                 <Text color="cyan">{formatMem(totalMem)}</Text>
                 <Text dim> RAM · q quit</Text>
@@ -217,8 +217,8 @@ const App = () => {
                         return (
                             <Box flexDirection="row" key={i} width={barW + 12}>
                                 <Text dim>
-                                    {String(i + 1).padStart(2)}
-                                    {" "}
+{String(i + 1).padStart(2)}
+{" "}
                                 </Text>
                                 <Text color={color}>[</Text>
                                 {miniBar(pct, barW, color)}
@@ -226,7 +226,7 @@ const App = () => {
                                 <Text bold color={color}>
                                     {" "}
                                     {String(pct).padStart(3)}
-                                    %
+%
                                 </Text>
                             </Box>
                         );
@@ -243,13 +243,13 @@ const App = () => {
                 <Text color="cyan">]</Text>
                 <Text bold color="cyan">
                     {String(memPct).padStart(3)}
-                    %
+%
                 </Text>
                 <Text dim>
                     {formatMem(memUsed)}
-                    {" "}
-                    /
-                    {formatMem(totalMem)}
+{" "}
+/
+{formatMem(totalMem)}
                 </Text>
             </Box>
 
@@ -292,7 +292,7 @@ const App = () => {
 
                 {sorted.length === 0
                     ? (
-                        <Text dim>no process rows available (check `ps` availability)</Text>
+                    <Text dim>no process rows available (check `ps` availability)</Text>
                     )
                     : (
                         sorted.map((p, i) => {
@@ -302,23 +302,23 @@ const App = () => {
                             const cmdDisplay = cmd.startsWith("/") ? (cmd.split("/").pop() ?? cmd) : cmd;
 
                             return (
-                                <Box flexDirection="row" key={`${p.pid}-${i}`}>
-                                    <Box width={7}>
-                                        <Text dim>{p.pid}</Text>
-                                    </Box>
-                                    <Box width={14}>
-                                        <Text color="cyan">{p.user.slice(0, 12)}</Text>
-                                    </Box>
-                                    <Box width={8}>
-                                        <Text bold={p.cpu > 20} color={cpuColor}>
-                                            {p.cpu.toFixed(1).padStart(5)}
-                                        </Text>
-                                    </Box>
-                                    <Box width={8}>
-                                        <Text color={memColor}>{p.mem.toFixed(1).padStart(5)}</Text>
-                                    </Box>
-                                    <Text color={i === 0 ? "white" : "gray"}>{cmdDisplay}</Text>
+                            <Box flexDirection="row" key={`${p.pid}-${i}`}>
+                                <Box width={7}>
+                                    <Text dim>{p.pid}</Text>
                                 </Box>
+                                <Box width={14}>
+                                    <Text color="cyan">{p.user.slice(0, 12)}</Text>
+                                </Box>
+                                <Box width={8}>
+                                    <Text bold={p.cpu > 20} color={cpuColor}>
+                                        {p.cpu.toFixed(1).padStart(5)}
+                                    </Text>
+                                </Box>
+                                <Box width={8}>
+                                    <Text color={memColor}>{p.mem.toFixed(1).padStart(5)}</Text>
+                                </Box>
+                                <Text color={i === 0 ? "white" : "gray"}>{cmdDisplay}</Text>
+                            </Box>
                             );
                         })
                     )}

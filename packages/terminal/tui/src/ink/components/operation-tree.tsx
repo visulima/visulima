@@ -95,8 +95,11 @@ type NodeLineProps = {
 
 const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactElement => {
     const color = STATUS_COLOR[node.status];
-    const connector = prefix.length === 0 ? "" : isLast ? "└─ " : "├─ ";
+    const branchConnector = isLast ? "└─ " : "├─ ";
+    const connector = prefix.length === 0 ? "" : branchConnector;
     const childPrefix = prefix + (isLast ? "   " : "│  ");
+    const runningGlyph = showSpinner ? <Spinner type="dots" /> : "…";
+    const statusGlyph = node.status === "running" ? runningGlyph : STATUS_ICON[node.status];
 
     return (
         <>
@@ -104,7 +107,7 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
                 <Text dimColor>{prefix}</Text>
                 <Text dimColor>{connector}</Text>
                 <Box flexShrink={0}>
-                    <Text color={color}>{node.status === "running" ? showSpinner ? <Spinner type="dots" /> : "…" : STATUS_ICON[node.status]}</Text>
+                    <Text color={color}>{statusGlyph}</Text>
                 </Box>
                 <Text> </Text>
                 <Box flexGrow={1} flexShrink={1} minWidth={0}>
@@ -120,21 +123,21 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
                 {node.durationMs === undefined
                     ? undefined
                     : (
-                        <Box flexShrink={0}>
-                            <Text dimColor>
-                                {" "}
-                                {formatDuration(node.durationMs)}
-                            </Text>
-                        </Box>
+                    <Box flexShrink={0}>
+                        <Text dimColor>
+{" "}
+{formatDuration(node.durationMs)}
+                        </Text>
+                    </Box>
                     )}
             </Box>
             {node.details === undefined
                 ? undefined
                 : (
-                    <Box>
-                        <Text dimColor>{childPrefix}</Text>
-                        <Text dimColor>{node.details}</Text>
-                    </Box>
+                <Box>
+                    <Text dimColor>{childPrefix}</Text>
+                    <Text dimColor>{node.details}</Text>
+                </Box>
                 )}
             {node.children?.map((child, index, all) => (
                 <NodeLine isLast={index === all.length - 1} key={child.id} node={child} prefix={childPrefix} showSpinner={showSpinner} />
@@ -146,7 +149,6 @@ const NodeLine = ({ isLast, node, prefix, showSpinner }: NodeLineProps): ReactEl
 /**
  * Renders a tree of operations with per-node status. Perfect for agent
  * progress panels (reading → editing → running tests → done).
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the nested tree of operation rows.
  */
 export default function OperationTree({ nodes, showSpinner = true }: Props): ReactElement {

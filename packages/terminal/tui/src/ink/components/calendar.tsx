@@ -137,7 +137,6 @@ const buildWeeks = (year: number, month: number, firstDayOfWeek: 0 | 1): Readonl
 /**
  * Month-grid date picker. Arrow keys move focus by one day, page up/down move
  * by month. Enter submits; Space or Enter selects.
- * @param props See {@link Props}.
  * @returns A bordered `ReactElement` containing the month header, weekday
  * labels, and the day grid.
  */
@@ -155,6 +154,7 @@ export default function Calendar({
     value,
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
+    // eslint-disable-next-line no-restricted-syntax -- today must be stable across renders; useRef would lose semantic clarity
     const today = useMemo(() => startOfDay(new Date()), []);
     const initial = startOfDay(value ?? defaultValue ?? today);
     const [internalCursor, setInternalCursor] = useState(initial);
@@ -231,10 +231,12 @@ export default function Calendar({
                 ))}
             </Box>
             {weeks.map((week, weekIndex) => (
+                // eslint-disable-next-line react-x/no-array-index-key -- calendar grid is positionally stable
                 <Box key={weekIndex}>
                     {week.map((day, dayIndex) => {
                         if (day === undefined) {
                             return (
+                                // eslint-disable-next-line react-x/no-array-index-key -- calendar grid is positionally stable
                                 <Box key={dayIndex} width={3}>
                                     <Text>{"   "}</Text>
                                 </Box>
@@ -244,17 +246,20 @@ export default function Calendar({
                         const isToday = isSameDay(day, today);
                         const isCursor = isSameDay(day, cursor);
                         const outOfRange = isOutOfRange(day, minDate, maxDate);
+                        const focusedColor = isToday ? selectedColor : undefined;
+                        const dayColor = isCursor && isFocused ? "black" : focusedColor;
 
                         return (
+                            // eslint-disable-next-line react-x/no-array-index-key -- calendar grid is positionally stable
                             <Box key={dayIndex} width={3}>
                                 <Text
                                     backgroundColor={isCursor && isFocused ? accentColor : undefined}
                                     bold={isToday}
-                                    color={isCursor && isFocused ? "black" : isToday ? selectedColor : undefined}
+                                    color={dayColor}
                                     dimColor={outOfRange || isDisabled}
                                 >
                                     {String(day.getDate()).padStart(2, " ")}
-                                    {" "}
+{" "}
                                 </Text>
                             </Box>
                         );

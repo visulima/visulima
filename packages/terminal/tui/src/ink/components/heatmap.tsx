@@ -17,9 +17,9 @@ export type HeatmapProps = {
     readonly cellWidth?: number;
 
     /**
-     * Character used to paint each heatmap cell. Defaults to `█` so the
+     * Glyph used to paint each heatmap cell. Defaults to `█` so the
      * background color fills the cell.
-     * @default "█"
+     * @default "█" (full block)
      */
     readonly character?: string;
 
@@ -80,6 +80,7 @@ export default function Heatmap({
 }: HeatmapProps): ReactElement {
     const { cols, colWidth, extent, rows } = useMemo(() => {
         const rowCount = data.length;
+        // eslint-disable-next-line unicorn/no-array-reduce -- finding max row length is naturally a reduce
         const colCount = data.reduce((widest, row) => Math.max(widest, row.length), 0);
 
         let min = minOverride ?? Infinity;
@@ -115,16 +116,17 @@ export default function Heatmap({
             {rowLabels === undefined
                 ? undefined
                 : (
-                    <Box flexDirection="column" marginRight={1}>
-                        {Array.from({ length: rows }, (_, index) => (
-                            <Text dimColor key={index}>
-                                {rowLabels[index] ?? ""}
-                            </Text>
-                        ))}
-                    </Box>
+                <Box flexDirection="column" marginRight={1}>
+                    {Array.from({ length: rows }, (_, index) => (
+                        <Text dimColor key={index}>
+                            {rowLabels[index] ?? ""}
+                        </Text>
+                    ))}
+                </Box>
                 )}
             <Box flexDirection="column">
                 <Canvas
+                    // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                     draw={(context: CanvasContext) => {
                         context.clear();
 
@@ -150,21 +152,23 @@ export default function Heatmap({
                         }
                     }}
                     height={height}
+                    // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                     version={[data, palette, cellWidth, minOverride, maxOverride]}
                     width={width}
                 />
                 {columnLabels === undefined
                     ? undefined
                     : (
-                        <Box>
-                            {columnLabels.map((label, index) => (
-                                <Box key={index} width={colWidth}>
-                                    <Text dimColor wrap="truncate-end">
-                                        {label}
-                                    </Text>
-                                </Box>
-                            ))}
-                        </Box>
+                    <Box>
+                        {columnLabels.map((label, index) => (
+                            // eslint-disable-next-line react-x/no-array-index-key -- column index is stable for the render
+                            <Box key={index} width={colWidth}>
+                                <Text dimColor wrap="truncate-end">
+                                    {label}
+                                </Text>
+                            </Box>
+                        ))}
+                    </Box>
                     )}
             </Box>
         </Box>

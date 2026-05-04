@@ -102,7 +102,6 @@ const ButtonLabel = ({ color, isFocused, label }: ButtonLabelProps): ReactElemen
  * Full-width modal-style confirm/cancel prompt. Unlike `ConfirmInput`, this
  * renders a visible two-button UI: ← / → to toggle focus, Enter to activate,
  * y/n as shortcuts, Esc to cancel.
- * @param props See {@link Props}.
  * @returns A bordered `ReactElement` with optional title, body, and two
  * buttons (cancel / confirm).
  */
@@ -127,6 +126,7 @@ export default function ConfirmDialog({
         useCallback(
             (input, key) => {
                 if (key.leftArrow || key.rightArrow || input === "h" || input === "l") {
+                    // eslint-disable-next-line no-confusing-arrow -- ternary in arrow body is the clearest expression here
                     setFocus((previous) => previous === "confirm" ? "cancel" : "confirm");
 
                     return;
@@ -162,18 +162,18 @@ export default function ConfirmDialog({
             {title === undefined
                 ? undefined
                 : (
-                    <Box marginBottom={1}>
-                        <Text bold color={color}>
-                            {title}
-                        </Text>
-                    </Box>
+                <Box marginBottom={1}>
+                    <Text bold color={color}>
+                        {title}
+                    </Text>
+                </Box>
                 )}
             {children === undefined
                 ? undefined
                 : (
-                    <Box flexDirection="column" marginBottom={1}>
-                        {typeof children === "string" ? <Text>{children}</Text> : children}
-                    </Box>
+                <Box flexDirection="column" marginBottom={1}>
+                    {typeof children === "string" ? <Text>{children}</Text> : children}
+                </Box>
                 )}
             <Box gap={2} justifyContent="flex-end">
                 <ButtonLabel color={color} isFocused={focus === "cancel"} label={cancelLabel} />

@@ -63,13 +63,13 @@ const App = () => {
             <Text dimColor>s toggle split/unified · i toggle inline diff · q quit</Text>
             <Text>
                 Mode:
-                {" "}
+{" "}
                 <Text bold color="yellow">
                     {mode}
                 </Text>
                 {" · "}
                 Inline diff:
-                {" "}
+{" "}
                 <Text bold color={inlineDiff ? "green" : "red"}>
                     {inlineDiff ? "on" : "off"}
                 </Text>

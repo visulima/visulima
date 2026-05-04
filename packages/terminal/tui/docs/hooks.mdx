@@ -883,23 +883,23 @@ const { values, errors, touched, setValue, setTouched, submit, isSubmitting, res
 
 ### Options
 
-| Option     | Type                                                          | Description                                              |
-| ---------- | ------------------------------------------------------------- | -------------------------------------------------------- |
-| `fields`   | `Record<string, FieldConfig<V>>`                              | Field declarations (`{ initialValue, validate? }`)       |
-| `onSubmit` | `(values) => void \| Promise<void>`                           | Called by `submit()` when all fields validate            |
+| Option     | Type                                | Description                                        |
+| ---------- | ----------------------------------- | -------------------------------------------------- |
+| `fields`   | `Record<string, FieldConfig<V>>`    | Field declarations (`{ initialValue, validate? }`) |
+| `onSubmit` | `(values) => void \| Promise<void>` | Called by `submit()` when all fields validate      |
 
 ### Return Value
 
-| Field           | Type                                                | Description                                              |
-| --------------- | --------------------------------------------------- | -------------------------------------------------------- |
-| `values`        | `FormValues<S>`                                     | Current values                                           |
-| `errors`        | `Partial<Record<keyof S, string>>`                  | Validation errors (per field)                            |
-| `touched`       | `Partial<Record<keyof S, boolean>>`                 | Per-field touched flag                                   |
-| `isSubmitting`  | `boolean`                                           | True while the last `submit()` is in-flight              |
-| `setValue`      | `(name, value) => void`                             | Update a single field (validates the field)              |
-| `setTouched`    | `(name, touched?) => void`                          | Mark a field as touched                                  |
-| `submit`        | `() => Promise<boolean>`                            | Validate all, mark touched, call `onSubmit`. Returns `true` on success. |
-| `reset`         | `() => void`                                        | Reset to initial values; clear errors and touched        |
+| Field          | Type                                | Description                                                             |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `values`       | `FormValues<S>`                     | Current values                                                          |
+| `errors`       | `Partial<Record<keyof S, string>>`  | Validation errors (per field)                                           |
+| `touched`      | `Partial<Record<keyof S, boolean>>` | Per-field touched flag                                                  |
+| `isSubmitting` | `boolean`                           | True while the last `submit()` is in-flight                             |
+| `setValue`     | `(name, value) => void`             | Update a single field (validates the field)                             |
+| `setTouched`   | `(name, touched?) => void`          | Mark a field as touched                                                 |
+| `submit`       | `() => Promise<boolean>`            | Validate all, mark touched, call `onSubmit`. Returns `true` on success. |
+| `reset`        | `() => void`                        | Reset to initial values; clear errors and touched                       |
 
 `submit()` returns `false` (and skips `onSubmit`) when any field is invalid.
 
@@ -921,8 +921,8 @@ useHotkey({ ctrl: true, input: "k" }, () => openPalette());
 
 ### Options
 
-| Option     | Type      | Default | Description                                  |
-| ---------- | --------- | ------- | -------------------------------------------- |
+| Option     | Type      | Default | Description                                              |
+| ---------- | --------- | ------- | -------------------------------------------------------- |
 | `isActive` | `boolean` | `true`  | Disable the binding while keeping the component rendered |
 
 For multiple bindings with help-bar integration, use [`useKeyBindings`](#usekeybindings) + `<Help>` instead.
@@ -940,8 +940,8 @@ useInterval(() => tick(), 1_000, { isActive: !paused });
 
 ### Options
 
-| Option     | Type      | Default | Description                                                |
-| ---------- | --------- | ------- | ---------------------------------------------------------- |
+| Option     | Type      | Default | Description                                                 |
+| ---------- | --------- | ------- | ----------------------------------------------------------- |
 | `isActive` | `boolean` | `true`  | When `false` the timer is paused; flipping back restarts it |
 
 Returns `{ clear }` for manual cancellation. Invalid intervals (`0`, `NaN`, `Infinity`) pause the timer.
@@ -959,10 +959,10 @@ const [recent, setRecent] = usePersistentState<string[]>("recent", [], { namespa
 
 ### Options
 
-| Option      | Type                | Default                              | Description                                     |
-| ----------- | ------------------- | ------------------------------------ | ----------------------------------------------- |
-| `namespace` | `string`            | `"tui"`                              | Used by the default file storage to scope keys  |
-| `storage`   | `PersistentStorage` | `createFileStorage(namespace)`       | Custom storage backend                          |
+| Option      | Type                | Default                        | Description                                    |
+| ----------- | ------------------- | ------------------------------ | ---------------------------------------------- |
+| `namespace` | `string`            | `"tui"`                        | Used by the default file storage to scope keys |
+| `storage`   | `PersistentStorage` | `createFileStorage(namespace)` | Custom storage backend                         |
 
 The backend is captured once on mount; mutating `options.storage` later has no effect. Remount the hook (e.g. via a `key` prop) to swap backends.
 

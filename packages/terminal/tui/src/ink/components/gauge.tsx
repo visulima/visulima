@@ -148,7 +148,7 @@ export default function Gauge({
             return undefined;
         }
 
-        return [...thresholds].sort((a, b) => a.max - b.max);
+        return [...thresholds].toSorted((a, b) => a.max - b.max);
     }, [thresholds]);
 
     const activeThreshold = useMemo(() => {
@@ -164,6 +164,7 @@ export default function Gauge({
     return (
         <Box flexDirection="column">
             <Canvas
+                // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                 draw={(context: CanvasContext) => {
                     context.clear();
 
@@ -207,11 +208,11 @@ export default function Gauge({
                         let color: string;
 
                         if (stepRatio > ratio) {
-                            color = backgroundColor as string;
+                            color = backgroundColor;
                         } else if (sortedThresholds) {
                             const segment = thresholdAtRatio(sortedThresholds, min, max, stepRatio);
 
-                            color = (segment?.color ?? "cyan") as string;
+                            color = (segment?.color ?? "cyan");
                         } else {
                             color = "cyan";
                         }
@@ -236,41 +237,43 @@ export default function Gauge({
                     }
                 }}
                 height={rows}
+                // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                 version={[value, min, max, size, thresholds, backgroundColor]}
                 width={cols}
             />
             {showValue || label
                 ? (
-                    <Box flexDirection="column">
-                        {label === undefined
-                            ? undefined
-                            : (
-                                <Box justifyContent="center">
-                                    <Text dimColor>{label}</Text>
-                                </Box>
-                            )}
-                        {showValue
-                            ? (
-                                <Box justifyContent="center">
-                                    <Text bold color={activeThreshold?.color ?? "white"}>
-                                        {readout}
-                                    </Text>
-                                </Box>
-                            )
-                            : undefined}
-                    </Box>
+                <Box flexDirection="column">
+                    {label === undefined
+                        ? undefined
+                        : (
+                        <Box justifyContent="center">
+                            <Text dimColor>{label}</Text>
+                        </Box>
+                        )}
+                    {showValue
+                        ? (
+                        <Box justifyContent="center">
+                            <Text bold color={activeThreshold?.color ?? "white"}>
+                                {readout}
+                            </Text>
+                        </Box>
+                        )
+                        : undefined}
+                </Box>
                 )
                 : undefined}
             {showLegend && thresholds && thresholds.length > 0
                 ? (
-                    <Box gap={2} justifyContent="center" marginTop={1}>
-                        {thresholds.map((threshold, index) => (
-                            <Box gap={1} key={index}>
-                                <Text color={threshold.color}>●</Text>
-                                <Text dimColor>{threshold.label ?? `≤ ${threshold.max}`}</Text>
-                            </Box>
-                        ))}
-                    </Box>
+                <Box gap={2} justifyContent="center" marginTop={1}>
+                    {thresholds.map((threshold, index) => (
+                        // eslint-disable-next-line react-x/no-array-index-key -- threshold index is stable for the render
+                        <Box gap={1} key={index}>
+                            <Text color={threshold.color}>●</Text>
+                            <Text dimColor>{threshold.label ?? `≤ ${threshold.max}`}</Text>
+                        </Box>
+                    ))}
+                </Box>
                 )
                 : undefined}
         </Box>

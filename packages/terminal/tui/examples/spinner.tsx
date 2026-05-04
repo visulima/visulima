@@ -47,12 +47,12 @@ const App = () => {
             </Text>
             <Text dim>
                 +/= faster · - slower · current interval
-                {" "}
+{" "}
                 <Text color="yellow">
                     {intervalMs}
                     ms
                 </Text>
-                {" "}
+{" "}
                 · q quit
             </Text>
 
@@ -75,11 +75,11 @@ const App = () => {
 
             <Text>
                 uptime:
-                {" "}
-                <Text color="green">
-                    {seconds}
-                    s
-                </Text>
+{" "}
+<Text color="green">
+{seconds}
+s
+</Text>
             </Text>
         </Box>
     );

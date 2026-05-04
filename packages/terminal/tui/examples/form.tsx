@@ -39,7 +39,7 @@ const App = () => {
             },
         },
         onSubmit: (values) => {
-            setSubmitted(values as Record<string, string>);
+            setSubmitted(values);
             setShowConfirm(true);
         },
     });
@@ -66,11 +66,11 @@ const App = () => {
                     <Box flexDirection="column">
                         <Text>
                             Submit as
-                            {" "}
-                            <Text bold>{submitted?.name ?? ""}</Text>
-                            {" "}
-                            &lt;
-                            {submitted?.email ?? ""}
+{" "}
+<Text bold>{submitted?.name ?? ""}</Text>
+{" "}
+&lt;
+{submitted?.email ?? ""}
                             &gt;?
                         </Text>
                     </Box>

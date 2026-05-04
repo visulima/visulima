@@ -60,10 +60,10 @@ const App = () => {
             {lastPicked === undefined
                 ? undefined
                 : (
-                    <Text dimColor>
-                        last picked:
-                        {lastPicked}
-                    </Text>
+                <Text dimColor>
+                    last picked:
+                    {lastPicked}
+                </Text>
                 )}
             <Text bold color="cyan">
                 Tooltip (press `h` to toggle)

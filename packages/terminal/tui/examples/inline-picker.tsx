@@ -86,6 +86,7 @@ const { waitUntilExit } = renderInline(
     { onExit: "destroy", rows: ITEMS.length + 4 },
 );
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises -- demo top-level promise
 waitUntilExit().then(() => {
     if (result) {
         process.stdout.write(`\nSelected: ${result}\n`);

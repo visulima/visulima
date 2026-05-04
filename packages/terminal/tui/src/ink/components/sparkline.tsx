@@ -73,7 +73,6 @@ const computeExtent = (data: ReadonlyArray<number>, minOverride: number | undefi
 
 /**
  * Inline bar chart using Unicode block glyphs.
- * @param props See {@link Props}.
  * @returns A `ReactElement` containing the glyph string, or `null` when
  * `data` is empty.
  */

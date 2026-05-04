@@ -141,8 +141,10 @@ describe(Placeholder, () => {
         // we're trying to assert here.
         const output = renderToString(<Placeholder animated={false} character="#" rows={2} width={10} widths={[1, 0.5]} />);
         const blockLines = output.split("\n").filter((line) => line.includes("#"));
-        const first = (blockLines[0] ?? "").match(/#+/)?.[0].length ?? 0;
-        const second = (blockLines[1] ?? "").match(/#+/)?.[0].length ?? 0;
+        const firstMatch = /#+/.exec(blockLines[0] ?? "");
+        const secondMatch = /#+/.exec(blockLines[1] ?? "");
+        const first = firstMatch?.[0].length ?? 0;
+        const second = secondMatch?.[0].length ?? 0;
 
         expect(second).toBeLessThan(first);
     });
@@ -275,6 +277,7 @@ describe(useForm, () => {
             },
         });
 
+        // eslint-disable-next-line no-param-reassign -- assigning to MutableRefObject.current is the standard pattern
         formRef.current = form;
 
         return <Text>form-harness</Text>;

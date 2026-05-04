@@ -351,9 +351,9 @@ function UnifiedView({
                 <Box flexDirection="column" key={hunkIndex}>
                     {hunkIndex > 0
                         ? (
-                            <Box marginBottom={0} marginTop={0}>
-                                <Text dimColor>···</Text>
-                            </Box>
+                        <Box marginBottom={0} marginTop={0}>
+                            <Text dimColor>···</Text>
+                        </Box>
                         )
                         : undefined}
                     <Text color="cyan" dimColor>
@@ -395,12 +395,12 @@ function UnifiedView({
                             <Box key={lineIndex}>
                                 {showLineNumbers
                                     ? (
-                                        <Text color={color} dimColor={line.type === "context"}>
-                                            {String(line.oldLineNum ?? "").padStart(4)}
-                                            {" "}
-                                            {String(line.newLineNum ?? "").padStart(4)}
-                                            {" "}
-                                        </Text>
+                                    <Text color={color} dimColor={line.type === "context"}>
+                                        {String(line.oldLineNum ?? "").padStart(4)}
+{" "}
+{String(line.newLineNum ?? "").padStart(4)}
+{" "}
+                                    </Text>
                                     )
                                     : undefined}
                                 <Text color={color}>{prefix}</Text>
@@ -438,9 +438,9 @@ function SplitView({
                 const separator
                     = hunkIndex > 0
                         ? (
-                            <Box marginBottom={0} marginTop={0}>
-                                <Text dimColor>···</Text>
-                            </Box>
+                        <Box marginBottom={0} marginTop={0}>
+                            <Text dimColor>···</Text>
+                        </Box>
                         )
                         : undefined;
 
@@ -517,10 +517,10 @@ function SplitView({
                                     <Box width={halfWidth}>
                                         {showLineNumbers
                                             ? (
-                                                <Text dimColor>
-                                                    {String(left?.lineNum ?? "").padStart(4)}
-                                                    {" "}
-                                                </Text>
+<Text dimColor>
+{String(left?.lineNum ?? "").padStart(4)}
+{" "}
+</Text>
                                             )
                                             : undefined}
                                         {left?.content}
@@ -529,10 +529,10 @@ function SplitView({
                                     <Box width={halfWidth}>
                                         {showLineNumbers
                                             ? (
-                                                <Text dimColor>
-                                                    {String(right?.lineNum ?? "").padStart(4)}
-                                                    {" "}
-                                                </Text>
+<Text dimColor>
+{String(right?.lineNum ?? "").padStart(4)}
+{" "}
+</Text>
                                             )
                                             : undefined}
                                         {right?.content}
@@ -598,13 +598,13 @@ export default function DiffView({
         <Box flexDirection="column">
             <Text color="red" dimColor>
                 ---
-                {" "}
-                {oldLabel}
+{" "}
+{oldLabel}
             </Text>
             <Text color="green" dimColor>
                 +++
-                {" "}
-                {newLabel}
+{" "}
+{newLabel}
             </Text>
         </Box>
     );

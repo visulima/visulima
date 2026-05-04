@@ -34,8 +34,8 @@ const App = () => {
                 <TextInput onChange={setValue} onSubmit={(v) => setSubmitted(v)} placeholder="Start typing..." />
                 <Text>
                     Input value: "
-                    <Text color="green">{value}</Text>
-                    "
+<Text color="green">{value}</Text>
+"
                 </Text>
                 {submitted !== undefined && (
                     <Text>

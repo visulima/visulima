@@ -161,11 +161,11 @@ const Dialog = ({
     const titleElement
         = typeof title === "string"
             ? (
-                <Box marginBottom={1}>
-                    <Text bold color={borderColor}>
-                        {title}
-                    </Text>
-                </Box>
+            <Box marginBottom={1}>
+                <Text bold color={borderColor}>
+                    {title}
+                </Text>
+            </Box>
             )
             : title ?? null
         ;

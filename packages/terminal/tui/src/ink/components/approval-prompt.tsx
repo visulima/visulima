@@ -92,6 +92,7 @@ const formatParameterValue = (value: unknown): string => {
     try {
         return JSON.stringify(value);
     } catch {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- last-resort fallback when value isn't JSON-serializable
         return String(value);
     }
 };
@@ -99,7 +100,6 @@ const formatParameterValue = (value: unknown): string => {
 /**
  * Three-way approval prompt for tool calls. Resolves via `onDecision`:
  * `y` / Enter → allow-once, `a` → allow-always, `n` / Esc → deny.
- * @param props See {@link Props}.
  * @returns A bordered `ReactElement` containing the risk banner, params
  * preview, optional body, and the prompt line.
  */
@@ -152,7 +152,7 @@ export default function ApprovalPrompt({
                 <Text backgroundColor={riskColor} color="black">
                     {" "}
                     {RISK_LABEL[risk]}
-                    {" "}
+{" "}
                 </Text>
                 <Text>
                     {" "}
@@ -162,24 +162,24 @@ export default function ApprovalPrompt({
             {description === undefined
                 ? undefined
                 : (
-                    <Box marginTop={1}>
-                        <Text>{description}</Text>
-                    </Box>
+                <Box marginTop={1}>
+                    <Text>{description}</Text>
+                </Box>
                 )}
             {parameterEntries.length === 0
                 ? undefined
                 : (
-                    <Box flexDirection="column" marginTop={1}>
-                        {parameterEntries.map(([name, value]) => (
-                            <Box key={name}>
-                                <Text color="cyan">
-                                    {name}
-                                    =
-                                </Text>
-                                <Text wrap="truncate-end">{formatParameterValue(value)}</Text>
-                            </Box>
-                        ))}
-                    </Box>
+                <Box flexDirection="column" marginTop={1}>
+                    {parameterEntries.map(([name, value]) => (
+                        <Box key={name}>
+                            <Text color="cyan">
+{name}
+=
+                            </Text>
+                            <Text wrap="truncate-end">{formatParameterValue(value)}</Text>
+                        </Box>
+                    ))}
+                </Box>
                 )}
             {children === undefined ? undefined : <Box marginTop={1}>{children}</Box>}
             <Box marginTop={1}>
@@ -189,12 +189,12 @@ export default function ApprovalPrompt({
                         y
                     </Text>
                     es /
-                    {" "}
+{" "}
                     <Text bold color={color}>
                         a
                     </Text>
                     lways /
-                    {" "}
+{" "}
                     <Text bold color={color}>
                         n
                     </Text>

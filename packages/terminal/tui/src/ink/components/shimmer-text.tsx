@@ -40,6 +40,7 @@ export type Props = {
 /**
  * Text with an animated highlight band that sweeps across the characters.
  * Perfect for "generating…" states.
+ * @param props Component props.
  * @param props.bandWidth Number of characters in the bright band.
  * @param props.color Color applied to characters outside the band.
  * @param props.highlightColor Color applied to characters inside the band.
@@ -52,6 +53,7 @@ export default function ShimmerText({ bandWidth = 3, color, highlightColor = "wh
 
     // Split the raw text into codepoints once per `text` change. The
     // per-frame render reuses this array instead of re-splitting.
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- shimmer treats text as a sequence of glyphs; splitting by codepoint is intentional
     const characters = useMemo(() => [...text], [text]);
     const total = characters.length;
     const cycle = total + bandWidth;
@@ -63,6 +65,7 @@ export default function ShimmerText({ bandWidth = 3, color, highlightColor = "wh
     const baseElements = useMemo(
         () =>
             characters.map((char, index) => (
+                // eslint-disable-next-line react-x/no-array-index-key -- shimmer characters are positionally stable
                 <Text color={color} dimColor={color === undefined} key={index}>
                     {char}
                 </Text>

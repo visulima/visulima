@@ -65,7 +65,7 @@ const App = () => {
 
             <Text>
                 OSC 52 support:
-                {" "}
+{" "}
                 <Text bold color={isSupported ? "green" : "red"}>
                     {isSupported ? "yes" : "no"}
                 </Text>
@@ -78,16 +78,16 @@ const App = () => {
                 <Text bold>Last copied:</Text>
                 {lastCopied
                     ? (
-                        <Box flexDirection="column">
-                            {lastCopied.split("\n").map((line, index) => (
-                                <Text color="green" key={index}>
-                                    {line}
-                                </Text>
-                            ))}
-                        </Box>
+                    <Box flexDirection="column">
+                        {lastCopied.split("\n").map((line, index) => (
+                            <Text color="green" key={index}>
+                                {line}
+                            </Text>
+                        ))}
+                    </Box>
                     )
                     : (
-                        <Text dimColor>(nothing copied yet — press 1, 2, or 3)</Text>
+                    <Text dimColor>(nothing copied yet — press 1, 2, or 3)</Text>
                     )}
             </Box>
 

@@ -59,7 +59,7 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
     // Reallocate the buffer whenever dimensions change.
     if (bufferRef.current?.width !== width || bufferRef.current.height !== height) {
         bufferRef.current = createCanvasBuffer(width, height);
-        rowCacheRef.current = { hasRendered: false, lines: new Array<string>(height).fill("") };
+        rowCacheRef.current = { hasRendered: false, lines: Array.from<string>({ length: height }).fill("") };
     }
 
     const buffer = bufferRef.current;
@@ -88,6 +88,7 @@ export default function Canvas({ draw, height, version, width }: Props): ReactEl
     return (
         <Box flexDirection="column" flexShrink={0} height={height} width={width}>
             {rows.map((line, index) => (
+                // eslint-disable-next-line react-x/no-array-index-key -- canvas rows are positionally stable
                 <Fragment key={index}>
                     <Text wrap="truncate-end">{line}</Text>
                 </Fragment>

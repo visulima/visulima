@@ -93,6 +93,7 @@ type RenderConfig = {
  * Project an (x, y) data point into pixel-grid coordinates for the given
  * canvas size. Used by every chart that paints on top of a braille grid.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- shared chart helper used by area-chart and scatter-plot
 export const projectPoint = (
     point: Point,
     config: Pick<RenderConfig, "xMax" | "xMin" | "yMax" | "yMin">,
@@ -114,6 +115,7 @@ export const projectPoint = (
  * Shared drawing path used by LineChart and ScatterPlot. AreaChart wraps
  * this with a fill pass.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- shared chart helper used by area-chart and scatter-plot
 export const drawSeriesOnCanvas = (context: CanvasContext, mode: "line" | "scatter", config: RenderConfig): void => {
     context.clear();
 
@@ -195,25 +197,30 @@ export default function LineChart({
     return (
         <Box flexDirection="column">
             <Canvas
+                // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
                 draw={(context: CanvasContext) => {
                     drawSeriesOnCanvas(context, "line", config);
                 }}
                 height={height}
+                // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop -- version array is the canvas redraw key
                 version={[series, width, height, minY, maxY, axisColor, palette]}
                 width={width}
             />
-            {showLegend ? (
+            {showLegend
+                ? (
                 <Box gap={2} marginTop={1}>
                     {config.seriesList.map(({ color, series: input }, index) => (
                         // Composite key: series index plus label so two
                         // series sharing a label don't collide.
+                        // eslint-disable-next-line react-x/no-array-index-key -- series index is stable for the render
                         <Box gap={1} key={`${index}:${input.label ?? ""}`}>
                             <Text color={color}>●</Text>
                             <Text>{input.label ?? `Series ${index + 1}`}</Text>
                         </Box>
                     ))}
                 </Box>
-            ) : undefined}
+                )
+                : undefined}
         </Box>
     );
 }

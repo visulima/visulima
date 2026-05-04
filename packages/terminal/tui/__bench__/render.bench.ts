@@ -154,21 +154,21 @@ describe("render (mount + first paint)", () => {
     describe("Simple component", () => {
         bench("@visulima/tui", () => {
             const stdout = createMockStdout();
-            const inst = tuiRender(React.createElement(TuiSimpleApp), { ...renderOptions, stdout } as any);
+            const inst = tuiRender(React.createElement(TuiSimpleApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
         bench("ink", () => {
             const stdout = createMockStdout();
-            const inst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout } as any);
+            const inst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
         bench("@jrichman/ink", () => {
             const stdout = createMockStdout();
-            const inst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout } as any);
+            const inst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
@@ -177,21 +177,21 @@ describe("render (mount + first paint)", () => {
     describe("Dashboard (borders + multi-panel)", () => {
         bench("@visulima/tui", () => {
             const stdout = createMockStdout();
-            const inst = tuiRender(React.createElement(TuiDashboardApp), { ...renderOptions, stdout } as any);
+            const inst = tuiRender(React.createElement(TuiDashboardApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
         bench("ink", () => {
             const stdout = createMockStdout();
-            const inst = inkRender(React.createElement(InkDashboardApp), { ...renderOptions, stdout } as any);
+            const inst = inkRender(React.createElement(InkDashboardApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
 
         bench("@jrichman/ink", () => {
             const stdout = createMockStdout();
-            const inst = jrInkRender(React.createElement(JrInkDashboardApp), { ...renderOptions, stdout } as any);
+            const inst = jrInkRender(React.createElement(JrInkDashboardApp), { ...renderOptions, stdout });
 
             inst.unmount();
         });
@@ -201,7 +201,7 @@ describe("render (mount + first paint)", () => {
 describe("render (rerender)", () => {
     describe("Simple component", () => {
         const tuiStdout = createMockStdout();
-        const tuiInst = tuiRender(React.createElement(TuiSimpleApp), { ...renderOptions, stdout: tuiStdout } as any);
+        const tuiInst = tuiRender(React.createElement(TuiSimpleApp), { ...renderOptions, stdout: tuiStdout });
         let tuiFrame = 0;
 
         bench(
@@ -220,7 +220,7 @@ describe("render (rerender)", () => {
         );
 
         const inkStdout = createMockStdout();
-        const inkInst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout: inkStdout } as any);
+        const inkInst = inkRender(React.createElement(InkSimpleApp), { ...renderOptions, stdout: inkStdout });
         let inkFrame = 0;
 
         bench(
@@ -243,7 +243,7 @@ describe("render (rerender)", () => {
         );
 
         const jrStdout = createMockStdout();
-        const jrInst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout: jrStdout } as any);
+        const jrInst = jrInkRender(React.createElement(JrInkSimpleApp), { ...renderOptions, stdout: jrStdout });
         let jrFrame = 0;
 
         bench(

@@ -47,10 +47,10 @@ const ResizeObserverDemo = () => {
             <Text>
                 {" "}
                 Observed size:
-                {" "}
-                {size.width}
-                x
-                {size.height}
+{" "}
+{size.width}
+x
+{size.height}
             </Text>
         </Box>
     );

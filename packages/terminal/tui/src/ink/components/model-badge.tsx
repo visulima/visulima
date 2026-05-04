@@ -44,10 +44,10 @@ export default function ModelBadge({ color = "magenta", icon, model, provider, v
         const renderedIcon = icon === undefined
             ? undefined
             : (
-                <>
-                    {icon}
-                    {" "}
-                </>
+<>
+{icon}
+{" "}
+</>
             );
 
         if (variant === "outline") {
@@ -75,7 +75,7 @@ export default function ModelBadge({ color = "magenta", icon, model, provider, v
                 {" "}
                 {renderedIcon}
                 {content}
-                {" "}
+{" "}
             </Text>
         );
     };

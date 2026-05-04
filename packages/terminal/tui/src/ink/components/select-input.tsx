@@ -275,7 +275,7 @@ export default function SelectInput<V>({
     initialIndex,
     isFocused = true,
     itemComponent = SelectInputItem,
-    items = EMPTY_ITEMS as ReadonlyArray<SelectInputEntry<V>>,
+    items = EMPTY_ITEMS,
     limit: customLimit,
     onHighlight,
     onSelect,
@@ -314,12 +314,13 @@ export default function SelectInput<V>({
     // Extract values for comparison, treating separators as a stable sentinel (Symbol avoids value collisions)
     const itemValues = useMemo(
         () =>
+            // eslint-disable-next-line sonarjs/function-return-type -- legitimate union return: separator sentinel symbol vs entry value
             items.map((entry) => {
                 if (isSeparator(entry)) {
-                    return SEPARATOR_SENTINEL as symbol | V;
+                    return SEPARATOR_SENTINEL;
                 }
 
-                return entry.value as symbol | V;
+                return entry.value;
             }),
         [items],
     );

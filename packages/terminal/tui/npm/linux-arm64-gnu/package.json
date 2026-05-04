@@ -3,34 +3,34 @@
     "version": "0.0.1",
     "description": "Native binding for @visulima/tui (Linux ARM64 glibc)",
     "homepage": "https://visulima.com",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/terminal/tui"
-    },
     "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "main": "tui-native.linux-arm64-gnu.node",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui"
+    },
     "files": [
         "tui-native.linux-arm64-gnu.node"
     ],
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
     "os": [
         "linux"
     ],
     "cpu": [
         "arm64"
     ],
+    "libc": [
+        "glibc"
+    ],
+    "main": "tui-native.linux-arm64-gnu.node",
     "publishConfig": {
         "access": "public",
         "provenance": true
     },
-    "libc": [
-        "glibc"
-    ]
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    }
 }

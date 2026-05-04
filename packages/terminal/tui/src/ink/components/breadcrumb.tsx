@@ -26,8 +26,8 @@ export type Props = {
     readonly items: ReadonlyArray<BreadcrumbItem>;
 
     /**
-     * Separator between items.
-     * @default "›"
+     * Glyph rendered between adjacent items.
+     * @default "›" (right single angle quote)
      */
     readonly separator?: string;
 };
@@ -45,21 +45,21 @@ export default function Breadcrumb({ currentColor = "blue", items, separator = "
                     <Fragment key={item.key ?? `${index}:${item.label}`}>
                         {index > 0
                             ? (
-                                <Text dimColor>
-                                    {" "}
-                                    {separator}
-                                    {" "}
-                                </Text>
+<Text dimColor>
+{" "}
+{separator}
+{" "}
+</Text>
                             )
                             : undefined}
                         <Text bold={isLast} color={isLast ? currentColor : undefined} dimColor={!isLast}>
                             {item.icon === undefined
                                 ? undefined
                                 : (
-                                    <>
-                                        {item.icon}
-                                        {" "}
-                                    </>
+<>
+{item.icon}
+{" "}
+</>
                                 )}
                             {item.label}
                         </Text>

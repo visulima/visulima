@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/no-use-before-define, func-style, no-empty, no-param-reassign, no-secrets/no-secrets, no-underscore-dangle, react-x/no-unnecessary-use-memo, sonarjs/no-dead-store, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/no-unused-vars, sonarjs/pseudo-random, unicorn/prefer-math-trunc, unicorn/prevent-abbreviations */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-use-before-define, func-style, no-empty, no-param-reassign, no-secrets/no-secrets, no-underscore-dangle, sonarjs/no-dead-store, sonarjs/no-nested-conditional, sonarjs/no-nested-functions, sonarjs/no-unused-vars, sonarjs/pseudo-random, unicorn/prefer-math-trunc, unicorn/prevent-abbreviations */
 
 /**
  * kitchen-sink.tsx — Ratatat interactive kitchen sink
@@ -80,9 +80,9 @@ const SectionHeading = ({ title }: { title: string }) => (
     <Box marginBottom={1}>
         <Text bold color="cyan">
             ━━
-            {" "}
-            {title}
-            {" "}
+{" "}
+{title}
+{" "}
         </Text>
         <Text dim>{"━".repeat(Math.max(0, 40 - title.length - 4))}</Text>
     </Box>
@@ -222,25 +222,25 @@ const TextSubsection = () => (
                 </Text>
                 <Text>
                     Normal
-                    {" "}
-                    <Text bold>Bold</Text>
-                    {" "}
-                    Normal
-                    {" "}
-                    <Text italic>Italic</Text>
-                    {" "}
-                    Normal
-                    {" "}
-                    <Text underline>Underline</Text>
+{" "}
+<Text bold>Bold</Text>
+{" "}
+Normal
+{" "}
+<Text italic>Italic</Text>
+{" "}
+Normal
+{" "}
+<Text underline>Underline</Text>
                 </Text>
                 <Text color="green">
                     Green
-                    {" "}
-                    <Text color="yellow">Yellow</Text>
-                    {" "}
-                    <Text color="red">Red</Text>
-                    {" "}
-                    <Text color="cyan">Cyan</Text>
+{" "}
+<Text color="yellow">Yellow</Text>
+{" "}
+<Text color="red">Red</Text>
+{" "}
+<Text color="cyan">Cyan</Text>
                 </Text>
                 <Text dim>Dimmed text looks like this — useful for hints</Text>
             </Box>
@@ -574,7 +574,7 @@ const GraphSection = ({ active }: { active: boolean }) => {
                 {pcts.map((p, i) => (
                     <Text color={barColors[i % barColors.length]} key={i}>
                         {String(p).padStart(3)}
-                        %
+%
                     </Text>
                 ))}
             </Box>
@@ -673,8 +673,8 @@ const LiveSection = () => {
                     <Text dim>Terminal</Text>
                     <Text bold color="magenta">
                         {columns}
-                        ×
-                        {rows}
+×
+{rows}
                     </Text>
                 </Box>
                 <Box flexDirection="column">
@@ -694,7 +694,7 @@ const LiveSection = () => {
                 <Box flexDirection="row" marginBottom={1}>
                     <Text bold color="yellow">
                         Ratatat vs Ink — benchmark
-                        {" "}
+{" "}
                     </Text>
                     <Text dim>ops/sec, higher is better</Text>
                 </Box>
@@ -872,58 +872,58 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
                     <Box flexDirection="row" gap={4}>
                         <Text>
                             Time:
-                            {" "}
+{" "}
                             <Text bold color="green">
                                 {timestamp}
                             </Text>
                         </Text>
                         <Text>
                             Updates:
-                            {" "}
+{" "}
                             <Text bold color="yellow">
                                 {counter}
                             </Text>
                         </Text>
                         <Text>
                             Rand:
-                            {" "}
-                            <Text color="cyan">{randValue}</Text>
+{" "}
+<Text color="cyan">{randValue}</Text>
                         </Text>
                         <Text>
-                            {fps || "--"}
-                            {" "}
-                            updates/sec
+{fps || "--"}
+{" "}
+updates/sec
                         </Text>
                     </Box>
                     <Text>
                         P1:
-                        {" "}
-                        <Text color="green">{incProgressBar(p1)}</Text>
-                        {" "}
-                        <Text color="green">
-                            {String(p1).padStart(3)}
-                            %
-                        </Text>
+{" "}
+<Text color="green">{incProgressBar(p1)}</Text>
+{" "}
+<Text color="green">
+{String(p1).padStart(3)}
+%
+</Text>
                     </Text>
                     <Text>
                         P2:
-                        {" "}
-                        <Text color="yellow">{incProgressBar(p2)}</Text>
-                        {" "}
-                        <Text color="yellow">
-                            {String(p2).padStart(3)}
-                            %
-                        </Text>
+{" "}
+<Text color="yellow">{incProgressBar(p2)}</Text>
+{" "}
+<Text color="yellow">
+{String(p2).padStart(3)}
+%
+</Text>
                     </Text>
                     <Text>
                         P3:
-                        {" "}
-                        <Text color="red">{incProgressBar(p3)}</Text>
-                        {" "}
-                        <Text color="red">
-                            {String(p3).padStart(3)}
-                            %
-                        </Text>
+{" "}
+<Text color="red">{incProgressBar(p3)}</Text>
+{" "}
+<Text color="red">
+{String(p3).padStart(3)}
+%
+</Text>
                     </Text>
                 </Box>
             </Box>
@@ -933,8 +933,8 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
                 <Box flexDirection="column">
                     <Text bold color="yellow">
                         Live Logs
-                        {" "}
-                        <Text dim>1-2 lines update per frame at ~60fps</Text>
+{" "}
+<Text dim>1-2 lines update per frame at ~60fps</Text>
                     </Text>
                     {logLines.map((line, i) => (
                         <Text color="green" dim key={i}>
@@ -949,8 +949,8 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
                 <Box flexDirection="column">
                     <Text bold color="magenta">
                         System Services
-                        {" "}
-                        <Text dim>↑↓ to navigate</Text>
+{" "}
+<Text dim>↑↓ to navigate</Text>
                     </Text>
                     {INC_SERVICES.map((svc, i) => {
                         const selected = i === selectedIndex;
@@ -1054,8 +1054,8 @@ const PrimitivesSubsection = ({ active }: { active: boolean }) => {
             <SectionHeading title="Primitives" />
             <Text dim>
                 select-input/table patterns
-                {" "}
-                <Text>↑↓ / j k</Text>
+{" "}
+<Text>↑↓ / j k</Text>
                 <Text dim> plus built-in Spinner + ProgressBar</Text>
             </Text>
             <Box flexDirection="row" gap={3}>
@@ -1080,7 +1080,7 @@ const PrimitivesSubsection = ({ active }: { active: boolean }) => {
                     <Box borderColor={selected.color} borderStyle="single" paddingX={2} paddingY={1}>
                         <Text>
                             Selected:
-                            {" "}
+{" "}
                             <Text bold color={selected.color}>
                                 {selected.name}
                             </Text>
@@ -1118,8 +1118,8 @@ const PrimitivesSubsection = ({ active }: { active: boolean }) => {
                                 width={16}
                             />
                             <Text color="yellow">
-                                {String(uploadProgress).padStart(3)}
-                                %
+{String(uploadProgress).padStart(3)}
+%
                             </Text>
                         </Box>
                         <Box flexDirection="row" gap={1}>
@@ -1277,16 +1277,16 @@ const TabBar = ({ current, onSelect }: { current: number; onSelect: (i: number) 
                     <Box key={s} marginRight={1}>
                         {active
                             ? (
-                                <Box backgroundColor="cyan" paddingX={1}>
-                                    <Text bold color="black">
-                                        {s}
-                                    </Text>
-                                </Box>
+                            <Box backgroundColor="cyan" paddingX={1}>
+                                <Text bold color="black">
+                                    {s}
+                                </Text>
+                            </Box>
                             )
                             : (
-                                <Box paddingX={1}>
-                                    <Text color="gray">{s}</Text>
-                                </Box>
+                            <Box paddingX={1}>
+                                <Text color="gray">{s}</Text>
+                            </Box>
                             )}
                     </Box>
                 );
@@ -1376,8 +1376,8 @@ const StaticSection = ({ active }: { active: boolean }) => {
                     {(task: Task) => (
                         <Box key={task.id}>
                             <Text color={task.ok ? "green" : "red"}>
-                                {task.ok ? " ✔" : " ✘"}
-                                {" "}
+{task.ok ? " ✔" : " ✘"}
+{" "}
                             </Text>
                             <Box width={24}>
                                 <Text>{task.name}</Text>
@@ -1411,14 +1411,14 @@ const StaticSection = ({ active }: { active: boolean }) => {
                         {tasks.length}
                     </Text>
                     <Text color="green">
-                        ✔
-                        {passed}
+✔
+{passed}
                     </Text>
                     {failed > 0 && (
-                        <Text color="red">
-                            ✘
-                            {failed}
-                        </Text>
+<Text color="red">
+✘
+{failed}
+</Text>
                     )}
                 </Box>
             </Box>
@@ -1530,10 +1530,10 @@ const MouseSection = ({ active }: { active: boolean }) => {
                 <Box justifyContent="flex-end">
                     <Text dim>
                         {scroll.offset + 1}
-                        –
-                        {Math.min(scroll.offset + logViewport, log.length)}
-                        /
-                        {log.length}
+–
+{Math.min(scroll.offset + logViewport, log.length)}
+/
+{log.length}
                     </Text>
                 </Box>
             )}
@@ -1542,7 +1542,7 @@ const MouseSection = ({ active }: { active: boolean }) => {
             <Box borderColor="cyan" borderStyle="single" paddingX={1}>
                 <Text bold color="cyan">
                     ›
-                    {" "}
+{" "}
                 </Text>
                 <Text>{before}</Text>
                 <Text inverse>{atChar}</Text>

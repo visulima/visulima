@@ -3,6 +3,7 @@ import { useCallback, useRef } from "react";
 import type { Key } from "./use-input";
 import useInput from "./use-input";
 
+// eslint-disable-next-line sonarjs/redundant-type-aliases -- semantic alias documents that strings are interpreted as chord steps
 export type KeyChordStep = string;
 
 export type UseKeyChordOptions = {
@@ -128,7 +129,6 @@ const normalizeStep = (step: KeyChordStep): string => step.trim().toLowerCase();
  * @param callback Invoked exactly once per successful chord match. Latest
  * reference is captured in a ref.
  * @param options Optional `isActive` flag and `resetAfter` silence timeout.
- * @returns `void` — chord detection is wired up via `useInput` internally.
  */
 const useKeyChord = (sequence: ReadonlyArray<KeyChordStep>, callback: () => void, options?: UseKeyChordOptions): void => {
     const { isActive = true, resetAfter = 1000 } = options ?? {};

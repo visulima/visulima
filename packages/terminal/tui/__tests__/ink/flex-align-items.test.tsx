@@ -114,7 +114,7 @@ describe("flex-align-items", () => {
                 <Text>
                     A
                     <Newline />
-                    B
+B
                 </Text>
                 <Text>X</Text>
             </Box>,

@@ -59,6 +59,7 @@ const resolveTextColor = (
     isFocused: boolean,
     isDisabled: boolean,
     accentColor: LiteralUnion<AnsiColors, string>,
+    // eslint-disable-next-line sonarjs/function-return-type -- legitimate union return based on variant/state
 ): LiteralUnion<AnsiColors, string> | undefined => {
     if (isDisabled) {
         return undefined;
@@ -77,7 +78,6 @@ const resolveTextColor = (
 
 /**
  * Focusable button. Triggers `onPress` on Enter / Space.
- * @param props See {@link Props}.
  * @returns A `ReactElement` rendering the button (bordered or ghost variant).
  */
 export default function Button({ accentColor = "blue", autoFocus = false, children, isDisabled = false, onPress, variant = "primary" }: Props): ReactElement {
@@ -117,6 +117,7 @@ export default function Button({ accentColor = "blue", autoFocus = false, childr
     //   primary   → filled accent background + accent border (highlighted when focused)
     //   secondary → transparent background + accent border always; bolder label on focus
     //   outline   → transparent background + neutral border, accent-colored when focused
+    // eslint-disable-next-line sonarjs/function-return-type -- legitimate union return based on variant/focus
     const borderColor = (() => {
         if (variant === "outline") {
             return isFocused ? accentColor : "gray";

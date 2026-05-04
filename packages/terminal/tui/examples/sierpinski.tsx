@@ -157,28 +157,28 @@ const StatsBar = ({
     <Box borderColor="cyan" borderStyle="round" flexShrink={0} paddingX={2}>
         <Text bold color="cyan">
             Sierpinski
-            {" "}
+{" "}
         </Text>
         <Text>
             {String(fps).padStart(3)}
-            {" "}
-            fps
-            {"  "}
+{" "}
+fps
+{"  "}
             frame:
-            {" "}
-            <Text color="white">{String(frame).padStart(6)}</Text>
+{" "}
+<Text color="white">{String(frame).padStart(6)}</Text>
             {"  "}
             counter:
-            {" "}
-            <Text color="yellow">{counter}</Text>
+{" "}
+<Text color="yellow">{counter}</Text>
             {"  "}
             nodes:
-            {" "}
-            <Text color="white">{DOT_COUNT}</Text>
+{" "}
+<Text color="white">{DOT_COUNT}</Text>
             {"  "}
             width:
-            {" "}
-            <Text color="white">{pulseWidth}</Text>
+{" "}
+<Text color="white">{pulseWidth}</Text>
             {"  "}
             <Text dim>Tab · Ctrl+C</Text>
         </Text>
