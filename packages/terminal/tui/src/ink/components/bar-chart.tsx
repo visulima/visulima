@@ -129,15 +129,14 @@ export default function BarChart({
                     return (
                         // eslint-disable-next-line react-x/no-array-index-key -- chart bar index is stable for the render
                         <Box gap={1} key={index}>
-                            {showLabels && datum.label !== undefined
-                                ? (
+                            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+                            {showLabels && datum.label !== undefined ? (
                                 <Box flexShrink={0} minWidth={8}>
                                     <Text dimColor wrap="truncate-end">
                                         {datum.label}
                                     </Text>
                                 </Box>
-                                )
-                                : undefined}
+                            ) : undefined}
                             <Box flexGrow={1} flexShrink={1}>
                                 <Canvas
                                     // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop -- canvas re-renders on `version` change, not draw identity
@@ -151,13 +150,12 @@ export default function BarChart({
                                     width={plotWidth}
                                 />
                             </Box>
-                            {showValues
-                                ? (
+                            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+                            {showValues ? (
                                 <Box flexShrink={0}>
                                     <Text>{String(datum.value)}</Text>
                                 </Box>
-                                )
-                                : undefined}
+                            ) : undefined}
                         </Box>
                     );
                 })}
@@ -191,6 +189,7 @@ export default function BarChart({
                 version={[data, computedMax, palette, barWidth, gap, height]}
                 width={plotWidth}
             />
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
             {showValues ? (
                 <Box>
                     {data.map((datum, index) => (
@@ -201,6 +200,7 @@ export default function BarChart({
                     ))}
                 </Box>
             ) : undefined}
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
             {showLabels ? (
                 <Box>
                     {data.map((datum, index) => (

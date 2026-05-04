@@ -197,6 +197,7 @@ export default function AreaChart({
                 version={[series, width, height, minY, maxY, fillDensity, axisColor, palette]}
                 width={width}
             />
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
             {showLegend ? (
                 <Box gap={2} marginTop={1}>
                     {prepared.list.map(({ color, series: input }, index) => (

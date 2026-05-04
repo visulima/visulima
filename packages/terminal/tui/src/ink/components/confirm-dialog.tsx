@@ -126,7 +126,7 @@ export default function ConfirmDialog({
         useCallback(
             (input, key) => {
                 if (key.leftArrow || key.rightArrow || input === "h" || input === "l") {
-                    setFocus((previous) => (previous === "confirm" ? "cancel" : "confirm"));
+                    setFocus(focus === "confirm" ? "cancel" : "confirm");
 
                     return;
                 }
@@ -158,22 +158,20 @@ export default function ConfirmDialog({
 
     return (
         <Box borderColor={color} borderStyle="round" flexDirection="column" paddingX={1} paddingY={1} width={width}>
-            {title === undefined
-                ? undefined
-                : (
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+            {title === undefined ? undefined : (
                 <Box marginBottom={1}>
                     <Text bold color={color}>
                         {title}
                     </Text>
                 </Box>
-                )}
-            {children === undefined
-                ? undefined
-                : (
+            )}
+            {/* eslint-disable-next-line @stylistic/multiline-ternary -- prettier formats JSX ternaries on one line */}
+            {children === undefined ? undefined : (
                 <Box flexDirection="column" marginBottom={1}>
                     {typeof children === "string" ? <Text>{children}</Text> : children}
                 </Box>
-                )}
+            )}
             <Box gap={2} justifyContent="flex-end">
                 <ButtonLabel color={color} isFocused={focus === "cancel"} label={cancelLabel} />
                 <ButtonLabel color={color} isFocused={focus === "confirm"} label={confirmLabel} />
