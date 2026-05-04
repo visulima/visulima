@@ -28,7 +28,7 @@ const defaultCacheStore = new LRUCache<string, string>(1000);
 
 const camelCase = <T extends string = string>(value?: T, options?: CaseOptions): CamelCase<T> => {
     if (typeof value !== "string" || !value) {
-        return "" as CamelCase<T>;
+        return "";
     }
 
     const shouldCache = options?.cache ?? false;

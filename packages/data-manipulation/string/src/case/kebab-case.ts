@@ -42,7 +42,7 @@ export interface KebabCaseOptions extends CaseOptions {
 
 export const kebabCase = <T extends string = string>(value?: T, options?: KebabCaseOptions): KebabCase<T> => {
     if (typeof value !== "string") {
-        return "" as KebabCase<T>;
+        return "";
     }
 
     const shouldCache = options?.cache ?? false;

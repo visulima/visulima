@@ -119,7 +119,7 @@ const handleScriptTransitions = (
     const detectorValues = Object.values(scriptDetectors);
 
     for (const detectorValue of detectorValues) {
-        if ((detectorValue as (char: string) => boolean)(s[0] as string)) {
+        if (detectorValue(s[0] as string)) {
             hasDetectedScript = true;
             break;
         }

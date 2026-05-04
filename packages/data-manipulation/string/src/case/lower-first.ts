@@ -13,12 +13,12 @@ import type { LocaleOptions, LowerFirst } from "./types";
  */
 const lowerFirst = <T extends string = string>(value?: T, options?: LocaleOptions): LowerFirst<T> => {
     if (typeof value !== "string" || value === "") {
-        return "" as LowerFirst<T>;
+        return "";
     }
 
     const firstChar = options?.locale ? (value[0] as string).toLocaleLowerCase(options.locale) : (value[0] as string).toLowerCase();
 
-    return (firstChar + value.slice(1)) as LowerFirst<T>;
+    return firstChar + value.slice(1);
 };
 
 export default lowerFirst;
