@@ -154,6 +154,12 @@ const run: Command = {
             name: "flaky",
             type: Boolean,
         },
+        {
+            // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
+            description: "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
+            name: "strict-env",
+            type: Boolean,
+        },
     ],
 };
 
@@ -181,6 +187,7 @@ export type RunOptions = CreateOptions<{
     "retry-budget": number | undefined;
     "skip-constraints": boolean | undefined;
     "skip-toolchain": boolean | undefined;
+    "strict-env": boolean | undefined;
     summarize: boolean | undefined;
     watch: boolean | undefined;
 }>;

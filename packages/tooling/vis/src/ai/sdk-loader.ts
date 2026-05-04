@@ -90,6 +90,19 @@ const defaultRunInstall = (sdk: OptionalSdk, workspaceRoot: string): Promise<{ e
 
 const installCommandFor = (sdk: OptionalSdk): string => `pnpm add ${sdk}`;
 
+// Static dispatch so the bundler can analyze each import() and mark
+// the SDK as external instead of trying to resolve a free variable.
+// Both targets are declared as optional peerDependencies, so the
+// runtime "module not found" branch below is the expected miss path
+// when a consumer hasn't installed the SDK.
+const defaultImport = (sdk: OptionalSdk): Promise<unknown> => {
+    if (sdk === "@gitbeaker/rest") {
+        return import("@gitbeaker/rest");
+    }
+
+    return import("@octokit/rest");
+};
+
 /**
  * Lazy-loads an optional peer-dep SDK.
  *
@@ -111,7 +124,7 @@ export const loadOptionalSdk = async <T = unknown>(sdk: OptionalSdk, options: Lo
     const interactive = options.interactive ?? isInteractive();
     const prompt = options.prompt ?? defaultPrompt;
     const runInstall = options.runInstall ?? defaultRunInstall;
-    const importImpl = options.importImpl ?? ((specifier: OptionalSdk) => import(specifier));
+    const importImpl = options.importImpl ?? defaultImport;
     const workspaceRoot = options.workspaceRoot ?? process.cwd();
 
     try {

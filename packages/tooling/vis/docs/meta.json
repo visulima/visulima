@@ -17,6 +17,7 @@
                 "commands/list",
                 "commands/status",
                 "commands/task-why",
+                "commands/replay",
                 "commands/action-graph",
                 "commands/graph",
                 "commands/sync",
@@ -49,6 +50,7 @@
                 "commands/toolchain",
                 "commands/clean",
                 "commands/cache",
+                "commands/service",
                 "commands/hook",
                 "commands/implode"
             ]

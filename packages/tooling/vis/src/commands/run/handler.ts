@@ -38,6 +38,7 @@ import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
 import { runToolchainPreflight } from "../../runtime/toolchain";
 import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
+import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
 import { buildAliasMap, collectAvailableTargets, formatTargetList, promptTargetInteractively, resolveTargetAlias, suggestTargets } from "../../task/target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../task/target-options";
 import { detectCurrentOs, loadEnvFile, resolveTargetShell, shouldRunInCI } from "../../task/target-options";
@@ -322,6 +323,13 @@ interface ExecutorDependencies {
      */
     serviceEnvByTaskId?: Map<string, Record<string, string>>;
     stdinRegistry?: Map<string, StdinEntry>;
+    /**
+     * When `true`, every task command is scanned for `${VAR}` / `$VAR`
+     * references before spawn — unset references fail the task instead
+     * of silently expanding to "". Falls back to per-target
+     * `options.strictEnv`, then `vis.config.ts strictEnv`, then `false`.
+     */
+    strictEnv?: boolean;
     workspaceRoot: string;
 }
 
@@ -366,7 +374,20 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
     const envFileCache: EnvFileCache = new Map();
 
     return async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
-        const { affectedFiles, currentOs, initCwd, lifeCycle, mutexPool, onOutput, onOutputReplace, retryBudget, serviceEnvByTaskId, stdinRegistry, workspaceRoot } = deps;
+        const {
+            affectedFiles,
+            currentOs,
+            initCwd,
+            lifeCycle,
+            mutexPool,
+            onOutput,
+            onOutputReplace,
+            retryBudget,
+            serviceEnvByTaskId,
+            stdinRegistry,
+            strictEnv: workspaceStrictEnv,
+            workspaceRoot,
+        } = deps;
 
         const visOptions = getTaskOptions(task);
 
@@ -405,6 +426,28 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             ...execOptions.env,
             ...affectedFilesEnv,
         };
+
+        // Per-target opt-in/out wins over the workspace flag — let a
+        // single target tolerate `$VAR` references when the rest of the
+        // workspace runs strict, and vice versa.
+        const strictEnvActive = visOptions?.strictEnv ?? workspaceStrictEnv ?? false;
+
+        if (strictEnvActive === true) {
+            const violation = checkStrictEnv({
+                command: commandWithAffected,
+                processEnv: process.env,
+                taskEnv: mergedEnv,
+                taskId: task.id,
+            });
+
+            if (violation) {
+                const message = formatStrictEnvError(violation);
+
+                lifeCycle?.onTaskStderr?.(task, message);
+
+                return { code: 1, terminalOutput: message };
+            }
+        }
 
         // PTY stdio is enabled when either an interactive stdin registry is
         // present (live TUI dev tasks) or the target config opts in via
@@ -1119,6 +1162,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const parallelFromEnv = parallelEnvParsed && "value" in parallelEnvParsed ? parallelEnvParsed.value : undefined;
     const resolvedParallel = options.parallel ?? parallelFromEnv ?? 3;
 
+    // CLI flag wins over the workspace config; per-target opt-in/out
+    // is applied later in the executor against this resolved baseline.
+    const resolvedStrictEnv = options.strictEnv ?? config.strictEnv ?? false;
+
     const runnerOptions: TaskRunnerOptions = {
         dryRun: options.dryRun ?? false,
         parallel: resolvedParallel,
@@ -1195,6 +1242,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             retryBudget: sharedRetryBudget,
             serviceEnvByTaskId,
             stdinRegistry,
+            strictEnv: resolvedStrictEnv,
             workspaceRoot,
         });
 
@@ -1336,6 +1384,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             mutexPool,
             retryBudget: sharedRetryBudget,
             serviceEnvByTaskId,
+            strictEnv: resolvedStrictEnv,
             workspaceRoot,
         });
 

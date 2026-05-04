@@ -140,6 +140,20 @@ interface VisConfig {
     };
 
     /**
+     * When `true`, every task command is scanned for `${VAR}` / `$VAR`
+     * references before spawn. If a referenced var is unset in the
+     * task's effective env (envFile + service env + per-task `env` +
+     * `process.env`), the task fails with an actionable error
+     * naming the missing variable, instead of letting the shell
+     * silently substitute an empty string.
+     *
+     * Override per run with `--strict-env` / `--no-strict-env`.
+     * Override per target with `options.strictEnv`.
+     * @default false
+     */
+    strictEnv?: boolean;
+
+    /**
      * Scope the task-runner cache directory by the current git branch.
      * When `true`, caches are stored under `&lt;cacheDir>/branches/&lt;slug>`
      * so `main` and feature branches stop thrashing each other —

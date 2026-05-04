@@ -43,6 +43,7 @@ import optimizeCommand from "./commands/optimize";
 // outdated is now an alias of check
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
+import replayCommand from "./commands/replay";
 import runCommand from "./commands/run";
 import sbomCommand from "./commands/sbom";
 import secretsCommand from "./commands/secrets";
@@ -132,6 +133,7 @@ cli.addCommand(graphCommand);
 cli.addCommand(actionGraphCommand);
 cli.addCommand(affectedCommand);
 cli.addCommand(taskWhyCommand);
+cli.addCommand(replayCommand);
 cli.addCommand(ignoreCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
