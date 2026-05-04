@@ -1,5 +1,3 @@
-import "isomorphic-fetch";
-
 import { describe, expect, it, vi } from "vitest";
 
 import { Router } from "../src";
@@ -442,7 +440,7 @@ describe("edge", () => {
             onNoMatch() {
                 expect(true, "onNoMatch called").toBe(true);
             },
-        }).handler()({ method: "GET", url: testUrl } as Request, {} as any);
+        }).handler()({ method: "GET", url: testUrl } as Request, {});
     });
 
     it("handler() - calls onError if custom onNoMatch throws", async () => {
@@ -457,7 +455,7 @@ describe("edge", () => {
 
                 throw new Error("💥");
             },
-        }).handler()({ method: "GET", url: testUrl } as Request, {} as never);
+        }).handler()({ method: "GET", url: testUrl } as Request, {});
     });
 
     it("prepareRequest() - attach params", async () => {
