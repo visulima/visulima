@@ -6,7 +6,7 @@ import {
     renderDiscoveryJson,
     renderDiscoveryText,
 } from "../src/commands/ai/discovery";
-import { aiRootExecute } from "../src/commands/ai/handler";
+import { aiDiscoverHelpExecute, aiRootExecute } from "../src/commands/ai/handler";
 
 const ANSI_RE = new RegExp(String.raw`${String.fromCodePoint(27)}\[[0-9;]*m`, "gu");
 const stripAnsi = (s: string): string => s.replaceAll(ANSI_RE, "");
@@ -226,12 +226,12 @@ describe(renderDiscoveryText, () => {
         expect(output).toContain("JSON output");
     });
 
-    it("should always end with the JSON-format hint", () => {
+    it("should always point users at the discover-help subcommand", () => {
         expect.assertions(1);
 
         const output = stripAnsi(renderDiscoveryText([]));
 
-        expect(output).toContain("--format=json");
+        expect(output).toContain("vis ai discover-help");
     });
 });
 
@@ -248,10 +248,33 @@ describe(aiRootExecute, () => {
         vi.restoreAllMocks();
     });
 
-    it("should write JSON to stdout when format=json", async () => {
+    it("should write text discovery to stderr (no JSON branch on root)", async () => {
+        expect.assertions(2);
+
+        await aiRootExecute({ options: {} } as never);
+
+        expect(stdout.value).toBe("");
+        expect(stripAnsi(stderr.value)).toContain("vis ai —");
+    });
+});
+
+describe(aiDiscoverHelpExecute, () => {
+    let stdout: StreamSpy;
+    let stderr: StreamSpy;
+
+    beforeEach(() => {
+        stdout = spyStream(process.stdout);
+        stderr = spyStream(process.stderr);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("should write JSON to stdout", async () => {
         expect.assertions(3);
 
-        await aiRootExecute({ options: { format: "json" } } as never);
+        await aiDiscoverHelpExecute({ options: {} } as never);
 
         expect(stderr.value).toBe("");
         expect(stdout.value).not.toBe("");
@@ -261,19 +284,10 @@ describe(aiRootExecute, () => {
         expect(parsed.command).toBe("ai");
     });
 
-    it("should write text discovery to stderr when format is omitted", async () => {
-        expect.assertions(2);
-
-        await aiRootExecute({ options: {} } as never);
-
-        expect(stdout.value).toBe("");
-        expect(stripAnsi(stderr.value)).toContain("vis ai —");
-    });
-
     it("should exclude the root ai command from listed subcommands", async () => {
         expect.assertions(2);
 
-        await aiRootExecute({ options: { format: "json" } } as never);
+        await aiDiscoverHelpExecute({ options: {} } as never);
 
         const parsed = JSON.parse(stdout.value) as { subcommands: { name: string; path: string }[] };
 
@@ -282,13 +296,14 @@ describe(aiRootExecute, () => {
     });
 
     it("should list every non-root ai subcommand the package registers", async () => {
-        expect.assertions(5);
+        expect.assertions(6);
 
-        await aiRootExecute({ options: { format: "json" } } as never);
+        await aiDiscoverHelpExecute({ options: {} } as never);
 
         const parsed = JSON.parse(stdout.value) as { subcommands: { path: string }[] };
         const paths = parsed.subcommands.map((c) => c.path);
 
+        expect(paths).toContain("ai discover-help");
         expect(paths).toContain("ai providers");
         expect(paths).toContain("ai test");
         expect(paths).toContain("ai fix");

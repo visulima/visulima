@@ -17,24 +17,18 @@ vis ai [subcommand] [options]
 
 | Subcommand                | Purpose                                                                                                          |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| [`providers`](#providers) | List detected AI providers and show which one is selected                                                        |
-| [`test`](#test)           | Run a one-shot prompt against the selected provider to verify it works                                           |
-| [`fix`](#fix)             | Read a failed task's logs and propose a structured patch (Phase 1: local, no git side effects)                   |
-| [`heal`](#heal)           | Self-healing CI loop: propose a fix, validate it via re-run, post the result to the PR/MR                        |
-
-Agent discovery is served by `vis ai --format json` on the root command — see [Help discovery for agents](#help-discovery-for-agents).
+| [`providers`](#providers)         | List detected AI providers and show which one is selected                                                        |
+| [`test`](#test)                   | Run a one-shot prompt against the selected provider to verify it works                                           |
+| [`fix`](#fix)                     | Read a failed task's logs and propose a structured patch (Phase 1: local, no git side effects)                   |
+| [`heal`](#heal)                   | Self-healing CI loop: propose a fix, validate it via re-run, post the result to the PR/MR                        |
+| [`discover-help`](#discover-help) | Emit the machine-readable subcommand catalogue as JSON (for AI agents)                                           |
 
 ## Root: `vis ai`
 
-Lists subcommands. Pass `--format json` for a machine-readable catalogue (intended for agents).
-
-| Option       | Default | Description                                  |
-| ------------ | ------- | -------------------------------------------- |
-| `--format`   | `text`  | Output format: `text` or `json`              |
+Lists subcommands as a human-readable summary on stderr. Takes no options — for the JSON catalogue, use [`discover-help`](#discover-help).
 
 ```bash
-vis ai                       # human-readable list
-vis ai --format json         # machine-readable subcommand catalogue
+vis ai                       # human-readable list (stderr)
 ```
 
 ## providers
@@ -106,12 +100,13 @@ vis ai heal --validation-timeout 600       # cap validation at 10 minutes
 
 The PR/MR comment includes the failing task ID, the AI's root-cause explanation, an inline diff per file (with a backtick fence chosen to survive content collisions), and a `vis ai fix … --apply` snippet for local re-application. Comments larger than 60 KB drop the diff body and link back to `vis ai fix`.
 
-## Help discovery for agents
+## discover-help
 
-`vis ai --format json` emits the subcommand catalogue as structured JSON — names, descriptions, examples, and option schemas — so a coding agent (Claude, Cursor, Zed, …) can introspect the namespace without parsing prose. The same payload is surfaced through the bundled MCP server; see the [AI Integration guide](/guides/ai-integration).
+Emits the subcommand catalogue as structured JSON to stdout — names, descriptions, examples, and option schemas — so a coding agent (Claude, Cursor, Zed, …) can introspect the namespace without parsing prose. The same payload is surfaced through the bundled MCP server; see the [AI Integration guide](/guides/ai-integration).
 
 ```bash
-vis ai --format json
+vis ai discover-help
+vis ai discover-help | jq '.subcommands[].path'
 ```
 
 ## Related
