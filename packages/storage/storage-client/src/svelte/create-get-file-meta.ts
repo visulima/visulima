@@ -70,7 +70,7 @@ export const createGetFileMeta = (options: CreateGetFileMetaOptions): CreateGetF
         error: errorStore,
         isLoading: isLoadingStore,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

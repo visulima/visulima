@@ -93,7 +93,7 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         error: errorStore,
         isLoading: isLoadingStore,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

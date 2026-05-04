@@ -59,7 +59,7 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
             },
             onSuccess: (_data, variables) => {
                 // Invalidate file-related queries
-                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) });
+                queryClient.invalidateQueries({ queryKey: storageQueryKeys.files.all(endpoint) }).catch(() => {});
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.detail(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.meta(endpoint, variables.id) });
                 queryClient.removeQueries({ queryKey: storageQueryKeys.files.head(endpoint, variables.id) });
