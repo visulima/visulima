@@ -125,10 +125,10 @@
                 },
                 "inputs": {
                     "type": "array",
-                    "description": "Input patterns for cache invalidation. Supports file globs, @filegroup:<name> references, and structured input definitions.",
+                    "description": "Input patterns for cache invalidation. Strings may be bare globs (\"src/**/*.ts\"), @filegroup:<name> references, named-input refs, or URI form: file://path, glob://pattern, env://NAME, func://command, dep://pkg-a,pkg-b. Object form is also accepted for explicit fileset/env/runtime/externalDependencies.",
                     "items": {
                         "oneOf": [
-                            { "type": "string" },
+                            { "$ref": "#/$defs/inputString" },
                             { "$ref": "#/$defs/fileSetInput" },
                             { "$ref": "#/$defs/environmentInput" },
                             { "$ref": "#/$defs/runtimeInput" },
@@ -293,6 +293,10 @@
                     "description": "Whether to forward or ignore parameters from the parent task."
                 }
             }
+        },
+        "inputString": {
+            "type": "string",
+            "description": "Input pattern. Bare globs (\"src/**/*.ts\"), @filegroup:<name>/named-input refs, or URI form: file://path | glob://pattern | env://NAME | func://command | dep://pkg-a,pkg-b. Negation (\"!\") works for fileset forms (file://, glob://, bare globs)."
         },
         "fileSetInput": {
             "type": "object",

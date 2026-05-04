@@ -10,6 +10,7 @@ import { getFrameworkEnvVariables } from "./framework-inference";
 import type { IncrementalFileHasher } from "./incremental-hasher";
 import { LockfileHasher } from "./lockfile-hasher";
 import { loadNativeBindings } from "./native-binding";
+import { looksLikeInputUri, parseInputUri } from "./parse-input-uri";
 import type {
     EnvironmentInput,
     ExternalDependencyInput,
@@ -455,7 +456,13 @@ class InProcessTaskHasher implements TaskHasher {
 
         for (const input of inputs) {
             if (typeof input === "string") {
-                if (input.startsWith("{") || input.startsWith("!{")) {
+                if (looksLikeInputUri(input)) {
+                    const parsed = parseInputUri(input);
+
+                    if (parsed) {
+                        result.push(parsed);
+                    }
+                } else if (input.startsWith("{") || input.startsWith("!{")) {
                     result.push({ fileset: input });
                 } else if (input.startsWith("^")) {
                     continue;

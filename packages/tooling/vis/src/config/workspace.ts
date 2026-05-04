@@ -9,6 +9,7 @@ import type {
     TargetConfiguration,
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
+import { looksLikeInputUri, parseInputUri } from "@visulima/task-runner";
 
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { mergeTargetWithInherit } from "../task/target-merge";
@@ -334,7 +335,10 @@ const collectTargetDefaults = (
 
 /**
  * Resolves `@filegroup:&lt;name>` tokens in an inputs array into their
- * concrete patterns defined at the workspace level.
+ * concrete patterns defined at the workspace level. Eagerly validates any
+ * URI-shaped strings (`file://`, `glob://`, `env://`, `func://`,
+ * `dep://`) so config-load surfaces typos like `gob://**` instead of
+ * deferring the failure until the affected target happens to run.
  */
 const resolveFileGroupInputs = (
     inputs: (string | InputDefinition)[] | undefined,
@@ -359,6 +363,12 @@ const resolveFileGroupInputs = (
         }
 
         resolved.push(input);
+    }
+
+    for (const input of resolved) {
+        if (typeof input === "string" && looksLikeInputUri(input)) {
+            parseInputUri(input);
+        }
     }
 
     return resolved;

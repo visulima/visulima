@@ -73,6 +73,9 @@ export { createLogReporter, LogReporter } from "./log-reporter";
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";
 export { resolveOutputs } from "./output-resolver";
+// Input URI parser (file://, glob://, env://, func://, dep://)
+export type { InputUriScheme } from "./parse-input-uri";
+export { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputUri } from "./parse-input-uri";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
 
