@@ -236,7 +236,7 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
         }
     }
 
-    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
+    normalizeInput(packageJson, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -311,7 +311,7 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
         }
     }
 
-    normalizeInput(packageJson as Input, options.strict ?? false, options.ignoreWarnings);
+    normalizeInput(packageJson, options.strict ?? false, options.ignoreWarnings);
 
     const output = {
         packageJson: packageJson as NormalizedPackageJson,
@@ -417,7 +417,7 @@ export const parsePackageJsonSync = (
         }
     }
 
-    normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
+    normalizeInput(json, options?.strict ?? false, options?.ignoreWarnings);
 
     const result = json as NormalizedPackageJson;
 
@@ -500,7 +500,7 @@ export const parsePackageJson = async (
         }
     }
 
-    normalizeInput(json as Input, options?.strict ?? false, options?.ignoreWarnings);
+    normalizeInput(json, options?.strict ?? false, options?.ignoreWarnings);
 
     const result = json as NormalizedPackageJson;
 

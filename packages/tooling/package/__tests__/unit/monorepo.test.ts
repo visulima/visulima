@@ -32,7 +32,7 @@ describe("monorepo", () => {
 
                 // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
-                    result = await (result as Promise<RootMonorepo>);
+                    result = await result;
                 }
 
                 expect((result as RootMonorepo).strategy).toBe(strategy);
@@ -48,7 +48,7 @@ describe("monorepo", () => {
 
                 // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
-                    result = await (result as Promise<RootMonorepo>);
+                    result = await result;
                 }
 
                 expect((result as RootMonorepo).strategy).toBe(strategy);
@@ -64,7 +64,7 @@ describe("monorepo", () => {
 
                 // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
-                    result = await (result as Promise<RootMonorepo>);
+                    result = await result;
                 }
 
                 expect((result as RootMonorepo).strategy).toBe(strategy);
@@ -80,7 +80,7 @@ describe("monorepo", () => {
 
                 // eslint-disable-next-line vitest/no-conditional-in-test
                 if (name === "findMonorepoRoot") {
-                    result = await (result as Promise<RootMonorepo>);
+                    result = await result;
                 }
 
                 expect((result as RootMonorepo).strategy).toBe(strategy);
