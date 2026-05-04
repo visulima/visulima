@@ -31,7 +31,7 @@ const preparedScan = (ruleMeta: Map<string, RuleMeta> = new Map(), include?: str
     return {
         excludeIds: exclude,
         includeIds: include,
-        nativeOptions: {} as PreparedScan["nativeOptions"],
+        nativeOptions: {},
         ruleMeta,
     };
 };

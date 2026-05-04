@@ -13,7 +13,7 @@ export interface IgnoreMatcher {
 
 type IgnoreFactory = () => IgnoreMatcher;
 
-const ignore: IgnoreFactory = (ignoreModule as { default?: IgnoreFactory }).default ?? (ignoreModule as unknown as IgnoreFactory);
+const ignore: IgnoreFactory = (ignoreModule as { default?: IgnoreFactory }).default ?? ignoreModule;
 
 /**
  * Build a gitignore matcher for the `scanFiles` path — it bypasses the native

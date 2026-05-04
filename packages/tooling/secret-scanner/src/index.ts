@@ -24,7 +24,7 @@ import type { Finding, RuleInfo, ScanOptions, SkippedRule } from "./types";
 export const inspectRuleset = async (options?: ScanOptions): Promise<SkippedRule[]> => {
     const prepared = prepareScan(options);
 
-    return binding.inspectRuleset(prepared.nativeOptions) as SkippedRule[];
+    return binding.inspectRuleset(prepared.nativeOptions);
 };
 
 /** Return metadata for every compiled rule in the effective config. */
