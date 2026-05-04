@@ -58,7 +58,7 @@ vi.mock(import("pkijs"), async () => {
             algorithm: { name: "RSA-PSS" },
             extractable: true,
             type: "public",
-        } as CryptoKey);
+        });
 
         public constructor(_options?: any) {
             // Accept any constructor parameters but don't use them

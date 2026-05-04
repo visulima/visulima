@@ -460,7 +460,7 @@ describe(buildMimeMessage, () => {
                     {
                         contentType: "text/plain",
                         filename: "test.txt",
-                    } as never,
+                    },
                 ],
                 from: { email: "sender@example.com" },
                 subject: "Test",

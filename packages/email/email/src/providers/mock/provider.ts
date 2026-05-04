@@ -35,7 +35,7 @@ const createDefaultConfig = (): DefaultMockConfig => {
  * Mock Provider for testing emails without actually sending them
  * Stores emails in memory for later retrieval and inspection
  */
-const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[]> = defineProvider((options: MockConfig = {} as MockConfig) => {
+const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[]> = defineProvider((options: MockConfig = {}) => {
     // Use instance ID to separate storage for different provider instances
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, sonarjs/pseudo-random
     const instanceId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;

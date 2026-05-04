@@ -44,12 +44,12 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
                 fetchOptions.body = data;
             } else if (data instanceof Uint8Array) {
                 fetchOptions.body = data as BodyInit;
-            } else if (hasBuffer && (data as unknown) instanceof (globalThis.Buffer as unknown as typeof Buffer)) {
+            } else if (hasBuffer && (data as unknown) instanceof globalThis.Buffer) {
                 // Convert Buffer to Uint8Array for better fetch API compatibility
-                fetchOptions.body = new Uint8Array(data as ArrayLike<number>) as BodyInit;
+                fetchOptions.body = new Uint8Array(data) as BodyInit;
             } else {
                 // Fallback: convert to Uint8Array
-                fetchOptions.body = new Uint8Array(data as ArrayLike<number>) as BodyInit;
+                fetchOptions.body = new Uint8Array(data) as BodyInit;
             }
         }
 

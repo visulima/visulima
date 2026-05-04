@@ -342,7 +342,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                 logger.debug("Sending email via Azure Communication Services API", {
                     subject: payload.content.subject,
                     to: payload.recipients.to,
-                } as Record<string, unknown>);
+                });
 
                 const headers: Record<string, string> = {
                     "Content-Type": "application/json",
