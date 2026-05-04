@@ -60,6 +60,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         const fileId = idValue();
         const transformParams = transformValue();
 
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps -- endpoint is captured from outer scope; queryKey already includes it via storageQueryKeys.transform.file
         return {
             enabled: enabledValue() && !!fileId && !!transformParams,
             queryFn: async () => {
@@ -102,7 +103,7 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
             try {
                 const dataValue = (
                     query as {
-                        data: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                        data: Accessor<{ blob: Blob; meta?: FileMeta } | undefined> | { blob: Blob; meta?: FileMeta } | undefined;
                     }
                 ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
@@ -135,12 +136,12 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
             try {
                 const dataValue = (
                     query as {
-                        data: Accessor<{ blob: Blob; meta?: FileMeta | undefined } | undefined> | { blob: Blob; meta?: FileMeta | undefined } | undefined;
+                        data: Accessor<{ blob: Blob; meta?: FileMeta } | undefined> | { blob: Blob; meta?: FileMeta } | undefined;
                     }
                 ).data;
                 const data = typeof dataValue === "function" ? dataValue() : dataValue;
 
-                return data?.meta || undefined;
+                return data?.meta;
             } catch {
                 return undefined;
             }

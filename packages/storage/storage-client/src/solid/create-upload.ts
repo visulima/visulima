@@ -275,13 +275,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     });
 
     const getError = (): Error | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.error() ?? undefined;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.error() ?? undefined;
         }
 
@@ -289,13 +289,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getIsPaused = (): boolean | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.isPaused();
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.isPaused();
         }
 
@@ -303,13 +303,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getIsUploading = (): boolean => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.isUploading() ?? false;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.isUploading() ?? false;
         }
 
@@ -317,13 +317,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getOffset = (): number | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.offset();
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.offset();
         }
 
@@ -331,13 +331,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getPause = (): (() => void) | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.pause;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.pause;
         }
 
@@ -345,13 +345,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getProgress = (): number => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.progress() ?? 0;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.progress() ?? 0;
         }
 
@@ -359,13 +359,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getResult = (): UploadResult | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.result() ?? undefined;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.result() ?? undefined;
         }
 
@@ -373,13 +373,13 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     };
 
     const getResume = (): (() => Promise<void>) | undefined => {
-        const method = currentMethod();
+        const activeMethod = currentMethod();
 
-        if (method === "tus") {
+        if (activeMethod === "tus") {
             return tusUpload?.resume;
         }
 
-        if (method === "chunked-rest") {
+        if (activeMethod === "chunked-rest") {
             return chunkedRestUpload?.resume;
         }
 
