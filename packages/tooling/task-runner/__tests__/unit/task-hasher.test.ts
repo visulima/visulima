@@ -495,6 +495,149 @@ describe(InProcessTaskHasher, () => {
 
         expect(Object.keys(details.nodes).some((p) => p.includes("dist/out.js"))).toBe(false);
     });
+
+    it("expands URI-form input strings into their structured equivalents", async () => {
+        expect.assertions(3);
+
+        process.env["URI_TEST_VAR"] = "uri-value";
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: ["glob://{projectRoot}/src/**/*", "env://URI_TEST_VAR"],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const details = await hasher.hashTask(task);
+
+        expect(Object.keys(details.nodes).some((p) => p.includes("src/index.ts"))).toBe(true);
+        expect(details.runtime?.["env:URI_TEST_VAR"]).toBeDefined();
+        // package.json is at projectRoot, not under src/, so the URI glob should exclude it.
+        expect(Object.keys(details.nodes)).not.toContain("packages/lib-a/package.json");
+
+        delete process.env["URI_TEST_VAR"];
+    });
+
+    it("hashes URI form identically to its equivalent object form", async () => {
+        expect.assertions(2);
+
+        const uriHasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: ["glob://{projectRoot}/src/**/*"],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const objectHasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: [{ fileset: "{projectRoot}/src/**/*" }],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const uriDetails = await uriHasher.hashTask(task);
+        const objectDetails = await objectHasher.hashTask(task);
+
+        expect(uriDetails.nodes).toStrictEqual(objectDetails.nodes);
+        expect(computeTaskHash(uriDetails)).toBe(computeTaskHash(objectDetails));
+    });
+
+    it("expands URI strings inside named-input refs", async () => {
+        expect.assertions(2);
+
+        process.env["URI_NAMED_VAR"] = "named-value";
+
+        const hasher = new InProcessTaskHasher({
+            namedInputs: {
+                production: ["glob://{projectRoot}/src/**/*", "env://URI_NAMED_VAR"],
+            },
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: { inputs: ["production"] },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const details = await hasher.hashTask(task);
+
+        expect(Object.keys(details.nodes).some((p) => p.includes("src/index.ts"))).toBe(true);
+        expect(details.runtime?.["env:URI_NAMED_VAR"]).toBeDefined();
+
+        delete process.env["URI_NAMED_VAR"];
+    });
+
+    it("surfaces unknown URI schemes as an InvalidInputUriError", async () => {
+        expect.assertions(1);
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: ["typo://oops"],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        await expect(hasher.hashTask(task)).rejects.toThrow(/Unknown input URI scheme/);
+    });
 });
 
 describe(computeTaskHash, () => {

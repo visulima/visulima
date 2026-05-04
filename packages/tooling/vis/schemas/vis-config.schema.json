@@ -303,10 +303,10 @@
         },
         "fileGroups": {
             "type": "object",
-            "description": "Named file-group patterns, reusable via @filegroup:<name> in target inputs.",
+            "description": "Named file-group patterns, reusable via @filegroup:<name> in target inputs. Strings may be bare globs or URI form (file://, glob://, env://, func://, dep://).",
             "additionalProperties": {
                 "type": "array",
-                "items": { "type": "string" }
+                "items": { "$ref": "project.schema.json#/$defs/inputString" }
             }
         },
         "namedInputs": {
@@ -316,7 +316,7 @@
                 "type": "array",
                 "items": {
                     "oneOf": [
-                        { "type": "string" },
+                        { "$ref": "project.schema.json#/$defs/inputString" },
                         { "$ref": "project.schema.json#/$defs/fileSetInput" },
                         { "$ref": "project.schema.json#/$defs/environmentInput" },
                         { "$ref": "project.schema.json#/$defs/runtimeInput" },

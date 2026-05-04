@@ -83,6 +83,41 @@ export default defineConfig({
 });
 ```
 
+### Input Forms
+
+`inputs` accepts three interchangeable string forms — the URI form is sugar over the object form, so all three hash identically and produce the same cache keys:
+
+| Form              | Example                                                    | Equivalent object form                              |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| Bare glob         | `"src/**/*.ts"`, `"!{projectRoot}/dist/**"`                | `{ fileset: "src/**/*.ts" }`                        |
+| `file://`         | `"file://tsconfig.json"`                                   | `{ fileset: "tsconfig.json" }`                      |
+| `glob://`         | `"glob://{projectRoot}/src/**/*"`                          | `{ fileset: "{projectRoot}/src/**/*" }`             |
+| `env://`          | `"env://NODE_ENV"`                                         | `{ env: "NODE_ENV" }`                               |
+| `func://`         | `"func://node --version"`                                  | `{ runtime: "node --version" }`                     |
+| `dep://`          | `"dep://typescript,vitest"`                                | `{ externalDependencies: ["typescript", "vitest"] }`|
+| `@filegroup:`     | `"@filegroup:sources"`                                     | (expanded inline from `fileGroups.sources`)         |
+| Named-input ref   | `"production"`                                             | (expanded inline from `namedInputs.production`)     |
+
+Negation (`!`) works for fileset forms only: `!file://...`, `!glob://...`, `!{projectRoot}/dist/**`. Negating env/func/dep throws at config load — there is no semantic for "not this env var".
+
+```typescript
+export default defineConfig({
+    targetDefaults: {
+        build: {
+            inputs: [
+                "glob://{projectRoot}/src/**/*",        // fileset
+                "file://{workspaceRoot}/tsconfig.base.json",
+                "env://NODE_ENV",                       // env-var fingerprint
+                "func://node --version",                // runtime-command fingerprint
+                "dep://typescript,vitest",              // external-dep fingerprint
+            ],
+        },
+    },
+});
+```
+
+Unknown URI schemes (e.g. `gob://**` typo) throw `InvalidInputUriError` at config load rather than degrading silently into a glob — silent fallback would mask cache-correctness bugs.
+
 ### Layered Configuration
 
 `vis.config.ts` can `extends` other config files, and each project can ship a `vis.task.ts` overlay. Both are opt-in — projects without them behave identically to before.
