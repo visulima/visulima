@@ -108,8 +108,8 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     const queryDataStore
         = (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null)
-            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>(undefined);
-    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
+            ?? readable<{ blob: Blob; meta: FileMeta } | undefined>();
+    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
     const queryIsLoadingStore: Readable<boolean>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
         = typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
@@ -146,7 +146,7 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
     return {
         data: derived(queryDataStore, ($data) => $data?.blob),
-        error: derived(queryErrorStore, ($error) => ($error ? ($error as Error) : undefined)),
+        error: derived(queryErrorStore, ($error) => $error ?? undefined),
         isLoading: queryIsLoadingStore,
         meta,
         refetch: () => {
