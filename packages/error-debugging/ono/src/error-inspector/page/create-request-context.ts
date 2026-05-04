@@ -548,7 +548,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
         }
 
         // body is narrowed to number/boolean/bigint/symbol/function here; objects handled above
-
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- objects are returned earlier; only primitives reach String(body)
         const stringifiedBody
             = typeof body === "symbol" || typeof body === "bigint" || typeof body === "function" ? (body as { toString: () => string }).toString() : String(body);
 
