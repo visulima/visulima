@@ -11,10 +11,10 @@ export interface FileListResponse {
         firstPageUrl?: string;
         lastPage?: number;
         lastPageUrl?: string;
-        nextPageUrl?: string | undefined;
+        nextPageUrl?: string;
         page?: number;
         perPage?: number;
-        previousPageUrl?: string | undefined;
+        previousPageUrl?: string;
         total?: number;
     };
 }
@@ -67,7 +67,7 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
             const response = data;
             const result: FileListResponse = {
-                data: response.data || (data as unknown as FileMeta[]),
+                data: response.data,
             };
 
             if (response.meta) {
@@ -93,23 +93,23 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     // Call callbacks when query state changes
     useEffect(() => {
-        if (query.data && onSuccessRef.current) {
-            onSuccessRef.current(query.data);
+        if (query.data) {
+            onSuccessRef.current?.(query.data);
         }
     }, [query.data]);
 
     useEffect(() => {
-        if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error);
+        if (query.error) {
+            onErrorRef.current?.(query.error);
         }
     }, [query.error]);
 
     return {
         data: query.data,
-        error: (query.error as Error) || undefined,
+        error: query.error ?? undefined,
         isLoading: query.isLoading,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };

@@ -83,7 +83,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
                     };
                 })) as { error: { code: string; message: string } };
 
-                throw new Error(errorData.error?.message || `Failed to get transformed file: ${response.status} ${response.statusText}`);
+                throw new Error(errorData.error.message || `Failed to get transformed file: ${String(response.status)} ${response.statusText}`);
             }
 
             const blob = await response.blob();
@@ -95,7 +95,7 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
     });
 
     // Extract metadata from response if available
-    const meta: FileMeta | undefined = query.data?.meta || undefined;
+    const meta: FileMeta | undefined = query.data?.meta;
 
     // Store callbacks in refs to avoid re-running effects when callbacks change
     const onSuccessRef = useRef(onSuccess);
@@ -111,24 +111,24 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
     // Call callbacks in useEffect to avoid calling during render
     useEffect(() => {
-        if (query.data && onSuccessRef.current) {
-            onSuccessRef.current(query.data.blob, meta);
+        if (query.data) {
+            onSuccessRef.current?.(query.data.blob, meta);
         }
     }, [query.data, meta]);
 
     useEffect(() => {
-        if (query.error && onErrorRef.current) {
-            onErrorRef.current(query.error);
+        if (query.error) {
+            onErrorRef.current?.(query.error);
         }
     }, [query.error]);
 
     return {
         data: query.data?.blob,
-        error: (query.error as Error) || undefined,
+        error: query.error ?? undefined,
         isLoading: query.isLoading,
         meta,
         refetch: () => {
-            query.refetch();
+            query.refetch().catch(() => {});
         },
     };
 };
