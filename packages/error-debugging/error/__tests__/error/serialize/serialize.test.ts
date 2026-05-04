@@ -1060,7 +1060,7 @@ describe("error serializer", () => {
             const serialized = serializeError(originalError);
 
             // Verify the serialized form has the expected string representation
-            expect((serialized as Record<string, unknown> & SerializedError).data).toBe("[object Buffer]");
+            expect(serialized.data).toBe("[object Buffer]");
 
             // Now deserialize it back
             const deserialized = deserializeError(serialized);

@@ -1,8 +1,15 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import isPlainObject from "is-plain-obj";
-
 import type { SerializedError } from "./error-proto";
 import { ErrorProto } from "./error-proto";
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const proto: unknown = Object.getPrototypeOf(value);
+
+    return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null;
+};
 
 type CauseError = Error & {
     cause: unknown;
@@ -62,7 +69,7 @@ const toJSON = (from: JsonError) => {
         // Non-extensible objects (like when toJSON returns 'this') should preserve original enumerability
         Object.isExtensible(json)
     ) {
-        makePropertiesEnumerable(json as Record<string, unknown>);
+        makePropertiesEnumerable(json);
     }
 
     return json;
@@ -126,7 +133,7 @@ const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options
 
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
         for (const key in value) {
-            plainObject[key] = serializeValue((value as Record<string, unknown>)[key], seen, depth, options);
+            plainObject[key] = serializeValue(value[key], seen, depth, options);
         }
 
         return plainObject;
@@ -159,7 +166,7 @@ const _serialize = (
         return toJSON(error as JsonError);
     }
 
-    const protoError = Object.create(ErrorProto as object) as SerializedError;
+    const protoError = Object.create(ErrorProto) as SerializedError;
 
     // Set error properties with correct enumerability
     // Serialized errors are plain objects, so all properties should be enumerable
